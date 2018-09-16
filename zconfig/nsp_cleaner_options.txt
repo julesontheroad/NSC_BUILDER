@@ -1,0 +1,5 @@
+nut_location|ztools/nut_RTR.py
+working_folder|nspDecrypted
+output_folder|o_clean_nsp
+replace_original|YES
+setting|lines
