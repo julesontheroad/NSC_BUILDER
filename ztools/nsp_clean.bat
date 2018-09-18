@@ -20,25 +20,28 @@ if not exist "ztools\keys.txt" exit
 goto set_options1
 
 ::Set PRESETS
-::For now only nut.py route
+::OPT1 set nut.py route
+::OPT2 Set auto mode output format from option 2 of option file
+::     nsp > output as nsp
+::     xci > output as xci
+::     both > output as both nsp and xci
 :set_options1
-if exist "zconfig\nsp_cleaner_options.txt" goto set_options2
+set i_folder=%~dp0 
+set i_folder=%i_folder:ztools\ =%
+::echo %i_folder%>i_folder.txt
+if exist "%i_folder%zconfig\nsp_cleaner_options.cmd" goto set_options2
 set NUT_ROUTE=ztools/nut_RTR.py
+set vrepack=nsp
 if exist %NUT_ROUTE% goto startpr
 exit
 
 :set_options2
-
-set crlt=0
-for /f "tokens=2 delims=|" %%a in (zconfig\nsp_cleaner_options.txt) do (
-    set /a crlt=!crlt! + 1
-    set opt!crlt!=%%a
-)
-set NUT_ROUTE=%opt1%
+call "zconfig/nsp_cleaner_options.cmd"
 if exist %NUT_ROUTE% goto startpr
 set NUT_ROUTE=ztools/nut_RTR.py
 if exist %NUT_ROUTE% goto startpr
 exit
+
 
 :startpr
 ::Set working folder and file
@@ -48,6 +51,9 @@ set filename=%%~ni
 )
 ::set filename=%filename:_= %
 cls
+::manual mode takes preference for repack
+::set vrepack=%2
+::echo %vrepack% >vrepack.txt
 
 if "%~x1"==".nsp" (goto nsp)
 if "%~x1"==".xci" (goto end)
@@ -107,6 +113,28 @@ if exist "o_clean_nsp\!filename!.nsp" del "o_clean_nsp\!filename!.nsp"  >NUL 2>&
 set myfile=%~dp0\nspDecrypted\%filename%.nsp
 MD nspDecrypted
 
+set f_assist=%filename%
+::Check if repack as xci while game being update
+set check_UPD= 
+echo %f_assist% > nspDecrypted\name.txt
+set f_assist=%f_assist: =%
+FINDSTR /l [UPD] nspDecrypted\name.txt >nspDecrypted\check_UPD.txt
+for /f "tokens=*" %%a in ( nspDecrypted\check_UPD.txt ) do ( set check_UPD=%%a )
+set check_UPD=%check_UPD: =%
+del nspDecrypted\name.txt
+del nspDecrypted\check_UPD.txt
+
+if %f_assist%==%check_UPD% goto itwasupdate1
+goto allgood
+
+:itwasupdate1
+if %vrepack%=="xci" goto itwasupdate2
+if %vrepack%=="both" ( set vrepack=nsp )
+::echo %vrepack% > vrepack.txt
+
+
+:allgood
+
 ECHO -------------------------------------------------------------------------------------
 echo Copy %filename% to nspDecrypted
 ECHO -------------------------------------------------------------------------------------
@@ -152,8 +180,13 @@ del "nspDecrypted\rawnsp\*.tik"
 del "nspDecrypted\rawnsp\*.cert"
 if exist nspDecrypted\rawnsp\*.jpg del nspDecrypted\*.jpg
 echo DONE  
+
+if %vrepack%=="nsp" ( goto nsp_repack )
+if %vrepack%=="xci" ( goto xci_repack )
+
+:nsp_repack
 ECHO -------------------------------------------------------------------------------------
-echo Repacking nsp with nspbuild by CVFireDragon
+echo Repacking as nsp with nspbuild by CVFireDragon
 ECHO -------------------------------------------------------------------------------------
 set ruta_nspb=ztools\nspBuild.py
 dir "nspDecrypted\rawnsp\*" /b  > "nspDecrypted\nsp_fileslist.txt"
@@ -161,40 +194,91 @@ set row=
 for /f %%x in (nspDecrypted\nsp_fileslist.txt) do set row="nspDecrypted\rawnsp\%%x" !row!
 %ruta_nspb% "nspDecrypted\%filename%[nt].nsp" %row% >NUL 2>&1
 echo DONE 
+if not exist o_clean_nsp MD o_clean_nsp
+move  "nspDecrypted\*.nsp"  "o_clean_nsp"  >NUL 2>&1
+if %vrepack%=="both" ( goto xci_repack )
+goto final
+
+:xci_repack
+del nspDecrypted\*.txt >NUL 2>&1
+if exist nspDecrypted\secure RD /S /Q nspDecrypted\secure\ >NUL 2>&1
+MD nspDecrypted\secure
+echo f | xcopy /f /y "%p_folder%zconfig\game_info_preset.ini" "nspDecrypted\"  >NUL 2>&1
+RENAME "nspDecrypted\game_info_preset.ini" "game_info.ini"
+move  "nspDecrypted\rawnsp\*.nca"  "nspDecrypted\secure\"  >NUL 2>&1
+RD /S /Q nspDecrypted\rawnsp\
+MD nspDecrypted\normal
+MD nspDecrypted\update
+ECHO -------------------------------------------------------------------------------------
+echo Repacking as xci file with hacbuild by LucaFraga
+ECHO -------------------------------------------------------------------------------------
+ECHO NOTE:
+echo With files bigger than 4Gb it'll take more time proportionally than with smaller files.
+echo Also you'll need to have at least double the amount of free disk space than file's size.
+echo IF YOU DON'T SEE "DONE" HACBUILD IS STILL AT WORK.
+ECHO ........................................................................................
+"ztools\hacbuild.exe" xci_auto "nspDecrypted"  "nspDecrypted\!filename![xcib].xci"  >NUL 2>&1
+echo DONE
+RD /S /Q "nspDecrypted\secure" >NUL 2>&1
+RD /S /Q "nspDecrypted\normal" >NUL 2>&1
+RD /S /Q "nspDecrypted\update" >NUL 2>&1
+del "nspDecrypted\game_info.ini"
+MD "output_xcib\!ofolder!" >NUL 2>&1
+move  "nspDecrypted\*.xci"  "output_xcib\!ofolder!"  >NUL 2>&1
+ECHO -------------------------------------------------------------------------------------
+echo Processed !filename!
+echo Your files should be in the output_xcib folder
+ECHO -------------------------------------------------------------------------------------
+echo DONE 
 goto final
 
 :an_error
 echo Couldn't Remove title rights from file %filename%
 echo %DATE%. %TIME%>>log.txt
 echo Error removing title rights from %filename%>>log.txt
-RD /S /Q nspDecrypted\
-goto end
+RD /S /Q "nspDecrypted" >NUL 2>&1
+goto fallback
+
+:fallback
+set rutaXCIB=%p_folder%XCI_Builder.bat
+if not exist %p_folder%XCI_Builder.bat ( set rutaXCIB=%p_folder%ztools\XCI_Builder.bat )
+call "%rutaXCIB%" "%~1"
+goto final
 
 :final
 RD /S /Q nspDecrypted\rawnsp\
-if not exist o_clean_nsp MD o_clean_nsp
-move  "nspDecrypted\*.nsp"  "o_clean_nsp"  >NUL 2>&1
 RD /S /Q nspDecrypted\
-
 echo Cleaned !filename!.nsp
+if %vrepack%=="nsp" echo and repacked it as nsp
+if %vrepack%=="xci" echo and repacked it as xci
+if %vrepack%=="both" echo and repacked it as nsp and xci
 echo.
-echo Your files should be in the o_clean_nsp folder
+echo Your files should be in the respective output folders
 echo.
 echo    /@
 echo    \ \
 echo  ___\ \
 echo (__O)  \
+echo (____@) \
 echo (____@)  \
-echo (____@)   \
 echo (__o)_    \
 echo       \    \
 echo.
 echo HOPE YOU HAVE A FUN TIME
+goto end
 
-
-
+:itwasupdate2
+RD /S /Q nspDecrypted\rawnsp\
+RD /S /Q nspDecrypted\
+echo **************************************************
+echo FILE WASN'T REPACKED AS XCI DUE TO BEING AN UPDATE
+echo **************************************************
+echo **************************************************
+echo if chosen to also repack as nsp the resulting file
+echo should be in o_folder.
+echo **************************************************
 
 :end
 PING -n 3 127.0.0.1 >NUL 2>&1
-cls
+
 
