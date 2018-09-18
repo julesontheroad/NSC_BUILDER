@@ -6,22 +6,21 @@ setlocal enabledelayedexpansion
 set /a Enclean=0
 
 ::Checks if cleaner exist
-if exist "%~dp0\nsp_clean.bat" set /a Enclean=1
-if exist "%~dp0\ztools\nsp_clean.bat" set /a Enclean=1
+if exist "%~dp0nsp_clean.bat" set /a Enclean=1
+if exist "%~dp0ztools\nsp_clean.bat" set /a Enclean=1
 
 ::If no program exist go to exit
 if %Enclean% EQU 0 ( goto noprograms )
 
 ::Set route for programs depending on it's location
-set rutaNCLEAN=%~dp0\nsp_clean.bat
+set rutaNCLEAN=%~dp0nsp_clean.bat
 
-if not exist "%~dp0\nsp_clean.bat" ( set rutaNCLEAN=%~dp0\ztools\nsp_clean.bat ) 
+if not exist "%~dp0nsp_clean.bat" ( set rutaNCLEAN=%~dp0ztools\nsp_clean.bat ) 
 
 ::Check if user is dragging a folder or a file
 
 if exist "%~dp1%~n1\*.nsp" goto folder
 goto file
-
 
 :folder
 ECHO                 __       __          __       __             __                          
@@ -41,8 +40,8 @@ ECHO and check blawar's NUT at:  https://github.com/blawar/nut
 ECHO -------------------------------------------------------------------------------------
 PING -n 2 127.0.0.1 >NUL 2>&1
 
-for %%f in ("%~dp1%~n1\*.*") do (
-if %Enclean% EQU 1 ( "%rutaNCLEAN%" "%%f" )
+for /r "%~1" %%f in (*.nsp) do (
+if %Enclean% EQU 1 ( call "%rutaNCLEAN%" "%%f" )
 )
 ECHO ---------------------------------------------------
 ECHO ************ ALL FILES WERE CLEANED! ************** 
@@ -58,7 +57,8 @@ if "%~x1"==".*" ( goto other )
 goto manual
 
 :nsp
-"%rutaNCLEAN%" "%~1"
+
+call "%rutaNCLEAN%" "%~1"
 exit
 
 :noprograms
@@ -81,16 +81,16 @@ setlocal enabledelayedexpansion
 set /a Enclean=0
 
 ::Checks if cleaner exist
-if exist "%~dp0\nsp_clean.bat" set /a Enclean=1
-if exist "%~dp0\ztools\nsp_clean.bat" set /a Enclean=1
+if exist "%~dp0nsp_clean.bat" set /a Enclean=1
+if exist "%~dp0ztools\nsp_clean.bat" set /a Enclean=1
 
 ::If no program exist go to exit
 if %Enclean% EQU 0 ( goto noprograms )
 
 ::Set route for programs depending on it's location
-set rutaNCLEAN=%~dp0\nsp_clean.bat
+set rutaNCLEAN=%~dp0nsp_clean.bat
 
-if not exist "%~dp0\nsp_clean.bat" ( set rutaNCLEAN=%~dp0\ztools\nsp_clean.bat ) 
+if not exist "%~dp0nsp_clean.bat" ( set rutaNCLEAN=%~dp0ztools\nsp_clean.bat ) 
 
 
 ECHO                 __       __          __       __             __                          
@@ -149,12 +149,10 @@ echo ...................................................................
 :manual_INIT
 set /p bs="PLEASE DRAG A FILE OR FOLDER OVER THE WINDOW AND PRESS ENTER: "
 set bs=%bs:"=%
-if exist "%bs%\*.nsp" goto checkfolder
+if exist "%bs%\" goto checkfolder
 goto checkfile
 :checkfolder
-for %%f in ("%bs%\*.*") do (
-echo %%f >>hlist.txt
-)
+DIR /B /S "%bs%\*.nsp" >hlist.txt
 FINDSTR ".nsp" hlist.txt >>list.txt
 del hlist.txt
 goto checkagain
@@ -180,7 +178,7 @@ if /i "%bs%"=="1" goto start_cleaning
 if /i "%bs%"=="e" goto salida
 if /i "%bs%"=="i" goto showlist
 if /i "%bs%"=="r" goto r_files
-if exist "%bs%\*.nsp" goto checkfolder
+if exist "%bs%\" goto checkfolder
 goto checkfile
 goto salida
 pause
@@ -223,14 +221,31 @@ echo YOU'VE ADDED !conta! FILES TO CLEAN
 echo .................................................
 goto checkagain
 
+:s_cl_wrongchoice
+echo wrong choice
+echo ............
 :start_cleaning
+echo *******************************************************
+echo CHOOSE WHAT TO DO AFTER CLEANING TITLERIGHTS ENCRYPTION
+echo *******************************************************
+echo Press "1" to repack list as nsp
+echo Press "2" to repack list as xci
+echo Press "3" to repack list as both
+set /p bs="Enter your choice: "
+set bs=%bs:"=%
+set vrepack=none
+if /i "%bs%"=="1" set vrepack=nsp
+if /i "%bs%"=="2" set vrepack=xci
+if /i "%bs%"=="3" set vrepack=both
+if %vrepack%=="none" goto s_cl_wrongchoice
+
 set conta=
 for /f "tokens=*" %%f in (list.txt) do (
 echo %%f
 set /a conta=!conta! + 1
 )
 for /f "tokens=*" %%f in (list.txt) do (
-"%rutaNCLEAN%" "%%f"
+call "%rutaNCLEAN%" "%%f" "%vrepack%"
 more +1 "list.txt" >"list.txt.new"
 move /y "list.txt.new" "list.txt" >nul
 set /a conta=!conta! - 1
