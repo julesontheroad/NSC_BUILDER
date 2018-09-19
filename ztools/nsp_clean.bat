@@ -52,7 +52,7 @@ set filename=%%~ni
 ::set filename=%filename:_= %
 cls
 ::manual mode takes preference for repack
-::set vrepack=%2
+if exist %2 set vrepack=%2
 ::echo %vrepack% >vrepack.txt
 
 if "%~x1"==".nsp" (goto nsp)
@@ -68,7 +68,7 @@ ECHO ---------------------------------------------------------------------------
 ECHO =============================     BY JULESONTHEROAD     =============================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                              POWERED WITH NUT BY BLAWAR                           "
-ECHO                                      VERSION 0.15               
+ECHO                                      VERSION 0.2               
 ECHO -------------------------------------------------------------------------------------                   
 ECHO check xci_batch_builder at: https://github.com/julesontheroad/
 ECHO and check blawar's NUT at:  https://github.com/blawar/nut 
@@ -102,7 +102,7 @@ ECHO ---------------------------------------------------------------------------
 ECHO =============================     BY JULESONTHEROAD     =============================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                              POWERED WITH NUT BY BLAWAR                           "
-ECHO                                      VERSION 0.15               
+ECHO                                      VERSION 0.2               
 ECHO -------------------------------------------------------------------------------------                   
 ECHO check xci_batch_builder at: https://github.com/julesontheroad/
 ECHO and check blawar's NUT at:  https://github.com/blawar/nut 
@@ -123,7 +123,6 @@ for /f "tokens=*" %%a in ( nspDecrypted\check_UPD.txt ) do ( set check_UPD=%%a )
 set check_UPD=%check_UPD: =%
 del nspDecrypted\name.txt
 del nspDecrypted\check_UPD.txt
-
 if %f_assist%==%check_UPD% goto itwasupdate1
 goto allgood
 
@@ -192,7 +191,7 @@ set ruta_nspb=ztools\nspBuild.py
 dir "nspDecrypted\rawnsp\*" /b  > "nspDecrypted\nsp_fileslist.txt"
 set row=
 for /f %%x in (nspDecrypted\nsp_fileslist.txt) do set row="nspDecrypted\rawnsp\%%x" !row!
-%ruta_nspb% "nspDecrypted\%filename%[nt].nsp" %row% >NUL 2>&1
+%ruta_nspb% "nspDecrypted\%filename%[rr].nsp" %row% >NUL 2>&1
 echo DONE 
 if not exist o_clean_nsp MD o_clean_nsp
 move  "nspDecrypted\*.nsp"  "o_clean_nsp"  >NUL 2>&1
@@ -201,53 +200,35 @@ goto final
 
 :xci_repack
 del nspDecrypted\*.txt >NUL 2>&1
-if exist nspDecrypted\secure RD /S /Q nspDecrypted\secure\ >NUL 2>&1
-MD nspDecrypted\secure
-echo f | xcopy /f /y "%p_folder%zconfig\game_info_preset.ini" "nspDecrypted\"  >NUL 2>&1
-RENAME "nspDecrypted\game_info_preset.ini" "game_info.ini"
-move  "nspDecrypted\rawnsp\*.nca"  "nspDecrypted\secure\"  >NUL 2>&1
+MD nspDecrypted\rawsecure\ >NUL 2>&1
+move  "nspDecrypted\rawnsp\*"  "nspDecrypted\rawsecure\"  >NUL 2>&1
 RD /S /Q nspDecrypted\rawnsp\
-MD nspDecrypted\normal
-MD nspDecrypted\update
-ECHO -------------------------------------------------------------------------------------
-echo Repacking as xci file with hacbuild by LucaFraga
-ECHO -------------------------------------------------------------------------------------
-ECHO NOTE:
-echo With files bigger than 4Gb it'll take more time proportionally than with smaller files.
-echo Also you'll need to have at least double the amount of free disk space than file's size.
-echo IF YOU DON'T SEE "DONE" HACBUILD IS STILL AT WORK.
-ECHO ........................................................................................
-"ztools\hacbuild.exe" xci_auto "nspDecrypted"  "nspDecrypted\!filename![xcib].xci"  >NUL 2>&1
-echo DONE
-RD /S /Q "nspDecrypted\secure" >NUL 2>&1
-RD /S /Q "nspDecrypted\normal" >NUL 2>&1
-RD /S /Q "nspDecrypted\update" >NUL 2>&1
-del "nspDecrypted\game_info.ini"
-MD "output_xcib\!ofolder!" >NUL 2>&1
-move  "nspDecrypted\*.xci"  "output_xcib\!ofolder!"  >NUL 2>&1
-ECHO -------------------------------------------------------------------------------------
-echo Processed !filename!
-echo Your files should be in the output_xcib folder
-ECHO -------------------------------------------------------------------------------------
-echo DONE 
+set rutaXCIB=XCI_Builder.bat
+if not exist XCI_Builder.bat ( set rutaXCIB=ztools\XCI_Builder.bat )
+set op=startbuilding
+call %rutaXCIB% "%~1" "%op%"
 goto final
 
 :an_error
 echo Couldn't Remove title rights from file %filename%
 echo %DATE%. %TIME%>>log.txt
 echo Error removing title rights from %filename%>>log.txt
-RD /S /Q "nspDecrypted" >NUL 2>&1
-goto fallback
+echo Initiating fallback alternative
+if %vrepack%=="xci" ( goto fallback )
+RD /S /Q nspDecrypted\ >NUL 2>&1
+goto final
 
 :fallback
-set rutaXCIB=%p_folder%XCI_Builder.bat
-if not exist %p_folder%XCI_Builder.bat ( set rutaXCIB=%p_folder%ztools\XCI_Builder.bat )
-call "%rutaXCIB%" "%~1"
+set rutaXCIB=XCI_Builder.bat
+if not exist XCI_Builder.bat ( set rutaXCIB=ztools\XCI_Builder.bat )
+set op=fallback
+call %rutaXCIB% "%~1" "%op%"
+
 goto final
 
 :final
-RD /S /Q nspDecrypted\rawnsp\
-RD /S /Q nspDecrypted\
+RD /S /Q nspDecrypted\rawnsp\ >NUL 2>&1
+RD /S /Q nspDecrypted\ >NUL 2>&1
 echo Cleaned !filename!.nsp
 if %vrepack%=="nsp" echo and repacked it as nsp
 if %vrepack%=="xci" echo and repacked it as xci
