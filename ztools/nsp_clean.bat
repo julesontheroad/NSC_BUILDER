@@ -51,9 +51,8 @@ set filename=%%~ni
 )
 ::set filename=%filename:_= %
 cls
-::manual mode takes preference for repack
-if exist %2 set vrepack=%2
-::echo %vrepack% >vrepack.txt
+::Included other variable for manual to fix issues
+if %2=="manual" set vrepack=%3
 
 if "%~x1"==".nsp" (goto nsp)
 if "%~x1"==".xci" (goto end)
@@ -68,7 +67,7 @@ ECHO ---------------------------------------------------------------------------
 ECHO =============================     BY JULESONTHEROAD     =============================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                              POWERED WITH NUT BY BLAWAR                           "
-ECHO                                      VERSION 0.2               
+ECHO                                      VERSION 0.21               
 ECHO -------------------------------------------------------------------------------------                   
 ECHO check xci_batch_builder at: https://github.com/julesontheroad/
 ECHO and check blawar's NUT at:  https://github.com/blawar/nut 
@@ -102,7 +101,7 @@ ECHO ---------------------------------------------------------------------------
 ECHO =============================     BY JULESONTHEROAD     =============================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                              POWERED WITH NUT BY BLAWAR                           "
-ECHO                                      VERSION 0.2               
+ECHO                                      VERSION 0.21               
 ECHO -------------------------------------------------------------------------------------                   
 ECHO check xci_batch_builder at: https://github.com/julesontheroad/
 ECHO and check blawar's NUT at:  https://github.com/blawar/nut 
@@ -118,18 +117,24 @@ set f_assist=%filename%
 set check_UPD= 
 echo %f_assist% > nspDecrypted\name.txt
 set f_assist=%f_assist: =%
-FINDSTR /l [UPD] nspDecrypted\name.txt >nspDecrypted\check_UPD.txt
-for /f "tokens=*" %%a in ( nspDecrypted\check_UPD.txt ) do ( set check_UPD=%%a )
-set check_UPD=%check_UPD: =%
-del nspDecrypted\name.txt
-del nspDecrypted\check_UPD.txt
-if %f_assist%==%check_UPD% goto itwasupdate1
-goto allgood
+echo %f_assist%>nspDecrypted\f_assist.txt
+FINDSTR /L 000] nspDecrypted\name.txt >nspDecrypted\check_game.txt
+for /f "tokens=*" %%a in ( nspDecrypted\check_game.txt ) do ( set check_game=%%a )
+set check_game=%check_game: =%
+::del nspDecrypted\name.txt
+::del nspDecrypted\check_game.txt
+
+if %f_assist%==%check_game% goto allgood
+goto itwasupdate1
 
 :itwasupdate1
 if %vrepack%=="xci" goto itwasupdate2
 if %vrepack%=="both" ( set vrepack=nsp )
+goto allgood
 ::echo %vrepack% > vrepack.txt
+:itwasupdate2
+if %xnsp_ifnotgame%=="true" ( set vrepack=nsp )
+if %xnsp_ifnotgame%=="false" ( goto itwasupdate3 )
 
 
 :allgood
@@ -248,7 +253,7 @@ echo.
 echo HOPE YOU HAVE A FUN TIME
 goto end
 
-:itwasupdate2
+:itwasupdate3
 RD /S /Q nspDecrypted\rawnsp\
 RD /S /Q nspDecrypted\
 echo **************************************************
