@@ -33,7 +33,7 @@ ECHO ---------------------------------------------------------------------------
 ECHO =============================     BY JULESONTHEROAD     =============================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                              POWERED WITH NUT BY BLAWAR                           "
-ECHO                                      VERSION 0.2               
+ECHO                                      VERSION 0.21               
 ECHO -------------------------------------------------------------------------------------                   
 ECHO check xci_batch_builder at: https://github.com/julesontheroad/
 ECHO and check blawar's NUT at:  https://github.com/blawar/nut 
@@ -41,7 +41,7 @@ ECHO ---------------------------------------------------------------------------
 PING -n 2 127.0.0.1 >NUL 2>&1
 
 for /r "%~1" %%f in (*.nsp) do (
-if %Enclean% EQU 1 ( call "%rutaNCLEAN%" "%%f" )
+if %Enclean% EQU 1 ( call "%rutaNCLEAN%" "%%f" "auto" "")
 )
 ECHO ---------------------------------------------------
 ECHO ************ ALL FILES WERE CLEANED! ************** 
@@ -58,7 +58,7 @@ goto manual
 
 :nsp
 
-call "%rutaNCLEAN%" "%~1"
+call "%rutaNCLEAN%" "%~1" "auto" ""
 exit
 
 :noprograms
@@ -102,8 +102,8 @@ ECHO                /_____/                         /_____/
 ECHO -------------------------------------------------------------------------------------
 ECHO =============================     BY JULESONTHEROAD     =============================
 ECHO -------------------------------------------------------------------------------------
-ECHO "                                POWERED NY NUT BY BLAWAR                           "
-ECHO                                        VERSION 0.2               
+ECHO "                             POWERED NY NUT BY BLAWAR                              "
+ECHO                                     VERSION 0.21               
 ECHO -------------------------------------------------------------------------------------                   
 ECHO check xci_batch_builder at: https://github.com/julesontheroad/
 ECHO and check blawar's NUT at:  https://github.com/blawar/nut 
@@ -245,7 +245,7 @@ echo %%f
 set /a conta=!conta! + 1
 )
 for /f "tokens=*" %%f in (list.txt) do (
-call "%rutaNCLEAN%" "%%f" "%vrepack%"
+call "%rutaNCLEAN%" "%%f" "manual" "%vrepack%" 
 more +1 "list.txt" >"list.txt.new"
 move /y "list.txt.new" "list.txt" >nul
 set /a conta=!conta! - 1
