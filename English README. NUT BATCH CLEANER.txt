@@ -8,9 +8,10 @@
 =============================     BY JULESONTHEROAD     =============================
 -------------------------------------------------------------------------------------
 "                              POWERED WITH NUT BY BLAWAR                           "
-
-------------------------------------------------------------------------------------------                   
-also check xci_batch_builder at: https://github.com/julesontheroad/
+                                     Version 0.21
+------------------------------------------------------------------------------------------
+MORE AT: https://github.com/julesontheroad/NUT_BATCH_CLEANER                   
+also check xci_batch_builder at: https://github.com/julesontheroad/-XCI-Batch-Builder-
 and check blawar's NUT at:  https://github.com/blawar/nut 
 and also check blawar's awesome installer in the works at https://github.com/blawar/sysnut
 ------------------------------------------------------------------------------------------
@@ -20,7 +21,13 @@ FALSE ERROR LOG
 ---------------
 0. Changelog
 ---------------
-v0.1 - First official release
+v0.21- Fixed issue with manual mode not detecting the user repacking input correctly
+       Added better check for dlcs and updates, according to id
+       Added another config parameter to "nsp_cleaner_options.cmd" (xnsp_ifnotgame)
+       > This parameter serves to repack dlcs and updates as nsp if processing list as xci only.
+         Options are:
+         * true: repack dlcs and updates as nsp
+         * false: skip dlc and update repacking when exporting as xci.
 v0.2 - Added xci repacking. You can now repack as:
        *xci
        *nsp
@@ -35,6 +42,7 @@ v0.2 - Added xci repacking. You can now repack as:
      - For manual mode you can allways choose what format to build from the current
        list.
      - More changes coming soon.
+v0.1 - First official release
 
 NOTE: STILL DIDN'T HAVE TIME TO FIX THE WEIRD CHARACTERS ERROR
       also repacking a batch to get python libraries dependencies. I believe they're
