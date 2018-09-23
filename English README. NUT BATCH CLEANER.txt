@@ -21,6 +21,17 @@ FALSE ERROR LOG
 ---------------
 0. Changelog
 ---------------
+v0.30- Added new options in zconfig.
+       > Option 4: Way the items are organized.
+         * line: scattered in output folder
+         * folder: in folders according to game name
+       > Option 5 and option 6: Output folders for xci and nsp. As default using
+         a common folder for both.
+       > Option 7: Preserve stripped files from the nsp as a .zip file for future
+         restore function. (True by default)
+       > Option 8: Replace original file with clean/converted files.As default false.
+         TAKE CARE WITH THIS ONE. BETTER CHECK ALL WORKS FINE BEFORE ACTIVATING IT.
+       Added option to erase list.txt in manual mode.
 v0.21- Fixed issue with manual mode not detecting the user repacking input correctly
        Added better check for dlcs and updates, according to id
        Added another config parameter to "nsp_cleaner_options.cmd" (xnsp_ifnotgame)
