@@ -33,7 +33,7 @@ ECHO ---------------------------------------------------------------------------
 ECHO =============================     BY JULESONTHEROAD     =============================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                              POWERED WITH NUT BY BLAWAR                           "
-ECHO                                      VERSION 0.21               
+ECHO                                      VERSION 0.30               
 ECHO -------------------------------------------------------------------------------------                   
 ECHO check xci_batch_builder at: https://github.com/julesontheroad/
 ECHO and check blawar's NUT at:  https://github.com/blawar/nut 
@@ -103,7 +103,7 @@ ECHO ---------------------------------------------------------------------------
 ECHO =============================     BY JULESONTHEROAD     =============================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                             POWERED NY NUT BY BLAWAR                              "
-ECHO                                     VERSION 0.21               
+ECHO                                     VERSION 0.30               
 ECHO -------------------------------------------------------------------------------------                   
 ECHO check xci_batch_builder at: https://github.com/julesontheroad/
 ECHO and check blawar's NUT at:  https://github.com/blawar/nut 
@@ -171,6 +171,7 @@ echo Press "1" to start cleaning
 echo Press "e" to exit
 echo Press "i" to see list of files to clean
 echo Press "r" to remove some files (counting from bottom)
+echo Press "z" to remove the whole list
 echo ......................................................................
 set /p bs="Drag file/folder or set option: "
 set bs=%bs:"=%
@@ -178,6 +179,7 @@ if /i "%bs%"=="1" goto start_cleaning
 if /i "%bs%"=="e" goto salida
 if /i "%bs%"=="i" goto showlist
 if /i "%bs%"=="r" goto r_files
+if /i "%bs%"=="z" del list.txt
 if exist "%bs%\" goto checkfolder
 goto checkfile
 goto salida
