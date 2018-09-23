@@ -49,7 +49,16 @@ if not exist "ztools\keys.txt" exit
 goto startpr
 
 :startpr
+if %f_replace%=="true" ( set org_out="folder")
+if %fold_xcib%=="false" ( set root_outxf=output_xcib)
+if not %fold_xcib%=="false" ( set root_outxf=%fold_xcib%)
+set root_outxf=%root_outxf:"=%
+
+set zip=ztools/7za.exe
 set opsb=%2
+set z_preserve=%3
+set org_out=%4
+::echo %zpreserve% >zpreserve.txt
 ::echo %opsb% >opsb.txt
 if %opsb%=="startbuilding" ( goto startbuilding )
 
@@ -129,7 +138,7 @@ echo Please wait till window closes
 echo Depending on file size it can take a little
 PING -n 2 127.0.0.1 >NUL 2>&1
 
-if exist "output_xcib\!filename!" RD /s /q "output_xcib\!filename!" >NUL 2>&1
+if exist "%root_outxf%\!filename!" RD /s /q "%root_outxf%\!filename!" >NUL 2>&1
 set ofolder=%filename%
 ::Extract nsp to rawsecure
 echo ----------------------------------------------------
@@ -138,6 +147,29 @@ echo ----------------------------------------------------
 "ztools\hactool.exe" -k "ztools\keys.txt" -t pfs0 --pfs0dir=nspDecrypted\rawsecure "%~1" >NUL 2>&1
 echo DONE
 :startbuilding
+set ofolder=%filename%
+echo %ofolder%>nspDecrypted\fname.txt
+::deletebrackets
+for /f "tokens=1* delims=[" %%a in (nspDecrypted\fname.txt) do (
+    set ofolder=%%a)
+echo %ofolder%>nspDecrypted\fname.txt
+::deleteparenthesis
+for /f "tokens=1* delims=(" %%a in (nspDecrypted\fname.txt) do (
+    set ofolder=%%a)
+echo %ofolder%>nspDecrypted\fname.txt
+::I also wanted to remove_(
+set ofolder=%ofolder:_= %
+if exist nspDecrypted\fname.txt del nspDecrypted\fname.txt
+
+set p_folder=%~dp0 
+set p_folder=%p_folder:ztools\ =%
+
+if %z_preserve%=="true" ( "%p_folder%%zip%" a "%p_folder%nspDecrypted\%filename%[del].zip" "%p_folder%nspDecrypted\rawsecure\*.jpg" ) >NUL 2>&1
+if %z_preserve%=="true" ( "%p_folder%%zip%" a "%p_folder%nspDecrypted\%filename%[del].zip" "%p_folder%nspDecrypted\rawsecure\*.tik" ) >NUL 2>&1
+if %z_preserve%=="true" ( "%p_folder%%zip%" a "%p_folder%nspDecrypted\%filename%[del].zip" "%p_folder%nspDecrypted\rawsecure\*.xml" ) >NUL 2>&1
+if %z_preserve%=="true" ( "%p_folder%%zip%" a "%p_folder%nspDecrypted\%filename%[del].zip" "%p_folder%nspDecrypted\rawsecure\*.cert" ) >NUL 2>&1
+if %z_preserve%=="true" ( "%p_folder%%zip%" a "%p_folder%nspDecrypted\%filename%[del].zip" "%p_folder%nspDecrypted\rawsecure\*.jpg" ) >NUL 2>&1
+
 ::Delete .jpg files if BBB dump
 if exist nspDecrypted\rawsecure\*.jpg del nspDecrypted\rawsecure\*.jpg >NUL 2>&1
 ::List .nca files in directory
@@ -178,8 +210,8 @@ set myhtmlnca=%%a.nca)
 ::If we don't want to preserve the manual erase it
 ::If we want to preserve it move it out of rawsecure
 ::echo %myhtmlnca%>nspDecrypted\myhtmlnca.txt
-if !preservemanual! EQU 1 ( move "nspDecrypted\rawsecure\%myhtmlnca%"  "nspDecrypted\" ) 
-if !preservemanual! NEQ 1 ( del "nspDecrypted\rawsecure\%myhtmlnca%" )
+if %z_preserve%=="true" ( "%p_folder%%zip%" a "%p_folder%nspDecrypted\%filename%[del].zip" "%p_folder%nspDecrypted\rawsecure\%myhtmlnca%" ) >NUL 2>&1
+del "nspDecrypted\rawsecure\%myhtmlnca%"
 ::echo %myhtmlnca%>nspDecrypted\myhtmlnca.txt
 set filename=!filename![nm]
 
@@ -239,6 +271,7 @@ for /f %%a in (nspDecrypted\ncatocheck.txt) do (
     set ncatocheck=%%a
 )
 "ztools\hactool.exe" -k "ztools\keys.txt" -t nca -i "nspDecrypted\rawsecure\%ncatocheck%" >"nspDecrypted\nca_data.txt"
+
 FINDSTR "Type" nspDecrypted\nca_data.txt >nspDecrypted\nca_helper.txt
 for /f "tokens=3* delims=: " %%a in (nspDecrypted\nca_helper.txt) do (
 echo %%a>>nspDecrypted\nca_helper2.txt)
@@ -293,26 +326,22 @@ if !size_tm2! GTR !size_tm1!( goto case4 )
 goto nomanual
 
 :case1
-if !preservemanual! EQU 1 ( move "%f_tmanual1%"  "nspDecrypted\" ) 
-if !preservemanual! NEQ 1 ( del "%f_tmanual1%" ) 
+if %z_preserve%=="true" ( "%p_folder%%zip%" a "%p_folder%nspDecrypted\%filename%[del].zip" "%p_folder%%f_tmanual1%" ) >NUL 2>&1
 del "%f_tmanual1%"
 set filename=!filename![nm]
 goto lcnsp
 :case2
-if !preservemanual! EQU 1 ( move "%f_tmanual2%"  "nspDecrypted\" ) 
-if !preservemanual! NEQ 1 ( del "%f_tmanual2%" ) 
+if %z_preserve%=="true" ( "%p_folder%%zip%" a "%p_folder%nspDecrypted\%filename%[del].zip" "%p_folder%%f_tmanual2%" ) >NUL 2>&1
 del "%f_tmanual2%"
 set filename=!filename![nm]
 goto lcnsp
 :case3
-if !preservemanual! EQU 1 ( move "%f_tmanual2%"  "nspDecrypted\" ) 
-if !preservemanual! NEQ 1 ( del "%f_tmanual2%" ) 
+if %z_preserve%=="true" ( "%p_folder%%zip%" a "%p_folder%nspDecrypted\%filename%[del].zip" "%p_folder%%f_tmanual2%" ) >NUL 2>&1
 del "%f_tmanual2%"
 set filename=!filename![nm]
 goto lcnsp
 :case4
-if !preservemanual! EQU 1 ( move "%f_tmanual1%"  "nspDecrypted\" ) 
-if !preservemanual! NEQ 1 ( del "%f_tmanual1%" ) 
+if %z_preserve%=="true" ( "%p_folder%%zip%" a "%p_folder%nspDecrypted\%filename%[del].zip" "%p_folder%%f_tmanual1%" ) >NUL 2>&1
 del "%f_tmanual1%"
 set filename=!filename![nm]
 goto lcnsp
@@ -425,14 +454,23 @@ RD /S /Q "nspDecrypted\secure"
 RD /S /Q "nspDecrypted\normal"
 RD /S /Q "nspDecrypted\update"
 del "nspDecrypted\game_info.ini"
-MD "output_xcib\!ofolder!" >NUL 2>&1
-move  "nspDecrypted\*.*"  "output_xcib\!ofolder!"  >NUL 2>&1
+if not exist "%root_outxf%" MD "%root_outxf%" >NUL 2>&1
+if %org_out%=="folder" goto org_xci_f
+move  "nspDecrypted\*.*"  "%root_outxf%\"  >NUL 2>&1
 RD /S /Q "nspDecrypted"
 if %opsb%=="startbuilding" ( goto end )
 if %opsb%=="fallback" ( goto end )
+
+:org_xci_f
+MD "%root_outxf%\!ofolder!" >NUL 2>&1
+move  "nspDecrypted\*.*"  "%root_outxf%\!ofolder!"  >NUL 2>&1
+RD /S /Q "nspDecrypted"
+if %opsb%=="startbuilding" ( goto end )
+if %opsb%=="fallback" ( goto end )
+
 echo ----------------------------------------------
 echo Processed !filename!
-echo Your files should be in the output_xcib folder
+echo Your files should be in the %root_outxf% folder
 echo ----------------------------------------------
 PING -n 4 127.0.0.1 >NUL 2>&1
 echo    /@

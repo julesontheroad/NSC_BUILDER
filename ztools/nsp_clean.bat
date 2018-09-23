@@ -29,9 +29,11 @@ goto set_options1
 set i_folder=%~dp0 
 set i_folder=%i_folder:ztools\ =%
 ::echo %i_folder%>i_folder.txt
+set zip=ztools/7za.exe
 if exist "%i_folder%zconfig\nsp_cleaner_options.cmd" goto set_options2
 set NUT_ROUTE=ztools/nut_RTR.py
-set vrepack=nsp
+set z_preserve="true"
+set vrepack="nsp"
 if exist %NUT_ROUTE% goto startpr
 exit
 
@@ -46,6 +48,11 @@ exit
 :startpr
 ::Set working folder and file
 set file=%~n1
+if %f_replace%=="true" ( set org_out="folder")
+if %fold_clnsp%=="false" ( set root_outf=o_clean_nsp)
+if not %fold_clnsp%=="false" ( set root_outf=%fold_clnsp%)
+set root_outf=%root_outf:"=%
+
 FOR %%i IN ("%file%") DO (
 set filename=%%~ni
 )
@@ -67,7 +74,7 @@ ECHO ---------------------------------------------------------------------------
 ECHO =============================     BY JULESONTHEROAD     =============================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                              POWERED WITH NUT BY BLAWAR                           "
-ECHO                                      VERSION 0.21               
+ECHO                                      VERSION 0.30               
 ECHO -------------------------------------------------------------------------------------                   
 ECHO check xci_batch_builder at: https://github.com/julesontheroad/
 ECHO and check blawar's NUT at:  https://github.com/blawar/nut 
@@ -101,14 +108,14 @@ ECHO ---------------------------------------------------------------------------
 ECHO =============================     BY JULESONTHEROAD     =============================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                              POWERED WITH NUT BY BLAWAR                           "
-ECHO                                      VERSION 0.21               
+ECHO                                      VERSION 0.30               
 ECHO -------------------------------------------------------------------------------------                   
 ECHO check xci_batch_builder at: https://github.com/julesontheroad/
 ECHO and check blawar's NUT at:  https://github.com/blawar/nut 
 ECHO -------------------------------------------------------------------------------------
 
 if exist "nspDecrypted\" rmdir /s /q "nspDecrypted\"  >NUL 2>&1
-if exist "o_clean_nsp\!filename!.nsp" del "o_clean_nsp\!filename!.nsp"  >NUL 2>&1
+if exist "%root_outf%\!filename!.nsp" del "%root_outf%\!filename!.nsp"  >NUL 2>&1
 set myfile=%~dp0\nspDecrypted\%filename%.nsp
 MD nspDecrypted
 
@@ -145,6 +152,20 @@ ECHO ---------------------------------------------------------------------------
 echo f | xcopy /f /y "%~1" "nspDecrypted\"   >NUL 2>&1
 echo DONE
 
+set ofolder=%filename%
+echo %ofolder%>nspDecrypted\fname.txt
+::deletebrackets
+for /f "tokens=1* delims=[" %%a in (nspDecrypted\fname.txt) do (
+    set ofolder=%%a)
+echo %ofolder%>nspDecrypted\fname.txt
+::deleteparenthesis
+for /f "tokens=1* delims=(" %%a in (nspDecrypted\fname.txt) do (
+    set ofolder=%%a)
+echo %ofolder%>nspDecrypted\fname.txt
+::I also wanted to remove_(
+set ofolder=%ofolder:_= %
+if exist nspDecrypted\fname.txt del nspDecrypted\fname.txt
+
 ECHO -------------------------------------------------------------------------------------
 echo Cleaning nsp with nut.py
 ECHO -------------------------------------------------------------------------------------
@@ -177,12 +198,18 @@ ECHO ---------------------------------------------------------------------------
 "ztools\hactool.exe" -k "ztools\keys.txt" -t pfs0 --pfs0dir=nspDecrypted\rawnsp "nspDecrypted\%filename%.nsp" >NUL 2>&1
 echo DONE  
 ECHO -------------------------------------------------------------------------------------
-echo Removing ticket and cert
+if not %z_preserve%=="true" echo Removing ticket and cert
+if %z_preserve%=="true"  echo Removing ticket and cert and ziping them
 ECHO -------------------------------------------------------------------------------------
 del "nspDecrypted\%filename%.nsp"
+
+if %z_preserve%=="true" ( "%zip%" a "%p_folder%nspDecrypted\%filename%[del].zip" "%p_folder%nspDecrypted\rawnsp\*.tik" ) >NUL 2>&1
 del "nspDecrypted\rawnsp\*.tik"
+if %z_preserve%=="true" ( "%zip%" a "%p_folder%nspDecrypted\%filename%[del].zip" "%p_folder%nspDecrypted\rawnsp\*.cert" ) >NUL 2>&1
 del "nspDecrypted\rawnsp\*.cert"
+if %z_preserve%=="true" ( "%zip%" a "%p_folder%nspDecrypted\%filename%[del].zip" "%p_folder%nspDecrypted\rawnsp\*.jpg" ) >NUL 2>&1
 if exist nspDecrypted\rawnsp\*.jpg del nspDecrypted\*.jpg
+
 echo DONE  
 
 if %vrepack%=="nsp" ( goto nsp_repack )
@@ -198,20 +225,34 @@ set row=
 for /f %%x in (nspDecrypted\nsp_fileslist.txt) do set row="nspDecrypted\rawnsp\%%x" !row!
 %ruta_nspb% "nspDecrypted\%filename%[rr].nsp" %row% >NUL 2>&1
 echo DONE 
-if not exist o_clean_nsp MD o_clean_nsp
-move  "nspDecrypted\*.nsp"  "o_clean_nsp"  >NUL 2>&1
+if not exist %root_outf% MD %root_outf%
+
+if %org_out%=="folder" goto org_nsp_f
+move  "nspDecrypted\*.nsp"  "%root_outf%"  >NUL 2>&1
+echo f | xcopy /f /y "nspDecrypted\*.zip" "%root_outf%" >NUL 2>&1
+if %vrepack%=="both" ( goto xci_repack )
+goto final
+
+
+
+:org_nsp_f
+MD "%root_outf%\!ofolder!" >NUL 2>&1
+move  "nspDecrypted\*.nsp"  "%root_outf%\!ofolder!"  >NUL 2>&1
+echo f | xcopy /f /y "nspDecrypted\*.zip" "%root_outf%\!ofolder!" >NUL 2>&1
 if %vrepack%=="both" ( goto xci_repack )
 goto final
 
 :xci_repack
 del nspDecrypted\*.txt >NUL 2>&1
 MD nspDecrypted\rawsecure\ >NUL 2>&1
-move  "nspDecrypted\rawnsp\*"  "nspDecrypted\rawsecure\"  >NUL 2>&1
+move  "nspDecrypted\rawnsp\*"  "nspDecrypted\rawsecure\" >NUL 2>&1
 RD /S /Q nspDecrypted\rawnsp\
 set rutaXCIB=XCI_Builder.bat
 if not exist XCI_Builder.bat ( set rutaXCIB=ztools\XCI_Builder.bat )
 set op=startbuilding
-call %rutaXCIB% "%~1" "%op%"
+set z_preserve=%z_preserve:"=%
+set org_out=%org_out:"=%
+call %rutaXCIB% "%~1" "%op%" "%z_preserve%" "%org_out%"
 goto final
 
 :an_error
@@ -238,6 +279,16 @@ echo Cleaned !filename!.nsp
 if %vrepack%=="nsp" echo and repacked it as nsp
 if %vrepack%=="xci" echo and repacked it as xci
 if %vrepack%=="both" echo and repacked it as nsp and xci
+if %f_replace%=="true" goto replace_orig
+goto thumbup
+:replace_orig
+del "%~1" >NUL 2>&1
+set ofolder=%ofolder%\
+set ofolder=%ofolder: \=\%
+move  "%root_outf%\!ofolder!*.*"  "%~dp1"  >NUL 2>&1
+RD /S /Q "%root_outf%\!ofolder!" >NUL 2>&1
+
+:thumbup
 echo.
 echo Your files should be in the respective output folders
 echo.
