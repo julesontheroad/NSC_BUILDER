@@ -69,8 +69,7 @@ class Nsp(Pfs0):
 		return self.files.__iter__()
 		
 	def title(self):
-		if not self.titleId:
-			raise IOError('NSP no titleId set')
+
 			
 		if self.titleId in Titles.keys():
 			return Titles.get(self.titleId)
@@ -197,7 +196,6 @@ class Nsp(Pfs0):
 		if z:
 			self.titleId = z.groups()[0].upper()
 		else:
-			Print.info('could not get title id from filename, name needs to contain [titleId] : ' + path)
 			self.titleId = None
 
 		z = re.match('.*\[v([0-9]+)\].*', path, re.I)
@@ -441,8 +439,25 @@ class Nsp(Pfs0):
 				nca.header.setRightsId(0)
 				nca.header.setKeyBlock(encKeyBlock)
 				Hex.dump(encKeyBlock)
-			
 		
+	def seteshop(self):
+		for nca in self:
+			if type(nca) == Nca:
+				nca.header.setgamecard(0)
+			
+	def setecard(self):
+		for nca in self:
+			if type(nca) == Nca:
+				nca.header.setcgame(1)	
+				
+	def getnspid(self):
+		target=self.cnmt()
+		titleid=target.printtitleId()
+
+
+
+				
+
 	def pack(self, files):
 		if not self.path:
 			return False

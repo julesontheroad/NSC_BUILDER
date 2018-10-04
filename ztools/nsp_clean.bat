@@ -74,7 +74,7 @@ ECHO ---------------------------------------------------------------------------
 ECHO =============================     BY JULESONTHEROAD     =============================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                              POWERED WITH NUT BY BLAWAR                           "
-ECHO                                      VERSION 0.30               
+ECHO                                      VERSION 0.40               
 ECHO -------------------------------------------------------------------------------------                   
 ECHO check xci_batch_builder at: https://github.com/julesontheroad/
 ECHO and check blawar's NUT at:  https://github.com/blawar/nut 
@@ -108,7 +108,7 @@ ECHO ---------------------------------------------------------------------------
 ECHO =============================     BY JULESONTHEROAD     =============================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                              POWERED WITH NUT BY BLAWAR                           "
-ECHO                                      VERSION 0.30               
+ECHO                                      VERSION 0.40               
 ECHO -------------------------------------------------------------------------------------                   
 ECHO check xci_batch_builder at: https://github.com/julesontheroad/
 ECHO and check blawar's NUT at:  https://github.com/blawar/nut 
@@ -119,20 +119,21 @@ if exist "%root_outf%\!filename!.nsp" del "%root_outf%\!filename!.nsp"  >NUL 2>&
 set myfile=%~dp0\nspDecrypted\%filename%.nsp
 MD nspDecrypted
 
-set f_assist=%filename%
-::Check if repack as xci while game being update
-set check_UPD= 
-echo %f_assist% > nspDecrypted\name.txt
-set f_assist=%f_assist: =%
-echo %f_assist%>nspDecrypted\f_assist.txt
-FINDSTR /L 000] nspDecrypted\name.txt >nspDecrypted\check_game.txt
-for /f "tokens=*" %%a in ( nspDecrypted\check_game.txt ) do ( set check_game=%%a )
-set check_game=%check_game: =%
-::del nspDecrypted\name.txt
-::del nspDecrypted\check_game.txt
+py -3 "%NUT_ROUTE%" --nsptitleid "%~1" >nspDecrypted\nsptitleid.txt
+set /p titleid=<nspDecrypted\nsptitleid.txt
+echo [%titleid%]>nspDecrypted\nsptitleid.txt
 
-if %f_assist%==%check_game% goto allgood
-goto itwasupdate1
+FINDSTR /L 000] nspDecrypted\nsptitleid.txt >nspDecrypted\isbasef.txt
+set /p base_nsp=<nspDecrypted\isbasef.txt
+
+FINDSTR /L 800] nspDecrypted\nsptitleid.txt >nspDecrypted\isupdatef.txt
+set /p update_nsp=<nspDecrypted\isupdatef.txt
+
+del nspDecrypted\isupdatef.txt
+del nspDecrypted\isbasef.txt
+
+if [%titleid%] EQU !base_nsp! goto allgood
+if [%titleid%] EQU !update_nsp! goto itwasupdate1
 
 :itwasupdate1
 if %vrepack%=="xci" goto itwasupdate2
@@ -142,7 +143,6 @@ goto allgood
 :itwasupdate2
 if %xnsp_ifnotgame%=="true" ( set vrepack=nsp )
 if %xnsp_ifnotgame%=="false" ( goto itwasupdate3 )
-
 
 :allgood
 
@@ -171,14 +171,35 @@ echo Cleaning nsp with nut.py
 ECHO -------------------------------------------------------------------------------------
 set p_folder=%~dp0 
 set p_folder=%p_folder:ztools\ =%
-"%NUT_ROUTE%" --remove-title-rights "%p_folder%nspDecrypted\%filename%.nsp" >nspDecrypted\assist.txt
+
+::NAME REFORMING SCRIPT
+py -3 "%NUT_ROUTE%" --nsptitleid "%p_folder%nspDecrypted\%filename%.nsp" >nspDecrypted\nsptitleid.txt
+set /p titleid=<nspDecrypted\nsptitleid.txt
+echo [%titleid%]>nspDecrypted\nsptitleid.txt
+
+FINDSTR /L 000] nspDecrypted\nsptitleid.txt >nspDecrypted\isbasef.txt
+set /p base_nsp=<nspDecrypted\isbasef.txt
+
+FINDSTR /L 800] nspDecrypted\nsptitleid.txt >nspDecrypted\isupdatef.txt
+set /p update_nsp=<nspDecrypted\isupdatef.txt
+
+set ttag=[DLC]
+if [%titleid%] EQU !base_nsp! set ttag=[V0]
+if [%titleid%] EQU !update_nsp! set ttag=[UPD]
+del nspDecrypted\isupdatef.txt
+del nspDecrypted\isbasef.txt
+
+ren "%p_folder%nspDecrypted\%filename%.nsp" "%ofolder% [%titleid%] %ttag%.nsp"
+set filenametemp=%ofolder% [%titleid%] %ttag%
+
+py -3 "%NUT_ROUTE%" --remove-title-rights "%p_folder%nspDecrypted\%filenametemp%.nsp" >nspDecrypted\assist.txt
 FINDSTR /N "Mismatched" nspDecrypted\assist.txt > nspDecrypted\l_check.txt
 FINDSTR /N "name needs to contain [titleId]" nspDecrypted\assist.txt >> nspDecrypted\l_check.txt
 for /f "tokens=1* delims=:" %%a in (nspDecrypted\l_check.txt) do set l_check=%%a
 del nspDecrypted\l_check.txt >NUL 2>&1
 if !l_check! GTR 0 goto an_error
-more +8 "nspDecrypted\assist.txt" >"nspDecrypted\assist.txt.new"
-move /y "nspDecrypted\assist.txt.new" "nspDecrypted\assist.txt" >nul
+::more +8 "nspDecrypted\assist.txt" >"nspDecrypted\assist.txt.new"
+::move /y "nspDecrypted\assist.txt.new" "nspDecrypted\assist.txt" >nul
 
 echo                    ,;:;;,
 echo                   ;;;;;
@@ -192,6 +213,8 @@ for /f "tokens=*" %%n in (nspDecrypted\assist.txt) do echo %%n
 del nspDecrypted\assist.txt >NUL 2>&1
 echo .......
 echo DONE  
+::set filename=%filenametemp%
+ren "%p_folder%nspDecrypted\%filenametemp%.nsp" "%filename%.nsp"
 ECHO -------------------------------------------------------------------------------------
 echo Extracting nsp file with hactool by SciresM
 ECHO -------------------------------------------------------------------------------------
@@ -223,7 +246,7 @@ set ruta_nspb=ztools\nspBuild.py
 dir "nspDecrypted\rawnsp\*" /b  > "nspDecrypted\nsp_fileslist.txt"
 set row=
 for /f %%x in (nspDecrypted\nsp_fileslist.txt) do set row="nspDecrypted\rawnsp\%%x" !row!
-%ruta_nspb% "nspDecrypted\%filename%[rr].nsp" %row% >NUL 2>&1
+py -3 %ruta_nspb% "nspDecrypted\%filename%[rr].nsp" %row% >NUL 2>&1
 echo DONE 
 if not exist %root_outf% MD %root_outf%
 
@@ -256,6 +279,7 @@ call %rutaXCIB% "%~1" "%op%" "%z_preserve%" "%org_out%"
 goto final
 
 :an_error
+ren "%p_folder%nspDecrypted\%filenametemp%.nsp" "%filename%.nsp"
 echo Couldn't Remove title rights from file %filename%
 echo %DATE%. %TIME%>>log.txt
 echo Error removing title rights from %filename%>>log.txt
@@ -317,5 +341,5 @@ echo **************************************************
 
 :end
 PING -n 3 127.0.0.1 >NUL 2>&1
-
+endlocal
 

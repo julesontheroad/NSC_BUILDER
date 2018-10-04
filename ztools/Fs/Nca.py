@@ -166,6 +166,14 @@ class NcaHeader(File):
 	def setCryptoType(self, value):
 		self.seek(0x206)
 		self.writeInt8(value)
+		
+	def setgamecard(self, value):
+		self.seek(0x204)
+		self.writeInt8(value)
+		
+	def getgamecard(self, value):
+		self.seek(0x204)
+		return self.readInt8()
 
 	def getCryptoType2(self):
 		self.seek(0x220)
@@ -229,7 +237,12 @@ class Nca(File):
 		
 		self.titleKeyDec = None
 		self.masterKey = None
-
+		
+	def printtitleId(self, indent = 0):	
+		Print.info(str(self.header.titleId))
+			
+	def cardstate(self, indent = 0):	
+		Print.info(hex(self.header.isGameCard))
 		
 	def printInfo(self, indent = 0):
 		tabs = '\t' * indent

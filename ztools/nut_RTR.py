@@ -35,19 +35,15 @@ if __name__ == '__main__':
 		parser = argparse.ArgumentParser()
 		parser.add_argument('file',nargs='*')
 		parser.add_argument('--remove-title-rights', nargs='+', help='Removes title rights encryption from all NCA\'s in the NSP.')
+		parser.add_argument('--seteshop', nargs='+', help='Set a nca as eshop')
+		parser.add_argument('--setcgame', nargs='+', help='Set a nca as card')		
+		parser.add_argument('--ncatitleid', nargs='+', help='Returns titleid from a nca input')
+		parser.add_argument('--cardstate', nargs='+', help='Returns value for isgamecard flag')	
+		parser.add_argument('--nsptitleid', nargs='+', help='Returns titleid for a nsp file flag')	
 		
 		args = parser.parse_args()
 
 		Status.start()
-		Print.info('                        ,;:;;,')
-		Print.info('                       ;;;;;')
-		Print.info('               .=\',    ;:;;:,')
-		Print.info('              /_\', "=. \';:;:;')
-		Print.info('              @=:__,  \,;:;:\'')
-		Print.info('                _(\.=  ;:;;\'')
-		Print.info('               `"_(  _/="`')
-		Print.info('                `"\'')
-
 		if args.remove_title_rights:
 			for fileName in args.remove_title_rights:
 				try:
@@ -58,6 +54,54 @@ if __name__ == '__main__':
 				except BaseException as e:
 					Print.error('Exception: ' + str(e))
 		Status.close()
+		
+		if args.seteshop:
+			for fileName in args.seteshop:
+				try:
+					f = Fs.Nsp(fileName, 'r+b')
+					f.seteshop()
+					f.flush()
+					f.close()
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))
+		if args.setcgame:
+			for fileName in args.setcgame:
+				try:
+					f = Fs.Nsp(fileName, 'r+b')
+					f.setcgame()
+					f.flush()
+					f.close()
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))				
+		if args.ncatitleid:
+			for fileName in args.ncatitleid:		
+				try:
+					f = Fs.Nca(fileName, 'r+b')
+					f.printtitleId()
+					f.flush()
+					f.close()
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))	
+		if args.cardstate:
+			for fileName in args.cardstate:		
+				try:
+					f = Fs.Nca(fileName, 'r+b')
+					f.cardstate()
+					f.flush()
+					f.close()
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))		
+
+		if args.nsptitleid:
+			for fileName in args.nsptitleid:		
+				try:
+					f = Fs.Nsp(fileName, 'r+b')
+					titleid=f.getnspid()
+					f.flush()
+					f.close()
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))				
+		
 	
 	except KeyboardInterrupt:
 		Config.isRunning = False
@@ -67,5 +111,5 @@ if __name__ == '__main__':
 		Status.close()
 		raise
 
-	Print.info('fin')
+
 

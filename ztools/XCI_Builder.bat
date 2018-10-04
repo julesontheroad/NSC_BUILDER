@@ -216,7 +216,7 @@ del "nspDecrypted\rawsecure\%myhtmlnca%"
 set filename=!filename![nm]
 
 :nsp_proper_nm
-::Process for nsp without manual or nest step if we have a manual
+::Process for nsp without manual or next step if we have a manual
 set meta_xml=nspDecrypted\rawsecure\*.cnmt.xml
 if exist nspDecrypted\id.txt del nspDecrypted\id.txt
 
@@ -410,7 +410,7 @@ if not exist nspDecrypted\licencia\*.tik goto createxci
 echo ----------------------------------------------------
 echo Building license nsp with "nspbuild" by CVFireDragon
 echo ----------------------------------------------------
-"ztools\nspbuild.py" "nspDecrypted\!ofolder![lc].nsp" "nspDecrypted\licencia\%varlist1%" "nspDecrypted\licencia\%varlist2%" "nspDecrypted\licencia\%varlist3%" "nspDecrypted\licencia\%varlist4%"  >NUL 2>&1
+py -3 "ztools\nspbuild.py" "nspDecrypted\!ofolder![lc].nsp" "nspDecrypted\licencia\%varlist1%" "nspDecrypted\licencia\%varlist2%" "nspDecrypted\licencia\%varlist3%" "nspDecrypted\licencia\%varlist4%"  >NUL 2>&1
 echo DONE
 del nspDecrypted\fileslist.txt
 rmdir /s /q "nspDecrypted\licencia"
@@ -419,7 +419,7 @@ goto createxci
 echo ----------------------------------------------------
 echo Building license nsp with "nspbuild" by CVFireDragon
 echo ----------------------------------------------------
-"ztools\nspbuild.py" "nspDecrypted\!ofolder![lc].nsp" "nspDecrypted\licencia\%varlist1%" "nspDecrypted\licencia\%varlist2%" "nspDecrypted\licencia\%varlist3%"  >NUL 2>&1
+py -3 "ztools\nspbuild.py" "nspDecrypted\!ofolder![lc].nsp" "nspDecrypted\licencia\%varlist1%" "nspDecrypted\licencia\%varlist2%" "nspDecrypted\licencia\%varlist3%"  >NUL 2>&1
 echo DONE
 del nspDecrypted\fileslist.txt
 rmdir /s /q "nspDecrypted\licencia"
