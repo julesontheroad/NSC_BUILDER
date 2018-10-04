@@ -15,12 +15,21 @@ also check xci_batch_builder at: https://github.com/julesontheroad/-XCI-Batch-Bu
 and check blawar's NUT at:  https://github.com/blawar/nut 
 and also check blawar's awesome installer in the works at https://github.com/blawar/sysnut
 ------------------------------------------------------------------------------------------
-
-ADVICE: FOR ALL TO WORK CORRECTLY DON'T SPECIAL CHARACTER'S IN NSP NAMES, IT WILL GIVE A
-FALSE ERROR LOG
 ---------------
 0. Changelog
 ---------------
+v0.40- While I finish NX_Builder I solved couple of naming issues.
+       1.- Now you don't need [titleid] in filename.
+       2.- Solved issues with special characters like !,+,&,$... Added correction for
+       a bunch of them if you need to add more edit ztools/safename.bat
+       Example: If you want to replace @ for a input:
+       set fileinput=%fileinput:@=a%
+       Or to delete it:
+       set fileinput=%fileinput:@=%
+       You'll probably see the first version for NX_Builder either trough the weekend
+       or at the beginning of next week.
+       NOTE: This version is using a function of my modified NUT libraries for NX_Builder
+       so don't change the config to use the whole NUT.
 v0.30- Added new options in zconfig.
        > Option 4: Way the items are organized.
          * line: scattered in output folder

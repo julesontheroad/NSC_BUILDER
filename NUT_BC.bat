@@ -33,7 +33,7 @@ ECHO ---------------------------------------------------------------------------
 ECHO =============================     BY JULESONTHEROAD     =============================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                              POWERED WITH NUT BY BLAWAR                           "
-ECHO                                      VERSION 0.30               
+ECHO                                      VERSION 0.40               
 ECHO -------------------------------------------------------------------------------------                   
 ECHO check xci_batch_builder at: https://github.com/julesontheroad/
 ECHO and check blawar's NUT at:  https://github.com/blawar/nut 
@@ -41,8 +41,11 @@ ECHO ---------------------------------------------------------------------------
 PING -n 2 127.0.0.1 >NUL 2>&1
 
 for /r "%~1" %%f in (*.nsp) do (
-if %Enclean% EQU 1 ( call "%rutaNCLEAN%" "%%f" "auto" "")
+set target=%%f
+set originalname=%%~nxf
+call :nsp_fa
 )
+
 ECHO ---------------------------------------------------
 ECHO ************ ALL FILES WERE CLEANED! ************** 
 ECHO ---------------------------------------------------
@@ -51,14 +54,33 @@ ECHO PROGRAM WILL CLOSE NOW
 PING -n 2 127.0.0.1 >NUL 2>&1
 exit
 
+
+:nsp_fa
+call %~dp0ztools\safename.bat "%target%" >NUL 2>&1
+
+for /f "tokens=*" %%f in (myinput.txt) do (
+	set myinput=%%f
+	call "%rutaNCLEAN%" "%%f" "auto" "" 
+	ren "%myinput%" "%originalname%"
+)
+del myinput.txt
+
+exit /B
+
 :file
 if "%~x1"==".nsp" ( goto nsp )
 if "%~x1"==".*" ( goto other )
 goto manual
 
 :nsp
-
-call "%rutaNCLEAN%" "%~1" "auto" ""
+set originalname=%~nx1
+call %~dp0ztools\safename.bat "%~1" >NUL 2>&1
+for /f "tokens=*" %%f in (myinput.txt) do (
+set myinput=%%f
+call "%rutaNCLEAN%" "%%f" "auto" "" 
+ren "%myinput%" "%originalname%"
+)
+del myinput.txt
 exit
 
 :noprograms
@@ -76,7 +98,7 @@ exit
 
 
 :manual
-setlocal enabledelayedexpansion
+endlocal
 ::Set checks
 set /a Enclean=0
 
@@ -103,7 +125,7 @@ ECHO ---------------------------------------------------------------------------
 ECHO =============================     BY JULESONTHEROAD     =============================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                             POWERED NY NUT BY BLAWAR                              "
-ECHO                                     VERSION 0.30               
+ECHO                                     VERSION 0.40               
 ECHO -------------------------------------------------------------------------------------                   
 ECHO check xci_batch_builder at: https://github.com/julesontheroad/
 ECHO and check blawar's NUT at:  https://github.com/blawar/nut 
@@ -118,9 +140,13 @@ goto manual_INIT
 set conta=0
 for /f "tokens=*" %%f in (list.txt) do (
 echo %%f
+) >NUL 2>&1
+setlocal enabledelayedexpansion
+for /f "tokens=*" %%f in (list.txt) do (
 set /a conta=!conta! + 1
 ) >NUL 2>&1
 if !conta! LEQ 0 ( del list.txt )
+endlocal
 if not exist "list.txt" goto manual_INIT
 ECHO .......................................................
 ECHO A PREVIOUS LIST WHAS FOUND. WHAT DO YOU WANT TO DO?
@@ -147,6 +173,7 @@ del list.txt
 echo YOU'VE DECIDED TO START A NEW LIST
 echo ...................................................................
 :manual_INIT
+endlocal
 set /p bs="PLEASE DRAG A FILE OR FOLDER OVER THE WINDOW AND PRESS ENTER: "
 set bs=%bs:"=%
 if exist "%bs%\" goto checkfolder
@@ -188,6 +215,8 @@ pause
 :r_files
 set /p bs="Input the number of files you want to remove (from bottom): "
 set bs=%bs:"=%
+
+setlocal enabledelayedexpansion
 set conta=
 for /f "tokens=*" %%f in (list.txt) do (
 set /a conta=!conta! + 1
@@ -196,6 +225,7 @@ set /a conta=!conta! + 1
 set /a pos1=!conta!-!bs!
 set /a pos2=!conta!
 set string=
+
 :update_list1
 if !pos1! GTR !pos2! ( goto :update_list2 ) else ( set /a pos1+=1 )
 set string=%string%,%pos1%
@@ -204,23 +234,31 @@ goto :update_list1
 set string=%string%,
 set skiplist=%string%
 Set "skip=%skiplist%"
+setlocal DisableDelayedExpansion
 (for /f "tokens=1,*delims=:" %%a in (' findstr /n "^" ^<list.txt'
 ) do Echo=%skip%|findstr ",%%a," 2>&1>NUL ||Echo=%%b
 )>list.txt.new
+endlocal
 move /y "list.txt.new" "list.txt" >nul
+endlocal
 
 :showlist
 ECHO -------------------------------------------------
 ECHO                 FILES TO CLEAN 
 ECHO -------------------------------------------------
-set conta=
 for /f "tokens=*" %%f in (list.txt) do (
 echo %%f
+)
+setlocal enabledelayedexpansion
+set conta=
+for /f "tokens=*" %%f in (list.txt) do (
 set /a conta=!conta! + 1
 )
 echo .................................................
 echo YOU'VE ADDED !conta! FILES TO CLEAN
 echo .................................................
+endlocal
+
 goto checkagain
 
 :s_cl_wrongchoice
@@ -241,19 +279,13 @@ if /i "%bs%"=="2" set vrepack=xci
 if /i "%bs%"=="3" set vrepack=both
 if %vrepack%=="none" goto s_cl_wrongchoice
 
-set conta=
 for /f "tokens=*" %%f in (list.txt) do (
-echo %%f
-set /a conta=!conta! + 1
-)
-for /f "tokens=*" %%f in (list.txt) do (
-call "%rutaNCLEAN%" "%%f" "manual" "%vrepack%" 
+set target=%%f
+set originalname=%%~nxf
+call :nsp_clean_manual
 more +1 "list.txt" >"list.txt.new"
 move /y "list.txt.new" "list.txt" >nul
-set /a conta=!conta! - 1
-echo .................................................
-echo STILL !conta! FILES TO CLEAN
-echo .................................................
+call :contador_NF
 )
 ECHO -------------------------------------------------
 ECHO *********** ALL FILES WERE CLEANED! *************
@@ -261,6 +293,32 @@ ECHO -------------------------------------------------
 PING -n 2 127.0.0.1 >NUL 2>&1
 ECHO PROGRAM WILL CLOSE NOW
 PING -n 2 127.0.0.1 >NUL 2>&1
-:salida
+goto salida
 
+
+:nsp_clean_manual
+call %~dp0ztools\safename.bat "%target%" >NUL 2>&1
+
+for /f "tokens=*" %%f in (myinput.txt) do (
+	set myinput=%%f
+	call "%rutaNCLEAN%" "%%f" "manual" "%vrepack%" 
+	ren "%myinput%" "%originalname%"
+)
+del myinput.txt
+exit /B
+
+:contador_NF
+setlocal enabledelayedexpansion
+set conta=
+for /f "tokens=*" %%f in (list.txt) do (
+set /a conta=!conta! + 1
+)
+echo .................................................
+echo STILL !conta! FILES TO PROCESS
+echo .................................................
+endlocal
+exit /B
+
+:salida
 exit
+
