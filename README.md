@@ -63,3 +63,10 @@ nspBuild was made by CVFireDragon
 https://github.com/CVFireDragon/nspBuild
 Thx to MadScript77 and BigJokker for their great suggestions.
 Also thanks to all members from gbatemp, elotrolado.net and my friends at discord ;)
+d.) nstool: Program with similar functions as hactool but with more file options
+nstool was made by jakcron
+https://github.com/jakcron/NNTools/tree/master/programs/nstool
+e.) 7zip: Program meant to compress and extract files in several formats
+7zip was made by Igor Pavlov
+https://www.7-zip.org/
+
