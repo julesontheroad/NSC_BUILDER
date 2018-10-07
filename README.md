@@ -19,12 +19,17 @@ The batch has 2 modes:
 - auto mode: you drag nsp files individually or folders with severall nsp files and
 you get clean nsp files in "o_clean_nsp" folder
 Note: auto mode won't process subfolders yet.
+
 - manual mode: you double click the batch and uou can build a list of nsp files to
 clean, you can even erase items via batch or directly in the list before starting.
 You can resume the list if you close the window before compleating all the cleanings.
+
 It also fetures a check that will stop the cleaning for a file if the titlerights
 can't be stripped from it. In this case it will generate a log.txt with the file name.
 If an error is found that file is skipped an the batch continues processing the queue.
+
+For the advanced configurations edit zconfig/nsp_cleaner_options.cmd
+
 ---------------
 2. Important
 ---------------
@@ -38,10 +43,12 @@ in nsp_cleaner_options.txt inside zconfig.
 The other options are not enabled yet (sorry about that).
 
 ---------------
-2. Requirements
+3. Requirements
 ---------------
 
-- You'll need to have Python installed for the program to work correctly
+- You'll need to have Python 3 installed for the program to work correctly
+- You'll need to install these libraries: "urllib3 unidecode tqdm bs4 tqdm requests image"
+  to assist you in this you can run "install_dependencies.bat" file.
 - You need to fill the keys.txt file inside the ztools folder.
 
 ------------------------
