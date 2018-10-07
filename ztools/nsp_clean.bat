@@ -31,7 +31,7 @@ set i_folder=%i_folder:ztools\ =%
 ::echo %i_folder%>i_folder.txt
 set zip=ztools/7za.exe
 if exist "%i_folder%zconfig\nsp_cleaner_options.cmd" goto set_options2
-set NUT_ROUTE=ztools/nut_RTR.py
+set NUT_ROUTE=ztools\nut_RTR.py
 set z_preserve="true"
 set vrepack="nsp"
 if exist %NUT_ROUTE% goto startpr
@@ -40,7 +40,7 @@ exit
 :set_options2
 call "zconfig/nsp_cleaner_options.cmd"
 if exist %NUT_ROUTE% goto startpr
-set NUT_ROUTE=ztools/nut_RTR.py
+set NUT_ROUTE=ztools\nut_RTR.py
 if exist %NUT_ROUTE% goto startpr
 exit
 
@@ -74,7 +74,7 @@ ECHO ---------------------------------------------------------------------------
 ECHO =============================     BY JULESONTHEROAD     =============================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                              POWERED WITH NUT BY BLAWAR                           "
-ECHO                                      VERSION 0.40               
+ECHO                                      VERSION 0.41               
 ECHO -------------------------------------------------------------------------------------                   
 ECHO check xci_batch_builder at: https://github.com/julesontheroad/
 ECHO and check blawar's NUT at:  https://github.com/blawar/nut 
@@ -108,7 +108,7 @@ ECHO ---------------------------------------------------------------------------
 ECHO =============================     BY JULESONTHEROAD     =============================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                              POWERED WITH NUT BY BLAWAR                           "
-ECHO                                      VERSION 0.40               
+ECHO                                      VERSION 0.41               
 ECHO -------------------------------------------------------------------------------------                   
 ECHO check xci_batch_builder at: https://github.com/julesontheroad/
 ECHO and check blawar's NUT at:  https://github.com/blawar/nut 
@@ -147,12 +147,15 @@ if %xnsp_ifnotgame%=="false" ( goto itwasupdate3 )
 :allgood
 
 ECHO -------------------------------------------------------------------------------------
-echo Copy %filename% to nspDecrypted
+echo Copy %originalname% to nspDecrypted
 ECHO -------------------------------------------------------------------------------------
 echo f | xcopy /f /y "%~1" "nspDecrypted\"   >NUL 2>&1
 echo DONE
-
+if exist "%myinput%" ren "%myinput%" "%originalname%"
 set ofolder=%filename%
+::In case these tags are at the beginning of the file
+set ofolder=%ofolder:[DLC]=%
+set ofolder=%ofolder:[UPD]=%
 echo %ofolder%>nspDecrypted\fname.txt
 ::deletebrackets
 for /f "tokens=1* delims=[" %%a in (nspDecrypted\fname.txt) do (
@@ -164,6 +167,7 @@ for /f "tokens=1* delims=(" %%a in (nspDecrypted\fname.txt) do (
 echo %ofolder%>nspDecrypted\fname.txt
 ::I also wanted to remove_(
 set ofolder=%ofolder:_= %
+set onlyinfo_name=%ofolder%
 if exist nspDecrypted\fname.txt del nspDecrypted\fname.txt
 
 ECHO -------------------------------------------------------------------------------------
@@ -182,7 +186,7 @@ set /p base_nsp=<nspDecrypted\isbasef.txt
 
 FINDSTR /L 800] nspDecrypted\nsptitleid.txt >nspDecrypted\isupdatef.txt
 set /p update_nsp=<nspDecrypted\isupdatef.txt
-
+del nspDecrypted\nsptitleid.txt
 set ttag=[DLC]
 if [%titleid%] EQU !base_nsp! set ttag=[V0]
 if [%titleid%] EQU !update_nsp! set ttag=[UPD]
@@ -226,12 +230,21 @@ if %z_preserve%=="true"  echo Removing ticket and cert and ziping them
 ECHO -------------------------------------------------------------------------------------
 del "nspDecrypted\%filename%.nsp"
 
+if %safe_var% EQU "agro" call :get_nsp_data
+if not %safe_var% EQU "agro" ( if %ncap_rname% EQU "true" call :get_nsp_data )
+if not %safe_var% EQU "agro" ( if %ncap_rname% EQU "oinfo" call :get_nsp_data )
+
+::echo %filename%>nspDecrypted\filename.txt
+::echo %ofolder%>nspDecrypted\ofolder.txt
+
+
 if %z_preserve%=="true" ( "%zip%" a "%p_folder%nspDecrypted\%filename%[del].zip" "%p_folder%nspDecrypted\rawnsp\*.tik" ) >NUL 2>&1
 del "nspDecrypted\rawnsp\*.tik"
 if %z_preserve%=="true" ( "%zip%" a "%p_folder%nspDecrypted\%filename%[del].zip" "%p_folder%nspDecrypted\rawnsp\*.cert" ) >NUL 2>&1
 del "nspDecrypted\rawnsp\*.cert"
 if %z_preserve%=="true" ( "%zip%" a "%p_folder%nspDecrypted\%filename%[del].zip" "%p_folder%nspDecrypted\rawnsp\*.jpg" ) >NUL 2>&1
 if exist nspDecrypted\rawnsp\*.jpg del nspDecrypted\*.jpg
+
 
 echo DONE  
 
@@ -256,8 +269,6 @@ echo f | xcopy /f /y "nspDecrypted\*.zip" "%root_outf%" >NUL 2>&1
 if %vrepack%=="both" ( goto xci_repack )
 goto final
 
-
-
 :org_nsp_f
 MD "%root_outf%\!ofolder!" >NUL 2>&1
 move  "nspDecrypted\*.nsp"  "%root_outf%\!ofolder!"  >NUL 2>&1
@@ -275,7 +286,8 @@ if not exist XCI_Builder.bat ( set rutaXCIB=ztools\XCI_Builder.bat )
 set op=startbuilding
 set z_preserve=%z_preserve:"=%
 set org_out=%org_out:"=%
-call %rutaXCIB% "%~1" "%op%" "%z_preserve%" "%org_out%"
+if exist "%orinput%" ( call %rutaXCIB% "%orinput%" "%op%" "%z_preserve%" "%org_out%" )
+if not exist "%orinput%" ( call %rutaXCIB% "%~1" "%op%" "%z_preserve%" "%org_out%" )
 goto final
 
 :an_error
@@ -292,8 +304,8 @@ goto final
 set rutaXCIB=XCI_Builder.bat
 if not exist XCI_Builder.bat ( set rutaXCIB=ztools\XCI_Builder.bat )
 set op=fallback
-call %rutaXCIB% "%~1" "%op%"
-
+if exist "%orinput%" ( call %rutaXCIB% "%orinput%" "%op%" )
+if not exist "%orinput%" (  call %rutaXCIB% "%~1" "%op%" )
 goto final
 
 :final
@@ -306,7 +318,7 @@ if %vrepack%=="both" echo and repacked it as nsp and xci
 if %f_replace%=="true" goto replace_orig
 goto thumbup
 :replace_orig
-del "%~1" >NUL 2>&1
+del "%orinput%" >NUL 2>&1
 set ofolder=%ofolder%\
 set ofolder=%ofolder: \=\%
 move  "%root_outf%\!ofolder!*.*"  "%~dp1"  >NUL 2>&1
@@ -328,6 +340,107 @@ echo.
 echo HOPE YOU HAVE A FUN TIME
 goto end
 
+::SUBROUTINES
+
+:get_nsp_data
+ECHO -------------------------------------------------------------------------------------
+echo Getting data from control and meta nca files
+ECHO -------------------------------------------------------------------------------------
+dir "nspDecrypted\rawnsp\*.nca" /b  > "nspDecrypted\nca_list.txt"
+
+set p_folder=%~dp0 
+set p_folder=%p_folder:ztools\ =%
+
+for /f "tokens=*" %%f in ( nspDecrypted\nca_list.txt ) do (
+py -3 "%p_folder%%NUT_ROUTE%" --ncatype "%p_folder%nspDecrypted\rawnsp\%%f" >nspDecrypted\ncatype.txt
+set /p nca_type=<nspDecrypted\ncatype.txt 
+if "!nca_type!" EQU "Content.CONTROL" set cont_nca=%%f 
+if "!nca_type!" EQU "Content.META" set meta_nca=%%f 
+)
+
+del nspDecrypted\nca_list.txt
+del nspDecrypted\ncatype.txt 
+MD nspDecrypted\control
+::echo %cont_nca%>nspDecrypted\control.txt
+::echo %meta_nca%>nspDecrypted\meta.txt
+
+"ztools\hactool.exe" -k "ztools\keys.txt" -t nca --exefsdir=nspDecrypted\control --romfsdir=nspDecrypted\control "nspDecrypted\rawnsp\%cont_nca%" >NUL 2>&1
+del nspDecrypted\control\*.dat >NUL 2>&1
+"ztools\nstool.exe" -k "ztools\keys.txt" --listfs "nspDecrypted\control\control.nacp" >nspDecrypted\nacp.txt
+FINDSTR /L Name "nspDecrypted\nacp.txt" >nspDecrypted\gamename.txt
+del nspDecrypted\nacp.txt
+set crlt=0
+for /f "tokens=1* delims=: " %%a in ( nspDecrypted\gamename.txt ) do (
+    set /a crlt=!crlt! + 1
+    set gamename!crlt!=%%b
+)
+set gamename=!gamename1!
+del nspDecrypted\gamename.txt
+::echo !gamename!>nspDecrypted\gamename2.txt
+
+call "ztools/safename.bat" "!gamename!" "control_name"
+
+set gamename=%mygamename%
+::echo %mygamename%>nspDecrypted\mygamename.txt
+
+set filename=%gamename% [%titleid%] %ttag%
+set ofolder=%mygamename%
+RD /S /Q nspDecrypted\control
+
+::echo %filename%>nspDecrypted\filename.txt
+::echo %ofolder%>nspDecrypted\ofolder.txt
+
+if "%ttag%" EQU "[UPD]" goto check_upd_ver
+if "%ttag%" EQU "[DLC]" goto check_upd_ver
+goto data_end_check
+
+:check_upd_ver
+MD nspDecrypted\meta
+"ztools\nstool.exe" -k "ztools\keys.txt" -t nca --part0 "nspDecrypted\meta" "nspDecrypted\rawnsp\%meta_nca%" >NUL 2>&1
+dir "nspDecrypted\meta\*.cnmt" /b  > "nspDecrypted\cnmt.txt"
+set /p cnmt_file=<nspDecrypted\cnmt.txt 
+del nspDecrypted\cnmt.txt
+"ztools\nstool.exe" -k "ztools\keys.txt" --listfs "nspDecrypted\meta\%cnmt_file%" >nspDecrypted\metadata.txt
+FINDSTR /L " Version:" "nspDecrypted\metadata.txt" >nspDecrypted\gameversion.txt
+del nspDecrypted\metadata.txt 
+set crlt=0
+for /f "tokens=1* delims=: " %%a in ( nspDecrypted\gameversion.txt ) do (
+    set /a crlt=!crlt! + 1
+    set gameversion!crlt!=%%b
+)
+del nspDecrypted\gameversion.txt
+echo !gameversion1!>nspDecrypted\checkversion.txt
+::deleteparenthesis
+for /f "tokens=1* delims=(" %%a in (nspDecrypted\checkversion.txt) do (
+    set gameversion=%%a)
+set gameversion=%gameversion: =%
+del nspDecrypted\checkversion.txt
+::echo %gameversion%>nspDecrypted\gameversion.txt
+RD /S /Q nspDecrypted\meta
+set filename=%gamename% [%titleid%] %ttag% [%gameversion%]
+::echo %filename%>nspDecrypted\filename.txt
+
+
+:data_end_check
+
+if not %safe_var% EQU "agro" ( if %ncap_rname% EQU "oinfo" goto only_info )
+if %ncap_rname% EQU "true" ( if "%ttag%" EQU "[DLC]" goto only_info )
+goto not_oinfo
+
+:only_info
+if "%ttag%" EQU "[UPD]" ( set filename=%onlyinfo_name% [%titleid%] %ttag% [%gameversion%] )
+if "%ttag%" EQU "[DLC]" ( set filename=%onlyinfo_name% [%titleid%] %ttag% [%gameversion%] )
+if "%ttag%" EQU "[V0]" ( set filename=%onlyinfo_name% [%titleid%] %ttag% )
+set ofolder=%onlyinfo_name%
+exit /B
+
+:not_oinfo
+if %safe_var% EQU "agro" ( if "%ttag%" EQU "[DLC]" ( set filename=[%titleid%] %ttag% [%gameversion%] ) )
+if %safe_var% EQU "agro" ( if "%ttag%" EQU "[DLC]" ( set ofolder=[%titleid%] ) )
+exit /B
+
+::END OF PROGRAM
+
 :itwasupdate3
 RD /S /Q nspDecrypted\rawnsp\
 RD /S /Q nspDecrypted\
@@ -340,6 +453,9 @@ echo should be in o_folder.
 echo **************************************************
 
 :end
+if exist nspDecrypted\ RD /S /Q nspDecrypted\ >NUL 2>&1
 PING -n 3 127.0.0.1 >NUL 2>&1
 endlocal
+
+
 

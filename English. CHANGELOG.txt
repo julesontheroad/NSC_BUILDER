@@ -1,0 +1,86 @@
+                 __       __          __       __             __                          
+    ____  __  __/ /_     / /_  ____ _/ /______/ /_      _____/ /__  ____ _____  ___  _____
+   / __ \/ / / / __/    / __ \/ __ `/ __/ ___/ __ \    / ___/ / _ \/ __ `/ __ \/ _ \/ ___/
+  / / / / /_/ / /_     / /_/ / /_/ / /_/ /__/ / / /   / /__/ /  __/ /_/ / / / /  __/ /    
+ /_/ /_/\__,_/\__/____/_.___/\__,_/\__/\___/_/ /_/____\___/_/\___/\__,_/_/ /_/\___/_/     
+                /_____/                         /_____/       
+-------------------------------------------------------------------------------------
+=============================     BY JULESONTHEROAD     =============================
+-------------------------------------------------------------------------------------
+"                              POWERED WITH NUT BY BLAWAR                           "
+                                     Version 0.41
+------------------------------------------------------------------------------------------
+MORE AT: https://github.com/julesontheroad/NUT_BATCH_CLEANER                   
+also check xci_batch_builder at: https://github.com/julesontheroad/-XCI-Batch-Builder-
+and check blawar's NUT at:  https://github.com/blawar/nut 
+and also check blawar's awesome installer in the works at https://github.com/blawar/sysnut
+------------------------------------------------------------------------------------------
+---------------
+0. Changelog
+---------------
+v0.41- Solved some issues with v0.4 and made new options in the filenaming solution.
+       1.- Added "nstool.exe by jakcron" to ztools folder to be able to read data from
+       meta and control nca files.
+       2.- Solve issues originated by spaces in the program route.
+       3.- NEW OPTIONS ADDED TO "zconfig\nsp_cleaner_options.cmd"
+       a.) OPTION 9: Process files by temporarly renaming them to a safe name
+           * false->don't rename files
+           * true->rename temporarly to safename
+           * agro->"Agresive Output" rename temporarly to tempname and output as name 
+             set in nacp file.
+           -- DEFAULT OPTION IS "true" --
+       NOTE: DLCS DON'T HAVE NACP FILE SO AGRO WILL OUTPUT THEM AS [titleid]
+       b.) OPTION 10: Output final file as game real name looking at control nca
+           (If option 9 is set as "agro" it will allways output as the real name)
+           * false->output as original name/or original name corrected with safe characters
+           * true-> output as "real" name, stored in control nca.
+           * oinfo->"Only info"-> Use either original filename or safename and add only 
+             titleid, version, content tag ...
+           -- DEFAULT OPTION IS "oinfo" --
+       NOTE: DLCS DON'T HAVE NACP FILE SO "true" IN THIS CASE WILL BE REPLACED BY THE "oinfo" OPTION
+
+v0.40- While I finish NX_Builder I solved couple of naming issues.
+       1.- Now you don't need [titleid] in filename.
+       2.- Solved issues with special characters like !,+,&,$... Added correction for
+       a bunch of them if you need to add more edit ztools/safename.bat
+       Example: If you want to replace @ for a input:
+       set fileinput=%fileinput:@=a%
+       Or to delete it:
+       set fileinput=%fileinput:@=%
+       You'll probably see the first version for NX_Builder either trough the weekend
+       or at the beginning of next week.
+       NOTE: This version is using a function of my modified NUT libraries for NX_Builder
+       so don't change the config to use the whole NUT.
+v0.30- Added new options in zconfig.
+       > Option 4: Way the items are organized.
+         * line: scattered in output folder
+         * folder: in folders according to game name
+       > Option 5 and option 6: Output folders for xci and nsp. As default using
+         a common folder for both.
+       > Option 7: Preserve stripped files from the nsp as a .zip file for future
+         restore function. (True by default)
+       > Option 8: Replace original file with clean/converted files.As default false.
+         TAKE CARE WITH THIS ONE. BETTER CHECK ALL WORKS FINE BEFORE ACTIVATING IT.
+       Added option to erase list.txt in manual mode.
+v0.21- Fixed issue with manual mode not detecting the user repacking input correctly
+       Added better check for dlcs and updates, according to id
+       Added another config parameter to "nsp_cleaner_options.cmd" (xnsp_ifnotgame)
+       > This parameter serves to repack dlcs and updates as nsp if processing list as xci only.
+         Options are:
+         * true: repack dlcs and updates as nsp
+         * false: skip dlc and update repacking when exporting as xci.
+v0.2 - Added xci repacking. You can now repack as:
+       *xci
+       *nsp
+       *both formats
+     - Added nsp_cleaner_options.cmd at zconfig. It'll let you configure the repack
+       option for auto-mode as (xci,nsp,both)
+     - If xci repacking filenames with [UPD] tag are skipped
+     - If with xci repacking an error is logged it activates a fallback and an
+       xci + [lc].nsp are build.
+     - Now we support subfolders, thanks to MadScript77 for the advice on how to 
+       set it as in the other great advices he gave about the code.
+     - For manual mode you can allways choose what format to build from the current
+       list.
+     - More changes coming soon.
+v0.1 - First official release

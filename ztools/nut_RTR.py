@@ -38,6 +38,7 @@ if __name__ == '__main__':
 		parser.add_argument('--seteshop', nargs='+', help='Set a nca as eshop')
 		parser.add_argument('--setcgame', nargs='+', help='Set a nca as card')		
 		parser.add_argument('--ncatitleid', nargs='+', help='Returns titleid from a nca input')
+		parser.add_argument('--ncatype', nargs='+', help='Returns type of a nca file')	
 		parser.add_argument('--cardstate', nargs='+', help='Returns value for isgamecard flag')	
 		parser.add_argument('--nsptitleid', nargs='+', help='Returns titleid for a nsp file flag')	
 		
@@ -82,6 +83,17 @@ if __name__ == '__main__':
 					f.close()
 				except BaseException as e:
 					Print.error('Exception: ' + str(e))	
+					
+		if args.ncatype:
+			for fileName in args.ncatype:		
+				try:
+					f = Fs.Nca(fileName, 'r+b')
+					f.print_nca_type()
+					f.flush()
+					f.close()
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))	
+					
 		if args.cardstate:
 			for fileName in args.cardstate:		
 				try:
@@ -100,7 +112,7 @@ if __name__ == '__main__':
 					f.flush()
 					f.close()
 				except BaseException as e:
-					Print.error('Exception: ' + str(e))				
+					Print.error('Exception: ' + str(e))							
 		
 	
 	except KeyboardInterrupt:

@@ -240,6 +240,9 @@ class Nca(File):
 		
 	def printtitleId(self, indent = 0):	
 		Print.info(str(self.header.titleId))
+		
+	def print_nca_type(self, indent = 0):	
+		Print.info(str(self.header.contentType))
 			
 	def cardstate(self, indent = 0):	
 		Print.info(hex(self.header.isGameCard))

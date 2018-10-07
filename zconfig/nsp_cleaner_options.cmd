@@ -5,7 +5,7 @@
 ::FS folder and lib folder from ztools
 ::--------------------------------------------------------------
 
-set NUT_ROUTE=ztools/nut_RTR.py
+set NUT_ROUTE=ztools\nut_RTR.py
 
 ::--------------------------------------------------------------
 ::OPTION 2
@@ -75,50 +75,93 @@ set z_preserve="true"
 ::--------------------------------------------------------------
 ::true->replace original file
 ::false->don't replace original file
+::ADVICE. TO BE USE ONLY IN MANUAL MODE OR WITH INDIVIDUAL FILES
+::DO NOT USE WITH FOLDERS IN AUTO MODE
 
 set f_replace="false"
 
 ::--------------------------------------------------------------
-::OPTION 10
-::clean trimmed xci output folder
+::OPTION 9
+::Process files by temporarly renaming them to a safe name
 ::--------------------------------------------------------------
+::false->don't rename files
+::true->use safename.bat
+::agro->rename temporarly to tempname and output as name set in nacp file
+::DLCS DON'T HAVE NACP FILE SO AGRO WILL OUTPUT THEM AS [titleid]
+set safe_var="true"
 
+::--------------------------------------------------------------
+::OPTION 10
+::Output final file as game real name looking at control nca
+::(If option 9 is set as "agro" it will allways output to the
+::real name.
+::--------------------------------------------------------------
+::false->output as original name/or original name corrected with safe characters
+::true->output as "real" name, stored in control nca.
+::oinfo->"Only info"-> Use either original filename or safename and add only titleid, version, content tag ...
+::DLCS DON'T HAVE NACP FILE SO "true" IN THIS CASE WILL BE REPLACED BY THE "oinfo" OPTION
 
+set ncap_rname="oinfo"
 
 ::--------------------------------------------------------------
 ::OPTION 11
-::clean trimmed xci output folder
+::Remove all xml from nsp file. (NOT YET IMPLEMENTED)
 ::--------------------------------------------------------------
-
-
+::false->keep xml files inside the nsp
+::true->erase or zip xml files
 
 ::--------------------------------------------------------------
 ::OPTION 12
-::Types of tags to erase in output xci
+::Tag skipping (NOT YET IMPLEMENTED)
 ::--------------------------------------------------------------
+::false->keep xml files inside the nsp
+::true->erase or zip xml files
+::set total_tags=3
+::set tag_to_skip1=[rr]
+::set tag_to_skip2=[xcib]
+::set tag_to_skip3=[nxt]
+
+::--------------------------------------------------------------
+::OPTION 12
+::clean trimmed xci output folder (NOT YET IMPLEMENTED)
+::--------------------------------------------------------------
+
 
 
 ::--------------------------------------------------------------
 ::OPTION 13
-::Types of tags to erase in output nsp
+::clean trimmed xci output folder (NOT YET IMPLEMENTED)
 ::--------------------------------------------------------------
+
 
 
 ::--------------------------------------------------------------
 ::OPTION 14
-::Types of tags to ADD in output xci
+::Types of tags to erase in output xci (NOT YET IMPLEMENTED)
 ::--------------------------------------------------------------
 
 
 ::--------------------------------------------------------------
 ::OPTION 15
-::Types of tags to ADD in output nsp
+::Types of tags to erase in output nsp (NOT YET IMPLEMENTED)
 ::--------------------------------------------------------------
 
 
 ::--------------------------------------------------------------
 ::OPTION 16
-::Repack nsp as base + update [PROPOSED]
+::Types of tags to ADD in output xci (NOT YET IMPLEMENTED)
+::--------------------------------------------------------------
+
+
+::--------------------------------------------------------------
+::OPTION 17
+::Types of tags to ADD in output nsp (NOT YET IMPLEMENTED)
+::--------------------------------------------------------------
+
+
+::--------------------------------------------------------------
+::OPTION 18
+::Repack nsp as base + update (NOT YET IMPLEMENTED)
 ::--------------------------------------------------------------
 
 

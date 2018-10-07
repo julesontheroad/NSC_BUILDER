@@ -1,6 +1,11 @@
 @ECHO OFF
 color 03
-setlocal enabledelayedexpansion
+
+setlocal
+if exist "%~dp0zconfig/nsp_cleaner_options.cmd" call "%~dp0zconfig/nsp_cleaner_options.cmd" 	  
+endlocal & ( 
+set safe_var=%safe_var%
+)
 
 ::Set checks
 set /a Enclean=0
@@ -16,6 +21,7 @@ if %Enclean% EQU 0 ( goto noprograms )
 set rutaNCLEAN=%~dp0nsp_clean.bat
 
 if not exist "%~dp0nsp_clean.bat" ( set rutaNCLEAN=%~dp0ztools\nsp_clean.bat ) 
+
 
 ::Check if user is dragging a folder or a file
 if "%~1"=="" goto manual
@@ -33,7 +39,7 @@ ECHO ---------------------------------------------------------------------------
 ECHO =============================     BY JULESONTHEROAD     =============================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                              POWERED WITH NUT BY BLAWAR                           "
-ECHO                                      VERSION 0.40               
+ECHO                                      VERSION 0.41               
 ECHO -------------------------------------------------------------------------------------                   
 ECHO check xci_batch_builder at: https://github.com/julesontheroad/
 ECHO and check blawar's NUT at:  https://github.com/blawar/nut 
@@ -43,7 +49,10 @@ PING -n 2 127.0.0.1 >NUL 2>&1
 for /r "%~1" %%f in (*.nsp) do (
 set target=%%f
 set originalname=%%~nxf
-call :nsp_fa
+set orinput=%%f
+::echo %safe_var%>safe.txt
+if %safe_var% EQU "false" ( call "%rutaNCLEAN%" "%%f" "auto" "" )
+if not %safe_var% EQU "false" call :nsp_fa
 )
 
 ECHO ---------------------------------------------------
@@ -56,14 +65,10 @@ exit
 
 
 :nsp_fa
-call %~dp0ztools\safename.bat "%target%" >NUL 2>&1
-
-for /f "tokens=*" %%f in (myinput.txt) do (
-	set myinput=%%f
-	call "%rutaNCLEAN%" "%%f" "auto" "" 
-	ren "%myinput%" "%originalname%"
-)
-del myinput.txt
+call "%~dp0ztools\safename.bat" "%target%" "%safe_var%" >NUL 2>&1
+call "%rutaNCLEAN%" "%myinput%" "auto" ""
+if exist "%myinput%" ( ren "%myinput%" "%originalname%" ) >NUL 2>&1
+::echo %myinput%>myinput.txt
 
 exit /B
 
@@ -74,13 +79,14 @@ goto manual
 
 :nsp
 set originalname=%~nx1
-call %~dp0ztools\safename.bat "%~1" >NUL 2>&1
-for /f "tokens=*" %%f in (myinput.txt) do (
-set myinput=%%f
-call "%rutaNCLEAN%" "%%f" "auto" "" 
-ren "%myinput%" "%originalname%"
-)
-del myinput.txt
+set orinput=%~1
+
+if %safe_var% EQU "false" ( call "%rutaNCLEAN%" "%~1" "auto" "" )
+if not %safe_var% EQU "false" ( call "%~dp0ztools\safename.bat" "%~1" "%safe_var%" ) >NUL 2>&1
+if not %safe_var% EQU "false" ( call "%rutaNCLEAN%" "%myinput%" "auto" "" )
+if exist "%myinput%" ( ren "%myinput%" "%originalname%" ) >NUL 2>&1
+::echo %myinput%>myinput.txt
+
 exit
 
 :noprograms
@@ -125,7 +131,7 @@ ECHO ---------------------------------------------------------------------------
 ECHO =============================     BY JULESONTHEROAD     =============================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                             POWERED NY NUT BY BLAWAR                              "
-ECHO                                     VERSION 0.40               
+ECHO                                     VERSION 0.41               
 ECHO -------------------------------------------------------------------------------------                   
 ECHO check xci_batch_builder at: https://github.com/julesontheroad/
 ECHO and check blawar's NUT at:  https://github.com/blawar/nut 
@@ -281,6 +287,7 @@ if %vrepack%=="none" goto s_cl_wrongchoice
 
 for /f "tokens=*" %%f in (list.txt) do (
 set target=%%f
+set orinput=%%f
 set originalname=%%~nxf
 call :nsp_clean_manual
 more +1 "list.txt" >"list.txt.new"
@@ -297,14 +304,13 @@ goto salida
 
 
 :nsp_clean_manual
-call %~dp0ztools\safename.bat "%target%" >NUL 2>&1
-
-for /f "tokens=*" %%f in (myinput.txt) do (
-	set myinput=%%f
-	call "%rutaNCLEAN%" "%%f" "manual" "%vrepack%" 
-	ren "%myinput%" "%originalname%"
+call "%~dp0ztools\safename.bat" "%target%" "%safe_var%" >NUL 2>&1
+if %safe_var% EQU "false" ( call "%rutaNCLEAN%" "%target%" "auto" "" )
+if not %safe_var% EQU "false" ( call "%~dp0ztools\safename.bat" "%target%" "%safe_var%" ) >NUL 2>&1
+if not %safe_var% EQU "false" (	call "%rutaNCLEAN%" "%myinput%" "manual" "%vrepack%" )
+if exist "%myinput%" ( ren "%myinput%" "%originalname%" ) >NUL 2>&1
 )
-del myinput.txt
+
 exit /B
 
 :contador_NF
