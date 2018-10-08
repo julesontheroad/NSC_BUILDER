@@ -9,12 +9,11 @@ set fext=%~x1
 set safe_var=%~2
 
 if %safe_var% EQU "agro" goto agro 
-
-set local
-
+::set fileinput=%fileinput:(=%
+::set fileinput=%fileinput:)=%
 set fileinput=%fileinput:!= %
-set mygamename=%mygamename:?= %
-set mygamename=%mygamename::= %
+set fileinput=%fileinput:?= %
+set fileinput=%fileinput::= %
 set fileinput=%fileinput:-= %
 set fileinput=%fileinput:#= %
 set fileinput=%fileinput:&=and%
@@ -34,16 +33,13 @@ set fileinput=%fileinput: .=.%
 set fileinput=%fileinput:    = %
 set fileinput=%fileinput:   = %
 set fileinput=%fileinput:  = %
-ren "%ruta%%originalname%" "%fileinput%"
-set myinput=%ruta%%fileinput%
+set t_input="%ruta%%originalname%"
+ren %t_input% "%fileinput%"
+set myinput="%ruta%%fileinput%"
+set myinput=%myinput:"=%
 ::echo %originalname%>originalname.txt
 ::echo %ruta%>mypath.txt
-::echo %myinput%>myinput.txt
-
-endlocal & ( 
-set myinput=%myinput%
-set orinput=%ruta%%originalname%
-)
+echo %myinput%>myinput.txt
 goto end
 
 :agro
@@ -58,10 +54,12 @@ set orinput=%ruta%%originalname%
 goto end
 
 :contrl_name
-setlocal enabledelayedexpansion
+
 CD /d "%~dp0"
 CD /d ".."
 set mygamename=%~1
+::set mygamename=%mygamename:(=[%
+::set mygamename=%mygamename:)=]%
 set mygamename=%mygamename:!= %
 set mygamename=%mygamename:?= %
 set mygamename=%mygamename::= %
@@ -84,9 +82,6 @@ set fileinput=%fileinput:    = %
 set fileinput=%fileinput:   = %
 set fileinput=%fileinput:  = %
 
-endlocal & ( 
-set mygamename=%mygamename%
-)
 goto end
 
 :end
