@@ -101,17 +101,25 @@ set safe_var="true"
 ::oinfo->"Only info"-> Use either original filename or safename and add only titleid, version, content tag ...
 ::DLCS DON'T HAVE NACP FILE SO "true" IN THIS CASE WILL BE REPLACED BY THE "oinfo" OPTION
 
-set ncap_rname="oinfo"
+set ncap_rname="false"
+
+::--------------------------------------------------------------------
+::OPTION 11
+::Python 3 command function
+::Set py, python, py -3, python -3, conda ... depending on your system
+::--------------------------------------------------------------------
+
+set pycommand="py -3"
 
 ::--------------------------------------------------------------
-::OPTION 11
+::OPTION 12
 ::Remove all xml from nsp file. (NOT YET IMPLEMENTED)
 ::--------------------------------------------------------------
 ::false->keep xml files inside the nsp
 ::true->erase or zip xml files
 
 ::--------------------------------------------------------------
-::OPTION 12
+::OPTION 13
 ::Tag skipping (NOT YET IMPLEMENTED)
 ::--------------------------------------------------------------
 ::false->keep xml files inside the nsp
@@ -122,45 +130,45 @@ set ncap_rname="oinfo"
 ::set tag_to_skip3=[nxt]
 
 ::--------------------------------------------------------------
-::OPTION 12
-::clean trimmed xci output folder (NOT YET IMPLEMENTED)
-::--------------------------------------------------------------
-
-
-
-::--------------------------------------------------------------
-::OPTION 13
-::clean trimmed xci output folder (NOT YET IMPLEMENTED)
-::--------------------------------------------------------------
-
-
-
-::--------------------------------------------------------------
 ::OPTION 14
+::clean trimmed xci output folder (NOT YET IMPLEMENTED)
+::--------------------------------------------------------------
+
+
+
+::--------------------------------------------------------------
+::OPTION 15
+::clean trimmed xci output folder (NOT YET IMPLEMENTED)
+::--------------------------------------------------------------
+
+
+
+::--------------------------------------------------------------
+::OPTION 16
 ::Types of tags to erase in output xci (NOT YET IMPLEMENTED)
 ::--------------------------------------------------------------
 
 
 ::--------------------------------------------------------------
-::OPTION 15
+::OPTION 17
 ::Types of tags to erase in output nsp (NOT YET IMPLEMENTED)
 ::--------------------------------------------------------------
 
 
 ::--------------------------------------------------------------
-::OPTION 16
+::OPTION 18
 ::Types of tags to ADD in output xci (NOT YET IMPLEMENTED)
 ::--------------------------------------------------------------
 
 
 ::--------------------------------------------------------------
-::OPTION 17
+::OPTION 19
 ::Types of tags to ADD in output nsp (NOT YET IMPLEMENTED)
 ::--------------------------------------------------------------
 
 
 ::--------------------------------------------------------------
-::OPTION 18
+::OPTION 20
 ::Repack nsp as base + update (NOT YET IMPLEMENTED)
 ::--------------------------------------------------------------
 
