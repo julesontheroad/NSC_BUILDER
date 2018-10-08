@@ -39,7 +39,7 @@ set myinput="%ruta%%fileinput%"
 set myinput=%myinput:"=%
 ::echo %originalname%>originalname.txt
 ::echo %ruta%>mypath.txt
-echo %myinput%>myinput.txt
+::echo %myinput%>myinput.txt
 goto end
 
 :agro

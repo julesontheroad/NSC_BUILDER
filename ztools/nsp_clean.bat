@@ -39,6 +39,7 @@ exit
 
 :set_options2
 call "zconfig/nsp_cleaner_options.cmd"
+set pycommand=%pycommand:"=%
 if exist %NUT_ROUTE% goto startpr
 set NUT_ROUTE=ztools\nut_RTR.py
 if exist %NUT_ROUTE% goto startpr
@@ -119,7 +120,7 @@ if exist "%root_outf%\!filename!.nsp" del "%root_outf%\!filename!.nsp"  >NUL 2>&
 set myfile=%~dp0\nspDecrypted\%filename%.nsp
 MD nspDecrypted
 
-py -3 "%NUT_ROUTE%" --nsptitleid "%~1" >nspDecrypted\nsptitleid.txt
+%pycommand% "%NUT_ROUTE%" --nsptitleid "%~1" >nspDecrypted\nsptitleid.txt
 set /p titleid=<nspDecrypted\nsptitleid.txt
 echo [%titleid%]>nspDecrypted\nsptitleid.txt
 
@@ -177,7 +178,7 @@ set p_folder=%~dp0
 set p_folder=%p_folder:ztools\ =%
 
 ::NAME REFORMING SCRIPT
-py -3 "%NUT_ROUTE%" --nsptitleid "%p_folder%nspDecrypted\%filename%.nsp" >nspDecrypted\nsptitleid.txt
+%pycommand% "%NUT_ROUTE%" --nsptitleid "%p_folder%nspDecrypted\%filename%.nsp" >nspDecrypted\nsptitleid.txt
 set /p titleid=<nspDecrypted\nsptitleid.txt
 echo [%titleid%]>nspDecrypted\nsptitleid.txt
 
@@ -196,7 +197,7 @@ del nspDecrypted\isbasef.txt
 ren "%p_folder%nspDecrypted\%filename%.nsp" "%ofolder% [%titleid%] %ttag%.nsp"
 set filenametemp=%ofolder% [%titleid%] %ttag%
 
-py -3 "%NUT_ROUTE%" --remove-title-rights "%p_folder%nspDecrypted\%filenametemp%.nsp" >nspDecrypted\assist.txt
+%pycommand% "%NUT_ROUTE%" --remove-title-rights "%p_folder%nspDecrypted\%filenametemp%.nsp" >nspDecrypted\assist.txt
 FINDSTR /N "Mismatched" nspDecrypted\assist.txt > nspDecrypted\l_check.txt
 FINDSTR /N "name needs to contain [titleId]" nspDecrypted\assist.txt >> nspDecrypted\l_check.txt
 for /f "tokens=1* delims=:" %%a in (nspDecrypted\l_check.txt) do set l_check=%%a
@@ -259,7 +260,7 @@ set ruta_nspb=ztools\nspBuild.py
 dir "nspDecrypted\rawnsp\*" /b  > "nspDecrypted\nsp_fileslist.txt"
 set row=
 for /f %%x in (nspDecrypted\nsp_fileslist.txt) do set row="nspDecrypted\rawnsp\%%x" !row!
-py -3 %ruta_nspb% "nspDecrypted\%filename%[rr].nsp" %row% >NUL 2>&1
+%pycommand% %ruta_nspb% "nspDecrypted\%filename%[rr].nsp" %row% >NUL 2>&1
 echo DONE 
 if not exist %root_outf% MD %root_outf%
 
@@ -352,7 +353,7 @@ set p_folder=%~dp0
 set p_folder=%p_folder:ztools\ =%
 
 for /f "tokens=*" %%f in ( nspDecrypted\nca_list.txt ) do (
-py -3 "%p_folder%%NUT_ROUTE%" --ncatype "%p_folder%nspDecrypted\rawnsp\%%f" >nspDecrypted\ncatype.txt
+%pycommand% "%p_folder%%NUT_ROUTE%" --ncatype "%p_folder%nspDecrypted\rawnsp\%%f" >nspDecrypted\ncatype.txt
 set /p nca_type=<nspDecrypted\ncatype.txt 
 if "!nca_type!" EQU "Content.CONTROL" set cont_nca=%%f 
 if "!nca_type!" EQU "Content.META" set meta_nca=%%f 

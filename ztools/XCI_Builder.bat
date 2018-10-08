@@ -410,7 +410,7 @@ if not exist nspDecrypted\licencia\*.tik goto createxci
 echo ----------------------------------------------------
 echo Building license nsp with "nspbuild" by CVFireDragon
 echo ----------------------------------------------------
-py -3 "ztools\nspbuild.py" "nspDecrypted\!ofolder![lc].nsp" "nspDecrypted\licencia\%varlist1%" "nspDecrypted\licencia\%varlist2%" "nspDecrypted\licencia\%varlist3%" "nspDecrypted\licencia\%varlist4%"  >NUL 2>&1
+%pycommand% "ztools\nspbuild.py" "nspDecrypted\!ofolder![lc].nsp" "nspDecrypted\licencia\%varlist1%" "nspDecrypted\licencia\%varlist2%" "nspDecrypted\licencia\%varlist3%" "nspDecrypted\licencia\%varlist4%"  >NUL 2>&1
 echo DONE
 del nspDecrypted\fileslist.txt
 rmdir /s /q "nspDecrypted\licencia"
@@ -419,7 +419,7 @@ goto createxci
 echo ----------------------------------------------------
 echo Building license nsp with "nspbuild" by CVFireDragon
 echo ----------------------------------------------------
-py -3 "ztools\nspbuild.py" "nspDecrypted\!ofolder![lc].nsp" "nspDecrypted\licencia\%varlist1%" "nspDecrypted\licencia\%varlist2%" "nspDecrypted\licencia\%varlist3%"  >NUL 2>&1
+%pycommand% "ztools\nspbuild.py" "nspDecrypted\!ofolder![lc].nsp" "nspDecrypted\licencia\%varlist1%" "nspDecrypted\licencia\%varlist2%" "nspDecrypted\licencia\%varlist3%"  >NUL 2>&1
 echo DONE
 del nspDecrypted\fileslist.txt
 rmdir /s /q "nspDecrypted\licencia"
