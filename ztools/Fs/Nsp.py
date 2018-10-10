@@ -448,7 +448,7 @@ class Nsp(Pfs0):
 	def setecard(self):
 		for nca in self:
 			if type(nca) == Nca:
-				nca.header.setcgame(1)	
+				nca.header.setgamecard(1)	
 				
 	def getnspid(self):
 		target=self.cnmt()
