@@ -72,6 +72,7 @@ if not exist "%game_info%" ( goto missing_things )
 if not exist "%dec_keys%" ( goto missing_things )
 ::-----------------------------------------------------
 
+
 ::Check if user is dragging a folder or a file
 if "%~1"=="" goto manual
 if exist "%~1\" goto folder
@@ -177,7 +178,7 @@ if exist "%w_folder%" rmdir /s /q "%w_folder%" >NUL 2>&1
 MD "%w_folder%"
 MD "%w_folder%\secure"
 call :getname
-set filename=%end_folder%[multi]
+set "filename=%end_folder%[multi]"
 ::FOR NSP FILES
 for /r "%~1" %%f in (*.nsp) do (
 cls
@@ -198,6 +199,7 @@ call :squirrell
 ::FOR XCI FILES
 for /r "%~1" %%f in (*.xci) do (
 cls
+call :program_logo
 echo ------------------------------------------------------------
 echo Extracting secure partition from xci with hactool by SciresM
 echo ------------------------------------------------------------
