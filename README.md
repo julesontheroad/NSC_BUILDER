@@ -10,10 +10,6 @@ Tinfoil and SX installer will install the ticket either way so for it to not sta
 your system you need to erase the ticket and cert from the nsp, this batch will take
 care of that.
 
-This batch automates a process you can do yourself with nut and let's make clean nsp
-files that you can also pass for XCI-Batch-Builder to generate xci files that don't
-need a ticket.
-
 Current version of the program allow you to make multi-content xci or nsp files.
 
 The batch has 2 modes:
