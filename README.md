@@ -46,29 +46,28 @@ builds.
 
 ## 4. Option description
 
-* OPTION 1: Work and Output folders setup
-* OPTION 2: Route to needed programs
-* OPTION 3: Nut options
-  a) pycommand -> your command to invoke python 3 (by deffault py -3)
-  b) buffer -> buffer in number of bytes for the copy functions
-* OPTION 4: Route to game_info.ini and keys.txt
-* OPTION 5: REPACK OPTIONS. Controls repack in auto mode.
-::Repack option for auto-mode
-  a) xci -> repack as xci
-  b) nsp -> repacck as nsp
-  c) both -> repacck as both
-::Type of repack for folders
-  a) indiv -> repack content individually as multiple xci/nsp
-  b) multi -> repack content as single multicontent xci/nsp
-* OPTION 6: MANUAL MODE INTRO. 
-  a) indiv-> Enter in individual packing mode directly
-  b) multi-> Enter in multi-pack mode directly
-  c) choose-> Prompt to choose the mode in which you want to enter
-::OPTION 7: ZIP FILES -> Select if you want to zip things that will allow to restore nsp files
-to original state.
+### OPTION 1: Work and Output folders setup
+### OPTION 2: Route to needed programs
+### OPTION 3: Nut options
+  - pycommand -> your command to invoke python 3 (by deffault py -3)
+  - buffer -> buffer in number of bytes for the copy functions
+###  OPTION 4: Route to game_info.ini and keys.txt
+### OPTION 5: REPACK OPTIONS. Controls repack in auto mode.
+#### Repack option for auto-mode
+  - xci -> repack as xci
+  - nsp -> repacck as nsp
+  - both -> repacck as both
+#### Type of repack for folders
+  - indiv -> repack content individually as multiple xci/nsp
+  - multi -> repack content as single multicontent xci/nsp
+### OPTION 6: MANUAL MODE INTRO. 
+  - indiv-> Enter in individual packing mode directly
+  - multi-> Enter in multi-pack mode directly
+  - choose-> Prompt to choose the mode in which you want to enter
+### OPTION 7: ZIP FILES 
+Select if you want to zip things that will allow to restore nsp files to original state.
 
 ## 5. Limitations 
-
 - You can't make multi-content xci files with more than 8 games. It'll give error when loading
 in horizon. I suspect it may be a qlauncher limitation so it could work with theme mods but INTRO
 didn't test it.
@@ -76,7 +75,6 @@ didn't test it.
 the update prompt.
 
 ## 6. Planned features 
-
 - List manager.
 - Batch tools to put in application some of my changes to nut libraries.
 - Support for meta patching and control nca building for custom logos.
