@@ -718,7 +718,7 @@ endlocal
 
 goto multi_checkagain
 
-:s_cl_wrongchoice
+:m_cl_wrongchoice
 echo wrong choice
 echo ............
 :multi_start_cleaning
@@ -734,7 +734,7 @@ set vrepack=none
 if /i "%bs%"=="1" set "vrepack=nsp"
 if /i "%bs%"=="2" set "vrepack=xci"
 if /i "%bs%"=="3" set "vrepack=both"
-if %vrepack%=="none" goto s_cl_wrongchoice
+if %vrepack%=="none" goto m_cl_wrongchoice
 echo *******************************************************
 echo ENTER FINAL FILENAME FOR THE OUTPUT FILE
 echo *******************************************************
@@ -750,8 +750,9 @@ more +1 "mlist.txt" >"mlist.txt.new"
 move /y "mlist.txt.new" "mlist.txt" >nul
 call :multi_contador_NF
 )
-set "filename=%finalname%[multi]"
+set "filename=%finalname%"
 set "end_folder=%finalname%"
+set "filename=%finalname%[multi]"
 
 if "%vrepack%" EQU "nsp" ( call "%nsp_lib%" "convert" "%w_folder%" )
 if "%vrepack%" EQU "xci" ( call "%xci_lib%" "repack" "%w_folder%" )
@@ -818,41 +819,7 @@ PING -n 2 127.0.0.1 >NUL 2>&1
 set /a conta=0
 endlocal
 exit /B
-:to_do
 
-echo ----------------------------
-echo MULTI-REPACK MODE ACTIVATED
-echo ----------------------------
-echo How are you going to repack?
-echo ...........................
-echo Press "1" to repack as nsp
-echo Press "2" to repack as xci
-echo Press "3" to repack as both
-echo ...........................
-echo.
-set /p bs="Enter your choice: "
-set bs=%bs:"=%
-if /i "%bs%"=="1" set "repack=NSP"
-if /i "%bs%"=="2" set "repack=XCI"
-if /i "%bs%"=="3" set "repack=BOTH"
-
-if "%repack%" EQU "NSP" goto no_c_logo
-echo ------------------------------------------
-echo Do you want to set a custom logo and name?
-echo ------------------------------------------
-echo Indicated for multi-game xci. 
-echo Currently custom logos and names are set dragging a nsp or control nca
-echo That way the program will copy the control nca in the normal partition
-echo If you don't add a custom logo the logo will be set from one of your games
-echo ..................................
-echo Press "1" add a custom logo
-echo Press "2" don't add a custom logo
-echo ..................................
-echo.
-set /p bs="Enter your choice: "
-set bs=%bs:"=%
-if /i "%bs%"=="1" goto custom_logo
-if /i "%bs%"=="2" goto no_c_logo
 
 :multi_set_clogo
 echo ------------------------------------------
