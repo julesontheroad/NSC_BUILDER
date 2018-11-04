@@ -19,6 +19,7 @@ from Fs.File import File
 from Fs.Rom import Rom
 from Fs.Pfs0 import Pfs0
 from Fs.BaseFs import BaseFs
+from Fs.Ticket import Ticket
 
 MEDIA_SIZE = 0x200
 
@@ -237,6 +238,17 @@ class Nca(File):
 		
 		self.titleKeyDec = None
 		self.masterKey = None
+
+	def removeTitleRightsnca(self, masterKeyRev, titleKeyDec):
+		Print.info('titleKeyDec =\t' + str(hx(titleKeyDec)))
+		Print.info('masterKeyRev =\t' + hex(masterKeyRev))
+
+		Print.info('writing masterKeyRev for %s, %d' % (str(self._path),  masterKeyRev))
+		crypto = aes128.AESECB(Keys.keyAreaKey(Keys.getMasterKeyIndex(masterKeyRev), self.header.keyIndex))
+		encKeyBlock = crypto.encrypt(titleKeyDec * 4)
+		self.header.setRightsId(0)
+		self.header.setKeyBlock(encKeyBlock)
+		Hex.dump(encKeyBlock)		
 		
 	def printtitleId(self, indent = 0):	
 		Print.info(str(self.header.titleId))

@@ -439,24 +439,487 @@ class Nsp(Pfs0):
 				nca.header.setRightsId(0)
 				nca.header.setKeyBlock(encKeyBlock)
 				Hex.dump(encKeyBlock)
+				
+	def copy_ticket(self,ofolder):
+		for ticket in self:
+			if type(ticket) == Ticket:
+				ticket.rewind()
+				data = ticket.read()
+				filename =  str(ticket._path)
+				outfolder = str(ofolder)+'/'
+				filepath = os.path.join(outfolder, filename)
+				if not os.path.exists(outfolder):
+					os.makedirs(outfolder)
+				fp = open(str(filepath), 'w+b')
+				fp.write(data)
+				fp.flush()
+				fp.close()
+
+	def copy_nca(self,ofolder,buffer):
+		indent = 1
+		tabs = '\t' * indent
+		for nca in self:
+			if type(nca) == Nca:
+				nca.rewind()
+				filename =  str(nca._path)
+				outfolder = str(ofolder)+'/'
+				filepath = os.path.join(outfolder, filename)
+				if not os.path.exists(outfolder):
+					os.makedirs(outfolder)
+				fp = open(filepath, 'w+b')
+				nca.rewind()
+				Print.info(tabs + 'Copying: ' + str(filename))
+				for data in iter(lambda: nca.read(int(buffer)), ""):
+					fp.write(data)
+					fp.flush()
+					if not data:
+						break
+				fp.close()
+				
+	def copy_nca_control(self,ofolder,buffer):
+		for nca in self:
+			if type(nca) == Nca:
+				if 	str(nca.header.contentType) == 'Content.CONTROL':
+					nca.rewind()
+					filename =  str(nca._path)
+					outfolder = str(ofolder)+'/'
+					filepath = os.path.join(outfolder, filename)
+					if not os.path.exists(outfolder):
+						os.makedirs(outfolder)
+					fp = open(filepath, 'w+b')
+					nca.rewind()				
+					for data in iter(lambda: nca.read(int(buffer)), ""):
+						fp.write(data)
+						fp.flush()
+						if not data:
+							break
+					fp.close()					
+					
+	def copy_nca_meta(self,ofolder,buffer):
+		for nca in self:
+			if type(nca) == Nca:
+				if 	str(nca.header.contentType) == 'Content.META':
+					nca.rewind()
+					filename =  str(nca._path)
+					outfolder = str(ofolder)+'/'
+					filepath = os.path.join(outfolder, filename)
+					if not os.path.exists(outfolder):
+						os.makedirs(outfolder)
+					fp = open(filepath, 'w+b')
+					nca.rewind()				
+					for data in iter(lambda: nca.read(int(buffer)), ""):
+						fp.write(data)
+						fp.flush()
+						if not data:
+							break
+					fp.close()
+
+	def copy_pfs0(self,ofolder,buffer):
+		for nca in self:
+			if type(nca) == Nca:
+				for f in nca:
+					nca.rewind()
+					f.rewind()
+					filename =  str(f._path)
+					outfolder = str(ofolder)+'/'
+					filepath = os.path.join(outfolder, filename)
+					if not os.path.exists(outfolder):
+						os.makedirs(outfolder)
+					fp = open(filepath, 'w+b')
+					nca.rewind()
+					f.rewind()	
+					for data in iter(lambda:f.read(int(buffer)), ""):
+						fp.write(data)
+						fp.flush()
+						if not data:
+							break
+					fp.close()					
+						
+	def copy_cnmt(self,ofolder,buffer):
+		for nca in self:
+			if type(nca) == Nca:
+				if 	str(nca.header.contentType) == 'Content.META':
+					for f in nca:
+						for file in f:
+							nca.rewind()
+							f.rewind()
+							file.rewind()
+							filename =  str(file._path)
+							outfolder = str(ofolder)+'/'
+							filepath = os.path.join(outfolder, filename)
+							if not os.path.exists(outfolder):
+								os.makedirs(outfolder)
+							fp = open(filepath, 'w+b')
+							nca.rewind()
+							f.rewind()	
+							file.rewind()								
+							for data in iter(lambda:file.read(int(buffer)), ""):
+								fp.write(data)
+								fp.flush()
+								if not data:
+									break
+							fp.close()	
+
+	def copy_ncap(self,ofolder,buffer):
+		for nca in self:
+			if type(nca) == Nca:
+				if 	str(nca.header.contentType) == 'Content.CONTROL':
+					for f in nca:
+						nca.rewind()
+						f.rewind()
+						filename =  str(f._path)
+						outfolder = str(ofolder)+'/'
+						filepath = os.path.join(outfolder, filename)
+						if not os.path.exists(outfolder):
+							os.makedirs(outfolder)
+						fp = open(filepath, 'w+b')
+						nca.rewind()
+						f.rewind()	
+						for data in iter(lambda:f.read(int(buffer)), ""):
+							fp.write(data)
+							fp.flush()
+							if not data:
+								break
+						
+
+	def copy_nca_manual(self,ofolder,buffer):
+		for nca in self:
+			if type(nca) == Nca:
+				if 	str(nca.header.contentType) == 'Content.MANUAL':
+					nca.rewind()
+					filename =  str(nca._path)
+					outfolder = str(ofolder)+'/'
+					filepath = os.path.join(outfolder, filename)
+					if not os.path.exists(outfolder):
+						os.makedirs(outfolder)
+					fp = open(filepath, 'w+b')
+					nca.rewind()				
+					for data in iter(lambda: nca.read(int(buffer)), ""):
+						fp.write(data)
+						fp.flush()
+						if not data:
+							break
+					fp.close()		
+									
+	def copy_nca_program(self,ofolder,buffer):
+		for nca in self:
+			if type(nca) == Nca:
+				if 	str(nca.header.contentType) == 'Content.PROGRAM':
+					nca.rewind()
+					filename =  str(nca._path)
+					outfolder = str(ofolder)+'/'
+					filepath = os.path.join(outfolder, filename)
+					if not os.path.exists(outfolder):
+						os.makedirs(outfolder)
+					fp = open(filepath, 'w+b')
+					nca.rewind()				
+					for data in iter(lambda: nca.read(int(buffer)), ""):
+						fp.write(data)
+						fp.flush()
+						if not data:
+							break
+					fp.close()					
+				
+	def copy_nca_data(self,ofolder,buffer):
+		for nca in self:
+			if type(nca) == Nca:
+				if 	str(nca.header.contentType) == 'Content.DATA':
+					nca.rewind()
+					filename =  str(nca._path)
+					outfolder = str(ofolder)+'/'
+					filepath = os.path.join(outfolder, filename)
+					if not os.path.exists(outfolder):
+						os.makedirs(outfolder)
+					fp = open(filepath, 'w+b')
+					nca.rewind()				
+					for data in iter(lambda: nca.read(int(buffer)), ""):
+						fp.write(data)
+						fp.flush()
+						if not data:
+							break
+					fp.close()		
+									
+	def copy_nca_pdata(self,ofolder,buffer):
+		for nca in self:
+			if type(nca) == Nca:
+				if 	str(nca.header.contentType) == 'Content.UNKNOWN':
+					nca.rewind()
+					filename =  str(nca._path)
+					outfolder = str(ofolder)+'/'
+					filepath = os.path.join(outfolder, filename)
+					if not os.path.exists(outfolder):
+						os.makedirs(outfolder)
+					fp = open(filepath, 'w+b')
+					nca.rewind()				
+					for data in iter(lambda: nca.read(int(buffer)), ""):
+						fp.write(data)
+						fp.flush()
+						if not data:
+							break
+					fp.close()				
+
+	def copy_other(self,ofolder,buffer):
+		for file in self:
+			if type(file) == File:
+				file.rewind()
+				filename =  str(file._path)
+				outfolder = str(ofolder)+'/'
+				filepath = os.path.join(outfolder, filename)
+				if not os.path.exists(outfolder):
+					os.makedirs(outfolder)
+				fp = open(filepath, 'w+b')
+				file.rewind()
+				for data in iter(lambda: file.read(int(buffer)), ""):
+					fp.write(data)
+					fp.flush()
+					if not data:
+						break
+				fp.close()
+				
+	def copy_xml(self,ofolder,buffer):
+		for file in self:
+			if file._path.endswith('.xml'):
+				file.rewind()
+				filename =  str(file._path)
+				outfolder = str(ofolder)+'/'
+				filepath = os.path.join(outfolder, filename)
+				if not os.path.exists(outfolder):
+					os.makedirs(outfolder)
+				fp = open(filepath, 'w+b')
+				file.rewind()
+				for data in iter(lambda: file.read(int(buffer)), ""):
+					fp.write(data)
+					fp.flush()
+					if not data:
+						break
+				fp.close()			
+		
+	def copy_nsp_cert(self,ofolder,buffer):
+		for file in self:
+			if file._path.endswith('.cert'):
+				file.rewind()
+				filename =  str(file._path)
+				outfolder = str(ofolder)+'/'
+				filepath = os.path.join(outfolder, filename)
+				if not os.path.exists(outfolder):
+					os.makedirs(outfolder)
+				fp = open(filepath, 'w+b')
+				file.rewind()
+				for data in iter(lambda: file.read(int(buffer)), ""):
+					fp.write(data)
+					fp.flush()
+					if not data:
+						break
+				fp.close()						
+
+	def copy_jpg(self,ofolder,buffer):
+		for file in self:
+			if file._path.endswith('.jpg'):
+				file.rewind()
+				filename =  str(file._path)
+				outfolder = str(ofolder)+'/'
+				filepath = os.path.join(outfolder, filename)
+				if not os.path.exists(outfolder):
+					os.makedirs(outfolder)
+				fp = open(filepath, 'w+b')
+				file.rewind()
+				for data in iter(lambda: file.read(int(buffer)), ""):
+					fp.write(data)
+					fp.flush()
+					if not data:
+						break
+				fp.close()						
+
+	def copy_tr_nca(self,ofolder,buffer):
+		for nca in self:
+			if type(nca) == Nca:
+				if nca.header.getRightsId() != 0:
+					nca.rewind()
+					filename =  str(nca._path)
+					outfolder = str(ofolder)+'/'
+					filepath = os.path.join(outfolder, filename)
+					if not os.path.exists(outfolder):
+						os.makedirs(outfolder)
+					fp = open(filepath, 'w+b')
+					nca.rewind()			
+					for data in iter(lambda: nca.read(312000), ""):
+						fp.write(data)
+						fp.flush()
+						if not data:
+							break
+					fp.close()				
+
+	def copy_ntr_nca(self,ofolder,buffer):
+		for nca in self:
+			if type(nca) == Nca:
+				if nca.header.getRightsId() == 0:
+					nca.rewind()
+					filename =  str(nca._path)
+					outfolder = str(ofolder)+'/'
+					filepath = os.path.join(outfolder, filename)
+					if not os.path.exists(outfolder):
+						os.makedirs(outfolder)
+					fp = open(filepath, 'w+b')
+					nca.rewind()			
+					for data in iter(lambda: nca.read(312000), ""):
+						fp.write(data)
+						fp.flush()
+						if not data:
+							break
+					fp.close()
+
+					
+	def copyandremove_tr_nca(self,ofolder,buffer):
+		indent = 1
+		tabs = '\t' * indent
+		ticket = self.ticket()
+		masterKeyRev = ticket.getMasterKeyRevision()
+		titleKeyDec = Keys.decryptTitleKey(ticket.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(masterKeyRev))
+		rightsId = ticket.getRightsId()
+		Print.info('rightsId =\t' + hex(rightsId))
+		Print.info('titleKeyDec =\t' + str(hx(titleKeyDec)))
+		Print.info('masterKeyRev =\t' + hex(masterKeyRev))
+		
+		for nca in self:
+			if type(nca) == Nca:
+				if nca.header.getCryptoType2() != masterKeyRev:
+					pass
+					raise IOError('Mismatched masterKeyRevs!')
+		
+		for nca in self:
+			if type(nca) == Nca:
+				Print.info('Copying files: ')
+				if nca.header.getRightsId() != 0:
+					nca.rewind()
+					filename =  str(nca._path)
+					outfolder = str(ofolder)+'/'
+					filepath = os.path.join(outfolder, filename)
+					if not os.path.exists(outfolder):
+						os.makedirs(outfolder)
+					fp = open(filepath, 'w+b')
+					nca.rewind()
+					Print.info(tabs + 'Copying: ' + str(filename))
+					for data in iter(lambda: nca.read(int(buffer)), ""):
+						fp.write(data)
+						fp.flush()
+						if not data:
+							break
+					fp.close()
+					target = Fs.Nca(filepath, 'r+b')
+					target.rewind()
+					Print.info(tabs + 'Removing titlerights for ' + str(filename))
+					Print.info(tabs + 'Writing masterKeyRev for %s, %d' % (str(nca._path),  masterKeyRev))
+					crypto = aes128.AESECB(Keys.keyAreaKey(Keys.getMasterKeyIndex(masterKeyRev), nca.header.keyIndex))
+					encKeyBlock = crypto.encrypt(titleKeyDec * 4)
+					target.header.setRightsId(0)
+					target.header.setKeyBlock(encKeyBlock)
+					Hex.dump(encKeyBlock)	
+					target.close()
+					
+				if nca.header.getRightsId() == 0:
+					nca.rewind()
+					filename =  str(nca._path)
+					outfolder = str(ofolder)+'/'
+					filepath = os.path.join(outfolder, filename)
+					if not os.path.exists(outfolder):
+						os.makedirs(outfolder)
+					fp = open(filepath, 'w+b')
+					nca.rewind()
+					Print.info(tabs + 'Copying: ' + str(filename))
+					for data in iter(lambda: nca.read(int(buffer)), ""):
+						fp.write(data)
+						fp.flush()
+						if not data:
+							break
+					
+	def copy_KeyBlock(self,ofolder):
+		for nca in self:
+			if type(nca) == Nca:
+				if nca.header.getRightsId() != 0:
+					nca.rewind()
+					nca.seek(0x300)
+					KeyBlock = nca.read(0x40)
+					filename = str(nca._path)
+					filename = filename[:-4] + '.keyblock'
+					outfolder = str(ofolder)+'/'
+					filepath = os.path.join(outfolder, filename)
+					if not os.path.exists(outfolder):
+						os.makedirs(outfolder)
+					fp = open(filepath, 'w+b')
+					fp.write(KeyBlock)
+					fp.flush()
+					fp.close()			
+				
+	def removeTitleRightsnca(self, masterKeyRev, titleKeyDec):
+		if not Titles.contains(self.titleId):
+			raise IOError('No title key found in database! ' + self.titleId)
+
+		Print.info('titleKeyDec =\t' + str(hx(titleKeyDec)))
+		Print.info('masterKeyRev =\t' + hex(masterKeyRev))
+
+
+		for nca in self:
+			if type(nca) == Nca:
+				if nca.header.getCryptoType2() != masterKeyRev:
+					pass
+					raise IOError('Mismatched masterKeyRevs!')
+
+
+		ticket.setRightsId(0)
+
+		for nca in files:
+			if type(nca) == Nca:
+				if nca.header.getRightsId() == 0:
+					continue
+
+				Print.info('writing masterKeyRev for %s, %d' % (str(nca._path),  masterKeyRev))
+				crypto = aes128.AESECB(Keys.keyAreaKey(Keys.getMasterKeyIndex(masterKeyRev), nca.header.keyIndex))
+
+				encKeyBlock = crypto.encrypt(titleKeyDec * 4)
+				nca.header.setRightsId(0)
+				nca.header.setKeyBlock(encKeyBlock)
+				Hex.dump(encKeyBlock)				
+
+
 		
 	def seteshop(self):
 		for nca in self:
 			if type(nca) == Nca:
 				nca.header.setgamecard(0)
 			
-	def setecard(self):
+	def setcgame(self):
 		for nca in self:
 			if type(nca) == Nca:
 				nca.header.setgamecard(1)	
 				
+				
+				
 	def getnspid(self):
 		target=self.cnmt()
-		titleid=target.printtitleId()
+		titleid=str(target.header.titleId)
+		return titleid
+		
+	def nspmasterkey(self):
+		if not Titles.contains(self.titleId):
+			raise IOError('No title key found in database! ' + self.titleId)
+		ticket = self.ticket()
+		masterKeyRev = ticket.getMasterKeyRevision()
+		titleKeyDec = Keys.decryptTitleKey(ticket.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(masterKeyRev))
+		rightsId = ticket.getRightsId()
 
+		return masterKeyRev
+		
+	def nsptitlekeydec(self):				
+		if not Titles.contains(self.titleId):
+			raise IOError('No title key found in database! ' + self.titleId)
+		ticket = self.ticket()
+		masterKeyRev = ticket.getMasterKeyRevision()
+		titleKeyDec = Keys.decryptTitleKey(ticket.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(masterKeyRev))
+		rightsId = ticket.getRightsId()
+		titleKey = ticket.getTitleKeyBlock().to_bytes(16, byteorder='big')
 
-
-				
+		return titleKeyDec		
+		
 
 	def pack(self, files):
 		if not self.path:
@@ -525,3 +988,45 @@ class Nsp(Pfs0):
 		for f in self:
 			if type(f) == Nca:
 				pass
+
+	def exist_control(self):
+		for nca in self:
+			if type(nca) == Nca:
+				if 	str(nca.header.contentType) == 'Content.CONTROL':
+					return 'TRUE'
+		return 'FALSE'	
+				
+	def trights_set(self):
+		for nca in self:
+			if type(nca) == Nca:
+				if nca.header.getRightsId() != 0:
+					return 'TRUE'	
+		return 'FALSE'					
+
+	def exist_ticket(self):
+		for ticket in self:
+			if type(ticket) == Ticket:
+				return 'TRUE'	
+		return 'FALSE'			
+
+	def print_file_list(self):
+		for nca in self:
+			if type(nca) == Nca:
+				if nca._path.endswith('.cnmt.nca'):
+					continue
+				filename = str(nca._path)
+				Print.info(str(filename))
+		for nca in self:
+			if type(nca) == Nca:
+				if nca._path.endswith('.cnmt.nca'):
+					filename = str(nca._path)
+					Print.info(str(filename))
+		for file in self:
+			if type(file) != Nca:
+				filename =  str(file._path)
+				Print.info(str(filename))
+	
+
+				
+				
+				
