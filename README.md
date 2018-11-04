@@ -46,25 +46,25 @@ builds.
 
 ## 4. Option description
 
-### OPTION 1: Work and Output folders setup
-### OPTION 2: Route to needed programs
-### OPTION 3: Nut options
+#### OPTION 1: Work and Output folders setup
+#### OPTION 2: Route to needed programs
+#### OPTION 3: Nut options
   - pycommand -> your command to invoke python 3 (by deffault py -3)
   - buffer -> buffer in number of bytes for the copy functions
-###  OPTION 4: Route to game_info.ini and keys.txt
-### OPTION 5: REPACK OPTIONS. Controls repack in auto mode.
-#### Repack option for auto-mode
+####  OPTION 4: Route to game_info.ini and keys.txt
+#### OPTION 5: REPACK OPTIONS. Controls repack in auto mode.
+##### Repack option for auto-mode
   - xci -> repack as xci
   - nsp -> repacck as nsp
   - both -> repacck as both
-#### Type of repack for folders
+##### Type of repack for folders
   - indiv -> repack content individually as multiple xci/nsp
   - multi -> repack content as single multicontent xci/nsp
-### OPTION 6: MANUAL MODE INTRO. 
+#### OPTION 6: MANUAL MODE INTRO. 
   - indiv-> Enter in individual packing mode directly
   - multi-> Enter in multi-pack mode directly
   - choose-> Prompt to choose the mode in which you want to enter
-### OPTION 7: ZIP FILES 
+#### OPTION 7: ZIP FILES 
 Select if you want to zip things that will allow to restore nsp files to original state.
 
 ## 5. Limitations 
