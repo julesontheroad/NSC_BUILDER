@@ -18,15 +18,8 @@ Current version of the program allow you to make multi-content xci or nsp files.
 
 The batch has 2 modes:
 
-- auto mode: you drag nsp files individually or folders with severall nsp files and
-you get clean nsp files in "o_clean_nsp" folder
-Note: auto mode won't process subfolders yet.
-- manual mode: you double click the batch and uou can build a list of nsp files to
-clean, you can even erase items via batch or directly in the list before starting.
-You can resume the list if you close the window before compleating all the cleanings.
-It also fetures a check that will stop the cleaning for a file if the titlerights
-can't be stripped from it. In this case it will generate a log.txt with the file name.
-If an error is found that file is skipped an the batch continues processing the queue.
+- auto mode: you drag nsp files individually or folders with several files over the batch to enter in auto mode.
+- manual mode: you double click the batch and you can build a list of files to process.
 
 The behavior of these modes can be controlled by editing ztools\NSCB_options.cmd
 
