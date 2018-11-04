@@ -1,7 +1,7 @@
 # Nintendo Switch Cleaner and Builder (NSC_Builder)
 
 
-##1. Description
+## 1. Description
 
 NSC_Builder is based in the awesome function "REMOVE_TITLE_RIGHTS" from nut by blawar
 this function let's you erase the titlerights encryption from nsp files.
@@ -29,13 +29,13 @@ If an error is found that file is skipped an the batch continues processing the 
 
 The behavior of these modes can be controlled by editing ztools\NSCB_options.cmd
 
-##2. Important
+## 2. Important
 
 The program incorporates a custom build of nut.py and hacbuild with several added 
 functions. You won't be able to use it if you replace these files for the official
 builds.
 
-##3. Requirements
+## 3. Requirements
 
 - A computer with a Window's OS is needed
 - You'll need to have Python 3 installed for the program to work correctly
@@ -44,7 +44,7 @@ builds.
 - You need to fill the keys_template.txt file inside the ztools folder and rename to keys.txt
 - You'll need to have at least .net frameworks 4.5.2 installed so hacbuild can work correctly.
 
-##4. Option description
+## 4. Option description
 
 * OPTION 1: Work and Output folders setup
 * OPTION 2: Route to needed programs
@@ -67,7 +67,7 @@ builds.
 ::OPTION 7: ZIP FILES -> Select if you want to zip things that will allow to restore nsp files
 to original state.
 
-##5. Limitations 
+## 5. Limitations 
 
 - You can't make multi-content xci files with more than 8 games. It'll give error when loading
 in horizon. I suspect it may be a qlauncher limitation so it could work with theme mods but INTRO
@@ -75,7 +75,7 @@ didn't test it.
 - If you pack an update that requires a superior firmware that you're in you won't be able to skip
 the update prompt.
 
-##6. Planned features 
+## 6. Planned features 
 
 - List manager.
 - Batch tools to put in application some of my changes to nut libraries.
@@ -84,7 +84,7 @@ the update prompt.
 - Content splitter.
 - Titlerights restoration mode.
 
-##7. Thanks and credits to 
+## 7. Thanks and credits to 
 
 NSC_Builder is based on
 
