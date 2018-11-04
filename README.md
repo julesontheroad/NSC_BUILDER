@@ -95,7 +95,7 @@ the update prompt.
 ------------------------
 7. Thanks and credits to 
 ------------------------
-NC_Builder is based on
+NSC_Builder is based on
 
 a.) Nut: Without the work of "blawar" one of the most talented Switch sceners nothing of this would
 be possible at this point.
