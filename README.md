@@ -1,5 +1,6 @@
 # Nintendo Switch Cleaner and Builder (NSC_Builder)
 
+**NOTE: For my hacbuild's fix go to https://github.com/julesontheroad/hacbuild **
 
 ## 1. Description
 
