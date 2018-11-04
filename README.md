@@ -95,20 +95,23 @@ the update prompt.
 ------------------------
 7. Thanks and credits to 
 ------------------------
-
-Nut_batch_cleaner is based on
+NC_Builder is based on
 
 a.) Nut: Without the work of "blawar" one of the most talented Switch sceners nothing of this would
 be possible at this point.
 https://github.com/blawar/nut
+
 a.) Hacbuild: The xci repacking functions are based in hacbuild made by LucaFraga
-Original hacbuild: https://github.com/LucaFraga/hacbuild) by LucaFraga
-Revised hacbuild by me: https://github.com/julesontheroad/hacbuild
-c.) hactool: Program which function is give information, decrypt and extract a lot of different kind of files us by the NX System.
-Hactool was made by SciresM
+
+- Original hacbuild: https://github.com/LucaFraga/hacbuild) by LucaFraga
+
+- Revised hacbuild by me: https://github.com/julesontheroad/hacbuild
+
+c.) hactool: Program which function is give information, decrypt and extract a lot of different kind of files us by the NX System. Hactool was made by SciresM
+
 https://github.com/SciresM/hactool
-d.) 7zip: Program meant to compress and extract files in several formats
-7zip was made by Igor Pavlov
+
+d.) 7zip: Program meant to compress and extract files in several formats. 7zip was made by Igor Pavlov
 https://www.7-zip.org/
 
 Thx to MadScript77 his great suggestions,specially the idea of profiles for the batch.
