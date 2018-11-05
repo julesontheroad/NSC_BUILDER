@@ -177,8 +177,8 @@ set "orinput=%~f1"
 if exist "%w_folder%" rmdir /s /q "%w_folder%" >NUL 2>&1
 MD "%w_folder%"
 MD "%w_folder%\secure"
-call :getname
-set "filename=%end_folder%[multi]"
+set "end_folder=%filename%"
+set "filename=%filename%[multi]"
 ::FOR NSP FILES
 for /r "%~1" %%f in (*.nsp) do (
 cls
@@ -964,7 +964,7 @@ echo %end_folder%>"%w_folder%\fname.txt"
 ::I also wanted to remove_(
 set end_folder=%end_folder:_= %
 del "%w_folder%\fname.txt" >NUL 2>&1
-if "%vrename%" EQU "true" ( set filename=%end_folder% )
+if "%vrename%" EQU "true" ( set "filename=%end_folder%" )
 exit /B
 
 :makezip
