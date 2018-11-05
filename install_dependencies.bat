@@ -1,5 +1,5 @@
 @ECHO OFF
-call "zconfig/nsp_cleaner_options.cmd"
+call "zconfig/NSCB_options.cmd"
 set pycommand=%pycommand:"=%
 ECHO.
 ECHO Installing dependencies 
