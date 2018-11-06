@@ -71,8 +71,8 @@ if __name__ == '__main__':
 		parser.add_argument('--XCI_c_hfs0_secure', nargs='+', help='Extracts secure hfs0 partition files from target xci')
 		parser.add_argument('--XCI_c_hfs0_normal', nargs='+', help='Extracts normal hfs0 partition files from target xci')
 		parser.add_argument('--XCI_c_hfs0_update', nargs='+', help='Extracts update hfs0 partition files from target xci')
-		parser.add_argument('--XCI_copy_nca_secure', nargs='+', help='Extract nca from secure partition')
-		parser.add_argument('--XCI_copy_nca_update', nargs='+', help='Extract nca from update partition')
+		parser.add_argument('--XCI_copy_nca_secure', nargs='+', help='Extracts nca from secure partition')
+		parser.add_argument('--XCI_copy_rhfs0', nargs='+', help='Extracts root.hfs0')
 
 		# Dedicated copy functions. NCA Types. 
 		parser.add_argument('--NSP_copy_nca_meta', nargs='+', help='Extracts nca files with type meta from target nsp')
@@ -431,7 +431,7 @@ if __name__ == '__main__':
 		# ...........................................						
 		# Copy root.hfs0 from XCI 
 		# ...........................................	
-		if args.XCI_copy_nca_update:
+		if args.XCI_copy_rhfs0:
 			for input in args.ofolder:
 				try:
 					ofolder = input
@@ -442,7 +442,7 @@ if __name__ == '__main__':
 					buffer = input
 				except BaseException as e:
 					Print.error('Exception: ' + str(e))		
-			for filePath in args.XCI_copy_nca_update:
+			for filePath in args.XCI_copy_rhfs0:
 				f = Fs.factory(filePath)
 				f.open(filePath, 'rb')
 				f.copy_root_hfs0(ofolder,buffer)
