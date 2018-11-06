@@ -247,7 +247,7 @@ class BaseFile:
 			ofs >>= 8
 		return bytes(ctr)
 		
-	def printInfo(self, indent = 0):
+	def printInfo(self, maxDepth = 3, indent = 0):
 		tabs = '\t' * indent
 		if self._path:
 			Print.info('%sFile Path: %s' % (tabs, self._path))

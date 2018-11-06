@@ -56,7 +56,7 @@ if __name__ == '__main__':
 		parser.add_argument('--setcgame_nca', nargs='+', help='Set a single nca in an nsp card')	
 		parser.add_argument('--cardstate', nargs='+', help='Returns value for isgamecard flag from an nca')	
 		
-		# Copy functions
+		# NSP Copy functions
 		parser.add_argument('--NSP_copy_ticket', nargs='+', help='Extracts ticket from target nsp')
 		parser.add_argument('--NSP_copy_nca', nargs='+', help='Extracts all nca files from target nsp')	
 		parser.add_argument('--NSP_copy_other', nargs='+', help='Extracts all kinds of files different from nca or ticket from target nsp')
@@ -64,7 +64,15 @@ if __name__ == '__main__':
 		parser.add_argument('--NSP_copy_cert', nargs='+', help='Extracts cert files from target nsp')
 		parser.add_argument('--NSP_copy_jpg', nargs='+', help='Extracts jpg files from target nsp')	
 		parser.add_argument('--NSP_copy_cnmt', nargs='+', help='Extracts cnmt files from target nsp')
-		parser.add_argument('--NSP_copy_ncap', nargs='+', help='Extracts ncap files from target nsp')			
+		parser.add_argument('--NSP_copy_ncap', nargs='+', help='Extracts ncap files from target nsp')
+		
+		# XCI Copy functions
+		parser.add_argument('--XCI_copy_hfs0', nargs='+', help='Extracts hfs0 partition files from target xci')
+		parser.add_argument('--XCI_c_hfs0_secure', nargs='+', help='Extracts secure hfs0 partition files from target xci')
+		parser.add_argument('--XCI_c_hfs0_normal', nargs='+', help='Extracts normal hfs0 partition files from target xci')
+		parser.add_argument('--XCI_c_hfs0_update', nargs='+', help='Extracts update hfs0 partition files from target xci')
+		parser.add_argument('--XCI_copy_nca_secure', nargs='+', help='Extract nca from secure partition')
+		parser.add_argument('--XCI_copy_nca_update', nargs='+', help='Extract nca from update partition')
 
 		# Dedicated copy functions. NCA Types. 
 		parser.add_argument('--NSP_copy_nca_meta', nargs='+', help='Extracts nca files with type meta from target nsp')
@@ -319,6 +327,129 @@ if __name__ == '__main__':
 					f.close()
 				except BaseException as e:
 					Print.error('Exception: ' + str(e))	
+					
+		# ...................................................................						
+		# Copy all hfs0 partitions (update, normal,secure,logo) from XCI file
+		# ...................................................................	
+		if args.XCI_copy_hfs0:
+			for input in args.ofolder:
+				try:
+					ofolder = input
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))	
+			for input in args.buffer:
+				try:
+					buffer = input
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))		
+			for filePath in args.XCI_copy_hfs0:
+				f = Fs.factory(filePath)
+				f.open(filePath, 'rb')
+				f.copy_hfs0(ofolder,buffer,"all")
+				f.close()
+
+		# ...........................................						
+		# Copy update partition from XCI file as hfs0
+		# ...........................................	
+		if args.XCI_c_hfs0_update:
+			for input in args.ofolder:
+				try:
+					ofolder = input
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))	
+			for input in args.buffer:
+				try:
+					buffer = input
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))		
+			for filePath in args.XCI_c_hfs0_update:
+				f = Fs.factory(filePath)
+				f.open(filePath, 'rb')
+				f.copy_hfs0(ofolder,buffer,"update")
+				f.close()		
+				
+		# ...........................................						
+		# Copy normal partition from XCI file as hfs0
+		# ...........................................	
+		if args.XCI_c_hfs0_normal:
+			for input in args.ofolder:
+				try:
+					ofolder = input
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))	
+			for input in args.buffer:
+				try:
+					buffer = input
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))		
+			for filePath in args.XCI_c_hfs0_normal:
+				f = Fs.factory(filePath)
+				f.open(filePath, 'rb')
+				f.copy_hfs0(ofolder,buffer,"normal")
+				f.close()	
+
+		# ...........................................						
+		# Copy secure partition from XCI file as hfs0
+		# ...........................................	
+		if args.XCI_c_hfs0_secure:
+			for input in args.ofolder:
+				try:
+					ofolder = input
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))	
+			for input in args.buffer:
+				try:
+					buffer = input
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))		
+			for filePath in args.XCI_c_hfs0_secure:
+				f = Fs.factory(filePath)
+				f.open(filePath, 'rb')
+				f.copy_hfs0(ofolder,buffer,'secure')
+				f.close()						
+				
+		# ...........................................						
+		# Copy nca from secure partition from XCI 
+		# ...........................................	
+		if args.XCI_copy_nca_secure:
+			for input in args.ofolder:
+				try:
+					ofolder = input
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))	
+			for input in args.buffer:
+				try:
+					buffer = input
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))		
+			for filePath in args.XCI_copy_nca_secure:
+				f = Fs.factory(filePath)
+				f.open(filePath, 'rb')
+				f.copy_nca(ofolder,buffer,'secure')
+				f.close()						
+		
+		# ...........................................						
+		# Copy root.hfs0 from XCI 
+		# ...........................................	
+		if args.XCI_copy_nca_update:
+			for input in args.ofolder:
+				try:
+					ofolder = input
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))	
+			for input in args.buffer:
+				try:
+					buffer = input
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))		
+			for filePath in args.XCI_copy_nca_update:
+				f = Fs.factory(filePath)
+				f.open(filePath, 'rb')
+				f.copy_root_hfs0(ofolder,buffer)
+				f.close()			
+
+
+					
 		# ...................................................						
 		# Copy OTHER KIND OF FILES from NSP file
 		# ...................................................							

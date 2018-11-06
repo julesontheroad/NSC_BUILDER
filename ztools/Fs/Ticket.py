@@ -134,6 +134,15 @@ class Ticket(File):
 	def getMasterKeyRevision(self):
 		self.seekStart(0x145)
 		self.masterKeyRevision = self.readInt8() | self.readInt8()
+		if self.masterKeyRevision == 0:
+			self.rewind()
+			self.seekStart(0x144)
+			self.masterKeyRevision = self.readInt8() | self.readInt8()
+			if self.masterKeyRevision == 0:
+				filename = str(self._path)
+				filename = filename[:-4] 
+				filename = filename[-1] 
+				self.masterKeyRevision = int(filename) 
 		return self.masterKeyRevision
 
 	def setMasterKeyRevision(self, value):

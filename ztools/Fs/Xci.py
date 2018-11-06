@@ -1,6 +1,9 @@
 from binascii import hexlify as hx, unhexlify as uhx
-from Fs.File import File
 from Fs.Hfs0 import Hfs0
+from Fs.Ticket import Ticket
+from Fs.Nca import Nca
+from Fs.File import File
+import os
 import Print
 
 
@@ -116,16 +119,163 @@ class Xci(File):
 		self.seek(0xF000)
 		self.hfs0 = Hfs0(None, cryptoKey = None)
 		self.partition(0xf000, None, self.hfs0, cryptoKey = None)
+
+	def unpack(self, path):
+		os.makedirs(path, exist_ok=True)
+
+		for nspF in self.hfs0:
+			filePath = os.path.abspath(path + '/' + nspF._path)
+			f = open(filePath, 'wb')
+			nspF.rewind()
+			i = 0
+
+			pageSize = 0x10000
+
+			while True:
+				buf = nspF.read(pageSize)
+				if len(buf) == 0:
+					break
+				i += len(buf)
+				f.write(buf)
+			f.close()
+			Print.info(filePath)
 		
-	def printInfo(self, indent = 0):
+	def printInfo(self, maxDepth = 3, indent = 0):
 		tabs = '\t' * indent
 		Print.info('\n%sXCI Archive\n' % (tabs))
-		super(Xci, self).printInfo(indent)
+		super(Xci, self).printInfo(maxDepth, indent)
 		
 		Print.info(tabs + 'magic = ' + str(self.magic))
 		Print.info(tabs + 'titleKekIndex = ' + str(self.titleKekIndex))
 		
 		Print.info(tabs + 'gamecardCert = ' + str(hx(self.gamecardCert.magic + self.gamecardCert.unknown1 + self.gamecardCert.unknown2 + self.gamecardCert.data)))
 
-		self.hfs0.printInfo()
+		self.hfs0.printInfo(maxDepth, indent)
 
+
+	def copy_hfs0(self,ofolder,buffer,token):
+		indent = 1
+		tabs = '\t' * indent
+		if token == "all":
+			for nspF in self.hfs0:
+				nspF.rewind()
+				filename =  str(nspF._path)
+				outfolder = str(ofolder)+'/'
+				filepath = os.path.join(outfolder, filename)
+				if not os.path.exists(outfolder):
+					os.makedirs(outfolder)
+				fp = open(filepath, 'w+b')
+				nspF.rewind()
+				Print.info(tabs + 'Copying: ' + str(filename))
+				for data in iter(lambda: nspF.read(int(buffer)), ""):
+					fp.write(data)
+					fp.flush()
+					if not data:
+						break
+				fp.close()
+		else:
+			for nspF in self.hfs0:
+				if token == str(nspF._path):
+					nspF.rewind()
+					filename =  str(nspF._path)
+					outfolder = str(ofolder)+'/'
+					filepath = os.path.join(outfolder, filename)
+					if not os.path.exists(outfolder):
+						os.makedirs(outfolder)
+					fp = open(filepath, 'w+b')
+					nspF.rewind()
+					Print.info(tabs + 'Copying: ' + str(filename))
+					for data in iter(lambda: nspF.read(int(buffer)), ""):
+						fp.write(data)
+						fp.flush()
+						if not data:
+							break
+					fp.close()
+					
+	def copy_nca(self,ofolder,buffer,token):
+		indent = 1
+		tabs = '\t' * indent
+		for nspF in self.hfs0:
+			if token == str(nspF._path):
+				for nca in nspF:
+					if type(nca) == Nca:
+						nca.rewind()
+						filename =  str(nca._path)
+						outfolder = str(ofolder)+'/'
+						filepath = os.path.join(outfolder, filename)
+						if not os.path.exists(outfolder):
+							os.makedirs(outfolder)
+						fp = open(filepath, 'w+b')
+						nca.rewind()
+						Print.info(tabs + 'Copying: ' + str(filename))
+						for data in iter(lambda: nca.read(int(buffer)), ""):
+							fp.write(data)
+							fp.flush()
+							if not data:
+								break
+						fp.close()
+
+	def copy_ticket(self,ofolder,buffer,token):
+		indent = 1
+		tabs = '\t' * indent
+		for nspF in self.hfs0:
+			if token == str(nspF._path):
+				for nca in nspF:
+					if type(ticket) == Ticket:
+						ticket.rewind()
+						data = ticket.read()
+						filename =  str(ticket._path)
+						outfolder = str(ofolder)+'/'
+						filepath = os.path.join(outfolder, filename)
+						if not os.path.exists(outfolder):
+							os.makedirs(outfolder)
+						fp = open(str(filepath), 'w+b')
+						fp.write(data)
+						fp.flush()
+
+
+	def copy_other(self,ofolder,buffer,token):
+		indent = 1
+		tabs = '\t' * indent
+		for nspF in self.hfs0:
+			if token == str(nspF._path):
+				for file in self:
+					if type(file) == File:
+						file.rewind()
+						filename =  str(file._path)
+						outfolder = str(ofolder)+'/'
+						filepath = os.path.join(outfolder, filename)
+						if not os.path.exists(outfolder):
+							os.makedirs(outfolder)
+						fp = open(filepath, 'w+b')
+						file.rewind()
+						for data in iter(lambda: file.read(int(buffer)), ""):
+							fp.write(data)
+							fp.flush()
+							if not data:
+								break
+						fp.close()										
+						
+	def copy_root_hfs0(self,ofolder,buffer):
+		indent = 1
+		tabs = '\t' * indent
+		target=self.hfs0
+		target.rewind()
+		filename = 'root.hfs0'
+		outfolder = str(ofolder)+'/'
+		filepath = os.path.join(outfolder, filename)
+		if not os.path.exists(outfolder):
+			os.makedirs(outfolder)
+		fp = open(filepath, 'w+b')
+		target.rewind()
+		Print.info(tabs + 'Copying: ' + str(filename))
+		for data in iter(lambda: target.read(int(buffer)), ""):
+			fp.write(data)
+			fp.flush()
+			if not data:
+				break
+		fp.close()
+
+		
+		
+		
