@@ -11,7 +11,7 @@
 -------------------------------------------------------------------------------------
 "                             POWERED WITH NUT BY BLAWAR                            "
 "                             AND LUCA FRAGA'S HACBUILD                             "
-                                    VERSION 0.50                                     	
+                                    VERSION 0.60                                     	
 -------------------------------------------------------------------------------------                   
 Program's github: https://github.com/julesontheroad/NSC_BUILDER
 Revised hacbuild: https://github.com/julesontheroad/hacbuild
@@ -21,6 +21,18 @@ SciresM hactool : https://github.com/SciresM/hactool
 ---------------
 0. Changelog
 ---------------
+v0.60- Changed name to NSC_Builder (Nintendo Switch Cleaner and Builder)
+	   1.- Added nut options. Copy function with or without deltas
+		   It'll let you skip the deltas wich are not needed for xci files.
+		   For nsp files they serve to transform old updates into new ones
+		   so they install faster and old update doesn't stay in your system
+		   They're dissabled by default if you use nsp consider activating them.
+	   2.- Added direct extraction from xci files instead of using hactool so now
+		   extraction speed is linked to buffer.
+	   3.- Added a couple of fallbacks to detect masterkeyrev in non standard ticket
+		   formats and old ticket formats.
+	   4.- Minor code clean up and little fixes.
+
 v0.50- Changed name to NSC_Builder (Nintendo Switch Cleaner and Builder)
 	   1.- Added updated hacbuild.
 	   2.- Removed nstool and nspBuild
