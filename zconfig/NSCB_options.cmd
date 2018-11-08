@@ -25,8 +25,13 @@ set "hacbuild=ztools\hacbuild.exe"
 set "pycommand=py -3"
 ::Buffer for the copy functions. 
 ::Change the number for the number of bytes that works best for you
-::30720bytes=30kB
-set "buffer=-b 30720"
+::32768bytes=32kB
+set "buffer=-b 32768"
+::Copy function with or without deltas
+::--C_clean -> Copy and remove titlerights. Don't skips deltas
+::--C_clean_ND-> Copy and remove titlerights skipping deltas
+set "nf_cleaner=--C_clean_ND"
+
 ::--------------------------------------------------------------
 ::OPTION 4: IMPORTANT FILES
 ::--------------------------------------------------------------
