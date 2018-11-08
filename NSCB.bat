@@ -12,8 +12,6 @@ if exist "%op_file%" call "%op_file%"
 endlocal & ( 
 REM VARIABLES
 set "safe_var=%safe_var%"
-set "pycommand=%pycommand%"
-set "buffer=%buffer%"
 set "vrepack=%vrepack%"
 set "vrename=%vrename%"
 set "fi_rep=%fi_rep%"
@@ -22,6 +20,11 @@ set "manual_intro=%manual_intro%"
 REM set "trn_skip=%trn_skip%"
 REM set "updx_skip=%updx_skip%"
 REM set "ngx_skip=%ngx_skip%"
+
+REM Copy function
+set "pycommand=%pycommand%"
+set "buffer=%buffer%"
+set "nf_cleaner=%nf_cleaner%"
 
 REM PROGRAMS
 set "nut=%nut%"
@@ -107,7 +110,7 @@ if "%zip_restore%" EQU "true" ( set "ziptarget=%%f" )
 if "%zip_restore%" EQU "true" ( call :makezip )
 REM echo %safe_var%>safe.txt
 call :squirrell
-%pycommand% "%nut%" %buffer% -o "%w_folder%\secure" --NSP_c_clean "%%f"
+%pycommand% "%nut%" %buffer% -o "%w_folder%\secure" %nf_cleaner% "%%f"
 call :getname
 REM setlocal enabledelayedexpansion
 REM set vpack=!vrepack!
@@ -142,10 +145,10 @@ call :processing_message
 MD "%w_folder%"
 MD "%w_folder%\secure"
 call :getname
-echo ------------------------------------------------------------
-echo Extracting secure partition from xci with hactool by SciresM
-echo ------------------------------------------------------------
-%hactool% -k "%dec_keys%" -t xci --securedir="%w_folder%\secure" "%%f" >NUL 2>&1
+echo -------------------------------------
+echo Extracting secure partition from xci 
+echo -------------------------------------
+%pycommand% "%nut%" %buffer% -o "%w_folder%\secure" %nf_cleaner% "%%f"
 echo DONE
 if "%vrename%" EQU "true" ( call :addtags_from_xci )
 if "%vrepack%" EQU "nsp" ( call "%nsp_lib%" "convert" "%w_folder%" )
@@ -193,17 +196,17 @@ if "%zip_restore%" EQU "true" ( set "ziptarget=%%f" )
 if "%zip_restore%" EQU "true" ( call :makezip )
 ::echo %safe_var%>safe.txt
 call :squirrell
-%pycommand% "%nut%" %buffer% -o "%w_folder%\secure" --NSP_c_clean "%%f"
+%pycommand% "%nut%" %buffer% -o "%w_folder%\secure" %nf_cleaner% "%%f"
 )
 
 ::FOR XCI FILES
 for /r "%~1" %%f in (*.xci) do (
 cls
 call :program_logo
-echo ------------------------------------------------------------
-echo Extracting secure partition from xci with hactool by SciresM
-echo ------------------------------------------------------------
-%hactool% -k "%dec_keys%" -t xci --securedir="%w_folder%\secure" "%%f" >NUL 2>&1
+echo ------------------------------------
+echo Extracting secure partition from xci
+echo ------------------------------------
+%pycommand% "%nut%" %buffer% -o "%w_folder%\secure" %nf_cleaner% "%%f"
 echo DONE
 )
 if "%vrepack%" EQU "nsp" ( call "%nsp_lib%" "convert" "%w_folder%" )
@@ -244,7 +247,7 @@ set "showname=%orinput%"
 call :processing_message
 if exist "%w_folder%" rmdir /s /q "%w_folder%" >NUL 2>&1
 call :squirrell
-%pycommand% "%nut%" %buffer% -o "%w_folder%\secure" --NSP_c_clean "%~1"
+%pycommand% "%nut%" %buffer% -o "%w_folder%\secure" %nf_cleaner% "%~1"
 call :getname
 if "%zip_restore%" EQU "true" ( set "ziptarget=%~1" )
 if "%zip_restore%" EQU "true" ( call :makezip )
@@ -276,10 +279,10 @@ if exist "%w_folder%" rmdir /s /q "%w_folder%" >NUL 2>&1
 MD "%w_folder%"
 MD "%w_folder%\secure"
 call :getname
-echo ------------------------------------------------------------
-echo Extracting secure partition from xci with hactool by SciresM
-echo ------------------------------------------------------------
-%hactool% -k "%dec_keys%" -t xci --securedir="%w_folder%\secure" "%~1" >NUL 2>&1
+echo ------------------------------------
+echo Extracting secure partition from xci 
+echo ------------------------------------
+%pycommand% "%nut%" %buffer% -o "%w_folder%\secure" %nf_cleaner% "%~1"
 echo DONE
 if "%vrename%" EQU "true" call :addtags_from_xci
 if "%vrepack%" EQU "nsp" ( call "%nsp_lib%" "convert" "%w_folder%" )
@@ -502,7 +505,7 @@ call :processing_message
 
 if exist "%w_folder%" rmdir /s /q "%w_folder%" >NUL 2>&1
 call :squirrell
-%pycommand% "%nut%" %buffer% -o "%w_folder%\secure" --NSP_c_clean "%orinput%"
+%pycommand% "%nut%" %buffer% -o "%w_folder%\secure" %nf_cleaner% "%orinput%"
 call :getname
 
 if "%zip_restore%" EQU "true" ( call :makezip )
@@ -535,10 +538,10 @@ if exist "%w_folder%" rmdir /s /q "%w_folder%" >NUL 2>&1
 MD "%w_folder%"
 MD "%w_folder%\secure"
 call :getname
-echo ------------------------------------------------------------
-echo Extracting secure partition from xci with hactool by SciresM
-echo ------------------------------------------------------------
-%hactool% -k "%dec_keys%" -t xci --securedir="%w_folder%\secure" "%orinput%" >NUL 2>&1
+echo ------------------------------------
+echo Extracting secure partition from xci
+echo ------------------------------------
+%pycommand% "%nut%" %buffer% -o "%w_folder%\secure" %nf_cleaner% "%orinput%"
 echo DONE
 if "%vrename%" EQU "true" call :addtags_from_xci
 if "%vrepack%" EQU "nsp" ( call "%nsp_lib%" "convert" "%w_folder%" )
@@ -783,7 +786,7 @@ call :program_logo
 set "showname=%orinput%"
 call :processing_message
 call :squirrell
-%pycommand% "%nut%" %buffer% -o "%w_folder%\secure" --NSP_c_clean "%orinput%"
+%pycommand% "%nut%" %buffer% -o "%w_folder%\secure" %nf_cleaner% "%orinput%"
 if "%zip_restore%" EQU "true" ( set "ziptarget=%orinput%" )
 if "%zip_restore%" EQU "true" ( call :makezip )
 call :thumbup
@@ -801,10 +804,10 @@ MD "%w_folder%\secure" >NUL 2>&1
 MD "%w_folder%\normal" >NUL 2>&1
 MD "%w_folder%\update" >NUL 2>&1
 call :getname
-echo ------------------------------------------------------------
-echo Extracting secure partition from xci with hactool by SciresM
-echo ------------------------------------------------------------
-%hactool% -k "%dec_keys%" -t xci --securedir="%w_folder%\secure" "%orinput%" >NUL 2>&1
+echo ------------------------------------
+echo Extracting secure partition from xci
+echo ------------------------------------
+%pycommand% "%nut%" %buffer% -o "%w_folder%\secure" %nf_cleaner% "%orinput%"
 echo DONE
 call :thumbup
 call :delay
@@ -918,7 +921,7 @@ ECHO =============================     BY JULESONTHEROAD     ===================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                             POWERED WITH NUT BY BLAWAR                            "
 ECHO "                             AND LUCA FRAGA'S HACBUILD                             "
-ECHO                                     VERSION 0.50                                     	
+ECHO                                     VERSION 0.60                                     	
 ECHO -------------------------------------------------------------------------------------                   
 ECHO Program's github: https://github.com/julesontheroad/NSC_BUILDER
 ECHO Revised hacbuild: https://github.com/julesontheroad/hacbuild
