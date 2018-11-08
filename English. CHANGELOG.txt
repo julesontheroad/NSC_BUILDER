@@ -21,7 +21,7 @@ SciresM hactool : https://github.com/SciresM/hactool
 ---------------
 0. Changelog
 ---------------
-v0.60- Changed name to NSC_Builder (Nintendo Switch Cleaner and Builder)
+v0.60- Support for delta skipping and direct extraction
 	   1.- Added nut options. Copy function with or without deltas
 		   It'll let you skip the deltas wich are not needed for xci files.
 		   For nsp files they serve to transform old updates into new ones
