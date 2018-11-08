@@ -100,7 +100,9 @@ d.) 7zip: Program meant to compress and extract files in several formats. 7zip w
 https://www.7-zip.org/
 
 Thx to MadScript77 his great suggestions,specially the idea of profiles for the batch.
-Thx to Liam from old SH discord for always being helpfull.
+
+Thx to Liam and 0mm0 from old SH discord for always being helpfull.
+
 Thx to XCI-Explorer's creator StudentBlake since his program made easier for me to came up with the fix for hacbuild.
 
 Also thanks to all members from gbatemp, elotrolado.net and my friends at discord ;)
