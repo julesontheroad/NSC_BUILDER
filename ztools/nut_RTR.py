@@ -32,6 +32,7 @@ if __name__ == '__main__':
 		# INFORMATION
 		parser.add_argument('-i', '--info', help='show info about title or file')
 		parser.add_argument('--NSP_filelist', nargs='+', help='Prints file list in an nsp')
+		parser.add_argument('--Read_cnmt', nargs='+', help='Read cnmt file inside NSP\XCI')
 
 		# REPACK
 		parser.add_argument('-c', '--create', help='create / pack a NSP')
@@ -85,8 +86,9 @@ if __name__ == '__main__':
 		# Dedicated copy functions. TITLERIGHTS. 
 		parser.add_argument('--NSP_copy_tr_nca', nargs='+', help='Extracts nca files with titlerights from target nsp')
 		parser.add_argument('--NSP_copy_ntr_nca', nargs='+', help='Extracts nca files without titlerights from target nsp')
-		parser.add_argument('--NSP_c_clean', nargs='+', help='Extracts nca files and removes it.s titlerights from target nsp')
-		parser.add_argument('--NSP_c_KeyBlock', nargs='+', help='Extracts keyblock from nsca files with titlerigths  from target nsp')				
+		parser.add_argument('--NSP_c_KeyBlock', nargs='+', help='Extracts keyblock from nsca files with titlerigths  from target nsp')	
+		parser.add_argument('--C_clean', nargs='+', help='Extracts nca files and removes it.s titlerights from target NSP OR XCI')			
+		parser.add_argument('--C_clean_ND', nargs='+', help='Extracts nca files and removes it.s titlerights from target NSP OR XCI without deltas')		
 
 		# Combinations	
 		parser.add_argument('--placeholder_combo', nargs='+', help='Extracts nca files for placeholder nsp')
@@ -764,11 +766,12 @@ if __name__ == '__main__':
 					f.flush()
 					f.close()
 				except BaseException as e:
-					Print.error('Exception: ' + str(e))		
-		# ...................................................						
-		# Copy ALL NCA AND CLEAN TITLERIGHTS
-		# ...................................................					
-		if args.NSP_c_clean:		
+					Print.error('Exception: ' + str(e))	
+
+		# ..................................						
+		# Copy ALL NCA AND CLEAN TITLERIGHTS 
+		# ..................................					
+		if args.C_clean:		
 			for input in args.ofolder:
 				try:
 					ofolder = input
@@ -779,23 +782,91 @@ if __name__ == '__main__':
 					buffer = input
 				except BaseException as e:
 					Print.error('Exception: ' + str(e))	
-			for fileName in args.NSP_c_clean:
+			for filename in args.C_clean:
+				if filename.endswith('.nsp'):
+					try:
+						f = Fs.Nsp(filename, 'r+b')
+						if f.trights_set() == 'FALSE':
+							Print.info("NSP DOESN'T HAVE TITLERIGHTS")
+							f.copy_nca(ofolder,buffer)	
+						if f.trights_set() == 'TRUE':
+							if f.exist_ticket() == 'TRUE':
+								Print.info("NSP HAS TITLERIGHTS AND TICKET EXISTS")
+								f.cr_tr_nca(ofolder,buffer)
+							if f.exist_ticket() == 'FALSE':
+								Print.error('NSP FILE HAS TITLERIGHTS BUT NO TICKET')		
+						f.flush()
+						f.close()
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+				if filename.endswith('.xci'):
+					try:
+						f = Fs.factory(filename)
+						f.open(filename, 'rb')
+						if f.trights_set() == 'FALSE':
+							Print.info("XCI DOESN'T HAVE TITLERIGHTS")
+							f.copy_nca(ofolder,buffer,'secure')
+						if f.trights_set() == 'TRUE':
+							if f.exist_ticket() == 'TRUE':
+								Print.info("XCI HAS TITLERIGHTS AND TICKET EXISTS")
+								f.cr_tr_nca(ofolder,buffer)
+							if f.exist_ticket() == 'FALSE':
+								Print.error('XCI FILE HAS TITLERIGHTS BUT NO TICKET')		
+						f.flush()
+						f.close()
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+			
+		# ...................................................						
+		# Copy ALL NCA AND CLEAN TITLERIGHTS WITHOUT DELTAS
+		# ...................................................					
+		if args.C_clean_ND:		
+			for input in args.ofolder:
 				try:
-					f = Fs.Nsp(fileName, 'r+b')
-					if f.trights_set() == 'FALSE':
-						Print.info("NSP DOESN'T HAVE TITLERIGHTS")
-						f.copy_nca(ofolder,buffer)	
-					if f.trights_set() == 'TRUE':
-						if f.exist_ticket() == 'TRUE':
-							Print.info("NSP HAS TITLERIGHTS AND TICKET EXISTS")
-							f.copyandremove_tr_nca(ofolder,buffer)
-						if f.exist_ticket() == 'FALSE':
-							Print.error('NSP FILE HAS TITLERIGHTS BUT NO TICKET')		
-					f.flush()
-					f.close()
+					ofolder = input
 				except BaseException as e:
 					Print.error('Exception: ' + str(e))	
-					
+			for input in args.buffer:
+				try:
+					buffer = input
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))	
+			for filename in args.C_clean_ND:
+				if filename.endswith('.nsp'):
+					try:
+						f = Fs.Nsp(filename, 'r+b')
+						if f.trights_set() == 'FALSE':
+							Print.info("NSP DOESN'T HAVE TITLERIGHTS")
+							f.copy_nca_nd(ofolder,buffer)	
+						if f.trights_set() == 'TRUE':
+							if f.exist_ticket() == 'TRUE':
+								Print.info("NSP HAS TITLERIGHTS AND TICKET EXISTS")
+								f.cr_tr_nca_nd(ofolder,buffer)
+							if f.exist_ticket() == 'FALSE':
+								Print.error('NSP FILE HAS TITLERIGHTS BUT NO TICKET')		
+						f.flush()
+						f.close()
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+				if filename.endswith('.xci'):
+					try:
+						f = Fs.factory(filename)
+						f.open(filename, 'rb')
+						if f.trights_set() == 'FALSE':
+							Print.info("XCI DOESN'T HAVE TITLERIGHTS")
+							f.copy_nca_nd(ofolder,buffer)	
+						if f.trights_set() == 'TRUE':
+							if f.exist_ticket() == 'TRUE':
+								Print.info("XCI HAS TITLERIGHTS AND TICKET EXISTS")
+								f.cr_tr_nca_nd(ofolder,buffer)
+							if f.exist_ticket() == 'FALSE':
+								Print.error('XCI FILE HAS TITLERIGHTS BUT NO TICKET')		
+						f.flush()
+						f.close()
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+
+	
 		# ........................................................						
 		# Copy keyblock from nca files with titlerights from a nsp
 		# ........................................................						
@@ -953,6 +1024,9 @@ if __name__ == '__main__':
 			#	Print.info(filePath)
 
 # INFORMATION
+		# ...................................................						
+		# Show nsp filelist
+		# ...................................................	
 		if args.NSP_filelist:
 			for fileName in args.NSP_filelist:
 				try:
@@ -962,6 +1036,9 @@ if __name__ == '__main__':
 					f.close()
 				except BaseException as e:
 					Print.error('Exception: ' + str(e))
+		# ...................................................						
+		# Show info
+		# ...................................................					
 		if args.info:
 			print(str(len(args.info)))
 			if re.search(r'^[A-Fa-f0-9]+$', args.info.strip(), re.I | re.M | re.S):
@@ -982,8 +1059,31 @@ if __name__ == '__main__':
 						Print.info('min: ' + str(j.readInt64()))
 				#f.flush()
 				#f.close()
-				'''								
-		
+				'''				
+		# ...................................................						
+		# Read cnmt inside nsp or xci
+		# ...................................................					
+
+		if args.Read_cnmt:
+			for filename in args.Read_cnmt:
+				if filename.endswith('.nsp'):
+					try:
+						f = Fs.Nsp(filename, 'r+b')
+						f.read_cnmt()
+						f.flush()
+						f.close()
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+				if filename.endswith('.xci'):
+					try:
+						f = Fs.factory(filename)
+						f.open(filename, 'rb')
+						f.read_cnmt()
+						f.flush()
+						f.close()														
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+
 		Status.close()
 	
 	except KeyboardInterrupt:
@@ -994,5 +1094,8 @@ if __name__ == '__main__':
 		Status.close()
 		raise
 
+		
+		
+		
 
 

@@ -455,27 +455,6 @@ class Nsp(Pfs0):
 				fp.flush()
 				fp.close()
 
-	def copy_nca(self,ofolder,buffer):
-		indent = 1
-		tabs = '\t' * indent
-		for nca in self:
-			if type(nca) == Nca:
-				nca.rewind()
-				filename =  str(nca._path)
-				outfolder = str(ofolder)+'/'
-				filepath = os.path.join(outfolder, filename)
-				if not os.path.exists(outfolder):
-					os.makedirs(outfolder)
-				fp = open(filepath, 'w+b')
-				nca.rewind()
-				Print.info(tabs + 'Copying: ' + str(filename))
-				for data in iter(lambda: nca.read(int(buffer)), ""):
-					fp.write(data)
-					fp.flush()
-					if not data:
-						break
-				fp.close()
-				
 	def copy_nca_control(self,ofolder,buffer):
 		for nca in self:
 			if type(nca) == Nca:
@@ -768,8 +747,90 @@ class Nsp(Pfs0):
 							break
 					fp.close()
 
+	def copy_ndata(self,ofolder,buffer):
+		for nca in self:
+			if type(nca) == Nca:
+				if 	str(nca.header.contentType) == 'Content.DATA':
+					for f in nca:
+						for file in f:
+							nca.rewind()
+							f.rewind()
+							file.rewind()
+							filename =  str(file._path)
+							outfolder = str(ofolder)+'/'
+							filepath = os.path.join(outfolder, filename)
+							if not os.path.exists(outfolder):
+								os.makedirs(outfolder)
+							fp = open(filepath, 'w+b')
+							nca.rewind()
+							f.rewind()	
+							file.rewind()								
+							for data in iter(lambda:file.read(int(buffer)), ""):
+								fp.write(data)
+								fp.flush()
+								if not data:
+									break
+							fp.close()					
+
+
+#Copy nca files						
+	def copy_nca(self,ofolder,buffer):
+		indent = 1
+		tabs = '\t' * indent
+		for nca in self:
+			if type(nca) == Nca:
+				nca.rewind()
+				filename =  str(nca._path)
+				outfolder = str(ofolder)+'/'
+				filepath = os.path.join(outfolder, filename)
+				if not os.path.exists(outfolder):
+					os.makedirs(outfolder)
+				fp = open(filepath, 'w+b')
+				nca.rewind()
+				Print.info(tabs + 'Copying: ' + str(filename))
+				for data in iter(lambda: nca.read(int(buffer)), ""):
+					fp.write(data)
+					fp.flush()
+					if not data:
+						break
+				fp.close()
+															
+#Copy nca files skipping deltas
+	def copy_nca_nd(self,ofolder,buffer):
+		indent = 1
+		tabs = '\t' * indent
+		Print.info('Copying files: ')
+		for nca in self:
+			vfragment="false"
+			if type(nca) == Nca:
+				if 	str(nca.header.contentType) == 'Content.DATA':
+					for f in nca:
+							for file in f:
+								filename = str(file._path)
+								if filename=="fragment":
+									vfragment="true"
+				if str(vfragment)=="true":
+					Print.info('Skipping delta fragment: ' + str(nca._path))
+					continue
+				else:
+					nca.rewind()
+					filename =  str(nca._path)
+					outfolder = str(ofolder)+'/'
+					filepath = os.path.join(outfolder, filename)
+					if not os.path.exists(outfolder):
+						os.makedirs(outfolder)
+					fp = open(filepath, 'w+b')
+					nca.rewind()
+					Print.info(tabs + 'Copying: ' + str(filename))
+					for data in iter(lambda: nca.read(int(buffer)), ""):
+						fp.write(data)
+						fp.flush()
+						if not data:
+							break
+					fp.close()		
 					
-	def copyandremove_tr_nca(self,ofolder,buffer):
+#Copy and clean nca files			
+	def cr_tr_nca(self,ofolder,buffer):
 		indent = 1
 		tabs = '\t' * indent
 		ticket = self.ticket()
@@ -831,6 +892,80 @@ class Nsp(Pfs0):
 						fp.flush()
 						if not data:
 							break
+
+#Copy and clean nca files skipping deltas						
+	def cr_tr_nca_nd(self,ofolder,buffer):
+		indent = 1
+		tabs = '\t' * indent
+		ticket = self.ticket()
+		masterKeyRev = ticket.getMasterKeyRevision()
+		titleKeyDec = Keys.decryptTitleKey(ticket.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(masterKeyRev))
+		rightsId = ticket.getRightsId()
+		Print.info('rightsId =\t' + hex(rightsId))
+		Print.info('titleKeyDec =\t' + str(hx(titleKeyDec)))
+		Print.info('masterKeyRev =\t' + hex(masterKeyRev))
+		Print.info('Copying files: ')
+		for nca in self:
+			if type(nca) == Nca:
+				if nca.header.getCryptoType2() != masterKeyRev:
+					pass
+					raise IOError('Mismatched masterKeyRevs!')
+		
+		for nca in self:
+			vfragment="false"
+			if type(nca) == Nca:
+				if 	str(nca.header.contentType) == 'Content.DATA':
+					for f in nca:
+							for file in f:
+								filename = str(file._path)
+								if filename=="fragment":
+									vfragment="true"
+				if str(vfragment)=="true":
+					Print.info(tabs + 'Skipping delta fragment: ' + str(nca._path))
+					continue
+				else:
+					if nca.header.getRightsId() != 0:
+						nca.rewind()
+						filename =  str(nca._path)
+						outfolder = str(ofolder)+'/'
+						filepath = os.path.join(outfolder, filename)
+						if not os.path.exists(outfolder):
+							os.makedirs(outfolder)
+						fp = open(filepath, 'w+b')
+						nca.rewind()
+						Print.info(tabs + 'Copying: ' + str(filename))
+						for data in iter(lambda: nca.read(int(buffer)), ""):
+							fp.write(data)
+							fp.flush()
+							if not data:
+								break
+						fp.close()
+						target = Fs.Nca(filepath, 'r+b')
+						target.rewind()
+						Print.info(tabs + 'Removing titlerights for ' + str(filename))
+						Print.info(tabs + 'Writing masterKeyRev for %s, %d' % (str(nca._path),  masterKeyRev))
+						crypto = aes128.AESECB(Keys.keyAreaKey(Keys.getMasterKeyIndex(masterKeyRev), nca.header.keyIndex))
+						encKeyBlock = crypto.encrypt(titleKeyDec * 4)
+						target.header.setRightsId(0)
+						target.header.setKeyBlock(encKeyBlock)
+						Hex.dump(encKeyBlock)
+						Print.info('')						
+						target.close()
+					if nca.header.getRightsId() == 0:
+						nca.rewind()
+						filename =  str(nca._path)
+						outfolder = str(ofolder)+'/'
+						filepath = os.path.join(outfolder, filename)
+						if not os.path.exists(outfolder):
+							os.makedirs(outfolder)
+						fp = open(filepath, 'w+b')
+						nca.rewind()
+						Print.info(tabs + 'Copying: ' + str(filename))
+						for data in iter(lambda: nca.read(int(buffer)), ""):
+							fp.write(data)
+							fp.flush()
+							if not data:
+								break
 					
 	def copy_KeyBlock(self,ofolder):
 		for nca in self:
@@ -848,8 +983,8 @@ class Nsp(Pfs0):
 					fp = open(filepath, 'w+b')
 					fp.write(KeyBlock)
 					fp.flush()
-					fp.close()			
-				
+					fp.close()		
+			
 	def removeTitleRightsnca(self, masterKeyRev, titleKeyDec):
 		if not Titles.contains(self.titleId):
 			raise IOError('No title key found in database! ' + self.titleId)
@@ -989,6 +1124,8 @@ class Nsp(Pfs0):
 			if type(f) == Nca:
 				pass
 
+				
+#SIMPLE CHECKS						
 	def exist_control(self):
 		for nca in self:
 			if type(nca) == Nca:
@@ -1009,6 +1146,8 @@ class Nsp(Pfs0):
 				return 'TRUE'	
 		return 'FALSE'			
 
+
+#SIMPLE FILE-LIST			
 	def print_file_list(self):
 		for nca in self:
 			if type(nca) == Nca:
@@ -1026,7 +1165,72 @@ class Nsp(Pfs0):
 				filename =  str(file._path)
 				Print.info(str(filename))
 	
+#READ CNMT FILE WITHOUT EXTRACTION	
+	def read_cnmt(self):
+		for nca in self:
+			if type(nca) == Nca:
+				if 	str(nca.header.contentType) == 'Content.META':
+					for f in nca:
+						for cnmt in f:
+							nca.rewind()
+							f.rewind()
+							cnmt.rewind()
+							titleid=cnmt.readInt64()
+							titleversion = cnmt.read(0x4)
+							cnmt.rewind()
+							cnmt.seek(0xE)
+							offset=cnmt.readInt16()
+							content_entries=cnmt.readInt16()
+							meta_entries=cnmt.readInt16()
+							cnmt.rewind()
+							cnmt.seek(0x20)
+							original_ID=cnmt.readInt64()
+							min_sversion=cnmt.readInt64()
+							Print.info('')	
+							Print.info('...........................................')								
+							Print.info('Reading: ' + str(cnmt._path))
+							Print.info('...........................................')							
+							Print.info('titleid = ' + str(hx(titleid.to_bytes(8, byteorder='big'))))
+							Print.info('version = ' + str(int.from_bytes(titleversion, byteorder='little')))
+							Print.info('Table offset = '+ str(hx((offset+0x20).to_bytes(2, byteorder='big'))))
+							Print.info('number of content = '+ str(content_entries))
+							Print.info('number of meta entries = '+ str(meta_entries))
+							Print.info('Application id\Patch id = ' + str(hx(original_ID.to_bytes(8, byteorder='big'))))
+							Print.info('RequiredSystemVersion = ' + str(min_sversion))
+							cnmt.rewind()
+							cnmt.seek(0x20+offset)
+							for i in range(content_entries):
+								Print.info('........................')							
+								Print.info('Content number ' + str(i+1))
+								Print.info('........................')
+								vhash = cnmt.read(0x20)
+								Print.info('hash =\t' + str(hx(vhash)))
+								NcaId = cnmt.read(0x10)
+								Print.info('NcaId =\t' + str(hx(NcaId)))
+								size = cnmt.read(0x6)
+								Print.info('Size =\t' + str(int.from_bytes(size, byteorder='little', signed=True)))
+								ncatype = cnmt.read(0x1)
+								Print.info('ncatype = ' + str(int.from_bytes(ncatype, byteorder='little', signed=True)))
+								unknown = cnmt.read(0x1)									
+				
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+				
+				
+				
+				
 				
 				
 				

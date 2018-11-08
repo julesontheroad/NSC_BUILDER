@@ -209,7 +209,7 @@ class Ticket(File):
 		super(Ticket, self).printInfo(indent)
 		Print.info(tabs + 'signatureType = ' + str(self.signatureType))
 		Print.info(tabs + 'keyType = ' + str(self.keyType))
-		Print.info(tabs + 'masterKeyRev = ' + str(self.masterKeyRevision))
+		Print.info(tabs + 'masterKeyRev = ' + str(self.getMasterKeyRevision()))
 		Print.info(tabs + 'ticketId = ' + str(self.ticketId))
 		Print.info(tabs + 'deviceId = ' + str(self.deviceId))
 		Print.info(tabs + 'rightsId = ' + hex(self.getRightsId()))
