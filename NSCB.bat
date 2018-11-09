@@ -372,19 +372,19 @@ set bs=%bs:"=%
 if exist "%bs%\" goto checkfolder
 goto checkfile
 :checkfolder
-DIR /B /S "%bs%\*.nsp" >hlist.txt
-FINDSTR /L ".nsp" hlist.txt >>list.txt
+DIR /B /S "%bs%\*.nsp">hlist.txt
+FINDSTR /L ".nsp" hlist.txt>>list.txt
 del hlist.txt
-DIR /B /S "%bs%\*.xci" >hlist2.txt
-FINDSTR /L ".xci" hlist2.txt >>list.txt
+DIR /B /S "%bs%\*.xci">hlist2.txt
+FINDSTR /L ".xci" hlist2.txt>>list.txt
 del hlist2.txt
 goto checkagain
 :checkfile
-echo %bs% >>hlist.txt
-FINDSTR /L ".nsp" hlist.txt >>list.txt
+echo %bs%>>hlist.txt
+FINDSTR /L ".nsp" hlist.txt>>list.txt
 del hlist.txt
-echo %bs% >>hlist2.txt
-FINDSTR /L ".xci" hlist2.txt >>list.txt
+echo %bs%>>hlist2.txt
+FINDSTR /L ".xci" hlist2.txt>>list.txt
 del hlist2.txt
 goto checkagain
 echo.
@@ -409,7 +409,6 @@ if /i "%bs%"=="z" del list.txt
 if exist "%bs%\" goto checkfolder
 goto checkfile
 goto salida
-pause
 
 :r_files
 set /p bs="Input the number of files you want to remove (from bottom): "
@@ -481,10 +480,11 @@ for /f "tokens=*" %%f in (list.txt) do (
 set "name=%%~nf"
 set "filename=%%~nxf"
 set "orinput=%%f"
+set "orinput=%%f"
 if "%zip_restore%" EQU "true" ( set "ziptarget=%%f" )
 if "%%~nxf"=="%%~nf.nsp" call :nsp_manual
 if "%%~nxf"=="%%~nf.xci" call :xci_manual
-more +1 "list.txt" >"list.txt.new"
+more +1 "list.txt">"list.txt.new"
 move /y "list.txt.new" "list.txt" >nul
 call :contador_NF
 )
@@ -505,9 +505,9 @@ call :processing_message
 
 if exist "%w_folder%" rmdir /s /q "%w_folder%" >NUL 2>&1
 call :squirrell
+echo %pycommand% "%nut%" %buffer% -o "%w_folder%\secure" %nf_cleaner% "%orinput%"
 %pycommand% "%nut%" %buffer% -o "%w_folder%\secure" %nf_cleaner% "%orinput%"
 call :getname
-
 if "%zip_restore%" EQU "true" ( call :makezip )
 
 if "%vrename%" EQU "true" call :addtags_from_nsp
@@ -633,19 +633,19 @@ set bs=%bs:"=%
 if exist "%bs%\" goto multi_checkfolder
 goto multi_checkfile
 :multi_checkfolder
-DIR /B /S "%bs%\*.nsp" >hmlist.txt
-FINDSTR /L ".nsp" hmlist.txt >>mlist.txt
+DIR /B /S "%bs%\*.nsp">hmlist.txt
+FINDSTR /L ".nsp" hmlist.txt>>mlist.txt
 del hmlist.txt
-DIR /B /S "%bs%\*.xci" >hmlist2.txt
-FINDSTR /L ".xci" hmlist2.txt >>mlist.txt
+DIR /B /S "%bs%\*.xci">hmlist2.txt
+FINDSTR /L ".xci" hmlist2.txt>>mlist.txt
 del hmlist2.txt
 goto multi_checkagain
 :multi_checkfile
-echo %bs% >>hmlist.txt
-FINDSTR /L ".nsp" hmlist.txt >>mlist.txt
+echo %bs%>>hmlist.txt
+FINDSTR /L ".nsp" hmlist.txt>>mlist.txt
 del hmlist.txt
-echo %bs% >>hmlist2.txt
-FINDSTR /L ".xci" hmlist2.txt >>mlist.txt
+echo %bs%>>hmlist2.txt
+FINDSTR /L ".xci" hmlist2.txt>>mlist.txt
 del hmlist2.txt
 goto multi_checkagain
 echo.
@@ -672,7 +672,7 @@ if /i "%bs%"=="z" del multi_mlist.txt
 if exist "%bs%\" goto multi_checkfolder
 goto multi_checkfile
 goto salida
-pause
+
 
 :multi_r_files
 set /p bs="Input the number of files you want to remove (from bottom): "
@@ -751,7 +751,7 @@ set "filename=%%~nxf"
 set "orinput=%%f"
 if "%%~nxf"=="%%~nf.nsp" call :multi_nsp_manual
 if "%%~nxf"=="%%~nf.xci" call :multi_xci_manual
-more +1 "mlist.txt" >"mlist.txt.new"
+more +1 "mlist.txt">"mlist.txt.new"
 move /y "mlist.txt.new" "mlist.txt" >nul
 call :multi_contador_NF
 )
