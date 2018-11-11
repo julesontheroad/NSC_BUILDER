@@ -104,6 +104,7 @@ echo Auto-Mode. Individual repacking is set
 echo --------------------------------------
 echo.
 set "filename=%%~nf"
+set "orinput=%%f"
 set "showname=%orinput%"
 call :processing_message
 if "%zip_restore%" EQU "true" ( set "ziptarget=%%f" )
@@ -138,7 +139,7 @@ for /r "%~1" %%f in (*.xci) do (
 if exist "%w_folder%" rmdir /s /q "%w_folder%" >NUL 2>&1
 cls
 call :program_logo
-set "filename=%%~nxf"
+set "filename=%%~nf"
 set "orinput=%%f"
 set "showname=%orinput%"
 call :processing_message
@@ -237,6 +238,10 @@ call :program_logo
 if "%~x1"==".nsp" ( goto nsp )
 if "%~x1"==".xci" ( goto xci )
 if "%~x1"==".*" ( goto other )
+:other
+echo No valid file was dragged. The program only accepts xci or nsp files.
+echo You'll be redirected to manual mode.
+pause
 goto manual
 
 :nsp
@@ -499,6 +504,7 @@ goto salida
 
 :nsp_manual
 cls
+set "filename=%name%"
 call :program_logo
 set "showname=%orinput%"
 call :processing_message
@@ -531,6 +537,7 @@ exit /B
 :xci_manual
 ::FOR XCI FILES
 cls
+set "filename=%name%"
 call :program_logo
 set "showname=%orinput%"
 call :processing_message
@@ -815,10 +822,12 @@ exit /B
 
 :multi_contador_NF
 setlocal enabledelayedexpansion
-set "cmd=findstr /R /N "^^" "%~dp0mlist.txt" | find /C ":""
-for /f %%a in ('!cmd!') do set number=%%a
+set /a conta=0
+for /f "tokens=*" %%f in (mlist.txt) do (
+set /a conta=!conta! + 1
+)
 echo .................................................
-echo STILL %number% FILES TO PROCESS
+echo STILL !conta! FILES TO PROCESS
 echo .................................................
 PING -n 2 127.0.0.1 >NUL 2>&1
 set /a conta=0
@@ -921,7 +930,7 @@ ECHO =============================     BY JULESONTHEROAD     ===================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                             POWERED WITH NUT BY BLAWAR                            "
 ECHO "                             AND LUCA FRAGA'S HACBUILD                             "
-ECHO                                     VERSION 0.60                                     	
+ECHO                                     VERSION 0.61                                     	
 ECHO -------------------------------------------------------------------------------------                   
 ECHO Program's github: https://github.com/julesontheroad/NSC_BUILDER
 ECHO Revised hacbuild: https://github.com/julesontheroad/hacbuild
@@ -1066,6 +1075,7 @@ echo Program will exit now
 PING -n 2 127.0.0.1 >NUL 2>&1
 goto salida
 :salida
+
 exit
 
 
