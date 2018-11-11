@@ -27,7 +27,7 @@ v0.61- Mostly bugfixes.
 	   2.- Changed nca header check for xci extraction so it doesn't give issues in rev games.
 	   3.- Fixed naming issues in individual modes. Basically extension getting in final name.
 	   4.- Repacked again the dependencies bat since I forgot in last build.
-	   4.- Added optional example profiles for nsp and xci.
+	   5.- Added optional example profiles for nsp and xci.
 	       1.- NSP: 
 	        	auto-repack-> NSP
 	                extract with deltas
