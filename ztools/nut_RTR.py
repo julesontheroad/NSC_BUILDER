@@ -65,6 +65,7 @@ if __name__ == '__main__':
 		parser.add_argument('--NSP_copy_cert', nargs='+', help='Extracts cert files from target nsp')
 		parser.add_argument('--NSP_copy_jpg', nargs='+', help='Extracts jpg files from target nsp')	
 		parser.add_argument('--NSP_copy_cnmt', nargs='+', help='Extracts cnmt files from target nsp')
+		parser.add_argument('--copy_pfs0_meta', nargs='+', help='Extracts meta pfs0 from target nsp')
 		parser.add_argument('--NSP_copy_ncap', nargs='+', help='Extracts ncap files from target nsp')
 		
 		# XCI Copy functions
@@ -100,7 +101,6 @@ if __name__ == '__main__':
 		parser.add_argument('-o', '--ofolder', nargs='+', help='Set output folder for copy instructions')
 		parser.add_argument('-b', '--buffer', nargs='+', help='Set buffer for copy instructions')
 		parser.add_argument('-ext', '--external', nargs='+', help='Set original nsp or ticket for remove nca titlerights functions')
-
 		
 		args = parser.parse_args()
 
@@ -564,6 +564,29 @@ if __name__ == '__main__':
 					f.close()
 				except BaseException as e:
 					Print.error('Exception: ' + str(e))		
+					
+		# ...................................................						
+		# Copy pfs0 from NSP file
+		# ...................................................	
+		if args.copy_pfs0_meta:
+			for input in args.ofolder:
+				try:
+					ofolder = input
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))	
+			for input in args.buffer:
+				try:
+					buffer = input
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))				
+			for fileName in args.copy_pfs0_meta:
+				try:
+					f = Fs.Nsp(fileName, 'r+b')
+					f.copy_pfs0(ofolder,buffer)
+					f.flush()
+					f.close()
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))											
 					
 		# ...................................................						
 		# Copy control ncap files from NSP file

@@ -348,9 +348,10 @@ class Xci(File):
 						Print.info('masterKeyRev =\t' + hex(masterKeyRev))
 				for nca in nspF:
 					if type(nca) == Nca:
-						if nca.header.getCryptoType2() != masterKeyRev:
-							pass
-							raise IOError('Mismatched masterKeyRevs!')
+						if nca.header.getRightsId() != 0:
+							if nca.header.getCryptoType2() != masterKeyRev:
+								pass
+								raise IOError('Mismatched masterKeyRevs!')
 				for nca in nspF:
 					vfragment="false"
 					if type(nca) == Nca:
@@ -413,9 +414,10 @@ class Xci(File):
 						Print.info('masterKeyRev =\t' + hex(masterKeyRev))
 				for nca in nspF:
 					if type(nca) == Nca:
-						if nca.header.getCryptoType2() != masterKeyRev:
-							pass
-							raise IOError('Mismatched masterKeyRevs!')
+						if nca.header.getRightsId() != 0:
+							if nca.header.getCryptoType2() != masterKeyRev:
+								pass
+								raise IOError('Mismatched masterKeyRevs!')
 				for nca in nspF:
 					vfragment="false"
 					if type(nca) == Nca:

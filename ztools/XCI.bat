@@ -18,11 +18,13 @@ FINDSTR /I ".nca" "%w_folder%\lisfiles.txt">"%w_folder%\nca_list.txt"
 del "%w_folder%\lisfiles.txt"
 
 setlocal enabledelayedexpansion
-FINDSTR /R /N "^.*" "%w_folder%\nca_list.txt" | FIND /C ":">"%w_folder%\nca_number.txt"
+set nca_number=
+for /f "tokens=*" %%f in (%w_folder%\nca_list.txt) do (
+set /a nca_number=!nca_number! + 1
+)
 del "%w_folder%\nca_list.txt"
-set /p nca_number=<"%w_folder%\nca_number.txt"
-del "%w_folder%\nca_number.txt"
 ::echo !nca_number!
+
 if !nca_number! LEQ 3 goto c1dummy
 if !nca_number! LEQ 2 goto c2dummy
 if !nca_number! LEQ 1 goto c3dummy

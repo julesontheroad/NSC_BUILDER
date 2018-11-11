@@ -493,26 +493,27 @@ class Nsp(Pfs0):
 							break
 					fp.close()
 
-	def copy_pfs0(self,ofolder,buffer):
+	def copy_pfs0_meta(self,ofolder,buffer):
 		for nca in self:
 			if type(nca) == Nca:
-				for f in nca:
-					nca.rewind()
-					f.rewind()
-					filename =  str(f._path)
-					outfolder = str(ofolder)+'/'
-					filepath = os.path.join(outfolder, filename)
-					if not os.path.exists(outfolder):
-						os.makedirs(outfolder)
-					fp = open(filepath, 'w+b')
-					nca.rewind()
-					f.rewind()	
-					for data in iter(lambda:f.read(int(buffer)), ""):
-						fp.write(data)
-						fp.flush()
-						if not data:
-							break
-					fp.close()					
+				if 	str(nca.header.contentType) == 'Content.META':
+					for f in nca:
+						nca.rewind()
+						f.rewind()
+						filename =  'PFS0'
+						outfolder = str(ofolder)+'/'
+						filepath = os.path.join(outfolder, filename)
+						if not os.path.exists(outfolder):
+							os.makedirs(outfolder)
+						fp = open(filepath, 'w+b')
+						nca.rewind()
+						f.rewind()	
+						for data in iter(lambda:f.read(int(buffer)), ""):
+							fp.write(data)
+							fp.flush()
+							if not data:
+								break
+						fp.close()					
 						
 	def copy_cnmt(self,ofolder,buffer):
 		for nca in self:
