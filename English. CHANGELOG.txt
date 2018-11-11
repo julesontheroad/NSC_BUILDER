@@ -11,7 +11,7 @@
 -------------------------------------------------------------------------------------
 "                             POWERED WITH NUT BY BLAWAR                            "
 "                             AND LUCA FRAGA'S HACBUILD                             "
-                                    VERSION 0.60                                     	
+                                    VERSION 0.61                                     	
 -------------------------------------------------------------------------------------                   
 Program's github: https://github.com/julesontheroad/NSC_BUILDER
 Revised hacbuild: https://github.com/julesontheroad/hacbuild
@@ -21,6 +21,26 @@ SciresM hactool : https://github.com/SciresM/hactool
 ---------------
 0. Changelog
 ---------------
+v0.61- Mostly bugfixes.
+	   1.- Changed counter functions from "find /C" to other method for people with inverted 
+	       bar routes.
+	   2.- Changed nca header check for xci extraction so it doesn't give issues in rev games.
+	   3.- Fixed naming issues in individual modes. Basically extension getting in final name.
+	   4.- Repacked again the dependencies bat since I forgot in last build.
+	   4.- Added optional example profiles for nsp and xci.
+	       1.- NSP: 
+	        	auto-repack-> NSP
+	                extract with deltas
+			pack files in folders individually for auto mode
+			work folder -> NSCB_ntemp
+	       2.- XCI: 
+	        	auto-repack-> XCI
+	                extract without deltas
+			pack files in folders authomatically for auto mode
+			work folder -> NSCB_xtemp
+		Just take the content of the profile you want or both of them and put them in the
+		program root folder. Several profiles can be together.
+
 v0.60- Support for delta skipping and direct extraction
 	   1.- Added nut options. Copy function with or without deltas
 		   It'll let you skip the deltas wich are not needed for xci files.

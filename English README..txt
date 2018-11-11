@@ -11,7 +11,7 @@
 -------------------------------------------------------------------------------------
 "                             POWERED WITH NUT BY BLAWAR                            "
 "                             AND LUCA FRAGA'S HACBUILD                             "
-                                    VERSION 0.50                                     	
+                                    VERSION 0.61                                     	
 -------------------------------------------------------------------------------------                   
 Program's github: https://github.com/julesontheroad/NSC_BUILDER
 Revised hacbuild: https://github.com/julesontheroad/hacbuild
@@ -73,6 +73,13 @@ builds.
 * OPTION 3: Nut options
   a) pycommand -> your command to invoke python 3 (by deffault py -3)
   b) buffer -> buffer in number of bytes for the copy functions
+  c) Copy function with or without deltas
+    --C_clean -> Copy and remove titlerights. Don't skips deltas
+    --C_clean_ND-> Copy and remove titlerights skipping deltas
+
+NOTE: By default is set to skip deltas, if you plan to repack to
+nsp it could be interesting to change this. (See changelog)
+
 * OPTION 4: Route to game_info.ini and keys.txt
 * OPTION 5: REPACK OPTIONS. Controls repack in auto mode.
 ::Repack option for auto-mode
@@ -97,6 +104,8 @@ in horizon. I suspect it may be a qlauncher limitation so it could work with the
 didn't test it.
 - If you pack an update that requires a superior firmware that you're in you won't be able to skip
 the update prompt.
+- It seems to either SX OS or Nintendo System is currently limit to 32gb cartriges maximum.
+- Lack of content splitting yet so rev xci games may do the final result fail. I'll fix this soon.
 
 ---------------------
 6. Planned features 
@@ -127,7 +136,7 @@ d.) 7zip: Program meant to compress and extract files in several formats
 https://www.7-zip.org/
 
 Thx to MadScript77 his great suggestions,specially the idea of profiles for the batch.
-Thx to Liam from old SH discord for always being helpfull.
+Thx to Liam and 0mn0 from old SH discord for always being helpfull.
 Thx to XCI-Explorer's creator StudentBlake since his program made easier for me to came up with the fix for hacbuild.
 
 Also thanks to all members from gbatemp, elotrolado.net and my friends at discord ;)
