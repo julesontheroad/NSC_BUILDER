@@ -550,6 +550,6 @@ class Nca(File):
 		for s in self:
 			s.printInfo(indent+1)
 			
-		self.read_pfs0_header()	
-		self.read_cnmt()
+		#self.read_pfs0_header()	
+		#self.read_cnmt()
 			

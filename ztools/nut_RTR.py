@@ -1005,7 +1005,7 @@ if __name__ == '__main__':
 		# Copy ALL NCA AND CLEAN TITLERIGHTS 
 		# ..................................					
 		if args.C_clean:
-		
+			metapatch = 'true'	
 			if args.ofolder:		
 				for input in args.ofolder:
 					try:
@@ -1032,11 +1032,11 @@ if __name__ == '__main__':
 						f = Fs.Nsp(filename, 'rb')
 						if f.trights_set() == 'FALSE':
 							Print.info("NSP DOESN'T HAVE TITLERIGHTS")
-							f.copy_nca(ofolder,buffer)	
+							f.copy_nca(ofolder,buffer,metapatch)	
 						if f.trights_set() == 'TRUE':
 							if f.exist_ticket() == 'TRUE':
 								Print.info("NSP HAS TITLERIGHTS AND TICKET EXISTS")
-								f.cr_tr_nca(ofolder,buffer)
+								f.cr_tr_nca(ofolder,buffer,metapatch)
 							if f.exist_ticket() == 'FALSE':
 								Print.error('NSP FILE HAS TITLERIGHTS BUT NO TICKET')		
 						f.flush()
@@ -1049,11 +1049,11 @@ if __name__ == '__main__':
 						f.open(filename, 'rb')
 						if f.trights_set() == 'FALSE':
 							Print.info("XCI DOESN'T HAVE TITLERIGHTS")
-							f.copy_nca(ofolder,buffer,'secure')
+							f.copy_nca(ofolder,buffer,'secure',metapatch)
 						if f.trights_set() == 'TRUE':
 							if f.exist_ticket() == 'TRUE':
 								Print.info("XCI HAS TITLERIGHTS AND TICKET EXISTS")
-								f.cr_tr_nca(ofolder,buffer)
+								f.cr_tr_nca(ofolder,buffer,metapatch)
 							if f.exist_ticket() == 'FALSE':
 								Print.error('XCI FILE HAS TITLERIGHTS BUT NO TICKET')		
 						f.flush()
@@ -1065,7 +1065,7 @@ if __name__ == '__main__':
 		# Copy ALL NCA AND CLEAN TITLERIGHTS WITHOUT DELTAS
 		# ...................................................					
 		if args.C_clean_ND:
-		
+			metapatch = 'true'	
 			if args.ofolder:		
 				for input in args.ofolder:
 					try:
@@ -1092,11 +1092,11 @@ if __name__ == '__main__':
 						f = Fs.Nsp(filename, 'rb')
 						if f.trights_set() == 'FALSE':
 							Print.info("NSP DOESN'T HAVE TITLERIGHTS")
-							f.cr_tr_nca_upver(ofolder,buffer)	
+							f.copy_nca_nd(ofolder,buffer,metapatch)	
 						if f.trights_set() == 'TRUE':
 							if f.exist_ticket() == 'TRUE':
 								Print.info("NSP HAS TITLERIGHTS AND TICKET EXISTS")
-								f.cr_tr_nca_nd_upver(ofolder,buffer)
+								f.cr_tr_nca_nd(ofolder,buffer,metapatch)
 							if f.exist_ticket() == 'FALSE':
 								Print.error('NSP FILE HAS TITLERIGHTS BUT NO TICKET')		
 						f.flush()
@@ -1109,11 +1109,11 @@ if __name__ == '__main__':
 						f.open(filename, 'rb')
 						if f.trights_set() == 'FALSE':
 							Print.info("XCI DOESN'T HAVE TITLERIGHTS")
-							f.cr_tr_nca_upver(ofolder,buffer)	
+							f.copy_nca_nd(ofolder,buffer,metapatch)	
 						if f.trights_set() == 'TRUE':
 							if f.exist_ticket() == 'TRUE':
 								Print.info("XCI HAS TITLERIGHTS AND TICKET EXISTS")
-								f.cr_tr_nca_nd_upver(ofolder,buffer)
+								f.cr_tr_nca_nd(ofolder,buffer,metapatch)
 							if f.exist_ticket() == 'FALSE':
 								Print.error('XCI FILE HAS TITLERIGHTS BUT NO TICKET')		
 						f.flush()
@@ -1434,7 +1434,6 @@ if __name__ == '__main__':
 						os.rename(filename, newpath)
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
-
 		Status.close()
 	
 	except KeyboardInterrupt:
