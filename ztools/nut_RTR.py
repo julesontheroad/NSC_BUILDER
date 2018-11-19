@@ -21,6 +21,8 @@ import Config
 import Print
 import Status
 import Nsps
+from hashlib import sha256
+from pathlib import Path
 
 
 if __name__ == '__main__':
@@ -33,7 +35,8 @@ if __name__ == '__main__':
 		parser.add_argument('-i', '--info', help='show info about title or file')
 		parser.add_argument('--NSP_filelist', nargs='+', help='Prints file list in an nsp')
 		parser.add_argument('--Read_cnmt', nargs='+', help='Read cnmt file inside NSP\XCI')
-
+		parser.add_argument('--update_hash', nargs='+', help='Read cnmt file inside NSP\XCI')	
+		
 		# REPACK
 		parser.add_argument('-c', '--create', help='create / pack a NSP')
 		
@@ -114,7 +117,7 @@ if __name__ == '__main__':
 		if args.ncatitleid:
 			for fileName in args.ncatitleid:		
 				try:
-					f = Fs.Nca(fileName, 'r+b')
+					f = Fs.Nca(fileName, 'rb')
 					f.printtitleId()
 					f.flush()
 					f.close()
@@ -126,7 +129,7 @@ if __name__ == '__main__':
 		if args.ncatype:
 			for fileName in args.ncatype:		
 				try:
-					f = Fs.Nca(fileName, 'r+b')
+					f = Fs.Nca(fileName, 'rb')
 					f.print_nca_type()
 					f.flush()
 					f.close()
@@ -138,7 +141,7 @@ if __name__ == '__main__':
 		if args.nsptitleid:
 			for fileName in args.nsptitleid:		
 				try:
-					f = Fs.Nsp(fileName, 'r+b')
+					f = Fs.Nsp(fileName, 'rb')
 					titleid=f.getnspid()
 					Print.info(titleid)
 					f.flush()
@@ -151,7 +154,7 @@ if __name__ == '__main__':
 		if args.nsptype:
 			for fileName in args.nsptype:		
 				try:
-					f = Fs.Nsp(fileName, 'r+b')
+					f = Fs.Nsp(fileName, 'rb')
 					titleid=f.getnspid()
 					if titleid[-3:] == '000':
 						if f.exist_control() == 'TRUE':
@@ -172,7 +175,7 @@ if __name__ == '__main__':
 		if args.nsp_htrights:
 			for fileName in args.nsp_htrights:		
 				try:
-					f = Fs.Nsp(fileName, 'r+b')
+					f = Fs.Nsp(fileName, 'rb')
 					if f.trights_set() == 'TRUE':
 						Print.info('TRUE')
 					if f.trights_set() == 'FALSE':
@@ -186,7 +189,7 @@ if __name__ == '__main__':
 		if args.nsp_hticket:
 			for fileName in args.nsp_hticket:		
 				try:
-					f = Fs.Nsp(fileName, 'r+b')
+					f = Fs.Nsp(fileName, 'rb')
 					if f.exist_ticket() == 'TRUE':
 						Print.info('TRUE')
 					if f.exist_ticket() == 'FALSE':
@@ -282,7 +285,7 @@ if __name__ == '__main__':
 		if args.cardstate:
 			for fileName in args.cardstate:		
 				try:
-					f = Fs.Nca(fileName, 'r+b')
+					f = Fs.Nca(fileName, 'rb')
 					f.cardstate()
 					f.flush()
 					f.close()
@@ -294,14 +297,19 @@ if __name__ == '__main__':
 		# Copy TICKET from NSP file
 		# ...................................................		
 		if args.NSP_copy_ticket:		
-			for input in args.ofolder:
-				try:
-					ofolder = input
-				except BaseException as e:
-					Print.error('Exception: ' + str(e))	
+			if args.ofolder:		
+				for input in args.ofolder:
+					try:
+						ofolder = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+			else:
+				for filename in args.NSP_copy_ticket:
+					dir=os.path.dirname(os.path.abspath(filename))
+					ofolder = dir+ '/'+ 'output'
 			for fileName in args.NSP_copy_ticket:
 				try:
-					f = Fs.Nsp(fileName, 'r+b')
+					f = Fs.Nsp(fileName, 'rb')
 					f.copy_ticket(ofolder)
 					f.flush()
 					f.close()
@@ -311,19 +319,28 @@ if __name__ == '__main__':
 		# Copy all NCA from NSP file
 		# ...................................................							
 		if args.NSP_copy_nca:
-			for input in args.ofolder:
-				try:
-					ofolder = input
-				except BaseException as e:
-					Print.error('Exception: ' + str(e))	
-			for input in args.buffer:
-				try:
-					buffer = input
-				except BaseException as e:
-					Print.error('Exception: ' + str(e))		
+			if args.ofolder:		
+				for input in args.ofolder:
+					try:
+						ofolder = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+			else:
+				for filename in args.NSP_copy_nca:
+					dir=os.path.dirname(os.path.abspath(filename))
+					ofolder = dir+ '/'+ 'output'
+					
+			if args.buffer:		
+				for input in args.buffer:
+					try:
+						buffer = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+			else:
+				buffer = 32768	
 			for fileName in args.NSP_copy_nca:
 				try:
-					f = Fs.Nsp(fileName, 'r+b')
+					f = Fs.Nsp(fileName, 'rb')
 					f.copy_nca(ofolder,buffer)
 					f.flush()
 					f.close()
@@ -334,16 +351,25 @@ if __name__ == '__main__':
 		# Copy all hfs0 partitions (update, normal,secure,logo) from XCI file
 		# ...................................................................	
 		if args.XCI_copy_hfs0:
-			for input in args.ofolder:
-				try:
-					ofolder = input
-				except BaseException as e:
-					Print.error('Exception: ' + str(e))	
-			for input in args.buffer:
-				try:
-					buffer = input
-				except BaseException as e:
-					Print.error('Exception: ' + str(e))		
+			if args.ofolder:		
+				for input in args.ofolder:
+					try:
+						ofolder = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+			else:
+				for filename in args.XCI_copy_hfs0:
+					dir=os.path.dirname(os.path.abspath(filename))
+					ofolder = dir+ '/'+ 'output'
+					
+			if args.buffer:		
+				for input in args.buffer:
+					try:
+						buffer = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+			else:
+				buffer = 32768				
 			for filePath in args.XCI_copy_hfs0:
 				f = Fs.factory(filePath)
 				f.open(filePath, 'rb')
@@ -354,16 +380,25 @@ if __name__ == '__main__':
 		# Copy update partition from XCI file as hfs0
 		# ...........................................	
 		if args.XCI_c_hfs0_update:
-			for input in args.ofolder:
-				try:
-					ofolder = input
-				except BaseException as e:
-					Print.error('Exception: ' + str(e))	
-			for input in args.buffer:
-				try:
-					buffer = input
-				except BaseException as e:
-					Print.error('Exception: ' + str(e))		
+			if args.ofolder:		
+				for input in args.ofolder:
+					try:
+						ofolder = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+			else:
+				for filename in args.XCI_c_hfs0_update:
+					dir=os.path.dirname(os.path.abspath(filename))
+					ofolder = dir+ '/'+ 'output'
+					
+			if args.buffer:		
+				for input in args.buffer:
+					try:
+						buffer = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+			else:
+				buffer = 32768			
 			for filePath in args.XCI_c_hfs0_update:
 				f = Fs.factory(filePath)
 				f.open(filePath, 'rb')
@@ -374,16 +409,25 @@ if __name__ == '__main__':
 		# Copy normal partition from XCI file as hfs0
 		# ...........................................	
 		if args.XCI_c_hfs0_normal:
-			for input in args.ofolder:
-				try:
-					ofolder = input
-				except BaseException as e:
-					Print.error('Exception: ' + str(e))	
-			for input in args.buffer:
-				try:
-					buffer = input
-				except BaseException as e:
-					Print.error('Exception: ' + str(e))		
+			if args.ofolder:		
+				for input in args.ofolder:
+					try:
+						ofolder = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+			else:
+				for filename in args.XCI_c_hfs0_normal:
+					dir=os.path.dirname(os.path.abspath(filename))
+					ofolder = dir+ '/'+ 'output'
+					
+			if args.buffer:		
+				for input in args.buffer:
+					try:
+						buffer = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+			else:
+				buffer = 32768			
 			for filePath in args.XCI_c_hfs0_normal:
 				f = Fs.factory(filePath)
 				f.open(filePath, 'rb')
@@ -394,16 +438,25 @@ if __name__ == '__main__':
 		# Copy secure partition from XCI file as hfs0
 		# ...........................................	
 		if args.XCI_c_hfs0_secure:
-			for input in args.ofolder:
-				try:
-					ofolder = input
-				except BaseException as e:
-					Print.error('Exception: ' + str(e))	
-			for input in args.buffer:
-				try:
-					buffer = input
-				except BaseException as e:
-					Print.error('Exception: ' + str(e))		
+			if args.ofolder:		
+				for input in args.ofolder:
+					try:
+						ofolder = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+			else:
+				for filename in args.XCI_c_hfs0_secure:
+					dir=os.path.dirname(os.path.abspath(filename))
+					ofolder = dir+ '/'+ 'output'
+					
+			if args.buffer:		
+				for input in args.buffer:
+					try:
+						buffer = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+			else:
+				buffer = 32768		
 			for filePath in args.XCI_c_hfs0_secure:
 				f = Fs.factory(filePath)
 				f.open(filePath, 'rb')
@@ -414,16 +467,25 @@ if __name__ == '__main__':
 		# Copy nca from secure partition from XCI 
 		# ...........................................	
 		if args.XCI_copy_nca_secure:
-			for input in args.ofolder:
-				try:
-					ofolder = input
-				except BaseException as e:
-					Print.error('Exception: ' + str(e))	
-			for input in args.buffer:
-				try:
-					buffer = input
-				except BaseException as e:
-					Print.error('Exception: ' + str(e))		
+			if args.ofolder:		
+				for input in args.ofolder:
+					try:
+						ofolder = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+			else:
+				for filename in args.XCI_copy_nca_secure:
+					dir=os.path.dirname(os.path.abspath(filename))
+					ofolder = dir+ '/'+ 'output'
+					
+			if args.buffer:		
+				for input in args.buffer:
+					try:
+						buffer = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+			else:
+				buffer = 32768			
 			for filePath in args.XCI_copy_nca_secure:
 				f = Fs.factory(filePath)
 				f.open(filePath, 'rb')
@@ -434,16 +496,25 @@ if __name__ == '__main__':
 		# Copy root.hfs0 from XCI 
 		# ...........................................	
 		if args.XCI_copy_rhfs0:
-			for input in args.ofolder:
-				try:
-					ofolder = input
-				except BaseException as e:
-					Print.error('Exception: ' + str(e))	
-			for input in args.buffer:
-				try:
-					buffer = input
-				except BaseException as e:
-					Print.error('Exception: ' + str(e))		
+			if args.ofolder:		
+				for input in args.ofolder:
+					try:
+						ofolder = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+			else:
+				for filename in args.XCI_copy_rhfs0:
+					dir=os.path.dirname(os.path.abspath(filename))
+					ofolder = dir+ '/'+ 'output'
+					
+			if args.buffer:		
+				for input in args.buffer:
+					try:
+						buffer = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+			else:
+				buffer = 32768		
 			for filePath in args.XCI_copy_rhfs0:
 				f = Fs.factory(filePath)
 				f.open(filePath, 'rb')
@@ -456,19 +527,28 @@ if __name__ == '__main__':
 		# Copy OTHER KIND OF FILES from NSP file
 		# ...................................................							
 		if args.NSP_copy_other:
-			for input in args.ofolder:
-				try:
-					ofolder = input
-				except BaseException as e:
-					Print.error('Exception: ' + str(e))	
-			for input in args.buffer:
-				try:
-					buffer = input
-				except BaseException as e:
-					Print.error('Exception: ' + str(e))				
+			if args.ofolder:		
+				for input in args.ofolder:
+					try:
+						ofolder = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+			else:
+				for filename in args.NSP_copy_other:
+					dir=os.path.dirname(os.path.abspath(filename))
+					ofolder = dir+ '/'+ 'output'
+					
+			if args.buffer:		
+				for input in args.buffer:
+					try:
+						buffer = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+			else:
+				buffer = 32768						
 			for fileName in args.NSP_copy_other:
 				try:
-					f = Fs.Nsp(fileName, 'r+b')
+					f = Fs.Nsp(fileName, 'rb')
 					f.copy_other(ofolder,buffer)
 					f.flush()
 					f.close()
@@ -479,19 +559,28 @@ if __name__ == '__main__':
 		# Copy XML from NSP file
 		# ...................................................	
 		if args.NSP_copy_xml:		
-			for input in args.ofolder:
-				try:
-					ofolder = input
-				except BaseException as e:
-					Print.error('Exception: ' + str(e))	
-			for input in args.buffer:
-				try:
-					buffer = input
-				except BaseException as e:
-					Print.error('Exception: ' + str(e))			
+			if args.ofolder:		
+				for input in args.ofolder:
+					try:
+						ofolder = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+			else:
+				for filename in args.NSP_copy_xml:
+					dir=os.path.dirname(os.path.abspath(filename))
+					ofolder = dir+ '/'+ 'output'
+					
+			if args.buffer:		
+				for input in args.buffer:
+					try:
+						buffer = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+			else:
+				buffer = 32768				
 			for fileName in args.NSP_copy_xml:
 				try:
-					f = Fs.Nsp(fileName, 'r+b')
+					f = Fs.Nsp(fileName, 'rb')
 					f.copy_xml(ofolder,buffer)
 					f.flush()
 					f.close()
@@ -501,19 +590,28 @@ if __name__ == '__main__':
 		# Copy CERT from NSP file
 		# ...................................................	
 		if args.NSP_copy_cert:
-			for input in args.ofolder:
-				try:
-					ofolder = input
-				except BaseException as e:
-					Print.error('Exception: ' + str(e))	
-			for input in args.buffer:
-				try:
-					buffer = input
-				except BaseException as e:
-					Print.error('Exception: ' + str(e))				
+			if args.ofolder:		
+				for input in args.ofolder:
+					try:
+						ofolder = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+			else:
+				for filename in args.NSP_copy_cert:
+					dir=os.path.dirname(os.path.abspath(filename))
+					ofolder = dir+ '/'+ 'output'
+					
+			if args.buffer:		
+				for input in args.buffer:
+					try:
+						buffer = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+			else:
+				buffer = 32768					
 			for fileName in args.NSP_copy_cert:
 				try:
-					f = Fs.Nsp(fileName, 'r+b')
+					f = Fs.Nsp(fileName, 'rb')
 					f.copy_nsp_cert(ofolder,buffer)
 					f.flush()
 					f.close()
@@ -523,19 +621,28 @@ if __name__ == '__main__':
 		# Copy JPG from NSP file
 		# ...................................................	
 		if args.NSP_copy_jpg:
-			for input in args.ofolder:
-				try:
-					ofolder = input
-				except BaseException as e:
-					Print.error('Exception: ' + str(e))	
-			for input in args.buffer:
-				try:
-					buffer = input
-				except BaseException as e:
-					Print.error('Exception: ' + str(e))				
+			if args.ofolder:		
+				for input in args.ofolder:
+					try:
+						ofolder = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+			else:
+				for filename in args.NSP_copy_jpg:
+					dir=os.path.dirname(os.path.abspath(filename))
+					ofolder = dir+ '/'+ 'output'
+					
+			if args.buffer:		
+				for input in args.buffer:
+					try:
+						buffer = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+			else:
+				buffer = 32768			
 			for fileName in args.NSP_copy_jpg:
 				try:
-					f = Fs.Nsp(fileName, 'r+b')
+					f = Fs.Nsp(fileName, 'rb')
 					f.copy_jpg(ofolder,buffer)
 					f.flush()
 					f.close()
@@ -546,19 +653,28 @@ if __name__ == '__main__':
 		# Copy meta cnmt files from NSP file
 		# ...................................................	
 		if args.NSP_copy_cnmt:
-			for input in args.ofolder:
-				try:
-					ofolder = input
-				except BaseException as e:
-					Print.error('Exception: ' + str(e))	
-			for input in args.buffer:
-				try:
-					buffer = input
-				except BaseException as e:
-					Print.error('Exception: ' + str(e))				
+			if args.ofolder:		
+				for input in args.ofolder:
+					try:
+						ofolder = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+			else:
+				for filename in args.NSP_copy_cnmt:
+					dir=os.path.dirname(os.path.abspath(filename))
+					ofolder = dir+ '/'+ 'output'
+					
+			if args.buffer:		
+				for input in args.buffer:
+					try:
+						buffer = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+			else:
+				buffer = 32768			
 			for fileName in args.NSP_copy_cnmt:
 				try:
-					f = Fs.Nsp(fileName, 'r+b')
+					f = Fs.Nsp(fileName, 'rb')
 					f.copy_cnmt(ofolder,buffer)
 					f.flush()
 					f.close()
@@ -569,20 +685,29 @@ if __name__ == '__main__':
 		# Copy pfs0 from NSP file
 		# ...................................................	
 		if args.copy_pfs0_meta:
-			for input in args.ofolder:
-				try:
-					ofolder = input
-				except BaseException as e:
-					Print.error('Exception: ' + str(e))	
-			for input in args.buffer:
-				try:
-					buffer = input
-				except BaseException as e:
-					Print.error('Exception: ' + str(e))				
+			if args.ofolder:		
+				for input in args.ofolder:
+					try:
+						ofolder = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+			else:
+				for filename in args.copy_pfs0_meta:
+					dir=os.path.dirname(os.path.abspath(filename))
+					ofolder = dir+ '/'+ 'output'
+					
+			if args.buffer:		
+				for input in args.buffer:
+					try:
+						buffer = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+			else:
+				buffer = 32768				
 			for fileName in args.copy_pfs0_meta:
 				try:
-					f = Fs.Nsp(fileName, 'r+b')
-					f.copy_pfs0(ofolder,buffer)
+					f = Fs.Nsp(fileName, 'rb')
+					f.copy_pfs0_meta(ofolder,buffer)
 					f.flush()
 					f.close()
 				except BaseException as e:
@@ -592,19 +717,28 @@ if __name__ == '__main__':
 		# Copy control ncap files from NSP file
 		# ...................................................	
 		if args.NSP_copy_ncap:
-			for input in args.ofolder:
-				try:
-					ofolder = input
-				except BaseException as e:
-					Print.error('Exception: ' + str(e))	
-			for input in args.buffer:
-				try:
-					buffer = input
-				except BaseException as e:
-					Print.error('Exception: ' + str(e))				
+			if args.ofolder:		
+				for input in args.ofolder:
+					try:
+						ofolder = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+			else:
+				for filename in args.NSP_copy_ncap:
+					dir=os.path.dirname(os.path.abspath(filename))
+					ofolder = dir+ '/'+ 'output'
+					
+			if args.buffer:		
+				for input in args.buffer:
+					try:
+						buffer = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+			else:
+				buffer = 32768				
 			for fileName in args.NSP_copy_ncap:
 				try:
-					f = Fs.Nsp(fileName, 'r+b')
+					f = Fs.Nsp(fileName, 'rb')
 					f.copy_ncap(ofolder,buffer)
 					f.flush()
 					f.close()
@@ -616,19 +750,28 @@ if __name__ == '__main__':
 		# Copy all META NCA from NSP file
 		# ...................................................	
 		if args.NSP_copy_nca_meta:
-			for input in args.ofolder:
-				try:
-					ofolder = input
-				except BaseException as e:
-					Print.error('Exception: ' + str(e))	
-			for input in args.buffer:
-				try:
-					buffer = input
-				except BaseException as e:
-					Print.error('Exception: ' + str(e))				
+			if args.ofolder:		
+				for input in args.ofolder:
+					try:
+						ofolder = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+			else:
+				for filename in args.NSP_copy_nca_meta:
+					dir=os.path.dirname(os.path.abspath(filename))
+					ofolder = dir+ '/'+ 'output'
+					
+			if args.buffer:		
+				for input in args.buffer:
+					try:
+						buffer = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+			else:
+				buffer = 32768				
 			for fileName in args.NSP_copy_nca_meta:
 				try:
-					f = Fs.Nsp(fileName, 'r+b')
+					f = Fs.Nsp(fileName, 'rb')
 					f.copy_nca_meta(ofolder,buffer)
 					f.flush()
 					f.close()
@@ -638,19 +781,28 @@ if __name__ == '__main__':
 		# Copy all CONTROL NCA from NSP file
 		# ...................................................	
 		if args.NSP_copy_nca_control:
-			for input in args.ofolder:
-				try:
-					ofolder = input
-				except BaseException as e:
-					Print.error('Exception: ' + str(e))	
-			for input in args.buffer:
-				try:
-					buffer = input
-				except BaseException as e:
-					Print.error('Exception: ' + str(e))				
+			if args.ofolder:		
+				for input in args.ofolder:
+					try:
+						ofolder = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+			else:
+				for filename in args.NSP_copy_nca_control:
+					dir=os.path.dirname(os.path.abspath(filename))
+					ofolder = dir+ '/'+ 'output'
+					
+			if args.buffer:		
+				for input in args.buffer:
+					try:
+						buffer = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+			else:
+				buffer = 32768				
 			for fileName in args.NSP_copy_nca_control:
 				try:
-					f = Fs.Nsp(fileName, 'r+b')
+					f = Fs.Nsp(fileName, 'rb')
 					f.copy_nca_control(ofolder,buffer)
 					f.flush()
 					f.close()
@@ -660,19 +812,28 @@ if __name__ == '__main__':
 		# Copy all MANUAL NCA from NSP file
 		# ...................................................	
 		if args.NSP_copy_nca_manual:
-			for input in args.ofolder:
-				try:
-					ofolder = input
-				except BaseException as e:
-					Print.error('Exception: ' + str(e))	
-			for input in args.buffer:
-				try:
-					buffer = input
-				except BaseException as e:
-					Print.error('Exception: ' + str(e))						
+			if args.ofolder:		
+				for input in args.ofolder:
+					try:
+						ofolder = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+			else:
+				for filename in args.NSP_copy_nca_manual:
+					dir=os.path.dirname(os.path.abspath(filename))
+					ofolder = dir+ '/'+ 'output'
+					
+			if args.buffer:		
+				for input in args.buffer:
+					try:
+						buffer = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+			else:
+				buffer = 32768						
 			for fileName in args.NSP_copy_nca_manual:
 				try:
-					f = Fs.Nsp(fileName, 'r+b')
+					f = Fs.Nsp(fileName, 'rb')
 					f.copy_nca_manual(ofolder,buffer)
 					f.flush()
 					f.close()
@@ -682,19 +843,28 @@ if __name__ == '__main__':
 		# Copy all PROGRAM NCA from NSP file
 		# ...................................................						
 		if args.NSP_copy_nca_program:
-			for input in args.ofolder:
-				try:
-					ofolder = input
-				except BaseException as e:
-					Print.error('Exception: ' + str(e))	
-			for input in args.buffer:
-				try:
-					buffer = input
-				except BaseException as e:
-					Print.error('Exception: ' + str(e))				
+			if args.ofolder:		
+				for input in args.ofolder:
+					try:
+						ofolder = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+			else:
+				for filename in args.NSP_copy_nca_program:
+					dir=os.path.dirname(os.path.abspath(filename))
+					ofolder = dir+ '/'+ 'output'
+					
+			if args.buffer:		
+				for input in args.buffer:
+					try:
+						buffer = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+			else:
+				buffer = 32768											
 			for fileName in args.NSP_copy_nca_program:
 				try:
-					f = Fs.Nsp(fileName, 'r+b')
+					f = Fs.Nsp(fileName, 'rb')
 					f.copy_nca_program(ofolder,buffer)
 					f.flush()
 					f.close()
@@ -704,19 +874,29 @@ if __name__ == '__main__':
 		# Copy all DATA NCA from NSP file
 		# ...................................................	
 		if args.NSP_copy_nca_data:	
-			for input in args.ofolder:
-				try:
-					ofolder = input
-				except BaseException as e:
-					Print.error('Exception: ' + str(e))	
-			for input in args.buffer:
-				try:
-					buffer = input
-				except BaseException as e:
-					Print.error('Exception: ' + str(e))				
+			if args.ofolder:		
+				for input in args.ofolder:
+					try:
+						ofolder = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+			else:
+				for filename in args.NSP_copy_nca_data:
+					dir=os.path.dirname(os.path.abspath(filename))
+					ofolder = dir+ '/'+ 'output'
+					
+			if args.buffer:		
+				for input in args.buffer:
+					try:
+						buffer = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+			else:
+				buffer = 32768
+											
 			for fileName in args.NSP_copy_nca_data:
 				try:
-					f = Fs.Nsp(fileName, 'r+b')
+					f = Fs.Nsp(fileName, 'rb')
 					f.copy_nca_data(ofolder,buffer)
 					f.flush()
 					f.close()
@@ -726,19 +906,29 @@ if __name__ == '__main__':
 		# Copy all PUBLIC DATA NCA from NSP file
 		# ...................................................	
 		if args.NSP_copy_nca_pdata:
-			for input in args.ofolder:
-				try:
-					ofolder = input
-				except BaseException as e:
-					Print.error('Exception: ' + str(e))	
-			for input in args.buffer:
-				try:
-					buffer = input
-				except BaseException as e:
-					Print.error('Exception: ' + str(e))				
+			if args.ofolder:		
+				for input in args.ofolder:
+					try:
+						ofolder = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+			else:
+				for filename in args.NSP_copy_nca_pdata:
+					dir=os.path.dirname(os.path.abspath(filename))
+					ofolder = dir+ '/'+ 'output'
+					
+			if args.buffer:		
+				for input in args.buffer:
+					try:
+						buffer = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+			else:
+				buffer = 32768
+								
 			for fileName in args.NSP_copy_nca_pdata:
 				try:
-					f = Fs.Nsp(fileName, 'r+b')
+					f = Fs.Nsp(fileName, 'rb')
 					f.copy_nca_pdata(ofolder,buffer)
 					f.flush()
 					f.close()
@@ -750,19 +940,29 @@ if __name__ == '__main__':
 		# Copy all NCA WITH TITLERIGHTS from target NSP
 		# ...................................................			
 		if args.NSP_copy_tr_nca:
-			for input in args.ofolder:
-				try:
-					ofolder = input
-				except BaseException as e:
-					Print.error('Exception: ' + str(e))	
-			for input in args.buffer:
-				try:
-					buffer = input
-				except BaseException as e:
-					Print.error('Exception: ' + str(e))				
+			if args.ofolder:		
+				for input in args.ofolder:
+					try:
+						ofolder = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+			else:
+				for filename in args.NSP_copy_tr_nca:
+					dir=os.path.dirname(os.path.abspath(filename))
+					ofolder = dir+ '/'+ 'output'
+					
+			if args.buffer:		
+				for input in args.buffer:
+					try:
+						buffer = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+			else:
+				buffer = 32768
+					
 			for fileName in args.NSP_copy_tr_nca:
 				try:
-					f = Fs.Nsp(fileName, 'r+b')
+					f = Fs.Nsp(fileName, 'rb')
 					f.copy_tr_nca(ofolder,buffer)
 					f.flush()
 					f.close()
@@ -772,19 +972,29 @@ if __name__ == '__main__':
 		# Copy all NCA WITHOUT TITLERIGHTS from target NSP
 		# ...................................................						
 		if args.NSP_copy_ntr_nca:		
-			for input in args.ofolder:
-				try:
-					ofolder = input
-				except BaseException as e:
-					Print.error('Exception: ' + str(e))	
-			for input in args.buffer:
-				try:
-					buffer = input
-				except BaseException as e:
-					Print.error('Exception: ' + str(e))	
+			if args.ofolder:		
+				for input in args.ofolder:
+					try:
+						ofolder = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+			else:
+				for filename in args.NSP_copy_ntr_nca:
+					dir=os.path.dirname(os.path.abspath(filename))
+					ofolder = dir+ '/'+ 'output'
+					
+			if args.buffer:		
+				for input in args.buffer:
+					try:
+						buffer = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+			else:
+				buffer = 32768
+				
 			for fileName in args.NSP_copy_ntr_nca:
 				try:
-					f = Fs.Nsp(fileName, 'r+b')
+					f = Fs.Nsp(fileName, 'rb')
 					f.copy_ntr_nca(ofolder,buffer)
 					f.flush()
 					f.close()
@@ -794,21 +1004,32 @@ if __name__ == '__main__':
 		# ..................................						
 		# Copy ALL NCA AND CLEAN TITLERIGHTS 
 		# ..................................					
-		if args.C_clean:		
-			for input in args.ofolder:
-				try:
-					ofolder = input
-				except BaseException as e:
-					Print.error('Exception: ' + str(e))	
-			for input in args.buffer:
-				try:
-					buffer = input
-				except BaseException as e:
-					Print.error('Exception: ' + str(e))	
+		if args.C_clean:
+		
+			if args.ofolder:		
+				for input in args.ofolder:
+					try:
+						ofolder = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+			else:
+				for filename in args.C_clean:
+					dir=os.path.dirname(os.path.abspath(filename))
+					ofolder = dir+ '/'+ 'output'
+					
+			if args.buffer:		
+				for input in args.buffer:
+					try:
+						buffer = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+			else:
+				buffer = 32768
+				
 			for filename in args.C_clean:
 				if filename.endswith('.nsp'):
 					try:
-						f = Fs.Nsp(filename, 'r+b')
+						f = Fs.Nsp(filename, 'rb')
 						if f.trights_set() == 'FALSE':
 							Print.info("NSP DOESN'T HAVE TITLERIGHTS")
 							f.copy_nca(ofolder,buffer)	
@@ -843,28 +1064,39 @@ if __name__ == '__main__':
 		# ...................................................						
 		# Copy ALL NCA AND CLEAN TITLERIGHTS WITHOUT DELTAS
 		# ...................................................					
-		if args.C_clean_ND:		
-			for input in args.ofolder:
-				try:
-					ofolder = input
-				except BaseException as e:
-					Print.error('Exception: ' + str(e))	
-			for input in args.buffer:
-				try:
-					buffer = input
-				except BaseException as e:
-					Print.error('Exception: ' + str(e))	
+		if args.C_clean_ND:
+		
+			if args.ofolder:		
+				for input in args.ofolder:
+					try:
+						ofolder = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+			else:
+				for filename in args.C_clean_ND:
+					dir=os.path.dirname(os.path.abspath(filename))
+					ofolder = dir+ '/'+ 'output'
+					
+			if args.buffer:		
+				for input in args.buffer:
+					try:
+						buffer = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+			else:
+				buffer = 32768
+				
 			for filename in args.C_clean_ND:
 				if filename.endswith('.nsp'):
 					try:
-						f = Fs.Nsp(filename, 'r+b')
+						f = Fs.Nsp(filename, 'rb')
 						if f.trights_set() == 'FALSE':
 							Print.info("NSP DOESN'T HAVE TITLERIGHTS")
-							f.copy_nca_nd(ofolder,buffer)	
+							f.cr_tr_nca_upver(ofolder,buffer)	
 						if f.trights_set() == 'TRUE':
 							if f.exist_ticket() == 'TRUE':
 								Print.info("NSP HAS TITLERIGHTS AND TICKET EXISTS")
-								f.cr_tr_nca_nd(ofolder,buffer)
+								f.cr_tr_nca_nd_upver(ofolder,buffer)
 							if f.exist_ticket() == 'FALSE':
 								Print.error('NSP FILE HAS TITLERIGHTS BUT NO TICKET')		
 						f.flush()
@@ -877,11 +1109,11 @@ if __name__ == '__main__':
 						f.open(filename, 'rb')
 						if f.trights_set() == 'FALSE':
 							Print.info("XCI DOESN'T HAVE TITLERIGHTS")
-							f.copy_nca_nd(ofolder,buffer)	
+							f.cr_tr_nca_upver(ofolder,buffer)	
 						if f.trights_set() == 'TRUE':
 							if f.exist_ticket() == 'TRUE':
 								Print.info("XCI HAS TITLERIGHTS AND TICKET EXISTS")
-								f.cr_tr_nca_nd(ofolder,buffer)
+								f.cr_tr_nca_nd_upver(ofolder,buffer)
 							if f.exist_ticket() == 'FALSE':
 								Print.error('XCI FILE HAS TITLERIGHTS BUT NO TICKET')		
 						f.flush()
@@ -894,14 +1126,19 @@ if __name__ == '__main__':
 		# Copy keyblock from nca files with titlerights from a nsp
 		# ........................................................						
 		if args.NSP_c_KeyBlock:	
-			for input in args.ofolder:
-				try:
-					ofolder = input
-				except BaseException as e:
-					Print.error('Exception: ' + str(e))	
+			if args.ofolder:		
+				for input in args.ofolder:
+					try:
+						ofolder = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+			else:
+				for filename in args.NSP_c_KeyBlock:
+					dir=os.path.dirname(os.path.abspath(filename))
+					ofolder = dir+ '/'+ 'output'
 			for fileName in args.NSP_c_KeyBlock:
 				try:
-					f = Fs.Nsp(fileName, 'r+b')
+					f = Fs.Nsp(fileName, 'rb')
 					f.copy_KeyBlock(ofolder)
 					f.flush()
 					f.close()
@@ -941,19 +1178,27 @@ if __name__ == '__main__':
 		# Get nca files to make a placeholder in eshop format from NSP
 		# ............................................................		
 		if args.placeholder_combo:		
-			for input in args.ofolder:
-				try:
-					ofolder = input
-				except BaseException as e:
-					Print.error('Exception: ' + str(e))	
-			for input in args.buffer:
-				try:
-					buffer = input
-				except BaseException as e:
-					Print.error('Exception: ' + str(e))	
+			if args.ofolder:		
+				for input in args.ofolder:
+					try:
+						ofolder = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+			else:
+				for filename in args.placeholder_combo:
+					dir=os.path.dirname(os.path.abspath(filename))
+					ofolder = dir+ '/'+ 'output'
+			if args.buffer:		
+				for input in args.buffer:
+					try:
+						buffer = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+			else:
+				buffer = 32768
 			for fileName in args.placeholder_combo:
 				try:
-					f = Fs.Nsp(fileName, 'r+b')
+					f = Fs.Nsp(fileName, 'rb')
 					f.copy_nca_control(ofolder,buffer)
 					f.copy_nca_meta(ofolder,buffer)
 					f.flush()
@@ -964,19 +1209,27 @@ if __name__ == '__main__':
 		# Get files to make a [lc].nsp from NSP
 		# ............................................................		
 		if args.license_combo:		
-			for input in args.ofolder:
-				try:
-					ofolder = input
-				except BaseException as e:
-					Print.error('Exception: ' + str(e))	
-			for input in args.buffer:
-				try:
-					buffer = input
-				except BaseException as e:
-					Print.error('Exception: ' + str(e))	
+			if args.ofolder:		
+				for input in args.ofolder:
+					try:
+						ofolder = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+			else:
+				for filename in args.license_combo:
+					dir=os.path.dirname(os.path.abspath(filename))
+					ofolder = dir+ '/'+ 'output'
+			if args.buffer:		
+				for input in args.buffer:
+					try:
+						buffer = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+			else:
+				buffer = 32768
 			for fileName in args.license_combo:
 				try:
-					f = Fs.Nsp(fileName, 'r+b')
+					f = Fs.Nsp(fileName, 'rb')
 					f.copy_nca_control(ofolder,buffer)
 					f.copy_ticket(ofolder)
 					f.copy_nsp_cert(ofolder,buffer)
@@ -988,19 +1241,27 @@ if __name__ == '__main__':
 		# Get files to make a placeholder+license nsp from a NSP
 		# ............................................................		
 		if args.mlicense_combo:		
-			for input in args.ofolder:
-				try:
-					ofolder = input
-				except BaseException as e:
-					Print.error('Exception: ' + str(e))	
-			for input in args.buffer:
-				try:
-					buffer = input
-				except BaseException as e:
-					Print.error('Exception: ' + str(e))	
+			if args.ofolder:		
+				for input in args.ofolder:
+					try:
+						ofolder = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+			else:
+				for filename in args.mlicense_combo:
+					dir=os.path.dirname(os.path.abspath(filename))
+					ofolder = dir+ '/'+ 'output'
+			if args.buffer:		
+				for input in args.buffer:
+					try:
+						buffer = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+			else:
+				buffer = 32768
 			for fileName in args.mlicense_combo:
 				try:
-					f = Fs.Nsp(fileName, 'r+b')
+					f = Fs.Nsp(fileName, 'rb')
 					f.copy_nca_control(ofolder,buffer)
 					f.copy_nca_meta(ofolder,buffer)
 					f.copy_ticket(ofolder)
@@ -1013,19 +1274,28 @@ if __name__ == '__main__':
 		# Get files to make zip to restore nsp to original state
 		# ............................................................
 		if args.zip_combo:		
-			for input in args.ofolder:
-				try:
-					ofolder = input
-				except BaseException as e:
-					Print.error('Exception: ' + str(e))	
-			for input in args.buffer:
-				try:
-					buffer = input
-				except BaseException as e:
-					Print.error('Exception: ' + str(e))	
+			if args.ofolder:		
+				for input in args.ofolder:
+					try:
+						ofolder = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+			else:
+				for filename in args.zip_combo:
+					dir=os.path.dirname(os.path.abspath(filename))
+					ofolder = dir+ '/'+ 'output'
+			if args.buffer:		
+				for input in args.buffer:
+					try:
+						buffer = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+			else:
+				buffer = 32768
+				
 			for fileName in args.zip_combo:
 				try:
-					f = Fs.Nsp(fileName, 'r+b')
+					f = Fs.Nsp(fileName, 'rb')
 					f.copy_nca_meta(ofolder,buffer)
 					f.copy_ticket(ofolder)
 					f.copy_other(ofolder,buffer)
@@ -1053,7 +1323,7 @@ if __name__ == '__main__':
 		if args.NSP_filelist:
 			for fileName in args.NSP_filelist:
 				try:
-					f = Fs.Nsp(fileName, 'r+b')
+					f = Fs.Nsp(fileName, 'rb')
 					f.print_file_list()
 					f.flush()
 					f.close()
@@ -1091,7 +1361,7 @@ if __name__ == '__main__':
 			for filename in args.Read_cnmt:
 				if filename.endswith('.nsp'):
 					try:
-						f = Fs.Nsp(filename, 'r+b')
+						f = Fs.Nsp(filename, 'rb')
 						f.read_cnmt()
 						f.flush()
 						f.close()
@@ -1104,6 +1374,64 @@ if __name__ == '__main__':
 						f.read_cnmt()
 						f.flush()
 						f.close()														
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+				if filename.endswith('.nca'):
+					try:
+						f = Fs.Nca(filename, 'rb')
+						f.read_cnmt()
+						f.flush()
+						f.close()												
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))						
+						
+		# ...................................................						
+		# Update hashes in cnmt file
+		# ...................................................									
+
+		if args.update_hash:
+			for filename in args.update_hash:
+				if filename.endswith('.nca'):
+					try:
+						f = Fs.Nca(filename, 'r+b')
+						f.write_req_system(336592896)
+						f.flush()
+						f.close()
+						############################
+						f = Fs.Nca(filename, 'r+b')
+						sha=f.calc_pfs0_hash()
+						f.flush()
+						f.close()
+						f = Fs.Nca(filename, 'r+b')
+						f.set_pfs0_hash(sha)
+						f.flush()
+						f.close()
+						############################
+						f = Fs.Nca(filename, 'r+b')
+						sha2=f.calc_htable_hash()
+						f.flush()
+						f.close()						
+						f = Fs.Nca(filename, 'r+b')
+						f.header.set_htable_hash(sha2)
+						f.flush()
+						f.close()
+						########################
+						f = Fs.Nca(filename, 'r+b')
+						sha3=f.header.calculate_hblock_hash()
+						f.flush()
+						f.close()						
+						f = Fs.Nca(filename, 'r+b')
+						f.header.set_hblock_hash(sha3)
+						f.flush()
+						f.close()
+						########################
+						with open(filename, 'r+b') as file:			
+							nsha=sha256(file.read()).hexdigest()
+						newname=nsha[:32] + '.cnmt.nca'				
+						Print.info('New name: ' + newname )
+						dir=os.path.dirname(os.path.abspath(filename))
+						newpath=dir+ '/' + newname
+						os.rename(filename, newpath)
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 

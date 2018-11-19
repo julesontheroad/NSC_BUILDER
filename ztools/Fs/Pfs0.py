@@ -112,7 +112,69 @@ class Pfs0(BaseFs):
 				self.files[i].name = stringTable[self.files[i].nameOffset:self.files[i+1].nameOffset].decode('utf-8').rstrip(' \t\r\n\0')
 		'''
 				
+		
+	def get_cryptoType(self):
+		return self.cryptoType
+		
+	def get_cryptoKey(self):
+		return self.cryptoKey
+
+	def get_cryptoCounter(self):
+		return self.cryptoCounter			
+		
+	def read_cnmt(self, path = None, mode = 'rb'):
+		cryptoType = self.get_cryptoType()
+		cryptoKey = self.get_cryptoKey()
+		cryptoCounter = self.get_cryptoCounter()
+		r = super(Pfs0, self).open(path, mode, cryptoType, cryptoKey, cryptoCounter)
+		self.rewind()
+		for cnmt in self:
+			f = Fs.factory(cnmt)
+			cnmt.rewind()
+			titleid=f.readInt64()
+			titleversion = cnmt.read(0x4)
+			cnmt.rewind()
+			cnmt.seek(0xE)
+			offset=cnmt.readInt16()
+			content_entries=cnmt.readInt16()
+			meta_entries=cnmt.readInt16()
+			cnmt.rewind()
+			cnmt.seek(0x20)
+			original_ID=cnmt.readInt64()
+			min_sversion=cnmt.readInt64()
+			Print.info('')	
+			Print.info('...........................................')								
+			Print.info('Reading: ' + str(cnmt._path))
+			Print.info('...........................................')							
+			Print.info('titleid = ' + str(hx(titleid.to_bytes(8, byteorder='big'))))
+			Print.info('version = ' + str(int.from_bytes(titleversion, byteorder='little')))
+			Print.info('Table offset = '+ str(hx((offset+0x20).to_bytes(2, byteorder='big'))))
+			Print.info('number of content = '+ str(content_entries))
+			Print.info('number of meta entries = '+ str(meta_entries))
+			Print.info('Application id\Patch id = ' + str(hx(original_ID.to_bytes(8, byteorder='big'))))
+			Print.info('RequiredSystemVersion = ' + str(min_sversion))
+			cnmt.rewind()
+			cnmt.seek(0x20+offset)
+			#for i in range(content_entries):
+			#	Print.info('........................')							
+			#	Print.info('Content number ' + str(i+1))
+			#	Print.info('........................')
+			#	vhash = cnmt.read(0x20)
+			#	Print.info('hash =\t' + str(hx(vhash)))
+			#	NcaId = cnmt.read(0x10)
+			#	Print.info('NcaId =\t' + str(hx(NcaId)))
+			#	size = cnmt.read(0x6)
+			#	Print.info('Size =\t' + str(int.from_bytes(size, byteorder='little', signed=True)))
+			#	ncatype = cnmt.read(0x1)
+			#	Print.info('ncatype = ' + str(int.from_bytes(ncatype, byteorder='little', signed=True)))
+			#	unknown = cnmt.read(0x1)					
+		
+		
+		
+		
+						
 	def printInfo(self, indent = 0):
+		maxDepth = 3
 		tabs = '\t' * indent
 		Print.info('\n%sPFS0\n' % (tabs))
-		super(Pfs0, self).printInfo(indent)
+		super(Pfs0, self).printInfo( indent)

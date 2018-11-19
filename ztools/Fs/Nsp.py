@@ -1186,6 +1186,11 @@ class Nsp(Pfs0):
 							cnmt.rewind()
 							cnmt.seek(0x20)
 							original_ID=cnmt.readInt64()
+							#cnmt.rewind()
+							#cnmt.seek(0x28)		
+							#cnmt.writeInt64(336592896)
+							cnmt.rewind()
+							cnmt.seek(0x28)					
 							min_sversion=cnmt.readInt64()
 							Print.info('')	
 							Print.info('...........................................')								
@@ -1216,6 +1221,241 @@ class Nsp(Pfs0):
 				
 
 
+#COPY AND CLEAN NCA FILES AND PATCH NEEDED SYSTEM VERSION			
+	def cr_tr_nca_upver(self,ofolder,buffer):
+		indent = 1
+		tabs = '\t' * indent
+		ticket = self.ticket()
+		masterKeyRev = ticket.getMasterKeyRevision()
+		titleKeyDec = Keys.decryptTitleKey(ticket.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(masterKeyRev))
+		rightsId = ticket.getRightsId()
+		Print.info('rightsId =\t' + hex(rightsId))
+		Print.info('titleKeyDec =\t' + str(hx(titleKeyDec)))
+		Print.info('masterKeyRev =\t' + hex(masterKeyRev))
+		
+		for nca in self:
+			if type(nca) == Nca:
+				if nca.header.getCryptoType2() != masterKeyRev:
+					pass
+					raise IOError('Mismatched masterKeyRevs!')
+		
+		for nca in self:
+			if type(nca) == Nca:
+				Print.info('Copying files: ')
+				if nca.header.getRightsId() != 0:
+					nca.rewind()
+					filename =  str(nca._path)
+					outfolder = str(ofolder)+'/'
+					filepath = os.path.join(outfolder, filename)
+					if not os.path.exists(outfolder):
+						os.makedirs(outfolder)
+					fp = open(filepath, 'w+b')
+					nca.rewind()
+					Print.info(tabs + 'Copying: ' + str(filename))
+					for data in iter(lambda: nca.read(int(buffer)), ""):
+						fp.write(data)
+						fp.flush()
+						if not data:
+							break
+					fp.close()
+					target = Fs.Nca(filepath, 'r+b')
+					target.rewind()
+					Print.info(tabs + 'Removing titlerights for ' + str(filename))
+					Print.info(tabs + 'Writing masterKeyRev for %s, %d' % (str(nca._path),  masterKeyRev))
+					crypto = aes128.AESECB(Keys.keyAreaKey(Keys.getMasterKeyIndex(masterKeyRev), nca.header.keyIndex))
+					encKeyBlock = crypto.encrypt(titleKeyDec * 4)
+					target.header.setRightsId(0)
+					target.header.setKeyBlock(encKeyBlock)
+					Hex.dump(encKeyBlock)	
+					target.close()
+					
+				if nca.header.getRightsId() == 0:
+					nca.rewind()
+					filename =  str(nca._path)
+					outfolder = str(ofolder)+'/'
+					filepath = os.path.join(outfolder, filename)
+					if not os.path.exists(outfolder):
+						os.makedirs(outfolder)
+					fp = open(filepath, 'w+b')
+					nca.rewind()
+					Print.info(tabs + 'Copying: ' + str(filename))
+					for data in iter(lambda: nca.read(int(buffer)), ""):
+						fp.write(data)
+						fp.flush()
+						if not data:
+							break				
+					fp.close()
+					if 	str(nca.header.contentType) == 'Content.META':
+						Print.info(tabs + '-------------------------------------')
+						Print.info(tabs + 'Checking meta: ')
+						meta_nca = Fs.Nca(filepath, 'r+b')
+						if 	meta_nca.get_req_system() > 336592896:
+							meta_nca.write_req_system(336592896)
+							meta_nca.flush()
+							meta_nca.close()
+							Print.info(tabs + 'Updating cnmt hashes: ')
+							############################
+							meta_nca = Fs.Nca(filepath, 'r+b')
+							sha=meta_nca.calc_pfs0_hash()
+							meta_nca.flush()
+							meta_nca.close()
+							meta_nca = Fs.Nca(filepath, 'r+b')
+							meta_nca.set_pfs0_hash(sha)
+							meta_nca.flush()
+							meta_nca.close()
+							############################
+							meta_nca = Fs.Nca(filepath, 'r+b')
+							sha2=meta_nca.calc_htable_hash()
+							meta_nca.flush()
+							meta_nca.close()						
+							meta_nca = Fs.Nca(filepath, 'r+b')
+							meta_nca.header.set_htable_hash(sha2)
+							meta_nca.flush()
+							meta_nca.close()
+							########################
+							meta_nca = Fs.Nca(filepath, 'r+b')
+							sha3=meta_nca.header.calculate_hblock_hash()
+							meta_nca.flush()
+							meta_nca.close()						
+							meta_nca = Fs.Nca(filepath, 'r+b')
+							meta_nca.header.set_hblock_hash(sha3)
+							meta_nca.flush()
+							meta_nca.close()
+							########################
+							with open(filepath, 'r+b') as file:			
+								nsha=sha256(file.read()).hexdigest()
+							newname=nsha[:32] + '.cnmt.nca'				
+							Print.info(tabs +'New name: ' + newname )
+							dir=os.path.dirname(os.path.abspath(filepath))
+							newpath=dir+ '/' + newname
+							os.rename(filepath, newpath)
+							Print.info(tabs + '-------------------------------------')
+						else:
+							Print.info(tabs +'-> No need to patch the meta' )
+							Print.info(tabs + '-------------------------------------')							
+						
+#COPY AND CLEAN NCA FILES SKIPPING DELTAS AND PATCH NEEDED SYSTEM VERSION						
+	def cr_tr_nca_nd_upver(self,ofolder,buffer):
+		indent = 1
+		tabs = '\t' * indent
+		ticket = self.ticket()
+		masterKeyRev = ticket.getMasterKeyRevision()
+		titleKeyDec = Keys.decryptTitleKey(ticket.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(masterKeyRev))
+		rightsId = ticket.getRightsId()
+		Print.info('rightsId =\t' + hex(rightsId))
+		Print.info('titleKeyDec =\t' + str(hx(titleKeyDec)))
+		Print.info('masterKeyRev =\t' + hex(masterKeyRev))
+		Print.info('Copying files: ')
+		for nca in self:
+			if type(nca) == Nca:
+				if nca.header.getCryptoType2() != masterKeyRev:
+					pass
+					raise IOError('Mismatched masterKeyRevs!')
+		
+		for nca in self:
+			vfragment="false"
+			if type(nca) == Nca:
+				if 	str(nca.header.contentType) == 'Content.DATA':
+					for f in nca:
+							for file in f:
+								filename = str(file._path)
+								if filename=="fragment":
+									vfragment="true"
+				if str(vfragment)=="true":
+					Print.info(tabs + 'Skipping delta fragment: ' + str(nca._path))
+					continue
+				else:
+					if nca.header.getRightsId() != 0:
+						nca.rewind()
+						filename =  str(nca._path)
+						outfolder = str(ofolder)+'/'
+						filepath = os.path.join(outfolder, filename)
+						if not os.path.exists(outfolder):
+							os.makedirs(outfolder)
+						fp = open(filepath, 'w+b')
+						nca.rewind()
+						Print.info(tabs + 'Copying: ' + str(filename))
+						for data in iter(lambda: nca.read(int(buffer)), ""):
+							fp.write(data)
+							fp.flush()
+							if not data:
+								break
+						fp.close()
+						target = Fs.Nca(filepath, 'r+b')
+						target.rewind()
+						Print.info(tabs + 'Removing titlerights for ' + str(filename))
+						Print.info(tabs + 'Writing masterKeyRev for %s, %d' % (str(nca._path),  masterKeyRev))
+						crypto = aes128.AESECB(Keys.keyAreaKey(Keys.getMasterKeyIndex(masterKeyRev), nca.header.keyIndex))
+						encKeyBlock = crypto.encrypt(titleKeyDec * 4)
+						target.header.setRightsId(0)
+						target.header.setKeyBlock(encKeyBlock)
+						Hex.dump(encKeyBlock)
+						Print.info('')						
+						target.close()
+					if nca.header.getRightsId() == 0:
+						nca.rewind()
+						filename =  str(nca._path)
+						outfolder = str(ofolder)+'/'
+						filepath = os.path.join(outfolder, filename)
+						if not os.path.exists(outfolder):
+							os.makedirs(outfolder)
+						fp = open(filepath, 'w+b')
+						nca.rewind()
+						Print.info(tabs + 'Copying: ' + str(filename))
+						for data in iter(lambda: nca.read(int(buffer)), ""):
+							fp.write(data)
+							fp.flush()
+							if not data:
+								break
+						fp.close()
+						if 	str(nca.header.contentType) == 'Content.META':
+							Print.info(tabs + '-------------------------------------')
+							Print.info(tabs + 'Checking meta: ')
+							meta_nca = Fs.Nca(filepath, 'r+b')
+							if 	meta_nca.get_req_system() > 336592896:
+								meta_nca.write_req_system(336592896)
+								meta_nca.flush()
+								meta_nca.close()
+								Print.info(tabs + 'Updating cnmt hashes: ')
+								############################
+								meta_nca = Fs.Nca(filepath, 'r+b')
+								sha=meta_nca.calc_pfs0_hash()
+								meta_nca.flush()
+								meta_nca.close()
+								meta_nca = Fs.Nca(filepath, 'r+b')
+								meta_nca.set_pfs0_hash(sha)
+								meta_nca.flush()
+								meta_nca.close()
+								############################
+								meta_nca = Fs.Nca(filepath, 'r+b')
+								sha2=meta_nca.calc_htable_hash()
+								meta_nca.flush()
+								meta_nca.close()						
+								meta_nca = Fs.Nca(filepath, 'r+b')
+								meta_nca.header.set_htable_hash(sha2)
+								meta_nca.flush()
+								meta_nca.close()
+								########################
+								meta_nca = Fs.Nca(filepath, 'r+b')
+								sha3=meta_nca.header.calculate_hblock_hash()
+								meta_nca.flush()
+								meta_nca.close()						
+								meta_nca = Fs.Nca(filepath, 'r+b')
+								meta_nca.header.set_hblock_hash(sha3)
+								meta_nca.flush()
+								meta_nca.close()
+								########################
+								with open(filepath, 'r+b') as file:			
+									nsha=sha256(file.read()).hexdigest()
+								newname=nsha[:32] + '.cnmt.nca'				
+								Print.info(tabs +'New name: ' + newname )
+								dir=os.path.dirname(os.path.abspath(filepath))
+								newpath=dir+ '/' + newname
+								os.rename(filepath, newpath)
+								Print.info(tabs + '-------------------------------------')
+							else:
+								Print.info(tabs +'-> No need to patch the meta' )
+								Print.info(tabs + '-------------------------------------')				
 
 
 

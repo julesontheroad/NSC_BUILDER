@@ -192,6 +192,76 @@ class NcaHeader(File):
 		self.seek(0x230)
 		self.writeInt128(value, 'big')
 
+	def setRightsId(self, value):
+		self.seek(0x230)
+		self.writeInt128(value, 'big')	
+			
+	def get_hblock_hash(self):
+		self.seek(0x280)
+		return self.read(0x20)
+		
+	def set_hblock_hash(self, value):
+		self.seek(0x280)
+		return self.write(value)		
+
+	def calculate_hblock_hash(self):
+		indent = 2
+		tabs = '\t' * indent
+		self.seek(0x400)
+		hblock = self.read(0x200)	 
+		sha=sha256(hblock).hexdigest()		
+		sha_hash= bytes.fromhex(sha)
+		Print.info(tabs + 'calculated header block hash: ' + str(hx(sha_hash)))
+		return sha_hash 
+		
+	def get_hblock_version(self):
+		self.seek(0x400)
+		return self.read(0x02)	
+		
+	def get_hblock_filesystem(self):
+		self.seek(0x403)
+		return self.read(0x01)	
+
+	def get_hblock_hash_type(self):
+		self.seek(0x404)
+		return self.read(0x01)	
+		
+	def get_hblock_crypto_type(self):
+		self.seek(0x405)
+		return self.read(0x01)	
+		
+	def get_htable_hash(self):
+		self.seek(0x408)
+		return self.read(0x20)	
+
+	def set_htable_hash(self, value):
+		self.seek(0x408)
+		return self.write(value)		
+	
+	def get_hblock_block_size(self):
+		self.seek(0x428)
+		return self.read(0x04)	
+
+	def get_hblock_uk1(self):
+		self.seek(0x42C)
+		return self.read(0x04)			
+
+	def get_htable_offset(self):
+		self.seek(0x430)
+		return self.readInt64()	
+		
+	def get_htable_size(self):
+		self.seek(0x438)
+		return self.readInt64()				
+	
+	def get_pfs0_offset(self):
+		self.seek(0x440)
+		return self.readInt64()			
+		
+	def get_pfs0_size(self):
+		self.seek(0x448)
+		return self.readInt64()			
+
 
 class Nca(File):
 	def __init__(self, path = None, mode = 'rb', cryptoType = -1, cryptoKey = -1, cryptoCounter = -1):
@@ -212,6 +282,7 @@ class Nca(File):
 		self.header = NcaHeader()
 		self.partition(0x0, 0xC00, self.header, Fs.Type.Crypto.XTS, uhx(Keys.get('header_key')))
 		#Print.info('partition complete, seeking')
+		
 		self.header.seek(0x400)
 		#Print.info('reading')
 		#Hex.dump(self.header.read(0x200))
@@ -224,7 +295,7 @@ class Nca(File):
 			#Print.info('st end offset = ' + str(self.header.sectionTables[i].endOffset - self.header.sectionTables[i].offset))
 			#Print.info('fs offset = ' + hex(self.header.sectionTables[i].offset))
 			#Print.info('fs section start = ' + hex(fs.sectionStart))
-			#Print.info('titleKey = ' + hex(self.header.titleKeyDec))
+			#Print.info('titleKey = ' + str(hx(self.header.titleKeyDec)))
 			try:
 				self.partition(self.header.sectionTables[i].offset + fs.sectionStart, self.header.sectionTables[i].endOffset - self.header.sectionTables[i].offset, fs, cryptoKey = self.header.titleKeyDec)
 			except BaseException as e:
@@ -239,10 +310,124 @@ class Nca(File):
 		self.titleKeyDec = None
 		self.masterKey = None
 
+	def get_hblock(self):		
+		version = self.header.get_hblock_version()
+		Print.info('version: ' + str(int.from_bytes(version, byteorder='little')))
+		filesystem = self.header.get_hblock_filesystem()
+		Print.info('filesystem: ' + str(int.from_bytes(filesystem, byteorder='little')))
+		hash_type = self.header.get_hblock_hash_type()
+		Print.info('hash type: ' + str(int.from_bytes(hash_type, byteorder='little')))
+		crypto_type = self.header.get_hblock_crypto_type()
+		Print.info('crypto type: ' + str(int.from_bytes(crypto_type, byteorder='little')))
+		hash_from_htable = self.header.get_htable_hash()
+		Print.info('hash from hash table: ' + str(hx(hash_from_htable)))
+		block_size = self.header.get_hblock_block_size()
+		Print.info('block size in bytes: ' + str(hx(block_size)))
+		v_unkn1 = self.header.get_hblock_uk1()
+		htable_offset = self.header.get_htable_offset()
+		Print.info('hash table offset: ' +  str(hx(htable_offset.to_bytes(8, byteorder='big'))))
+		htable_size = self.header.get_htable_size()
+		Print.info('Size of hash-table: ' +  str(hx(htable_size.to_bytes(8, byteorder='big'))))			
+		pfs0_offset = self.header.get_pfs0_offset()
+		Print.info('Pfs0 offset: ' +  str(hx(pfs0_offset.to_bytes(8, byteorder='big'))))	
+		pfs0_size = self.header.get_pfs0_size()
+		Print.info('Pfs0 size: ' +  str(hx(pfs0_size.to_bytes(8, byteorder='big'))))	
+			
+		
+		
+
+	def get_pfs0_hash(self, file = None, mode = 'rb', cryptoType = -1, cryptoKey = -1, cryptoCounter = -1):		
+		for f in self:
+			cryptoType=f.get_cryptoType()
+			cryptoKey=f.get_cryptoKey()	
+			cryptoCounter=f.get_cryptoCounter()
+		super(Nca, self).open(file, mode, cryptoType, cryptoKey, cryptoCounter)
+		self.seek(0xC00+self.header.get_htable_offset())
+		hash_from_pfs0=self.read(0x20)
+		return hash_from_pfs0
+		
+	def calc_htable_hash(self):		
+		indent = 2
+		tabs = '\t' * indent
+		htable = self.get_pfs0_hash()
+		sha=sha256(htable).hexdigest()		
+		sha_hash= bytes.fromhex(sha)
+		Print.info(tabs + 'calculated table hash: ' + str(hx(sha_hash)))
+		return sha_hash		
+
+	def calc_pfs0_hash(self, file = None, mode = 'rb'):	
+		indent = 2
+		tabs = '\t' * indent
+		for f in self:
+			cryptoType2=f.get_cryptoType()
+			cryptoKey2=f.get_cryptoKey()	
+			cryptoCounter2=f.get_cryptoCounter()
+		super(Nca, self).open(file, mode, cryptoType2, cryptoKey2, cryptoCounter2)
+		pfs0_offset = self.header.get_pfs0_offset()
+		pfs0_size = self.header.get_pfs0_size()
+		self.seek(0xC00+self.header.get_htable_offset()+pfs0_offset)
+		pfs0=self.read(pfs0_size)
+		sha=sha256(pfs0).hexdigest()
+		#Print.info('caculated hash from pfs0: ' + sha)	
+		sha_signature = bytes.fromhex(sha)
+		Print.info(tabs + 'calculated hash from pfs0: ' + str(hx(sha_signature)))
+		return sha_signature
+		
+	def set_pfs0_hash(self,value):
+		file = None	
+		mode = 'r+b'
+		for f in self:
+			cryptoType2=f.get_cryptoType()
+			cryptoKey2=f.get_cryptoKey()	
+			cryptoCounter2=f.get_cryptoCounter()
+		super(Nca, self).open(file, mode, cryptoType2, cryptoKey2, cryptoCounter2)
+		self.seek(0xC00+self.header.get_htable_offset())
+		self.write(value)		
+	
+	def get_req_system(self, file = None, mode = 'rb'):	
+		indent = 1
+		tabs = '\t' * indent
+		for f in self:
+			cryptoType=f.get_cryptoType()
+			cryptoKey=f.get_cryptoKey()	
+			cryptoCounter=f.get_cryptoCounter()		
+		pfs0_offset=0xC00+self.header.get_htable_offset()+self.header.get_pfs0_offset()
+		super(Nca, self).open(file, mode, cryptoType, cryptoKey, cryptoCounter)
+		self.seek(pfs0_offset+0x8)
+		pfs0_table_size=self.readInt32()
+		cmt_offset=pfs0_offset+0x28+pfs0_table_size
+		self.seek(cmt_offset+0x28)		
+		min_sversion=self.readInt64()
+		Print.info(tabs + 'RequiredSystemVersion = ' + str(min_sversion))
+		return min_sversion		
+
+	def write_req_system(self, verNumber):
+		indent = 1
+		tabs = '\t' * indent
+		file = None
+		mode = 'r+b'	
+		for f in self:
+			cryptoType=f.get_cryptoType()
+			cryptoKey=f.get_cryptoKey()	
+			cryptoCounter=f.get_cryptoCounter()
+		pfs0_offset=0xC00+self.header.get_htable_offset()+self.header.get_pfs0_offset()
+		super(Nca, self).open(file, mode, cryptoType, cryptoKey, cryptoCounter)
+		self.seek(pfs0_offset+0x8)
+		pfs0_table_size=self.readInt32()
+		cmt_offset=pfs0_offset+0x28+pfs0_table_size
+		self.seek(cmt_offset+0x28)	
+		min_sversion=self.readInt64()
+		#Print.info('Original RequiredSystemVersion = ' + str(min_sversion))
+		self.seek(cmt_offset+0x28)	
+		self.writeInt64(verNumber)
+		self.seek(cmt_offset+0x28)	
+		min_sversion=self.readInt64()
+		Print.info(tabs + 'New RequiredSystemVersion = ' + str(min_sversion))
+		return min_sversion			
+		
 	def removeTitleRightsnca(self, masterKeyRev, titleKeyDec):
 		Print.info('titleKeyDec =\t' + str(hx(titleKeyDec)))
 		Print.info('masterKeyRev =\t' + hex(masterKeyRev))
-
 		Print.info('writing masterKeyRev for %s, %d' % (str(self._path),  masterKeyRev))
 		crypto = aes128.AESECB(Keys.keyAreaKey(Keys.getMasterKeyIndex(masterKeyRev), self.header.keyIndex))
 		encKeyBlock = crypto.encrypt(titleKeyDec * 4)
@@ -259,20 +444,102 @@ class Nca(File):
 	def cardstate(self, indent = 0):	
 		Print.info(hex(self.header.isGameCard))
 		
+	def read_pfs0_header(self, file = None, mode = 'rb'):
+		for f in self:
+			cryptoType=f.get_cryptoType()
+			cryptoKey=f.get_cryptoKey()	
+			cryptoCounter=f.get_cryptoCounter()		
+		pfs0_offset=0xC00+self.header.get_htable_offset()+self.header.get_pfs0_offset()
+		self.seek(pfs0_offset)
+		pfs0_magic = self.read(4)
+		pfs0_nfiles=self.readInt32()
+		pfs0_table_size=self.readInt32()
+		pfs0_reserved=self.read(0x4)
+		Print.info('PFS0 Magic = ' + str(pfs0_magic))
+		Print.info('PFS0 number of files = ' + str(pfs0_nfiles))
+		Print.info('PFS0 string table size = ' + str(hx(pfs0_table_size.to_bytes(4, byteorder='big'))))
+	#	for i in range(pfs0_nfiles):
+		#	Print.info('........................')							
+		#	Print.info('PFS0 Content number ' + str(i+1))
+		#	Print.info('........................')
+		#	f_offset = self.readInt64()
+		#	Print.info('offset = ' + str(hx(f_offset.to_bytes(8, byteorder='big'))))
+		#	f_size = self.readInt32()
+		#	Print.info('Size =\t' +  str(hx(pfs0_table_size.to_bytes(4, byteorder='big'))))
+		#	filename_offset = self.readInt32()
+		#	Print.info('offset of filename = ' + str(hx(f_offset.to_bytes(8, byteorder='big'))))
+		#	f_reserved= self.read(0x4)
+
+	def read_cnmt(self, file = None, mode = 'rb'):
+		for f in self:
+			cryptoType=f.get_cryptoType()
+			cryptoKey=f.get_cryptoKey()	
+			cryptoCounter=f.get_cryptoCounter()
+		pfs0_offset=0xC00+self.header.get_htable_offset()+self.header.get_pfs0_offset()
+		self.seek(pfs0_offset+0x8)
+		pfs0_table_size=self.readInt32()
+		cmt_offset=pfs0_offset+0x28+pfs0_table_size
+		self.seek(cmt_offset)
+		titleid=self.readInt64()
+		titleversion = self.read(0x4)
+		self.seek(cmt_offset+0xE)
+		offset=self.readInt16()
+		content_entries=self.readInt16()
+		meta_entries=self.readInt16()
+		self.seek(cmt_offset+0x20)
+		original_ID=self.readInt64()
+		self.seek(cmt_offset+0x28)					
+		min_sversion=self.readInt64()
+		Print.info('')	
+		Print.info('...........................................')								
+		Print.info('Reading: ' + str(self._path))
+		Print.info('...........................................')							
+		Print.info('titleid = ' + str(hx(titleid.to_bytes(8, byteorder='big'))))
+		Print.info('version = ' + str(int.from_bytes(titleversion, byteorder='little')))
+		Print.info('Table offset = '+ str(hx((offset+0x20).to_bytes(2, byteorder='big'))))
+		Print.info('number of content = '+ str(content_entries))
+		Print.info('number of meta entries = '+ str(meta_entries))
+		Print.info('Application id\Patch id = ' + str(hx(original_ID.to_bytes(8, byteorder='big'))))
+		Print.info('RequiredSystemVersion = ' + str(min_sversion))
+		self.seek(cmt_offset+offset+0x20)
+		#for i in range(content_entries):
+		#	Print.info('........................')							
+		#	Print.info('Content number ' + str(i+1))
+		#	Print.info('........................')
+		#	vhash = self.read(0x20)
+		#	Print.info('hash =\t' + str(hx(vhash)))
+		#	NcaId = self.read(0x10)
+		#	Print.info('NcaId =\t' + str(hx(NcaId)))
+		#	size = self.read(0x6)
+		#	Print.info('Size =\t' + str(int.from_bytes(size, byteorder='little', signed=True)))
+		#	ncatype = self.read(0x1)
+		#	Print.info('ncatype = ' + str(int.from_bytes(ncatype, byteorder='little', signed=True)))
+		#	unknown = self.read(0x1)									
+	
 	def printInfo(self, indent = 0):
 		tabs = '\t' * indent
 		Print.info('\n%sNCA Archive\n' % (tabs))
 		super(Nca, self).printInfo(indent)
-		
+		#Print.info(tabs + 'Header Block Hash: ' + str(hx(self.header.get_hblock_hash())))
+		#self.header.calculate_hblock_hash()
+		#self.get_hblock()
+		#self.calc_htable_hash()
+		#Print.info('hash from pfs0: ' + str(hx(self.get_pfs0_hash())))
+		#self.calc_pfs0_hash()
+		#self.get_req_system()
+		#self.write_req_system()
+		#Print.info(tabs + 'RSA-2048 signature 1 = ' + str(hx(self.header.signature1)))
+		#Print.info(tabs + 'RSA-2048 signature 2 = ' + str(hx(self.header.signature2)))
 		Print.info(tabs + 'magic = ' + str(self.header.magic))
 		Print.info(tabs + 'titleId = ' + str(self.header.titleId))
 		Print.info(tabs + 'rightsId = ' + str(self.header.rightsId))
 		Print.info(tabs + 'isGameCard = ' + hex(self.header.isGameCard))
 		Print.info(tabs + 'contentType = ' + str(self.header.contentType))
-		Print.info(tabs + 'cryptoType = ' + str(self.cryptoType))
+		#Print.info(tabs + 'cryptoType = ' + str(self.header.getCryptoType()))
+		Print.info(tabs + 'SDK version = ' + str(self.header.sdkVersion))
 		Print.info(tabs + 'Size: ' + str(self.header.size))
-		Print.info(tabs + 'crypto master key: ' + str(self.header.cryptoType))
-		Print.info(tabs + 'crypto master key2: ' + str(self.header.cryptoType2))
+		Print.info(tabs + 'Crypto-Type1: ' + str(self.header.cryptoType))
+		Print.info(tabs + 'Crypto-Type2: ' + str(self.header.cryptoType2))
 		Print.info(tabs + 'key Index: ' + str(self.header.keyIndex))
 		#Print.info(tabs + 'key Block: ' + str(self.header.getKeyBlock()))
 		for key in self.header.keys:
@@ -282,3 +549,7 @@ class Nca(File):
 		
 		for s in self:
 			s.printInfo(indent+1)
+			
+		self.read_pfs0_header()	
+		self.read_cnmt()
+			
