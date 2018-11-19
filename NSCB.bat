@@ -171,7 +171,7 @@ ECHO ---------------------------------------------------
 PING -n 2 127.0.0.1 >NUL 2>&1
 ECHO PROGRAM WILL CLOSE NOW
 PING -n 2 127.0.0.1 >NUL 2>&1
-
+::pause
 exit
 
 ::AUTO MODE. MULTIREPACK PROCESSING OPTION.
@@ -231,6 +231,7 @@ ECHO ---------------------------------------------------
 PING -n 2 127.0.0.1 >NUL 2>&1
 ECHO PROGRAM WILL CLOSE NOW
 PING -n 2 127.0.0.1 >NUL 2>&1
+::pause
 exit
 
 :file
@@ -273,6 +274,7 @@ endlocal
 RD /S /Q "%w_folder%" >NUL 2>&1
 call :thumbup
 call :delay
+::pause
 exit
 
 :xci
@@ -303,10 +305,12 @@ endlocal
 RD /S /Q "%w_folder%" >NUL 2>&1
 call :thumbup
 call :delay
+::pause
 exit
 
 :manual
 endlocal
+
 
 call :program_logo
 echo ********************************
@@ -327,6 +331,13 @@ set bs=%bs:"=%
 if /i "%bs%"=="1" goto normalmode
 if /i "%bs%"=="2" goto multimode
 goto manual_Reentry
+
+
+REM //////////////////////////////////////////////////
+REM /////////////////////////////////////////////////
+REM START OF MANUAL MODE. INDIVIDUAL PROCESSING
+REM /////////////////////////////////////////////////
+REM ////////////////////////////////////////////////
 
 :normalmode
 echo -------------------------------
@@ -474,9 +485,12 @@ echo *******************************************************
 echo Press "1" to repack list as nsp
 echo Press "2" to repack list as xci
 echo Press "3" to repack list as both
+echo Press "0" TO JUST MAKE ZIP FILES!!!!
+echo.
 set /p bs="Enter your choice: "
 set bs=%bs:"=%
 set vrepack=none
+if /i "%bs%"=="0" set "vrepack=zip"
 if /i "%bs%"=="1" set "vrepack=nsp"
 if /i "%bs%"=="2" set "vrepack=xci"
 if /i "%bs%"=="3" set "vrepack=both"
@@ -485,7 +499,8 @@ for /f "tokens=*" %%f in (list.txt) do (
 set "name=%%~nf"
 set "filename=%%~nxf"
 set "orinput=%%f"
-set "orinput=%%f"
+
+if "%vrepack%" EQU "zip" ( set "zip_restore=true" )
 if "%zip_restore%" EQU "true" ( set "ziptarget=%%f" )
 if "%%~nxf"=="%%~nf.nsp" call :nsp_manual
 if "%%~nxf"=="%%~nf.xci" call :xci_manual
@@ -511,8 +526,12 @@ call :processing_message
 
 if exist "%w_folder%" rmdir /s /q "%w_folder%" >NUL 2>&1
 call :squirrell
-echo %pycommand% "%nut%" %buffer% -o "%w_folder%\secure" %nf_cleaner% "%orinput%"
+
+if "%vrepack%" EQU "zip" ( goto nsp_just_zip )
+
 %pycommand% "%nut%" %buffer% -o "%w_folder%\secure" %nf_cleaner% "%orinput%"
+
+:nsp_just_zip
 call :getname
 if "%zip_restore%" EQU "true" ( call :makezip )
 
@@ -531,12 +550,14 @@ endlocal
 RD /S /Q "%w_folder%" >NUL 2>&1
 call :thumbup
 call :delay
+
 :end_nsp_manual
 exit /B
 
 :xci_manual
 ::FOR XCI FILES
 cls
+if "%vrepack%" EQU "zip" ( goto end_xci_manual )
 set "filename=%name%"
 call :program_logo
 set "showname=%orinput%"
@@ -569,7 +590,7 @@ exit /B
 
 :contador_NF
 setlocal enabledelayedexpansion
-set conta=
+set /a conta=0
 for /f "tokens=*" %%f in (list.txt) do (
 set /a conta=!conta! + 1
 )
@@ -577,6 +598,7 @@ echo .................................................
 echo STILL !conta! FILES TO PROCESS
 echo .................................................
 PING -n 2 127.0.0.1 >NUL 2>&1
+set /a conta=0
 endlocal
 exit /B
 ::///////////////////////////////////////////////////
@@ -765,7 +787,7 @@ call :multi_contador_NF
 set "filename=%finalname%"
 set "end_folder=%finalname%"
 set "filename=%finalname%[multi]"
-
+::pause
 if "%vrepack%" EQU "nsp" ( call "%nsp_lib%" "convert" "%w_folder%" )
 if "%vrepack%" EQU "xci" ( call "%xci_lib%" "repack" "%w_folder%" )
 if "%vrepack%" EQU "both" ( call "%nsp_lib%" "convert" "%w_folder%" )
@@ -930,7 +952,7 @@ ECHO =============================     BY JULESONTHEROAD     ===================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                             POWERED WITH NUT BY BLAWAR                            "
 ECHO "                             AND LUCA FRAGA'S HACBUILD                             "
-ECHO                                     VERSION 0.61                                     	
+ECHO                                     VERSION 0.62                                     	
 ECHO -------------------------------------------------------------------------------------                   
 ECHO Program's github: https://github.com/julesontheroad/NSC_BUILDER
 ECHO Revised hacbuild: https://github.com/julesontheroad/hacbuild
@@ -958,6 +980,9 @@ echo HOPE YOU HAVE A FUN TIME
 exit /B
 
 :getname
+
+if not exist %w_folder% MD %w_folder% >NUL 2>&1
+
 set filename=%filename:[NAP]=%
 set filename=%filename:[rr]=%
 set filename=%filename:[xcib]=%
@@ -1075,7 +1100,7 @@ echo Program will exit now
 PING -n 2 127.0.0.1 >NUL 2>&1
 goto salida
 :salida
-
+::pause
 exit
 
 
