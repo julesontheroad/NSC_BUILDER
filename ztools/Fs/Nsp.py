@@ -1024,9 +1024,22 @@ class Nsp(Pfs0):
 								ncatype = cnmt.read(0x1)
 								Print.info('ncatype = ' + str(int.from_bytes(ncatype, byteorder='little', signed=True)))
 								unknown = cnmt.read(0x1)									
-				
 
+#GET VERSION NUMBER FROM CNMT							
+	def get_cnmt_verID(self):
+		for nca in self:
+			if type(nca) == Nca:
+				if 	str(nca.header.contentType) == 'Content.META':
+					for f in nca:
+						for cnmt in f:
+							nca.rewind()
+							f.rewind()
+							cnmt.rewind()
+							cnmt.seek(0x8)
+							titleversion = cnmt.read(0x4)
+							Print.info(str(int.from_bytes(titleversion, byteorder='little')))
 
+								
 #COPY AND CLEAN NCA FILES AND PATCH NEEDED SYSTEM VERSION			
 	def cr_tr_nca(self,ofolder,buffer,metapatch):
 		indent = 1

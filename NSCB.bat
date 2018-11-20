@@ -23,8 +23,9 @@ REM set "ngx_skip=%ngx_skip%"
 
 REM Copy function
 set "pycommand=%pycommand%"
-set "buffer=%buffer%"
+set "buffer=%buffer% %patchRSV%"
 set "nf_cleaner=%nf_cleaner%"
+set "set "patchRSV=%patchRSV%"
 
 REM PROGRAMS
 set "nut=%nut%"
@@ -111,7 +112,7 @@ if "%zip_restore%" EQU "true" ( set "ziptarget=%%f" )
 if "%zip_restore%" EQU "true" ( call :makezip )
 REM echo %safe_var%>safe.txt
 call :squirrell
-%pycommand% "%nut%" %buffer% -o "%w_folder%\secure" %nf_cleaner% "%%f"
+%pycommand% "%nut%" %buffer% %patchRSV% -o "%w_folder%\secure" %nf_cleaner% "%%f"
 call :getname
 REM setlocal enabledelayedexpansion
 REM set vpack=!vrepack!
@@ -149,7 +150,7 @@ call :getname
 echo -------------------------------------
 echo Extracting secure partition from xci 
 echo -------------------------------------
-%pycommand% "%nut%" %buffer% -o "%w_folder%\secure" %nf_cleaner% "%%f"
+%pycommand% "%nut%" %buffer% %patchRSV% -o "%w_folder%\secure" %nf_cleaner% "%%f"
 echo DONE
 if "%vrename%" EQU "true" ( call :addtags_from_xci )
 if "%vrepack%" EQU "nsp" ( call "%nsp_lib%" "convert" "%w_folder%" )
@@ -197,7 +198,7 @@ if "%zip_restore%" EQU "true" ( set "ziptarget=%%f" )
 if "%zip_restore%" EQU "true" ( call :makezip )
 ::echo %safe_var%>safe.txt
 call :squirrell
-%pycommand% "%nut%" %buffer% -o "%w_folder%\secure" %nf_cleaner% "%%f"
+%pycommand% "%nut%" %buffer% %patchRSV% -o "%w_folder%\secure" %nf_cleaner% "%%f"
 )
 
 ::FOR XCI FILES
@@ -207,7 +208,7 @@ call :program_logo
 echo ------------------------------------
 echo Extracting secure partition from xci
 echo ------------------------------------
-%pycommand% "%nut%" %buffer% -o "%w_folder%\secure" %nf_cleaner% "%%f"
+%pycommand% "%nut%" %buffer% %patchRSV% -o "%w_folder%\secure" %nf_cleaner% "%%f"
 echo DONE
 )
 if "%vrepack%" EQU "nsp" ( call "%nsp_lib%" "convert" "%w_folder%" )
@@ -253,7 +254,7 @@ set "showname=%orinput%"
 call :processing_message
 if exist "%w_folder%" rmdir /s /q "%w_folder%" >NUL 2>&1
 call :squirrell
-%pycommand% "%nut%" %buffer% -o "%w_folder%\secure" %nf_cleaner% "%~1"
+%pycommand% "%nut%" %buffer% %patchRSV% -o "%w_folder%\secure" %nf_cleaner% "%~1"
 call :getname
 if "%zip_restore%" EQU "true" ( set "ziptarget=%~1" )
 if "%zip_restore%" EQU "true" ( call :makezip )
@@ -289,7 +290,7 @@ call :getname
 echo ------------------------------------
 echo Extracting secure partition from xci 
 echo ------------------------------------
-%pycommand% "%nut%" %buffer% -o "%w_folder%\secure" %nf_cleaner% "%~1"
+%pycommand% "%nut%" %buffer% %patchRSV% -o "%w_folder%\secure" %nf_cleaner% "%~1"
 echo DONE
 if "%vrename%" EQU "true" call :addtags_from_xci
 if "%vrepack%" EQU "nsp" ( call "%nsp_lib%" "convert" "%w_folder%" )
@@ -529,7 +530,7 @@ call :squirrell
 
 if "%vrepack%" EQU "zip" ( goto nsp_just_zip )
 
-%pycommand% "%nut%" %buffer% -o "%w_folder%\secure" %nf_cleaner% "%orinput%"
+%pycommand% "%nut%" %buffer% %patchRSV% -o "%w_folder%\secure" %nf_cleaner% "%orinput%"
 
 :nsp_just_zip
 call :getname
@@ -569,7 +570,7 @@ call :getname
 echo ------------------------------------
 echo Extracting secure partition from xci
 echo ------------------------------------
-%pycommand% "%nut%" %buffer% -o "%w_folder%\secure" %nf_cleaner% "%orinput%"
+%pycommand% "%nut%" %buffer% %patchRSV% -o "%w_folder%\secure" %nf_cleaner% "%orinput%"
 echo DONE
 if "%vrename%" EQU "true" call :addtags_from_xci
 if "%vrepack%" EQU "nsp" ( call "%nsp_lib%" "convert" "%w_folder%" )
@@ -815,7 +816,7 @@ call :program_logo
 set "showname=%orinput%"
 call :processing_message
 call :squirrell
-%pycommand% "%nut%" %buffer% -o "%w_folder%\secure" %nf_cleaner% "%orinput%"
+%pycommand% "%nut%" %buffer% %patchRSV% -o "%w_folder%\secure" %nf_cleaner% "%orinput%"
 if "%zip_restore%" EQU "true" ( set "ziptarget=%orinput%" )
 if "%zip_restore%" EQU "true" ( call :makezip )
 call :thumbup
@@ -836,7 +837,7 @@ call :getname
 echo ------------------------------------
 echo Extracting secure partition from xci
 echo ------------------------------------
-%pycommand% "%nut%" %buffer% -o "%w_folder%\secure" %nf_cleaner% "%orinput%"
+%pycommand% "%nut%" %buffer% %patchRSV% -o "%w_folder%\secure" %nf_cleaner% "%orinput%"
 echo DONE
 call :thumbup
 call :delay
@@ -901,7 +902,7 @@ if "%nsptype%" EQU "DLC" echo ---NSP DOESN'T HAVE A CONTROL NCA---
 if "%nsptype%" EQU "DLC" echo.
 if "%nsptype%" EQU "DLC" ( goto multi_set_clogo )
 MD "%w_folder%\normal" >NUL 2>&1
-%pycommand% "%nut%" %buffer% -o "%w_folder%\normal" --NSP_copy_nca_control "%custlogo%"
+%pycommand% "%nut%" %buffer% %patchRSV% -o "%w_folder%\normal" --NSP_copy_nca_control "%custlogo%"
 echo ................
 echo "EXTRACTED LOGO"
 echo ................
@@ -952,7 +953,7 @@ ECHO =============================     BY JULESONTHEROAD     ===================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                             POWERED WITH NUT BY BLAWAR                            "
 ECHO "                             AND LUCA FRAGA'S HACBUILD                             "
-ECHO                                     VERSION 0.62                                     	
+ECHO                                     VERSION 0.65                                     	
 ECHO -------------------------------------------------------------------------------------                   
 ECHO Program's github: https://github.com/julesontheroad/NSC_BUILDER
 ECHO Revised hacbuild: https://github.com/julesontheroad/hacbuild
@@ -1007,7 +1008,7 @@ exit /B
 :makezip
 echo Making zip for %ziptarget%
 echo.
-%pycommand% "%nut%" %buffer% -o "%w_folder%\zip" --zip_combo "%ziptarget%"
+%pycommand% "%nut%" %buffer% %patchRSV% -o "%w_folder%\zip" --zip_combo "%ziptarget%"
 %pycommand% "%nut%" -o "%w_folder%\zip" --NSP_c_KeyBlock "%ziptarget%"
 %pycommand% "%nut%" --nsptitleid "%ziptarget%" >"%w_folder%\nsptitleid.txt"
 set /p titleid=<"%w_folder%\nsptitleid.txt"
@@ -1015,12 +1016,16 @@ del "%w_folder%\nsptitleid.txt" >NUL 2>&1
 %pycommand% "%nut%" --nsptype "%ziptarget%" >"%w_folder%\nsptype.txt"
 set /p type=<"%w_folder%\nsptype.txt"
 del "%w_folder%\nsptype.txt" >NUL 2>&1
-if "%type%" EQU "BASE" ( set ctag=[BASE] )
+%pycommand% "%nut%" --ReadversionID "%ziptarget%">"%w_folder%\nspversion.txt"
+set /p verID=<"%w_folder%\nspversion.txt"
+set "verID=V%verID%"
+del "%w_folder%\nspversion.txt" >NUL 2>&1
+if "%type%" EQU "BASE" ( set "ctag=" )
 if "%type%" EQU "UPDATE" ( set ctag=[UPD] )
 if "%type%" EQU "DLC" ( set ctag=[DLC] )
-%pycommand% "%nut%" -i "%ziptarget%">"%w_folder%\zip\fileinfo[%titleid%]%ctag%.txt" 
-%pycommand% "%nut%" --NSP_filelist "%ziptarget%">"%w_folder%\zip\filelist[%titleid%]%ctag%.txt"
-"%zip%" a "%w_folder%\%titleid%%ctag%.zip" "%w_folder%\zip\*.*" >NUL 2>&1
+%pycommand% "%nut%" -i "%ziptarget%">"%w_folder%\zip\fileinfo[%titleid%][%verID%]%ctag%.txt" 
+%pycommand% "%nut%" --NSP_filelist "%ziptarget%">"%w_folder%\zip\ORIGINAL_filelist[%titleid%][%verID%]%ctag%.txt"
+"%zip%" a "%w_folder%\%titleid%[%verID%]%ctag%.zip" "%w_folder%\zip\*.*" >NUL 2>&1
 RD /S /Q "%w_folder%\zip" >NUL 2>&1
 exit /B
 

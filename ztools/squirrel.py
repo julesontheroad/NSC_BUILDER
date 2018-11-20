@@ -65,6 +65,7 @@ if __name__ == '__main__':
 		parser.add_argument('--ncatype', nargs='+', help='Returns type of a nca file')	
 		parser.add_argument('--nsptitleid', nargs='+', help='Returns titleid for a nsp file')
 		parser.add_argument('--nsptype', nargs='+', help='Returns type for a nsp file')			
+		parser.add_argument('--ReadversionID', nargs='+', help='Returns version number for nsp Oorxci')				
 		parser.add_argument('--nsp_htrights', nargs='+', help='Returns true if nsp has titlerights')
 		parser.add_argument('--nsp_hticket', nargs='+', help='Returns true if nsp has ticket')
 		
@@ -124,6 +125,8 @@ if __name__ == '__main__':
 		parser.add_argument('-o', '--ofolder', nargs='+', help='Set output folder for copy instructions')
 		parser.add_argument('-b', '--buffer', nargs='+', help='Set buffer for copy instructions')
 		parser.add_argument('-ext', '--external', nargs='+', help='Set original nsp or ticket for remove nca titlerights functions')
+		parser.add_argument('-pv', '--patchversion', nargs='+', help='Patch Required system version')
+
 		
 		args = parser.parse_args()
 
@@ -135,9 +138,9 @@ if __name__ == '__main__':
 		# Get titleid from nca file
 		# ..................................................
 		if args.ncatitleid:
-			for fileName in args.ncatitleid:		
+			for filename in args.ncatitleid:		
 				try:
-					f = Fs.Nca(fileName, 'rb')
+					f = Fs.Nca(filename, 'rb')
 					f.printtitleId()
 					f.flush()
 					f.close()
@@ -147,9 +150,9 @@ if __name__ == '__main__':
 		# Get type from nca file	
 		# ..................................................		
 		if args.ncatype:
-			for fileName in args.ncatype:		
+			for filename in args.ncatype:		
 				try:
-					f = Fs.Nca(fileName, 'rb')
+					f = Fs.Nca(filename, 'rb')
 					f.print_nca_type()
 					f.flush()
 					f.close()
@@ -161,20 +164,43 @@ if __name__ == '__main__':
 		if args.nsptitleid:
 			for fileName in args.nsptitleid:		
 				try:
-					f = Fs.Nsp(fileName, 'rb')
+					f = Fs.Nsp(fileName, 'r+b')
 					titleid=f.getnspid()
 					Print.info(titleid)
 					f.flush()
 					f.close()
 				except BaseException as e:
-					Print.error('Exception: ' + str(e))
+					Print.error('Exception: ' + str(e))										
+		# ..................................................
+		# Read version number from nsp or xci	
+		# ..................................................		
+		if args.ReadversionID:
+			for filename in args.ReadversionID:		
+				if filename.endswith('.nsp'):
+					try:
+						f = Fs.Nsp(filename, 'rb')
+						f.get_cnmt_verID()
+						f.flush()
+						f.close()
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+				if filename.endswith('.xci'):
+					try:
+						f = Fs.factory(filename)
+						f.open(filename, 'rb')
+						f.get_cnmt_verID()
+						f.flush()
+						f.close()														
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+			
 		# ..................................................
 		# Identify type of nsp	
 		# ..................................................
 		if args.nsptype:
-			for fileName in args.nsptype:		
+			for filename in args.nsptype:		
 				try:
-					f = Fs.Nsp(fileName, 'rb')
+					f = Fs.Nsp(filename, 'rb')
 					titleid=f.getnspid()
 					if titleid[-3:] == '000':
 						if f.exist_control() == 'TRUE':
@@ -193,9 +219,9 @@ if __name__ == '__main__':
 		# Identify if nsp has titlerights
 		# ..................................................
 		if args.nsp_htrights:
-			for fileName in args.nsp_htrights:		
+			for filename in args.nsp_htrights:		
 				try:
-					f = Fs.Nsp(fileName, 'rb')
+					f = Fs.Nsp(filename, 'rb')
 					if f.trights_set() == 'TRUE':
 						Print.info('TRUE')
 					if f.trights_set() == 'FALSE':
@@ -207,9 +233,9 @@ if __name__ == '__main__':
 		# Identify if nsp has ticket
 		# ..................................................	
 		if args.nsp_hticket:
-			for fileName in args.nsp_hticket:		
+			for filename in args.nsp_hticket:		
 				try:
-					f = Fs.Nsp(fileName, 'rb')
+					f = Fs.Nsp(filename, 'rb')
 					if f.exist_ticket() == 'TRUE':
 						Print.info('TRUE')
 					if f.exist_ticket() == 'FALSE':
@@ -217,14 +243,28 @@ if __name__ == '__main__':
 				except BaseException as e:
 					Print.error('Exception: ' + str(e))	
 
+		# ..................................................
+		# Identify if nsp has ticket
+		# ..................................................	
+		if args.nsp_hticket:
+			for filename in args.nsp_hticket:		
+				try:
+					f = Fs.Nsp(filename, 'rb')
+					if f.exist_ticket() == 'TRUE':
+						Print.info('TRUE')
+					if f.exist_ticket() == 'FALSE':
+						Print.info('FALSE')
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))							
+
 # REMOVE TITLERIGHTS FUNCTIONS
 		# ..................................................
 		# Remove titlerights from input NSP
 		# ..................................................
 		if args.remove_title_rights:
-			for fileName in args.remove_title_rights:
+			for filename in args.remove_title_rights:
 				try:
-					f = Fs.Nsp(fileName, 'r+b')
+					f = Fs.Nsp(filename, 'r+b')
 					f.removeTitleRights()
 					f.flush()
 					f.close()
@@ -234,18 +274,18 @@ if __name__ == '__main__':
 		# Remove titlerights from an NSP using information from original NSP
 		# ..................................................................		
 		if args.RTRNCA_h_nsp:
-			for fileName in args.external:
+			for filename in args.external:
 				try:
-					f = Fs.Nsp(fileName, 'r+b')
+					f = Fs.Nsp(filename, 'r+b')
 					masterKeyRev=f.nspmasterkey()
 					titleKeyDec=f.nsptitlekeydec()
 					f.flush()
 					f.close()
 				except BaseException as e:
 					Print.error('Exception: ' + str(e))
-			for fileName in args.RTRNCA_h_nsp:
+			for filename in args.RTRNCA_h_nsp:
 				try:
-					f = Fs.Nca(fileName, 'r+b')
+					f = Fs.Nca(filename, 'r+b')
 					f.removeTitleRightsnca(masterKeyRev,titleKeyDec)
 					f.flush()
 					f.close()
@@ -255,19 +295,19 @@ if __name__ == '__main__':
 		# Remove titlerights from an NCA using information from an extracted TICKET
 		# .........................................................................			
 		if args.RTRNCA_h_tick:
-			for fileName in args.external:
+			for filename in args.external:
 				try:
-					f = Fs.Ticket(fileName, 'r+b')
-					f.open(fileName, 'r+b')
+					f = Fs.Ticket(filename, 'r+b')
+					f.open(filename, 'r+b')
 					masterKeyRev=f.getMasterKeyRevision()
 					titleKeyDec=f.get_titlekeydec()
 					f.flush()
 					f.close()
 				except BaseException as e:
 					Print.error('Exception: ' + str(e))
-			for fileName in args.RTRNCA_h_tick:
+			for filename in args.RTRNCA_h_tick:
 				try:
-					f = Fs.Nca(fileName, 'r+b')
+					f = Fs.Nca(filename, 'r+b')
 					f.removeTitleRightsnca(masterKeyRev,titleKeyDec)
 					f.flush()
 					f.close()
@@ -279,9 +319,9 @@ if __name__ == '__main__':
 		# Set isgamecard flag from all nca in an NSP as ESHOP
 		# ...................................................
 		if args.seteshop:
-			for fileName in args.seteshop:
+			for filename in args.seteshop:
 				try:
-					f = Fs.Nsp(fileName, 'r+b')
+					f = Fs.Nsp(filename, 'r+b')
 					f.seteshop()
 					f.flush()
 					f.close()
@@ -291,9 +331,9 @@ if __name__ == '__main__':
 		# Set isgamecard flag from all nca in an NSP as CARD
 		# ...................................................					
 		if args.setcgame:
-			for fileName in args.setcgame:
+			for filename in args.setcgame:
 				try:
-					f = Fs.Nsp(fileName, 'r+b')
+					f = Fs.Nsp(filename, 'r+b')
 					f.setcgame()
 					f.flush()
 					f.close()
@@ -303,9 +343,9 @@ if __name__ == '__main__':
 		# Get isgamecard flag from a NCA file
 		# ...................................................		
 		if args.cardstate:
-			for fileName in args.cardstate:		
+			for filename in args.cardstate:		
 				try:
-					f = Fs.Nca(fileName, 'rb')
+					f = Fs.Nca(filename, 'rb')
 					f.cardstate()
 					f.flush()
 					f.close()
@@ -327,9 +367,9 @@ if __name__ == '__main__':
 				for filename in args.NSP_copy_ticket:
 					dir=os.path.dirname(os.path.abspath(filename))
 					ofolder = dir+ '/'+ 'output'
-			for fileName in args.NSP_copy_ticket:
+			for filename in args.NSP_copy_ticket:
 				try:
-					f = Fs.Nsp(fileName, 'rb')
+					f = Fs.Nsp(filename, 'rb')
 					f.copy_ticket(ofolder)
 					f.flush()
 					f.close()
@@ -358,9 +398,9 @@ if __name__ == '__main__':
 						Print.error('Exception: ' + str(e))
 			else:
 				buffer = 32768	
-			for fileName in args.NSP_copy_nca:
+			for filename in args.NSP_copy_nca:
 				try:
-					f = Fs.Nsp(fileName, 'rb')
+					f = Fs.Nsp(filename, 'rb')
 					f.copy_nca(ofolder,buffer)
 					f.flush()
 					f.close()
@@ -566,9 +606,9 @@ if __name__ == '__main__':
 						Print.error('Exception: ' + str(e))
 			else:
 				buffer = 32768						
-			for fileName in args.NSP_copy_other:
+			for filename in args.NSP_copy_other:
 				try:
-					f = Fs.Nsp(fileName, 'rb')
+					f = Fs.Nsp(filename, 'rb')
 					f.copy_other(ofolder,buffer)
 					f.flush()
 					f.close()
@@ -598,9 +638,9 @@ if __name__ == '__main__':
 						Print.error('Exception: ' + str(e))
 			else:
 				buffer = 32768				
-			for fileName in args.NSP_copy_xml:
+			for filename in args.NSP_copy_xml:
 				try:
-					f = Fs.Nsp(fileName, 'rb')
+					f = Fs.Nsp(filename, 'rb')
 					f.copy_xml(ofolder,buffer)
 					f.flush()
 					f.close()
@@ -629,9 +669,9 @@ if __name__ == '__main__':
 						Print.error('Exception: ' + str(e))
 			else:
 				buffer = 32768					
-			for fileName in args.NSP_copy_cert:
+			for filename in args.NSP_copy_cert:
 				try:
-					f = Fs.Nsp(fileName, 'rb')
+					f = Fs.Nsp(filename, 'rb')
 					f.copy_nsp_cert(ofolder,buffer)
 					f.flush()
 					f.close()
@@ -660,9 +700,9 @@ if __name__ == '__main__':
 						Print.error('Exception: ' + str(e))
 			else:
 				buffer = 32768			
-			for fileName in args.NSP_copy_jpg:
+			for filename in args.NSP_copy_jpg:
 				try:
-					f = Fs.Nsp(fileName, 'rb')
+					f = Fs.Nsp(filename, 'rb')
 					f.copy_jpg(ofolder,buffer)
 					f.flush()
 					f.close()
@@ -692,9 +732,9 @@ if __name__ == '__main__':
 						Print.error('Exception: ' + str(e))
 			else:
 				buffer = 32768			
-			for fileName in args.NSP_copy_cnmt:
+			for filename in args.NSP_copy_cnmt:
 				try:
-					f = Fs.Nsp(fileName, 'rb')
+					f = Fs.Nsp(filename, 'rb')
 					f.copy_cnmt(ofolder,buffer)
 					f.flush()
 					f.close()
@@ -724,9 +764,9 @@ if __name__ == '__main__':
 						Print.error('Exception: ' + str(e))
 			else:
 				buffer = 32768				
-			for fileName in args.copy_pfs0_meta:
+			for filename in args.copy_pfs0_meta:
 				try:
-					f = Fs.Nsp(fileName, 'rb')
+					f = Fs.Nsp(filename, 'rb')
 					f.copy_pfs0_meta(ofolder,buffer)
 					f.flush()
 					f.close()
@@ -756,9 +796,9 @@ if __name__ == '__main__':
 						Print.error('Exception: ' + str(e))
 			else:
 				buffer = 32768				
-			for fileName in args.NSP_copy_ncap:
+			for filename in args.NSP_copy_ncap:
 				try:
-					f = Fs.Nsp(fileName, 'rb')
+					f = Fs.Nsp(filename, 'rb')
 					f.copy_ncap(ofolder,buffer)
 					f.flush()
 					f.close()
@@ -789,9 +829,9 @@ if __name__ == '__main__':
 						Print.error('Exception: ' + str(e))
 			else:
 				buffer = 32768				
-			for fileName in args.NSP_copy_nca_meta:
+			for filename in args.NSP_copy_nca_meta:
 				try:
-					f = Fs.Nsp(fileName, 'rb')
+					f = Fs.Nsp(filename, 'rb')
 					f.copy_nca_meta(ofolder,buffer)
 					f.flush()
 					f.close()
@@ -820,9 +860,9 @@ if __name__ == '__main__':
 						Print.error('Exception: ' + str(e))
 			else:
 				buffer = 32768				
-			for fileName in args.NSP_copy_nca_control:
+			for filename in args.NSP_copy_nca_control:
 				try:
-					f = Fs.Nsp(fileName, 'rb')
+					f = Fs.Nsp(filename, 'rb')
 					f.copy_nca_control(ofolder,buffer)
 					f.flush()
 					f.close()
@@ -851,9 +891,9 @@ if __name__ == '__main__':
 						Print.error('Exception: ' + str(e))
 			else:
 				buffer = 32768						
-			for fileName in args.NSP_copy_nca_manual:
+			for filename in args.NSP_copy_nca_manual:
 				try:
-					f = Fs.Nsp(fileName, 'rb')
+					f = Fs.Nsp(filename, 'rb')
 					f.copy_nca_manual(ofolder,buffer)
 					f.flush()
 					f.close()
@@ -882,9 +922,9 @@ if __name__ == '__main__':
 						Print.error('Exception: ' + str(e))
 			else:
 				buffer = 32768											
-			for fileName in args.NSP_copy_nca_program:
+			for filename in args.NSP_copy_nca_program:
 				try:
-					f = Fs.Nsp(fileName, 'rb')
+					f = Fs.Nsp(filename, 'rb')
 					f.copy_nca_program(ofolder,buffer)
 					f.flush()
 					f.close()
@@ -914,9 +954,9 @@ if __name__ == '__main__':
 			else:
 				buffer = 32768
 											
-			for fileName in args.NSP_copy_nca_data:
+			for filename in args.NSP_copy_nca_data:
 				try:
-					f = Fs.Nsp(fileName, 'rb')
+					f = Fs.Nsp(filename, 'rb')
 					f.copy_nca_data(ofolder,buffer)
 					f.flush()
 					f.close()
@@ -946,9 +986,9 @@ if __name__ == '__main__':
 			else:
 				buffer = 32768
 								
-			for fileName in args.NSP_copy_nca_pdata:
+			for filename in args.NSP_copy_nca_pdata:
 				try:
-					f = Fs.Nsp(fileName, 'rb')
+					f = Fs.Nsp(filename, 'rb')
 					f.copy_nca_pdata(ofolder,buffer)
 					f.flush()
 					f.close()
@@ -980,9 +1020,9 @@ if __name__ == '__main__':
 			else:
 				buffer = 32768
 					
-			for fileName in args.NSP_copy_tr_nca:
+			for filename in args.NSP_copy_tr_nca:
 				try:
-					f = Fs.Nsp(fileName, 'rb')
+					f = Fs.Nsp(filename, 'rb')
 					f.copy_tr_nca(ofolder,buffer)
 					f.flush()
 					f.close()
@@ -1012,9 +1052,9 @@ if __name__ == '__main__':
 			else:
 				buffer = 32768
 				
-			for fileName in args.NSP_copy_ntr_nca:
+			for filename in args.NSP_copy_ntr_nca:
 				try:
-					f = Fs.Nsp(fileName, 'rb')
+					f = Fs.Nsp(filename, 'rb')
 					f.copy_ntr_nca(ofolder,buffer)
 					f.flush()
 					f.close()
@@ -1025,7 +1065,6 @@ if __name__ == '__main__':
 		# Copy ALL NCA AND CLEAN TITLERIGHTS 
 		# ..................................					
 		if args.C_clean:
-			metapatch = 'true'	
 			if args.ofolder:		
 				for input in args.ofolder:
 					try:
@@ -1045,7 +1084,14 @@ if __name__ == '__main__':
 						Print.error('Exception: ' + str(e))
 			else:
 				buffer = 32768
-				
+			if args.patchversion:
+				for input in args.patchversion:
+					try:
+						metapatch = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+			else:
+				metapatch = 'true'					
 			for filename in args.C_clean:
 				if filename.endswith('.nsp'):
 					try:
@@ -1085,7 +1131,6 @@ if __name__ == '__main__':
 		# Copy ALL NCA AND CLEAN TITLERIGHTS WITHOUT DELTAS
 		# ...................................................					
 		if args.C_clean_ND:
-			metapatch = 'true'	
 			if args.ofolder:		
 				for input in args.ofolder:
 					try:
@@ -1095,8 +1140,7 @@ if __name__ == '__main__':
 			else:
 				for filename in args.C_clean_ND:
 					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder = dir+ '/'+ 'output'
-					
+					ofolder = dir+ '/'+ 'output'		
 			if args.buffer:		
 				for input in args.buffer:
 					try:
@@ -1104,8 +1148,15 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768
-				
+				buffer = 32768				
+			if args.patchversion:
+				for input in args.patchversion:
+					try:
+						metapatch = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+			else:
+				metapatch = 'true'	
 			for filename in args.C_clean_ND:
 				if filename.endswith('.nsp'):
 					try:
@@ -1156,9 +1207,9 @@ if __name__ == '__main__':
 				for filename in args.NSP_c_KeyBlock:
 					dir=os.path.dirname(os.path.abspath(filename))
 					ofolder = dir+ '/'+ 'output'
-			for fileName in args.NSP_c_KeyBlock:
+			for filename in args.NSP_c_KeyBlock:
 				try:
-					f = Fs.Nsp(fileName, 'rb')
+					f = Fs.Nsp(filename, 'rb')
 					f.copy_KeyBlock(ofolder)
 					f.flush()
 					f.close()
@@ -1169,9 +1220,9 @@ if __name__ == '__main__':
 		# Identify if nsp has titlerights
 		# ..................................................
 #		if args.nsp_htrights:
-#			for fileName in args.nsp_htrights:		
+#			for filename in args.nsp_htrights:		
 #				try:
-#					f = Fs.Nsp(fileName, 'r+b')
+#					f = Fs.Nsp(filename, 'r+b')
 #					if f.trights_set() == 'TRUE':
 #						Print.info('TRUE')
 #					if f.trights_set() == 'FALSE':
@@ -1183,9 +1234,9 @@ if __name__ == '__main__':
 		# Identify if nsp has ticket
 		# ..................................................	
 #		if args.nsp_hticket:
-#			for fileName in args.nsp_hticket:		
+#			for filename in args.nsp_hticket:		
 #				try:
-#					f = Fs.Nsp(fileName, 'r+b')
+#					f = Fs.Nsp(filename, 'r+b')
 #					if f.exist_ticket() == 'TRUE':
 #						Print.info('TRUE')
 #					if f.exist_ticket() == 'FALSE':
@@ -1216,9 +1267,9 @@ if __name__ == '__main__':
 						Print.error('Exception: ' + str(e))
 			else:
 				buffer = 32768
-			for fileName in args.placeholder_combo:
+			for filename in args.placeholder_combo:
 				try:
-					f = Fs.Nsp(fileName, 'rb')
+					f = Fs.Nsp(filename, 'rb')
 					f.copy_nca_control(ofolder,buffer)
 					f.copy_nca_meta(ofolder,buffer)
 					f.flush()
@@ -1247,9 +1298,9 @@ if __name__ == '__main__':
 						Print.error('Exception: ' + str(e))
 			else:
 				buffer = 32768
-			for fileName in args.license_combo:
+			for filename in args.license_combo:
 				try:
-					f = Fs.Nsp(fileName, 'rb')
+					f = Fs.Nsp(filename, 'rb')
 					f.copy_nca_control(ofolder,buffer)
 					f.copy_ticket(ofolder)
 					f.copy_nsp_cert(ofolder,buffer)
@@ -1279,9 +1330,9 @@ if __name__ == '__main__':
 						Print.error('Exception: ' + str(e))
 			else:
 				buffer = 32768
-			for fileName in args.mlicense_combo:
+			for filename in args.mlicense_combo:
 				try:
-					f = Fs.Nsp(fileName, 'rb')
+					f = Fs.Nsp(filename, 'rb')
 					f.copy_nca_control(ofolder,buffer)
 					f.copy_nca_meta(ofolder,buffer)
 					f.copy_ticket(ofolder)
@@ -1313,9 +1364,9 @@ if __name__ == '__main__':
 			else:
 				buffer = 32768
 				
-			for fileName in args.zip_combo:
+			for filename in args.zip_combo:
 				try:
-					f = Fs.Nsp(fileName, 'rb')
+					f = Fs.Nsp(filename, 'rb')
 					f.copy_nca_meta(ofolder,buffer)
 					f.copy_ticket(ofolder)
 					f.copy_other(ofolder,buffer)
@@ -1341,9 +1392,9 @@ if __name__ == '__main__':
 		# Show nsp filelist
 		# ...................................................	
 		if args.NSP_filelist:
-			for fileName in args.NSP_filelist:
+			for filename in args.NSP_filelist:
 				try:
-					f = Fs.Nsp(fileName, 'rb')
+					f = Fs.Nsp(filename, 'rb')
 					f.print_file_list()
 					f.flush()
 					f.close()

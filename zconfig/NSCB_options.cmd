@@ -12,14 +12,14 @@ set "fold_output=NSCB_output"
 ::--------------------------------------------------------------
 ::OPTION 2: PROGRAM ROUTES
 ::--------------------------------------------------------------
-set "nut=ztools\nut_RTR.py"
+set "nut=ztools\squirrel.py"
 set "xci_lib=ztools\XCI.bat"
 set "nsp_lib=ztools\NSP.bat"
 set "zip=ztools\7za.exe"
 set "hactool=ztools\hactool.exe"
 set "hacbuild=ztools\hacbuild.exe"
 ::--------------------------------------------------------------
-::OPTION 3: NUT OPTIONS
+::OPTION 3: SQUIRREL OPTIONS
 ::--------------------------------------------------------------
 ::python command
 set "pycommand=py -3"
@@ -31,6 +31,11 @@ set "buffer=-b 32768"
 ::--C_clean -> Copy and remove titlerights. Don't skips deltas
 ::--C_clean_ND-> Copy and remove titlerights skipping deltas
 set "nf_cleaner=--C_clean_ND"
+::Patch the RequiredSystemVersion so console doesn't ask for updates bigger
+::than the required FW to decypher the crypto
+::true -> Patch required system version in the meta nca
+::false-> Don't patch required system version in the meta nca
+set "patchRSV=-pv true"
 
 ::--------------------------------------------------------------
 ::OPTION 4: IMPORTANT FILES

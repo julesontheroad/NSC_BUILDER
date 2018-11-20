@@ -450,6 +450,7 @@ class Nca(File):
 			cryptoKey=f.get_cryptoKey()	
 			cryptoCounter=f.get_cryptoCounter()		
 		pfs0_offset=0xC00+self.header.get_htable_offset()+self.header.get_pfs0_offset()
+		super(Nca, self).open(file, mode, cryptoType, cryptoKey, cryptoCounter)
 		self.seek(pfs0_offset)
 		pfs0_magic = self.read(4)
 		pfs0_nfiles=self.readInt32()
@@ -458,17 +459,17 @@ class Nca(File):
 		Print.info('PFS0 Magic = ' + str(pfs0_magic))
 		Print.info('PFS0 number of files = ' + str(pfs0_nfiles))
 		Print.info('PFS0 string table size = ' + str(hx(pfs0_table_size.to_bytes(4, byteorder='big'))))
-	#	for i in range(pfs0_nfiles):
-		#	Print.info('........................')							
-		#	Print.info('PFS0 Content number ' + str(i+1))
-		#	Print.info('........................')
-		#	f_offset = self.readInt64()
-		#	Print.info('offset = ' + str(hx(f_offset.to_bytes(8, byteorder='big'))))
-		#	f_size = self.readInt32()
-		#	Print.info('Size =\t' +  str(hx(pfs0_table_size.to_bytes(4, byteorder='big'))))
-		#	filename_offset = self.readInt32()
-		#	Print.info('offset of filename = ' + str(hx(f_offset.to_bytes(8, byteorder='big'))))
-		#	f_reserved= self.read(0x4)
+		for i in range(pfs0_nfiles):
+			Print.info('........................')							
+			Print.info('PFS0 Content number ' + str(i+1))
+			Print.info('........................')
+			f_offset = self.readInt64()
+			Print.info('offset = ' + str(hx(f_offset.to_bytes(8, byteorder='big'))))
+			f_size = self.readInt32()
+			Print.info('Size =\t' +  str(hx(pfs0_table_size.to_bytes(4, byteorder='big'))))
+			filename_offset = self.readInt32()
+			Print.info('offset of filename = ' + str(hx(f_offset.to_bytes(8, byteorder='big'))))
+			f_reserved= self.read(0x4)
 
 	def read_cnmt(self, file = None, mode = 'rb'):
 		for f in self:
@@ -476,6 +477,7 @@ class Nca(File):
 			cryptoKey=f.get_cryptoKey()	
 			cryptoCounter=f.get_cryptoCounter()
 		pfs0_offset=0xC00+self.header.get_htable_offset()+self.header.get_pfs0_offset()
+		super(Nca, self).open(file, mode, cryptoType, cryptoKey, cryptoCounter)
 		self.seek(pfs0_offset+0x8)
 		pfs0_table_size=self.readInt32()
 		cmt_offset=pfs0_offset+0x28+pfs0_table_size
@@ -502,19 +504,19 @@ class Nca(File):
 		Print.info('Application id\Patch id = ' + str(hx(original_ID.to_bytes(8, byteorder='big'))))
 		Print.info('RequiredSystemVersion = ' + str(min_sversion))
 		self.seek(cmt_offset+offset+0x20)
-		#for i in range(content_entries):
-		#	Print.info('........................')							
-		#	Print.info('Content number ' + str(i+1))
-		#	Print.info('........................')
-		#	vhash = self.read(0x20)
-		#	Print.info('hash =\t' + str(hx(vhash)))
-		#	NcaId = self.read(0x10)
-		#	Print.info('NcaId =\t' + str(hx(NcaId)))
-		#	size = self.read(0x6)
-		#	Print.info('Size =\t' + str(int.from_bytes(size, byteorder='little', signed=True)))
-		#	ncatype = self.read(0x1)
-		#	Print.info('ncatype = ' + str(int.from_bytes(ncatype, byteorder='little', signed=True)))
-		#	unknown = self.read(0x1)									
+		for i in range(content_entries):
+			Print.info('........................')							
+			Print.info('Content number ' + str(i+1))
+			Print.info('........................')
+			vhash = self.read(0x20)
+			Print.info('hash =\t' + str(hx(vhash)))
+			NcaId = self.read(0x10)
+			Print.info('NcaId =\t' + str(hx(NcaId)))
+			size = self.read(0x6)
+			Print.info('Size =\t' + str(int.from_bytes(size, byteorder='little', signed=True)))
+			ncatype = self.read(0x1)
+			Print.info('ncatype = ' + str(int.from_bytes(ncatype, byteorder='little', signed=True)))
+			unknown = self.read(0x1)									
 	
 	def printInfo(self, indent = 0):
 		tabs = '\t' * indent

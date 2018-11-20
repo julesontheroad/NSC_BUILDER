@@ -748,27 +748,19 @@ class Xci(File):
 										Print.info('ncatype = ' + str(int.from_bytes(ncatype, byteorder='little')))
 										unknown = cnmt.read(0x1)			
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	
-		
-		
-		
-		
-		
-		
-		
-		
-		
+										
+#GET VERSION NUMBER FROM CNMT							
+	def get_cnmt_verID(self):
+		for nspF in self.hfs0:
+			if str(nspF._path)=="secure":
+				for nca in nspF:
+					if type(nca) == Nca:
+						if 	str(nca.header.contentType) == 'Content.META':
+							for f in nca:
+								for cnmt in f:
+									nca.rewind()
+									f.rewind()
+									cnmt.rewind()
+									cnmt.seek(0x8)
+									titleversion = cnmt.read(0x4)
+									Print.info(str(int.from_bytes(titleversion, byteorder='little')))	
