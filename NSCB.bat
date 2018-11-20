@@ -23,9 +23,9 @@ REM set "ngx_skip=%ngx_skip%"
 
 REM Copy function
 set "pycommand=%pycommand%"
-set "buffer=%buffer% %patchRSV%"
+set "buffer=%buffer%"
 set "nf_cleaner=%nf_cleaner%"
-set "set "patchRSV=%patchRSV%"
+set "patchRSV=%patchRSV%"
 
 REM PROGRAMS
 set "nut=%nut%"
