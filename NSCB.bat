@@ -989,7 +989,7 @@ set filename=%filename:[rr]=%
 set filename=%filename:[xcib]=%
 set filename=%filename:[nxt]=%
 set filename=%filename:[Trimmed]=%
-echo %filename%>"%w_folder%\fname.txt"
+echo %filename% >"%w_folder%\fname.txt"
 
 ::deletebrackets
 for /f "tokens=1* delims=[" %%a in (%w_folder%\fname.txt) do (
@@ -999,8 +999,9 @@ echo %end_folder%>"%w_folder%\fname.txt"
 for /f "tokens=1* delims=(" %%a in (%w_folder%\fname.txt) do (
     set end_folder=%%a)
 echo %end_folder%>"%w_folder%\fname.txt"
-::I also wanted to remove _
+::I also wanted to remove_(
 set end_folder=%end_folder:_= %
+set end_folder=%end_folder:~0,-1%
 del "%w_folder%\fname.txt" >NUL 2>&1
 if "%vrename%" EQU "true" ( set "filename=%end_folder%" )
 exit /B
