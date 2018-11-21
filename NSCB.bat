@@ -999,7 +999,7 @@ echo %end_folder%>"%w_folder%\fname.txt"
 for /f "tokens=1* delims=(" %%a in (%w_folder%\fname.txt) do (
     set end_folder=%%a)
 echo %end_folder%>"%w_folder%\fname.txt"
-::I also wanted to remove_(
+::I also wanted to remove _
 set end_folder=%end_folder:_= %
 del "%w_folder%\fname.txt" >NUL 2>&1
 if "%vrename%" EQU "true" ( set "filename=%end_folder%" )
