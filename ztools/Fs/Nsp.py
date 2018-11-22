@@ -1044,6 +1044,7 @@ class Nsp(Pfs0):
 	def cr_tr_nca(self,ofolder,buffer,metapatch):
 		indent = 1
 		tabs = '\t' * indent
+		text_file='newcontent_'+self.getnspid()+'.dat'
 		ticket = self.ticket()
 		masterKeyRev = ticket.getMasterKeyRevision()
 		titleKeyDec = Keys.decryptTitleKey(ticket.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(masterKeyRev))
@@ -1068,6 +1069,9 @@ class Nsp(Pfs0):
 					filepath = os.path.join(outfolder, filename)
 					if not os.path.exists(outfolder):
 						os.makedirs(outfolder)
+					textpath = os.path.join(outfolder, text_file)
+					with open(textpath, 'a') as tfile:			
+						tfile.write(str(nca.header.contentType)+ ': ' + tabs + str(nca._path) + '\n')	
 					fp = open(filepath, 'w+b')
 					nca.rewind()
 					Print.info(tabs + 'Copying: ' + str(filename))
@@ -1150,14 +1154,26 @@ class Nsp(Pfs0):
 								newpath=dir+ '/' + newname
 								os.rename(filepath, newpath)
 								Print.info(tabs + '-------------------------------------')
+								textpath = os.path.join(outfolder, text_file)
+								with open(textpath, 'a') as tfile:			
+									tfile.write(str(nca.header.contentType)+ ': ' + tabs + tabs + newname + '\n')
 							else:
 								Print.info(tabs +'-> No need to patch the meta' )
-								Print.info(tabs + '-------------------------------------')							
+								Print.info(tabs + '-------------------------------------')
+								textpath = os.path.join(outfolder, text_file)
+								with open(textpath, 'a') as tfile:			
+									tfile.write(str(nca.header.contentType)+ ': ' + tabs + tabs + str(nca._path) + '\n')
+						else:					
+							textpath = os.path.join(outfolder, text_file)
+							with open(textpath, 'a') as tfile:			
+								tfile.write(str(nca.header.contentType)+ ': ' + tabs + str(nca._path) + '\n')				
+								
 						
 #COPY AND CLEAN NCA FILES SKIPPING DELTAS AND PATCH NEEDED SYSTEM VERSION						
 	def cr_tr_nca_nd(self,ofolder,buffer,metapatch):
 		indent = 1
 		tabs = '\t' * indent
+		text_file='newcontent_'+self.getnspid()+'.dat'
 		ticket = self.ticket()
 		masterKeyRev = ticket.getMasterKeyRevision()
 		titleKeyDec = Keys.decryptTitleKey(ticket.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(masterKeyRev))
@@ -1192,6 +1208,9 @@ class Nsp(Pfs0):
 						filepath = os.path.join(outfolder, filename)
 						if not os.path.exists(outfolder):
 							os.makedirs(outfolder)
+						textpath = os.path.join(outfolder, text_file)
+						with open(textpath, 'a') as tfile:			
+							tfile.write(str(nca.header.contentType)+ ': ' + tabs + str(nca._path)+'\n')	
 						fp = open(filepath, 'w+b')
 						nca.rewind()
 						Print.info(tabs + 'Copying: ' + str(filename))
@@ -1274,14 +1293,25 @@ class Nsp(Pfs0):
 									newpath=dir+ '/' + newname
 									os.rename(filepath, newpath)
 									Print.info(tabs + '-------------------------------------')
+									textpath = os.path.join(outfolder, text_file)
+									with open(textpath, 'a') as tfile:			
+										tfile.write(str(nca.header.contentType)+ ': ' + tabs + tabs + newname + '\n')
 								else:
 									Print.info(tabs +'-> No need to patch the meta' )
-									Print.info(tabs + '-------------------------------------')				
+									Print.info(tabs + '-------------------------------------')
+									textpath = os.path.join(outfolder, text_file)
+									with open(textpath, 'a') as tfile:			
+										tfile.write(str(nca.header.contentType)+ ': ' + tabs + tabs + str(nca._path) + '\n')
+							else:					
+								textpath = os.path.join(outfolder, text_file)
+								with open(textpath, 'a') as tfile:			
+									tfile.write(str(nca.header.contentType)+ ': ' + tabs + str(nca._path) + '\n')												
 
 #Copy nca files						
 	def copy_nca(self,ofolder,buffer,metapatch):
 		indent = 1
 		tabs = '\t' * indent
+		text_file='newcontent_'+self.getnspid()+'.dat'
 		for nca in self:
 			if type(nca) == Nca:
 				nca.rewind()
@@ -1345,15 +1375,26 @@ class Nsp(Pfs0):
 							newpath=dir+ '/' + newname
 							os.rename(filepath, newpath)
 							Print.info(tabs + '-------------------------------------')
+							textpath = os.path.join(outfolder, text_file)
+							with open(textpath, 'a') as tfile:			
+								tfile.write(str(nca.header.contentType)+ ': ' + tabs + tabs + newname + '\n')
 						else:
 							Print.info(tabs +'-> No need to patch the meta' )
-							Print.info(tabs + '-------------------------------------')							
+							Print.info(tabs + '-------------------------------------')
+							textpath = os.path.join(outfolder, text_file)
+							with open(textpath, 'a') as tfile:			
+								tfile.write(str(nca.header.contentType)+ ': ' + tabs + tabs + str(nca._path) + '\n')
+					else:					
+						textpath = os.path.join(outfolder, text_file)
+						with open(textpath, 'a') as tfile:			
+							tfile.write(str(nca.header.contentType)+ ': ' + tabs + str(nca._path) + '\n')									
 				
 															
 #Copy nca files skipping deltas
 	def copy_nca_nd(self,ofolder,buffer,metapatch):
 		indent = 1
 		tabs = '\t' * indent
+		text_file='newcontent_'+self.getnspid()+'.dat'
 		Print.info('Copying files: ')
 		for nca in self:
 			vfragment="false"
@@ -1373,7 +1414,7 @@ class Nsp(Pfs0):
 					outfolder = str(ofolder)+'/'
 					filepath = os.path.join(outfolder, filename)
 					if not os.path.exists(outfolder):
-						os.makedirs(outfolder)
+						os.makedirs(outfolder)	
 					fp = open(filepath, 'w+b')
 					nca.rewind()
 					Print.info(tabs + 'Copying: ' + str(filename))
@@ -1429,10 +1470,19 @@ class Nsp(Pfs0):
 								newpath=dir+ '/' + newname
 								os.rename(filepath, newpath)
 								Print.info(tabs + '-------------------------------------')
+								textpath = os.path.join(outfolder, text_file)
+								with open(textpath, 'a') as tfile:			
+									tfile.write(str(nca.header.contentType)+ ': ' + tabs + tabs + newname + '\n')
 							else:
 								Print.info(tabs +'-> No need to patch the meta' )
-								Print.info(tabs + '-------------------------------------')				
-
+								Print.info(tabs + '-------------------------------------')
+								textpath = os.path.join(outfolder, text_file)
+								with open(textpath, 'a') as tfile:			
+									tfile.write(str(nca.header.contentType)+ ': ' + tabs + tabs + str(nca._path) + '\n')
+						else:					
+							textpath = os.path.join(outfolder, text_file)
+							with open(textpath, 'a') as tfile:			
+								tfile.write(str(nca.header.contentType)+ ': ' + tabs + str(nca._path) + '\n')								
 
 
 

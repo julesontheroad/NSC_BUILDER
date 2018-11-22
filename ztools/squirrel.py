@@ -113,7 +113,7 @@ if __name__ == '__main__':
 		parser.add_argument('--NSP_copy_ntr_nca', nargs='+', help='Extracts nca files without titlerights from target nsp')
 		parser.add_argument('--NSP_c_KeyBlock', nargs='+', help='Extracts keyblock from nsca files with titlerigths  from target nsp')	
 		parser.add_argument('--C_clean', nargs='+', help='Extracts nca files and removes it.s titlerights from target NSP OR XCI')			
-		parser.add_argument('--C_clean_ND', nargs='+', help='Extracts nca files and removes it.s titlerights from target NSP OR XCI without deltas')		
+		parser.add_argument('--C_clean_ND', nargs='+', help='Extracts nca files and removes it.s titlerights from target NSP OR XCI without deltas')
 
 		# Combinations	
 		parser.add_argument('--placeholder_combo', nargs='+', help='Extracts nca files for placeholder nsp')
@@ -132,7 +132,6 @@ if __name__ == '__main__':
 
 		Status.start()
 		
-
 # NCA/NSP IDENTIFICATION
 		# ..................................................
 		# Get titleid from nca file
@@ -313,7 +312,7 @@ if __name__ == '__main__':
 					f.close()
 				except BaseException as e:
 					Print.error('Exception: ' + str(e))			
-					
+				
 # GAMECARD FLAG FUNCTIONS
 		# ...................................................						
 		# Set isgamecard flag from all nca in an NSP as ESHOP

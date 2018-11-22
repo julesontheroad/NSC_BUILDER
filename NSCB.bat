@@ -108,11 +108,11 @@ set "filename=%%~nf"
 set "orinput=%%f"
 set "showname=%orinput%"
 call :processing_message
-if "%zip_restore%" EQU "true" ( set "ziptarget=%%f" )
-if "%zip_restore%" EQU "true" ( call :makezip )
 REM echo %safe_var%>safe.txt
 call :squirrell
 %pycommand% "%nut%" %buffer% %patchRSV% -o "%w_folder%\secure" %nf_cleaner% "%%f"
+if "%zip_restore%" EQU "true" ( set "ziptarget=%%f" )
+if "%zip_restore%" EQU "true" ( call :makezip )
 call :getname
 REM setlocal enabledelayedexpansion
 REM set vpack=!vrepack!
@@ -194,11 +194,11 @@ echo --------------------------------------
 echo.
 set "showname=%orinput%"
 call :processing_message
-if "%zip_restore%" EQU "true" ( set "ziptarget=%%f" )
-if "%zip_restore%" EQU "true" ( call :makezip )
 ::echo %safe_var%>safe.txt
 call :squirrell
 %pycommand% "%nut%" %buffer% %patchRSV% -o "%w_folder%\secure" %nf_cleaner% "%%f"
+if "%zip_restore%" EQU "true" ( set "ziptarget=%%f" )
+if "%zip_restore%" EQU "true" ( call :makezip )
 )
 
 ::FOR XCI FILES
@@ -255,9 +255,9 @@ call :processing_message
 if exist "%w_folder%" rmdir /s /q "%w_folder%" >NUL 2>&1
 call :squirrell
 %pycommand% "%nut%" %buffer% %patchRSV% -o "%w_folder%\secure" %nf_cleaner% "%~1"
-call :getname
 if "%zip_restore%" EQU "true" ( set "ziptarget=%~1" )
 if "%zip_restore%" EQU "true" ( call :makezip )
+call :getname
 if "%vrename%" EQU "true" call :addtags_from_nsp
 ::echo "%vrepack%"
 ::echo "%nsp_lib%"
@@ -533,17 +533,18 @@ if "%vrepack%" EQU "zip" ( goto nsp_just_zip )
 %pycommand% "%nut%" %buffer% %patchRSV% -o "%w_folder%\secure" %nf_cleaner% "%orinput%"
 
 :nsp_just_zip
-call :getname
 if "%zip_restore%" EQU "true" ( call :makezip )
-
+call :getname
 if "%vrename%" EQU "true" call :addtags_from_nsp
 if "%vrepack%" EQU "nsp" ( call "%nsp_lib%" "repack" "%w_folder%" "%%f")
 if "%vrepack%" EQU "xci" ( call "%xci_lib%" "repack" "%w_folder%" "%%f")
 if "%vrepack%" EQU "both" ( call "%nsp_lib%" "repack" "%w_folder%" "%%f")
 if "%vrepack%" EQU "both" ( call "%xci_lib%" "repack" "%w_folder%" "%%f")
 setlocal enabledelayedexpansion
+if "%zip_restore%" EQU "true" ( goto :nsp_just_zip2 )
 if exist "%fold_output%\!end_folder!" RD /S /Q "%fold_output%\!end_folder!" >NUL 2>&1
-MD "%fold_output%\!end_folder!" >NUL 2>&1
+:nsp_just_zip2
+if not exist "%fold_output%\!end_folder!" MD "%fold_output%\!end_folder!" >NUL 2>&1
 move  "%w_folder%\*.xci"  "%fold_output%\!end_folder!" >NUL 2>&1
 move  "%w_folder%\*.nsp"  "%fold_output%\!end_folder!" >NUL 2>&1
 move  "%w_folder%\*.zip"  "%fold_output%\!end_folder!" >NUL 2>&1
@@ -1007,11 +1008,14 @@ if "%vrename%" EQU "true" ( set "filename=%end_folder%" )
 exit /B
 
 :makezip
+echo.
 echo Making zip for %ziptarget%
 echo.
 %pycommand% "%nut%" %buffer% %patchRSV% -o "%w_folder%\zip" --zip_combo "%ziptarget%"
 %pycommand% "%nut%" -o "%w_folder%\zip" --NSP_c_KeyBlock "%ziptarget%"
 %pycommand% "%nut%" --nsptitleid "%ziptarget%" >"%w_folder%\nsptitleid.txt"
+if exist "%w_folder%\secure\*.dat" ( move "%w_folder%\secure\*.dat" "%w_folder%\zip" ) >NUL 2>&1
+
 set /p titleid=<"%w_folder%\nsptitleid.txt"
 del "%w_folder%\nsptitleid.txt" >NUL 2>&1
 %pycommand% "%nut%" --nsptype "%ziptarget%" >"%w_folder%\nsptype.txt"

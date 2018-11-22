@@ -47,6 +47,8 @@ builds.
 
 ``` --C_clean_ND-> Copy and remove titlerights skipping deltas```
 
+  - patchRSV -> Patch RequiredSystemVersion
+
 ####  OPTION 4: Route to game_info.ini and keys.txt
 #### OPTION 5: REPACK OPTIONS. Controls repack in auto mode.
 ##### Repack option for auto-mode
