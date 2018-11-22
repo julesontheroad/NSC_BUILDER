@@ -884,7 +884,7 @@ FINDSTR /L ".nca" "%~dp0hlogo.txt" >>"%~dp0logo.txt"
 del "%~dp0hlogo.txt"
 set /p custlogo=<"%~dp0logo.txt"
 ::echo %custlogo%
-for /f "tokens=*" %%f in ( %~dp0logo.txt ) do (
+for /f "usebackq tokens=*" %%f in ( "%~dp0logo.txt" ) do (
 set "logoname=%%~nxf"
 if "%%~nxf"=="%%~nf.nsp" goto ext_log
 if "%%~nxf"=="%%~nf.nca" goto check_log
@@ -993,11 +993,11 @@ set filename=%filename:[Trimmed]=%
 echo %filename% >"%w_folder%\fname.txt"
 
 ::deletebrackets
-for /f "tokens=1* delims=[" %%a in (%w_folder%\fname.txt) do (
+for /f "usebackq tokens=1* delims=[" %%a in ("%w_folder%\fname.txt") do (
     set end_folder=%%a)
 echo %end_folder%>"%w_folder%\fname.txt"
 ::deleteparenthesis
-for /f "tokens=1* delims=(" %%a in (%w_folder%\fname.txt) do (
+for /f "usebackq tokens=1* delims=(" %%a in ("%w_folder%\fname.txt") do (
     set end_folder=%%a)
 echo %end_folder%>"%w_folder%\fname.txt"
 ::I also wanted to remove_(

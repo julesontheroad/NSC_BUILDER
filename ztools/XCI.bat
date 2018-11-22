@@ -19,7 +19,7 @@ del "%w_folder%\lisfiles.txt"
 
 setlocal enabledelayedexpansion
 set nca_number=
-for /f "tokens=*" %%f in (%w_folder%\nca_list.txt) do (
+for /f "usebackq tokens=*" %%f in ("%w_folder%\nca_list.txt") do (
 set /a nca_number=!nca_number! + 1
 )
 del "%w_folder%\nca_list.txt"
