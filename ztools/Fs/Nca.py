@@ -172,7 +172,7 @@ class NcaHeader(File):
 		self.seek(0x204)
 		self.writeInt8(value)
 		
-	def getgamecard(self, value):
+	def getgamecard(self):
 		self.seek(0x204)
 		return self.readInt8()
 

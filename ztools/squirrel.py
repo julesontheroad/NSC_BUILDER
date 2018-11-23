@@ -77,8 +77,8 @@ if __name__ == '__main__':
 		# Gamecard flag functions
 		parser.add_argument('--seteshop', nargs='+', help='Set all nca in an nsp as eshop')
 		parser.add_argument('--setcgame', nargs='+', help='Set all nca in an nsp card')	
-		parser.add_argument('--seteshop_nca', nargs='+', help='Set a single nca in an nsp as eshop')
-		parser.add_argument('--setcgame_nca', nargs='+', help='Set a single nca in an nsp card')	
+		parser.add_argument('--seteshop_nca', nargs='+', help='Set a single nca as eshop')
+		parser.add_argument('--setcgame_nca', nargs='+', help='Set a single nca as card')	
 		parser.add_argument('--cardstate', nargs='+', help='Returns value for isgamecard flag from an nca')	
 		
 		# NSP Copy functions
@@ -337,7 +337,34 @@ if __name__ == '__main__':
 					f.flush()
 					f.close()
 				except BaseException as e:
-					Print.error('Exception: ' + str(e))				
+					Print.error('Exception: ' + str(e))	
+		# ...................................................						
+		# Set isgamecard flag for one nca as ESHOP
+		# ...................................................
+		if args.seteshop_nca:
+			for filename in args.seteshop_nca:
+				try:
+					f = Fs.Nca(filename, 'r+b')
+					f.header.setgamecard(0)
+					Print.info('IsGameCard flag is now set as: ' + str(f.header.getgamecard()))	
+					f.flush()
+					f.close()
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))
+		# ...................................................						
+		# Set isgamecard flag for one nca as CARD
+		# ...................................................
+		if args.setcgame_nca:
+			for filename in args.setcgame_nca:
+				try:
+					f = Fs.Nca(filename, 'r+b')
+					f.header.setgamecard(1)
+					Print.info('IsGameCard flag is now set as: ' + str(f.header.getgamecard()))	
+					f.flush()
+					f.close()
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))
+					
 		# ...................................................						
 		# Get isgamecard flag from a NCA file
 		# ...................................................		
