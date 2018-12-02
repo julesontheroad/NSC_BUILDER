@@ -11,6 +11,7 @@ import Hex
 import Title
 import Titles
 import Hex
+import sq_tools
 from struct import pack as pk, unpack as upk
 from hashlib import sha256
 import Fs.Type
@@ -300,8 +301,10 @@ class Xci(File):
 								Print.info(tabs + '-------------------------------------')
 								Print.info(tabs + 'Checking meta: ')
 								meta_nca = Fs.Nca(filepath, 'r+b')
-								if 	meta_nca.get_req_system() > 336592896:
-									meta_nca.write_req_system(336592896)
+								keygen=meta_nca.header.getCryptoType2()
+								RSV=sq_tools.getRSV(keygen,meta_nca.get_req_system())
+								if 	meta_nca.get_req_system() > RSV:
+									meta_nca.write_req_system(RSV)
 									meta_nca.flush()
 									meta_nca.close()
 									Print.info(tabs + 'Updating cnmt hashes: ')
@@ -387,8 +390,10 @@ class Xci(File):
 									Print.info(tabs + '-------------------------------------')
 									Print.info(tabs + 'Checking meta: ')
 									meta_nca = Fs.Nca(filepath, 'r+b')
-									if 	meta_nca.get_req_system() > 336592896:
-										meta_nca.write_req_system(336592896)
+									keygen=meta_nca.header.getCryptoType2()
+									RSV=sq_tools.getRSV(keygen,meta_nca.get_req_system())
+									if 	meta_nca.get_req_system() > RSV:
+										meta_nca.write_req_system(RSV)
 										meta_nca.flush()
 										meta_nca.close()
 										Print.info(tabs + 'Updating cnmt hashes: ')
@@ -505,8 +510,10 @@ class Xci(File):
 									Print.info(tabs + '-------------------------------------')
 									Print.info(tabs + 'Checking meta: ')
 									meta_nca = Fs.Nca(filepath, 'r+b')
-									if 	meta_nca.get_req_system() > 336592896:
-										meta_nca.write_req_system(336592896)
+									keygen=meta_nca.header.getCryptoType2()
+									RSV=sq_tools.getRSV(keygen,meta_nca.get_req_system())
+									if 	meta_nca.get_req_system() > RSV:
+										meta_nca.write_req_system(RSV)
 										meta_nca.flush()
 										meta_nca.close()
 										Print.info(tabs + 'Updating cnmt hashes: ')
@@ -633,8 +640,10 @@ class Xci(File):
 										Print.info(tabs + '-------------------------------------')
 										Print.info(tabs + 'Checking meta: ')
 										meta_nca = Fs.Nca(filepath, 'r+b')
-										if 	meta_nca.get_req_system() > 336592896:
-											meta_nca.write_req_system(336592896)
+										keygen=meta_nca.header.getCryptoType2()
+										RSV=sq_tools.getRSV(keygen,meta_nca.get_req_system())
+										if 	meta_nca.get_req_system() > RSV:
+											meta_nca.write_req_system(RSV)
 											meta_nca.flush()
 											meta_nca.close()
 											Print.info(tabs + 'Updating cnmt hashes: ')
@@ -747,7 +756,373 @@ class Xci(File):
 										ncatype = cnmt.read(0x1)
 										Print.info('ncatype = ' + str(int.from_bytes(ncatype, byteorder='little')))
 										unknown = cnmt.read(0x1)			
+									
+#///////////////////////////////////////////////////								
+#SPLIT MULTI-CONTENT XCI IN FOLDERS
+#///////////////////////////////////////////////////	
+	def splitter_read(self,ofolder,buffer,pathend):
+		for nspF in self.hfs0:
+			if str(nspF._path)=="secure":
+				for nca in nspF:
+					if type(nca) == Nca:
+						if 	str(nca.header.contentType) == 'Content.META':
+							for f in nca:
+								for cnmt in f:		
+									nca.rewind()
+									f.rewind()
+									cnmt.rewind()
+									titleid=cnmt.readInt64()
+									titleversion = cnmt.read(0x4)
+									cnmt.rewind()
+									cnmt.seek(0xE)
+									offset=cnmt.readInt16()
+									content_entries=cnmt.readInt16()
+									meta_entries=cnmt.readInt16()
+									cnmt.rewind()
+									cnmt.seek(0x20)
+									original_ID=cnmt.readInt64()
+									min_sversion=cnmt.readInt64()
+									target=str(nca._path)
+									contentname = self.splitter_get_title(target,offset,content_entries,original_ID)
+									cnmt.rewind()
+									cnmt.seek(0x20+offset)
+									titleid2 = str(hx(titleid.to_bytes(8, byteorder='big'))) 	
+									titleid2 = titleid2[2:-1]
+									Print.info('-------------------------------------')
+									Print.info('Detected content: ' + str(titleid2))	
+									Print.info('-------------------------------------')							
+									for i in range(content_entries):
+										vhash = cnmt.read(0x20)
+										NcaId = cnmt.read(0x10)
+										size = cnmt.read(0x6)
+										ncatype = cnmt.read(0x1)
+										unknown = cnmt.read(0x1)		
+									#**************************************************************	
+										version=str(int.from_bytes(titleversion, byteorder='little'))
+										version='[v'+version+']'
+										titleid3 ='['+ titleid2+']'
+										nca_name=str(hx(NcaId))
+										nca_name=nca_name[2:-1]+'.nca'
+										ofolder2 = ofolder+ '/'+contentname+' '+ titleid3+' '+version+'/'+pathend
+										self.splitter_copy(ofolder2,buffer,nca_name)
+									nca_meta=str(nca._path)
+									self.splitter_copy(ofolder2,buffer,nca_meta)
+									self.splitter_tyc(ofolder2,titleid2)
+		dirlist=os.listdir(ofolder)
+		textpath = os.path.join(ofolder, 'dirlist.txt')
+		with open(textpath, 'a') as tfile:		
+			for folder in dirlist:
+				item = os.path.join(ofolder, folder)
+				tfile.write(item + '\n')
 
+	
+		indent = 1
+		tabs = '\t' * indent
+		token='secure'
+		for nspF in self.hfs0:
+			if token == str(nspF._path):
+				for nca in nspF:
+					if type(nca) == Nca:
+						if nca_name == str(nca._path):
+							nca.rewind()
+							filename =  str(nca._path)
+							outfolder = str(ofolder)+'/'
+							filepath = os.path.join(outfolder, filename)
+							if not os.path.exists(outfolder):
+								os.makedirs(outfolder)
+							fp = open(filepath, 'w+b')
+							nca.rewind()
+							Print.info(tabs + 'Copying: ' + str(filename))
+							for data in iter(lambda: nca.read(int(buffer)), ""):
+								fp.write(data)
+								fp.flush()
+								if not data:
+									break
+							fp.close()
+	
+	def splitter_copy(self,ofolder,buffer,nca_name):
+		indent = 1
+		tabs = '\t' * indent
+		token='secure'
+		for nspF in self.hfs0:
+			if token == str(nspF._path):
+				for nca in nspF:
+					if type(nca) == Nca:
+						if nca_name == str(nca._path):	
+							nca.rewind()
+							filename =  str(nca._path)
+							outfolder = str(ofolder)+'/'
+							filepath = os.path.join(outfolder, filename)
+							if not os.path.exists(outfolder):
+								os.makedirs(outfolder)
+							fp = open(filepath, 'w+b')
+							nca.rewind()
+							Print.info(tabs + 'Copying: ' + str(filename))
+							for data in iter(lambda: nca.read(int(buffer)), ""):
+								fp.write(data)
+								fp.flush()
+								if not data:
+									break
+							fp.close()
+
+	def splitter_tyc(self,ofolder,titleid):
+		indent = 1
+		tabs = '\t' * indent
+		token='secure'
+		for nspF in self.hfs0:
+			if token == str(nspF._path):
+				for ticket in nspF:		
+					if type(ticket) == Ticket:
+						tik_id = str(ticket._path)
+						tik_id =tik_id[:-20]
+						if titleid == tik_id:
+							ticket.rewind()
+							data = ticket.read()
+							filename =  str(ticket._path)
+							outfolder = str(ofolder)+'/'
+							filepath = os.path.join(outfolder, filename)
+							if not os.path.exists(outfolder):
+								os.makedirs(outfolder)
+							fp = open(str(filepath), 'w+b')
+							Print.info(tabs + 'Copying: ' + str(filename))
+							fp.write(data)
+							fp.flush()
+							fp.close()
+		for nspF in self.hfs0:
+			if token == str(nspF._path):
+				for cert in nspF:				
+					if cert._path.endswith('.cert'):
+						cert_id = str(cert._path)
+						cert_id =cert_id[:-21]
+						if titleid == cert_id:				
+							cert.rewind()
+							data = cert.read()
+							filename =  str(cert._path)
+							outfolder = str(ofolder)+'/'
+							filepath = os.path.join(outfolder, filename)
+							if not os.path.exists(outfolder):
+								os.makedirs(outfolder)
+							fp = open(str(filepath), 'w+b')
+							Print.info(tabs + 'Copying: ' + str(filename))
+							fp.write(data)
+							fp.flush()
+							fp.close()
+		
+	def splitter_get_title(self,target,offset,content_entries,original_ID):
+		content_type=''
+		token='secure'		
+		for nspF in self.hfs0:
+			if token == str(nspF._path):
+				for nca in nspF:
+					if type(nca) == Nca:
+						if target ==  str(nca._path):
+							for f in nca:
+								for cnmt in f:
+									nca.rewind()
+									f.rewind()
+									cnmt.rewind()					
+									cnmt.seek(0x20+offset)	
+									nca_name='false'
+									for i in range(content_entries):
+										vhash = cnmt.read(0x20)
+										NcaId = cnmt.read(0x10)
+										size = cnmt.read(0x6)
+										ncatype = cnmt.read(0x1)
+										unknown = cnmt.read(0x1)
+										ncatype2 = int.from_bytes(ncatype, byteorder='little')
+										if ncatype2 == 3:
+											nca_name=str(hx(NcaId))
+											nca_name=nca_name[2:-1]+'.nca'
+											content_name=str(cnmt._path)
+											content_name=content_name[:-22]
+											if content_name == 'Patch':
+												content_type=' [UPD]'
+		if nca_name=='false':
+			for nspF in self.hfs0:
+				if token == str(nspF._path):
+					for nca in nspF:		
+						if type(nca) == Nca:
+							if 	str(nca.header.contentType) == 'Content.META':
+								for f in nca:
+									for cnmt in f:
+										cnmt.rewind()
+										testID=cnmt.readInt64()
+										if 	testID == original_ID:
+											nca.rewind()
+											f.rewind()								
+											titleid=cnmt.readInt64()
+											titleversion = cnmt.read(0x4)
+											cnmt.rewind()
+											cnmt.seek(0xE)
+											offset=cnmt.readInt16()
+											content_entries=cnmt.readInt16()
+											meta_entries=cnmt.readInt16()
+											cnmt.rewind()
+											cnmt.seek(0x20)
+											original_ID=cnmt.readInt64()
+											min_sversion=cnmt.readInt64()
+											target=str(nca._path)
+											contentname = self.splitter_get_title(target,offset,content_entries,original_ID)
+											cnmt.rewind()
+											cnmt.seek(0x20+offset)								
+											for i in range(content_entries):
+												vhash = cnmt.read(0x20)
+												NcaId = cnmt.read(0x10)
+												size = cnmt.read(0x6)
+												ncatype = cnmt.read(0x1)
+												unknown = cnmt.read(0x1)
+												ncatype2 = int.from_bytes(ncatype, byteorder='little')
+												if ncatype2 == 3:
+													nca_name=str(hx(NcaId))
+													nca_name=nca_name[2:-1]+'.nca'
+													content_type=' [DLC]'
+		title='DLC'
+		for nspF in self.hfs0:
+			if token == str(nspF._path):
+				for nca in nspF:		
+					if type(nca) == Nca:
+						if nca_name == str(nca._path):
+							for f in nca:
+								nca.rewind()
+								f.rewind()	
+								f.seek(0x14200)
+								title = f.read(0x200)		
+								title = title.split(b'\0', 1)[0].decode('utf-8')
+								title = (re.sub(r'[\/\\\:\*\?\"\<\>\|\.\s™©®()\~]+', ' ', title))
+								title = title + content_type
+		return(title)
+												
+		
+
+#///////////////////////////////////////////////////								
+#PREPARE BASE CONTENT TO UPDATE IT
+#///////////////////////////////////////////////////	
+	def updbase_read(self,ofolder,buffer,cskip):
+		for nspF in self.hfs0:
+			if str(nspF._path)=="secure":
+				for nca in nspF:
+					if type(nca) == Nca:
+						if 	str(nca.header.contentType) == 'Content.META':
+							for f in nca:
+								for cnmt in f:	
+									content_name=str(cnmt._path)
+									content_name=content_name[:-22]
+									if content_name == 'Patch':
+										if cskip == 'upd':
+											continue
+										if cskip == 'both':
+											continue
+									if content_name == 'AddOnContent':
+										if cskip == 'dlc':
+											continue
+										if cskip == 'both':
+											continue															
+									nca.rewind()
+									f.rewind()
+									cnmt.rewind()
+									titleid=cnmt.readInt64()
+									titleversion = cnmt.read(0x4)
+									cnmt.rewind()
+									cnmt.seek(0xE)
+									offset=cnmt.readInt16()
+									content_entries=cnmt.readInt16()
+									meta_entries=cnmt.readInt16()
+									cnmt.rewind()
+									cnmt.seek(0x20)
+									original_ID=cnmt.readInt64()
+									min_sversion=cnmt.readInt64()
+									target=str(nca._path)
+									cnmt.rewind()
+									cnmt.seek(0x20+offset)
+									titleid2 = str(hx(titleid.to_bytes(8, byteorder='big'))) 	
+									titleid2 = titleid2[2:-1]
+									Print.info('-------------------------------------')
+									Print.info('Copying content: ' + str(titleid2))	
+									Print.info('-------------------------------------')							
+									for i in range(content_entries):
+										vhash = cnmt.read(0x20)
+										NcaId = cnmt.read(0x10)
+										size = cnmt.read(0x6)
+										ncatype = cnmt.read(0x1)
+										unknown = cnmt.read(0x1)		
+									#**************************************************************	
+										version=str(int.from_bytes(titleversion, byteorder='little'))
+										version='[v'+version+']'
+										titleid3 ='['+ titleid2+']'
+										nca_name=str(hx(NcaId))
+										nca_name=nca_name[2:-1]+'.nca'
+										self.updbase_copy(ofolder,buffer,nca_name)
+									nca_meta=str(nca._path)
+									self.updbase_copy(ofolder,buffer,nca_meta)
+									self.updbase_tyc(ofolder,titleid2)
+									
+	def updbase_copy(self,ofolder,buffer,nca_name):
+		indent = 1
+		tabs = '\t' * indent
+		token='secure'
+		for nspF in self.hfs0:
+			if token == str(nspF._path):
+				for nca in nspF:
+					if type(nca) == Nca:
+						if nca_name == str(nca._path):	
+							nca.rewind()
+							filename =  str(nca._path)
+							outfolder = str(ofolder)+'/'
+							filepath = os.path.join(outfolder, filename)
+							if not os.path.exists(outfolder):
+								os.makedirs(outfolder)
+							fp = open(filepath, 'w+b')
+							nca.rewind()
+							Print.info(tabs + 'Copying: ' + str(filename))
+							for data in iter(lambda: nca.read(int(buffer)), ""):
+								fp.write(data)
+								fp.flush()
+								if not data:
+									break
+							fp.close()
+
+	def updbase_tyc(self,ofolder,titleid):
+		indent = 1
+		tabs = '\t' * indent
+		token='secure'
+		for nspF in self.hfs0:
+			if token == str(nspF._path):
+				for ticket in nspF:		
+					if type(ticket) == Ticket:
+						tik_id = str(ticket._path)
+						tik_id =tik_id[:-20]
+						if titleid == tik_id:
+							ticket.rewind()
+							data = ticket.read()
+							filename =  str(ticket._path)
+							outfolder = str(ofolder)+'/'
+							filepath = os.path.join(outfolder, filename)
+							if not os.path.exists(outfolder):
+								os.makedirs(outfolder)
+							fp = open(str(filepath), 'w+b')
+							Print.info(tabs + 'Copying: ' + str(filename))
+							fp.write(data)
+							fp.flush()
+							fp.close()
+		for nspF in self.hfs0:
+			if token == str(nspF._path):
+				for cert in nspF:				
+					if cert._path.endswith('.cert'):
+						cert_id = str(cert._path)
+						cert_id =cert_id[:-21]
+						if titleid == cert_id:				
+							cert.rewind()
+							data = cert.read()
+							filename =  str(cert._path)
+							outfolder = str(ofolder)+'/'
+							filepath = os.path.join(outfolder, filename)
+							if not os.path.exists(outfolder):
+								os.makedirs(outfolder)
+							fp = open(str(filepath), 'w+b')
+							Print.info(tabs + 'Copying: ' + str(filename))
+							fp.write(data)
+							fp.flush()
+							fp.close()
 										
 #GET VERSION NUMBER FROM CNMT							
 	def get_cnmt_verID(self):

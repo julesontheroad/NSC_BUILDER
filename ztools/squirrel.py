@@ -114,6 +114,10 @@ if __name__ == '__main__':
 		parser.add_argument('--NSP_c_KeyBlock', nargs='+', help='Extracts keyblock from nsca files with titlerigths  from target nsp')	
 		parser.add_argument('--C_clean', nargs='+', help='Extracts nca files and removes it.s titlerights from target NSP OR XCI')			
 		parser.add_argument('--C_clean_ND', nargs='+', help='Extracts nca files and removes it.s titlerights from target NSP OR XCI without deltas')
+		
+		# Dedicated copy functions. SPLIT OR UPDATE. 
+		parser.add_argument('--splitter', nargs='+', help='Split content by titleid according to cnmt files')
+		parser.add_argument('--updbase', nargs='+', help='Prepare base file to update it')
 
 		# Combinations	
 		parser.add_argument('--placeholder_combo', nargs='+', help='Extracts nca files for placeholder nsp')
@@ -126,6 +130,8 @@ if __name__ == '__main__':
 		parser.add_argument('-b', '--buffer', nargs='+', help='Set buffer for copy instructions')
 		parser.add_argument('-ext', '--external', nargs='+', help='Set original nsp or ticket for remove nca titlerights functions')
 		parser.add_argument('-pv', '--patchversion', nargs='+', help='Patch Required system version')
+		parser.add_argument('-pe', '--pathend', nargs='+', help='Output to subfolder')		
+		parser.add_argument('-cskip', nargs='+', help='Skip dlc or update')				
 
 		
 		args = parser.parse_args()
@@ -423,11 +429,19 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768	
+				buffer = 32768
+			if args.patchversion:
+				for input in args.patchversion:
+					try:
+						metapatch = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+			else:
+				metapatch = 'false'					
 			for filename in args.NSP_copy_nca:
 				try:
 					f = Fs.Nsp(filename, 'rb')
-					f.copy_nca(ofolder,buffer)
+					f.copy_nca(ofolder,buffer,metapatch)
 					f.flush()
 					f.close()
 				except BaseException as e:
@@ -1182,7 +1196,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				metapatch = 'true'	
+				metapatch = 'false'	
 			for filename in args.C_clean_ND:
 				if filename.endswith('.nsp'):
 					try:
@@ -1269,7 +1283,108 @@ if __name__ == '__main__':
 #						Print.info('FALSE')
 #				except BaseException as e:
 #					Print.error('Exception: ' + str(e))						
-	
+
+
+
+# DEDICATED COPY FUNCTIONS. SPLIT OR UPDATE. 
+		# ............................................................						
+		# Split content by titleid according to cnmt files
+		# ............................................................	
+		if args.splitter:
+			if args.ofolder:		
+				for input in args.ofolder:
+					try:
+						ofolder = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+			else:
+				for filename in args.splitter:
+					dir=os.path.dirname(os.path.abspath(filename))
+					ofolder = dir+ '/'+ 'output'		
+			if args.buffer:		
+				for input in args.buffer:
+					try:
+						buffer = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+			else:
+				buffer = 32768				
+			if args.pathend:
+				for input in args.pathend:
+					try:
+						pathend = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+			else:
+				pathend = ''					
+			for filename in args.splitter:
+				if filename.endswith('.nsp'):
+					try:
+						f = Fs.Nsp(filename, 'rb')
+						f.splitter_read(ofolder,buffer,pathend)
+						f.flush()
+						f.close()	
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+				if filename.endswith('.xci'):
+					try:
+						f = Fs.factory(filename)
+						f.open(filename, 'rb')
+						f.splitter_read(ofolder,buffer,pathend)
+						f.flush()
+						f.close()
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+						
+		# ............................................................						
+		# Prepare base content to get it updated
+		# ............................................................	
+		if args.updbase:
+			if args.ofolder:		
+				for input in args.ofolder:
+					try:
+						ofolder = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+			else:
+				for filename in args.updbase:
+					dir=os.path.dirname(os.path.abspath(filename))
+					ofolder = dir+ '/'+ 'output'		
+			if args.buffer:		
+				for input in args.buffer:
+					try:
+						buffer = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+			else:
+				buffer = 32768				
+			if args.cskip:
+				for input in args.cskip:
+					try:
+						cskip = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+			else:
+				pathend = 'false'					
+			for filename in args.updbase:
+				if filename.endswith('.nsp'):
+					try:
+						f = Fs.Nsp(filename, 'rb')
+						f.updbase_read(ofolder,buffer,cskip)
+						f.flush()
+						f.close()	
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+				if filename.endswith('.xci'):
+					try:
+						f = Fs.factory(filename)
+						f.open(filename, 'rb')
+						f.updbase_read(ofolder,buffer,cskip)
+						f.flush()
+						f.close()
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+												
 # COMBINATIONS
 		# ............................................................						
 		# Get nca files to make a placeholder in eshop format from NSP
@@ -1300,8 +1415,20 @@ if __name__ == '__main__':
 					f.copy_nca_meta(ofolder,buffer)
 					f.flush()
 					f.close()
+					'''
+					#TEST CODE 
+					f = Fs.Nsp(filename, 'rb')
+					lcontrol=f.copy_nca_control(ofolder,buffer)
+					lmeta=f.copy_nca_meta(ofolder,buffer)
+					files=lcontrol+lmeta
+					f.flush()
+					f.close()
+					nsp = Fs.Nsp(None, None)
+					nsp.path = "placeholder.nsp"
+					nsp.pack(files)'''
 				except BaseException as e:
 					Print.error('Exception: ' + str(e))
+	
 		# ............................................................						
 		# Get files to make a [lc].nsp from NSP
 		# ............................................................		

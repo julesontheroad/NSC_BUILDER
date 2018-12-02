@@ -11,7 +11,7 @@
 -------------------------------------------------------------------------------------
 "                             POWERED WITH NUT BY BLAWAR                            "
 "                             AND LUCA FRAGA'S HACBUILD                             "
-                                    VERSION 0.61                                     	
+                                    VERSION 0.70                                     	
 -------------------------------------------------------------------------------------                   
 Program's github: https://github.com/julesontheroad/NSC_BUILDER
 Revised hacbuild: https://github.com/julesontheroad/hacbuild
@@ -21,6 +21,27 @@ SciresM hactool : https://github.com/SciresM/hactool
 ---------------
 0. Changelog
 ---------------
+v0.70- Better RequiredSystemVersion patching, added Split Mode, added Update Mode
+       1.- RequiredSystemVersion patching is now set by default in auto-mode.
+       2.- Program asks before patching RequiredSystemVersion in manual mode
+       3.- RequiredSystemVersion IS NOW PATCHED TO THE KEYGENERATION. This means the system
+	   will ask you to download the system update if it's needed because it lacks the master-key.
+       4.- ADDED SPLIT MODE as option 3 in manual mode. Split Mode will let you split multi-content
+           xci or nsp to it's original content.
+           Split mode is set to repack DLC and Updates always as nsp.
+       5.- ADDED UPDATE MODE as option 4 in manual mode. This is a first and easy implementation.
+           You first set the base, which needs to be a multi-content file then make a list of things 
+           to update\upgrade the content.
+           Choose if you want to strip UPDATES\DLC or both from the base file, choose how you want
+           to repack the resulting content and if you want to patch the meta and the program will 
+           process the file.
+       NOTE: IF A XCI DOESN'T WORK WITH RSV PATCHING TRY TO REDO IT WITHOUT PATCHING AND TELL ME
+       IN GITHUB. SOME OLDER GAMES SEEM TO HAVE ISSUES WITH THE META PATCHING IN XCI FORM. I STILL
+       NEED TO CHECK THE REASON.
+v0.65- Added option to patched RequiredSystemVersion in the meta nca (set by default)
+       Changed Read\Write permissions for input files to Read
+       Renamed "nut_RTR.py" to "squirrel" since it's deviating a lot from Nut's main line.
+v0.62- Added option to just make zips in "Manual Mode. Individual processing.
 v0.61- Mostly bugfixes.
 	   1.- Changed counter functions from "find /C" to other method for people with inverted 
 	       bar routes.

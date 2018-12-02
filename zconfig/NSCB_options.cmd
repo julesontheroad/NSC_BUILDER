@@ -35,7 +35,7 @@ set "nf_cleaner=--C_clean_ND"
 ::than the required FW to decypher the crypto
 ::true -> Patch required system version in the meta nca
 ::false-> Don't patch required system version in the meta nca
-set "patchRSV=-pv true"
+set "patchRSV=-pv false"
 
 ::--------------------------------------------------------------
 ::OPTION 4: IMPORTANT FILES
@@ -55,13 +55,15 @@ set "vrepack=both"
 ::Type of repack for folders
 ::indiv->repack multiple input files as multiple output file. INDIVIDUAL MODE
 ::multi->repack multiple input files as single output file. MULTI-MODE
-set "fi_rep=multi"
+set "fi_rep=indiv"
 ::--------------------------------------------------------------
 ::OPTION 6: MANUAL MODE INTRO
 ::--------------------------------------------------------------
 ::Repack mode that is shown first in manual mode
 ::indiv->individual packing of files
 ::multi->multi-pack mode
+::split->splitter mode
+::update->update mode
 ::choose->prompt to choose the mode to enter
 set "manual_intro=choose"
 ::--------------------------------------------------------------
