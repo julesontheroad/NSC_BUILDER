@@ -55,7 +55,7 @@ set "vrepack=both"
 ::Type of repack for folders
 ::indiv->repack multiple input files as multiple output file. INDIVIDUAL MODE
 ::multi->repack multiple input files as single output file. MULTI-MODE
-set "fi_rep=indiv"
+set "fi_rep=multi"
 ::--------------------------------------------------------------
 ::OPTION 6: MANUAL MODE INTRO
 ::--------------------------------------------------------------
