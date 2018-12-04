@@ -298,55 +298,7 @@ class Xci(File):
 						fp.close()
 						if metapatch == 'true':
 							if 	str(nca.header.contentType) == 'Content.META':
-								Print.info(tabs + '-------------------------------------')
-								Print.info(tabs + 'Checking meta: ')
-								meta_nca = Fs.Nca(filepath, 'r+b')
-								keygen=meta_nca.header.getCryptoType2()
-								RSV=sq_tools.getRSV(keygen,meta_nca.get_req_system())
-								if 	meta_nca.get_req_system() > RSV:
-									meta_nca.write_req_system(RSV)
-									meta_nca.flush()
-									meta_nca.close()
-									Print.info(tabs + 'Updating cnmt hashes: ')
-									############################
-									meta_nca = Fs.Nca(filepath, 'r+b')
-									sha=meta_nca.calc_pfs0_hash()
-									meta_nca.flush()
-									meta_nca.close()
-									meta_nca = Fs.Nca(filepath, 'r+b')
-									meta_nca.set_pfs0_hash(sha)
-									meta_nca.flush()
-									meta_nca.close()
-									############################
-									meta_nca = Fs.Nca(filepath, 'r+b')
-									sha2=meta_nca.calc_htable_hash()
-									meta_nca.flush()
-									meta_nca.close()						
-									meta_nca = Fs.Nca(filepath, 'r+b')
-									meta_nca.header.set_htable_hash(sha2)
-									meta_nca.flush()
-									meta_nca.close()
-									########################
-									meta_nca = Fs.Nca(filepath, 'r+b')
-									sha3=meta_nca.header.calculate_hblock_hash()
-									meta_nca.flush()
-									meta_nca.close()						
-									meta_nca = Fs.Nca(filepath, 'r+b')
-									meta_nca.header.set_hblock_hash(sha3)
-									meta_nca.flush()
-									meta_nca.close()
-									########################
-									with open(filepath, 'r+b') as file:			
-										nsha=sha256(file.read()).hexdigest()
-									newname=nsha[:32] + '.cnmt.nca'				
-									Print.info(tabs +'New name: ' + newname )
-									dir=os.path.dirname(os.path.abspath(filepath))
-									newpath=dir+ '/' + newname
-									os.rename(filepath, newpath)
-									Print.info(tabs + '-------------------------------------')
-								else:
-									Print.info(tabs +'-> No need to patch the meta' )
-									Print.info(tabs + '-------------------------------------')			
+								self.patch_meta(filepath,outfolder)					
 										
 										
 #Copy nca files from secure skipping deltas
@@ -387,55 +339,7 @@ class Xci(File):
 							fp.close()
 							if metapatch == 'true':
 								if 	str(nca.header.contentType) == 'Content.META':
-									Print.info(tabs + '-------------------------------------')
-									Print.info(tabs + 'Checking meta: ')
-									meta_nca = Fs.Nca(filepath, 'r+b')
-									keygen=meta_nca.header.getCryptoType2()
-									RSV=sq_tools.getRSV(keygen,meta_nca.get_req_system())
-									if 	meta_nca.get_req_system() > RSV:
-										meta_nca.write_req_system(RSV)
-										meta_nca.flush()
-										meta_nca.close()
-										Print.info(tabs + 'Updating cnmt hashes: ')
-										############################
-										meta_nca = Fs.Nca(filepath, 'r+b')
-										sha=meta_nca.calc_pfs0_hash()
-										meta_nca.flush()
-										meta_nca.close()
-										meta_nca = Fs.Nca(filepath, 'r+b')
-										meta_nca.set_pfs0_hash(sha)
-										meta_nca.flush()
-										meta_nca.close()
-										############################
-										meta_nca = Fs.Nca(filepath, 'r+b')
-										sha2=meta_nca.calc_htable_hash()
-										meta_nca.flush()
-										meta_nca.close()						
-										meta_nca = Fs.Nca(filepath, 'r+b')
-										meta_nca.header.set_htable_hash(sha2)
-										meta_nca.flush()
-										meta_nca.close()
-										########################
-										meta_nca = Fs.Nca(filepath, 'r+b')
-										sha3=meta_nca.header.calculate_hblock_hash()
-										meta_nca.flush()
-										meta_nca.close()						
-										meta_nca = Fs.Nca(filepath, 'r+b')
-										meta_nca.header.set_hblock_hash(sha3)
-										meta_nca.flush()
-										meta_nca.close()
-										########################
-										with open(filepath, 'r+b') as file:			
-											nsha=sha256(file.read()).hexdigest()
-										newname=nsha[:32] + '.cnmt.nca'				
-										Print.info(tabs +'New name: ' + newname )
-										dir=os.path.dirname(os.path.abspath(filepath))
-										newpath=dir+ '/' + newname
-										os.rename(filepath, newpath)
-										Print.info(tabs + '-------------------------------------')
-									else:
-										Print.info(tabs +'-> No need to patch the meta' )
-										Print.info(tabs + '-------------------------------------')			
+									self.patch_meta(filepath,outfolder)					
 
 
 	
@@ -507,55 +411,7 @@ class Xci(File):
 							fp.close()
 							if metapatch == 'true':
 								if 	str(nca.header.contentType) == 'Content.META':
-									Print.info(tabs + '-------------------------------------')
-									Print.info(tabs + 'Checking meta: ')
-									meta_nca = Fs.Nca(filepath, 'r+b')
-									keygen=meta_nca.header.getCryptoType2()
-									RSV=sq_tools.getRSV(keygen,meta_nca.get_req_system())
-									if 	meta_nca.get_req_system() > RSV:
-										meta_nca.write_req_system(RSV)
-										meta_nca.flush()
-										meta_nca.close()
-										Print.info(tabs + 'Updating cnmt hashes: ')
-										############################
-										meta_nca = Fs.Nca(filepath, 'r+b')
-										sha=meta_nca.calc_pfs0_hash()
-										meta_nca.flush()
-										meta_nca.close()
-										meta_nca = Fs.Nca(filepath, 'r+b')
-										meta_nca.set_pfs0_hash(sha)
-										meta_nca.flush()
-										meta_nca.close()
-										############################
-										meta_nca = Fs.Nca(filepath, 'r+b')
-										sha2=meta_nca.calc_htable_hash()
-										meta_nca.flush()
-										meta_nca.close()						
-										meta_nca = Fs.Nca(filepath, 'r+b')
-										meta_nca.header.set_htable_hash(sha2)
-										meta_nca.flush()
-										meta_nca.close()
-										########################
-										meta_nca = Fs.Nca(filepath, 'r+b')
-										sha3=meta_nca.header.calculate_hblock_hash()
-										meta_nca.flush()
-										meta_nca.close()						
-										meta_nca = Fs.Nca(filepath, 'r+b')
-										meta_nca.header.set_hblock_hash(sha3)
-										meta_nca.flush()
-										meta_nca.close()
-										########################
-										with open(filepath, 'r+b') as file:			
-											nsha=sha256(file.read()).hexdigest()
-										newname=nsha[:32] + '.cnmt.nca'				
-										Print.info(tabs +'New name: ' + newname )
-										dir=os.path.dirname(os.path.abspath(filepath))
-										newpath=dir+ '/' + newname
-										os.rename(filepath, newpath)
-										Print.info(tabs + '-------------------------------------')
-									else:
-										Print.info(tabs +'-> No need to patch the meta' )
-										Print.info(tabs + '-------------------------------------')			
+									self.patch_meta(filepath,outfolder)				
 
 
 #COPY AND CLEAN NCA FILES FROM SECURE SKIPPING DELTAS AND PATCH NEEDED SYSTEM VERSION
@@ -637,56 +493,64 @@ class Xci(File):
 								fp.close()
 								if metapatch == 'true':
 									if 	str(nca.header.contentType) == 'Content.META':
-										Print.info(tabs + '-------------------------------------')
-										Print.info(tabs + 'Checking meta: ')
-										meta_nca = Fs.Nca(filepath, 'r+b')
-										keygen=meta_nca.header.getCryptoType2()
-										RSV=sq_tools.getRSV(keygen,meta_nca.get_req_system())
-										if 	meta_nca.get_req_system() > RSV:
-											meta_nca.write_req_system(RSV)
-											meta_nca.flush()
-											meta_nca.close()
-											Print.info(tabs + 'Updating cnmt hashes: ')
-											############################
-											meta_nca = Fs.Nca(filepath, 'r+b')
-											sha=meta_nca.calc_pfs0_hash()
-											meta_nca.flush()
-											meta_nca.close()
-											meta_nca = Fs.Nca(filepath, 'r+b')
-											meta_nca.set_pfs0_hash(sha)
-											meta_nca.flush()
-											meta_nca.close()
-											############################
-											meta_nca = Fs.Nca(filepath, 'r+b')
-											sha2=meta_nca.calc_htable_hash()
-											meta_nca.flush()
-											meta_nca.close()						
-											meta_nca = Fs.Nca(filepath, 'r+b')
-											meta_nca.header.set_htable_hash(sha2)
-											meta_nca.flush()
-											meta_nca.close()
-											########################
-											meta_nca = Fs.Nca(filepath, 'r+b')
-											sha3=meta_nca.header.calculate_hblock_hash()
-											meta_nca.flush()
-											meta_nca.close()						
-											meta_nca = Fs.Nca(filepath, 'r+b')
-											meta_nca.header.set_hblock_hash(sha3)
-											meta_nca.flush()
-											meta_nca.close()
-											########################
-											with open(filepath, 'r+b') as file:			
-												nsha=sha256(file.read()).hexdigest()
-											newname=nsha[:32] + '.cnmt.nca'				
-											Print.info(tabs +'New name: ' + newname )
-											dir=os.path.dirname(os.path.abspath(filepath))
-											newpath=dir+ '/' + newname
-											os.rename(filepath, newpath)
-											Print.info(tabs + '-------------------------------------')
-										else:
-											Print.info(tabs +'-> No need to patch the meta' )
-											Print.info(tabs + '-------------------------------------')				
+										self.patch_meta(filepath,outfolder)						
 	
+#///////////////////////////////////////////////////								
+#PATCH META FUNCTION
+#///////////////////////////////////////////////////	
+	def patch_meta(self,filepath,outfolder):
+		indent = 1
+		tabs = '\t' * indent	
+		Print.info(tabs + '-------------------------------------')
+		Print.info(tabs + 'Checking meta: ')
+		meta_nca = Fs.Nca(filepath, 'r+b')
+		keygen=meta_nca.header.getCryptoType2()
+		RSV=sq_tools.getMinRSV(keygen,meta_nca.get_req_system())
+		if 	meta_nca.get_req_system() > RSV:
+			meta_nca.write_req_system(RSV)
+			meta_nca.flush()
+			meta_nca.close()
+			Print.info(tabs + 'Updating cnmt hashes: ')
+			############################
+			meta_nca = Fs.Nca(filepath, 'r+b')
+			sha=meta_nca.calc_pfs0_hash()
+			meta_nca.flush()
+			meta_nca.close()
+			meta_nca = Fs.Nca(filepath, 'r+b')
+			meta_nca.set_pfs0_hash(sha)
+			meta_nca.flush()
+			meta_nca.close()
+			############################
+			meta_nca = Fs.Nca(filepath, 'r+b')
+			sha2=meta_nca.calc_htable_hash()
+			meta_nca.flush()
+			meta_nca.close()						
+			meta_nca = Fs.Nca(filepath, 'r+b')
+			meta_nca.header.set_htable_hash(sha2)
+			meta_nca.flush()
+			meta_nca.close()
+			########################
+			meta_nca = Fs.Nca(filepath, 'r+b')
+			sha3=meta_nca.header.calculate_hblock_hash()
+			meta_nca.flush()
+			meta_nca.close()						
+			meta_nca = Fs.Nca(filepath, 'r+b')
+			meta_nca.header.set_hblock_hash(sha3)
+			meta_nca.flush()
+			meta_nca.close()
+			########################
+			with open(filepath, 'r+b') as file:			
+				nsha=sha256(file.read()).hexdigest()
+			newname=nsha[:32] + '.cnmt.nca'				
+			Print.info(tabs +'New name: ' + newname )
+			dir=os.path.dirname(os.path.abspath(filepath))
+			newpath=dir+ '/' + newname
+			os.rename(filepath, newpath)
+			Print.info(tabs + '-------------------------------------')
+		else:
+			Print.info(tabs +'-> No need to patch the meta' )
+			Print.info(tabs + '-------------------------------------')								
+		
 #Check if titlerights			
 	def trights_set(self):
 		for nspF in self.hfs0:

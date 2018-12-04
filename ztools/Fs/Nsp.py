@@ -1605,7 +1605,7 @@ class Nsp(Pfs0):
 		Print.info(tabs + 'Checking meta: ')
 		meta_nca = Fs.Nca(filepath, 'r+b')
 		keygen=meta_nca.header.getCryptoType2()
-		RSV=sq_tools.getRSV(keygen,meta_nca.get_req_system())
+		RSV=sq_tools.getMinRSV(keygen,meta_nca.get_req_system())
 		if 	meta_nca.get_req_system() > RSV:
 			meta_nca.write_req_system(RSV)
 			meta_nca.flush()

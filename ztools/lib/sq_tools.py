@@ -23,7 +23,7 @@ versions =
     404750376: "6.2.0" -> keygeneration = 7
 '''	
 
-def getRSV(keygeneration, RSV):
+def getTopRSV(keygeneration, RSV):
 	if keygeneration == 0:
 		return 450	
 	if keygeneration == 1:
@@ -42,3 +42,28 @@ def getRSV(keygeneration, RSV):
 		return 404750376
 	else:
 		return RSV
+
+def getMinRSV(keygeneration, RSV):
+	if keygeneration == 0:
+		return 0	
+	if keygeneration == 1:
+		return 65796
+	if keygeneration == 2:
+		return 201327002
+	if keygeneration == 3:
+		return 201392178
+	if keygeneration == 4:
+		return 268435656
+	if keygeneration == 5:
+		return 335544750
+	if keygeneration == 6:
+		return 402653494
+	if keygeneration == 7:
+		return 404750376
+	else:
+		return RSV		
+		
+		
+		
+		
+		
