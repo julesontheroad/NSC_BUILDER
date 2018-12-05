@@ -55,7 +55,9 @@ if __name__ == '__main__':
 		parser.add_argument('-i', '--info', help='show info about title or file')
 		parser.add_argument('--NSP_filelist', nargs='+', help='Prints file list in an nsp')
 		parser.add_argument('--Read_cnmt', nargs='+', help='Read cnmt file inside NSP\XCI')
-		parser.add_argument('--update_hash', nargs='+', help='Read cnmt file inside NSP\XCI')	
+		parser.add_argument('--update_hash', nargs='+', help='Updates cnmt.nca hashes')	
+		parser.add_argument('--set_cnmt_version', nargs='+', help='Changes cnmt.nca version number')	
+		parser.add_argument('--set_cnmt_RSV', nargs='+', help='Changes cnmt.nca RSV')	
 		
 		# REPACK
 		parser.add_argument('-c', '--create', help='create / pack a NSP')
@@ -129,7 +131,7 @@ if __name__ == '__main__':
 		parser.add_argument('-o', '--ofolder', nargs='+', help='Set output folder for copy instructions')
 		parser.add_argument('-b', '--buffer', nargs='+', help='Set buffer for copy instructions')
 		parser.add_argument('-ext', '--external', nargs='+', help='Set original nsp or ticket for remove nca titlerights functions')
-		parser.add_argument('-pv', '--patchversion', nargs='+', help='Patch Required system version')
+		parser.add_argument('-pv', '--patchversion', nargs='+', help='Number fot patch Required system version or program, patch or addcontent version')
 		parser.add_argument('-pe', '--pathend', nargs='+', help='Output to subfolder')		
 		parser.add_argument('-cskip', nargs='+', help='Skip dlc or update')				
 
@@ -1610,15 +1612,22 @@ if __name__ == '__main__':
 						Print.error('Exception: ' + str(e))						
 						
 		# ...................................................						
-		# Update hashes in cnmt file
+		# Change Required System Version in a nca file
 		# ...................................................									
-
-		if args.update_hash:
-			for filename in args.update_hash:
+		if args.patchversion:		
+			for input in args.patchversion:
+				try:
+					number = input
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))
+			else:
+				number = 336592896
+		if args.set_cnmt_RSV:
+			for filename in args.set_cnmt_RSV:
 				if filename.endswith('.nca'):
 					try:
 						f = Fs.Nca(filename, 'r+b')
-						f.write_req_system(336592896)
+						f.write_req_system(number)
 						f.flush()
 						f.close()
 						############################
@@ -1660,6 +1669,112 @@ if __name__ == '__main__':
 						Print.error('Exception: ' + str(e))
 		Status.close()
 	
+		# ...................................................						
+		# Change version number from nca
+		# ...................................................									
+
+		if args.patchversion:		
+			for input in args.patchversion:
+				try:
+					number = input
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))
+			else:
+				number = 65536*0
+		if args.set_cnmt_version:
+			for filename in args.set_cnmt_version:
+				if filename.endswith('.nca'):
+					try:
+						f = Fs.Nca(filename, 'r+b')
+						f.write_version(number)
+						f.flush()
+						f.close()
+						############################
+						f = Fs.Nca(filename, 'r+b')
+						sha=f.calc_pfs0_hash()
+						f.flush()
+						f.close()
+						f = Fs.Nca(filename, 'r+b')
+						f.set_pfs0_hash(sha)
+						f.flush()
+						f.close()
+						############################
+						f = Fs.Nca(filename, 'r+b')
+						sha2=f.calc_htable_hash()
+						f.flush()
+						f.close()						
+						f = Fs.Nca(filename, 'r+b')
+						f.header.set_htable_hash(sha2)
+						f.flush()
+						f.close()
+						########################
+						f = Fs.Nca(filename, 'r+b')
+						sha3=f.header.calculate_hblock_hash()
+						f.flush()
+						f.close()						
+						f = Fs.Nca(filename, 'r+b')
+						f.header.set_hblock_hash(sha3)
+						f.flush()
+						f.close()
+						########################
+						with open(filename, 'r+b') as file:			
+							nsha=sha256(file.read()).hexdigest()
+						newname=nsha[:32] + '.cnmt.nca'				
+						Print.info('New name: ' + newname )
+						dir=os.path.dirname(os.path.abspath(filename))
+						newpath=dir+ '/' + newname
+						os.rename(filename, newpath)
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+		Status.close()
+									
+		# ...................................................						
+		# Update hashes in cnmt file
+		# ...................................................									
+
+		if args.update_hash:
+			for filename in args.update_hash:
+				if filename.endswith('.nca'):
+					try:
+						f = Fs.Nca(filename, 'r+b')
+						sha=f.calc_pfs0_hash()
+						f.flush()
+						f.close()
+						f = Fs.Nca(filename, 'r+b')
+						f.set_pfs0_hash(sha)
+						f.flush()
+						f.close()
+						############################
+						f = Fs.Nca(filename, 'r+b')
+						sha2=f.calc_htable_hash()
+						f.flush()
+						f.close()						
+						f = Fs.Nca(filename, 'r+b')
+						f.header.set_htable_hash(sha2)
+						f.flush()
+						f.close()
+						########################
+						f = Fs.Nca(filename, 'r+b')
+						sha3=f.header.calculate_hblock_hash()
+						f.flush()
+						f.close()						
+						f = Fs.Nca(filename, 'r+b')
+						f.header.set_hblock_hash(sha3)
+						f.flush()
+						f.close()
+						########################
+						with open(filename, 'r+b') as file:			
+							nsha=sha256(file.read()).hexdigest()
+						newname=nsha[:32] + '.cnmt.nca'				
+						Print.info('New name: ' + newname )
+						dir=os.path.dirname(os.path.abspath(filename))
+						newpath=dir+ '/' + newname
+						os.rename(filename, newpath)
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+		Status.close()	
+	
+	
 	except KeyboardInterrupt:
 		Config.isRunning = False
 		Status.close()
@@ -1668,8 +1783,6 @@ if __name__ == '__main__':
 		Status.close()
 		raise
 
-		
-		
 		
 
 

@@ -423,7 +423,32 @@ class Nca(File):
 		self.seek(cmt_offset+0x28)	
 		min_sversion=self.readInt64()
 		Print.info(tabs + 'New RequiredSystemVersion = ' + str(min_sversion))
-		return min_sversion			
+		return min_sversion
+
+	def write_version(self, verNumber):
+		indent = 1
+		tabs = '\t' * indent
+		file = None
+		mode = 'r+b'	
+		for f in self:
+			cryptoType=f.get_cryptoType()
+			cryptoKey=f.get_cryptoKey()	
+			cryptoCounter=f.get_cryptoCounter()
+		pfs0_offset=0xC00+self.header.get_htable_offset()+self.header.get_pfs0_offset()
+		super(Nca, self).open(file, mode, cryptoType, cryptoKey, cryptoCounter)
+		self.seek(pfs0_offset+0x8)
+		pfs0_table_size=self.readInt32()
+		cmt_offset=pfs0_offset+0x28+pfs0_table_size
+		self.seek(cmt_offset)
+		titleid=self.readInt64()
+		tnumber = verNumber.to_bytes(0x04, byteorder='little')
+		titleversion = self.write(tnumber)
+		#Print.info('Original RequiredSystemVersion = ' + str(min_sversion))
+		self.seek(cmt_offset)
+		titleid=self.readInt64()
+		titleversion = self.read(0x4)
+		Print.info('version = ' + str(int.from_bytes(titleversion, byteorder='little')))
+		return titleversion			
 		
 	def removeTitleRightsnca(self, masterKeyRev, titleKeyDec):
 		Print.info('titleKeyDec =\t' + str(hx(titleKeyDec)))
