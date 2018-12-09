@@ -53,11 +53,14 @@ if __name__ == '__main__':
 		
 		# INFORMATION
 		parser.add_argument('-i', '--info', help='show info about title or file')
-		parser.add_argument('--NSP_filelist', nargs='+', help='Prints file list in an nsp')
+		parser.add_argument('--filelist', nargs='+', help='Prints file list in  NSP\XCI secure partition')
 		parser.add_argument('--Read_cnmt', nargs='+', help='Read cnmt file inside NSP\XCI')
-		parser.add_argument('--update_hash', nargs='+', help='Updates cnmt.nca hashes')	
+		parser.add_argument('--fw_req', nargs='+', help='Get information about fw requirements for NSP\XCI')		
+
+		# CNMT Flag funtions		
 		parser.add_argument('--set_cnmt_version', nargs='+', help='Changes cnmt.nca version number')	
 		parser.add_argument('--set_cnmt_RSV', nargs='+', help='Changes cnmt.nca RSV')	
+		parser.add_argument('--update_hash', nargs='+', help='Updates cnmt.nca hashes')			
 		
 		# REPACK
 		parser.add_argument('-c', '--create', help='create / pack a NSP')
@@ -75,6 +78,13 @@ if __name__ == '__main__':
 		parser.add_argument('--remove-title-rights', nargs='+', help='Removes title rights encryption from all NCA\'s in the NSP.')
 		parser.add_argument('--RTRNCA_h_nsp', nargs='+', help='Removes title rights encryption from a single nca reading from original nsp')		
 		parser.add_argument('--RTRNCA_h_tick', nargs='+', help='Removes title rights encryption from a single nca reading from extracted ticket')
+		parser.add_argument('--set-masterkey1', help='Changes the master key encryption for NSP.')
+		parser.add_argument('--set-masterkey2', help='Changes the master key encryption for NSP.')
+		parser.add_argument('--set-masterkey3', help='Changes the master key encryption for NSP.')
+		parser.add_argument('--set-masterkey4', help='Changes the master key encryption for NSP.')
+		parser.add_argument('--set-masterkey5', help='Changes the master key encryption for NSP.')
+		parser.add_argument('--set-masterkey6', help='Changes the master key encryption for NSP.')
+		parser.add_argument('--set-masterkey7', help='Changes the master key encryption for NSP.')		
 		
 		# Gamecard flag functions
 		parser.add_argument('--seteshop', nargs='+', help='Set all nca in an nsp as eshop')
@@ -132,6 +142,7 @@ if __name__ == '__main__':
 		parser.add_argument('-b', '--buffer', nargs='+', help='Set buffer for copy instructions')
 		parser.add_argument('-ext', '--external', nargs='+', help='Set original nsp or ticket for remove nca titlerights functions')
 		parser.add_argument('-pv', '--patchversion', nargs='+', help='Number fot patch Required system version or program, patch or addcontent version')
+		parser.add_argument('-kp', '--keypatch', nargs='+', help='patch masterkey to input number')	
 		parser.add_argument('-pe', '--pathend', nargs='+', help='Output to subfolder')		
 		parser.add_argument('-cskip', nargs='+', help='Skip dlc or update')				
 
@@ -277,6 +288,58 @@ if __name__ == '__main__':
 					f.close()
 				except BaseException as e:
 					Print.error('Exception: ' + str(e))
+		# ..................................................
+		# Change Master keys
+		# ..................................................					
+
+		if args.set_masterkey1:
+			f = Fs.Nsp(args.set_masterkey1, 'r+b')
+			f.setMasterKeyRev(0)
+			f.flush()
+			f.close()
+			pass
+
+		if args.set_masterkey2:
+			f = Fs.Nsp(args.set_masterkey2, 'r+b')
+			f.setMasterKeyRev(2)
+			f.flush()
+			f.close()
+			pass
+
+		if args.set_masterkey3:
+			f = Fs.Nsp(args.set_masterkey3, 'r+b')
+			f.setMasterKeyRev(3)
+			f.flush()
+			f.close()
+			pass
+
+		if args.set_masterkey4:
+			f = Fs.Nsp(args.set_masterkey4, 'r+b')
+			f.setMasterKeyRev(4)
+			f.flush()
+			f.close()
+			pass
+
+		if args.set_masterkey5:
+			f = Fs.Nsp(args.set_masterkey5, 'r+b')
+			f.setMasterKeyRev(5)
+			f.flush()
+			f.close()
+			pass
+
+		if args.set_masterkey6:
+			f = Fs.Nsp(args.set_masterkey6, 'r+b')
+			f.setMasterKeyRev(6)
+			f.flush()
+			f.close()
+			pass			
+			
+		if args.set_masterkey7:
+			f = Fs.Nsp(args.set_masterkey7, 'r+b')
+			f.setMasterKeyRev(7)
+			f.flush()
+			f.close()
+			pass								
 		# ..................................................................			
 		# Remove titlerights from an NSP using information from original NSP
 		# ..................................................................		
@@ -1133,18 +1196,26 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				metapatch = 'true'					
+				metapatch = 'true'
+			if args.keypatch:
+				for input in args.keypatch:
+					try:
+						vkeypatch = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+			else:
+				vkeypatch = 'false'				
 			for filename in args.C_clean:
 				if filename.endswith('.nsp'):
 					try:
 						f = Fs.Nsp(filename, 'rb')
 						if f.trights_set() == 'FALSE':
 							Print.info("NSP DOESN'T HAVE TITLERIGHTS")
-							f.copy_nca(ofolder,buffer,metapatch)	
+							f.copy_nca(ofolder,buffer,metapatch,vkeypatch)	
 						if f.trights_set() == 'TRUE':
 							if f.exist_ticket() == 'TRUE':
 								Print.info("NSP HAS TITLERIGHTS AND TICKET EXISTS")
-								f.cr_tr_nca(ofolder,buffer,metapatch)
+								f.cr_tr_nca(ofolder,buffer,metapatch,vkeypatch)
 							if f.exist_ticket() == 'FALSE':
 								Print.error('NSP FILE HAS TITLERIGHTS BUT NO TICKET')		
 						f.flush()
@@ -1157,11 +1228,11 @@ if __name__ == '__main__':
 						f.open(filename, 'rb')
 						if f.trights_set() == 'FALSE':
 							Print.info("XCI DOESN'T HAVE TITLERIGHTS")
-							f.copy_nca(ofolder,buffer,'secure',metapatch)
+							f.copy_nca(ofolder,buffer,'secure',metapatch,vkeypatch)
 						if f.trights_set() == 'TRUE':
 							if f.exist_ticket() == 'TRUE':
 								Print.info("XCI HAS TITLERIGHTS AND TICKET EXISTS")
-								f.cr_tr_nca(ofolder,buffer,metapatch)
+								f.cr_tr_nca(ofolder,buffer,metapatch,vkeypatch)
 							if f.exist_ticket() == 'FALSE':
 								Print.error('XCI FILE HAS TITLERIGHTS BUT NO TICKET')		
 						f.flush()
@@ -1171,7 +1242,7 @@ if __name__ == '__main__':
 			
 		# ...................................................						
 		# Copy ALL NCA AND CLEAN TITLERIGHTS WITHOUT DELTAS
-		# ...................................................					
+		# ...................................................				
 		if args.C_clean_ND:
 			if args.ofolder:		
 				for input in args.ofolder:
@@ -1199,17 +1270,25 @@ if __name__ == '__main__':
 						Print.error('Exception: ' + str(e))
 			else:
 				metapatch = 'false'	
+			if args.keypatch:
+				for input in args.keypatch:
+					try:
+						vkeypatch = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+			else:
+				vkeypatch = 'false'					
 			for filename in args.C_clean_ND:
 				if filename.endswith('.nsp'):
 					try:
 						f = Fs.Nsp(filename, 'rb')
 						if f.trights_set() == 'FALSE':
 							Print.info("NSP DOESN'T HAVE TITLERIGHTS")
-							f.copy_nca_nd(ofolder,buffer,metapatch)	
+							f.copy_nca_nd(ofolder,buffer,metapatch,vkeypatch)	
 						if f.trights_set() == 'TRUE':
 							if f.exist_ticket() == 'TRUE':
 								Print.info("NSP HAS TITLERIGHTS AND TICKET EXISTS")
-								f.cr_tr_nca_nd(ofolder,buffer,metapatch)
+								f.cr_tr_nca_nd(ofolder,buffer,metapatch,vkeypatch)
 							if f.exist_ticket() == 'FALSE':
 								Print.error('NSP FILE HAS TITLERIGHTS BUT NO TICKET')		
 						f.flush()
@@ -1222,11 +1301,11 @@ if __name__ == '__main__':
 						f.open(filename, 'rb')
 						if f.trights_set() == 'FALSE':
 							Print.info("XCI DOESN'T HAVE TITLERIGHTS")
-							f.copy_nca_nd(ofolder,buffer,metapatch)	
+							f.copy_nca_nd(ofolder,buffer,metapatch,vkeypatch)	
 						if f.trights_set() == 'TRUE':
 							if f.exist_ticket() == 'TRUE':
 								Print.info("XCI HAS TITLERIGHTS AND TICKET EXISTS")
-								f.cr_tr_nca_nd(ofolder,buffer,metapatch)
+								f.cr_tr_nca_nd(ofolder,buffer,metapatch,vkeypatch)
 							if f.exist_ticket() == 'FALSE':
 								Print.error('XCI FILE HAS TITLERIGHTS BUT NO TICKET')		
 						f.flush()
@@ -1544,17 +1623,51 @@ if __name__ == '__main__':
 
 # INFORMATION
 		# ...................................................						
-		# Show nsp filelist
+		# Show file filelist
 		# ...................................................	
-		if args.NSP_filelist:
-			for filename in args.NSP_filelist:
-				try:
-					f = Fs.Nsp(filename, 'rb')
-					f.print_file_list()
-					f.flush()
-					f.close()
-				except BaseException as e:
-					Print.error('Exception: ' + str(e))
+		if args.filelist:
+			for filename in args.filelist:
+				if filename.endswith('.nsp'):
+					try:
+						f = Fs.Nsp(filename, 'rb')
+						f.print_file_list()
+						f.flush()
+						f.close()
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+				if filename.endswith('.xci'):
+					try:
+						f = Fs.factory(filename)
+						f.open(filename, 'rb')
+						f.print_file_list()
+						f.flush()
+						f.close()
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))		
+
+		# ...................................................						
+		# FW REQ INFO
+		# ...................................................	
+		if args.fw_req:
+			for filename in args.fw_req:
+				if filename.endswith('.nsp'):
+					try:
+						f = Fs.Nsp(filename, 'rb')
+						f.print_fw_req()
+						f.flush()
+						f.close()
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+				if filename.endswith('.xci'):
+					try:
+						f = Fs.factory(filename)
+						f.open(filename, 'rb')
+						f.print_fw_req()
+						f.flush()
+						f.close()
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))									
+			
 		# ...................................................						
 		# Show info
 		# ...................................................					

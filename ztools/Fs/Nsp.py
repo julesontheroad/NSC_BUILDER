@@ -999,7 +999,8 @@ class Nsp(Pfs0):
 							#cnmt.writeInt64(336592896)
 							cnmt.rewind()
 							cnmt.seek(0x28)					
-							min_sversion=cnmt.readInt64()
+							min_sversion=self.readInt32()
+							end_of_emeta=self.readInt32()	
 							Print.info('')	
 							Print.info('...........................................')								
 							Print.info('Reading: ' + str(cnmt._path))
@@ -1043,7 +1044,9 @@ class Nsp(Pfs0):
 
 								
 #COPY AND CLEAN NCA FILES AND PATCH NEEDED SYSTEM VERSION			
-	def cr_tr_nca(self,ofolder,buffer,metapatch):
+	def cr_tr_nca(self,ofolder,buffer,metapatch, keypatch):
+		if keypatch != 'false':
+			keypatch = int(keypatch)
 		indent = 1
 		tabs = '\t' * indent
 		text_file='newcontent_'+self.getnspid()+'.dat'
@@ -1093,7 +1096,13 @@ class Nsp(Pfs0):
 					target.header.setKeyBlock(encKeyBlock)
 					Hex.dump(encKeyBlock)	
 					target.close()
-					
+					#///////////////////////////////////
+					target = Fs.Nca(filepath, 'r+b')
+					target.rewind()
+					if keypatch != 'false':
+						if keypatch < target.header.getCryptoType2():
+							self.change_mkrev_nca(target, keypatch)
+					target.close()											
 				if nca.header.getRightsId() == 0:
 					nca.rewind()
 					filename =  str(nca._path)
@@ -1110,6 +1119,13 @@ class Nsp(Pfs0):
 						if not data:
 							break				
 					fp.close()
+					#///////////////////////////////////
+					target = Fs.Nca(filepath, 'r+b')
+					target.rewind()
+					if keypatch != 'false':
+						if keypatch < target.header.getCryptoType2():
+							self.change_mkrev_nca(target, keypatch)
+					target.close()											
 					if metapatch == 'true':
 						if 	str(nca.header.contentType) == 'Content.META':
 							self.patch_meta(filepath,text_file,outfolder)
@@ -1120,7 +1136,9 @@ class Nsp(Pfs0):
 								
 						
 #COPY AND CLEAN NCA FILES SKIPPING DELTAS AND PATCH NEEDED SYSTEM VERSION						
-	def cr_tr_nca_nd(self,ofolder,buffer,metapatch):
+	def cr_tr_nca_nd(self,ofolder,buffer,metapatch, keypatch):
+		if keypatch != 'false':
+			keypatch = int(keypatch)
 		indent = 1
 		tabs = '\t' * indent
 		text_file='newcontent_'+self.getnspid()+'.dat'
@@ -1163,6 +1181,7 @@ class Nsp(Pfs0):
 							tfile.write(str(nca.header.contentType)+ ': ' + tabs + str(nca._path)+'\n')	
 						fp = open(filepath, 'w+b')
 						nca.rewind()
+						Print.info(tabs)
 						Print.info(tabs + 'Copying: ' + str(filename))
 						for data in iter(lambda: nca.read(int(buffer)), ""):
 							fp.write(data)
@@ -1181,6 +1200,13 @@ class Nsp(Pfs0):
 						Hex.dump(encKeyBlock)
 						Print.info('')						
 						target.close()
+						#///////////////////////////////////
+						target = Fs.Nca(filepath, 'r+b')
+						target.rewind()
+						if keypatch != 'false':
+							if keypatch < target.header.getCryptoType2():
+								self.change_mkrev_nca(target, keypatch)
+						target.close()						
 					if nca.header.getRightsId() == 0:
 						nca.rewind()
 						filename =  str(nca._path)
@@ -1190,13 +1216,22 @@ class Nsp(Pfs0):
 							os.makedirs(outfolder)
 						fp = open(filepath, 'w+b')
 						nca.rewind()
-						Print.info(tabs + 'Copying: ' + str(filename))
+						Print.info(tabs)
+						Print.info(tabs + '-> Copying: ' + str(filename))
 						for data in iter(lambda: nca.read(int(buffer)), ""):
 							fp.write(data)
 							fp.flush()
 							if not data:
 								break
 						fp.close()
+						#///////////////////////////////////
+						target = Fs.Nca(filepath, 'r+b')
+						target.rewind()
+						if keypatch != 'false':
+							if keypatch < target.header.getCryptoType2():
+								self.change_mkrev_nca(target, keypatch)
+						target.close()						
+						#///////////////////////////////////						
 						if metapatch == 'true':
 							if 	str(nca.header.contentType) == 'Content.META':
 								self.patch_meta(filepath,text_file,outfolder)
@@ -1206,7 +1241,9 @@ class Nsp(Pfs0):
 									tfile.write(str(nca.header.contentType)+ ': ' + tabs + str(nca._path) + '\n')												
 									
 #Copy nca files						
-	def copy_nca(self,ofolder,buffer,metapatch):
+	def copy_nca(self,ofolder,buffer,metapatch, keypatch):
+		if keypatch != 'false':
+			keypatch = int(keypatch)
 		indent = 1
 		tabs = '\t' * indent
 		text_file='newcontent_'+self.getnspid()+'.dat'
@@ -1227,6 +1264,13 @@ class Nsp(Pfs0):
 					if not data:
 						break
 				fp.close()
+				#///////////////////////////////////
+				target = Fs.Nca(filepath, 'r+b')
+				target.rewind()
+				if keypatch != 'false':
+					if keypatch < target.header.getCryptoType2():
+						self.change_mkrev_nca(target, keypatch)
+				target.close()						
 				if metapatch == 'true':
 					if 	str(nca.header.contentType) == 'Content.META':
 						self.patch_meta(filepath,text_file,outfolder)
@@ -1237,7 +1281,9 @@ class Nsp(Pfs0):
 				
 															
 #Copy nca files skipping deltas
-	def copy_nca_nd(self,ofolder,buffer,metapatch):
+	def copy_nca_nd(self,ofolder,buffer,metapatch, keypatch):
+		if keypatch != 'false':
+			keypatch = int(keypatch)
 		indent = 1
 		tabs = '\t' * indent
 		text_file='newcontent_'+self.getnspid()+'.dat'
@@ -1270,6 +1316,13 @@ class Nsp(Pfs0):
 						if not data:
 							break
 					fp.close()
+					#///////////////////////////////////
+					target = Fs.Nca(filepath, 'r+b')
+					target.rewind()
+					if keypatch != 'false':
+						if keypatch < target.header.getCryptoType2():
+							self.change_mkrev_nca(target, keypatch)
+					target.close()							
 					if metapatch == 'true':
 						if 	str(nca.header.contentType) == 'Content.META':
 							self.patch_meta(filepath,text_file,outfolder)
@@ -1300,7 +1353,8 @@ class Nsp(Pfs0):
 							cnmt.rewind()
 							cnmt.seek(0x20)
 							original_ID=cnmt.readInt64()
-							min_sversion=cnmt.readInt64()
+							min_sversion=self.readInt32()
+							end_of_emeta=self.readInt32()	
 							target=str(nca._path)
 							contentname = self.splitter_get_title(target,offset,content_entries,original_ID)
 							cnmt.rewind()
@@ -1442,7 +1496,8 @@ class Nsp(Pfs0):
 									cnmt.rewind()
 									cnmt.seek(0x20)
 									original_ID=cnmt.readInt64()
-									min_sversion=cnmt.readInt64()
+									min_sversion=self.readInt32()
+									end_of_emeta=self.readInt32()	
 									target=str(nca._path)
 									contentname = self.splitter_get_title(target,offset,content_entries,original_ID)
 									cnmt.rewind()
@@ -1475,6 +1530,132 @@ class Nsp(Pfs0):
 
 
 		
+		
+		
+
+
+
+
+
+#///////////////////////////////////////////////////								
+#INFO ABOUT UPD REQUIREMENTS
+#///////////////////////////////////////////////////	
+	def print_fw_req(self):
+		for nca in self:
+			if type(nca) == Nca:
+				if 	str(nca.header.contentType) == 'Content.META':
+					for f in nca:
+						for cnmt in f:
+							nca.rewind()
+							f.rewind()
+							cnmt.rewind()
+							titleid=cnmt.readInt64()
+							titleversion = cnmt.read(0x4)
+							cnmt.rewind()
+							cnmt.seek(0xE)
+							offset=cnmt.readInt16()
+							content_entries=cnmt.readInt16()
+							meta_entries=cnmt.readInt16()
+							cnmt.rewind()
+							cnmt.seek(0x20)
+							original_ID=cnmt.readInt64()
+							RSversion=cnmt.readInt32()
+							Emeta=cnmt.readInt32()
+							target=str(nca._path)
+							contentname = self.inf_get_title(target,offset,content_entries,original_ID)
+							cnmt.rewind()
+							cnmt.seek(0x20+offset)
+							titleid2 = str(hx(titleid.to_bytes(8, byteorder='big'))) 	
+							titleid2 = titleid2[2:-1]
+							version=str(int.from_bytes(titleversion, byteorder='little'))
+							keygen=nca.header.getCryptoType2()					
+							MinRSV=sq_tools.getMinRSV(keygen,RSversion)
+							FW_rq=sq_tools.getFWRangeKG(keygen)
+							RSV_rq=sq_tools.getFWRangeRSV(RSversion)									
+							RSV_rq_min=sq_tools.getFWRangeRSV(MinRSV)
+							content_name=str(cnmt._path)
+							content_name=content_name[:-22]
+							if content_name == 'Patch':
+								content_type='Update'
+							if content_name == 'AddOnContent':
+								content_type='DLC'
+							if content_name == 'Application':
+								content_type='Base Game or Application'
+							Print.info('-------------------------------------')
+							Print.info('Detected content: ' + str(titleid2))	
+							Print.info('-------------------------------------')							
+							Print.info("- Name: " + contentname)	
+							Print.info("- Version: " + version)
+							Print.info("- Type: " + content_type)								
+							Print.info('- RequiredSystemVersion: ' + str(RSversion)+" -> " +RSV_rq)	
+							Print.info('- Encryption (keygeneration): ' + str(keygen)+" -> " +FW_rq)
+							Print.info('- Patchable to: ' + str(MinRSV)+" -> " + RSV_rq_min)		
+							
+	def inf_get_title(self,target,offset,content_entries,original_ID):
+		content_type=''
+		for nca in self:
+			if type(nca) == Nca:
+				if target ==  str(nca._path):
+					for f in nca:
+						for cnmt in f:
+							nca.rewind()
+							f.rewind()
+							cnmt.rewind()					
+							cnmt.seek(0x20+offset)	
+							nca_name='false'
+							for i in range(content_entries):
+								vhash = cnmt.read(0x20)
+								NcaId = cnmt.read(0x10)
+								size = cnmt.read(0x6)
+								ncatype = cnmt.read(0x1)
+								unknown = cnmt.read(0x1)
+								ncatype2 = int.from_bytes(ncatype, byteorder='little')
+								if ncatype2 == 3:
+									nca_name=str(hx(NcaId))
+									nca_name=nca_name[2:-1]+'.nca'
+		if nca_name=='false':
+			for nca in self:
+				if type(nca) == Nca:
+					if 	str(nca.header.contentType) == 'Content.META':
+						for f in nca:
+							for cnmt in f:
+								cnmt.rewind()
+								testID=cnmt.readInt64()
+								if 	testID == original_ID:
+									nca.rewind()
+									f.rewind()								
+									titleid=cnmt.readInt64()
+									titleversion = cnmt.read(0x4)
+									cnmt.rewind()
+									cnmt.seek(0xE)
+									offset=cnmt.readInt16()
+									content_entries=cnmt.readInt16()
+									meta_entries=cnmt.readInt16()
+									cnmt.rewind()
+									cnmt.seek(0x20)
+									original_ID=cnmt.readInt64()
+									min_sversion=self.readInt32()
+									end_of_emeta=self.readInt32()	
+									target=str(nca._path)
+									contentname = self.splitter_get_title(target,offset,content_entries,original_ID)
+									cnmt.rewind()
+									cnmt.seek(0x20+offset)								
+		title='DLC'
+		for nca in self:
+			if type(nca) == Nca:
+				if nca_name == str(nca._path):
+					for f in nca:
+						nca.rewind()
+						f.rewind()	
+						f.seek(0x14200)
+						title = f.read(0x200)		
+						title = title.split(b'\0', 1)[0].decode('utf-8')
+						title = (re.sub(r'[\/\\\:\*\?\!\"\<\>\|\.\s™©®()\~]+', ' ', title))
+						title = title.strip()
+						title = title
+		return(title)							
+							
+							
 #///////////////////////////////////////////////////								
 #PREPARE BASE CONTENT TO UPDATE IT
 #///////////////////////////////////////////////////	
@@ -1509,7 +1690,8 @@ class Nsp(Pfs0):
 							cnmt.rewind()
 							cnmt.seek(0x20)
 							original_ID=cnmt.readInt64()
-							min_sversion=cnmt.readInt64()
+							min_sversion=cnmt.readInt32()
+							Emeta=cnmt.readInt32()
 							target=str(nca._path)
 							cnmt.rewind()
 							cnmt.seek(0x20+offset)
@@ -1595,6 +1777,43 @@ class Nsp(Pfs0):
 					fp.flush()
 					fp.close()
 		
+#///////////////////////////////////////////////////								
+# Change MKREV_NCA
+#///////////////////////////////////////////////////						
+		
+	def change_mkrev_nca(self, nca, newMasterKeyRev):
+	
+		indent = 2
+		tabs = '\t' * indent
+		indent2 = 3
+		tabs2 = '\t' * indent2
+		
+		masterKeyRev = nca.header.getCryptoType2()	
+
+		if type(nca) == Nca:
+			if nca.header.getCryptoType2() != newMasterKeyRev:
+				Print.info(tabs + '-----------------------------------')
+				Print.info(tabs + 'Changing keygeneration from %d to %s' % ( nca.header.getCryptoType2(), str(newMasterKeyRev)))
+				Print.info(tabs + '-----------------------------------')
+				encKeyBlock = nca.header.getKeyBlock()
+				if sum(encKeyBlock) != 0:
+					key = Keys.keyAreaKey(Keys.getMasterKeyIndex(masterKeyRev), nca.header.keyIndex)
+					Print.info(tabs2 + '+ decrypting with %s (%d, %d)' % (str(hx(key)), Keys.getMasterKeyIndex(masterKeyRev), nca.header.keyIndex))
+					crypto = aes128.AESECB(key)
+					decKeyBlock = crypto.decrypt(encKeyBlock)
+					key = Keys.keyAreaKey(Keys.getMasterKeyIndex(newMasterKeyRev), nca.header.keyIndex)
+					Print.info(tabs2 + '+ encrypting with %s (%d, %d)' % (str(hx(key)), Keys.getMasterKeyIndex(newMasterKeyRev), nca.header.keyIndex))
+					crypto = aes128.AESECB(key)
+					reEncKeyBlock = crypto.encrypt(decKeyBlock)
+					nca.header.setKeyBlock(reEncKeyBlock)
+				if newMasterKeyRev >= 3:
+					nca.header.setCryptoType(2)
+					nca.header.setCryptoType2(newMasterKeyRev)
+				else:
+					nca.header.setCryptoType(newMasterKeyRev)
+					nca.header.setCryptoType2(0)	
+					Print.info(tabs2 + 'DONE')					
+
 #///////////////////////////////////////////////////								
 #PATCH META FUNCTION
 #///////////////////////////////////////////////////	

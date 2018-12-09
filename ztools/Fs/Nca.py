@@ -397,7 +397,7 @@ class Nca(File):
 		pfs0_table_size=self.readInt32()
 		cmt_offset=pfs0_offset+0x28+pfs0_table_size
 		self.seek(cmt_offset+0x28)		
-		min_sversion=self.readInt64()
+		min_sversion=self.readInt32()
 		Print.info(tabs + 'RequiredSystemVersion = ' + str(min_sversion))
 		return min_sversion		
 
@@ -416,12 +416,12 @@ class Nca(File):
 		pfs0_table_size=self.readInt32()
 		cmt_offset=pfs0_offset+0x28+pfs0_table_size
 		self.seek(cmt_offset+0x28)	
-		min_sversion=self.readInt64()
+		min_sversion=self.readInt32()
 		#Print.info('Original RequiredSystemVersion = ' + str(min_sversion))
 		self.seek(cmt_offset+0x28)	
 		self.writeInt64(verNumber)
 		self.seek(cmt_offset+0x28)	
-		min_sversion=self.readInt64()
+		min_sversion=self.readInt32()
 		Print.info(tabs + 'New RequiredSystemVersion = ' + str(min_sversion))
 		return min_sversion
 
@@ -443,7 +443,6 @@ class Nca(File):
 		titleid=self.readInt64()
 		tnumber = verNumber.to_bytes(0x04, byteorder='little')
 		titleversion = self.write(tnumber)
-		#Print.info('Original RequiredSystemVersion = ' + str(min_sversion))
 		self.seek(cmt_offset)
 		titleid=self.readInt64()
 		titleversion = self.read(0x4)
@@ -516,7 +515,8 @@ class Nca(File):
 		self.seek(cmt_offset+0x20)
 		original_ID=self.readInt64()
 		self.seek(cmt_offset+0x28)					
-		min_sversion=self.readInt64()
+		min_sversion=self.readInt32()
+		end_of_emeta=self.readInt32()		
 		Print.info('')	
 		Print.info('...........................................')								
 		Print.info('Reading: ' + str(self._path))

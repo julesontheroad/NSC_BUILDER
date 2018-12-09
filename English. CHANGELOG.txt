@@ -11,7 +11,7 @@
 -------------------------------------------------------------------------------------
 "                             POWERED WITH NUT BY BLAWAR                            "
 "                             AND LUCA FRAGA'S HACBUILD                             "
-                                    VERSION 0.70                                     	
+                                    VERSION 0.75                                     	
 -------------------------------------------------------------------------------------                   
 Program's github: https://github.com/julesontheroad/NSC_BUILDER
 Revised hacbuild: https://github.com/julesontheroad/hacbuild
@@ -21,6 +21,31 @@ SciresM hactool : https://github.com/SciresM/hactool
 ---------------
 0. Changelog
 ---------------
+v0.75- Added configuration from the bat, option to change keygeneration, corrected RSV
+       readouts and more.
+       1.- Added options to change keygeneration to help run games at lower firmwares.
+           Note it won't always work as the game can have other dependencies than the 
+           firmware. 6.2 to 6.0 seems to work and 6.2 to 5.0 works if basegame is 5.0
+       2.- Added "Mode 0" - Profile configuration from the bat.
+       3.- Added auto-profile linking. A profile Bat will link with it's configuration
+           file if they follow the following name scheme:
+           a) Bat -> batname.bat
+           b) Profile in zconfig -> batname_options.cmd
+           Where "batname" is a name of your choosing. You can add as many bats in the
+           same folder as you want with different profiles this way.
+       4.- Corrected RequiredSystemVersion reads. It seems like our update XML read the 
+           value wrong and RSV is 4bytes long instead of 8bytes long.
+           Thanks to Liam for the tip. ^_^
+       5.- Added better navigation from the bat and dissable auto-exit in manual-mode so 
+           people can see the log. (Auto-Exit can be activated in the configuration)
+       6.- Added "mode 5: file-info mode". Dragg a file and choose if you want to:
+           a) See it's content
+           b) See "nut-info" (as NUT from blawar shows it)
+           c) See Firmware Requirements and to what is patchable without changing the
+              keygeneration )nca files encryption)
+           d) Get a read of the cnmt
+           You only need to load the file one time to get all reads and the functions
+           will let you print each read to a text file in "INFO" folder at bat's route.
 v0.70- Better RequiredSystemVersion patching, added Split Mode, added Update Mode
        1.- RequiredSystemVersion patching is now set by default in auto-mode.
        2.- Program asks before patching RequiredSystemVersion in manual mode

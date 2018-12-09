@@ -1,7 +1,7 @@
 ::--------------------------------------------------------------
 ::SET CUSTOM COLOR FOR THE BATCH FILES
 ::--------------------------------------------------------------
-color 03
+color 1F
 ::--------------------------------------------------------------
 ::OPTION 1: FOLDERS
 ::--------------------------------------------------------------
@@ -18,6 +18,10 @@ set "nsp_lib=ztools\NSP.bat"
 set "zip=ztools\7za.exe"
 set "hactool=ztools\hactool.exe"
 set "hacbuild=ztools\hacbuild.exe"
+set "listmanager=ztools\listmanager.py"
+set "batconfig=ztools\NSCB_config.bat"
+set "batdepend=ztools\install_dependencies.bat"
+set "advbat=ztools\ADV.bat"
 ::--------------------------------------------------------------
 ::OPTION 3: SQUIRREL OPTIONS
 ::--------------------------------------------------------------
@@ -75,7 +79,30 @@ set "manual_intro=choose"
 set "zip_restore=true"
 
 ::--------------------------------------------------------------
-::OPTION 8: RENAMING OPTIONS
+::OPTION 8: PATCH IF KEYGENERATION IS BIGGER THAN
+::--------------------------------------------------------------
+:: CHANGE ENCRYPTION TO THE SET KEYGENERATION IN AUTO-MODE
+::
+:: Don't change encryption -> vkey = false
+:: "1.0.0"			  	   -> vkey = 0
+:: "2.0.0 - 2.3.0"         -> vkey = 1
+:: "3.0.0" 		   	 	   -> vkey = 2
+:: "3.0.1 - 3.0.2" 		   -> vkey = 3
+:: "4.0.0 - 4.1.0"		   -> vkey = 4
+:: "5.0.0 - 5.1.0" 		   -> vkey = 5
+:: "6.0.0-4 - 6.1.0" 	   -> vkey = 6 
+:: "6.2.0" 		  	 	   -> vkey = 7
+
+set "vkey=-kp false"
+
+::--------------------------------------------------------------
+::OPTION 10: AUTO-EXIT
+::--------------------------------------------------------------
+:: If set at true the program will auto-exit in manual mode
+set "va_exit=false"
+
+::--------------------------------------------------------------
+::OPTION 9: RENAMING OPTIONS
 ::--------------------------------------------------------------
 REM -> Requires some more work to work as intended without nstool
 set "vrename=false"
@@ -98,5 +125,3 @@ REM "updx_skip=true"
 ::true-> repack as nsp
 ::false-> repack as xci either way
 REM "ngx_skip=true"
-
-

@@ -63,7 +63,87 @@ def getMinRSV(keygeneration, RSV):
 	else:
 		return RSV		
 		
-		
-		
-		
+def getFWRangeKG(keygeneration):
+	if keygeneration == 0:
+		return "(1.0.0)"	
+	if keygeneration == 1:
+		return "(2.0.0 - 2.3.0)"	
+	if keygeneration == 2:
+		return "(3.0.0)"	
+	if keygeneration == 3:
+		return "(3.0.1 - 3.0.2)"	
+	if keygeneration == 4:
+		return "(4.0.0 - 4.1.0)"	
+	if keygeneration == 5:
+		return "(5.0.0 - 5.1.0)"
+	if keygeneration == 6:
+		return "(6.0.0 - 6.1.0)"
+	if keygeneration == 7:
+		return "(6.2.0 - >6.2.0)"
+	else:
+		return "UNKNOWN"			
+
+def getFWRangeRSV(RSV):
+	if RSV > 404750376:
+		return "(>6.2.0)"	
+	if RSV >= 404750376:
+		return "(6.2.0)"		
+	if RSV >= 403701850:
+		return "(6.1.0)"	
+	if RSV >= 402718730:
+		return "(6.0.1)"	
+	if RSV >= 402653514:
+		return "(6.0.0)"	
+	if RSV >= 402653494:
+		return "(6.0.0-4)"			
+	if RSV >= 336592976:
+		return "(5.1.0)"	
+	if RSV >= 335675432:
+		return "(5.0.2)"			
+	if RSV >= 335609886:
+		return "(5.0.1)"			
+	if RSV >= 335544750:
+		return "(5.0.0)"	
+	if RSV >= 269484082:
+		return "(4.1.0)"	
+	if RSV >= 268501002:
+		return "(4.0.1)"	
+	if RSV >= 268435656:
+		return "(4.0.0)"	
+	if RSV >= 201457684:
+		return "(3.0.2)"					
+	if RSV >= 201392178:
+		return "(3.0.1)"				
+	if RSV >= 201327002:
+		return "(3.0.0)"	
+	if RSV >= 262164:
+		return "(2.3.0)"	
+	if RSV >= 196628:
+		return "(2.2.0)"	
+	if RSV >= 131162:
+		return "(2.1.0)"	
+	if RSV >= 65796:
+		return "(2.0.0)"	
+	if RSV >= 450:
+		return "(1.0.0)"	
+	else:
+		return range	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
 		
