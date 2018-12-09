@@ -11,7 +11,7 @@
 -------------------------------------------------------------------------------------
 "                             POWERED WITH NUT BY BLAWAR                            "
 "                             AND LUCA FRAGA'S HACBUILD                             "
-                                    VERSION 0.62                                     	
+                                    VERSION 0.75                                     	
 -------------------------------------------------------------------------------------                   
 Program's github: https://github.com/julesontheroad/NSC_BUILDER
 Revised hacbuild: https://github.com/julesontheroad/hacbuild
@@ -47,6 +47,9 @@ can't be stripped from it. In this case it will generate a log.txt with the file
 If an error is found that file is skipped an the batch continues processing the queue.
 
 The behavior of these modes can be controlled by editing ztools\NSCB_options.cmd
+
+NOTE: With 0.75 changes the readme needs a redo. Read the changelog for information
+about latest changes Sorry for the inconvinience.
 
 ---------------
 2. Important
