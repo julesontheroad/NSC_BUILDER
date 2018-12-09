@@ -20,7 +20,8 @@ versions =
     402653544: "6.0.0", -> keygeneration = 6
     402718730: "6.0.1", -> keygeneration = 6
     403701850: "6.1.0", -> keygeneration = 6
-    404750376: "6.2.0" -> keygeneration = 7
+	404750336: "6.2.0" -> keygeneration = 7
+    404750376: "6.2.0-40" -> keygeneration = 7
 '''	
 
 def getTopRSV(keygeneration, RSV):
@@ -59,7 +60,7 @@ def getMinRSV(keygeneration, RSV):
 	if keygeneration == 6:
 		return 402653494
 	if keygeneration == 7:
-		return 404750376
+		return 404750336
 	else:
 		return RSV		
 		
@@ -85,9 +86,11 @@ def getFWRangeKG(keygeneration):
 
 def getFWRangeRSV(RSV):
 	if RSV > 404750376:
-		return "(>6.2.0)"	
-	if RSV >= 404750376:
-		return "(6.2.0)"		
+		return "(>6.2.0-40)"
+	if RSV == 404750376:
+		return "(6.2.0-40)"
+	if RSV == 404750336:
+		return "(6.2.0)"			
 	if RSV >= 403701850:
 		return "(6.1.0)"	
 	if RSV >= 402718730:
