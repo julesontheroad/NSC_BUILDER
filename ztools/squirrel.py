@@ -1792,8 +1792,8 @@ if __name__ == '__main__':
 					number = input
 				except BaseException as e:
 					Print.error('Exception: ' + str(e))
-			else:
-				number = 65536*0
+		else:
+			number = 65536
 		if args.set_cnmt_version:
 			for filename in args.set_cnmt_version:
 				if filename.endswith('.nca'):
