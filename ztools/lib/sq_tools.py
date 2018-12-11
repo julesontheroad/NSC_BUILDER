@@ -1,5 +1,6 @@
 '''	
 versions = 
+      0:       "1.0.0", -> keygeneration = 0
     450:       "1.0.0", -> keygeneration = 0
     65796:     "2.0.0", -> keygeneration = 1
     131162:    "2.1.0", -> keygeneration = 1
@@ -128,6 +129,8 @@ def getFWRangeRSV(RSV):
 	if RSV >= 65796:
 		return "(2.0.0)"	
 	if RSV >= 450:
+		return "(1.0.0)"	
+	if RSV >= 0:
 		return "(1.0.0)"	
 	else:
 		return range	
