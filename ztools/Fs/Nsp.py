@@ -1044,7 +1044,7 @@ class Nsp(Pfs0):
 
 								
 #COPY AND CLEAN NCA FILES AND PATCH NEEDED SYSTEM VERSION			
-	def cr_tr_nca(self,ofolder,buffer,metapatch, keypatch):
+	def cr_tr_nca(self,ofolder,buffer,metapatch, keypatch,RSV_cap):
 		if keypatch != 'false':
 			keypatch = int(keypatch)
 		indent = 1
@@ -1128,7 +1128,7 @@ class Nsp(Pfs0):
 					target.close()											
 					if metapatch == 'true':
 						if 	str(nca.header.contentType) == 'Content.META':
-							self.patch_meta(filepath,text_file,outfolder)
+							self.patch_meta(filepath,text_file,outfolder,RSV_cap)
 						else:					
 							textpath = os.path.join(outfolder, text_file)
 							with open(textpath, 'a') as tfile:			
@@ -1136,7 +1136,7 @@ class Nsp(Pfs0):
 								
 						
 #COPY AND CLEAN NCA FILES SKIPPING DELTAS AND PATCH NEEDED SYSTEM VERSION						
-	def cr_tr_nca_nd(self,ofolder,buffer,metapatch, keypatch):
+	def cr_tr_nca_nd(self,ofolder,buffer,metapatch, keypatch,RSV_cap):
 		if keypatch != 'false':
 			keypatch = int(keypatch)
 		indent = 1
@@ -1234,14 +1234,14 @@ class Nsp(Pfs0):
 						#///////////////////////////////////						
 						if metapatch == 'true':
 							if 	str(nca.header.contentType) == 'Content.META':
-								self.patch_meta(filepath,text_file,outfolder)
+								self.patch_meta(filepath,text_file,outfolder,RSV_cap)
 							else:					
 								textpath = os.path.join(outfolder, text_file)
 								with open(textpath, 'a') as tfile:			
 									tfile.write(str(nca.header.contentType)+ ': ' + tabs + str(nca._path) + '\n')												
 									
 #Copy nca files						
-	def copy_nca(self,ofolder,buffer,metapatch, keypatch):
+	def copy_nca(self,ofolder,buffer,metapatch, keypatch,RSV_cap):
 		if keypatch != 'false':
 			keypatch = int(keypatch)
 		indent = 1
@@ -1273,7 +1273,7 @@ class Nsp(Pfs0):
 				target.close()						
 				if metapatch == 'true':
 					if 	str(nca.header.contentType) == 'Content.META':
-						self.patch_meta(filepath,text_file,outfolder)
+						self.patch_meta(filepath,text_file,outfolder,RSV_cap)
 					else:					
 						textpath = os.path.join(outfolder, text_file)
 						with open(textpath, 'a') as tfile:			
@@ -1281,7 +1281,7 @@ class Nsp(Pfs0):
 				
 															
 #Copy nca files skipping deltas
-	def copy_nca_nd(self,ofolder,buffer,metapatch, keypatch):
+	def copy_nca_nd(self,ofolder,buffer,metapatch, keypatch,RSV_cap):
 		if keypatch != 'false':
 			keypatch = int(keypatch)
 		indent = 1
@@ -1325,7 +1325,7 @@ class Nsp(Pfs0):
 					target.close()							
 					if metapatch == 'true':
 						if 	str(nca.header.contentType) == 'Content.META':
-							self.patch_meta(filepath,text_file,outfolder)
+							self.patch_meta(filepath,text_file,outfolder,RSV_cap)
 						else:					
 							textpath = os.path.join(outfolder, text_file)
 							with open(textpath, 'a') as tfile:			
@@ -1817,7 +1817,7 @@ class Nsp(Pfs0):
 #///////////////////////////////////////////////////								
 #PATCH META FUNCTION
 #///////////////////////////////////////////////////	
-	def patch_meta(self,filepath,text_file,outfolder):
+	def patch_meta(self,filepath,text_file,outfolder,RSV_cap):
 		indent = 1
 		tabs = '\t' * indent	
 		Print.info(tabs + '-------------------------------------')
@@ -1826,7 +1826,10 @@ class Nsp(Pfs0):
 		keygen=meta_nca.header.getCryptoType2()
 		RSV=sq_tools.getMinRSV(keygen,meta_nca.get_req_system())
 		if 	meta_nca.get_req_system() > RSV:
-			meta_nca.write_req_system(RSV)
+			if RSV>RSV_cap:
+				meta_nca.write_req_system(RSV)
+			else:
+				meta_nca.write_req_system(RSV_cap)
 			meta_nca.flush()
 			meta_nca.close()
 			Print.info(tabs + 'Updating cnmt hashes: ')

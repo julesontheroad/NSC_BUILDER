@@ -230,7 +230,34 @@ class Xci(File):
 						fp.write(data)
 						fp.flush()
 
-
+	def copy_cnmt(self,ofolder,buffer):
+		for nspF in self.hfs0:
+			if "secure" == str(nspF._path):
+				for nca in nspF:
+					if type(nca) == Nca:
+						if 	str(nca.header.contentType) == 'Content.META':
+							for f in nca:
+								for file in f:
+									nca.rewind()
+									f.rewind()
+									file.rewind()
+									filename =  str(file._path)
+									outfolder = str(ofolder)+'/'
+									filepath = os.path.join(outfolder, filename)
+									if not os.path.exists(outfolder):
+										os.makedirs(outfolder)
+									fp = open(filepath, 'w+b')
+									nca.rewind()
+									f.rewind()	
+									file.rewind()								
+									for data in iter(lambda:file.read(int(buffer)), ""):
+										fp.write(data)
+										fp.flush()
+										if not data:
+											break
+									fp.close()
+			
+						
 	def copy_other(self,ofolder,buffer,token):
 		indent = 1
 		tabs = '\t' * indent
@@ -274,7 +301,7 @@ class Xci(File):
 		fp.close()
 
 #Copy nca files from secure 
-	def copy_nca(self,ofolder,buffer,token,metapatch,keypatch):
+	def copy_nca(self,ofolder,buffer,token,metapatch,keypatch,RSV_cap):
 		if keypatch != 'false':
 			keypatch = int(keypatch)
 		indent = 1
@@ -307,11 +334,11 @@ class Xci(File):
 						target.close()		
 						if metapatch == 'true':
 							if 	str(nca.header.contentType) == 'Content.META':
-								self.patch_meta(filepath,outfolder)					
+								self.patch_meta(filepath,outfolder,RSV_cap)					
 										
 										
 #Copy nca files from secure skipping deltas
-	def copy_nca_nd(self,ofolder,buffer,metapatch,keypatch):
+	def copy_nca_nd(self,ofolder,buffer,metapatch,keypatch,RSV_cap):
 		if keypatch != 'false':
 			keypatch = int(keypatch)
 		indent = 1
@@ -357,10 +384,10 @@ class Xci(File):
 							target.close()		
 							if metapatch == 'true':
 								if 	str(nca.header.contentType) == 'Content.META':
-									self.patch_meta(filepath,outfolder)					
+									self.patch_meta(filepath,outfolder,RSV_cap)					
 
 #COPY AND CLEAN NCA FILES FROM SECURE AND PATCH NEEDED SYSTEM VERSION			
-	def cr_tr_nca(self,ofolder,buffer,metapatch,keypatch):
+	def cr_tr_nca(self,ofolder,buffer,metapatch,keypatch,RSV_cap):
 		if keypatch != 'false':
 			keypatch = int(keypatch)
 		indent = 1
@@ -443,11 +470,11 @@ class Xci(File):
 							target.close()									
 							if metapatch == 'true':
 								if 	str(nca.header.contentType) == 'Content.META':
-									self.patch_meta(filepath,outfolder)				
+									self.patch_meta(filepath,outfolder,RSV_cap)				
 
 
 #COPY AND CLEAN NCA FILES FROM SECURE SKIPPING DELTAS AND PATCH NEEDED SYSTEM VERSION
-	def cr_tr_nca_nd(self,ofolder,buffer,metapatch,keypatch):
+	def cr_tr_nca_nd(self,ofolder,buffer,metapatch,keypatch,RSV_cap):
 		if keypatch != 'false':
 			keypatch = int(keypatch)
 		indent = 1
@@ -541,7 +568,7 @@ class Xci(File):
 								target.close()										
 								if metapatch == 'true':
 									if 	str(nca.header.contentType) == 'Content.META':
-										self.patch_meta(filepath,outfolder)						
+										self.patch_meta(filepath,outfolder,RSV_cap)						
 		
 #///////////////////////////////////////////////////								
 # Change MKREV_NCA
@@ -583,7 +610,7 @@ class Xci(File):
 #///////////////////////////////////////////////////								
 #PATCH META FUNCTION
 #///////////////////////////////////////////////////	
-	def patch_meta(self,filepath,outfolder):
+	def patch_meta(self,filepath,outfolder,RSV_cap):
 		indent = 1
 		tabs = '\t' * indent	
 		Print.info(tabs + '-------------------------------------')
@@ -592,7 +619,10 @@ class Xci(File):
 		keygen=meta_nca.header.getCryptoType2()
 		RSV=sq_tools.getMinRSV(keygen,meta_nca.get_req_system())
 		if 	meta_nca.get_req_system() > RSV:
-			meta_nca.write_req_system(RSV)
+			if RSV>RSV_cap:
+				meta_nca.write_req_system(RSV)
+			else:
+				meta_nca.write_req_system(RSV_cap)		
 			meta_nca.flush()
 			meta_nca.close()
 			Print.info(tabs + 'Updating cnmt hashes: ')
@@ -1119,7 +1149,7 @@ class Xci(File):
 
 #///////////////////////////////////////////////////								
 #INFO ABOUT UPD REQUIREMENTS
-#///////////////////////////////////////////////////
+#///////////////////////////////////////////////////	
 	def print_fw_req(self):
 		for nspF in self.hfs0:
 			if str(nspF._path)=="secure":

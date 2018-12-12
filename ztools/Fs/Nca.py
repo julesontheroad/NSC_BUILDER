@@ -2,6 +2,7 @@ import aes128
 import Title
 import Titles
 import Hex
+import math
 from binascii import hexlify as hx, unhexlify as uhx
 from struct import pack as pk, unpack as upk
 from hashlib import sha256
@@ -240,7 +241,7 @@ class NcaHeader(File):
 	
 	def get_hblock_block_size(self):
 		self.seek(0x428)
-		return self.read(0x04)	
+		return self.readInt32()
 
 	def get_hblock_uk1(self):
 		self.seek(0x42C)
@@ -322,7 +323,7 @@ class Nca(File):
 		hash_from_htable = self.header.get_htable_hash()
 		Print.info('hash from hash table: ' + str(hx(hash_from_htable)))
 		block_size = self.header.get_hblock_block_size()
-		Print.info('block size in bytes: ' + str(hx(block_size)))
+		Print.info('block size in bytes: ' + str(hx(block_size.to_bytes(8, byteorder='big'))))
 		v_unkn1 = self.header.get_hblock_uk1()
 		htable_offset = self.header.get_htable_offset()
 		Print.info('hash table offset: ' +  str(hx(htable_offset.to_bytes(8, byteorder='big'))))
@@ -334,16 +335,35 @@ class Nca(File):
 		Print.info('Pfs0 size: ' +  str(hx(pfs0_size.to_bytes(8, byteorder='big'))))	
 			
 		
+	def get_pfs0_hash_data(self):	
+		block_size = self.header.get_hblock_block_size()
+		#Print.info('block size in bytes: ' + str(hx(block_size.to_bytes(8, byteorder='big'))))
+		pfs0_size = self.header.get_pfs0_size()
+		#Print.info('Pfs0 size: ' +  str(hx(pfs0_size.to_bytes(8, byteorder='big'))))
+		multiplier=pfs0_size/block_size
+		multiplier=math.ceil(multiplier)
+		#Print.info('Multiplier: ' +  str(multiplier))
+		return pfs0_size,block_size,multiplier
 		
-
+	def pfs0_MULT(self):	
+		block_size = self.header.get_hblock_block_size()
+		#Print.info('block size in bytes: ' + str(hx(block_size.to_bytes(8, byteorder='big'))))
+		pfs0_size = self.header.get_pfs0_size()
+		#Print.info('Pfs0 size: ' +  str(hx(pfs0_size.to_bytes(8, byteorder='big'))))
+		multiplier=pfs0_size/block_size
+		multiplier=math.ceil(multiplier)
+		#Print.info('Multiplier: ' +  str(multiplier))
+		return multiplier		
+	
 	def get_pfs0_hash(self, file = None, mode = 'rb', cryptoType = -1, cryptoKey = -1, cryptoCounter = -1):		
+		mult=self.pfs0_MULT()
 		for f in self:
 			cryptoType=f.get_cryptoType()
 			cryptoKey=f.get_cryptoKey()	
 			cryptoCounter=f.get_cryptoCounter()
 		super(Nca, self).open(file, mode, cryptoType, cryptoKey, cryptoCounter)
 		self.seek(0xC00+self.header.get_htable_offset())
-		hash_from_pfs0=self.read(0x20)
+		hash_from_pfs0=self.read(0x20*mult)
 		return hash_from_pfs0
 		
 	def calc_htable_hash(self):		
@@ -356,6 +376,7 @@ class Nca(File):
 		return sha_hash		
 
 	def calc_pfs0_hash(self, file = None, mode = 'rb'):	
+		mult=self.pfs0_MULT()
 		indent = 2
 		tabs = '\t' * indent
 		for f in self:
@@ -365,8 +386,12 @@ class Nca(File):
 		super(Nca, self).open(file, mode, cryptoType2, cryptoKey2, cryptoCounter2)
 		pfs0_offset = self.header.get_pfs0_offset()
 		pfs0_size = self.header.get_pfs0_size()
+		block_size = self.header.get_hblock_block_size()
 		self.seek(0xC00+self.header.get_htable_offset()+pfs0_offset)
-		pfs0=self.read(pfs0_size)
+		if mult>1:
+			pfs0=self.read(block_size)
+		else:
+			pfs0=self.read(pfs0_size)
 		sha=sha256(pfs0).hexdigest()
 		#Print.info('caculated hash from pfs0: ' + sha)	
 		sha_signature = bytes.fromhex(sha)
@@ -547,16 +572,15 @@ class Nca(File):
 		tabs = '\t' * indent
 		Print.info('\n%sNCA Archive\n' % (tabs))
 		super(Nca, self).printInfo(indent)
-		#Print.info(tabs + 'Header Block Hash: ' + str(hx(self.header.get_hblock_hash())))
-		#self.header.calculate_hblock_hash()
-		#self.get_hblock()
-		#self.calc_htable_hash()
-		#Print.info('hash from pfs0: ' + str(hx(self.get_pfs0_hash())))
-		#self.calc_pfs0_hash()
-		#self.get_req_system()
-		#self.write_req_system()
-		#Print.info(tabs + 'RSA-2048 signature 1 = ' + str(hx(self.header.signature1)))
-		#Print.info(tabs + 'RSA-2048 signature 2 = ' + str(hx(self.header.signature2)))
+#		Print.info(tabs + 'Header Block Hash: ' + str(hx(self.header.get_hblock_hash())))
+#		self.header.calculate_hblock_hash()
+#		self.get_hblock()
+#		self.calc_htable_hash()
+#		Print.info('hash from pfs0: ' + str(hx(self.get_pfs0_hash())))
+#		self.calc_pfs0_hash()
+#		self.get_req_system()
+#		Print.info(tabs + 'RSA-2048 signature 1 = ' + str(hx(self.header.signature1)))
+#		Print.info(tabs + 'RSA-2048 signature 2 = ' + str(hx(self.header.signature2)))
 		Print.info(tabs + 'magic = ' + str(self.header.magic))
 		Print.info(tabs + 'titleId = ' + str(self.header.titleId))
 		Print.info(tabs + 'rightsId = ' + str(self.header.rightsId))

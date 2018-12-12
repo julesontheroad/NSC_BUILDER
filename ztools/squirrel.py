@@ -43,6 +43,7 @@ import Status
 import Nsps
 from hashlib import sha256
 from pathlib import Path
+from binascii import hexlify as hx, unhexlify as uhx
 
 
 if __name__ == '__main__':
@@ -143,6 +144,7 @@ if __name__ == '__main__':
 		parser.add_argument('-ext', '--external', nargs='+', help='Set original nsp or ticket for remove nca titlerights functions')
 		parser.add_argument('-pv', '--patchversion', nargs='+', help='Number fot patch Required system version or program, patch or addcontent version')
 		parser.add_argument('-kp', '--keypatch', nargs='+', help='patch masterkey to input number')	
+		parser.add_argument('-rsvc', '--RSVcap', nargs='+', help='RSV cap when patching. Default is FW4.0')			
 		parser.add_argument('-pe', '--pathend', nargs='+', help='Output to subfolder')		
 		parser.add_argument('-cskip', nargs='+', help='Skip dlc or update')				
 
@@ -503,10 +505,18 @@ if __name__ == '__main__':
 						Print.error('Exception: ' + str(e))
 			else:
 				metapatch = 'false'					
+			if args.RSVcap:
+				for input in args.RSVcap:
+					try:
+						RSV_cap = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+			else:
+				RSV_cap = 268435656					
 			for filename in args.NSP_copy_nca:
 				try:
 					f = Fs.Nsp(filename, 'rb')
-					f.copy_nca(ofolder,buffer,metapatch)
+					f.copy_nca(ofolder,buffer,metapatch,RSV_cap)
 					f.flush()
 					f.close()
 				except BaseException as e:
@@ -838,13 +848,23 @@ if __name__ == '__main__':
 			else:
 				buffer = 32768			
 			for filename in args.NSP_copy_cnmt:
-				try:
-					f = Fs.Nsp(filename, 'rb')
-					f.copy_cnmt(ofolder,buffer)
-					f.flush()
-					f.close()
-				except BaseException as e:
-					Print.error('Exception: ' + str(e))		
+				if filename.endswith('.nsp'):
+					try:
+						f = Fs.Nsp(filename, 'rb')
+						f.copy_cnmt(ofolder,buffer)
+						f.flush()
+						f.close()
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))		
+				if filename.endswith('.xci'):
+					try:
+						f = Fs.factory(filename)
+						f.open(filename, 'rb')
+						f.copy_cnmt(ofolder,buffer)
+						f.flush()
+						f.close()
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))								
 					
 		# ...................................................						
 		# Copy pfs0 from NSP file
@@ -1204,18 +1224,26 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				vkeypatch = 'false'				
+				vkeypatch = 'false'	
+			if args.RSVcap:
+				for input in args.RSVcap:
+					try:
+						RSV_cap = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+			else:
+				RSV_cap = 268435656						
 			for filename in args.C_clean:
 				if filename.endswith('.nsp'):
 					try:
 						f = Fs.Nsp(filename, 'rb')
 						if f.trights_set() == 'FALSE':
 							Print.info("NSP DOESN'T HAVE TITLERIGHTS")
-							f.copy_nca(ofolder,buffer,metapatch,vkeypatch)	
+							f.copy_nca(ofolder,buffer,metapatch,vkeypatch,RSV_cap)	
 						if f.trights_set() == 'TRUE':
 							if f.exist_ticket() == 'TRUE':
 								Print.info("NSP HAS TITLERIGHTS AND TICKET EXISTS")
-								f.cr_tr_nca(ofolder,buffer,metapatch,vkeypatch)
+								f.cr_tr_nca(ofolder,buffer,metapatch,vkeypatch,RSV_cap)
 							if f.exist_ticket() == 'FALSE':
 								Print.error('NSP FILE HAS TITLERIGHTS BUT NO TICKET')		
 						f.flush()
@@ -1228,11 +1256,11 @@ if __name__ == '__main__':
 						f.open(filename, 'rb')
 						if f.trights_set() == 'FALSE':
 							Print.info("XCI DOESN'T HAVE TITLERIGHTS")
-							f.copy_nca(ofolder,buffer,'secure',metapatch,vkeypatch)
+							f.copy_nca(ofolder,buffer,'secure',metapatch,vkeypatch,RSV_cap)
 						if f.trights_set() == 'TRUE':
 							if f.exist_ticket() == 'TRUE':
 								Print.info("XCI HAS TITLERIGHTS AND TICKET EXISTS")
-								f.cr_tr_nca(ofolder,buffer,metapatch,vkeypatch)
+								f.cr_tr_nca(ofolder,buffer,metapatch,vkeypatch,RSV_cap)
 							if f.exist_ticket() == 'FALSE':
 								Print.error('XCI FILE HAS TITLERIGHTS BUT NO TICKET')		
 						f.flush()
@@ -1277,18 +1305,26 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				vkeypatch = 'false'					
+				vkeypatch = 'false'		
+			if args.RSVcap:
+				for input in args.RSVcap:
+					try:
+						RSV_cap = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+			else:
+				RSV_cap = 268435656						
 			for filename in args.C_clean_ND:
 				if filename.endswith('.nsp'):
 					try:
 						f = Fs.Nsp(filename, 'rb')
 						if f.trights_set() == 'FALSE':
 							Print.info("NSP DOESN'T HAVE TITLERIGHTS")
-							f.copy_nca_nd(ofolder,buffer,metapatch,vkeypatch)	
+							f.copy_nca_nd(ofolder,buffer,metapatch,vkeypatch,RSV_cap)	
 						if f.trights_set() == 'TRUE':
 							if f.exist_ticket() == 'TRUE':
 								Print.info("NSP HAS TITLERIGHTS AND TICKET EXISTS")
-								f.cr_tr_nca_nd(ofolder,buffer,metapatch,vkeypatch)
+								f.cr_tr_nca_nd(ofolder,buffer,metapatch,vkeypatch,RSV_cap)
 							if f.exist_ticket() == 'FALSE':
 								Print.error('NSP FILE HAS TITLERIGHTS BUT NO TICKET')		
 						f.flush()
@@ -1301,11 +1337,11 @@ if __name__ == '__main__':
 						f.open(filename, 'rb')
 						if f.trights_set() == 'FALSE':
 							Print.info("XCI DOESN'T HAVE TITLERIGHTS")
-							f.copy_nca_nd(ofolder,buffer,metapatch,vkeypatch)	
+							f.copy_nca_nd(ofolder,buffer,metapatch,vkeypatch,RSV_cap)	
 						if f.trights_set() == 'TRUE':
 							if f.exist_ticket() == 'TRUE':
 								Print.info("XCI HAS TITLERIGHTS AND TICKET EXISTS")
-								f.cr_tr_nca_nd(ofolder,buffer,metapatch,vkeypatch)
+								f.cr_tr_nca_nd(ofolder,buffer,metapatch,vkeypatch,RSV_cap)
 							if f.exist_ticket() == 'FALSE':
 								Print.error('XCI FILE HAS TITLERIGHTS BUT NO TICKET')		
 						f.flush()
@@ -1844,11 +1880,18 @@ if __name__ == '__main__':
 		# ...................................................						
 		# Update hashes in cnmt file
 		# ...................................................									
-
 		if args.update_hash:
 			for filename in args.update_hash:
 				if filename.endswith('.nca'):
-					try:
+					try:				
+						f = Fs.Nca(filename, 'r+b')			
+						pfs0_size,block_size,multiplier=f.get_pfs0_hash_data()
+						Print.info('block size in bytes: ' + str(hx(block_size.to_bytes(8, byteorder='big'))))
+						Print.info('Pfs0 size: ' +  str(hx(pfs0_size.to_bytes(8, byteorder='big'))))
+						Print.info('Multiplier: ' +  str(multiplier))			
+						f.flush()
+						f.close()
+						############################
 						f = Fs.Nca(filename, 'r+b')
 						sha=f.calc_pfs0_hash()
 						f.flush()
