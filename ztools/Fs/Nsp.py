@@ -1825,11 +1825,13 @@ class Nsp(Pfs0):
 		meta_nca = Fs.Nca(filepath, 'r+b')
 		keygen=meta_nca.header.getCryptoType2()
 		RSV=sq_tools.getMinRSV(keygen,meta_nca.get_req_system())
+		RSVmax=sq_tools.getTopRSV(keygen,meta_nca.get_req_system())		
 		if 	meta_nca.get_req_system() > RSV:
 			if RSV>RSV_cap:
 				meta_nca.write_req_system(RSV)
-			else:
-				meta_nca.write_req_system(RSV_cap)
+			if keygen<4:
+				if meta_nca.get_req_system()>RSVmax:
+					meta_nca.write_req_system(RSV_cap)				
 			meta_nca.flush()
 			meta_nca.close()
 			Print.info(tabs + 'Updating cnmt hashes: ')
