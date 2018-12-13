@@ -508,7 +508,7 @@ if __name__ == '__main__':
 			if args.RSVcap:
 				for input in args.RSVcap:
 					try:
-						RSV_cap = input
+						RSV_cap = int(input)
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
@@ -1228,7 +1228,7 @@ if __name__ == '__main__':
 			if args.RSVcap:
 				for input in args.RSVcap:
 					try:
-						RSV_cap = input
+						RSV_cap = int(input)
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
@@ -1309,7 +1309,7 @@ if __name__ == '__main__':
 			if args.RSVcap:
 				for input in args.RSVcap:
 					try:
-						RSV_cap = input
+						RSV_cap = int(input)
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
