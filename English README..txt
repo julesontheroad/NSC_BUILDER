@@ -11,7 +11,7 @@
 -------------------------------------------------------------------------------------
 "                             POWERED WITH NUT BY BLAWAR                            "
 "                             AND LUCA FRAGA'S HACBUILD                             "
-                                    VERSION 0.76                                     	
+                                    VERSION 0.77                                     	
 -------------------------------------------------------------------------------------                   
 Program's github: https://github.com/julesontheroad/NSC_BUILDER
 Revised hacbuild: https://github.com/julesontheroad/hacbuild
