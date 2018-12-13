@@ -21,6 +21,10 @@ SciresM hactool : https://github.com/SciresM/hactool
 ---------------
 0. Changelog
 ---------------
+v0.77- Added new option to global config to skip the RSV and keygeneration patching
+       prompt dialogue.
+       Added fallback for names in info function number 3 in case there isn't american
+       english name. If name is japanese it'll show weirdly for now
 v0.76- Corrected hash calcultion after RSV patching in games that had a lot of updates.
        Added RequiredSystemVersion cap when lowering it up, set as FW4.0 by default when
        it's auto-calculated, since it's needed for some newer updates.

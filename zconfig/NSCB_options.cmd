@@ -102,26 +102,8 @@ set "vkey=-kp false"
 set "va_exit=false"
 
 ::--------------------------------------------------------------
-::OPTION 9: RENAMING OPTIONS
+::OPTION 11: SKIP RSV AND KEYGENERATION CHANGE PROPMT
 ::--------------------------------------------------------------
-REM -> Requires some more work to work as intended without nstool
-set "vrename=false"
-
-::--------------------------------------------------------------
-::OPTION 9: SKIPS FOR INDIVIDUAL MODE 
-::--------------------------------------------------------------
-REM -> Not enabled yet. They're here as a reminder for me.
-REM -> You can erase option's 9 block.
-
-::Skip NSP repack if input NSP doesn't have titlerights
-::true-> skip repacking
-::false-> don't skip repacking
-REM set "trn_skip=true"
-::Skip XCI repack if input XCI have empty update partition
-::true-> skip repacking
-::false-> don't skip repacking
-REM "updx_skip=true"
-::Repack as NSP updates and dlc 
-::true-> repack as nsp
-::false-> repack as xci either way
-REM "ngx_skip=true"
+:: Skip RequiredSystemVersion and keygeneration prompts while
+:: in manual mode
+set "skipRSVprompt=false"

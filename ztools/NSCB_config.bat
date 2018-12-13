@@ -8,7 +8,7 @@ echo ********************************************************
 echo OPTION - CONFIGURATION
 echo ********************************************************
 echo Input "1" for AUTO-MODE OPTIONS
-echo Input "2" for GLOBAL OPTIONS
+echo Input "2" for GLOBAL AND MANUAL OPTIONS
 echo Input "3" to INSTALL DEPENDENCIES
 echo.
 echo Input "c" to read CURRENT PROFILE
@@ -260,6 +260,7 @@ echo Input "3" to change OUTPUT FOLDER's name
 echo Input "4" to change DELTA files treatment
 echo Input "5" to change ZIP configuration
 echo Input "6" to change AUTO-EXIT configuration
+echo Input "7" to skip KEY-GENERATION PROMPT
 echo.
 echo Input "c" to read CURRENT GLOBAL SETTINGS
 echo Input "d" to set DEFAULT GLOBAL SETTINGS
@@ -274,6 +275,7 @@ if /i "%bs%"=="3" goto op_ofolder
 if /i "%bs%"=="4" goto op_delta
 if /i "%bs%"=="5" goto op_zip
 if /i "%bs%"=="6" goto op_aexit
+if /i "%bs%"=="7" goto op_kgprompt
 
 if /i "%bs%"=="c" call :curr_set2
 if /i "%bs%"=="c" echo.
@@ -494,7 +496,7 @@ echo.
 echo Input "1" to skip deltas (default configuration)
 echo Input "2" to repack deltas
 echo.
-echo Input "b" to return to AUTO-MODE - CONFIGURATION
+echo Input "b" to return to GLOBAL OPTIONS
 echo Input "0" to return to CONFIG MENU
 echo Input "e" to go back to the MAIN PROGRAM
 echo ...........................................................................
@@ -533,7 +535,7 @@ echo.
 echo Input "1" to generate zip files (default configuration)
 echo Input "2" to not generate zip files 
 echo.
-echo Input "b" to return to AUTO-MODE - CONFIGURATION
+echo Input "b" to return to GLOBAL OPTIONS
 echo Input "0" to return to CONFIG MENU
 echo Input "e" to go back to the MAIN PROGRAM
 echo ...........................................................................
@@ -549,7 +551,7 @@ if /i "%bs%"=="e" goto salida
 
 if "%v_gzip%"=="none" echo WRONG CHOICE
 if "%v_gzip%"=="none" echo.
-if "%v_gzip%"=="none" goto op_delta
+if "%v_gzip%"=="none" goto op_zip
 
 set v_gzip="zip_restore=%v_gzip%"
 set v_gzip="%v_gzip%"
@@ -572,7 +574,7 @@ echo.
 echo Input "1" to set off auto-exit (default configuration)
 echo Input "2" to to set on auto-exit
 echo.
-echo Input "b" to return to AUTO-MODE - CONFIGURATION
+echo Input "b" to return to GLOBAL OPTIONS
 echo Input "0" to return to CONFIG MENU
 echo Input "e" to go back to the MAIN PROGRAM
 echo ...........................................................................
@@ -588,7 +590,7 @@ if /i "%bs%"=="e" goto salida
 
 if "%v_exit%"=="none" echo WRONG CHOICE
 if "%v_exit%"=="none" echo.
-if "%v_exit%"=="none" goto op_delta
+if "%v_exit%"=="none" goto op_aexit
 
 set v_exit="va_exit=%v_exit%"
 set v_exit="%v_exit%"
@@ -598,6 +600,44 @@ echo.
 echo.
 pause
 goto sc3
+
+:op_kgprompt
+cls
+call :logo
+echo ***************************************************************************
+echo SHOW\SKIP REQUIRED_SYSTEM_VERSION AND KEYGENERATION CHANGE PROPMT
+echo ***************************************************************************
+echo.
+echo Input "1" to show RSV prompt (default configuration)
+echo Input "2" to not show RSV prompt
+echo.
+echo Input "b" to return to GLOBAL OPTIONS
+echo Input "0" to return to CONFIG MENU
+echo Input "e" to go back to the MAIN PROGRAM
+echo ...........................................................................
+echo.
+set /p bs="Enter your choice: "
+set "skipRSVprompt=none"
+if /i "%bs%"=="1" set "skipRSVprompt=false"
+if /i "%bs%"=="2" set "skipRSVprompt=true"
+
+if /i "%bs%"=="b" goto sc3
+if /i "%bs%"=="0" goto sc1
+if /i "%bs%"=="e" goto salida
+
+if "%skipRSVprompt%"=="none" echo WRONG CHOICE
+if "%skipRSVprompt%"=="none" echo.
+if "%skipRSVprompt%"=="none" goto op_kgprompt
+
+set skipRSVprompt="skipRSVprompt=%skipRSVprompt%"
+set skipRSVprompt="%skipRSVprompt%"
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "108" -nl "set %skipRSVprompt%" 
+echo.
+%pycommand% "%listmanager%" -rl "%op_file%" -ln "108" -nl "Line in config was changed to: "
+echo.
+pause
+goto sc3
+
 
 
 
@@ -681,6 +721,14 @@ set v_exit="va_exit=%v_exit%"
 set v_exit="%v_exit%"
 %pycommand% "%listmanager%" -cl "%op_file%" -ln "101" -nl "set %v_exit%" 
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "101" -nl "Line in config was changed to: "
+
+REM skipRSVprompt
+set "skipRSVprompt=false"
+set skipRSVprompt="skipRSVprompt=%skipRSVprompt%"
+set skipRSVprompt="%skipRSVprompt%"
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "108" -nl "set %skipRSVprompt%" 
+%pycommand% "%listmanager%" -rl "%op_file%" -ln "108" -nl "Line in config was changed to: "
+echo.
 exit /B
 
 
@@ -722,6 +770,10 @@ REM zip_restore
 
 REM AUTO-EXIT
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "101" -nl "Auto-exit is set to: "
+
+REM skipRSVprompt
+%pycommand% "%listmanager%" -rl "%op_file%" -ln "108" -nl "Line in config was changed to: "
+
 exit /B
 :salida
 exit /B
@@ -740,7 +792,7 @@ ECHO =============================     BY JULESONTHEROAD     ===================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                             POWERED WITH NUT BY BLAWAR                            "
 ECHO "                             AND LUCA FRAGA'S HACBUILD                             "
-ECHO                                     VERSION 0.76                                     	
+ECHO                                     VERSION 0.77                                     	
 ECHO -------------------------------------------------------------------------------------                   
 ECHO Program's github: https://github.com/julesontheroad/NSC_BUILDER
 ECHO Revised hacbuild: https://github.com/julesontheroad/hacbuild

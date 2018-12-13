@@ -1180,7 +1180,7 @@ class Xci(File):
 									RSversion=cnmt.readInt32()
 									Emeta=cnmt.readInt32()
 									target=str(nca._path)
-									contentname = self.splitter_get_title(target,offset,content_entries,original_ID)
+									contentname = self.inf_get_title(target,offset,content_entries,original_ID)
 									cnmt.rewind()
 									cnmt.seek(0x20+offset)
 									titleid2 = str(hx(titleid.to_bytes(8, byteorder='big'))) 	
@@ -1208,4 +1208,95 @@ class Xci(File):
 									Print.info('- RequiredSystemVersion: ' + str(RSversion)+" -> " +RSV_rq)	
 									Print.info('- Encryption (keygeneration): ' + str(keygen)+" -> " +FW_rq)
 									Print.info('- Patchable to: ' + str(MinRSV)+" -> " + RSV_rq_min)							
+						
+	def inf_get_title(self,target,offset,content_entries,original_ID):
+		content_type=''
+		token='secure'		
+		for nspF in self.hfs0:
+			if token == str(nspF._path):
+				for nca in nspF:
+					if type(nca) == Nca:
+						if target ==  str(nca._path):
+							for f in nca:
+								for cnmt in f:
+									nca.rewind()
+									f.rewind()
+									cnmt.rewind()					
+									cnmt.seek(0x20+offset)	
+									nca_name='false'
+									for i in range(content_entries):
+										vhash = cnmt.read(0x20)
+										NcaId = cnmt.read(0x10)
+										size = cnmt.read(0x6)
+										ncatype = cnmt.read(0x1)
+										unknown = cnmt.read(0x1)
+										ncatype2 = int.from_bytes(ncatype, byteorder='little')
+										if ncatype2 == 3:
+											nca_name=str(hx(NcaId))
+											nca_name=nca_name[2:-1]+'.nca'
+											content_name=str(cnmt._path)
+											content_name=content_name[:-22]
+											if content_name == 'Patch':
+												content_type=' [UPD]'
+		if nca_name=='false':
+			for nspF in self.hfs0:
+				if token == str(nspF._path):
+					for nca in nspF:		
+						if type(nca) == Nca:
+							if 	str(nca.header.contentType) == 'Content.META':
+								for f in nca:
+									for cnmt in f:
+										cnmt.rewind()
+										testID=cnmt.readInt64()
+										if 	testID == original_ID:
+											nca.rewind()
+											f.rewind()								
+											titleid=cnmt.readInt64()
+											titleversion = cnmt.read(0x4)
+											cnmt.rewind()
+											cnmt.seek(0xE)
+											offset=cnmt.readInt16()
+											content_entries=cnmt.readInt16()
+											meta_entries=cnmt.readInt16()
+											cnmt.rewind()
+											cnmt.seek(0x20)
+											original_ID=cnmt.readInt64()
+											min_sversion=self.readInt32()
+											end_of_emeta=self.readInt32()	
+											target=str(nca._path)
+											contentname = self.splitter_get_title(target,offset,content_entries,original_ID)
+											cnmt.rewind()
+											cnmt.seek(0x20+offset)								
+											for i in range(content_entries):
+												vhash = cnmt.read(0x20)
+												NcaId = cnmt.read(0x10)
+												size = cnmt.read(0x6)
+												ncatype = cnmt.read(0x1)
+												unknown = cnmt.read(0x1)
+												ncatype2 = int.from_bytes(ncatype, byteorder='little')
+												if ncatype2 == 3:
+													nca_name=str(hx(NcaId))
+													nca_name=nca_name[2:-1]+'.nca'
+													content_type=' [DLC]'
+		for nspF in self.hfs0:
+			if token == str(nspF._path):
+				for nca in nspF:		
+					if type(nca) == Nca:
+						if nca_name == str(nca._path):
+							for f in nca:
+								nca.rewind()
+								f.rewind()	
+								f.seek(0x14200)
+								for i in range(14):
+									title = f.read(0x200)		
+									title = title.split(b'\0', 1)[0].decode('utf-8')
+									title = (re.sub(r'[\/\\\:\*\?\!\"\<\>\|\.\s™©®()\~]+', ' ', title))
+									title = title.strip()
+									if title == "":
+										title = 'DLC'
+									if title != 'DLC':
+										title = title
+										return(title)
+		return(title)			
+												
 						

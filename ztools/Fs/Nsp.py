@@ -20,6 +20,7 @@ from Fs.Pfs0 import Pfs0
 from Fs.Ticket import Ticket
 from Fs.Nca import Nca
 
+
 MEDIA_SIZE = 0x200
 
 class Nsp(Pfs0):
@@ -1640,7 +1641,6 @@ class Nsp(Pfs0):
 									contentname = self.splitter_get_title(target,offset,content_entries,original_ID)
 									cnmt.rewind()
 									cnmt.seek(0x20+offset)								
-		title='DLC'
 		for nca in self:
 			if type(nca) == Nca:
 				if nca_name == str(nca._path):
@@ -1648,11 +1648,16 @@ class Nsp(Pfs0):
 						nca.rewind()
 						f.rewind()	
 						f.seek(0x14200)
-						title = f.read(0x200)		
-						title = title.split(b'\0', 1)[0].decode('utf-8')
-						title = (re.sub(r'[\/\\\:\*\?\!\"\<\>\|\.\s™©®()\~]+', ' ', title))
-						title = title.strip()
-						title = title
+						for i in range(14):
+							title = f.read(0x200)		
+							title = title.split(b'\0', 1)[0].decode('utf-8')
+							title = (re.sub(r'[\/\\\:\*\?\!\"\<\>\|\.\s™©®()\~]+', ' ', title))
+							title = title.strip()
+							if title == "":
+								title = 'DLC'
+							if title != 'DLC':
+								title = title
+								return(title)
 		return(title)							
 							
 							

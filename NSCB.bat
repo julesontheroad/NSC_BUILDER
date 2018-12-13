@@ -4,7 +4,7 @@
 set "prog_dir=%~dp0"
 set "bat_name=%~n0"
 set "ofile_name=%bat_name%_options.cmd"
-Title NSC_Builder v0.76. -- Profile: %ofile_name% -- by JulesOnTheRoad
+Title NSC_Builder v0.77. -- Profile: %ofile_name% -- by JulesOnTheRoad
 ::-----------------------------------------------------
 ::EDIT THIS VARIABLE TO LINK OTHER OPTION FILE
 ::-----------------------------------------------------
@@ -24,6 +24,7 @@ set "fi_rep=%fi_rep%"
 set "zip_restore=%zip_restore%"
 set "manual_intro=%manual_intro%"
 set "va_exit=%va_exit%"
+set "skipRSVprompt=%skipRSVprompt%"
 REM set "trn_skip=%trn_skip%"
 REM set "updx_skip=%updx_skip%"
 REM set "ngx_skip=%ngx_skip%"
@@ -559,6 +560,8 @@ if /i "%bs%"=="2" set "vrepack=xci"
 if /i "%bs%"=="3" set "vrepack=both"
 if %vrepack%=="none" goto s_cl_wrongchoice
 :s_RSV_wrongchoice
+if /i "%skipRSVprompt%"=="true" set "patchRSV=-pv false"
+if /i "%skipRSVprompt%"=="true" goto s_KeyChange_skip
 echo *******************************************************
 echo DO YOU WANT TO PATCH THE REQUIRED-SYSTEM-VERSION
 echo *******************************************************
@@ -945,6 +948,8 @@ if /i "%bs%"=="2" set "vrepack=xci"
 if /i "%bs%"=="3" set "vrepack=both"
 if %vrepack%=="none" goto m_cl_wrongchoice
 :m_RSV_wrongchoice
+if /i "%skipRSVprompt%"=="true" set "patchRSV=-pv false"
+if /i "%skipRSVprompt%"=="true" goto m_KeyChange_skip
 echo *******************************************************
 echo DO YOU WANT TO PATCH THE REQUIRED-SYSTEM-VERSION
 echo *******************************************************
@@ -1737,6 +1742,8 @@ if /i "%bs%"=="1" set "vrepack=nsp"
 if /i "%bs%"=="2" set "vrepack=xci"
 if /i "%bs%"=="3" set "vrepack=both"
 if %vrepack%=="none" goto upd_pack_choice
+if /i "%skipRSVprompt%"=="true" set "patchRSV=-pv false"
+if /i "%skipRSVprompt%"=="true" goto upd_KeyChange_skip
 echo *******************************************************
 echo DO YOU WANT TO PATCH THE REQUIRED-SYSTEM-VERSION
 echo *******************************************************
@@ -1952,7 +1959,7 @@ ECHO =============================     BY JULESONTHEROAD     ===================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                             POWERED WITH NUT BY BLAWAR                            "
 ECHO "                             AND LUCA FRAGA'S HACBUILD                             "
-ECHO                                     VERSION 0.76
+ECHO                                     VERSION 0.77
 ECHO -------------------------------------------------------------------------------------                   
 ECHO Program's github: https://github.com/julesontheroad/NSC_BUILDER
 ECHO Revised hacbuild: https://github.com/julesontheroad/hacbuild
