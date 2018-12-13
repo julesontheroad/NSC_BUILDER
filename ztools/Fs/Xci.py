@@ -625,9 +625,7 @@ class Xci(File):
 				meta_nca.write_req_system(RSVmin)
 			if keygen < 4:
 				if RSV > RSVmax:
-					meta_nca.write_req_system(RSV_cap)
-			else:
-				meta_nca.write_req_system(RSV_cap)						
+					meta_nca.write_req_system(RSV_cap)				
 			meta_nca.flush()
 			meta_nca.close()
 			Print.info(tabs + 'Updating cnmt hashes: ')

@@ -11,7 +11,7 @@
 -------------------------------------------------------------------------------------
 "                             POWERED WITH NUT BY BLAWAR                            "
 "                             AND LUCA FRAGA'S HACBUILD                             "
-                                    VERSION 0.76                                     	
+                                    VERSION 0.75                                     	
 -------------------------------------------------------------------------------------                   
 Program's github: https://github.com/julesontheroad/NSC_BUILDER
 Revised hacbuild: https://github.com/julesontheroad/hacbuild
@@ -21,12 +21,6 @@ SciresM hactool : https://github.com/SciresM/hactool
 ---------------
 0. Changelog
 ---------------
-v0.76- Corrected hash calcultion after RSV patching in games that had a lot of updates.
-       Added RequiredSystemVersion cap when lowering it up, set as FW4.0 by default when
-       it's auto-calculated, since it's needed for some newer updates.
-       Linked RSV cap to the keygeneration selection. Now if you choose keygeneration 7
-       RSV won't go lower than 6.2 even if real keygeneration is lower, if you choose 5
-	   it won't go lower than FW5.0, etc...
 v0.75- Added configuration from the bat, option to change keygeneration, corrected RSV
        readouts and more.
        1.- Added options to change keygeneration to help run games at lower firmwares.

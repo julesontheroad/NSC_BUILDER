@@ -4,7 +4,7 @@
 set "prog_dir=%~dp0"
 set "bat_name=%~n0"
 set "ofile_name=%bat_name%_options.cmd"
-Title NSC_Builder v0.76. -- Profile: %ofile_name% -- by JulesOnTheRoad
+Title NSC_Builder v0.75. -- Profile: %ofile_name% -- by JulesOnTheRoad
 ::-----------------------------------------------------
 ::EDIT THIS VARIABLE TO LINK OTHER OPTION FILE
 ::-----------------------------------------------------
@@ -34,7 +34,6 @@ set "buffer=%buffer%"
 set "nf_cleaner=%nf_cleaner%"
 set "patchRSV=%patchRSV%"
 set "vkey=%vkey%"
-set "cap2RSV=%cap2RSV%"
 
 REM PROGRAMS
 set "nut=%nut%"
@@ -130,7 +129,7 @@ set "showname=%orinput%"
 call :processing_message
 REM echo %safe_var%>safe.txt
 call :squirrell
-%pycommand% "%nut%" %buffer% %patchRSV% %vkey% %cap2RSV% -o "%w_folder%\secure" %nf_cleaner% "%%f"
+%pycommand% "%nut%" %buffer% %patchRSV% %vkey% -o "%w_folder%\secure" %nf_cleaner% "%%f"
 if "%zip_restore%" EQU "true" ( set "ziptarget=%%f" )
 if "%zip_restore%" EQU "true" ( call :makezip )
 call :getname
@@ -170,7 +169,7 @@ call :getname
 echo -------------------------------------
 echo Extracting secure partition from xci 
 echo -------------------------------------
-%pycommand% "%nut%" %buffer% %patchRSV% %vkey% %cap2RSV% -o "%w_folder%\secure" %nf_cleaner% "%%f"
+%pycommand% "%nut%" %buffer% %patchRSV% %vkey% -o "%w_folder%\secure" %nf_cleaner% "%%f"
 echo DONE
 if "%vrename%" EQU "true" ( call :addtags_from_xci )
 if "%vrepack%" EQU "nsp" ( call "%nsp_lib%" "convert" "%w_folder%" )
@@ -216,7 +215,7 @@ set "showname=%orinput%"
 call :processing_message
 ::echo %safe_var%>safe.txt
 call :squirrell
-%pycommand% "%nut%" %buffer% %patchRSV% %vkey% %cap2RSV% -o "%w_folder%\secure" %nf_cleaner% "%%f"
+%pycommand% "%nut%" %buffer% %patchRSV% %vkey% -o "%w_folder%\secure" %nf_cleaner% "%%f"
 if "%zip_restore%" EQU "true" ( set "ziptarget=%%f" )
 if "%zip_restore%" EQU "true" ( call :makezip )
 )
@@ -228,7 +227,7 @@ call :program_logo
 echo ------------------------------------
 echo Extracting secure partition from xci
 echo ------------------------------------
-%pycommand% "%nut%" %buffer% %patchRSV% %vkey% %cap2RSV% -o "%w_folder%\secure" %nf_cleaner% "%%f"
+%pycommand% "%nut%" %buffer% %patchRSV% %vkey% -o "%w_folder%\secure" %nf_cleaner% "%%f"
 echo DONE
 )
 if "%vrepack%" EQU "nsp" ( call "%nsp_lib%" "convert" "%w_folder%" )
@@ -274,7 +273,7 @@ set "showname=%orinput%"
 call :processing_message
 if exist "%w_folder%" rmdir /s /q "%w_folder%" >NUL 2>&1
 call :squirrell
-%pycommand% "%nut%" %buffer% %patchRSV% %vkey% %cap2RSV% -o "%w_folder%\secure" %nf_cleaner% "%~1"
+%pycommand% "%nut%" %buffer% %patchRSV% %vkey% -o "%w_folder%\secure" %nf_cleaner% "%~1"
 if "%zip_restore%" EQU "true" ( set "ziptarget=%~1" )
 if "%zip_restore%" EQU "true" ( call :makezip )
 call :getname
@@ -310,7 +309,7 @@ call :getname
 echo ------------------------------------
 echo Extracting secure partition from xci 
 echo ------------------------------------
-%pycommand% "%nut%" %buffer% %patchRSV% %vkey% %cap2RSV% -o "%w_folder%\secure" %nf_cleaner% "%~1"
+%pycommand% "%nut%" %buffer% %patchRSV% %vkey% -o "%w_folder%\secure" %nf_cleaner% "%~1"
 echo DONE
 if "%vrename%" EQU "true" call :addtags_from_xci
 if "%vrepack%" EQU "nsp" ( call "%nsp_lib%" "convert" "%w_folder%" )
@@ -585,12 +584,10 @@ if /i "%bs%"=="0" goto s_KeyChange_skip
 
 :s_KeyChange_wrongchoice
 echo *******************************************************
-echo SET MAXIMUM KEYGENERATION\RSV ALOWED
+echo DO YOU WANT TO CHANGE THE KEYGENERATION
 echo *******************************************************
 echo Depending on your choice keygeneration and RSV will be
-echo lowered to the corresponding keygeneration range in case
-echo read keygeneration value is bigger than the one specified
-echo in the program.
+echo set to the corresponding keygeneration range.
 echo THIS WON'T ALWAYS WORK TO LOWER THE FIRMWARE REQUIREMENT.
 echo.
 echo Input "f" to not change the keygeneration
@@ -613,21 +610,13 @@ set "vkey=none"
 if /i "%bs%"=="b" goto checkagain
 if /i "%bs%"=="f" set "vkey=-kp false"
 if /i "%bs%"=="0" set "vkey=-kp 0"
-if /i "%bs%"=="0" set "cap2RSV=-rsvc 0"
 if /i "%bs%"=="1" set "vkey=-kp 1"
-if /i "%bs%"=="1" set "cap2RSV=-rsvc 65796"
 if /i "%bs%"=="2" set "vkey=-kp 2"
-if /i "%bs%"=="2" set "cap2RSV=-rsvc 201327002"
 if /i "%bs%"=="3" set "vkey=-kp 3"
-if /i "%bs%"=="3" set "cap2RSV=-rsvc 201392178"
 if /i "%bs%"=="4" set "vkey=-kp 4"
-if /i "%bs%"=="4" set "cap2RSV=-rsvc 268435656"
 if /i "%bs%"=="5" set "vkey=-kp 5"
-if /i "%bs%"=="5" set "cap2RSV=-rsvc 335544750"
 if /i "%bs%"=="6" set "vkey=-kp 6"
-if /i "%bs%"=="6" set "cap2RSV=-rsvc 402653494"
 if /i "%bs%"=="7" set "vkey=-kp 7"
-if /i "%bs%"=="7" set "cap2RSV=-rsvc 404750336"
 if /i "%vkey%"=="none" echo WRONG CHOICE
 if /i "%vkey%"=="none" goto s_KeyChange_wrongchoice
 
@@ -674,7 +663,7 @@ call :squirrell
 
 if "%vrepack%" EQU "zip" ( goto nsp_just_zip )
 
-%pycommand% "%nut%" %buffer% %patchRSV% %vkey% %cap2RSV% -o "%w_folder%\secure" %nf_cleaner% "%orinput%"
+%pycommand% "%nut%" %buffer% %patchRSV% %vkey% -o "%w_folder%\secure" %nf_cleaner% "%orinput%"
 
 :nsp_just_zip
 if "%zip_restore%" EQU "true" ( call :makezip )
@@ -715,7 +704,7 @@ call :getname
 echo ------------------------------------
 echo Extracting secure partition from xci
 echo ------------------------------------
-%pycommand% "%nut%" %buffer% %patchRSV% %vkey% %cap2RSV% -o "%w_folder%\secure" %nf_cleaner% "%orinput%"
+%pycommand% "%nut%" %buffer% %patchRSV% %vkey% -o "%w_folder%\secure" %nf_cleaner% "%orinput%"
 echo DONE
 if "%vrename%" EQU "true" call :addtags_from_xci
 if "%vrepack%" EQU "nsp" ( call "%nsp_lib%" "convert" "%w_folder%" )
@@ -971,12 +960,10 @@ if /i "%bs%"=="0" goto m_KeyChange_skip
 
 :m_KeyChange_wrongchoice
 echo *******************************************************
-echo SET MAXIMUM KEYGENERATION\RSV ALOWED
+echo DO YOU WANT TO CHANGE THE KEYGENERATION
 echo *******************************************************
 echo Depending on your choice keygeneration and RSV will be
-echo lowered to the corresponding keygeneration range in case
-echo read keygeneration value is bigger than the one specified
-echo in the program.
+echo set to the corresponding keygeneration range.
 echo THIS WON'T ALWAYS WORK TO LOWER THE FIRMWARE REQUIREMENT.
 echo.
 echo Input "f" to not change the keygeneration
@@ -999,21 +986,13 @@ set "vkey=none"
 if /i "%bs%"=="b" goto multi_checkagain
 if /i "%bs%"=="f" set "vkey=-kp false"
 if /i "%bs%"=="0" set "vkey=-kp 0"
-if /i "%bs%"=="0" set "cap2RSV=-rsvc 0"
 if /i "%bs%"=="1" set "vkey=-kp 1"
-if /i "%bs%"=="1" set "cap2RSV=-rsvc 65796"
 if /i "%bs%"=="2" set "vkey=-kp 2"
-if /i "%bs%"=="2" set "cap2RSV=-rsvc 201327002"
 if /i "%bs%"=="3" set "vkey=-kp 3"
-if /i "%bs%"=="3" set "cap2RSV=-rsvc 201392178"
 if /i "%bs%"=="4" set "vkey=-kp 4"
-if /i "%bs%"=="4" set "cap2RSV=-rsvc 268435656"
 if /i "%bs%"=="5" set "vkey=-kp 5"
-if /i "%bs%"=="5" set "cap2RSV=-rsvc 335544750"
 if /i "%bs%"=="6" set "vkey=-kp 6"
-if /i "%bs%"=="6" set "cap2RSV=-rsvc 402653494"
 if /i "%bs%"=="7" set "vkey=-kp 7"
-if /i "%bs%"=="7" set "cap2RSV=-rsvc 404750336"
 if /i "%vkey%"=="none" echo WRONG CHOICE
 if /i "%vkey%"=="none" goto m_KeyChange_wrongchoice
 
@@ -1079,7 +1058,7 @@ goto m_exit_choice
 set "showname=%orinput%"
 call :processing_message
 call :squirrell
-%pycommand% "%nut%" %buffer% %patchRSV% %vkey% %cap2RSV% -o "%w_folder%\secure" %nf_cleaner% "%orinput%"
+%pycommand% "%nut%" %buffer% %patchRSV% %vkey% -o "%w_folder%\secure" %nf_cleaner% "%orinput%"
 if "%zip_restore%" EQU "true" ( set "ziptarget=%orinput%" )
 if "%zip_restore%" EQU "true" ( call :makezip )
 call :thumbup
@@ -1098,7 +1077,7 @@ call :getname
 echo ------------------------------------
 echo Extracting secure partition from xci
 echo ------------------------------------
-%pycommand% "%nut%" %buffer% %patchRSV% %vkey% %cap2RSV% -o "%w_folder%\secure" %nf_cleaner% "%orinput%"
+%pycommand% "%nut%" %buffer% %patchRSV% %vkey% -o "%w_folder%\secure" %nf_cleaner% "%orinput%"
 echo DONE
 call :thumbup
 call :delay
@@ -1165,7 +1144,7 @@ if "%nsptype%" EQU "DLC" echo ---NSP DOESN'T HAVE A CONTROL NCA---
 if "%nsptype%" EQU "DLC" echo.
 if "%nsptype%" EQU "DLC" ( goto multi_set_clogo )
 MD "%w_folder%\normal" >NUL 2>&1
-%pycommand% "%nut%" %buffer% %patchRSV% %vkey% %cap2RSV% -o "%w_folder%\normal" --NSP_copy_nca_control "%custlogo%"
+%pycommand% "%nut%" %buffer% %patchRSV% %vkey% -o "%w_folder%\normal" --NSP_copy_nca_control "%custlogo%"
 echo ................
 echo "EXTRACTED LOGO"
 echo ................
@@ -1763,12 +1742,10 @@ if /i "%bs%"=="0" goto upd_KeyChange_skip
 
 :upd_KeyChange_wrongchoice
 echo *******************************************************
-echo SET MAXIMUM KEYGENERATION\RSV ALOWED
+echo DO YOU WANT TO CHANGE THE KEYGENERATION
 echo *******************************************************
 echo Depending on your choice keygeneration and RSV will be
-echo lowered to the corresponding keygeneration range in case
-echo read keygeneration value is bigger than the one specified
-echo in the program.
+echo set to the corresponding keygeneration range.
 echo THIS WON'T ALWAYS WORK TO LOWER THE FIRMWARE REQUIREMENT.
 echo.
 echo Input "f" to not change the keygeneration
@@ -1791,21 +1768,13 @@ set "vkey=none"
 if /i "%bs%"=="b" goto upd_checkagain
 if /i "%bs%"=="f" set "vkey=-kp false"
 if /i "%bs%"=="0" set "vkey=-kp 0"
-if /i "%bs%"=="0" set "cap2RSV=-rsvc 0"
 if /i "%bs%"=="1" set "vkey=-kp 1"
-if /i "%bs%"=="1" set "cap2RSV=-rsvc 65796"
 if /i "%bs%"=="2" set "vkey=-kp 2"
-if /i "%bs%"=="2" set "cap2RSV=-rsvc 201327002"
 if /i "%bs%"=="3" set "vkey=-kp 3"
-if /i "%bs%"=="3" set "cap2RSV=-rsvc 201392178"
 if /i "%bs%"=="4" set "vkey=-kp 4"
-if /i "%bs%"=="4" set "cap2RSV=-rsvc 268435656"
 if /i "%bs%"=="5" set "vkey=-kp 5"
-if /i "%bs%"=="5" set "cap2RSV=-rsvc 335544750"
 if /i "%bs%"=="6" set "vkey=-kp 6"
-if /i "%bs%"=="6" set "cap2RSV=-rsvc 402653494"
 if /i "%bs%"=="7" set "vkey=-kp 7"
-if /i "%bs%"=="7" set "cap2RSV=-rsvc 404750336"
 if /i "%vkey%"=="none" echo WRONG CHOICE
 if /i "%vkey%"=="none" goto m_KeyChange_wrongchoice
 
@@ -1867,7 +1836,7 @@ goto UPD_exit_choice
 set "showname=%orinput%"
 call :processing_message
 call :squirrell
-%pycommand% "%nut%" %buffer% %patchRSV% %vkey% %cap2RSV% -o "%w_folder%\secure" %nf_cleaner% "%orinput%"
+%pycommand% "%nut%" %buffer% %patchRSV% %vkey% -o "%w_folder%\secure" %nf_cleaner% "%orinput%"
 if "%zip_restore%" EQU "true" ( set "ziptarget=%orinput%" )
 if "%zip_restore%" EQU "true" ( call :makezip )
 call :thumbup
@@ -1885,7 +1854,7 @@ call :getname
 echo ------------------------------------
 echo Extracting secure partition from xci
 echo ------------------------------------
-%pycommand% "%nut%" %buffer% %patchRSV% %vkey% %cap2RSV% -o "%w_folder%\secure" %nf_cleaner% "%orinput%"
+%pycommand% "%nut%" %buffer% %patchRSV% %vkey% -o "%w_folder%\secure" %nf_cleaner% "%orinput%"
 echo DONE
 call :thumbup
 call :delay
@@ -1952,7 +1921,7 @@ ECHO =============================     BY JULESONTHEROAD     ===================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                             POWERED WITH NUT BY BLAWAR                            "
 ECHO "                             AND LUCA FRAGA'S HACBUILD                             "
-ECHO                                     VERSION 0.76
+ECHO                                     VERSION 0.75
 ECHO -------------------------------------------------------------------------------------                   
 ECHO Program's github: https://github.com/julesontheroad/NSC_BUILDER
 ECHO Revised hacbuild: https://github.com/julesontheroad/hacbuild
@@ -2009,7 +1978,7 @@ exit /B
 echo.
 echo Making zip for %ziptarget%
 echo.
-%pycommand% "%nut%" %buffer% %patchRSV% %vkey% %cap2RSV% -o "%w_folder%\zip" --zip_combo "%ziptarget%"
+%pycommand% "%nut%" %buffer% %patchRSV% %vkey% -o "%w_folder%\zip" --zip_combo "%ziptarget%"
 %pycommand% "%nut%" -o "%w_folder%\zip" --NSP_c_KeyBlock "%ziptarget%"
 %pycommand% "%nut%" --nsptitleid "%ziptarget%" >"%w_folder%\nsptitleid.txt"
 if exist "%w_folder%\secure\*.dat" ( move "%w_folder%\secure\*.dat" "%w_folder%\zip" ) >NUL 2>&1

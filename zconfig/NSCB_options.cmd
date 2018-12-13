@@ -40,7 +40,7 @@ set "nf_cleaner=--C_clean_ND"
 ::true -> Patch required system version in the meta nca
 ::false-> Don't patch required system version in the meta nca
 set "patchRSV=-pv false"
-set "cap2RSV=-rsvc 268435656"
+
 ::--------------------------------------------------------------
 ::OPTION 4: IMPORTANT FILES
 ::--------------------------------------------------------------
