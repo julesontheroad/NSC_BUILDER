@@ -1000,8 +1000,8 @@ class Nsp(Pfs0):
 							#cnmt.writeInt64(336592896)
 							cnmt.rewind()
 							cnmt.seek(0x28)					
-							min_sversion=self.readInt32()
-							end_of_emeta=self.readInt32()	
+							min_sversion=cnmt.readInt32()
+							end_of_emeta=cnmt.readInt32()	
 							Print.info('')	
 							Print.info('...........................................')								
 							Print.info('Reading: ' + str(cnmt._path))
@@ -1012,7 +1012,12 @@ class Nsp(Pfs0):
 							Print.info('number of content = '+ str(content_entries))
 							Print.info('number of meta entries = '+ str(meta_entries))
 							Print.info('Application id\Patch id = ' + str(hx(original_ID.to_bytes(8, byteorder='big'))))
-							Print.info('RequiredSystemVersion = ' + str(min_sversion))
+							content_name=str(cnmt._path)
+							content_name=content_name[:-22]				
+							if content_name == 'AddOnContent':
+								Print.info('RequiredUpdateNumber = ' + str(min_sversion))
+							if content_name != 'AddOnContent':
+								Print.info('RequiredSystemVersion = ' + str(min_sversion))
 							cnmt.rewind()
 							cnmt.seek(0x20+offset)
 							for i in range(content_entries):
@@ -1129,11 +1134,20 @@ class Nsp(Pfs0):
 					target.close()											
 					if metapatch == 'true':
 						if 	str(nca.header.contentType) == 'Content.META':
-							self.patch_meta(filepath,text_file,outfolder,RSV_cap)
-						else:					
-							textpath = os.path.join(outfolder, text_file)
-							with open(textpath, 'a') as tfile:			
-								tfile.write(str(nca.header.contentType)+ ': ' + tabs + str(nca._path) + '\n')					
+							for pfs0 in nca:
+								for cnmt in pfs0:
+									check=str(cnmt._path)
+									check=check[:-22]
+									if check == 'AddOnContent':
+										Print.info(tabs + '-------------------------------------')
+										Print.info(tabs +'DLC -> No need to patch the meta' )
+										Print.info(tabs + '-------------------------------------')
+									else:	
+										self.patch_meta(filepath,text_file,outfolder,RSV_cap)
+								else:					
+									textpath = os.path.join(outfolder, text_file)
+									with open(textpath, 'a') as tfile:			
+										tfile.write(str(nca.header.contentType)+ ': ' + tabs + str(nca._path) + '\n')				
 								
 						
 #COPY AND CLEAN NCA FILES SKIPPING DELTAS AND PATCH NEEDED SYSTEM VERSION						
@@ -1233,13 +1247,22 @@ class Nsp(Pfs0):
 								self.change_mkrev_nca(target, keypatch)
 						target.close()						
 						#///////////////////////////////////						
-						if metapatch == 'true':
-							if 	str(nca.header.contentType) == 'Content.META':
-								self.patch_meta(filepath,text_file,outfolder,RSV_cap)
-							else:					
-								textpath = os.path.join(outfolder, text_file)
-								with open(textpath, 'a') as tfile:			
-									tfile.write(str(nca.header.contentType)+ ': ' + tabs + str(nca._path) + '\n')												
+					if metapatch == 'true':
+						if 	str(nca.header.contentType) == 'Content.META':
+							for pfs0 in nca:
+								for cnmt in pfs0:
+									check=str(cnmt._path)
+									check=check[:-22]
+									if check == 'AddOnContent':
+										Print.info(tabs + '-------------------------------------')
+										Print.info(tabs +'DLC -> No need to patch the meta' )
+										Print.info(tabs + '-------------------------------------')
+									else:	
+										self.patch_meta(filepath,text_file,outfolder,RSV_cap)
+								else:					
+									textpath = os.path.join(outfolder, text_file)
+									with open(textpath, 'a') as tfile:			
+										tfile.write(str(nca.header.contentType)+ ': ' + tabs + str(nca._path) + '\n')							
 									
 #Copy nca files						
 	def copy_nca(self,ofolder,buffer,metapatch, keypatch,RSV_cap):
@@ -1274,11 +1297,20 @@ class Nsp(Pfs0):
 				target.close()						
 				if metapatch == 'true':
 					if 	str(nca.header.contentType) == 'Content.META':
-						self.patch_meta(filepath,text_file,outfolder,RSV_cap)
-					else:					
-						textpath = os.path.join(outfolder, text_file)
-						with open(textpath, 'a') as tfile:			
-							tfile.write(str(nca.header.contentType)+ ': ' + tabs + str(nca._path) + '\n')											
+						for pfs0 in nca:
+							for cnmt in pfs0:
+								check=str(cnmt._path)
+								check=check[:-22]
+								if check == 'AddOnContent':
+									Print.info(tabs + '-------------------------------------')
+									Print.info(tabs +'DLC -> No need to patch the meta' )
+									Print.info(tabs + '-------------------------------------')
+								else:	
+									self.patch_meta(filepath,text_file,outfolder,RSV_cap)
+							else:					
+								textpath = os.path.join(outfolder, text_file)
+								with open(textpath, 'a') as tfile:			
+									tfile.write(str(nca.header.contentType)+ ': ' + tabs + str(nca._path) + '\n')											
 				
 															
 #Copy nca files skipping deltas
@@ -1326,11 +1358,20 @@ class Nsp(Pfs0):
 					target.close()							
 					if metapatch == 'true':
 						if 	str(nca.header.contentType) == 'Content.META':
-							self.patch_meta(filepath,text_file,outfolder,RSV_cap)
-						else:					
-							textpath = os.path.join(outfolder, text_file)
-							with open(textpath, 'a') as tfile:			
-								tfile.write(str(nca.header.contentType)+ ': ' + tabs + str(nca._path) + '\n')						
+							for pfs0 in nca:
+								for cnmt in pfs0:
+									check=str(cnmt._path)
+									check=check[:-22]
+									if check == 'AddOnContent':
+										Print.info(tabs + '-------------------------------------')
+										Print.info(tabs +'DLC -> No need to patch the meta' )
+										Print.info(tabs + '-------------------------------------')
+									else:	
+										self.patch_meta(filepath,text_file,outfolder,RSV_cap)
+								else:					
+									textpath = os.path.join(outfolder, text_file)
+									with open(textpath, 'a') as tfile:			
+										tfile.write(str(nca.header.contentType)+ ': ' + tabs + str(nca._path) + '\n')				
 
 #///////////////////////////////////////////////////								
 #SPLIT MULTI-CONTENT NSP IN FOLDERS
@@ -1529,15 +1570,6 @@ class Nsp(Pfs0):
 						title = title + content_type
 		return(title)
 
-
-		
-		
-		
-
-
-
-
-
 #///////////////////////////////////////////////////								
 #INFO ABOUT UPD REQUIREMENTS
 #///////////////////////////////////////////////////	
@@ -1578,19 +1610,31 @@ class Nsp(Pfs0):
 							content_name=content_name[:-22]
 							if content_name == 'Patch':
 								content_type='Update'
+								reqtag='- RequiredSystemVersion: '										
 							if content_name == 'AddOnContent':
 								content_type='DLC'
+								reqtag='- RequiredUpdateNumber: '
 							if content_name == 'Application':
 								content_type='Base Game or Application'
+								reqtag='- RequiredSystemVersion: '	
 							Print.info('-------------------------------------')
 							Print.info('Detected content: ' + str(titleid2))	
-							Print.info('-------------------------------------')							
-							Print.info("- Name: " + contentname)	
-							Print.info("- Version: " + version)
+							Print.info('-------------------------------------')	
+							if content_name != 'AddOnContent':							
+								Print.info("- Name: " + contentname)
+							v_number=int(int(version)/65536) 								
+							Print.info("- Version: " + version+' -> '+content_name+' ('+str(v_number)+')')
 							Print.info("- Type: " + content_type)								
-							Print.info('- RequiredSystemVersion: ' + str(RSversion)+" -> " +RSV_rq)	
+							if content_name == 'AddOnContent':
+								upd_number=int(RSversion/65536) 
+								Print.info(reqtag + str(RSversion)+' -> ' +'patch'+' ('+str(upd_number)+')')																		
+							else:
+								Print.info(reqtag + str(RSversion)+" -> " +RSV_rq)						
 							Print.info('- Encryption (keygeneration): ' + str(keygen)+" -> " +FW_rq)
-							Print.info('- Patchable to: ' + str(MinRSV)+" -> " + RSV_rq_min)		
+							if content_name != 'AddOnContent':							
+								Print.info('- Patchable to: ' + str(MinRSV)+" -> " + RSV_rq_min)
+							else:
+								Print.info('- Patchable to: DLC -> no RSV to patch')						
 							
 	def inf_get_title(self,target,offset,content_entries,original_ID):
 		content_type=''
@@ -1640,7 +1684,8 @@ class Nsp(Pfs0):
 									target=str(nca._path)
 									contentname = self.splitter_get_title(target,offset,content_entries,original_ID)
 									cnmt.rewind()
-									cnmt.seek(0x20+offset)								
+									cnmt.seek(0x20+offset)	
+		title = 'DLC'									
 		for nca in self:
 			if type(nca) == Nca:
 				if nca_name == str(nca._path):

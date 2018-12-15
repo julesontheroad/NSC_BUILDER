@@ -552,7 +552,7 @@ class Nca(File):
 		Print.info('number of content = '+ str(content_entries))
 		Print.info('number of meta entries = '+ str(meta_entries))
 		Print.info('Application id\Patch id = ' + str(hx(original_ID.to_bytes(8, byteorder='big'))))
-		Print.info('RequiredSystemVersion = ' + str(min_sversion))
+		Print.info('RequiredVersion = ' + str(min_sversion))
 		self.seek(cmt_offset+offset+0x20)
 		for i in range(content_entries):
 			Print.info('........................')							

@@ -334,7 +334,17 @@ class Xci(File):
 						target.close()		
 						if metapatch == 'true':
 							if 	str(nca.header.contentType) == 'Content.META':
-								self.patch_meta(filepath,outfolder,RSV_cap)					
+								for pfs0 in nca:
+									for cnmt in pfs0:
+										check=str(cnmt._path)
+										check=check[:-22]
+									if check == 'AddOnContent':
+										Print.info(tabs + '-------------------------------------')
+										Print.info(tabs +'DLC -> No need to patch the meta' )
+										Print.info(tabs + '-------------------------------------')
+									else:	
+										self.patch_meta(filepath,outfolder,RSV_cap)	
+					
 										
 										
 #Copy nca files from secure skipping deltas
@@ -384,7 +394,17 @@ class Xci(File):
 							target.close()		
 							if metapatch == 'true':
 								if 	str(nca.header.contentType) == 'Content.META':
-									self.patch_meta(filepath,outfolder,RSV_cap)					
+									for pfs0 in nca:
+										for cnmt in pfs0:
+											check=str(cnmt._path)
+											check=check[:-22]
+										if check == 'AddOnContent':
+											Print.info(tabs + '-------------------------------------')
+											Print.info(tabs +'DLC -> No need to patch the meta' )
+											Print.info(tabs + '-------------------------------------')
+										else:	
+											self.patch_meta(filepath,outfolder,RSV_cap)	
+						
 
 #COPY AND CLEAN NCA FILES FROM SECURE AND PATCH NEEDED SYSTEM VERSION			
 	def cr_tr_nca(self,ofolder,buffer,metapatch,keypatch,RSV_cap):
@@ -470,7 +490,17 @@ class Xci(File):
 							target.close()									
 							if metapatch == 'true':
 								if 	str(nca.header.contentType) == 'Content.META':
-									self.patch_meta(filepath,outfolder,RSV_cap)				
+									for pfs0 in nca:
+										for cnmt in pfs0:
+											check=str(cnmt._path)
+											check=check[:-22]
+										if check == 'AddOnContent':
+											Print.info(tabs + '-------------------------------------')
+											Print.info(tabs +'DLC -> No need to patch the meta' )
+											Print.info(tabs + '-------------------------------------')
+										else:	
+											self.patch_meta(filepath,outfolder,RSV_cap)	
+							
 
 
 #COPY AND CLEAN NCA FILES FROM SECURE SKIPPING DELTAS AND PATCH NEEDED SYSTEM VERSION
@@ -568,7 +598,16 @@ class Xci(File):
 								target.close()										
 								if metapatch == 'true':
 									if 	str(nca.header.contentType) == 'Content.META':
-										self.patch_meta(filepath,outfolder,RSV_cap)						
+										for pfs0 in nca:
+											for cnmt in pfs0:
+												check=str(cnmt._path)
+												check=check[:-22]
+											if check == 'AddOnContent':
+												Print.info(tabs + '-------------------------------------')
+												Print.info(tabs +'DLC -> No need to patch the meta' )
+												Print.info(tabs + '-------------------------------------')
+											else:	
+												self.patch_meta(filepath,outfolder,RSV_cap)	
 		
 #///////////////////////////////////////////////////								
 # Change MKREV_NCA
@@ -714,8 +753,8 @@ class Xci(File):
 									cnmt.rewind()
 									cnmt.seek(0x20)
 									original_ID=cnmt.readInt64()
-									min_sversion=self.readInt32()
-									end_of_emeta=self.readInt32()	
+									min_sversion=cnmt.readInt32()
+									end_of_emeta=cnmt.readInt32()	
 									Print.info('')	
 									Print.info('...........................................')								
 									Print.info('Reading: ' + str(cnmt._path))
@@ -726,7 +765,12 @@ class Xci(File):
 									Print.info('number of content = '+ str(content_entries))
 									Print.info('number of meta entries = '+ str(meta_entries))
 									Print.info('Application id\Patch id = ' + str(hx(original_ID.to_bytes(8, byteorder='big'))))
-									Print.info('RequiredSystemVersion = ' + str(min_sversion))
+									content_name=str(cnmt._path)
+									content_name=content_name[:-22]				
+									if content_name == 'AddOnContent':
+										Print.info('RequiredUpdateNumber = ' + str(min_sversion))
+									if content_name != 'AddOnContent':
+										Print.info('RequiredSystemVersion = ' + str(min_sversion))
 									cnmt.rewind()
 									cnmt.seek(0x20+offset)
 									for i in range(content_entries):
@@ -1195,19 +1239,31 @@ class Xci(File):
 									content_name=content_name[:-22]
 									if content_name == 'Patch':
 										content_type='Update'
+										reqtag='- RequiredSystemVersion: '										
 									if content_name == 'AddOnContent':
 										content_type='DLC'
+										reqtag='- RequiredUpdateNumber: '
 									if content_name == 'Application':
 										content_type='Base Game or Application'
+										reqtag='- RequiredSystemVersion: '	
 									Print.info('-------------------------------------')
 									Print.info('Detected content: ' + str(titleid2))	
-									Print.info('-------------------------------------')							
-									Print.info("- Name: " + contentname)	
-									Print.info("- Version: " + version)
+									Print.info('-------------------------------------')	
+									if content_name != 'AddOnContent':							
+										Print.info("- Name: " + contentname)
+									v_number=int(int(version)/65536) 								
+									Print.info("- Version: " + version+' -> '+content_name+' ('+str(v_number)+')')
 									Print.info("- Type: " + content_type)								
-									Print.info('- RequiredSystemVersion: ' + str(RSversion)+" -> " +RSV_rq)	
+									if content_name == 'AddOnContent':
+										upd_number=int(RSversion/65536) 
+										Print.info(reqtag + str(RSversion)+' -> ' +'patch'+' ('+str(upd_number)+')')																		
+									else:
+										Print.info(reqtag + str(RSversion)+" -> " +RSV_rq)						
 									Print.info('- Encryption (keygeneration): ' + str(keygen)+" -> " +FW_rq)
-									Print.info('- Patchable to: ' + str(MinRSV)+" -> " + RSV_rq_min)							
+									if content_name != 'AddOnContent':							
+										Print.info('- Patchable to: ' + str(MinRSV)+" -> " + RSV_rq_min)
+									else:
+										Print.info('- Patchable to: DLC -> no RSV to patch')									
 						
 	def inf_get_title(self,target,offset,content_entries,original_ID):
 		content_type=''
@@ -1278,6 +1334,7 @@ class Xci(File):
 													nca_name=str(hx(NcaId))
 													nca_name=nca_name[2:-1]+'.nca'
 													content_type=' [DLC]'
+		title = 'DLC'									
 		for nspF in self.hfs0:
 			if token == str(nspF._path):
 				for nca in nspF:		

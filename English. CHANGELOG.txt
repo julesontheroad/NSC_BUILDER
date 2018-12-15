@@ -11,7 +11,7 @@
 -------------------------------------------------------------------------------------
 "                             POWERED WITH NUT BY BLAWAR                            "
 "                             AND LUCA FRAGA'S HACBUILD                             "
-                                    VERSION 0.76                                     	
+                                    VERSION 0.78                                     	
 -------------------------------------------------------------------------------------                   
 Program's github: https://github.com/julesontheroad/NSC_BUILDER
 Revised hacbuild: https://github.com/julesontheroad/hacbuild
@@ -21,6 +21,8 @@ SciresM hactool : https://github.com/SciresM/hactool
 ---------------
 0. Changelog
 ---------------
+v0.78- Fixed error with RSV patching were DLC's got it's UpdateRequiredNumber patched
+	Modified FW-requirements and CNMT-reader a little.
 v0.77- Added new option to global config to skip the RSV and keygeneration patching
        prompt dialogue.
        Added fallback for names in info function number 3 in case there isn't american
