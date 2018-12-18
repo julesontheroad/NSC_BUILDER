@@ -11,7 +11,6 @@ ECHO -----------------
 echo Repacking as nsp 
 ECHO -----------------
 dir "%w_folder%\secure" /b  > "%w_folder%\nsp_fileslist.txt"
-if exist "%w_folder%\secure\*.dat" del "%w_folder%\secure\*.dat" >NUL 2>&1
 setlocal enabledelayedexpansion
 set row=
 for /f "usebackq" %%x in ("%w_folder%\nsp_fileslist.txt") do set row="%w_folder%\secure\%%x" !row!
@@ -27,7 +26,6 @@ ECHO -----------------
 echo Repacking as nsp 
 ECHO -----------------
 dir "%w_folder%\secure" /b  > "%w_folder%\nsp_fileslist.txt"
-if exist "%w_folder%\secure\*.dat" del "%w_folder%\secure\*.dat" >NUL 2>&1
 setlocal enabledelayedexpansion
 set row=
 for /f "usebackq" %%x in ("%w_folder%\nsp_fileslist.txt") do set row="%w_folder%\secure\%%x" !row!
@@ -43,7 +41,6 @@ exit /B
 ECHO -----------------
 echo Repacking as nsp 
 ECHO -----------------
-if exist "%w_folder%\secure\*.dat" del "%w_folder%\secure\*.dat" >NUL 2>&1
 dir "!tfolder!\secure" /b  > "!tfolder!\nsp_fileslist.txt"
 set row=
 for /f "usebackq" %%x in ("!tfolder!\nsp_fileslist.txt") do set row="!tfolder!\secure\%%x" !row!
