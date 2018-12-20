@@ -364,13 +364,20 @@ class Nsp(Pfs0):
 		Print.info('newTitleKey =\t' + str(hx(newTitleKey)))
 		Print.info('masterKeyRev =\t' + hex(masterKeyRev))
 
-
-
 		for nca in self:
 			if type(nca) == Nca:
 				if nca.header.getCryptoType2() != masterKeyRev:
 					pass
 					raise IOError('Mismatched masterKeyRevs!')
+
+		for nca in self:
+			if type(nca) == Nca:
+				if nca.header.getRightsId() != 0:
+					if nca.header.getCryptoType2() == 0:
+						if nca.header.getCryptoType() == 2:
+							masterKeyRev = 2						
+							titleKeyDec = Keys.decryptTitleKey(ticket.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(masterKeyRev))
+							break					
 
 		ticket.setMasterKeyRevision(newMasterKeyRev)
 		ticket.setRightsId((ticket.getRightsId() & 0xFFFFFFFFFFFFFFFF0000000000000000) + newMasterKeyRev)
@@ -400,6 +407,9 @@ class Nsp(Pfs0):
 					if newMasterKeyRev >= 3:
 						nca.header.setCryptoType(2)
 						nca.header.setCryptoType2(newMasterKeyRev)
+					if newMasterKeyRev == 2:
+						nca.header.setCryptoType(2)
+						nca.header.setCryptoType2(0)						
 					else:
 						nca.header.setCryptoType(newMasterKeyRev)
 						nca.header.setCryptoType2(0)
@@ -418,14 +428,20 @@ class Nsp(Pfs0):
 		Print.info('titleKeyDec =\t' + str(hx(titleKeyDec)))
 		Print.info('masterKeyRev =\t' + hex(masterKeyRev))
 
-
-
 		for nca in self:
 			if type(nca) == Nca:
 				if nca.header.getCryptoType2() != masterKeyRev:
 					pass
 					raise IOError('Mismatched masterKeyRevs!')
 
+		for nca in self:
+			if type(nca) == Nca:
+				if nca.header.getRightsId() != 0:
+					if nca.header.getCryptoType2() == 0:
+						if nca.header.getCryptoType() == 2:
+							masterKeyRev = 2						
+							titleKeyDec = Keys.decryptTitleKey(ticket.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(masterKeyRev))
+							break					
 
 		ticket.setRightsId(0)
 
@@ -808,6 +824,14 @@ class Nsp(Pfs0):
 					pass
 					raise IOError('Mismatched masterKeyRevs!')
 
+		for nca in self:
+			if type(nca) == Nca:
+				if nca.header.getRightsId() != 0:
+					if nca.header.getCryptoType2() == 0:
+						if nca.header.getCryptoType() == 2:
+							masterKeyRev = 2						
+							titleKeyDec = Keys.decryptTitleKey(ticket.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(masterKeyRev))
+							break								
 
 		ticket.setRightsId(0)
 
@@ -1069,7 +1093,16 @@ class Nsp(Pfs0):
 				if nca.header.getCryptoType2() != masterKeyRev:
 					pass
 					raise IOError('Mismatched masterKeyRevs!')
-		
+
+		for nca in self:
+			if type(nca) == Nca:
+				if nca.header.getRightsId() != 0:
+					if nca.header.getCryptoType2() == 0:
+						if nca.header.getCryptoType() == 2:
+							masterKeyRev = 2						
+							titleKeyDec = Keys.decryptTitleKey(ticket.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(masterKeyRev))
+							break					
+	
 		for nca in self:
 			if type(nca) == Nca:
 				Print.info('Copying files: ')
@@ -1161,16 +1194,27 @@ class Nsp(Pfs0):
 		masterKeyRev = ticket.getMasterKeyRevision()
 		titleKeyDec = Keys.decryptTitleKey(ticket.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(masterKeyRev))
 		rightsId = ticket.getRightsId()
-		Print.info('rightsId =\t' + hex(rightsId))
-		Print.info('titleKeyDec =\t' + str(hx(titleKeyDec)))
-		Print.info('masterKeyRev =\t' + hex(masterKeyRev))
-		Print.info('Copying files: ')
+		
 		for nca in self:
 			if type(nca) == Nca:
 				if nca.header.getCryptoType2() != masterKeyRev:
 					pass
-					raise IOError('Mismatched masterKeyRevs!')
+					raise IOError('Mismatched masterKeyRevs!')		
 		
+		for nca in self:
+			if type(nca) == Nca:
+				if nca.header.getRightsId() != 0:
+					if nca.header.getCryptoType2() == 0:
+						if nca.header.getCryptoType() == 2:
+							masterKeyRev = 2						
+							titleKeyDec = Keys.decryptTitleKey(ticket.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(masterKeyRev))
+							break
+
+		Print.info('rightsId =\t' + hex(rightsId))
+		Print.info('titleKeyDec =\t' + str(hx(titleKeyDec)))
+		Print.info('masterKeyRev =\t' + hex(masterKeyRev))
+		Print.info('Copying files: ')							
+			
 		for nca in self:
 			vfragment="false"
 			if type(nca) == Nca:
@@ -1601,7 +1645,15 @@ class Nsp(Pfs0):
 							titleid2 = str(hx(titleid.to_bytes(8, byteorder='big'))) 	
 							titleid2 = titleid2[2:-1]
 							version=str(int.from_bytes(titleversion, byteorder='little'))
-							keygen=nca.header.getCryptoType2()					
+							crypto1=nca.header.getCryptoType()	
+							crypto2=nca.header.getCryptoType2()	
+							if crypto1 == 2:
+								if crypto1 > crypto2:								
+									keygen=nca.header.getCryptoType()
+								else:			
+									keygen=nca.header.getCryptoType2()	
+							else:			
+								keygen=nca.header.getCryptoType2()					
 							MinRSV=sq_tools.getMinRSV(keygen,RSversion)
 							FW_rq=sq_tools.getFWRangeKG(keygen)
 							RSV_rq=sq_tools.getFWRangeRSV(RSversion)									
@@ -1859,10 +1911,13 @@ class Nsp(Pfs0):
 				if newMasterKeyRev >= 3:
 					nca.header.setCryptoType(2)
 					nca.header.setCryptoType2(newMasterKeyRev)
+				if newMasterKeyRev == 2:
+					nca.header.setCryptoType(2)
+					nca.header.setCryptoType2(0)					
 				else:
 					nca.header.setCryptoType(newMasterKeyRev)
 					nca.header.setCryptoType2(0)	
-					Print.info(tabs2 + 'DONE')					
+				Print.info(tabs2 + 'DONE')					
 
 #///////////////////////////////////////////////////								
 #PATCH META FUNCTION
@@ -1873,7 +1928,15 @@ class Nsp(Pfs0):
 		Print.info(tabs + '-------------------------------------')
 		Print.info(tabs + 'Checking meta: ')
 		meta_nca = Fs.Nca(filepath, 'r+b')
-		keygen=meta_nca.header.getCryptoType2()
+		crypto1=meta_nca.header.getCryptoType()	
+		crypto2=meta_nca.header.getCryptoType2()	
+		if crypto1 == 2:
+			if crypto1 > crypto2:								
+				keygen=meta_nca.header.getCryptoType()
+			else:			
+				keygen=meta_nca.header.getCryptoType2()	
+		else:			
+			keygen=meta_nca.header.getCryptoType2()	
 		RSV=meta_nca.get_req_system()		
 		RSVmin=sq_tools.getMinRSV(keygen,RSV)
 		RSVmax=sq_tools.getTopRSV(keygen,RSV)		

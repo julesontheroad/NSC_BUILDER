@@ -428,6 +428,16 @@ class Xci(File):
 							if nca.header.getCryptoType2() != masterKeyRev:
 								pass
 								raise IOError('Mismatched masterKeyRevs!')
+
+				for nca in nspF:
+					if type(nca) == Nca:
+						if nca.header.getRightsId() != 0:
+							if nca.header.getCryptoType2() == 0:
+								if nca.header.getCryptoType() == 2:
+									masterKeyRev = 2						
+									titleKeyDec = Keys.decryptTitleKey(ticket.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(masterKeyRev))
+									break									
+											
 				for nca in nspF:
 					vfragment="false"
 					if type(nca) == Nca:
@@ -525,6 +535,15 @@ class Xci(File):
 							if nca.header.getCryptoType2() != masterKeyRev:
 								pass
 								raise IOError('Mismatched masterKeyRevs!')
+				for nca in nspF:
+					if type(nca) == Nca:
+						if nca.header.getRightsId() != 0:
+							if nca.header.getCryptoType2() == 0:
+								if nca.header.getCryptoType() == 2:
+									masterKeyRev = 2						
+									titleKeyDec = Keys.decryptTitleKey(ticket.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(masterKeyRev))
+									break									
+
 				for nca in nspF:
 					vfragment="false"
 					if type(nca) == Nca:
@@ -641,10 +660,13 @@ class Xci(File):
 				if newMasterKeyRev >= 3:
 					nca.header.setCryptoType(2)
 					nca.header.setCryptoType2(newMasterKeyRev)
+				if newMasterKeyRev == 2:
+					nca.header.setCryptoType(2)
+					nca.header.setCryptoType2(0)					
 				else:
 					nca.header.setCryptoType(newMasterKeyRev)
 					nca.header.setCryptoType2(0)	
-					Print.info(tabs2 + 'DONE')					
+				Print.info(tabs2 + 'DONE')			
 	
 #///////////////////////////////////////////////////								
 #PATCH META FUNCTION
@@ -655,7 +677,15 @@ class Xci(File):
 		Print.info(tabs + '-------------------------------------')
 		Print.info(tabs + 'Checking meta: ')
 		meta_nca = Fs.Nca(filepath, 'r+b')
-		keygen=meta_nca.header.getCryptoType2()
+		crypto1=meta_nca.header.getCryptoType()	
+		crypto2=meta_nca.header.getCryptoType2()	
+		if crypto1 == 2:
+			if crypto1 > crypto2:								
+				keygen=meta_nca.header.getCryptoType()
+			else:			
+				keygen=meta_nca.header.getCryptoType2()	
+		else:			
+			keygen=meta_nca.header.getCryptoType2()					
 		RSV=meta_nca.get_req_system()		
 		RSVmin=sq_tools.getMinRSV(keygen,RSV)
 		RSVmax=sq_tools.getTopRSV(keygen,RSV)		
@@ -1230,7 +1260,15 @@ class Xci(File):
 									titleid2 = str(hx(titleid.to_bytes(8, byteorder='big'))) 	
 									titleid2 = titleid2[2:-1]
 									version=str(int.from_bytes(titleversion, byteorder='little'))
-									keygen=nca.header.getCryptoType2()					
+									crypto1=nca.header.getCryptoType()	
+									crypto2=nca.header.getCryptoType2()										
+									if crypto1 == 2:
+										if crypto1 > crypto2:								
+											keygen=nca.header.getCryptoType()
+										else:			
+											keygen=nca.header.getCryptoType2()	
+									else:			
+										keygen=nca.header.getCryptoType2()														
 									MinRSV=sq_tools.getMinRSV(keygen,RSversion)
 									FW_rq=sq_tools.getFWRangeKG(keygen)
 									RSV_rq=sq_tools.getFWRangeRSV(RSversion)									
