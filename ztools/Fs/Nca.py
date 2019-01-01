@@ -526,6 +526,7 @@ class Nca(File):
 			cryptoKey=f.get_cryptoKey()	
 			cryptoCounter=f.get_cryptoCounter()
 		pfs0_offset=0xC00+self.header.get_htable_offset()+self.header.get_pfs0_offset()
+		pfs0_size = self.header.get_pfs0_size()		
 		super(Nca, self).open(file, mode, cryptoType, cryptoKey, cryptoCounter)
 		self.seek(pfs0_offset+0x8)
 		pfs0_table_size=self.readInt32()
@@ -533,6 +534,7 @@ class Nca(File):
 		self.seek(cmt_offset)
 		titleid=self.readInt64()
 		titleversion = self.read(0x4)
+		type_n = self.read(0x1)		
 		self.seek(cmt_offset+0xE)
 		offset=self.readInt16()
 		content_entries=self.readInt16()
@@ -541,18 +543,20 @@ class Nca(File):
 		original_ID=self.readInt64()
 		self.seek(cmt_offset+0x28)					
 		min_sversion=self.readInt32()
-		end_of_emeta=self.readInt32()		
+		length_of_emeta=self.readInt32()		
 		Print.info('')	
 		Print.info('...........................................')								
 		Print.info('Reading: ' + str(self._path))
 		Print.info('...........................................')							
 		Print.info('titleid = ' + str(hx(titleid.to_bytes(8, byteorder='big'))))
 		Print.info('version = ' + str(int.from_bytes(titleversion, byteorder='little')))
+		Print.info('type number = ' + str(hx(type_n)))		
 		Print.info('Table offset = '+ str(hx((offset+0x20).to_bytes(2, byteorder='big'))))
 		Print.info('number of content = '+ str(content_entries))
 		Print.info('number of meta entries = '+ str(meta_entries))
 		Print.info('Application id\Patch id = ' + str(hx(original_ID.to_bytes(8, byteorder='big'))))
 		Print.info('RequiredVersion = ' + str(min_sversion))
+		Print.info('Length of exmeta = ' + str(length_of_emeta))		
 		self.seek(cmt_offset+offset+0x20)
 		for i in range(content_entries):
 			Print.info('........................')							
@@ -566,8 +570,258 @@ class Nca(File):
 			Print.info('Size =\t' + str(int.from_bytes(size, byteorder='little', signed=True)))
 			ncatype = self.read(0x1)
 			Print.info('ncatype = ' + str(int.from_bytes(ncatype, byteorder='little', signed=True)))
-			unknown = self.read(0x1)									
-	
+			unknown = self.read(0x1)	
+			
+		self.seek(pfs0_offset+pfs0_size-0x20)			
+		digest = self.read(0x20)
+		Print.info("")	
+		Print.info('digest= '+str(hx(digest)))
+		Print.info("")		
+		self.seek(cmt_offset+offset+0x20+content_entries*0x38)			
+		if length_of_emeta>0:
+			Print.info('----------------')			
+			Print.info('Extended meta')	
+			Print.info('----------------')				
+			num_prev_cnmt=self.read(0x4)
+			num_prev_delta=self.read(0x4)
+			num_delta_info=self.read(0x4)
+			num_delta_application =self.read(0x4)	
+			num_previous_content=self.read(0x4)		
+			num_delta_content=self.read(0x4)	
+			self.read(0x4)	
+			Print.info('Number of previous cnmt entries = ' + str(int.from_bytes(num_prev_cnmt, byteorder='little')))	
+			Print.info('Number of previous delta entries = ' + str(int.from_bytes(num_prev_delta, byteorder='little')))	
+			Print.info('Number of delta info entries = ' + str(int.from_bytes(num_delta_info, byteorder='little')))			
+			Print.info('Number of delta application info entries = ' + str(int.from_bytes(num_delta_application, byteorder='little')))	
+			Print.info('Number of previous content entries = ' + str(int.from_bytes(num_previous_content, byteorder='little')))	
+			Print.info('Number of delta content entries = ' + str(int.from_bytes(num_delta_content, byteorder='little')))			
+			for i in range(int.from_bytes(num_prev_cnmt, byteorder='little')):
+				Print.info('...........................................')								
+				Print.info('Previous cnmt records: '+ str(i+1))
+				Print.info('...........................................')				
+				titleid=self.readInt64()	
+				titleversion = self.read(0x4)	
+				type_n = self.read(0x1)					
+				unknown1=self.read(0x3)
+				vhash = self.read(0x20)
+				unknown2=self.read(0x2)
+				unknown3=self.read(0x2)
+				unknown4=self.read(0x4)				
+				Print.info('titleid = ' + str(hx(titleid.to_bytes(8, byteorder='big'))))	
+				Print.info('version = ' + str(int.from_bytes(titleversion, byteorder='little')))
+				Print.info('type number = ' + str(hx(type_n)))	
+				#Print.info('unknown1 = ' + str(int.from_bytes(unknown1, byteorder='little')))			
+				Print.info('hash =\t' + str(hx(vhash)))				
+				Print.info('content nca number = ' + str(int.from_bytes(unknown2, byteorder='little')))				
+				#Print.info('unknown3 = ' + str(int.from_bytes(unknown3, byteorder='little')))				
+				#Print.info('unknown4 = ' + str(int.from_bytes(unknown4, byteorder='little')))
+			for i in range(int.from_bytes(num_prev_delta, byteorder='little')):
+				Print.info('...........................................')								
+				Print.info('Previous delta records: '+ str(i+1))
+				Print.info('...........................................')				
+				oldtitleid=self.readInt64()	
+				newtitleid=self.readInt64()					
+				oldtitleversion = self.read(0x4)	
+				newtitleversion = self.read(0x4)	
+				size = self.read(0x8)
+				unknown1=self.read(0x8)				
+				Print.info('old titleid = ' + str(hx(oldtitleid.to_bytes(8, byteorder='big'))))	
+				Print.info('new titleid = ' + str(hx(newtitleid.to_bytes(8, byteorder='big'))))						
+				Print.info('old version = ' + str(int.from_bytes(oldtitleversion, byteorder='little')))
+				Print.info('new version = ' + str(int.from_bytes(newtitleversion, byteorder='little')))	
+				Print.info('size = ' + str(int.from_bytes(size, byteorder='little', signed=True)))					
+				#Print.info('unknown1 = ' + str(int.from_bytes(unknown1, byteorder='little')))			
+			for i in range(int.from_bytes(num_delta_info, byteorder='little')):
+				Print.info('...........................................')								
+				Print.info('Delta info: '+ str(i+1))
+				Print.info('...........................................')				
+				oldtitleid=self.readInt64()	
+				newtitleid=self.readInt64()					
+				oldtitleversion = self.read(0x4)	
+				newtitleversion = self.read(0x4)	
+				index1=self.readInt64()	
+				index2=self.readInt64()				
+				Print.info('old titleid = ' + str(hx(oldtitleid.to_bytes(8, byteorder='big'))))	
+				Print.info('new titleid = ' + str(hx(newtitleid.to_bytes(8, byteorder='big'))))						
+				Print.info('old version = ' + str(int.from_bytes(oldtitleversion, byteorder='little')))
+				Print.info('new version = ' + str(int.from_bytes(newtitleversion, byteorder='little')))	
+				Print.info('index1 = ' + str(hx(index1.to_bytes(8, byteorder='big'))))	
+				Print.info('index2 = ' + str(hx(index2.to_bytes(8, byteorder='big'))))						
+				#Print.info('unknown1 = ' + str(int.from_bytes(unknown1, byteorder='little')))
+			for i in range(int.from_bytes(num_delta_application, byteorder='little')):
+				Print.info('...........................................')								
+				Print.info('Delta application info: '+ str(i+1))
+				Print.info('...........................................')				
+				OldNcaId = self.read(0x10)
+				NewNcaId = self.read(0x10)		
+				old_size = self.read(0x6)				
+				up2bytes = self.read(0x2)
+				low4bytes = self.read(0x4)
+				unknown1 = self.read(0x2)
+				ncatype = self.read(0x1)	
+				installable = self.read(0x1)
+				unknown2 = self.read(0x4)				
+				Print.info('OldNcaId =\t' + str(hx(OldNcaId)))	
+				Print.info('NewNcaId =\t' + str(hx(NewNcaId)))	
+				Print.info('Old size =\t' +  str(int.from_bytes(old_size, byteorder='little', signed=True)))	
+				Print.info('unknown1 =\t' + str(int.from_bytes(unknown1, byteorder='little')))
+				Print.info('ncatype =\t' + str(int.from_bytes(ncatype, byteorder='little', signed=True)))
+				Print.info('installable =\t' + str(int.from_bytes(installable, byteorder='little', signed=True)))
+				Print.info('Upper 2 bytes of the new size=\t' + str(hx(up2bytes)))	
+				Print.info('Lower 4 bytes of the new size=\t' + str(hx(low4bytes)))					
+				#Print.info('unknown2 =\t' + str(int.from_bytes(unknown2, byteorder='little')))			
+
+			for i in range(int.from_bytes(num_previous_content, byteorder='little')):
+				Print.info('...........................................')								
+				Print.info('Previous content records: '+ str(i+1))
+				Print.info('...........................................')				
+				NcaId = self.read(0x10)		
+				size = self.read(0x6)				
+				ncatype = self.read(0x1)	
+				unknown1 = self.read(0x1)				
+				Print.info('NcaId = '+ str(hx(NcaId)))	
+				Print.info('Size = '+ str(int.from_bytes(size, byteorder='little', signed=True)))	
+				Print.info('ncatype = '+ str(int.from_bytes(ncatype, byteorder='little', signed=True)))			
+				#Print.info('unknown1 = '+ str(int.from_bytes(unknown1, byteorder='little')))	
+				
+			for i in range(int.from_bytes(num_delta_content, byteorder='little')):
+				Print.info('........................')							
+				Print.info('Delta content entry ' + str(i+1))
+				Print.info('........................')
+				vhash = self.read(0x20)
+				Print.info('hash =\t' + str(hx(vhash)))
+				NcaId = self.read(0x10)
+				Print.info('NcaId =\t' + str(hx(NcaId)))
+				size = self.read(0x6)
+				Print.info('Size =\t' + str(int.from_bytes(size, byteorder='little', signed=True)))
+				ncatype = self.read(0x1)
+				Print.info('ncatype = ' + str(int.from_bytes(ncatype, byteorder='little', signed=True)))
+				unknown = self.read(0x1)		
+		
+
+	def xml_gen(self, ofolder,nsha):
+		file = None
+		mode = 'rb'
+		for f in self:
+			cryptoType=f.get_cryptoType()
+			cryptoKey=f.get_cryptoKey()	
+			cryptoCounter=f.get_cryptoCounter()
+		pfs0_offset=0xC00+self.header.get_htable_offset()+self.header.get_pfs0_offset()
+		pfs0_size = self.header.get_pfs0_size()		
+		super(Nca, self).open(file, mode, cryptoType, cryptoKey, cryptoCounter)
+		self.seek(pfs0_offset+0x8)
+		pfs0_table_size=self.readInt32()
+		cmt_offset=pfs0_offset+0x28+pfs0_table_size
+		self.seek(cmt_offset)
+		titleid=self.readInt64()
+		titleversion = self.read(0x4)
+		type_n = self.read(0x1)		
+		self.seek(cmt_offset+0xE)
+		offset=self.readInt16()
+		content_entries=self.readInt16()
+		meta_entries=self.readInt16()
+		self.seek(cmt_offset+0x18)		
+		RDSV=self.readInt64()		
+		self.seek(cmt_offset+0x20)
+		original_ID=self.readInt64()
+		self.seek(cmt_offset+0x28)					
+		min_sversion=self.readInt32()
+		length_of_emeta=self.readInt32()		
+		self.seek(cmt_offset+offset+0x20)
+		
+		if str(hx(type_n)) == "b'1'":
+			type='SystemProgram'		
+		if str(hx(type_n)) == "b'2'":
+			type='SystemData'
+		if str(hx(type_n)) == "b'3'":
+			type='SystemUpdate'
+		if str(hx(type_n)) == "b'4'":
+			type='BootImagePackage'		
+		if str(hx(type_n)) == "b'5'":
+			type='BootImagePackageSafe'		
+		if str(hx(type_n)) == "b'80'":
+			type='Application'			
+		if str(hx(type_n)) == "b'81'":
+			type='Patch'
+		if str(hx(type_n)) == "b'82'":
+			type='AddOnContent'
+		if str(hx(type_n)) == "b'83'":
+			type='Delta'
+
+		titleid=str(hx(titleid.to_bytes(8, byteorder='big')))	
+		titleid='0x'+titleid[2:-1]
+		version = str(int.from_bytes(titleversion, byteorder='little'))
+		RDSV=str(RDSV)
+		xmlname = str(self._path)	
+		xmlname = xmlname[:-4] + '.xml'	
+		outfolder = str(ofolder)+'/'		
+		textpath = os.path.join(outfolder, xmlname)
+		with open(textpath, 'w+') as tfile:			
+			tfile.write('<?xml version="1.0" encoding="utf-8"?>' + '\n')	
+			tfile.write('<ContentMeta>' + '\n')	
+			tfile.write('  <Type>'+ type +'</Type>' + '\n')	
+			tfile.write('  <Id>'+ titleid +'</Id>' + '\n')	
+			tfile.write('  <Version>'+ version +'</Version>' + '\n')
+			tfile.write('  <RequiredDownloadSystemVersion>'+ RDSV +'</RequiredDownloadSystemVersion>' + '\n')	
+			
+		for i in range(content_entries):
+			vhash = self.read(0x20)
+			NcaId = self.read(0x10)
+			size = self.read(0x6)
+			ncatype = self.readInt8()
+			unknown = self.read(0x1)
+			if ncatype==0:
+				type='Meta'		
+			if str(ncatype)=="1":
+				type='Program'		
+			if ncatype==2:
+				type='Data'		
+			if ncatype==3:
+				type='Control'		
+			if ncatype==4:
+				type='HtmlDocument'	
+			if ncatype==5:
+				type='LegalInformation'		
+			if ncatype==6:
+				type='DeltaFragment'						
+				
+			NcaId=str(hx(NcaId))
+			NcaId=NcaId[2:-1]
+			size=str(int.from_bytes(size, byteorder='little'))
+			vhash=str(hx(vhash))
+			vhash=vhash[2:-1]			
+							
+			with open(textpath, 'a') as tfile:	
+				tfile.write('  <Content>' + '\n')	
+				tfile.write('    <Type>'+ type +'</Type>' + '\n')
+				tfile.write('    <Id>'+ NcaId +'</Id>' + '\n')
+				tfile.write('    <Size>'+ size +'</Size>' + '\n')				
+				tfile.write('    <Hash>'+ vhash +'</Hash>' + '\n')	
+				tfile.write('    <KeyGeneration>'+ str(self.header.cryptoType2) +'</KeyGeneration>' + '\n')				
+				tfile.write('  </Content>' + '\n')						
+
+		self.seek(pfs0_offset+pfs0_size-0x20)			
+		digest = str(hx(self.read(0x20)))
+		digest=digest[2:-1]			
+		original_ID=str(hx(original_ID.to_bytes(8, byteorder='big')))
+		original_ID='0x'+original_ID[2:-1]	
+		metaname=os.path.basename(os.path.abspath(self._path))
+		metaname =  metaname[:-9]
+		size=str(os.path.getsize(self._path))		
+		with open(textpath, 'a') as tfile:	
+			tfile.write('  <Content>' + '\n')	
+			tfile.write('    <Type>'+ 'Meta' +'</Type>' + '\n')
+			tfile.write('    <Id>'+ metaname +'</Id>' + '\n')
+			tfile.write('    <Size>'+ size +'</Size>' + '\n')				
+			tfile.write('    <Hash>'+ nsha +'</Hash>' + '\n')				
+			tfile.write('    <KeyGeneration>'+ str(self.header.cryptoType2) +'</KeyGeneration>' + '\n')					
+			tfile.write('  </Content>' + '\n')						
+			tfile.write('  <Digest>'+ digest +'</Digest>' + '\n')
+			tfile.write('  <KeyGeneration>'+ str(self.header.cryptoType2) +'</KeyGeneration>' + '\n')
+			tfile.write('  <RequiredSystemVersion>'+ str(min_sversion) +'</RequiredSystemVersion>' + '\n')				
+			tfile.write('  <OriginalId>'+ original_ID +'</OriginalId>' + '\n')	
+			tfile.write('</ContentMeta>')					
+		
 	def printInfo(self, indent = 0):
 		tabs = '\t' * indent
 		Print.info('\n%sNCA Archive\n' % (tabs))

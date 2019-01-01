@@ -136,7 +136,41 @@ def getFWRangeRSV(RSV):
 		return range	
 
 
-
+def getSize(bytes):
+	if bytes>(1024*1024*1024):
+		Gbytes=bytes/(1024*1024*1024)
+		Gbytes=round(Gbytes,2)
+		Gbytes=str(Gbytes)+"GB"
+		return Gbytes
+	if bytes>(1024*1024):
+		Mbytes=bytes/(1024*1024)
+		Mbytes=round(Mbytes,2)
+		Mbytes=str(Mbytes)+"MB"
+		return Mbytes		
+	if bytes>(1024):
+		Kbytes=bytes/(1024)
+		Kbytes=round(Kbytes,2)
+		Kbytes=str(Kbytes)+"KB"	
+		return Kbytes		
+	else:
+		bytes=str(bytes)+"B"	
+		return bytes
+		
+def getTypeFromCNMT(number):	
+	if number == 0:
+		return "Meta: "
+	if number == 1:
+		return "Program: "
+	if number == 2:
+		return "Data: "
+	if number == 3:
+		return "Control: "
+	if number == 4:
+		return "HtmlDoc: "
+	if number == 5:
+		return "LegalInf: "
+	if number == 6:
+		return "Delta: "
 
 
 

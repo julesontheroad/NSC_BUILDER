@@ -54,14 +54,16 @@ if __name__ == '__main__':
 		
 		# INFORMATION
 		parser.add_argument('-i', '--info', help='show info about title or file')
-		parser.add_argument('--filelist', nargs='+', help='Prints file list in  NSP\XCI secure partition')
+		parser.add_argument('--filelist', nargs='+', help='Prints file list from NSP\XCI secure partition')
+		parser.add_argument('--ADVfilelist', nargs='+', help='Prints ADVANCED file list from NSP\XCI secure partition')		
 		parser.add_argument('--Read_cnmt', nargs='+', help='Read cnmt file inside NSP\XCI')
 		parser.add_argument('--fw_req', nargs='+', help='Get information about fw requirements for NSP\XCI')		
 
 		# CNMT Flag funtions		
 		parser.add_argument('--set_cnmt_version', nargs='+', help='Changes cnmt.nca version number')	
 		parser.add_argument('--set_cnmt_RSV', nargs='+', help='Changes cnmt.nca RSV')	
-		parser.add_argument('--update_hash', nargs='+', help='Updates cnmt.nca hashes')			
+		parser.add_argument('--update_hash', nargs='+', help='Updates cnmt.nca hashes')	
+		parser.add_argument('--xml_gen', nargs='+', help='Generates cnmt.xml')				
 		
 		# REPACK
 		parser.add_argument('-c', '--create', help='create / pack a NSP')
@@ -512,11 +514,19 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				RSV_cap = 268435656					
+				RSV_cap = 268435656		
+			if args.keypatch:
+				for input in args.keypatch:
+					try:
+						vkeypatch = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+			else:
+				vkeypatch = 'false'					
 			for filename in args.NSP_copy_nca:
 				try:
 					f = Fs.Nsp(filename, 'rb')
-					f.copy_nca(ofolder,buffer,metapatch,int(RSV_cap))
+					f.copy_nca(ofolder,buffer,metapatch,vkeypatch,int(RSV_cap))
 					f.flush()
 					f.close()
 				except BaseException as e:
@@ -1680,7 +1690,28 @@ if __name__ == '__main__':
 						f.close()
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))		
-
+		# ...................................................						
+		# Show advance filelist
+		# ...................................................	
+		if args.ADVfilelist:
+			for filename in args.ADVfilelist:
+				if filename.endswith('.nsp'):
+					try:
+						f = Fs.Nsp(filename, 'rb')
+						f.adv_file_list()
+						f.flush()
+						f.close()
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+				if filename.endswith('.xci'):
+					try:
+						f = Fs.factory(filename)
+						f.open(filename, 'rb')
+						f.adv_file_list()
+						f.flush()
+						f.close()
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))		
 		# ...................................................						
 		# FW REQ INFO
 		# ...................................................	
@@ -1929,7 +1960,32 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 		Status.close()	
-	
+		
+		# ..................						
+		# Generate cnmt.xml
+		# ..................									
+		if args.xml_gen:
+			if args.ofolder:		
+				for input in args.ofolder:
+					try:
+						ofolder = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+			else:
+				for filename in args.xml_gen:
+					dir=os.path.dirname(os.path.abspath(filename))
+					ofolder = dir+ '/'+ 'output'					
+			for filename in args.xml_gen:
+				if filename.endswith('.nca'):
+					try:
+						with open(filename, 'r+b') as file:			
+							nsha=sha256(file.read()).hexdigest()			
+						f = Fs.Nca(filename, 'r+b')	
+						f.xml_gen(ofolder,nsha)					
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+		Status.close()		
+		
 	
 	except KeyboardInterrupt:
 		Config.isRunning = False

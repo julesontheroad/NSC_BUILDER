@@ -11,7 +11,7 @@
 -------------------------------------------------------------------------------------
 "                             POWERED WITH NUT BY BLAWAR                            "
 "                             AND LUCA FRAGA'S HACBUILD                             "
-                                    VERSION 0.78                                     	
+                                    VERSION 0.79                                    	
 -------------------------------------------------------------------------------------                   
 Program's github: https://github.com/julesontheroad/NSC_BUILDER
 Revised hacbuild: https://github.com/julesontheroad/hacbuild
@@ -21,6 +21,18 @@ SciresM hactool : https://github.com/SciresM/hactool
 ---------------
 0. Changelog
 ---------------
+v0.79- Corrected detection for keygeneration 2 wich fixes the issue with the Xenoblade
+       Chronicles 2 DLCs
+       Added xml generation when repacking as NSP giving support to xci-explorer.
+       Fixed issue with NSCB clossing in info mode if you try to swap the file without
+       turning back. File swapping is now enabled.
+       Improved the functions in mode 5 "file-info mode":
+         1.- Get CONTENT of the xci\nsp will show game data, types of files and size for
+             all content inside the xci or nsp.
+         2.- GAME-INFO and FW requirements eas expanded with more information for dlc,
+             editor information, language information ...
+         3.- Read the CNMT was expanded to include extended meta information.
+       Improved the naming in the spitter mode.  
 v0.78- Fixed error with RSV patching were DLC's got it's UpdateRequiredNumber patched
 	Modified FW-requirements and CNMT-reader a little.
 v0.77- Added new option to global config to skip the RSV and keygeneration patching

@@ -25,14 +25,22 @@ call :logo
 echo .......................................................
 echo Input "1" to get CONTENT of the xci\nsp
 echo Input "2" to get NUT-INFO of the xci\nsp
-echo Input "3" to get FIRMWARE REQUIREMENTS of the xci\nsp
+echo Input "3" to get GAME-INFO and FW requirements
 echo Input "4" to READ the CNMT of the xci\nsp
 echo.
 echo Input "b" to go back to FILE LOADING
 echo Input "0" to go back to the MAIN PROGRAM
+echo.
+echo --- Or DRAG a New File to change the current target ---
 echo .......................................................
 echo.
 set /p bs="Enter your choice: "
+set bs=%bs:"=%
+for /f "delims=" %%a in ("%bs%") do set "Extension=%%~xa"
+if "%Extension%" EQU ".*" ( goto wch )
+if "%Extension%" EQU ".nsp" ( goto snfi )
+if "%Extension%" EQU ".xci" ( goto snfi )
+
 if /i "%bs%"=="1" goto g_content
 if /i "%bs%"=="2" goto n_info
 if /i "%bs%"=="3" goto f_info
@@ -40,8 +48,15 @@ if /i "%bs%"=="4" goto r_cnmt
 
 if /i "%bs%"=="b" goto sc1
 if /i "%bs%"=="0" goto salida
+goto wch
+
+:snfi
+for /f "delims=" %%a in ("%bs%") do set "Name=%%~na"
+set "targt=%bs%"
+goto sc2
+:wch
 echo WRONG CHOICE
-echo.
+pause
 goto sc2
 
 :g_content
@@ -50,7 +65,7 @@ call :logo
 echo ********************************************************
 echo SHOW NSP CONTENT OR XCI SECURE PARTITION CONTENT
 echo ********************************************************
-%pycommand% "%nut%" --filelist "%targt%"
+%pycommand% "%nut%" --ADVfilelist "%targt%"
 echo.
 ECHO ********************************************************
 echo Do you want to print the information to a text file?
@@ -68,7 +83,7 @@ goto g_content_wrong
 :g_content_print
 if not exist "%info_dir%" MD "%info_dir%">NUL 2>&1
 set "i_file=%info_dir%\%Name%-content.txt"
-%pycommand% "%nut%" --filelist "%targt%">"%i_file%"
+%pycommand% "%nut%" --ADVfilelist "%targt%">"%i_file%"
 ECHO DONE
 goto sc2
 
@@ -106,10 +121,10 @@ goto sc2
 cls
 call :logo
 echo ********************************************************
-echo SHOW INFORMATION ABOUT REQUIRED FIRMWARE
+echo SHOW INFORMATION AND DATA ABOUT THE REQUIRED FIRMWARE
 echo ********************************************************
 %pycommand% "%nut%" --fw_req "%targt%"
-echo.
+
 ECHO ********************************************************
 echo Do you want to print the information to a text file?
 ECHO ********************************************************
@@ -177,7 +192,7 @@ ECHO =============================     BY JULESONTHEROAD     ===================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                             POWERED WITH NUT BY BLAWAR                            "
 ECHO "                             AND LUCA FRAGA'S HACBUILD                             "
-ECHO                                     VERSION 0.78                                     	
+ECHO                                     VERSION 0.79                                     	
 ECHO -------------------------------------------------------------------------------------                   
 ECHO Program's github: https://github.com/julesontheroad/NSC_BUILDER
 ECHO Revised hacbuild: https://github.com/julesontheroad/hacbuild

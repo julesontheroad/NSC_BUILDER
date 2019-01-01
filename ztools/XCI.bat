@@ -46,6 +46,7 @@ echo Also you'll need to have at least double the amount of free disk space than
 echo IF YOU DON'T SEE "DONE" HACBUILD IS STILL AT WORK.
 ECHO ........................................................................................
 if exist "%w_folder%\secure\*.dat" del "%w_folder%\secure\*.dat" >NUL 2>&1
+if exist "%w_folder%\secure\*.xml" del "%w_folder%\secure\*.xml" >NUL 2>&1
 "%hacbuild%" xci_auto_del "%w_folder%"  "%w_folder%\%filename%[xcib].xci"
 exit /B
 
@@ -108,7 +109,8 @@ echo With files bigger than 4Gb it'll take more time proportionally than with sm
 echo Also you'll need to have at least double the amount of free disk space than file's size.
 echo IF YOU DON'T SEE "DONE" HACBUILD IS STILL AT WORK.
 ECHO ........................................................................................
-if exist "%w_folder%\secure\*.dat" del "%w_folder%\secure\*.dat" >NUL 2>&1
+if exist "!tfolder!\secure\*.dat" del "!tfolder!\secure\*.dat" >NUL 2>&1
+if exist "!tfolder!\secure\*.xml" del "!tfolder!\secure\*.xml" >NUL 2>&1
 ::echo "%hacbuild%" xci_auto_del "!tfolder!" "%w_folder%\!fname!.xci"
 "%hacbuild%" xci_auto_del "!tfolder!" "%w_folder%\!fname!.xci"
 RD /S /Q  "!tfolder!" >NUL 2>&1

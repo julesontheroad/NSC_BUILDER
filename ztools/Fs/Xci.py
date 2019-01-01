@@ -784,7 +784,7 @@ class Xci(File):
 									cnmt.seek(0x20)
 									original_ID=cnmt.readInt64()
 									min_sversion=cnmt.readInt32()
-									end_of_emeta=cnmt.readInt32()	
+									length_of_emeta=cnmt.readInt32()	
 									Print.info('')	
 									Print.info('...........................................')								
 									Print.info('Reading: ' + str(cnmt._path))
@@ -815,7 +815,133 @@ class Xci(File):
 										Print.info('Size =\t' + str(int.from_bytes(size, byteorder='little')))
 										ncatype = cnmt.read(0x1)
 										Print.info('ncatype = ' + str(int.from_bytes(ncatype, byteorder='little')))
-										unknown = cnmt.read(0x1)			
+										unknown = cnmt.read(0x1)	
+										cnmt.seek(0x20+offset+content_entries*0x38+length_of_emeta)			
+										digest = cnmt.read(0x20)
+										Print.info("")	
+										Print.info('digest= '+str(hx(digest)))
+										Print.info("")		
+										cnmt.seek(0x20+offset+content_entries*0x38)										
+										if length_of_emeta>0:
+											Print.info('----------------')			
+											Print.info('Extended meta')	
+											Print.info('----------------')				
+											num_prev_cnmt=cnmt.read(0x4)
+											num_prev_delta=cnmt.read(0x4)
+											num_delta_info=cnmt.read(0x4)
+											num_delta_application =cnmt.read(0x4)	
+											num_previous_content=cnmt.read(0x4)		
+											num_delta_content=cnmt.read(0x4)	
+											cnmt.read(0x4)	
+											Print.info('Number of previous cnmt entries = ' + str(int.from_bytes(num_prev_cnmt, byteorder='little')))	
+											Print.info('Number of previous delta entries = ' + str(int.from_bytes(num_prev_delta, byteorder='little')))	
+											Print.info('Number of delta info entries = ' + str(int.from_bytes(num_delta_info, byteorder='little')))			
+											Print.info('Number of delta application info entries = ' + str(int.from_bytes(num_delta_application, byteorder='little')))	
+											Print.info('Number of previous content entries = ' + str(int.from_bytes(num_previous_content, byteorder='little')))	
+											Print.info('Number of delta content entries = ' + str(int.from_bytes(num_delta_content, byteorder='little')))		
+											for i in range(int.from_bytes(num_prev_cnmt, byteorder='little')):
+												Print.info('...........................................')								
+												Print.info('Previous cnmt records: '+ str(i+1))
+												Print.info('...........................................')				
+												titleid=cnmt.readInt64()	
+												titleversion = cnmt.read(0x4)	
+												type_n = cnmt.read(0x1)					
+												unknown1=cnmt.read(0x3)
+												vhash = cnmt.read(0x20)
+												unknown2=cnmt.read(0x2)
+												unknown3=cnmt.read(0x2)
+												unknown4=cnmt.read(0x4)				
+												Print.info('titleid = ' + str(hx(titleid.to_bytes(8, byteorder='big'))))	
+												Print.info('version = ' + str(int.from_bytes(titleversion, byteorder='little')))
+												Print.info('type number = ' + str(hx(type_n)))	
+												#Print.info('unknown1 = ' + str(int.from_bytes(unknown1, byteorder='little')))			
+												Print.info('hash =\t' + str(hx(vhash)))				
+												Print.info('content nca number = ' + str(int.from_bytes(unknown2, byteorder='little')))				
+												#Print.info('unknown3 = ' + str(int.from_bytes(unknown3, byteorder='little')))				
+												#Print.info('unknown4 = ' + str(int.from_bytes(unknown4, byteorder='little')))
+											for i in range(int.from_bytes(num_prev_delta, byteorder='little')):
+												Print.info('...........................................')								
+												Print.info('Previous delta records: '+ str(i+1))
+												Print.info('...........................................')				
+												oldtitleid=cnmt.readInt64()	
+												newtitleid=cnmt.readInt64()					
+												oldtitleversion = cnmt.read(0x4)	
+												newtitleversion = cnmt.read(0x4)	
+												size = cnmt.read(0x8)
+												unknown1=cnmt.read(0x8)				
+												Print.info('old titleid = ' + str(hx(oldtitleid.to_bytes(8, byteorder='big'))))	
+												Print.info('new titleid = ' + str(hx(newtitleid.to_bytes(8, byteorder='big'))))						
+												Print.info('old version = ' + str(int.from_bytes(oldtitleversion, byteorder='little')))
+												Print.info('new version = ' + str(int.from_bytes(newtitleversion, byteorder='little')))	
+												Print.info('size = ' + str(int.from_bytes(size, byteorder='little', signed=True)))					
+												#Print.info('unknown1 = ' + str(int.from_bytes(unknown1, byteorder='little')))			
+											for i in range(int.from_bytes(num_delta_info, byteorder='little')):
+												Print.info('...........................................')								
+												Print.info('Delta info: '+ str(i+1))
+												Print.info('...........................................')				
+												oldtitleid=cnmt.readInt64()	
+												newtitleid=cnmt.readInt64()					
+												oldtitleversion = cnmt.read(0x4)	
+												newtitleversion = cnmt.read(0x4)	
+												index1=cnmt.readInt64()	
+												index2=cnmt.readInt64()				
+												Print.info('old titleid = ' + str(hx(oldtitleid.to_bytes(8, byteorder='big'))))	
+												Print.info('new titleid = ' + str(hx(newtitleid.to_bytes(8, byteorder='big'))))						
+												Print.info('old version = ' + str(int.from_bytes(oldtitleversion, byteorder='little')))
+												Print.info('new version = ' + str(int.from_bytes(newtitleversion, byteorder='little')))	
+												Print.info('index1 = ' + str(hx(index1.to_bytes(8, byteorder='big'))))	
+												Print.info('index2 = ' + str(hx(index2.to_bytes(8, byteorder='big'))))						
+												#Print.info('unknown1 = ' + str(int.from_bytes(unknown1, byteorder='little')))
+											for i in range(int.from_bytes(num_delta_application, byteorder='little')):
+												Print.info('...........................................')								
+												Print.info('Delta application info: '+ str(i+1))
+												Print.info('...........................................')				
+												OldNcaId = cnmt.read(0x10)
+												NewNcaId = cnmt.read(0x10)		
+												old_size = cnmt.read(0x6)				
+												up2bytes = cnmt.read(0x2)
+												low4bytes = cnmt.read(0x4)
+												unknown1 = cnmt.read(0x2)
+												ncatype = cnmt.read(0x1)	
+												installable = cnmt.read(0x1)
+												unknown2 = cnmt.read(0x4)				
+												Print.info('OldNcaId = ' + str(hx(OldNcaId)))	
+												Print.info('NewNcaId = ' + str(hx(NewNcaId)))	
+												Print.info('Old size = ' +  str(int.from_bytes(old_size, byteorder='little', signed=True)))	
+												Print.info('unknown1 = ' + str(int.from_bytes(unknown1, byteorder='little')))
+												Print.info('ncatype =  ' + str(int.from_bytes(ncatype, byteorder='little', signed=True)))
+												Print.info('installable = ' + str(int.from_bytes(installable, byteorder='little', signed=True)))
+												Print.info('Upper 2 bytes of the new size=' + str(hx(up2bytes)))	
+												Print.info('Lower 4 bytes of the new size=' + str(hx(low4bytes)))					
+												#Print.info('unknown2 =\t' + str(int.from_bytes(unknown2, byteorder='little')))			
+
+											for i in range(int.from_bytes(num_previous_content, byteorder='little')):
+												Print.info('...........................................')								
+												Print.info('Previous content records: '+ str(i+1))
+												Print.info('...........................................')				
+												NcaId = cnmt.read(0x10)		
+												size = cnmt.read(0x6)				
+												ncatype = cnmt.read(0x1)	
+												unknown1 = cnmt.read(0x1)				
+												Print.info('NcaId = '+ str(hx(NcaId)))	
+												Print.info('Size = '+ str(int.from_bytes(size, byteorder='little', signed=True)))	
+												Print.info('ncatype = '+ str(int.from_bytes(ncatype, byteorder='little', signed=True)))			
+												#Print.info('unknown1 = '+ str(int.from_bytes(unknown1, byteorder='little')))	
+				
+											for i in range(int.from_bytes(num_delta_content, byteorder='little')):
+												Print.info('........................')							
+												Print.info('Delta content entry ' + str(i+1))
+												Print.info('........................')
+												vhash = cnmt.read(0x20)
+												Print.info('hash =\t' + str(hx(vhash)))
+												NcaId = cnmt.read(0x10)
+												Print.info('NcaId =\t' + str(hx(NcaId)))
+												size = cnmt.read(0x6)
+												Print.info('Size =\t' + str(int.from_bytes(size, byteorder='little', signed=True)))
+												ncatype = cnmt.read(0x1)
+												Print.info('ncatype = ' + str(int.from_bytes(ncatype, byteorder='little', signed=True)))
+												unknown = cnmt.read(0x1)
+										
 									
 #///////////////////////////////////////////////////								
 #SPLIT MULTI-CONTENT XCI IN FOLDERS
@@ -1047,11 +1173,19 @@ class Xci(File):
 							for f in nca:
 								nca.rewind()
 								f.rewind()	
-								f.seek(0x14200)
-								title = f.read(0x200)		
-								title = title.split(b'\0', 1)[0].decode('utf-8')
-								title = (re.sub(r'[\/\\\:\*\?\"\<\>\|\.\s™©®()\~]+', ' ', title))
-								title = title + content_type
+								Langue = list()	
+								Langue = [0,1,6,5,7,10,3,4,9,8,2,11,12,13,14]		
+								for i in Langue:
+									f.seek(0x14200+i*0x300)								
+									title = f.read(0x200)		
+									title = title.split(b'\0', 1)[0].decode('utf-8')
+									title = (re.sub(r'[\/\\\:\*\?\!\"\<\>\|\.\s™©®()\~]+', ' ', title))
+									title = title.strip()
+									if title == "":
+										title = 'DLC'
+									if title != 'DLC':								
+										title = title + content_type
+										return(title)
 		return(title)
 												
 		
@@ -1227,6 +1361,342 @@ class Xci(File):
 						filename =  str(file._path)
 						Print.info(str(filename))									
 
+#ADVANCED FILE-LIST			
+	def  adv_file_list(self):
+		contentlist=list()	
+		for nspF in self.hfs0:
+			if str(nspF._path)=="secure":
+				for nca in nspF:
+					size1=0;size2=0;size3=0	
+					if type(nca) == Nca:	
+						if 	str(nca.header.contentType) == 'Content.META':
+							for f in nca:
+								for cnmt in f:
+									nca.rewind()
+									f.rewind()
+									cnmt.rewind()
+									titleid=cnmt.readInt64()
+									titleversion = cnmt.read(0x4)
+									cnmt.rewind()
+									cnmt.seek(0xE)
+									offset=cnmt.readInt16()
+									content_entries=cnmt.readInt16()
+									meta_entries=cnmt.readInt16()
+									cnmt.rewind()
+									cnmt.seek(0x20)
+									original_ID=cnmt.readInt64()								
+									min_sversion=cnmt.readInt32()
+									length_of_emeta=cnmt.readInt32()	
+									target=str(nca._path)
+									content_type_cnmt=str(cnmt._path)
+									content_type_cnmt=content_type_cnmt[:-22]		
+									if content_type_cnmt == 'Patch':
+										content_type='Update'
+										reqtag='- RequiredSystemVersion: '
+										tit_name,editor,ediver,SupLg = self.inf_get_title(target,offset,content_entries,original_ID)							
+									if content_type_cnmt == 'AddOnContent':
+										content_type='DLC'
+										reqtag='- RequiredUpdateNumber: '
+										tit_name,editor,ediver,SupLg = self.inf_get_title(target,offset,content_entries,original_ID)	
+									if content_type_cnmt == 'Application':
+										content_type='Base Game or Application'
+										reqtag='- RequiredSystemVersion: '	
+										tit_name,editor,ediver,SupLg = self.inf_get_title(target,offset,content_entries,original_ID)	
+									cnmt.rewind()							
+									cnmt.seek(0x20+offset)
+									titleid2 = str(hx(titleid.to_bytes(8, byteorder='big'))) 	
+									titleid2 = titleid2[2:-1]
+									version=str(int.from_bytes(titleversion, byteorder='little'))
+									v_number=int(int(version)/65536)
+									RS_number=int(min_sversion/65536)
+									crypto1=nca.header.getCryptoType()
+									crypto2=nca.header.getCryptoType2()	
+									if crypto1 == 2:
+										if crypto1 > crypto2:								
+											keygen=nca.header.getCryptoType()
+										else:			
+											keygen=nca.header.getCryptoType2()	
+									else:			
+										keygen=nca.header.getCryptoType2()		
+									MinRSV=sq_tools.getMinRSV(keygen,min_sversion)
+									FW_rq=sq_tools.getFWRangeKG(keygen)
+									RSV_rq=sq_tools.getFWRangeRSV(min_sversion)									
+									RSV_rq_min=sq_tools.getFWRangeRSV(MinRSV)								
+									Print.info('-----------------------------')
+									Print.info('CONTENT ID: ' + str(titleid2))	
+									Print.info('-----------------------------')			
+									if content_type_cnmt != 'AddOnContent':									
+										Print.info("Titleinfo:")							
+										Print.info("- Name: " + tit_name)
+										Print.info("- Editor: " + editor)
+										Print.info("- Build number: " + str(ediver))
+										suplangue=str((', '.join(SupLg)))
+										Print.info("- Supported Languages: "+suplangue)
+										Print.info("- Content type: "+content_type)
+										Print.info("- Version: " + version+' -> '+content_type_cnmt+' ('+str(v_number)+')')
+									if content_type_cnmt == 'AddOnContent':
+										if tit_name != "DLC":
+											Print.info("- Name: " + tit_name)
+											Print.info("- Editor: " + editor)										
+										Print.info("- Content type: "+"DLC")
+										DLCnumb=str(titleid2)
+										DLCnumb="0000000000000"+DLCnumb[-3:]									
+										DLCnumb=bytes.fromhex(DLCnumb)
+										DLCnumb=str(int.from_bytes(DLCnumb, byteorder='big'))									
+										DLCnumb=int(DLCnumb)
+										Print.info("- DLC number: "+str(DLCnumb)+' -> '+"AddOnContent"+' ('+str(DLCnumb)+')')						
+										Print.info("- DLC version Number: " + version+' -> '+"Version"+' ('+str(v_number)+')')												
+									Print.info("")								
+									Print.info("Required Firmware:")			
+									if content_type_cnmt == 'AddOnContent':
+										if v_number == 0:
+											Print.info("- Required game version: " + str(min_sversion)+' -> '+"Application"+' ('+str(RS_number)+')')									
+										if v_number > 0:
+											Print.info("- Required game version: " + str(min_sversion)+' -> '+"Patch"+' ('+str(RS_number)+')')																									
+									else:
+										Print.info(reqtag + str(min_sversion)+" -> " +RSV_rq)						
+									Print.info('- Encryption (keygeneration): ' + str(keygen)+" -> " +FW_rq)
+									if content_type_cnmt != 'AddOnContent':							
+										Print.info('- Patchable to: ' + str(MinRSV)+" -> " + RSV_rq_min)
+									else:
+										Print.info('- Patchable to: DLC -> no RSV to patch')	
+									Print.info("")						
+									ncalist = list()
+									ncasize = 0							
+									Print.info('......................')							
+									Print.info('NCA FILES (NON DELTAS)')	
+									Print.info('......................')							
+									for i in range(content_entries):
+										vhash = cnmt.read(0x20)
+										NcaId = cnmt.read(0x10)
+										size = cnmt.read(0x6)
+										ncatype = cnmt.read(0x1)
+										ncatype = int.from_bytes(ncatype, byteorder='little')	
+										unknown = cnmt.read(0x1)
+										#Print.info(str(ncatype))
+										if ncatype != 6:									
+											nca_name=str(hx(NcaId))
+											nca_name=nca_name[2:-1]+'.nca'
+											ncasize=ncasize+self.print_nca_by_title(nca_name,ncatype)
+											ncalist.append(nca_name[:-4])
+											contentlist.append(nca_name)									
+										if ncatype == 6:
+											nca_name=str(hx(NcaId))
+											nca_name=nca_name[2:-1]+'.nca'
+											ncalist.append(nca_name[:-4])
+											contentlist.append(nca_name)										
+									nca_meta=str(nca._path)
+									ncalist.append(nca_meta[:-4])	
+									contentlist.append(nca_meta)							
+									ncasize=ncasize+self.print_nca_by_title(nca_meta,0)
+									size1=ncasize
+									size_pr=sq_tools.getSize(ncasize)		
+									bigtab="\t"*7
+									Print.info(bigtab+"  --------------------")								
+									Print.info(bigtab+'  TOTAL SIZE: '+size_pr)	
+									if self.actually_has_deltas(ncalist)=="true":
+										cnmt.rewind()
+										cnmt.seek(0x20+offset)
+										for i in range(content_entries):
+											vhash = cnmt.read(0x20)
+											NcaId = cnmt.read(0x10)
+											size = cnmt.read(0x6)
+											ncatype = cnmt.read(0x1)
+											ncatype = int.from_bytes(ncatype, byteorder='little')		
+											unknown = cnmt.read(0x1)								
+											if ncatype == 6:							
+												Print.info('......................')							
+												Print.info('NCA FILES (DELTAS)')	
+												Print.info('......................')	
+												break
+										cnmt.rewind()
+										cnmt.seek(0x20+offset)
+										ncasize = 0								
+										for i in range(content_entries):
+											vhash = cnmt.read(0x20)
+											NcaId = cnmt.read(0x10)
+											size = cnmt.read(0x6)
+											ncatype = cnmt.read(0x1)
+											ncatype = int.from_bytes(ncatype, byteorder='little')	
+											unknown = cnmt.read(0x1)	
+											if ncatype == 6:
+												nca_name=str(hx(NcaId))
+												nca_name=nca_name[2:-1]+'.nca'
+												ncasize=ncasize+self.print_nca_by_title(nca_name,ncatype)
+										size2=ncasize
+										size_pr=sq_tools.getSize(ncasize)		
+										bigtab="\t"*7
+										Print.info(bigtab+"  --------------------")								
+										Print.info(bigtab+'  TOTAL SIZE: '+size_pr)	
+									if self.actually_has_other(titleid2,ncalist)=="true":								
+										Print.info('......................')							
+										Print.info('OTHER TYPES OF FILES')	
+										Print.info('......................')
+										othersize = 0								
+										othersize=othersize+self.print_xml_by_title(ncalist,contentlist)	
+										othersize=othersize+self.print_tac_by_title(titleid2,contentlist)
+										othersize=othersize+self.print_jpg_by_title(ncalist,contentlist)
+										size3=othersize								
+										size_pr=sq_tools.getSize(othersize)							
+										bigtab="\t"*7
+										Print.info(bigtab+"  --------------------")								
+										Print.info(bigtab+'  TOTAL SIZE: '+size_pr)
+							finalsize=size1+size2+size3	
+							size_pr=sq_tools.getSize(finalsize)	
+							Print.info("/////////////////////////////////////")							
+							Print.info('   FULL CONTENT TOTAL SIZE: '+size_pr+"   ")
+							Print.info("/////////////////////////////////////")	
+							Print.info("")								
+				self.printnonlisted(contentlist)
+					
+																				
+	def print_nca_by_title(self,nca_name,ncatype):	
+		tab="\t"
+		for nspF in self.hfs0:
+			if str(nspF._path)=="secure":
+				for nca in nspF:		
+					if type(nca) == Nca:
+						filename = str(nca._path)
+						if filename == nca_name:
+							size=nca.header.size
+							size_pr=sq_tools.getSize(size)
+							content=str(nca.header.contentType)
+							content=content[8:]+": "
+							ncatype=sq_tools.getTypeFromCNMT(ncatype)	
+							if ncatype != "Meta: ":
+								Print.info("- "+ncatype+tab+str(filename)+tab+tab+"Size: "+size_pr)	
+							else:
+								Print.info("- "+ncatype+tab+str(filename)+tab+"Size: "+size_pr)		
+							return size		
+	def print_xml_by_title(self,ncalist,contentlist):	
+		tab="\t"
+		size2return=0
+		for nspF in self.hfs0:
+			if str(nspF._path)=="secure":
+				for file in nspF:		
+					if file._path.endswith('.xml'):
+						size=file.size
+						size_pr=sq_tools.getSize(size)			
+						filename =  str(file._path)	
+						xml=filename[:-4]
+						if xml in ncalist:
+							Print.info("- XML: "+tab*2+str(filename)+tab+"Size: "+size_pr)
+							contentlist.append(filename)	
+							size2return=size+size2return			
+		return size2return						
+	def print_tac_by_title(self,titleid,contentlist):		
+		tab="\t"	
+		size2return=0	
+		for nspF in self.hfs0:
+			if str(nspF._path)=="secure":
+				for ticket in nspF:			
+					if type(ticket) == Ticket:
+						size=ticket.size			
+						size_pr=sq_tools.getSize(size)			
+						filename =  str(ticket._path)
+						tik=filename[:-20]
+						if tik == titleid:
+							Print.info("- Ticket: "+tab+str(filename)+tab*2+"Size: "+size_pr)	
+							contentlist.append(filename)					
+							size2return=size+size2return													
+				for cert in nspF:						
+					if cert._path.endswith('.cert'):
+						size=cert.size		
+						size_pr=sq_tools.getSize(size)
+						filename = str(cert._path)
+						cert_id =filename[:-21]
+						if cert_id == titleid:
+							Print.info("- Cert: "+tab+str(filename)+tab*2+"Size: "+size_pr)
+							contentlist.append(filename)					
+							size2return=size+size2return
+		return size2return				
+	def print_jpg_by_title(self,ncalist,contentlist):	
+		size2return=0
+		tab="\t"
+		for nspF in self.hfs0:
+			if str(nspF._path)=="secure":		
+				for file in nspF:
+					if file._path.endswith('.jpg'):
+						size=file.size
+						size_pr=sq_tools.getSize(size)			
+						filename =  str(file._path)	
+						jpg=filename[:32]
+						if jpg in ncalist:
+							Print.info("- JPG: "+tab*2+"..."+str(filename[-38:])+tab+"Size: "+size_pr)		
+							contentlist.append(filename)					
+							size2return=size+size2return
+		return size2return		
+	def actually_has_deltas(self,ncalist):	
+		vfragment="false"	
+		for nspF in self.hfs0:
+			if str(nspF._path)=="secure":
+				for nca in nspF:
+					if type(nca) == Nca:
+						if 	str(nca.header.contentType) == 'Content.DATA':
+							for f in nca:
+									for file in f:
+										filename = str(file._path)
+										if filename=="fragment":
+											if 	nca._path[:-4] in ncalist:	
+												vfragment="true"
+												break
+		return vfragment
+	def actually_has_other(self,titleid,ncalist):
+		vother="false"	
+		for nspF in self.hfs0:
+			if str(nspF._path)=="secure":		
+				for file in nspF:
+					if file._path.endswith('.xml'):
+						filename =  str(file._path)	
+						xml=filename[:-4]
+						if xml in ncalist:
+							vother="true"	
+							break		
+					if type(file) == Ticket:		
+						filename =  str(file._path)
+						tik=filename[:-20]
+						if tik == titleid:
+							vother="true"	
+							break																
+					if file._path.endswith('.cert'):
+						filename = str(file._path)
+						cert_id =filename[:-21]
+						if cert_id == titleid:
+							vother="true"	
+							break		
+					if file._path.endswith('.jpg'):
+						filename =  str(file._path)	
+						jpg=filename[:32]
+						if jpg in ncalist:
+							vother="true"	
+							break	
+		return vother					
+	def printnonlisted(self,contentlist):
+		tab="\t"	
+		list_nonlisted="false"
+		for nspF in self.hfs0:
+			if str(nspF._path)=="secure":		
+				for file in nspF:		
+					filename =  str(file._path)
+					if not filename in contentlist:
+						list_nonlisted="true"
+		if list_nonlisted == "true":
+			Print.info('-----------------------------------')
+			Print.info('FILES NOT LINKED TO CONTENT IN NSP')
+			Print.info('-----------------------------------')	
+			totsnl=0
+			for nspF in self.hfs0:
+				if str(nspF._path)=="secure":		
+					for file in nspF:				
+						filename =  str(file._path)
+						if not filename in contentlist:
+							totsnl=totsnl+file.size
+							size_pr=sq_tools.getSize(file.size)						
+							Print.info(str(filename)+3*tab+"Size: "+size_pr)		
+			bigtab="\t"*7
+			size_pr=sq_tools.getSize(totsnl)					
+			Print.info(bigtab+"  --------------------")								
+			Print.info(bigtab+'  TOTAL SIZE: '+size_pr)									
 #///////////////////////////////////////////////////								
 #INFO ABOUT UPD REQUIREMENTS
 #///////////////////////////////////////////////////	
@@ -1254,54 +1724,94 @@ class Xci(File):
 									RSversion=cnmt.readInt32()
 									Emeta=cnmt.readInt32()
 									target=str(nca._path)
-									contentname = self.inf_get_title(target,offset,content_entries,original_ID)
-									cnmt.rewind()
+									content_type_cnmt=str(cnmt._path)
+									content_type_cnmt=content_type_cnmt[:-22]		
+									if content_type_cnmt == 'Patch':
+										content_type='Update'
+										reqtag='- RequiredSystemVersion: '
+										tit_name,editor,ediver,SupLg = self.inf_get_title(target,offset,content_entries,original_ID)							
+									if content_type_cnmt == 'AddOnContent':
+										content_type='DLC'
+										reqtag='- RequiredUpdateNumber: '
+										tit_name,editor,ediver,SupLg = self.inf_get_title(target,offset,content_entries,original_ID)	
+									if content_type_cnmt == 'Application':
+										content_type='Base Game or Application'
+										reqtag='- RequiredSystemVersion: '	
+										tit_name,editor,ediver,SupLg = self.inf_get_title(target,offset,content_entries,original_ID)	
+									cnmt.rewind()							
 									cnmt.seek(0x20+offset)
 									titleid2 = str(hx(titleid.to_bytes(8, byteorder='big'))) 	
 									titleid2 = titleid2[2:-1]
 									version=str(int.from_bytes(titleversion, byteorder='little'))
-									crypto1=nca.header.getCryptoType()	
-									crypto2=nca.header.getCryptoType2()										
+									v_number=int(int(version)/65536)
+									RS_number=int(RSversion/65536)									
+									crypto1=nca.header.getCryptoType()
+									crypto2=nca.header.getCryptoType2()	
 									if crypto1 == 2:
 										if crypto1 > crypto2:								
 											keygen=nca.header.getCryptoType()
 										else:			
 											keygen=nca.header.getCryptoType2()	
 									else:			
-										keygen=nca.header.getCryptoType2()														
+										keygen=nca.header.getCryptoType2()					
 									MinRSV=sq_tools.getMinRSV(keygen,RSversion)
 									FW_rq=sq_tools.getFWRangeKG(keygen)
 									RSV_rq=sq_tools.getFWRangeRSV(RSversion)									
 									RSV_rq_min=sq_tools.getFWRangeRSV(MinRSV)
-									content_name=str(cnmt._path)
-									content_name=content_name[:-22]
-									if content_name == 'Patch':
+									content_type_cnmt=str(cnmt._path)
+									content_type_cnmt=content_type_cnmt[:-22]		
+									if content_type_cnmt == 'Patch':
 										content_type='Update'
-										reqtag='- RequiredSystemVersion: '										
-									if content_name == 'AddOnContent':
+										reqtag='- RequiredSystemVersion: '
+										tit_name,editor,ediver,SupLg = self.inf_get_title(target,offset,content_entries,original_ID)							
+									if content_type_cnmt == 'AddOnContent':
 										content_type='DLC'
 										reqtag='- RequiredUpdateNumber: '
-									if content_name == 'Application':
+										tit_name,editor,ediver,SupLg = self.inf_get_title(target,offset,content_entries,original_ID)	
+									if content_type_cnmt == 'Application':
 										content_type='Base Game or Application'
 										reqtag='- RequiredSystemVersion: '	
-									Print.info('-------------------------------------')
-									Print.info('Detected content: ' + str(titleid2))	
-									Print.info('-------------------------------------')	
-									if content_name != 'AddOnContent':							
-										Print.info("- Name: " + contentname)
-									v_number=int(int(version)/65536) 								
-									Print.info("- Version: " + version+' -> '+content_name+' ('+str(v_number)+')')
-									Print.info("- Type: " + content_type)								
-									if content_name == 'AddOnContent':
-										upd_number=int(RSversion/65536) 
-										Print.info(reqtag + str(RSversion)+' -> ' +'patch'+' ('+str(upd_number)+')')																		
+										tit_name,editor,ediver,SupLg = self.inf_get_title(target,offset,content_entries,original_ID)	
+									Print.info('-----------------------------')
+									Print.info('CONTENT ID: ' + str(titleid2))	
+									Print.info('-----------------------------')			
+									if content_type_cnmt != 'AddOnContent':									
+										Print.info("Titleinfo:")							
+										Print.info("- Name: " + tit_name)
+										Print.info("- Editor: " + editor)
+										Print.info("- Build number: " + str(ediver))
+										suplangue=str((', '.join(SupLg)))
+										Print.info("- Supported Languages: "+suplangue)
+										Print.info("- Content type: "+content_type)
+										Print.info("- Version: " + version+' -> '+content_type_cnmt+' ('+str(v_number)+')')									
+									if content_type_cnmt == 'AddOnContent':
+										Print.info("Titleinfo:")
+										if tit_name != "DLC":
+											Print.info("- Name: " + tit_name)
+											Print.info("- Editor: " + editor)										
+										Print.info("- Content type: "+"DLC")
+										DLCnumb=str(titleid2)
+										DLCnumb="0000000000000"+DLCnumb[-3:]									
+										DLCnumb=bytes.fromhex(DLCnumb)
+										DLCnumb=str(int.from_bytes(DLCnumb, byteorder='big'))									
+										DLCnumb=int(DLCnumb)
+										Print.info("- DLC number: "+str(DLCnumb)+' -> '+"AddOnContent"+' ('+str(DLCnumb)+')')					
+										Print.info("- DLC version Number: " + version+' -> '+"Version"+' ('+str(v_number)+')')
+									Print.info("")								
+									Print.info("Required Firmware:")			
+									if content_type_cnmt == 'AddOnContent':
+										if v_number == 0:
+											Print.info("- Required game version: " + str(RSversion)+' -> '+"Application"+' ('+str(RS_number)+')')									
+										if v_number > 0:
+											Print.info("- Required game version: " + str(RSversion)+' -> '+"Patch"+' ('+str(RS_number)+')')																									
 									else:
 										Print.info(reqtag + str(RSversion)+" -> " +RSV_rq)						
 									Print.info('- Encryption (keygeneration): ' + str(keygen)+" -> " +FW_rq)
-									if content_name != 'AddOnContent':							
+									if content_type_cnmt != 'AddOnContent':							
 										Print.info('- Patchable to: ' + str(MinRSV)+" -> " + RSV_rq_min)
 									else:
-										Print.info('- Patchable to: DLC -> no RSV to patch')									
+										Print.info('- Patchable to: DLC -> no RSV to patch')	
+									Print.info("")											
 						
 	def inf_get_title(self,target,offset,content_entries,original_ID):
 		content_type=''
@@ -1358,7 +1868,7 @@ class Xci(File):
 											min_sversion=self.readInt32()
 											end_of_emeta=self.readInt32()	
 											target=str(nca._path)
-											contentname = self.splitter_get_title(target,offset,content_entries,original_ID)
+											contentname = self.inf_get_title(target,offset,content_entries,original_ID)
 											cnmt.rewind()
 											cnmt.seek(0x20+offset)								
 											for i in range(content_entries):
@@ -1381,17 +1891,66 @@ class Xci(File):
 							for f in nca:
 								nca.rewind()
 								f.rewind()	
-								f.seek(0x14200)
-								for i in range(14):
+								Langue = list()	
+								Langue = [0,1,6,5,7,10,3,4,9,8,2,11,12,13,14]	
+								SupLg=list()
+								for i in Langue:
+									f.seek(0x14200+i*0x300)	
 									title = f.read(0x200)		
 									title = title.split(b'\0', 1)[0].decode('utf-8')
 									title = (re.sub(r'[\/\\\:\*\?\!\"\<\>\|\.\s™©®()\~]+', ' ', title))
 									title = title.strip()
+									if title != "":	
+										if i==0:
+											SupLg.append("US (eng)")
+										if i==1:
+											SupLg.append("GK (eng)")
+										if i==2:
+											SupLg.append("JP")
+										if i==3:
+											SupLg.append("FR")		
+										if i==4:
+											SupLg.append("DE")	
+										if i==5:
+											SupLg.append("LAT (spa)")	
+										if i==6:
+											SupLg.append("SPA")	
+										if i==7:
+											SupLg.append("IT")	
+										if i==8:
+											SupLg.append("DU")	
+										if i==9:
+											SupLg.append("CAD (fr)")	
+										if i==10:
+											SupLg.append("POR")	
+										if i==11:
+											SupLg.append("RU")	
+										if i==12:
+											SupLg.append("KOR")	
+										if i==13:
+											SupLg.append("TAI")		
+										if i==14:
+											SupLg.append("CH")															
+								for i in Langue:
+									f.seek(0x14200+i*0x300)		
+									title = f.read(0x200)
+									editor = f.read(0x100)							
+									title = title.split(b'\0', 1)[0].decode('utf-8')
+									title = (re.sub(r'[\/\\\:\*\?\!\"\<\>\|\.\s™©®()\~]+', ' ', title))
+									title = title.strip()
+									editor = editor.split(b'\0', 1)[0].decode('utf-8')
+									editor = (re.sub(r'[\/\\\:\*\?\!\"\<\>\|\s™©®()\~]+', ' ', editor))
+									editor = editor.strip()							
 									if title == "":
 										title = 'DLC'
 									if title != 'DLC':
 										title = title
-										return(title)
-		return(title)			
+										f.seek(0x17260)	
+										ediver = f.read(0x10)
+										ediver = ediver.split(b'\0', 1)[0].decode('utf-8')
+										ediver = (re.sub(r'[\/\\\:\*\?\!\"\<\>\|\s™©®()\~]+', ' ', ediver))
+										ediver = ediver.strip()															
+										return(title,editor,ediver,SupLg)
+		return(title,"","","")			
 												
 						

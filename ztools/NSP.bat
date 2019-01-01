@@ -11,6 +11,15 @@ ECHO -----------------
 echo Repacking as nsp 
 ECHO -----------------
 if exist "%w_folder%\secure\*.dat" del "%w_folder%\secure\*.dat" >NUL 2>&1
+
+dir "%w_folder%\secure\*.cnmt.nca" /b  > "%w_folder%\cnmt_fileslist.txt"
+setlocal enabledelayedexpansion
+set row=
+for /f "usebackq" %%x in ("%w_folder%\cnmt_fileslist.txt") do set row="%w_folder%\secure\%%x" !row!
+%pycommand% "%nut%" -o "%w_folder%\secure" --xml_gen %row% >NUL 2>&1
+endlocal
+del "%w_folder%\cnmt_fileslist.txt"
+
 dir "%w_folder%\secure" /b  > "%w_folder%\nsp_fileslist.txt"
 setlocal enabledelayedexpansion
 set row=
@@ -27,12 +36,23 @@ ECHO -----------------
 echo Repacking as nsp 
 ECHO -----------------
 if exist "%w_folder%\secure\*.dat" del "%w_folder%\secure\*.dat" >NUL 2>&1
+
+dir "%w_folder%\secure\*.cnmt.nca" /b  > "%w_folder%\cnmt_fileslist.txt"
+setlocal enabledelayedexpansion
+set row=
+for /f "usebackq" %%x in ("%w_folder%\cnmt_fileslist.txt") do set row="%w_folder%\secure\%%x" !row!
+%pycommand% "%nut%" -o "%w_folder%\secure" --xml_gen %row% >NUL 2>&1
+endlocal
+del "%w_folder%\cnmt_fileslist.txt"
+
 dir "%w_folder%\secure" /b  > "%w_folder%\nsp_fileslist.txt"
+
 setlocal enabledelayedexpansion
 set row=
 for /f "usebackq" %%x in ("%w_folder%\nsp_fileslist.txt") do set row="%w_folder%\secure\%%x" !row!
 %pycommand% "%nut%" -c "%w_folder%\output.nsp" %row% >NUL 2>&1
 endlocal
+
 %pycommand% "%nut%" --seteshop "%w_folder%\output.nsp"
 ren "%w_folder%\output.nsp" "%filename%[nap].nsp"
 del "%w_folder%\nsp_fileslist.txt"
@@ -43,7 +63,14 @@ exit /B
 ECHO -----------------
 echo Repacking as nsp 
 ECHO -----------------
-if exist "%w_folder%\secure\*.dat" del "%w_folder%\secure\*.dat" >NUL 2>&1
+if exist "!tfolder!\secure\*.dat" del "!tfolder!\secure\*.dat" >NUL 2>&1
+
+dir "!tfolder!\secure\*.cnmt.nca" /b  > "!tfolder!\cnmt_fileslist.txt"
+set row=
+for /f "usebackq" %%x in ("!tfolder!\cnmt_fileslist.txt") do set row="!tfolder!\secure\%%x" !row!
+%pycommand% "%nut%" -o "!tfolder!\secure" --xml_gen %row% >NUL 2>&1
+del "!tfolder!\cnmt_fileslist.txt"
+
 dir "!tfolder!\secure" /b  > "!tfolder!\nsp_fileslist.txt"
 set row=
 for /f "usebackq" %%x in ("!tfolder!\nsp_fileslist.txt") do set row="!tfolder!\secure\%%x" !row!
