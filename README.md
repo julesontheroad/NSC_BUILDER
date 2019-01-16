@@ -53,7 +53,7 @@ builds.
 #### OPTION 5: REPACK OPTIONS. Controls repack in auto mode.
 ##### Repack option for auto-mode
   - xci -> repack as xci
-  - nsp -> repacck as nsp
+  - nsp -> repack as nsp
   - both -> repack as both
 ##### Type of repack for folders
   - indiv -> repack content individually as multiple xci/nsp
