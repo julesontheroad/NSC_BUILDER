@@ -9,28 +9,28 @@ color 1F
 set "w_folder=NSCB_temp"
 ::output folder
 set "fold_output=NSCB_output"
+::zip folder
+set "zip_fold=NSCB_zips"
 ::--------------------------------------------------------------
 ::OPTION 2: PROGRAM ROUTES
 ::--------------------------------------------------------------
-set "nut=ztools\squirrel.py"
+set "nut=ztools\squirrel.exe"
 set "xci_lib=ztools\XCI.bat"
 set "nsp_lib=ztools\NSP.bat"
-set "zip=ztools\7za.exe"
-set "hactool=ztools\hactool.exe"
-set "hacbuild=ztools\hacbuild.exe"
-set "listmanager=ztools\listmanager.py"
+set "zip=ztools\squirrel.exe"
+set "listmanager=ztools\squirrel.exe"
 set "batconfig=ztools\NSCB_config.bat"
 set "batdepend=ztools\install_dependencies.bat"
-set "advbat=ztools\ADV.bat"
+set "infobat=ztools\info.bat"
 ::--------------------------------------------------------------
 ::OPTION 3: SQUIRREL OPTIONS
 ::--------------------------------------------------------------
 ::python command
-set "pycommand=py -3"
+set "pycommand="
 ::Buffer for the copy functions. 
 ::Change the number for the number of bytes that works best for you
-::32768bytes=32kB
-set "buffer=-b 32768"
+::32768=32kB ; 65536=64kB
+set "buffer=buffer=-b 65536"
 ::Copy function with or without deltas
 ::--C_clean -> Copy and remove titlerights. Don't skips deltas
 ::--C_clean_ND-> Copy and remove titlerights skipping deltas
@@ -44,8 +44,8 @@ set "capRSV=--RSVcap 268435656"
 ::--------------------------------------------------------------
 ::OPTION 4: IMPORTANT FILES
 ::--------------------------------------------------------------
-::Route for game_info file 
-set "game_info=zconfig\game_info_preset.ini"
+::
+::
 ::Route for keys.txt 
 set "dec_keys=ztools\keys.txt"
 ::--------------------------------------------------------------
@@ -76,7 +76,7 @@ set "manual_intro=choose"
 ::ZIP FILES FOR UPCOMING RESTORE MODE
 ::true->zip the needed files
 ::false->don't zip the files
-set "zip_restore=true"
+set "zip_restore=false"
 
 ::--------------------------------------------------------------
 ::OPTION 8: PATCH IF KEYGENERATION IS BIGGER THAN
@@ -91,7 +91,7 @@ set "zip_restore=true"
 :: "4.0.0 - 4.1.0"		   -> vkey = 4
 :: "5.0.0 - 5.1.0" 		   -> vkey = 5
 :: "6.0.0-4 - 6.1.0" 	   -> vkey = 6 
-:: "6.2.0" 		  	 	   -> vkey = 7
+:: "6.2.0 - ?"	  	 	   -> vkey = 7
 
 set "vkey=-kp false"
 
@@ -107,3 +107,20 @@ set "va_exit=false"
 :: Skip RequiredSystemVersion and keygeneration prompts while
 :: in manual mode
 set "skipRSVprompt=false"
+
+::--------------------------------------------------------------
+::OPTION 12: SD FORMAT
+::--------------------------------------------------------------
+:: Choose to pack xci or for exfat cards or fat32 cards
+::fatype can be fat32 or exfat
+::fexport pack split nsp as files (sxos rommenu) or as folder (other installers)
+set "fatype=-fat exfat"
+set "fexport=-fx files"
+
+::--------------------------------------------------------------
+::OPTION 13: END FOLDER ORGANIZATION
+::--------------------------------------------------------------
+::Organization in the output folder.
+::inline -> All files go to root folder
+::subfolder -> Files go to folder named by game
+set "oforg=inline"

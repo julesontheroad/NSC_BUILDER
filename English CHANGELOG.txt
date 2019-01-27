@@ -1,26 +1,50 @@
-                                        __          _ __    __         
-                  ____  _____ ____     / /_  __  __(_) /___/ /__  _____
-                 / __ \/ ___/ ___/    / __ \/ / / / / / __  / _ \/ ___/
-                / / / (__  ) /__     / /_/ / /_/ / / / /_/ /  __/ /    
-               /_/ /_/____/\___/____/_.___/\__,_/_/_/\__,_/\___/_/     
-                              /_____/                                  
+                                       __          _ __    __         
+                 ____  _____ ____     / /_  __  __(_) /___/ /__  _____
+                / __ \/ ___/ ___/    / __ \/ / / / / / __  / _ \/ ___/
+               / / / (__  ) /__     / /_/ / /_/ / / / /_/ /  __/ /    
+              /_/ /_/____/\___/____/_.___/\__,_/_/_/\__,_/\___/_/     
+                             /_____/                                  
 -------------------------------------------------------------------------------------
                         NINTENDO SWITCH CLEANER AND BUILDER
+                     (THE XCI MULTI CONTENT BUILDER AND MORE)
 -------------------------------------------------------------------------------------
 =============================     BY JULESONTHEROAD     =============================
 -------------------------------------------------------------------------------------
-"                             POWERED WITH NUT BY BLAWAR                            "
-"                             AND LUCA FRAGA'S HACBUILD                             "
-                                    VERSION 0.79                                    	
+"                                POWERED BY SQUIRREL                                "
+"                    BASED IN THE WORK OF BLAWAR AND LUCA FRAGA                     "
+                                 VERSION 0.80 (BETA)
 -------------------------------------------------------------------------------------                   
 Program's github: https://github.com/julesontheroad/NSC_BUILDER
-Revised hacbuild: https://github.com/julesontheroad/hacbuild
-Blawar's NUT    : https://github.com/blawar/nut 
-SciresM hactool : https://github.com/SciresM/hactool
+Blawar's github:  https://github.com/blawar
+Blawar's tinfoil: https://github.com/digableinc/tinfoil
+Luca Fraga's github: https://github.com/LucaFraga
 -------------------------------------------------------------------------------------
 ---------------
 0. Changelog
 ---------------
+v0.80- BETA VERSION with a lot of important changes 
+       *Erased all external program dependencies. Current program is fully powered by
+	   squirrel.exe or squirrel.py. (Beta will be based on squirrel.exe
+	   *Added direct xci generation from nca files with new code. This increases the 
+	   generation speed and makes it equal to nsp generation.
+	   *Added progression bars	   
+	   *Added direct generation to fat32 formats for nsp and xci
+		- FAT32 xci files (xc0,xc1,...)
+		- FAT32 compatible with SX rommenu (ns0,ns1,..)
+		- FAT32 compatble with all installers (00,01,..) in an archived folder. 
+		  Folder is set as archived authomatically
+	   *Set zip generation to zip folder and deactivated it by default.
+	   *Added option to organize files on subfolders or individually in the output
+	   folder. By default it'll be individually.
+	   *Added option to configure buffer trough the bat. Increased default buffer to
+	   64kB wich works best for me. Test different buffers to find your best one ;)
+	   *Change to false exit in auto-mode and linked it to the batch option that was
+	   before only used in manual mode.
+	   *Reduced "cls" calls in auto-mode"
+	   *Added minimun keys template. NOTE: The xci_header_key is optional, if not 
+	   included the game-info will use default data already encrypted with a default
+	   IV.
+	   
 v0.79- Corrected detection for keygeneration 2 wich fixes the issue with the Xenoblade
        Chronicles 2 DLCs
        Added xml generation when repacking as NSP giving support to xci-explorer.

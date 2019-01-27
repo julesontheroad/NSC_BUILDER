@@ -6,12 +6,9 @@ if "%~1" EQU "repack" call :xci_repack
 if "%~1" EQU "sp_repack" call :sp_xci_repack
 goto end
 
-
 :xci_repack
 if not exist "%w_folder%\normal" MD "%w_folder%\normal"
 if not exist "%w_folder%\update" MD "%w_folder%\update"
-echo f | xcopy /f /y "%game_info%" "%w_folder%\"  >NUL 2>&1
-ren "%w_folder%\*.ini" "game_info.ini"
 
 dir /b "%w_folder%\secure\*.nca">"%w_folder%\lisfiles.txt"
 FINDSTR /I ".nca" "%w_folder%\lisfiles.txt">"%w_folder%\nca_list.txt"
@@ -38,23 +35,16 @@ type nul>testfile>"%w_folder%\secure\0"
 :nodummy
 endlocal
 echo -------------------------------
-echo Building xci file with hacbuild 
+echo Repacking as xci
 echo -------------------------------
-ECHO NOTE:
-echo With files bigger than 4Gb it'll take more time proportionally than with smaller files.
-echo Also you'll need to have at least double the amount of free disk space than file's size.
-echo IF YOU DON'T SEE "DONE" HACBUILD IS STILL AT WORK.
-ECHO ........................................................................................
 if exist "%w_folder%\secure\*.dat" del "%w_folder%\secure\*.dat" >NUL 2>&1
 if exist "%w_folder%\secure\*.xml" del "%w_folder%\secure\*.xml" >NUL 2>&1
-"%hacbuild%" xci_auto_del "%w_folder%"  "%w_folder%\%filename%[xcib].xci"
+%pycommand% "%nut%" %buffer% -ifo "%w_folder%" %fatype% --create_xci "%w_folder%\%filename%[xcib].xci" %fatype% 
 exit /B
 
 :sp_xci_repack
 if not exist "!tfolder!\normal" MD "!tfolder!\normal"
 if not exist "!tfolder!\update" MD "!tfolder!\update"
-echo f | xcopy /f /y "%game_info%" "!tfolder!\"  >NUL 2>&1
-ren "!tfolder!\*.ini" "game_info.ini"
 
 dir /b "!tfolder!\secure\*.nca">"!tfolder!\lisfiles.txt"
 FINDSTR /I ".nca" "!tfolder!\lisfiles.txt">"!tfolder!\nca_list.txt"
@@ -102,17 +92,11 @@ del "!tfolder!\lc_list.txt"
 
 :sp_build
 echo -------------------------------
-echo Building xci file with hacbuild 
+echo Repacking as xci
 echo -------------------------------
-ECHO NOTE:
-echo With files bigger than 4Gb it'll take more time proportionally than with smaller files.
-echo Also you'll need to have at least double the amount of free disk space than file's size.
-echo IF YOU DON'T SEE "DONE" HACBUILD IS STILL AT WORK.
-ECHO ........................................................................................
 if exist "!tfolder!\secure\*.dat" del "!tfolder!\secure\*.dat" >NUL 2>&1
 if exist "!tfolder!\secure\*.xml" del "!tfolder!\secure\*.xml" >NUL 2>&1
-::echo "%hacbuild%" xci_auto_del "!tfolder!" "%w_folder%\!fname!.xci"
-"%hacbuild%" xci_auto_del "!tfolder!" "%w_folder%\!fname!.xci"
+%pycommand% "%nut%" %buffer% -ifo "!tfolder!" %fatype% --create_xci "%w_folder%\!fname!.xci"
 RD /S /Q  "!tfolder!" >NUL 2>&1
 exit /B
 
