@@ -1,0 +1,224 @@
+                                       __          _ __    __         
+                 ____  _____ ____     / /_  __  __(_) /___/ /__  _____
+                / __ \/ ___/ ___/    / __ \/ / / / / / __  / _ \/ ___/
+               / / / (__  ) /__     / /_/ / /_/ / / / /_/ /  __/ /    
+              /_/ /_/____/\___/____/_.___/\__,_/_/_/\__,_/\___/_/     
+                             /_____/                                  
+-------------------------------------------------------------------------------------
+                        NINTENDO SWITCH CLEANER AND BUILDER
+                     (THE XCI MULTI CONTENT BUILDER AND MORE)
+-------------------------------------------------------------------------------------
+=============================     BY JULESONTHEROAD     =============================
+-------------------------------------------------------------------------------------
+"                                POWERED BY SQUIRREL                                "
+"                    BASED IN THE WORK OF BLAWAR AND LUCA FRAGA                     "
+                                 VERSION 0.80 (BETA)
+-------------------------------------------------------------------------------------                   
+Program's github: https://github.com/julesontheroad/NSC_BUILDER
+Blawar's github:  https://github.com/blawar
+Blawar's tinfoil: https://github.com/digableinc/tinfoil
+Luca Fraga's github: https://github.com/LucaFraga
+-------------------------------------------------------------------------------------
+---------------
+0. Changelog
+---------------
+v0.80- BETA VERSION with a lot of important changes 
+       *Erased all external program dependencies. Current program is fully powered by
+	   squirrel.exe or squirrel.py. (Beta will be based on squirrel.exe
+	   *Added direct xci generation from nca files with new code. This increases the 
+	   generation speed and makes it equal to nsp generation.
+	   *Added progression bars	   
+	   *Added direct generation to fat32 formats for nsp and xci
+		- FAT32 xci files (xc0,xc1,...)
+		- FAT32 compatible with SX rommenu (ns0,ns1,..)
+		- FAT32 compatble with all installers (00,01,..) in an archived folder. 
+		  Folder is set as archived authomatically
+	   *Set zip generation to zip folder and deactivated it by default.
+	   *Added option to organize files on subfolders or individually in the output
+	   folder. By default it'll be individually.
+	   *Added option to configure buffer trough the bat. Increased default buffer to
+	   64kB wich works best for me. Test different buffers to find your best one ;)
+	   *Change to false exit in auto-mode and linked it to the batch option that was
+	   before only used in manual mode.
+	   *Reduced "cls" calls in auto-mode"
+	   *Added minimun keys template. NOTE: The xci_header_key is optional, if not 
+	   included the game-info will use default data already encrypted with a default
+	   IV.
+	   
+v0.79- Corrected detection for keygeneration 2 wich fixes the issue with the Xenoblade
+       Chronicles 2 DLCs
+       Added xml generation when repacking as NSP giving support to xci-explorer.
+       Fixed issue with NSCB clossing in info mode if you try to swap the file without
+       turning back. File swapping is now enabled.
+       Improved the functions in mode 5 "file-info mode":
+         1.- Get CONTENT of the xci\nsp will show game data, types of files and size for
+             all content inside the xci or nsp.
+         2.- GAME-INFO and FW requirements eas expanded with more information for dlc,
+             editor information, language information ...
+         3.- Read the CNMT was expanded to include extended meta information.
+       Improved the naming in the spitter mode.  
+v0.78- Fixed error with RSV patching were DLC's got it's UpdateRequiredNumber patched
+	Modified FW-requirements and CNMT-reader a little.
+v0.77- Added new option to global config to skip the RSV and keygeneration patching
+       prompt dialogue.
+       Added fallback for names in info function number 3 in case there isn't american
+       english name. If name is japanese it'll show weirdly for now
+v0.76- Corrected hash calcultion after RSV patching in games that had a lot of updates.
+       Added RequiredSystemVersion cap when lowering it up, set as FW4.0 by default when
+       it's auto-calculated, since it's needed for some newer updates.
+       Linked RSV cap to the keygeneration selection. Now if you choose keygeneration 7
+       RSV won't go lower than 6.2 even if real keygeneration is lower, if you choose 5
+	   it won't go lower than FW5.0, etc...
+v0.75- Added configuration from the bat, option to change keygeneration, corrected RSV
+       readouts and more.
+       1.- Added options to change keygeneration to help run games at lower firmwares.
+           Note it won't always work as the game can have other dependencies than the 
+           firmware. 6.2 to 6.0 seems to work and 6.2 to 5.0 works if basegame is 5.0
+       2.- Added "Mode 0" - Profile configuration from the bat.
+       3.- Added auto-profile linking. A profile Bat will link with it's configuration
+           file if they follow the following name scheme:
+           a) Bat -> batname.bat
+           b) Profile in zconfig -> batname_options.cmd
+           Where "batname" is a name of your choosing. You can add as many bats in the
+           same folder as you want with different profiles this way.
+       4.- Corrected RequiredSystemVersion reads. It seems like our update XML read the 
+           value wrong and RSV is 4bytes long instead of 8bytes long.
+           Thanks to Liam for the tip. ^_^
+       5.- Added better navigation from the bat and dissable auto-exit in manual-mode so 
+           people can see the log. (Auto-Exit can be activated in the configuration)
+       6.- Added "mode 5: file-info mode". Dragg a file and choose if you want to:
+           a) See it's content
+           b) See "nut-info" (as NUT from blawar shows it)
+           c) See Firmware Requirements and to what is patchable without changing the
+              keygeneration )nca files encryption)
+           d) Get a read of the cnmt
+           You only need to load the file one time to get all reads and the functions
+           will let you print each read to a text file in "INFO" folder at bat's route.
+v0.70- Better RequiredSystemVersion patching, added Split Mode, added Update Mode
+       1.- RequiredSystemVersion patching is now set by default in auto-mode.
+       2.- Program asks before patching RequiredSystemVersion in manual mode
+       3.- RequiredSystemVersion IS NOW PATCHED TO THE KEYGENERATION. This means the system
+	   will ask you to download the system update if it's needed because it lacks the master-key.
+       4.- ADDED SPLIT MODE as option 3 in manual mode. Split Mode will let you split multi-content
+           xci or nsp to it's original content.
+           Split mode is set to repack DLC and Updates always as nsp.
+       5.- ADDED UPDATE MODE as option 4 in manual mode. This is a first and easy implementation.
+           You first set the base, which needs to be a multi-content file then make a list of things 
+           to update\upgrade the content.
+           Choose if you want to strip UPDATES\DLC or both from the base file, choose how you want
+           to repack the resulting content and if you want to patch the meta and the program will 
+           process the file.
+       NOTE: IF A XCI DOESN'T WORK WITH RSV PATCHING TRY TO REDO IT WITHOUT PATCHING AND TELL ME
+       IN GITHUB. SOME OLDER GAMES SEEM TO HAVE ISSUES WITH THE META PATCHING IN XCI FORM. I STILL
+       NEED TO CHECK THE REASON.
+v0.65- Added option to patched RequiredSystemVersion in the meta nca (set by default)
+       Changed Read\Write permissions for input files to Read
+       Renamed "nut_RTR.py" to "squirrel" since it's deviating a lot from Nut's main line.
+v0.62- Added option to just make zips in "Manual Mode. Individual processing.
+v0.61- Mostly bugfixes.
+	   1.- Changed counter functions from "find /C" to other method for people with inverted 
+	       bar routes.
+	   2.- Changed nca header check for xci extraction so it doesn't give issues in rev games.
+	   3.- Fixed naming issues in individual modes. Basically extension getting in final name.
+	   4.- Repacked again the dependencies bat since I forgot in last build.
+	   5.- Added optional example profiles for nsp and xci.
+	       1.- NSP: 
+	        	auto-repack-> NSP
+	                extract with deltas
+			pack files in folders individually for auto mode
+			work folder -> NSCB_ntemp
+	       2.- XCI: 
+	        	auto-repack-> XCI
+	                extract without deltas
+			pack files in folders authomatically for auto mode
+			work folder -> NSCB_xtemp
+		Just take the content of the profile you want or both of them and put them in the
+		program root folder. Several profiles can be together.
+
+v0.60- Support for delta skipping and direct extraction
+	   1.- Added nut options. Copy function with or without deltas
+		   It'll let you skip the deltas wich are not needed for xci files.
+		   For nsp files they serve to transform old updates into new ones
+		   so they install faster and old update doesn't stay in your system
+		   They're dissabled by default if you use nsp consider activating them.
+	   2.- Added direct extraction from xci files instead of using hactool so now
+		   extraction speed is linked to buffer.
+	   3.- Added a couple of fallbacks to detect masterkeyrev in non standard ticket
+		   formats and old ticket formats.
+	   4.- Minor code clean up and little fixes.
+
+v0.50- Changed name to NSC_Builder (Nintendo Switch Cleaner and Builder)
+	   1.- Added updated hacbuild.
+	   2.- Removed nstool and nspBuild
+	   3.- Added modifications for nut libraries
+	   4.- Added multi-content building options for xci and nsp.
+	   5.- Removed old assistant bat files and replaced them with XCI.bat and NSP.bat
+	   6.- Changed options in option file.
+	   7.- Ability to link options files editing NSCB.bat header
+	   
+v0.41- Solved some issues with v0.4 and made new options in the filenaming solution.
+       1.- Added "nstool.exe by jakcron" to ztools folder to be able to read data from
+       meta and control nca files.
+       2.- Solve issues originated by spaces in the program route.
+       3.- NEW OPTIONS ADDED TO "zconfig\nsp_cleaner_options.cmd"
+       a.) OPTION 9: Process files by temporarly renaming them to a safe name
+           * false->don't rename files
+           * true->rename temporarly to safename
+           * agro->"Agresive Output" rename temporarly to tempname and output as name 
+             set in nacp file.
+           -- DEFAULT OPTION IS "true" --
+       NOTE: DLCS DON'T HAVE NACP FILE SO AGRO WILL OUTPUT THEM AS [titleid]
+       b.) OPTION 10: Output final file as game real name looking at control nca
+           (If option 9 is set as "agro" it will allways output as the real name)
+           * false->output as original name/or original name corrected with safe characters
+           * true-> output as "real" name, stored in control nca.
+           * oinfo->"Only info"-> Use either original filename or safename and add only 
+             titleid, version, content tag ...
+           -- DEFAULT OPTION IS "oinfo" --
+       NOTE: DLCS DON'T HAVE NACP FILE SO "true" IN THIS CASE WILL BE REPLACED BY THE "oinfo" OPTION
+
+v0.40- While I finish NX_Builder I solved couple of naming issues.
+       1.- Now you don't need [titleid] in filename.
+       2.- Solved issues with special characters like !,+,&,$... Added correction for
+       a bunch of them if you need to add more edit ztools/safename.bat
+       Example: If you want to replace @ for a input:
+       set fileinput=%fileinput:@=a%
+       Or to delete it:
+       set fileinput=%fileinput:@=%
+       You'll probably see the first version for NX_Builder either trough the weekend
+       or at the beginning of next week.
+       NOTE: This version is using a function of my modified NUT libraries for NX_Builder
+       so don't change the config to use the whole NUT.
+v0.30- Added new options in zconfig.
+       > Option 4: Way the items are organized.
+         * line: scattered in output folder
+         * folder: in folders according to game name
+       > Option 5 and option 6: Output folders for xci and nsp. As default using
+         a common folder for both.
+       > Option 7: Preserve stripped files from the nsp as a .zip file for future
+         restore function. (True by default)
+       > Option 8: Replace original file with clean/converted files.As default false.
+         TAKE CARE WITH THIS ONE. BETTER CHECK ALL WORKS FINE BEFORE ACTIVATING IT.
+       Added option to erase list.txt in manual mode.
+v0.21- Fixed issue with manual mode not detecting the user repacking input correctly
+       Added better check for dlcs and updates, according to id
+       Added another config parameter to "nsp_cleaner_options.cmd" (xnsp_ifnotgame)
+       > This parameter serves to repack dlcs and updates as nsp if processing list as xci only.
+         Options are:
+         * true: repack dlcs and updates as nsp
+         * false: skip dlc and update repacking when exporting as xci.
+v0.2 - Added xci repacking. You can now repack as:
+       *xci
+       *nsp
+       *both formats
+     - Added nsp_cleaner_options.cmd at zconfig. It'll let you configure the repack
+       option for auto-mode as (xci,nsp,both)
+     - If xci repacking filenames with [UPD] tag are skipped
+     - If with xci repacking an error is logged it activates a fallback and an
+       xci + [lc].nsp are build.
+     - Now we support subfolders, thanks to MadScript77 for the advice on how to 
+       set it as in the other great advices he gave about the code.
+     - For manual mode you can allways choose what format to build from the current
+       list.
+     - More changes coming soon.
+v0.1 - First official release
