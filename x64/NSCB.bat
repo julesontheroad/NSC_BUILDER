@@ -585,6 +585,7 @@ if %vrepack%=="none" goto s_cl_wrongchoice
 :s_RSV_wrongchoice
 if /i "%skipRSVprompt%"=="true" set "patchRSV=-pv false"
 if /i "%skipRSVprompt%"=="true" goto s_KeyChange_skip
+if /i "%vrepack%"=="zip" goto s_KeyChange_skip
 echo *******************************************************
 echo DO YOU WANT TO PATCH THE REQUIRED-SYSTEM-VERSION
 echo *******************************************************
@@ -664,9 +665,9 @@ for /f "tokens=*" %%f in (list.txt) do (
 set "name=%%~nf"
 set "filename=%%~nxf"
 set "orinput=%%f"
+set "ziptarget=%%f" 
 
 if "%vrepack%" EQU "zip" ( set "zip_restore=true" )
-if "%zip_restore%" EQU "true" ( set "ziptarget=%%f" )
 if "%%~nxf"=="%%~nf.nsp" call :nsp_manual
 if "%%~nxf"=="%%~nf.xci" call :xci_manual
 more +1 "list.txt">"list.txt.new"
