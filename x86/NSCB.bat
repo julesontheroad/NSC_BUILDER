@@ -101,7 +101,6 @@ if not exist "%dec_keys%" ( goto missing_things )
 if "%~1"=="" goto manual
 dir "%~1\" >nul 2>nul
 if not errorlevel 1 goto folder
-if exist "%~1\" goto folder
 goto file
 
 :folder
@@ -460,7 +459,6 @@ set bs=%bs:"=%
 if /i "%bs%"=="0" goto manual_Reentry
 dir "%bs%\" >nul 2>nul
 if not errorlevel 1 goto checkfolder
-if exist "%bs%\" goto checkfolder
 goto checkfile
 :checkfolder
 DIR /B /S "%bs%\*.nsp">hlist.txt
@@ -504,7 +502,6 @@ if /i "%bs%"=="r" goto r_files
 if /i "%bs%"=="z" del list.txt
 dir "%bs%\" >nul 2>nul
 if not errorlevel 1 goto checkfolder
-if exist "%bs%\" goto checkfolder
 goto checkfile
 goto salida
 
@@ -867,7 +864,6 @@ set bs=%bs:"=%
 if /i "%bs%"=="0" goto manual_Reentry
 dir "%bs%\" >nul 2>nul
 if not errorlevel 1 goto multi_checkfolder
-if exist "%bs%\" goto multi_checkfolder
 goto multi_checkfile
 :multi_checkfolder
 DIR /B /S "%bs%\*.nsp">hmlist.txt
@@ -913,7 +909,6 @@ if /i "%bs%"=="r" goto multi_r_files
 if /i "%bs%"=="z" del mlist.txt
 dir "%bs%\" >nul 2>nul
 if not errorlevel 1 goto multi_checkfolder
-if exist "%bs%\" goto multi_checkfolder
 goto multi_checkfile
 goto salida
 
@@ -1323,7 +1318,6 @@ set bs=%bs:"=%
 if /i "%bs%"=="0" goto manual_Reentry
 dir "%bs%\" >nul 2>nul
 if not errorlevel 1 goto sp_checkfolder
-if exist "%bs%\" goto sp_checkfolder
 goto sp_checkfile
 :sp_checkfolder
 DIR /B /S "%bs%\*.nsp">hsplist.txt
@@ -1367,7 +1361,6 @@ if /i "%bs%"=="r" goto sp_r_files
 if /i "%bs%"=="z" del splist.txt
 dir "%bs%\" >nul 2>nul
 if not errorlevel 1 goto sp_checkfolder
-if exist "%bs%\" goto sp_checkfolder
 goto sp_checkfile
 goto salida
 
@@ -1646,7 +1639,6 @@ set bs=%bs:"=%
 if /i "%bs%"=="0" goto manual_Reentry
 dir "%bs%\" >nul 2>nul
 if not errorlevel 1 goto upd_checkfolder
-if exist "%bs%\" goto upd_checkfolder
 goto upd_checkfile
 :upd_checkfolder
 DIR /B /S "%bs%\*.nsp">hUPDlist.txt
@@ -1695,7 +1687,6 @@ if /i "%bs%"=="r" goto upd_r_files
 if /i "%bs%"=="z" del UPDlist.txt
 dir "%bs%\" >nul 2>nul
 if not errorlevel 1 goto upd_checkfolder
-if exist "%bs%\" goto upd_checkfolder
 goto upd_checkfile
 goto salida
 
