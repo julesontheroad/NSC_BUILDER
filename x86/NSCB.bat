@@ -99,6 +99,8 @@ if not exist "%dec_keys%" ( goto missing_things )
 
 ::Check if user is dragging a folder or a file
 if "%~1"=="" goto manual
+dir "%~1\" >nul 2>nul
+if not errorlevel 1 goto folder
 if exist "%~1\" goto folder
 goto file
 
@@ -456,6 +458,8 @@ echo.
 set /p bs="PLEASE DRAG A FILE OR FOLDER OVER THE WINDOW AND PRESS ENTER: "
 set bs=%bs:"=%
 if /i "%bs%"=="0" goto manual_Reentry
+dir "%bs%\" >nul 2>nul
+if not errorlevel 1 goto checkfolder
 if exist "%bs%\" goto checkfolder
 goto checkfile
 :checkfolder
@@ -498,6 +502,8 @@ if /i "%bs%"=="e" goto salida
 if /i "%bs%"=="i" goto showlist
 if /i "%bs%"=="r" goto r_files
 if /i "%bs%"=="z" del list.txt
+dir "%bs%\" >nul 2>nul
+if not errorlevel 1 goto checkfolder
 if exist "%bs%\" goto checkfolder
 goto checkfile
 goto salida
@@ -859,6 +865,8 @@ echo.
 set /p bs="PLEASE DRAG A FILE OR FOLDER OVER THE WINDOW AND PRESS ENTER: "
 set bs=%bs:"=%
 if /i "%bs%"=="0" goto manual_Reentry
+dir "%bs%\" >nul 2>nul
+if not errorlevel 1 goto multi_checkfolder
 if exist "%bs%\" goto multi_checkfolder
 goto multi_checkfile
 :multi_checkfolder
@@ -903,6 +911,8 @@ if /i "%bs%"=="e" goto salida
 if /i "%bs%"=="i" goto multi_showlist
 if /i "%bs%"=="r" goto multi_r_files
 if /i "%bs%"=="z" del mlist.txt
+dir "%bs%\" >nul 2>nul
+if not errorlevel 1 goto multi_checkfolder
 if exist "%bs%\" goto multi_checkfolder
 goto multi_checkfile
 goto salida
@@ -1311,6 +1321,8 @@ echo.
 set /p bs="PLEASE DRAG A FILE OR FOLDER OVER THE WINDOW AND PRESS ENTER: "
 set bs=%bs:"=%
 if /i "%bs%"=="0" goto manual_Reentry
+dir "%bs%\" >nul 2>nul
+if not errorlevel 1 goto sp_checkfolder
 if exist "%bs%\" goto sp_checkfolder
 goto sp_checkfile
 :sp_checkfolder
@@ -1353,6 +1365,8 @@ if /i "%bs%"=="e" goto salida
 if /i "%bs%"=="i" goto sp_showlist
 if /i "%bs%"=="r" goto sp_r_files
 if /i "%bs%"=="z" del splist.txt
+dir "%bs%\" >nul 2>nul
+if not errorlevel 1 goto sp_checkfolder
 if exist "%bs%\" goto sp_checkfolder
 goto sp_checkfile
 goto salida
@@ -1630,6 +1644,8 @@ ECHO.
 set /p bs="PLEASE DRAG A FILE OR FOLDER OVER THE WINDOW AND PRESS ENTER: "
 set bs=%bs:"=%
 if /i "%bs%"=="0" goto manual_Reentry
+dir "%bs%\" >nul 2>nul
+if not errorlevel 1 goto upd_checkfolder
 if exist "%bs%\" goto upd_checkfolder
 goto upd_checkfile
 :upd_checkfolder
@@ -1677,6 +1693,8 @@ if /i "%bs%"=="i" goto upd_showlist
 if /i "%bs%"=="b" goto upd_showbase
 if /i "%bs%"=="r" goto upd_r_files
 if /i "%bs%"=="z" del UPDlist.txt
+dir "%bs%\" >nul 2>nul
+if not errorlevel 1 goto upd_checkfolder
 if exist "%bs%\" goto upd_checkfolder
 goto upd_checkfile
 goto salida
