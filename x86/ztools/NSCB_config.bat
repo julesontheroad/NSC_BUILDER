@@ -9,8 +9,7 @@ echo OPTION - CONFIGURATION
 echo ********************************************************
 echo Input "1" for AUTO-MODE OPTIONS
 echo Input "2" for GLOBAL AND MANUAL OPTIONS
-echo Input "3" to VERIFY KEYS.TXT 
-REM echo Input "4" to INSTALL DEPENDENCIES
+echo Input "3" to INSTALL DEPENDENCIES
 echo.
 echo Input "c" to read CURRENT PROFILE
 echo Input "d" to set DEFAULT SETTINGS
@@ -20,8 +19,7 @@ echo.
 set /p bs="Enter your choice: "
 if /i "%bs%"=="1" goto sc2
 if /i "%bs%"=="2" goto sc3
-if /i "%bs%"=="3" goto verify_keys
-rem if /i "%bs%"=="4" goto idepend
+if /i "%bs%"=="3" goto idepend
 
 if /i "%bs%"=="c" call :curr_set1
 if /i "%bs%"=="c" call :curr_set2
@@ -964,30 +962,6 @@ REM OUTPUT ORGANIZING format
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "125" -nl "Output organization is set to: "
 
 exit /B
-
-
-:verify_keys
-cls
-call :logo
-echo ***************************************************************************
-echo VERIFY KEYS IN KEYS.TXT AGAINST SHA256 HASHES FROM THE CORRECT KEYS
-echo ***************************************************************************
-
-%pycommand% "%nut%" -nint_keys "%dec_keys%"
-
-echo ...........................................................................
-echo Input "0" to return to CONFIG MENU
-echo Input "1" to go back to the MAIN PROGRAM
-echo ...........................................................................
-echo.
-set /p bs="Enter your choice: "
-set bs=%bs:"=%
-
-if /i "%bs%"=="0" goto sc1
-if /i "%bs%"=="e" goto salida
-
-
-
 :salida
 exit /B
 
@@ -1006,7 +980,7 @@ ECHO =============================     BY JULESONTHEROAD     ===================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                                POWERED BY SQUIRREL                                "
 ECHO "                    BASED IN THE WORK OF BLAWAR AND LUCA FRAGA                     "
-ECHO                                  VERSION 0.81 (BETA2)
+ECHO                                  VERSION 0.80 (BETA)
 ECHO -------------------------------------------------------------------------------------                   
 ECHO Program's github: https://github.com/julesontheroad/NSC_BUILDER
 ECHO Blawar's github:  https://github.com/blawar

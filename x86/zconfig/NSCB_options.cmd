@@ -45,7 +45,7 @@ set "capRSV=--RSVcap 268435656"
 ::OPTION 4: IMPORTANT FILES
 ::--------------------------------------------------------------
 ::
-set "uinput=ztools\uinput"
+::
 ::Route for keys.txt 
 set "dec_keys=ztools\keys.txt"
 ::--------------------------------------------------------------

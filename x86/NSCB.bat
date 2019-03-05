@@ -3,7 +3,7 @@
 set "prog_dir=%~dp0"
 set "bat_name=%~n0"
 set "ofile_name=%bat_name%_options.cmd"
-Title NSC_Builder v0.81. -- Profile: %ofile_name% -- by JulesOnTheRoad
+Title NSC_Builder v0.80. -- Profile: %ofile_name% -- by JulesOnTheRoad
 ::-----------------------------------------------------
 ::EDIT THIS VARIABLE TO LINK OTHER OPTION FILE
 ::-----------------------------------------------------
@@ -50,7 +50,6 @@ set "batconfig=%batconfig%"
 set "batdepend=%batdepend%"
 set "infobat=%infobat%"
 REM FILES
-set "uinput=%uinput%"
 set "dec_keys=%dec_keys%"
 REM FOLDERS
 set "w_folder=%~dp0%w_folder%"
@@ -72,7 +71,6 @@ if exist "%~dp0%batconfig%"  set "batconfig=%~dp0%batconfig%"
 if exist "%~dp0%batdepend%"  set "batdepend=%~dp0%batdepend%"
 if exist "%~dp0%infobat%"  set "infobat=%~dp0%infobat%"
 ::Important files full route
-if exist "%~dp0%uinput%"  set "uinput=%~dp0%uinput%"
 if exist "%~dp0%dec_keys%"  set "dec_keys=%~dp0%dec_keys%"
 ::Folder output
 CD /d "%~dp0"
@@ -97,13 +95,12 @@ if not exist "%infobat%" ( goto missing_things )
 ::Important files check
 if not exist "%dec_keys%" ( goto missing_things )
 ::-----------------------------------------------------
-if exist "%w_folder%" rmdir /s /q "%w_folder%" >NUL 2>&1
+
 
 ::Check if user is dragging a folder or a file
 if "%~1"=="" goto manual
 dir "%~1\" >nul 2>nul
 if not errorlevel 1 goto folder
-if exist "%~1\" goto folder
 goto file
 
 :folder
@@ -124,14 +121,16 @@ for /r "%~1" %%f in (*.nsp) do (
 set "target=%%f"
 if exist "%w_folder%" RD /s /q "%w_folder%" >NUL 2>&1
 
+MD "%w_folder%"
+MD "%w_folder%\secure"
+
 set "filename=%%~nf"
 set "orinput=%%f"
 set "showname=%orinput%"
-
-MD "%w_folder%"
+call :processing_message
 REM echo %safe_var%>safe.txt
 call :squirrell
-
+%pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -o "%w_folder%\secure" %nf_cleaner% "%%f"
 if "%zip_restore%" EQU "true" ( set "ziptarget=%%f" )
 if "%zip_restore%" EQU "true" ( call :makezip )
 call :getname
@@ -142,20 +141,23 @@ REM endlocal & ( set "vpack=!vrepack!" )
 REM if "%trn_skip%" EQU "true" ( call :check_titlerights )
 if "%vrename%" EQU "true" ( call :addtags_from_nsp )
 
-if "%vrepack%" EQU "nsp" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% -o "%w_folder%" -t "nsp" -dc "%%f" )
-if "%vrepack%" EQU "xci" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport%  -o "%w_folder%" -t "xci" -dc "%%f" )
-if "%vrepack%" EQU "both" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport%  -o "%w_folder%" -t "both" -dc "%%f" )
-
+if "%vrepack%" EQU "nsp" ( call "%nsp_lib%" "repack" "%w_folder%" )
+if "%vrepack%" EQU "xci" ( call "%xci_lib%" "repack" "%w_folder%" )
+if "%vrepack%" EQU "both" ( call "%nsp_lib%" "repack" "%w_folder%" )
+if "%vrepack%" EQU "both" ( call "%xci_lib%" "repack" "%w_folder%" )
+setlocal enabledelayedexpansion
 if not exist "%fold_output%" MD "%fold_output%" >NUL 2>&1
-
-move "%w_folder%\*.xci" "%fold_output%" >NUL 2>&1
-move  "%w_folder%\*.xc*" "%fold_output%" >NUL 2>&1
-move "%w_folder%\*.nsp" "%fold_output%" >NUL 2>&1
-move "%w_folder%\*.ns*" "%fold_output%" >NUL 2>&1
+set "gefolder=%fold_output%\!end_folder!"
+if "%oforg%" EQU "inline" ( set "gefolder=%fold_output%" )
+MD "%gefolder%" >NUL 2>&1
+move "%w_folder%\*.xci" "%gefolder%" >NUL 2>&1
+move  "%w_folder%\*.xc*" "%gefolder%" >NUL 2>&1
+move "%w_folder%\*.nsp" "%gefolder%" >NUL 2>&1
+move "%w_folder%\*.ns*" "%gefolder%" >NUL 2>&1
 if exist "%w_folder%\*.zip" ( MD "%zip_fold%" ) >NUL 2>&1
 move "%w_folder%\*.zip" "%zip_fold%" >NUL 2>&1
-if exist "%w_folder%\archfolder" ( %pycommand% "%nut%" -ifo "%w_folder%\archfolder" -archive "%fold_output%\%filename%.nsp" )
-
+if exist "%w_folder%\archfolder" ( %pycommand% "%nut%" -ifo "%w_folder%\archfolder" -archive "%gefolder%\%filename%.nsp" )
+endlocal
 RD /S /Q "%w_folder%" >NUL 2>&1
 echo DONE
 call :thumbup
@@ -167,25 +169,28 @@ if exist "%w_folder%" rmdir /s /q "%w_folder%" >NUL 2>&1
 set "filename=%%~nf"
 set "orinput=%%f"
 set "showname=%orinput%"
-
+call :processing_message
 MD "%w_folder%"
+MD "%w_folder%\secure"
 call :getname
+echo -------------------------------------
+echo Extracting secure partition from xci 
+echo -------------------------------------
+%pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -o "%w_folder%\secure" %nf_cleaner% "%%f"
+echo DONE
 if "%vrename%" EQU "true" ( call :addtags_from_xci )
-
-if "%vrepack%" EQU "nsp" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -o "%w_folder%" -t "nsp" -dc "%%f" )
-if "%vrepack%" EQU "xci" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -o "%w_folder%" -t "xci" -dc "%%f" )
-if "%vrepack%" EQU "both" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -o "%w_folder%" -t "both" -dc "%%f" )
-
-if not exist "%fold_output%" MD "%fold_output%" >NUL 2>&1
-
-move "%w_folder%\*.xci" "%fold_output%" >NUL 2>&1
-move  "%w_folder%\*.xc*" "%fold_output%" >NUL 2>&1
-move "%w_folder%\*.nsp" "%fold_output%" >NUL 2>&1
-move "%w_folder%\*.ns*" "%fold_output%" >NUL 2>&1
-if exist "%w_folder%\*.zip" ( MD "%zip_fold%" ) >NUL 2>&1
-move "%w_folder%\*.zip" "%zip_fold%" >NUL 2>&1
-if exist "%w_folder%\archfolder" ( %pycommand% "%nut%" -ifo "%w_folder%\archfolder" -archive "%fold_output%\%filename%.nsp" )
-
+if "%vrepack%" EQU "nsp" ( call "%nsp_lib%" "convert" "%w_folder%" )
+if "%vrepack%" EQU "xci" ( call "%xci_lib%" "repack" "%w_folder%" )
+if "%vrepack%" EQU "both" ( call "%nsp_lib%" "convert" "%w_folder%" )
+if "%vrepack%" EQU "both" ( call "%xci_lib%" "repack" "%w_folder%" )
+setlocal enabledelayedexpansion
+MD "%fold_output%\!end_folder!" >NUL 2>&1
+move "%w_folder%\*.xci" "%fold_output%\!end_folder!" >NUL 2>&1
+move  "%w_folder%\*.xc*"  "%fold_output%\!end_folder!" >NUL 2>&1
+move "%w_folder%\*.nsp" "%fold_output%\!end_folder!" >NUL 2>&1
+move "%w_folder%\*.ns*" "%fold_output%\!end_folder!" >NUL 2>&1
+if exist "%w_folder%\archfolder" ( %pycommand% "%nut%" -ifo "%w_folder%\archfolder" -archive "%fold_output%\!end_folder!\%filename%.nsp" )
+endlocal
 RD /S /Q "%w_folder%" >NUL 2>&1
 echo DONE
 call :thumbup
@@ -215,7 +220,7 @@ set "showname=%orinput%"
 call :processing_message
 ::echo %safe_var%>safe.txt
 call :squirrell
-%pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% -o "%w_folder%\secure" %nf_cleaner% "%%f"
+%pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -o "%w_folder%\secure" %nf_cleaner% "%%f"
 if "%zip_restore%" EQU "true" ( set "ziptarget=%%f" )
 if "%zip_restore%" EQU "true" ( call :makezip )
 )
@@ -225,7 +230,7 @@ for /r "%~1" %%f in (*.xci) do (
 echo ------------------------------------
 echo Extracting secure partition from xci
 echo ------------------------------------
-%pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% -o "%w_folder%\secure" %nf_cleaner% "%%f"
+%pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -o "%w_folder%\secure" %nf_cleaner% "%%f"
 echo DONE
 )
 if "%vrepack%" EQU "nsp" ( call "%nsp_lib%" "convert" "%w_folder%" )
@@ -270,30 +275,33 @@ set "orinput=%~f1"
 set "filename=%~n1"
 set "target=%~1"
 set "showname=%orinput%"
-
+call :processing_message
 if exist "%w_folder%" rmdir /s /q "%w_folder%" >NUL 2>&1
 call :squirrell
-
+%pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -o "%w_folder%\secure" %nf_cleaner% "%~1"
 if "%zip_restore%" EQU "true" ( set "ziptarget=%~1" )
 if "%zip_restore%" EQU "true" ( call :makezip )
-MD "%w_folder%"
 call :getname
 if "%vrename%" EQU "true" call :addtags_from_nsp
-
-if "%vrepack%" EQU "nsp" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport%  -o "%w_folder%" -t "nsp" -dc "%~1" )
-if "%vrepack%" EQU "xci" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport%  -o "%w_folder%" -t "xci" -dc "%~1" )
-if "%vrepack%" EQU "both" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport%  -o "%w_folder%" -t "both" -dc "%~1"  )
-
+::echo "%vrepack%"
+::echo "%nsp_lib%"
+if "%vrepack%" EQU "nsp" ( call "%nsp_lib%" "repack" "%w_folder%" )
+if "%vrepack%" EQU "both" ( call "%nsp_lib%" "repack" "%w_folder%" )
+if "%vrepack%" EQU "xci" ( call "%xci_lib%" "repack" "%w_folder%" )
+if "%vrepack%" EQU "both" ( call "%xci_lib%" "repack" "%w_folder%" )
+setlocal enabledelayedexpansion
 if not exist "%fold_output%" MD "%fold_output%" >NUL 2>&1
-
-move "%w_folder%\*.xci" "%fold_output%" >NUL 2>&1
-move  "%w_folder%\*.xc*" "%fold_output%" >NUL 2>&1
-move "%w_folder%\*.nsp" "%fold_output%" >NUL 2>&1
-move "%w_folder%\*.ns*" "%fold_output%" >NUL 2>&1
+set "gefolder=%fold_output%\!end_folder!"
+if "%oforg%" EQU "inline" ( set "gefolder=%fold_output%" )
+MD "%gefolder%" >NUL 2>&1
+move "%w_folder%\*.xci" "%gefolder%" >NUL 2>&1
+move  "%w_folder%\*.xc*" "%gefolder%" >NUL 2>&1
+move "%w_folder%\*.nsp" "%gefolder%" >NUL 2>&1
+move "%w_folder%\*.ns*" "%gefolder%" >NUL 2>&1
 if exist "%w_folder%\*.zip" ( MD "%zip_fold%" ) >NUL 2>&1
 move "%w_folder%\*.zip" "%zip_fold%" >NUL 2>&1
-if exist "%w_folder%\archfolder" ( %pycommand% "%nut%" -ifo "%w_folder%\archfolder" -archive "%fold_output%\%filename%.nsp" )
-
+if exist "%w_folder%\archfolder" ( %pycommand% "%nut%" -ifo "%w_folder%\archfolder" -archive "%gefolder%\%filename%.nsp" )
+endlocal
 RD /S /Q "%w_folder%" >NUL 2>&1
 echo DONE
 call :thumbup
@@ -303,28 +311,30 @@ goto aut_exit_choice
 set "filename=%~n1"
 set "orinput=%~f1"
 set "showname=%orinput%"
-
+call :processing_message
 if exist "%w_folder%" rmdir /s /q "%w_folder%" >NUL 2>&1
 MD "%w_folder%"
 MD "%w_folder%\secure"
 call :getname
-
+echo ------------------------------------
+echo Extracting secure partition from xci 
+echo ------------------------------------
+%pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -o "%w_folder%\secure" %nf_cleaner% "%~1"
+echo DONE
 if "%vrename%" EQU "true" call :addtags_from_xci
-
-if "%vrepack%" EQU "nsp" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% -o "%w_folder%" -t "nsp" -dc "%~1" )
-if "%vrepack%" EQU "xci" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% -o "%w_folder%" -t "xci" -dc "%~1" )
-if "%vrepack%" EQU "both" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% -o "%w_folder%" -t "both" -dc "%~1"  )
-
-MD "%fold_output%\" >NUL 2>&1
-
-move "%w_folder%\*.xci" "%fold_output%" >NUL 2>&1
-move  "%w_folder%\*.xc*" "%fold_output%" >NUL 2>&1
-move "%w_folder%\*.nsp" "%fold_output%" >NUL 2>&1
-move "%w_folder%\*.ns*" "%fold_output%" >NUL 2>&1
-if exist "%w_folder%\*.zip" ( MD "%zip_fold%" ) >NUL 2>&1
-move "%w_folder%\*.zip" "%zip_fold%" >NUL 2>&1
-if exist "%w_folder%\archfolder" ( %pycommand% "%nut%" -ifo "%w_folder%\archfolder" -archive "%fold_output%\%filename%.nsp" )
-
+if "%vrepack%" EQU "nsp" ( call "%nsp_lib%" "convert" "%w_folder%" )
+if "%vrepack%" EQU "xci" ( call "%xci_lib%" "repack" "%w_folder%" )
+if "%vrepack%" EQU "both" ( call "%nsp_lib%" "convert" "%w_folder%" )
+if "%vrepack%" EQU "both" ( call "%xci_lib%" "repack" "%w_folder%" )
+setlocal enabledelayedexpansion
+if exist "%fold_output%\!end_folder!" RD /S /Q "%fold_output%\!end_folder!" >NUL 2>&1
+MD "%fold_output%\!end_folder!" >NUL 2>&1
+move  "%w_folder%\*.xci"  "%fold_output%\!end_folder!" >NUL 2>&1
+move  "%w_folder%\*.xc*"  "%fold_output%\!end_folder!" >NUL 2>&1
+move  "%w_folder%\*.nsp"  "%fold_output%\!end_folder!" >NUL 2>&1
+move "%w_folder%\*.ns*" "%fold_output%\!end_folder!" >NUL 2>&1
+if exist "%w_folder%\archfolder" ( %pycommand% "%nut%" -ifo "%w_folder%\archfolder" -archive "%fold_output%\!end_folder!\%filename%.nsp" )
+endlocal
 RD /S /Q "%w_folder%" >NUL 2>&1
 echo DONE
 call :thumbup
@@ -360,14 +370,12 @@ goto manual_Reentry
 cls
 call :program_logo
 ECHO .......................................................
-echo Input "1" to process files INDIVIDUALLY
-echo Input "2" to enter into MULTI-PACK mode
-echo Input "3" to enter into MULTI-CONTENT SPLITTER mode
-echo Input "4" to enter into UPDATE mode
-echo Input "5" to enter into FILE-INFO mode
-echo Input "6" to enter DATABASE building mode
-REM echo Input "7" to enter ADVANCE mode
-echo Input "0" to enter into CONFIGURATION mode
+echo Input "1" to process files individually
+echo Input "2" to enter into multi-pack mode
+echo Input "3" to enter into multi-content splitter mode
+echo Input "4" to enter into update mode
+echo Input "5" to enter into file-info mode
+echo Input "0" to enter into configuration mode
 echo .......................................................
 echo.
 set /p bs="Enter your choice: "
@@ -377,8 +385,6 @@ if /i "%bs%"=="2" goto multimode
 if /i "%bs%"=="3" goto SPLMODE
 if /i "%bs%"=="4" goto UPDMODE
 if /i "%bs%"=="5" goto INFMODE
-if /i "%bs%"=="6" goto DBMODE
-REM if /i "%bs%"=="7" goto ADVMODE
 if /i "%bs%"=="0" goto OPT_CONFIG
 goto manual_Reentry
 
@@ -448,13 +454,27 @@ ECHO ***********************************************
 echo Input "0" to return to the MODE SELECTION MENU
 ECHO ***********************************************
 echo.
-%pycommand% "%nut%" -t nsp xci -tfile "%prog_dir%list.txt" -uin "%uinput%" -ff "uinput"
-set /p eval=<"%uinput%"
-set eval=%eval:"=%
-setlocal enabledelayedexpansion
-echo+ >"%uinput%"
-endlocal
-if /i "%eval%"=="0" goto manual_Reentry
+set /p bs="PLEASE DRAG A FILE OR FOLDER OVER THE WINDOW AND PRESS ENTER: "
+set bs=%bs:"=%
+if /i "%bs%"=="0" goto manual_Reentry
+dir "%bs%\" >nul 2>nul
+if not errorlevel 1 goto checkfolder
+goto checkfile
+:checkfolder
+DIR /B /S "%bs%\*.nsp">hlist.txt
+FINDSTR /L ".nsp" hlist.txt>>list.txt
+del hlist.txt
+DIR /B /S "%bs%\*.xci">hlist2.txt
+FINDSTR /L ".xci" hlist2.txt>>list.txt
+del hlist2.txt
+goto checkagain
+:checkfile
+echo %bs%>>hlist.txt
+FINDSTR /L ".nsp" hlist.txt>>list.txt
+del hlist.txt
+echo %bs%>>hlist2.txt
+FINDSTR /L ".xci" hlist2.txt>>list.txt
+del hlist2.txt
 goto checkagain
 echo.
 :checkagain
@@ -472,21 +492,18 @@ ECHO *************************************************
 echo Or Input "0" to return to the MODE SELECTION MENU
 ECHO *************************************************
 echo.
-%pycommand% "%nut%" -t nsp xci -tfile "%prog_dir%list.txt" -uin "%uinput%" -ff "uinput"
-set /p eval=<"%uinput%"
-set eval=%eval:"=%
-setlocal enabledelayedexpansion
-echo+ >"%uinput%"
-endlocal
-
-if /i "%eval%"=="0" goto manual_Reentry
-if /i "%eval%"=="1" goto start_cleaning
-if /i "%eval%"=="e" goto salida
-if /i "%eval%"=="i" goto showlist
-if /i "%eval%"=="r" goto r_files
-if /i "%eval%"=="z" del list.txt
-
-goto checkagain
+set /p bs="Drag file/folder or set option: "
+set bs=%bs:"=%
+if /i "%bs%"=="0" goto manual_Reentry
+if /i "%bs%"=="1" goto start_cleaning
+if /i "%bs%"=="e" goto salida
+if /i "%bs%"=="i" goto showlist
+if /i "%bs%"=="r" goto r_files
+if /i "%bs%"=="z" del list.txt
+dir "%bs%\" >nul 2>nul
+if not errorlevel 1 goto checkfolder
+goto checkfile
+goto salida
 
 :r_files
 set /p bs="Input the number of files you want to remove (from bottom): "
@@ -552,6 +569,7 @@ echo *******************************************************
 echo Input "1" to repack list as nsp
 echo Input "2" to repack list as xci
 echo Input "3" to repack list as both
+echo Input "0" TO JUST MAKE ZIP FILES!!!!
 echo.
 ECHO ******************************************
 echo Or Input "b" to return to the list options
@@ -561,13 +579,16 @@ set /p bs="Enter your choice: "
 set bs=%bs:"=%
 set vrepack=none
 if /i "%bs%"=="b" goto checkagain
+if /i "%bs%"=="0" set "vrepack=zip"
 if /i "%bs%"=="1" set "vrepack=nsp"
 if /i "%bs%"=="2" set "vrepack=xci"
 if /i "%bs%"=="3" set "vrepack=both"
+if /i "%bs%"=="0" goto s_KeyChange_skip
 if %vrepack%=="none" goto s_cl_wrongchoice
 :s_RSV_wrongchoice
 if /i "%skipRSVprompt%"=="true" set "patchRSV=-pv false"
 if /i "%skipRSVprompt%"=="true" goto s_KeyChange_skip
+if /i "%vrepack%"=="zip" goto s_KeyChange_skip
 echo *******************************************************
 echo DO YOU WANT TO PATCH THE REQUIRED-SYSTEM-VERSION
 echo *******************************************************
@@ -603,15 +624,14 @@ echo in the program.
 echo THIS WON'T ALWAYS WORK TO LOWER THE FIRMWARE REQUIREMENT.
 echo.
 echo Input "f" to not change the keygeneration
-echo Input "0" to change top keygeneration to 0 (FW 1.0)
-echo Input "1" to change top keygeneration to 1 (FW 2.0-2.3)
-echo Input "2" to change top keygeneration to 2 (FW 3.0)
-echo Input "3" to change top keygeneration to 3 (FW 3.0.1-3.02)
-echo Input "4" to change top keygeneration to 4 (FW 4.0.0-4.1.0)
-echo Input "5" to change top keygeneration to 5 (FW 5.0.0-5.1.0)
-echo Input "6" to change top keygeneration to 6 (FW 6.0.0-6.1.0)
-echo Input "7" to change top keygeneration to 7 (FW 6.2.0)
-echo Input "8" to change top keygeneration to 8 (FW 7.0.0-7.0.1)
+echo Input "0" to change the keygeneration to 0 (FW 1.0)
+echo Input "1" to change the keygeneration to 1 (FW 2.0-2.3)
+echo Input "2" to change the keygeneration to 2 (FW 3.0)
+echo Input "3" to change the keygeneration to 3 (FW 3.0.1-3.02)
+echo Input "4" to change the keygeneration to 4 (FW 4.0.0-4.1.0)
+echo Input "5" to change the keygeneration to 5 (FW 5.0.0-5.1.0)
+echo Input "6" to change the keygeneration to 6 (FW 6.0.0-6.1.0)
+echo Input "7" to change the keygeneration to 7 (FW 6.2.0)
 echo.
 ECHO ******************************************
 echo Or Input "b" to return to the list options
@@ -638,8 +658,6 @@ if /i "%bs%"=="6" set "vkey=-kp 6"
 if /i "%bs%"=="6" set "capRSV=--RSVcap 402653494"
 if /i "%bs%"=="7" set "vkey=-kp 7"
 if /i "%bs%"=="7" set "capRSV=--RSVcap 404750336"
-if /i "%bs%"=="8" set "vkey=-kp 8"
-if /i "%bs%"=="8" set "capRSV=--RSVcap 469762048"
 if /i "%vkey%"=="none" echo WRONG CHOICE
 if /i "%vkey%"=="none" goto s_KeyChange_wrongchoice
 
@@ -652,6 +670,7 @@ set "filename=%%~nxf"
 set "orinput=%%f"
 set "ziptarget=%%f" 
 
+if "%vrepack%" EQU "zip" ( set "zip_restore=true" )
 if "%%~nxf"=="%%~nf.nsp" call :nsp_manual
 if "%%~nxf"=="%%~nf.xci" call :xci_manual
 more +1 "list.txt">"list.txt.new"
@@ -677,28 +696,41 @@ if /i "%bs%"=="1" goto salida
 goto s_exit_choice
 
 :nsp_manual
-rem set "filename=%name%"
-rem set "showname=%orinput%"
-if "%zip_restore%" EQU "true" ( call :makezip )
+set "filename=%name%"
+set "showname=%orinput%"
+call :processing_message
+
 if exist "%w_folder%" rmdir /s /q "%w_folder%" >NUL 2>&1
-MD "%w_folder%"
 call :squirrell
 
+if "%vrepack%" EQU "zip" ( goto nsp_just_zip )
+
+%pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -o "%w_folder%\secure" %nf_cleaner% "%orinput%"
+
+:nsp_just_zip
+if "%zip_restore%" EQU "true" ( call :makezip )
+call :getname
 if "%vrename%" EQU "true" call :addtags_from_nsp
-
-if "%vrepack%" EQU "nsp" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% -o "%w_folder%" -t "nsp" -dc "%orinput%" -tfile "%prog_dir%list.txt")
-if "%vrepack%" EQU "xci" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% -o "%w_folder%" -t "xci" -dc "%orinput%" -tfile "%prog_dir%list.txt")
-if "%vrepack%" EQU "both" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% -o "%w_folder%" -t "both" -dc "%orinput%" -tfile "%prog_dir%list.txt")
-
-
-move "%w_folder%\*.xci" "%fold_output%" >NUL 2>&1
-move  "%w_folder%\*.xc*" "%fold_output%" >NUL 2>&1
-move "%w_folder%\*.nsp" "%fold_output%" >NUL 2>&1
-move "%w_folder%\*.ns*" "%fold_output%" >NUL 2>&1
+if "%vrepack%" EQU "nsp" ( call "%nsp_lib%" "repack" "%w_folder%" "%%f")
+if "%vrepack%" EQU "xci" ( call "%xci_lib%" "repack" "%w_folder%" "%%f")
+if "%vrepack%" EQU "both" ( call "%nsp_lib%" "repack" "%w_folder%" "%%f")
+if "%vrepack%" EQU "both" ( call "%xci_lib%" "repack" "%w_folder%" "%%f")
+setlocal enabledelayedexpansion
+if "%zip_restore%" EQU "true" ( goto :nsp_just_zip2 )
+if exist "%fold_output%\!end_folder!" RD /S /Q "%fold_output%\!end_folder!" >NUL 2>&1
+:nsp_just_zip2
+if not exist "%fold_output%" MD "%fold_output%" >NUL 2>&1
+set "gefolder=%fold_output%\!end_folder!"
+if "%oforg%" EQU "inline" ( set "gefolder=%fold_output%" )
+MD "%gefolder%" >NUL 2>&1
+move "%w_folder%\*.xci" "%gefolder%" >NUL 2>&1
+move  "%w_folder%\*.xc*" "%gefolder%" >NUL 2>&1
+move "%w_folder%\*.nsp" "%gefolder%" >NUL 2>&1
+move "%w_folder%\*.ns*" "%gefolder%" >NUL 2>&1
 if exist "%w_folder%\*.zip" ( MD "%zip_fold%" ) >NUL 2>&1
 move "%w_folder%\*.zip" "%zip_fold%" >NUL 2>&1
-if exist "%w_folder%\archfolder" ( %pycommand% "%nut%" -ifo "%w_folder%\archfolder" -archive "%fold_output%\%filename%.nsp" )
-
+if exist "%w_folder%\archfolder" ( %pycommand% "%nut%" -ifo "%w_folder%\archfolder" -archive "%gefolder%\%filename%.nsp" )
+endlocal
 RD /S /Q "%w_folder%" >NUL 2>&1
 echo DONE
 call :thumbup
@@ -709,26 +741,35 @@ exit /B
 
 :xci_manual
 ::FOR XCI FILES
+cls
+if "%vrepack%" EQU "zip" ( goto end_xci_manual )
+set "filename=%name%"
+call :program_logo
+set "showname=%orinput%"
+call :processing_message
 if exist "%w_folder%" rmdir /s /q "%w_folder%" >NUL 2>&1
 MD "%w_folder%"
-
-set "filename=%name%"
-set "showname=%orinput%"
-
-if "%vrepack%" EQU "nsp" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% -o "%w_folder%" -t "nsp" -dc "%orinput%" -tfile "%prog_dir%list.txt")
-if "%vrepack%" EQU "xci" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% -o "%w_folder%" -t "xci" -dc "%orinput%" -tfile "%prog_dir%list.txt")
-if "%vrepack%" EQU "both" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% -o "%w_folder%" -t "both" -dc "%orinput%" -tfile "%prog_dir%list.txt")
-
-if not exist "%fold_output%" MD "%fold_output%" >NUL 2>&1
-
-move "%w_folder%\*.xci" "%fold_output%" >NUL 2>&1
-move  "%w_folder%\*.xc*" "%fold_output%" >NUL 2>&1
-move "%w_folder%\*.nsp" "%fold_output%" >NUL 2>&1
-move "%w_folder%\*.ns*" "%fold_output%" >NUL 2>&1
-if exist "%w_folder%\*.zip" ( MD "%zip_fold%" ) >NUL 2>&1
-move "%w_folder%\*.zip" "%zip_fold%" >NUL 2>&1
-if exist "%w_folder%\archfolder" ( %pycommand% "%nut%" -ifo "%w_folder%\archfolder" -archive "%fold_output%\%filename%.nsp" )
-
+MD "%w_folder%\secure"
+call :getname
+echo ------------------------------------
+echo Extracting secure partition from xci
+echo ------------------------------------
+%pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -o "%w_folder%\secure" %nf_cleaner% "%orinput%"
+echo DONE
+if "%vrename%" EQU "true" call :addtags_from_xci
+if "%vrepack%" EQU "nsp" ( call "%nsp_lib%" "convert" "%w_folder%" )
+if "%vrepack%" EQU "xci" ( call "%xci_lib%" "repack" "%w_folder%" )
+if "%vrepack%" EQU "both" ( call "%nsp_lib%" "convert" "%w_folder%" )
+if "%vrepack%" EQU "both" ( call "%xci_lib%" "repack" "%w_folder%" )
+setlocal enabledelayedexpansion
+if exist "%fold_output%\!end_folder!" RD /S /Q "%fold_output%\!end_folder!" >NUL 2>&1
+MD "%fold_output%\!end_folder!" >NUL 2>&1
+move  "%w_folder%\*.xci"  "%fold_output%\!end_folder!" >NUL 2>&1
+move  "%w_folder%\*.xc*"  "%fold_output%\!end_folder!" >NUL 2>&1
+move  "%w_folder%\*.nsp"  "%fold_output%\!end_folder!" >NUL 2>&1
+move "%w_folder%\*.ns*" "%fold_output%\!end_folder!" >NUL 2>&1
+if exist "%w_folder%\archfolder" ( %pycommand% "%nut%" -ifo "%w_folder%\archfolder" -archive "%fold_output%\!end_folder!\%filename%.nsp" )
+endlocal
 RD /S /Q "%w_folder%" >NUL 2>&1
 echo DONE
 call :thumbup
@@ -818,13 +859,27 @@ ECHO ***********************************************
 echo Input "0" to return to the MODE SELECTION MENU
 ECHO ***********************************************
 echo.
-%pycommand% "%nut%" -t nsp xci -tfile "%prog_dir%mlist.txt" -uin "%uinput%" -ff "uinput"
-set /p eval=<"%uinput%"
-set eval=%eval:"=%
-setlocal enabledelayedexpansion
-echo+ >"%uinput%"
-endlocal
-if /i "%eval%"=="0" goto manual_Reentry
+set /p bs="PLEASE DRAG A FILE OR FOLDER OVER THE WINDOW AND PRESS ENTER: "
+set bs=%bs:"=%
+if /i "%bs%"=="0" goto manual_Reentry
+dir "%bs%\" >nul 2>nul
+if not errorlevel 1 goto multi_checkfolder
+goto multi_checkfile
+:multi_checkfolder
+DIR /B /S "%bs%\*.nsp">hmlist.txt
+FINDSTR /L ".nsp" hmlist.txt>>mlist.txt
+del hmlist.txt
+DIR /B /S "%bs%\*.xci">hmlist2.txt
+FINDSTR /L ".xci" hmlist2.txt>>mlist.txt
+del hmlist2.txt
+goto multi_checkagain
+:multi_checkfile
+echo %bs%>>hmlist.txt
+FINDSTR /L ".nsp" hmlist.txt>>mlist.txt
+del hmlist.txt
+echo %bs%>>hmlist2.txt
+FINDSTR /L ".xci" hmlist2.txt>>mlist.txt
+del hmlist2.txt
 goto multi_checkagain
 echo.
 :multi_checkagain
@@ -843,23 +898,19 @@ ECHO *************************************************
 echo Or Input "0" to return to the MODE SELECTION MENU
 ECHO *************************************************
 echo.
-%pycommand% "%nut%" -t nsp xci -tfile "%prog_dir%mlist.txt" -uin "%uinput%" -ff "uinput"
-set /p eval=<"%uinput%"
-set eval=%eval:"=%
-setlocal enabledelayedexpansion
-echo+ >"%uinput%"
-endlocal
-
-if /i "%eval%"=="0" goto manual_Reentry
-if /i "%eval%"=="1" goto multi_start_cleaning
-if /i "%eval%"=="2" goto multi_set_clogo
-if /i "%eval%"=="e" goto salida
-if /i "%eval%"=="i" goto multi_showlist
-if /i "%eval%"=="r" goto multi_r_files
-if /i "%eval%"=="z" del mlist.txt
-
-goto multi_checkagain
-
+set /p bs="Drag file/folder or set option: "
+set bs=%bs:"=%
+if /i "%bs%"=="0" goto manual_Reentry
+if /i "%bs%"=="1" goto multi_start_cleaning
+if /i "%bs%"=="2" goto multi_set_clogo
+if /i "%bs%"=="e" goto salida
+if /i "%bs%"=="i" goto multi_showlist
+if /i "%bs%"=="r" goto multi_r_files
+if /i "%bs%"=="z" del mlist.txt
+dir "%bs%\" >nul 2>nul
+if not errorlevel 1 goto multi_checkfolder
+goto multi_checkfile
+goto salida
 
 :multi_r_files
 set /p bs="Input the number of files you want to remove (from bottom): "
@@ -976,15 +1027,14 @@ echo in the program.
 echo THIS WON'T ALWAYS WORK TO LOWER THE FIRMWARE REQUIREMENT.
 echo.
 echo Input "f" to not change the keygeneration
-echo Input "0" to change top keygeneration to 0 (FW 1.0)
-echo Input "1" to change top keygeneration to 1 (FW 2.0-2.3)
-echo Input "2" to change top keygeneration to 2 (FW 3.0)
-echo Input "3" to change top keygeneration to 3 (FW 3.0.1-3.02)
-echo Input "4" to change top keygeneration to 4 (FW 4.0.0-4.1.0)
-echo Input "5" to change top keygeneration to 5 (FW 5.0.0-5.1.0)
-echo Input "6" to change top keygeneration to 6 (FW 6.0.0-6.1.0)
-echo Input "7" to change top keygeneration to 7 (FW 6.2.0)
-echo Input "8" to change top keygeneration to 8 (FW 7.0.0-7.0.1)
+echo Input "0" to change the keygeneration to 0 (FW 1.0)
+echo Input "1" to change the keygeneration to 1 (FW 2.0-2.3)
+echo Input "2" to change the keygeneration to 2 (FW 3.0)
+echo Input "3" to change the keygeneration to 3 (FW 3.0.1-3.02)
+echo Input "4" to change the keygeneration to 4 (FW 4.0.0-4.1.0)
+echo Input "5" to change the keygeneration to 5 (FW 5.0.0-5.1.0)
+echo Input "6" to change the keygeneration to 6 (FW 6.0.0-6.1.0)
+echo Input "7" to change the keygeneration to 7 (FW 6.2.0)
 echo.
 ECHO *****************************************
 echo Or Input "b" to return to the option list
@@ -1011,8 +1061,6 @@ if /i "%bs%"=="6" set "vkey=-kp 6"
 if /i "%bs%"=="6" set "capRSV=--RSVcap 402653494"
 if /i "%bs%"=="7" set "vkey=-kp 7"
 if /i "%bs%"=="7" set "capRSV=--RSVcap 404750336"
-if /i "%bs%"=="8" set "vkey=-kp 8"
-if /i "%bs%"=="8" set "capRSV=--RSVcap 469762048"
 if /i "%vkey%"=="none" echo WRONG CHOICE
 if /i "%vkey%"=="none" goto m_KeyChange_wrongchoice
 
@@ -1085,7 +1133,7 @@ goto m_exit_choice
 set "showname=%orinput%"
 call :processing_message
 call :squirrell
-%pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -o "%w_folder%\secure" -tfile "%prog_dir%mlist.txt" %nf_cleaner% "%orinput%"
+%pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -o "%w_folder%\secure" %nf_cleaner% "%orinput%"
 if "%zip_restore%" EQU "true" ( set "ziptarget=%orinput%" )
 if "%zip_restore%" EQU "true" ( call :makezip )
 echo DONE
@@ -1105,7 +1153,7 @@ call :getname
 echo ------------------------------------
 echo Extracting secure partition from xci
 echo ------------------------------------
-%pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -o "%w_folder%\secure" -tfile "%prog_dir%mlist.txt" %nf_cleaner% "%orinput%"
+%pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -o "%w_folder%\secure" %nf_cleaner% "%orinput%"
 echo DONE
 call :thumbup
 call :delay
@@ -1150,8 +1198,8 @@ if exist "%~dp0logo.txt" del "%~dp0logo.txt" >NUL 2>&1
 echo %bs%>"%~dp0hlogo.txt"
 FINDSTR /L ".nsp" "%~dp0hlogo.txt" >"%~dp0logo.txt"
 FINDSTR /L ".nca" "%~dp0hlogo.txt" >>"%~dp0logo.txt"
-set /p custlogo=<"%~dp0logo.txt"
 del "%~dp0hlogo.txt"
+set /p custlogo=<"%~dp0logo.txt"
 ::echo %custlogo%
 for /f "usebackq tokens=*" %%f in ( "%~dp0logo.txt" ) do (
 set "logoname=%%~nxf"
@@ -1265,15 +1313,28 @@ ECHO ***********************************************
 echo Input "0" to return to the MODE SELECTION MENU
 ECHO ***********************************************
 echo.
-%pycommand% "%nut%" -t nsp xci -tfile "%prog_dir%splist.txt" -uin "%uinput%" -ff "uinput"
-set /p eval=<"%uinput%"
-set eval=%eval:"=%
-setlocal enabledelayedexpansion
-echo+ >"%uinput%"
-endlocal
-
-if /i "%eval%"=="0" goto manual_Reentry
-
+set /p bs="PLEASE DRAG A FILE OR FOLDER OVER THE WINDOW AND PRESS ENTER: "
+set bs=%bs:"=%
+if /i "%bs%"=="0" goto manual_Reentry
+dir "%bs%\" >nul 2>nul
+if not errorlevel 1 goto sp_checkfolder
+goto sp_checkfile
+:sp_checkfolder
+DIR /B /S "%bs%\*.nsp">hsplist.txt
+FINDSTR /L ".nsp" hsplist.txt>>splist.txt
+del hsplist.txt
+DIR /B /S "%bs%\*.xci">hsplist2.txt
+FINDSTR /L ".xci" hsplist2.txt>>splist.txt
+del hsplist2.txt
+goto sp_checkagain
+:sp_checkfile
+echo %bs%>>hsplist.txt
+FINDSTR /L ".nsp" hsplist.txt>>splist.txt
+del hsplist.txt
+echo %bs%>>hsplist2.txt
+FINDSTR /L ".xci" hsplist2.txt>>splist.txt
+del hsplist2.txt
+goto sp_checkagain
 echo.
 :sp_checkagain
 echo WHAT DO YOU WANT TO DO?
@@ -1290,21 +1351,18 @@ ECHO *************************************************
 echo Or Input "0" to return to the MODE SELECTION MENU
 ECHO *************************************************
 echo.
-%pycommand% "%nut%" -t nsp xci -tfile "%prog_dir%splist.txt" -uin "%uinput%" -ff "uinput"
-set /p eval=<"%uinput%"
-set eval=%eval:"=%
-setlocal enabledelayedexpansion
-echo+ >"%uinput%"
-endlocal
-
-if /i "%eval%"=="0" goto manual_Reentry
-if /i "%eval%"=="1" goto sp_start_cleaning
-if /i "%eval%"=="e" goto salida
-if /i "%eval%"=="i" goto sp_showlist
-if /i "%eval%"=="r" goto sp_r_files
-if /i "%eval%"=="z" del splist.txt
-
-goto sp_checkagain
+set /p bs="Drag file/folder or set option: "
+set bs=%bs:"=%
+if /i "%bs%"=="0" goto manual_Reentry
+if /i "%bs%"=="1" goto sp_start_cleaning
+if /i "%bs%"=="e" goto salida
+if /i "%bs%"=="i" goto sp_showlist
+if /i "%bs%"=="r" goto sp_r_files
+if /i "%bs%"=="z" del splist.txt
+dir "%bs%\" >nul 2>nul
+if not errorlevel 1 goto sp_checkfolder
+goto sp_checkfile
+goto salida
 
 :sp_r_files
 set /p bs="Input the number of files you want to remove (from bottom): "
@@ -1391,9 +1449,7 @@ set "filename=%%~nxf"
 set "end_folder=%%~nf"
 set "orinput=%%f"
 if "%%~nxf"=="%%~nf.nsp" call :split_content
-if "%%~nxf"=="%%~nf.NSP" call :split_content
 if "%%~nxf"=="%%~nf.xci" call :split_content
-if "%%~nxf"=="%%~nf.XCI" call :split_content
 more +1 "splist.txt">"splist.txt.new"
 move /y "splist.txt.new" "splist.txt" >NUL 2>&1
 setlocal enabledelayedexpansion
@@ -1433,9 +1489,35 @@ if exist "%w_folder%" RD /S /Q  "%w_folder%" >NUL 2>&1
 MD "%w_folder%" >NUL 2>&1
 call :processing_message
 call :squirrell
-if "%vrepack%" EQU "nsp" ( %pycommand% "%nut%" %buffer% -o "%w_folder%" %fatype% %fexport% -t "nsp" -dspl "%orinput%" -tfile "%prog_dir%splist.txt")
-if "%vrepack%" EQU "xci" ( %pycommand% "%nut%" %buffer% -o "%w_folder%" %fatype% %fexport% -t "xci" -dspl "%orinput%" -tfile "%prog_dir%splist.txt")
-if "%vrepack%" EQU "both" ( %pycommand% "%nut%" %buffer% -o "%w_folder%" %fatype% %fexport% -t "both" -dspl "%orinput%" -tfile "%prog_dir%splist.txt")
+%pycommand% "%nut%" %buffer% -o "%w_folder%" --splitter "%orinput%" -pe "secure"
+for /f "usebackq tokens=*" %%f in ("%w_folder%\dirlist.txt") do (
+setlocal enabledelayedexpansion
+rem echo "!sp_repack!"
+set "tfolder=%%f"
+set "fname=%%~nf"
+set "test=%%~nf"
+set test=!test:[DLC]=!
+rem echo !test!
+rem echo "!test!"
+rem echo "!fname!"
+if "!test!" NEQ "!fname!" ( set "sp_repack=nsp" )
+rem echo "!sp_repack!"
+set "test=%%~nf"
+set test=!test:[UPD]=!
+rem echo !test!
+rem echo "!test!"
+rem echo "!fname!"
+if "!test!" NEQ "!fname!" ( set "sp_repack=nsp" )
+rem echo "!sp_repack!"
+if "!sp_repack!" EQU "nsp" ( call "%nsp_lib%" "sp_convert" "%w_folder%" "!tfolder!" "!fname!" )
+if "!sp_repack!" EQU "xci" ( call "%xci_lib%" "sp_repack" "%w_folder%" "!tfolder!" "!fname!" )
+if "!sp_repack!" EQU "both" ( call "%nsp_lib%" "sp_convert" "%w_folder%" "!tfolder!" "!fname!" )
+if "!sp_repack!" EQU "both" ( call "%xci_lib%" "sp_repack" "%w_folder%" "!tfolder!" "!fname!" )
+endlocal
+more +1 "%w_folder%\dirlist.txt">"%w_folder%\dirlist.txt.new"
+move /y "%w_folder%\dirlist.txt.new" "%w_folder%\dirlist.txt" >nul
+)
+del "%w_folder%\dirlist.txt" >NUL 2>&1
 
 call :thumbup
 call :delay
@@ -1552,12 +1634,28 @@ ECHO *******************************************************************
 ECHO.
 echo Input "0" to return to the MODE SELECTION MENU
 ECHO.
-%pycommand% "%nut%" -t nsp xci -tfile "%prog_dir%UPDlist.txt" -uin "%uinput%" -ff "uinput"
-set /p eval=<"%uinput%"
-set eval=%eval:"=%
-if /i "%eval%"=="0" goto manual_Reentry
+set /p bs="PLEASE DRAG A FILE OR FOLDER OVER THE WINDOW AND PRESS ENTER: "
+set bs=%bs:"=%
+if /i "%bs%"=="0" goto manual_Reentry
+dir "%bs%\" >nul 2>nul
+if not errorlevel 1 goto upd_checkfolder
+goto upd_checkfile
+:upd_checkfolder
+DIR /B /S "%bs%\*.nsp">hUPDlist.txt
+FINDSTR /L ".nsp" hUPDlist.txt>>UPDlist.txt
+del hUPDlist.txt
+DIR /B /S "%bs%\*.xci">hUPDlist2.txt
+FINDSTR /L ".xci" hUPDlist2.txt>>UPDlist.txt
+del hUPDlist2.txt
 goto upd_checkagain
-
+:upd_checkfile
+echo %bs%>>hUPDlist.txt
+FINDSTR /L ".nsp" hUPDlist.txt>>UPDlist.txt
+del hUPDlist.txt
+echo %bs%>>hUPDlist2.txt
+FINDSTR /L ".xci" hUPDlist2.txt>>UPDlist.txt
+del hUPDlist2.txt
+goto upd_checkagain
 echo.
 :upd_checkagain
 echo.
@@ -1577,23 +1675,20 @@ ECHO *************************************************
 echo Or Input "0" to return to the MODE SELECTION MENU
 ECHO *************************************************
 echo.
-%pycommand% "%nut%" -t nsp xci -tfile "%prog_dir%UPDlist.txt" -uin "%uinput%" -ff "uinput"
-set /p eval=<"%uinput%"
-set eval=%eval:"=%
-setlocal enabledelayedexpansion
-echo+ >"%uinput%"
-endlocal
-
-if /i "%eval%"=="0" goto manual_Reentry
-if /i "%eval%"=="1" goto upd_starts
-if /i "%eval%"=="2" goto upd_ADD_BASE
-if /i "%eval%"=="e" goto salida
-if /i "%eval%"=="i" goto upd_showlist
-if /i "%eval%"=="b" goto upd_showbase
-if /i "%eval%"=="r" goto upd_r_files
-if /i "%eval%"=="z" del UPDlist.txt
-goto upd_checkagain
-
+set /p bs="Drag file/folder or set option: "
+set bs=%bs:"=%
+if /i "%bs%"=="0" goto manual_Reentry
+if /i "%bs%"=="1" goto upd_starts
+if /i "%bs%"=="2" goto upd_ADD_BASE
+if /i "%bs%"=="e" goto salida
+if /i "%bs%"=="i" goto upd_showlist
+if /i "%bs%"=="b" goto upd_showbase
+if /i "%bs%"=="r" goto upd_r_files
+if /i "%bs%"=="z" del UPDlist.txt
+dir "%bs%\" >nul 2>nul
+if not errorlevel 1 goto upd_checkfolder
+goto upd_checkfile
+goto salida
 
 :upd_showbase
 cls
@@ -1741,15 +1836,14 @@ echo in the program.
 echo THIS WON'T ALWAYS WORK TO LOWER THE FIRMWARE REQUIREMENT.
 echo.
 echo Input "f" to not change the keygeneration
-echo Input "0" to change top keygeneration to 0 (FW 1.0)
-echo Input "1" to change top keygeneration to 1 (FW 2.0-2.3)
-echo Input "2" to change top keygeneration to 2 (FW 3.0)
-echo Input "3" to change top keygeneration to 3 (FW 3.0.1-3.02)
-echo Input "4" to change top keygeneration to 4 (FW 4.0.0-4.1.0)
-echo Input "5" to change top keygeneration to 5 (FW 5.0.0-5.1.0)
-echo Input "6" to change top keygeneration to 6 (FW 6.0.0-6.1.0)
-echo Input "7" to change top keygeneration to 7 (FW 6.2.0)
-echo Input "8" to change top keygeneration to 8 (FW 7.0.0-7.0.1)
+echo Input "0" to change the keygeneration to 0 (FW 1.0)
+echo Input "1" to change the keygeneration to 1 (FW 2.0-2.3)
+echo Input "2" to change the keygeneration to 2 (FW 3.0)
+echo Input "3" to change the keygeneration to 3 (FW 3.0.1-3.02)
+echo Input "4" to change the keygeneration to 4 (FW 4.0.0-4.1.0)
+echo Input "5" to change the keygeneration to 5 (FW 5.0.0-5.1.0)
+echo Input "6" to change the keygeneration to 6 (FW 6.0.0-6.1.0)
+echo Input "7" to change the keygeneration to 7 (FW 6.2.0)
 echo.
 ECHO ******************************************
 echo Or Input "b" to return to the list options
@@ -1776,8 +1870,6 @@ if /i "%bs%"=="6" set "vkey=-kp 6"
 if /i "%bs%"=="6" set "capRSV=--RSVcap 402653494"
 if /i "%bs%"=="7" set "vkey=-kp 7"
 if /i "%bs%"=="7" set "capRSV=--RSVcap 404750336"
-if /i "%bs%"=="8" set "vkey=-kp 8"
-if /i "%bs%"=="8" set "capRSV=--RSVcap 469762048"
 if /i "%vkey%"=="none" echo WRONG CHOICE
 if /i "%vkey%"=="none" goto m_KeyChange_wrongchoice
 
@@ -1787,7 +1879,7 @@ call :program_logo
 
 if exist "%w_folder%" RD /S /Q "%w_folder%" >NUL 2>&1
 MD "%w_folder%" >NUL 2>&1
-%pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -o "%w_folder%\secure" -cskip "%cskip%" --updbase "%basefile%"
+%pycommand% "%nut%" %buffer% -o "%w_folder%\secure" -cskip "%cskip%" --updbase "%basefile%"
 
 for %%i in ("%basefile%") do (
 set "filename=%%~ni"
@@ -1846,7 +1938,7 @@ goto UPD_exit_choice
 set "showname=%orinput%"
 call :processing_message
 call :squirrell
-%pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -o "%w_folder%\secure" -tfile "%prog_dir%UPDlist.txt" %nf_cleaner% "%orinput%"
+%pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -o "%w_folder%\secure" %nf_cleaner% "%orinput%"
 if "%zip_restore%" EQU "true" ( set "ziptarget=%orinput%" )
 if "%zip_restore%" EQU "true" ( call :makezip )
 call :thumbup
@@ -1864,7 +1956,7 @@ call :getname
 echo ------------------------------------
 echo Extracting secure partition from xci
 echo ------------------------------------
-%pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -o "%w_folder%\secure" -tfile "%prog_dir%UPDlist.txt" %nf_cleaner% "%orinput%"
+%pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -o "%w_folder%\secure" %nf_cleaner% "%orinput%"
 echo DONE
 call :thumbup
 call :delay
@@ -1883,305 +1975,6 @@ PING -n 2 127.0.0.1 >NUL 2>&1
 set /a conta=0
 endlocal
 exit /B
-
-
-::///////////////////////////////////////////////////
-::///////////////////////////////////////////////////
-:: DB-MODE
-::///////////////////////////////////////////////////
-::///////////////////////////////////////////////////
-:DBMODE
-cls
-call :program_logo
-echo -----------------------------------------------
-echo DATABASE GENERATION MODE ACTIVATED
-echo -----------------------------------------------
-if exist "DBL.txt" goto DBprevlist
-goto DBmanual_INIT
-:DBprevlist
-set conta=0
-for /f "tokens=*" %%f in (DBL.txt) do (
-echo %%f
-) >NUL 2>&1
-setlocal enabledelayedexpansion
-for /f "tokens=*" %%f in (DBL.txt) do (
-set /a conta=!conta! + 1
-) >NUL 2>&1
-if !conta! LEQ 0 ( del DBL.txt )
-endlocal
-if not exist "DBL.txt" goto DBmanual_INIT
-ECHO .......................................................
-ECHO A PREVIOUS LIST WAS FOUND. WHAT DO YOU WANT TO DO?
-:DBprevlist0
-ECHO .......................................................
-echo Input "1" to auto-start processing from the previous list
-echo Input "2" to erase list and make a new one.
-echo Input "3" to continue building the previous list
-echo .......................................................
-echo NOTE: By pressing 3 you'll see the previous list 
-echo before starting the processing the files and you will 
-echo be able to add and delete items from the list
-echo.
-ECHO *************************************************
-echo Or Input "0" to return to the MODE SELECTION MENU
-ECHO *************************************************
-echo.
-set /p bs="Enter your choice: "
-set bs=%bs:"=%
-if /i "%bs%"=="3" goto DBshowlist
-if /i "%bs%"=="2" goto DBdelist
-if /i "%bs%"=="1" goto DBstart_cleaning
-if /i "%bs%"=="0" goto manual_Reentry
-echo.
-echo BAD CHOICE
-goto DBprevlist0
-:DBdelist
-del DBL.txt
-cls
-call :program_logo
-echo -----------------------------------------------
-echo INDIVIDUAL PROCESSING ACTIVATED
-echo -----------------------------------------------
-echo ..................................
-echo YOU'VE DECIDED TO START A NEW LIST
-echo ..................................
-:DBmanual_INIT
-endlocal
-ECHO ***********************************************
-echo Input "0" to return to the MODE SELECTION MENU
-ECHO ***********************************************
-echo.
-set /p bs="PLEASE DRAG A FILE OR FOLDER OVER THE WINDOW AND PRESS ENTER: "
-set bs=%bs:"=%
-if /i "%bs%"=="0" goto manual_Reentry
-set "targt=%bs%"
-dir "%bs%\" >nul 2>nul
-if not errorlevel 1 goto DBcheckfolder
-if exist "%bs%\" goto DBcheckfolder
-goto DBcheckfile
-:DBcheckfolder
-%pycommand% "%nut%" -t nsp -tfile "%prog_dir%DBL.txt" -ff "%targt%"
-%pycommand% "%nut%" -t nsx -tfile "%prog_dir%DBL.txt" -ff "%targt%"
-goto DBcheckagain
-:DBcheckfile
-%pycommand% "%nut%" -t nsp -tfile "%prog_dir%DBL.txt" -ff "%targt%"
-%pycommand% "%nut%" -t nsx -tfile "%prog_dir%DBL.txt" -ff "%targt%"
-goto DBcheckagain
-echo.
-:DBcheckagain
-echo WHAT DO YOU WANT TO DO?
-echo ......................................................................
-echo "DRAG ANOTHER FILE OR FOLDER AND PRESS ENTER TO ADD ITEMS TO THE LIST"
-echo.
-echo Input "1" to start processing
-echo Input "e" to exit
-echo Input "i" to see list of files to process
-echo Input "r" to remove some files (counting from bottom)
-echo Input "z" to remove the whole list
-echo ......................................................................
-ECHO *************************************************
-echo Or Input "0" to return to the MODE SELECTION MENU
-ECHO *************************************************
-echo.
-set /p bs="Drag file/folder or set option: "
-set bs=%bs:"=%
-if /i "%bs%"=="0" goto manual_Reentry
-if /i "%bs%"=="1" goto DBstart_cleaning
-if /i "%bs%"=="e" goto DBsalida
-if /i "%bs%"=="i" goto DBshowlist
-if /i "%bs%"=="r" goto DBr_files
-if /i "%bs%"=="z" del DBL.txt
-set "targt=%bs%"
-dir "%bs%\" >nul 2>nul
-if not errorlevel 1 goto DBcheckfolder
-if exist "%bs%\" goto DBcheckfolder
-goto DBcheckfile
-goto DBsalida
-
-:DBr_files
-set /p bs="Input the number of files you want to remove (from bottom): "
-set bs=%bs:"=%
-
-setlocal enabledelayedexpansion
-set conta=
-for /f "tokens=*" %%f in (DBL.txt) do (
-set /a conta=!conta! + 1
-)
-
-set /a pos1=!conta!-!bs!
-set /a pos2=!conta!
-set string=
-
-:DBupdate_list1
-if !pos1! GTR !pos2! ( goto :DBupdate_list2 ) else ( set /a pos1+=1 )
-set string=%string%,%pos1%
-goto :DBupdate_list1 
-:DBupdate_list2
-set string=%string%,
-set skiplist=%string%
-Set "skip=%skiplist%"
-setlocal DisableDelayedExpansion
-(for /f "tokens=1,*delims=:" %%a in (' findstr /n "^" ^<DBL.txt'
-) do Echo=%skip%|findstr ",%%a," 2>&1>NUL ||Echo=%%b
-)>DBL.txt.new
-endlocal
-move /y "DBL.txt.new" "DBL.txt" >nul
-endlocal
-
-:DBshowlist
-cls
-call :program_logo
-echo -------------------------------------------------
-echo INDIVIDUAL PROCESSING ACTIVATED
-echo -------------------------------------------------
-ECHO -------------------------------------------------
-ECHO                 FILES TO PROCESS 
-ECHO -------------------------------------------------
-for /f "tokens=*" %%f in (DBL.txt) do (
-echo %%f
-)
-setlocal enabledelayedexpansion
-set conta=
-for /f "tokens=*" %%f in (DBL.txt) do (
-set /a conta=!conta! + 1
-)
-echo .................................................
-echo YOU'VE ADDED !conta! FILES TO PROCESS
-echo .................................................
-endlocal
-
-goto DBcheckagain
-
-:DBs_cl_wrongchoice
-echo wrong choice
-echo ............
-:DBstart_cleaning
-echo *******************************************************
-echo CHOOSE WHAT TO DO AFTER PROCESSING THE SELECTED FILES
-echo *******************************************************
-echo Input "1" TO GENERATE NUTDB DATABASE
-echo Input "2" TO GENERATE EXTENDED DATABASE
-echo Input "3" TO GENERATE KEYLESS DATABASE (EXTENDED)
-echo Input "4" TO GENERATE ALL 3 ABOVE DATABASES
-echo Input "Z" TO MAKE ZIP FILES
-echo.
-ECHO ******************************************
-echo Or Input "0" to return to the list options
-ECHO ******************************************
-echo.
-set /p bs="Enter your choice: "
-set bs=%bs:"=%
-set vrepack=none
-if /i "%bs%"=="0" goto DBcheckagain
-if /i "%bs%"=="Z" set "vrepack=zip"
-if /i "%bs%"=="Z" goto DBs_start
-if /i "%bs%"=="1" set "dbformat=nutdb"
-if /i "%bs%"=="1" goto DBs_GENDB
-if /i "%bs%"=="2" set "dbformat=extended"
-if /i "%bs%"=="2" goto DBs_GENDB
-if /i "%bs%"=="3" set "dbformat=keyless"
-if /i "%bs%"=="3" goto DBs_GENDB
-if /i "%bs%"=="4" set "dbformat=all"
-if /i "%bs%"=="4" goto DBs_GENDB
-if %vrepack%=="none" goto DBs_cl_wrongchoice
-
-:DBs_start
-cls
-call :program_logo
-for /f "tokens=*" %%f in (DBL.txt) do (
-set "name=%%~nf"
-set "filename=%%~nxf"
-set "orinput=%%f"
-set "ziptarget=%%f" 
-if "%vrepack%" EQU "zip" ( set "zip_restore=true" )
-if "%%~nxf"=="%%~nf.nsp" call :DBnsp_manual
-if "%%~nxf"=="%%~nf.nsx" call :DBnsp_manual
-if "%%~nxf"=="%%~nf.NSP" call :DBnsp_manual
-if "%%~nxf"=="%%~nf.NSX" call :DBnsp_manual
-more +1 "DBL.txt">"DBL.txt.new"
-move /y "DBL.txt.new" "DBL.txt" >nul
-call :DBcontador_NF
-)
-ECHO ---------------------------------------------------
-ECHO *********** ALL FILES WERE PROCESSED! *************
-ECHO ---------------------------------------------------
-:DBs_exit_choice
-if exist DBL.txt del DBL.txt
-if /i "%va_exit%"=="true" echo PROGRAM WILL CLOSE NOW
-if /i "%va_exit%"=="true" ( PING -n 2 127.0.0.1 >NUL 2>&1 )
-if /i "%va_exit%"=="true" goto salida
-echo.
-echo Input "0" to go back to the mode selection
-echo Input "1" to exit the program
-echo.
-set /p bs="Enter your choice: "
-set bs=%bs:"=%
-if /i "%bs%"=="0" goto manual_Reentry
-if /i "%bs%"=="1" goto salida
-goto s_exit_choice
-
-:DBnsp_manual
-set "filename=%name%"
-set "showname=%orinput%"
-if exist "%w_folder%" rmdir /s /q "%w_folder%" >NUL 2>&1
-MD "%w_folder%"
-call :squirrell
-
-if "%vrepack%" EQU "zip" ( goto nsp_just_zip )
-
-:DBnsp_just_zip
-if "%zip_restore%" EQU "true" ( call :makezip )
-rem call :getname
-if "%vrename%" EQU "true" call :addtags_from_nsp
-if "%zip_restore%" EQU "true" ( goto :nsp_just_zip2 )
-
-:DBnsp_just_zip2
-
-if exist "%w_folder%\*.zip" ( MD "%zip_fold%" ) >NUL 2>&1
-move "%w_folder%\*.zip" "%zip_fold%" >NUL 2>&1
-RD /S /Q "%w_folder%" >NUL 2>&1
-
-echo DONE
-call :thumbup
-call :delay
-
-:DBend_nsp_manual
-exit /B
-
-:DBs_GENDB
-for /f "tokens=*" %%f in (DBL.txt) do (
-set "orinput=%%f"
-set "db_file=%prog_dir%INFO\%dbformat%_DB.txt"
-set "dbdir=%prog_dir%INFO\"
-call :DBGeneration
-more +1 "DBL.txt">"DBL.txt.new"
-move /y "DBL.txt.new" "DBL.txt" >nul
-call :DBcontador_NF
-)
-ECHO ---------------------------------------------------
-ECHO *********** ALL FILES WERE PROCESSED! *************
-ECHO ---------------------------------------------------
-goto DBs_exit_choice
-
-:DBGeneration
-if not exist "%dbdir%" MD "%dbdir%">NUL 2>&1
-%pycommand% "%nut%" --dbformat "%dbformat%" -dbfile "%db_file%" -tfile "%prog_dir%DBL.txt" -nscdb "%orinput%" 
-exit /B
-
-:DBcontador_NF
-setlocal enabledelayedexpansion
-set /a conta=0
-for /f "tokens=*" %%f in (DBL.txt) do (
-set /a conta=!conta! + 1
-)
-echo ...................................................
-echo STILL !conta! FILES TO PROCESS
-echo ...................................................
-PING -n 2 127.0.0.1 >NUL 2>&1
-set /a conta=0
-endlocal
-exit /B
-
 
 ::///////////////////////////////////////////////////
 ::NSCB FILE INFO MODE
@@ -2231,7 +2024,7 @@ ECHO =============================     BY JULESONTHEROAD     ===================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                                POWERED BY SQUIRREL                                "
 ECHO "                    BASED IN THE WORK OF BLAWAR AND LUCA FRAGA                     "
-ECHO                                  VERSION 0.81 (BETA2)
+ECHO                                  VERSION 0.80 (BETA)
 ECHO -------------------------------------------------------------------------------------                   
 ECHO Program's github: https://github.com/julesontheroad/NSC_BUILDER
 ECHO Blawar's github:  https://github.com/blawar
@@ -2256,7 +2049,6 @@ echo (__o)_    \
 echo       \    \
 echo.
 echo HOPE YOU HAVE A FUN TIME
-echo.
 exit /B
 
 :getname

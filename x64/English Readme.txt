@@ -1,24 +1,5 @@
-                                       __          _ __    __         
-                 ____  _____ ____     / /_  __  __(_) /___/ /__  _____
-                / __ \/ ___/ ___/    / __ \/ / / / / / __  / _ \/ ___/
-               / / / (__  ) /__     / /_/ / /_/ / / / /_/ /  __/ /    
-              /_/ /_/____/\___/____/_.___/\__,_/_/_/\__,_/\___/_/     
-                             /_____/                                  
--------------------------------------------------------------------------------------
-                        NINTENDO SWITCH CLEANER AND BUILDER
-                     (THE XCI MULTI CONTENT BUILDER AND MORE)
--------------------------------------------------------------------------------------
-=============================     BY JULESONTHEROAD     =============================
--------------------------------------------------------------------------------------
-"                                POWERED BY SQUIRREL                                "
-"                    BASED IN THE WORK OF BLAWAR AND LUCA FRAGA                     "
-                                 VERSION 0.80 (BETA)
--------------------------------------------------------------------------------------                   
-Program's github: https://github.com/julesontheroad/NSC_BUILDER
-Blawar's github:  https://github.com/blawar
-Blawar's tinfoil: https://github.com/digableinc/tinfoil
-Luca Fraga's github: https://github.com/LucaFraga
--------------------------------------------------------------------------------------
+# Nintendo Switch Cleaner and Builder (NSC_Builder)
+https://github.com/julesontheroad/NSC_BUILDER 
 
 ## 1. Description
 
