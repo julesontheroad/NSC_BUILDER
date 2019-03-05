@@ -45,7 +45,7 @@ set "capRSV=--RSVcap 268435656"
 ::OPTION 4: IMPORTANT FILES
 ::--------------------------------------------------------------
 ::
-::
+set "uinput=ztools\uinput"
 ::Route for keys.txt 
 set "dec_keys=ztools\keys.txt"
 ::--------------------------------------------------------------
@@ -59,7 +59,7 @@ set "vrepack=both"
 ::Type of repack for folders
 ::indiv->repack multiple input files as multiple output file. INDIVIDUAL MODE
 ::multi->repack multiple input files as single output file. MULTI-MODE
-set "fi_rep=multi"
+set "fi_rep=indiv"
 ::--------------------------------------------------------------
 ::OPTION 6: MANUAL MODE INTRO
 ::--------------------------------------------------------------

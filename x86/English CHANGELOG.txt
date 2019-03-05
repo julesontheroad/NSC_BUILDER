@@ -12,7 +12,7 @@
 -------------------------------------------------------------------------------------
 "                                POWERED BY SQUIRREL                                "
 "                    BASED IN THE WORK OF BLAWAR AND LUCA FRAGA                     "
-                                 VERSION 0.80 (BETA)
+                                 VERSION 0.81 (BETA2)
 -------------------------------------------------------------------------------------                   
 Program's github: https://github.com/julesontheroad/NSC_BUILDER
 Blawar's github:  https://github.com/blawar
@@ -22,28 +22,54 @@ Luca Fraga's github: https://github.com/LucaFraga
 ---------------
 0. Changelog
 ---------------
+v0.81- BETA 2 direct generation for individual processing and more.
+	*Added direct generation without nca extracting for individual processing (mode 1)
+	*Added direct generation without nca extracting for multi-content splitter (mode3)
+	Note: Both modes suppport all patches.
+	*Fixed issues with special characters when building by parsing user inputs and lists
+	trough python. This also solves issues with japanese characters while building.
+	Note: this made the interface a little slower at some points.
+	Note2: Base input in update mode and in the info functions is yet to be modified so 
+	if you run into issues there please rename the file.	
+	*Since it was longed asked the Update Mode (Mode 4) was modified. Now titlerights are
+	removed from the base and the same patches (keygeneration, RSV ...) are applied
+	to the base content.
+	*Added database function (Mode6) It's a direct read from files and supports 3 formats
+	nutdb, extended db and keyless extended. Last one is meant to be able to shared freely
+	Database data can be importet as a CSV via Excel data function or similar functions to
+	filter data.
+	Notes.
+		-Currently is only applied to nsp and nsx. XCI support will come in the future
+		-It can recover keys from titlerights removed nca
+		-Currently it doesn't work with nca from standard crypto origin (xci, custom)
+		-It exports to the INFO folder.
+		-DLCs are named by number since name data can't be extracted from them.
+		-It'll support pulling DLC names from nut json files in the future
+	*Added new info function that shows in a simple way the content ids from a multicontent
+	file
+	*Added option to verify keys.txt in the options configuration (Mode 0) 
 v0.80- BETA VERSION with a lot of important changes 
-       *Erased all external program dependencies. Current program is fully powered by
-	   squirrel.exe or squirrel.py. (Beta will be based on squirrel.exe
-	   *Added direct xci generation from nca files with new code. This increases the 
-	   generation speed and makes it equal to nsp generation.
-	   *Added progression bars	   
-	   *Added direct generation to fat32 formats for nsp and xci
+	*Erased all external program dependencies. Current program is fully powered by
+	squirrel.exe or squirrel.py. (Beta will be based on squirrel.exe
+	*Added direct xci generation from nca files with new code. This increases the 
+	generation speed and makes it equal to nsp generation.
+	*Added progression bars	   
+	*Added direct generation to fat32 formats for nsp and xci
 		- FAT32 xci files (xc0,xc1,...)
 		- FAT32 compatible with SX rommenu (ns0,ns1,..)
 		- FAT32 compatble with all installers (00,01,..) in an archived folder. 
 		  Folder is set as archived authomatically
-	   *Set zip generation to zip folder and deactivated it by default.
-	   *Added option to organize files on subfolders or individually in the output
-	   folder. By default it'll be individually.
-	   *Added option to configure buffer trough the bat. Increased default buffer to
-	   64kB wich works best for me. Test different buffers to find your best one ;)
-	   *Change to false exit in auto-mode and linked it to the batch option that was
-	   before only used in manual mode.
-	   *Reduced "cls" calls in auto-mode"
-	   *Added minimun keys template. NOTE: The xci_header_key is optional, if not 
-	   included the game-info will use default data already encrypted with a default
-	   IV.
+	*Set zip generation to zip folder and deactivated it by default.
+	*Added option to organize files on subfolders or individually in the output
+	folder. By default it'll be individually.
+	*Added option to configure buffer trough the bat. Increased default buffer to
+	64kB wich works best for me. Test different buffers to find your best one ;)
+	*Change to false exit in auto-mode and linked it to the batch option that was
+	before only used in manual mode.
+	*Reduced "cls" calls in auto-mode"
+	*Added minimun keys template. NOTE: The xci_header_key is optional, if not 
+	included the game-info will use default data already encrypted with a default
+	IV.	
 	   
 v0.79- Corrected detection for keygeneration 2 wich fixes the issue with the Xenoblade
        Chronicles 2 DLCs
