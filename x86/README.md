@@ -102,8 +102,10 @@ To install multi-nsp you need a installer compatible with them. Reported compati
 - SX OS installer
 - Blawar’s tinfoil:
 https://github.com/digableinc/tinfoil
+- Blawar’s lithium:
+https://github.com/blawar/lithium
 
-## 8. Requirements for 0.8 Beta
+## 8. Requirements for 0.8x Beta
 
 - A computer with a Window's OS is needed
 - Fill keys_template.txt on the ztools folder and rename it to keys.txt
