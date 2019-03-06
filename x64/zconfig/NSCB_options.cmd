@@ -14,11 +14,11 @@ set "zip_fold=NSCB_zips"
 ::--------------------------------------------------------------
 ::OPTION 2: PROGRAM ROUTES
 ::--------------------------------------------------------------
-set "nut=ztools\squirrel.py"
+set "nut=ztools\squirrel.exe"
 set "xci_lib=ztools\XCI.bat"
 set "nsp_lib=ztools\NSP.bat"
-set "zip=ztools\squirrel.py"
-set "listmanager=ztools\squirrel.py"
+set "zip=ztools\squirrel.exe"
+set "listmanager=ztools\squirrel.exe"
 set "batconfig=ztools\NSCB_config.bat"
 set "batdepend=ztools\install_dependencies.bat"
 set "infobat=ztools\info.bat"
@@ -26,7 +26,7 @@ set "infobat=ztools\info.bat"
 ::OPTION 3: SQUIRREL OPTIONS
 ::--------------------------------------------------------------
 ::python command
-set "pycommand=py -3"
+set "pycommand="
 ::Buffer for the copy functions. 
 ::Change the number for the number of bytes that works best for you
 ::32768=32kB ; 65536=64kB
