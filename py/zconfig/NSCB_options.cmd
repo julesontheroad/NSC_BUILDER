@@ -35,7 +35,7 @@ set "buffer=buffer=-b 65536"
 ::--C_clean -> Copy and remove titlerights. Don't skips deltas
 ::--C_clean_ND-> Copy and remove titlerights skipping deltas
 set "nf_cleaner=--C_clean_ND"
-::Patch the RequiredSystemVersion so console doesn't ask for updates bigger
+set "skdelta=-ND true"
 ::than the required FW to decypher the crypto
 ::true -> Patch required system version in the meta nca
 ::false-> Don't patch required system version in the meta nca

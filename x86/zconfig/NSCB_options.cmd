@@ -14,11 +14,11 @@ set "zip_fold=NSCB_zips"
 ::--------------------------------------------------------------
 ::OPTION 2: PROGRAM ROUTES
 ::--------------------------------------------------------------
-set "nut=ztools\squirrel.exe"
+set "nut=ztools\squirrel.py"
 set "xci_lib=ztools\XCI.bat"
 set "nsp_lib=ztools\NSP.bat"
-set "zip=ztools\squirrel.exe"
-set "listmanager=ztools\squirrel.exe"
+set "zip=ztools\squirrel.py"
+set "listmanager=ztools\squirrel.py"
 set "batconfig=ztools\NSCB_config.bat"
 set "batdepend=ztools\install_dependencies.bat"
 set "infobat=ztools\info.bat"
@@ -26,7 +26,7 @@ set "infobat=ztools\info.bat"
 ::OPTION 3: SQUIRREL OPTIONS
 ::--------------------------------------------------------------
 ::python command
-set "pycommand="
+set "pycommand=py -3"
 ::Buffer for the copy functions. 
 ::Change the number for the number of bytes that works best for you
 ::32768=32kB ; 65536=64kB
@@ -35,7 +35,7 @@ set "buffer=buffer=-b 65536"
 ::--C_clean -> Copy and remove titlerights. Don't skips deltas
 ::--C_clean_ND-> Copy and remove titlerights skipping deltas
 set "nf_cleaner=--C_clean_ND"
-::Patch the RequiredSystemVersion so console doesn't ask for updates bigger
+set "skdelta=-ND true"
 ::than the required FW to decypher the crypto
 ::true -> Patch required system version in the meta nca
 ::false-> Don't patch required system version in the meta nca

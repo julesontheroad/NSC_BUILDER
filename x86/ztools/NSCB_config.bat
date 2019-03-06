@@ -512,7 +512,9 @@ echo.
 set /p bs="Enter your choice: "
 set "v_delta=none"
 if /i "%bs%"=="1" set "v_delta=--C_clean_ND"
+if /i "%bs%"=="1" set "v_delta2_=-ND true"
 if /i "%bs%"=="2" set "v_delta=--C_clean"
+if /i "%bs%"=="2" set "v_delta2_=-ND false"
 
 if /i "%bs%"=="b" goto sc3
 if /i "%bs%"=="0" goto sc1
@@ -524,9 +526,16 @@ if "%v_delta%"=="none" goto op_delta
 
 set v_delta="nf_cleaner=%v_delta%"
 set v_delta="%v_delta%"
+set v_delta2_="skdelta=%v_delta2_%"
+set v_delta2_="%v_delta2_%"
+
 %pycommand% "%listmanager%" -cl "%op_file%" -ln "36" -nl "set %v_delta%" 
 echo.
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "36" -nl "Line in config was changed to: "
+echo.
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "37" -nl "set %v_delta2_%" 
+echo.
+%pycommand% "%listmanager%" -rl "%op_file%" -ln "37" -nl "Line in config was changed to: "
 echo.
 pause
 goto sc3
@@ -861,6 +870,13 @@ set v_delta="%v_delta%"
 %pycommand% "%listmanager%" -cl "%op_file%" -ln "36" -nl "set %v_delta%" 
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "36" -nl "Line in config was changed to: "
 
+REM v_delta2
+set "v_delta2_=-ND true"
+set v_delta2_="skdelta=%v_delta2_%"
+set v_delta2_="%v_delta2_%"
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "37" -nl "set %v_delta2_%" 
+%pycommand% "%listmanager%" -rl "%op_file%" -ln "37" -nl "Line in config was changed to: "
+
 REM zip_restore
 set "v_gzip=false"
 set v_gzip="zip_restore=%v_gzip%"
@@ -944,6 +960,9 @@ REM v_of
 
 REM v_delta
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "36" -nl "Delta Skipping is set to: "
+
+REM v_delta2
+%pycommand% "%listmanager%" -rl "%op_file%" -ln "37" -nl "Delta Skipping (direct functions) is set to: "
 
 REM zip_restore
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "78" -nl "Zip generation is set to: "
