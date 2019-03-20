@@ -128,17 +128,41 @@ def getFWRangeRSV(RSV):
 			version+=str(fth_num)
 		version="("+version+")"
 		return version			
-	elif RSV >= 262164:
-		return "(2.3.0)"	
-	elif RSV >= 196628:
-		return "(2.2.0)"	
-	elif RSV >= 131162:
-		return "(2.1.0)"	
-	elif RSV >= 65796:
-		return "(2.0.0)"	
-	elif RSV >= 450:
-		return "(1.0.0)"	
-	elif RSV >= 0:
+	elif RSV >= 65536:
+		RSV=int(RSV)
+		frst_num=2
+		sec_num=str(int(RSV/65536))
+		remainder=RSV%65536	
+		thd_num=0
+		fth_num=remainder
+		version=str(frst_num)
+		version+='.'
+		version+=str(sec_num)
+		version+='.'	
+		version+=str(thd_num)
+		if fth_num > 0:
+			version+='-'	
+			version+=str(fth_num)
+		version="("+version+")"
+		return version		
+	elif RSV > 65536:
+		RSV=int(RSV)
+		frst_num=1
+		sec_num=0
+		thd_num=0
+		remainder=RSV%65536
+		fth_num=remainder
+		version=str(frst_num)
+		version+='.'
+		version+=str(sec_num)
+		version+='.'	
+		version+=str(thd_num)		
+		if fth_num > 0:
+			version+='-'	
+			version+=str(fth_num)
+		version="("+version+")"
+		return version			
+	elif RSV == 0:
 		return "(1.0.0)"	
 	else:
 		return "(-)"
