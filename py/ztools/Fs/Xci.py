@@ -3867,7 +3867,8 @@ class Xci(File):
 									tit_name,editor,ediver,SupLg,regionstr,isdemo = self.inf_get_title(target,offset,content_entries,original_ID)
 									tit_name = (re.sub(r'[\/\\\:\*\?\!\"\<\>\|\.\s™©®()\~]+', ' ', tit_name))
 									tit_name = tit_name.strip()
-									filename=tit_name+' '+version+ttag
+									tid='['+titleid2+']'
+									filename=tit_name+' '+tid+' '+version+ttag
 									titlerights=titleid2+str('0'*15)+str(crypto2)
 									contentlist.append([filename,titleid2,titlerights,keygen,ncalist,CTYPE])
 		for nspF in self.hfs0:
@@ -3973,8 +3974,7 @@ class Xci(File):
 						hcrypto = aes128.AESXTS(uhx(Keys.get('header_key')))	
 						gc_flag='00'*0x01									
 						file.rewind()				
-						encKeyBlock = file.header.getKeyBlock()	
-						t.write('')							
+						encKeyBlock = file.header.getKeyBlock()					
 						t.write(tabs+'- Appending: ' + str(file._path))
 						file.rewind()					
 						i=0

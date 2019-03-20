@@ -4342,7 +4342,8 @@ class Nsp(Pfs0):
 							tit_name,editor,ediver,SupLg,regionstr,isdemo = self.inf_get_title(target,offset,content_entries,original_ID)
 							tit_name = (re.sub(r'[\/\\\:\*\?\!\"\<\>\|\.\s™©®()\~]+', ' ', tit_name))
 							tit_name = tit_name.strip()
-							filename=tit_name+' '+version+ttag
+							tid='['+titleid2+']'
+							filename=tit_name+' '+tid+' '+version+ttag
 							titlerights=titleid2+str('0'*15)+str(crypto2)
 							contentlist.append([filename,titleid2,titlerights,keygen,ncalist,CTYPE])
 							
