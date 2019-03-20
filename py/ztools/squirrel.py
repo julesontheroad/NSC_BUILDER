@@ -82,8 +82,9 @@ if __name__ == '__main__':
 		parser.add_argument('--create_xci', help='create / pack a xci')		
 		parser.add_argument('--xci_super_trim', nargs='+', help='Supertrim xci')	
 		parser.add_argument('-dc', '--direct_creation', nargs='+', help='Create directly a nsp or xci')		
-		
-		
+		parser.add_argument('-dmul', '--direct_multi', nargs='+', help='Create directly a multi nsp or xci')		
+		parser.add_argument('-ed', '--erase_deltas', nargs='+', help='Take of deltas from updates')			
+	
 		# nca/nsp identification
 		parser.add_argument('--ncatitleid', nargs='+', help='Returns titleid from a nca input')
 		parser.add_argument('--ncatype', nargs='+', help='Returns type of a nca file')	
@@ -2215,6 +2216,94 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))				
 
+				
+		# ...................................................						
+		# Take off deltas
+		# ...................................................						
+		if args.erase_deltas:	
+						
+			if args.buffer:		
+				for input in args.buffer:
+					try:
+						buffer = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+			else:
+				buffer = 32768
+	
+			if args.ofolder:		
+				for input in args.ofolder:
+					try:
+						ofolder = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+			else:
+				for filepath in args.erase_deltas:
+					dir=os.path.dirname(os.path.abspath(filepath))
+					ofolder = os.path.join(dir, 'output')						
+			if args.fat:		
+				for input in args.fat:
+					try:
+						if input == "fat32":
+							fat="fat32"
+						else:
+							fat="exfat"
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+			else:
+				fat="exfat"		
+			if args.fexport:		
+				for input in args.fexport:
+					try:
+						if input == "files":
+							fx="files"
+						else:
+							fx="folder"
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+			else:
+				fx="files"		
+				
+			if args.erase_deltas:
+				if args.text_file:
+					tfile=args.text_file
+					with open(tfile,"r+", encoding='utf8') as filelist: 	
+						filepath = filelist.readline()
+						filepath=os.path.abspath(filepath.rstrip('\n'))						
+				else:
+					for filepath in args.erase_deltas:
+						filepath=filepath
+				if args.type:
+					for input in args.type:							
+						if input == "nsp" or input == "NSP": 	
+							export='nsp'										
+						else:
+							print ("Wrong Type!!!")					
+				else:
+					if filepath.endswith('.nsp'):
+						export='nsp'
+					else:
+						print ("Wrong Type!!!")
+				if args.rename:
+					for newname in args.rename:
+						newname=newname+'.xxx'
+						endfile = os.path.join(ofolder, newname)
+				else:
+					endfile=os.path.basename(os.path.abspath(filepath))					
+				if args.cskip=='False':
+					cskip=False
+				else:
+					cskip=True						
+
+				if filepath.endswith(".nsp"):
+					try:				
+						f = Fs.Nsp(filepath)					
+						f.sp_groupncabyid_ND(buffer,ofolder,fat,fx)
+						f.flush()
+						f.close()		
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))						
+						
 		# ...................................................						
 		# Direct NSP OR XCI
 		# ...................................................				
@@ -2456,8 +2545,163 @@ if __name__ == '__main__':
 							f.close()						
 						except BaseException as e:
 							Print.error('Exception: ' + str(e))	
-								
 
+		# ...................................................						
+		# Direct MULTI NSP OR XCI
+		# ...................................................		
+		if args.direct_multi:	
+						
+			if args.buffer:		
+				for input in args.buffer:
+					try:
+						buffer = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+			else:
+				buffer = 32768
+	
+			if args.ofolder:		
+				for input in args.ofolder:
+					try:
+						ofolder = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+			else:
+				for filepath in args.direct_multi:
+					dir=os.path.dirname(os.path.abspath(filepath))
+					ofolder = os.path.join(dir, 'output')						
+			if args.fat:		
+				for input in args.fat:
+					try:
+						if input == "fat32":
+							fat="fat32"
+						else:
+							fat="exfat"
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+			else:
+				fat="exfat"		
+			if args.fexport:		
+				for input in args.fexport:
+					try:
+						if input == "files":
+							fx="files"
+						else:
+							fx="folder"
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+			else:
+				fx="files"		
+				
+			if args.direct_multi:
+				if args.text_file:
+					tfile=args.text_file
+					filelist=list()
+					tfile=args.text_file
+					with open(tfile,"r+", encoding='utf8') as f: 	
+						for line in f:
+							fp=line.strip()
+							filelist.append(fp)	
+					
+					#for file in filelist:		
+					#	print(file)
+					#	pass	
+					
+					
+					prlist=list()	
+					for filepath in filelist:
+						if filepath.endswith('.nsp'):
+							#print(filepath)
+							try:
+								c=list()
+								f = Fs.Nsp(filepath)					
+								contentlist=f.get_content()
+								f.flush()
+								f.close()		
+								if len(prlist)==0:
+									for i in contentlist:
+										prlist.append(i)
+									#print (prlist)
+								else:
+									for j in range(len(contentlist)):
+										notinlist=False
+										for i in range(len(prlist)):
+											#print (contentlist[j][1])
+											#print (contentlist[j][6])
+											#pass
+											if contentlist[j][1] == prlist[i][1]:
+												if contentlist[j][6] > prlist[i][6]:
+													del prlist[i]
+													prlist.append(contentlist[j])
+											else:
+												notinlist=True
+										if notinlist == True:
+											prlist.append(contentlist[j])	
+							except BaseException as e:
+								Print.error('Exception: ' + str(e))	
+								
+					for i in range(len(prlist)):
+						print (prlist[i][0])									
+						print (prlist[i][1]+' v'+prlist[i][6])	
+						for j in prlist[i][4]:
+							print (j[0])
+							print (j[1])		
+						print('////////////////////////////////////////////////////////////')
+							
+				'''		
+				else:
+					for filepath in args.direct_multi:
+						filepath=filepath
+				if args.type:
+					for input in args.type:		
+						if input == "xci" or input == "XCI": 
+							export='xci'						
+						elif input == "nsp" or input == "NSP": 	
+							export='nsp'
+						elif input == "both" or input == "BOTH": 
+							export='both'													
+						else:
+							print ("Wrong Type!!!")					
+				else:
+					if filepath.endswith('.nsp'):
+						export='nsp'
+					elif filepath.endswith('.xci'):
+						export='xci'
+					else:
+						print ("Wrong Type!!!")
+				if args.rename:
+					for newname in args.rename:
+						newname=newname+'.xxx'
+						endfile = os.path.join(ofolder, newname)
+				else:
+					endfile=os.path.basename(os.path.abspath(filepath))					
+				if args.cskip=='False':
+					cskip=False
+				else:
+					cskip=True						
+
+				if filepath.endswith(".nsp"):
+					try:				
+						f = Fs.Nsp(filepath)					
+						f.sp_groupncabyid(buffer,ofolder,fat,fx,export)
+						f.flush()
+						f.close()		
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))						
+				if filepath.endswith(".xci"):	
+					try:				
+						f = Fs.Xci(filepath)					
+						f.sp_groupncabyid(buffer,ofolder,fat,fx,export)		
+						f.flush()
+						f.close()				
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+				'''		
+		
+		# ...................................................						
+		# Direct Splitter
+		# ...................................................			
+		
 		if args.direct_splitter:	
 						
 			if args.buffer:		
@@ -2655,7 +2899,7 @@ if __name__ == '__main__':
 			outf.close()				
 
 		# ...................................................						
-		# Join split files
+		# ZIP
 		# ...................................................						
 		if args.zippy and args.ifolder:		
 			indent = 1
