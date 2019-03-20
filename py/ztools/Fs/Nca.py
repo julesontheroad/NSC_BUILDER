@@ -1111,6 +1111,47 @@ class Nca(File):
 						break								
 				else:
 					break
+			f.seek(offset+0x3060)	
+			ediver = f.read(0x10)
+			ediver = ediver.split(b'\0', 1)[0].decode('utf-8')
+			ediver = (re.sub(r'[\/\\]+', ' ', ediver))
+			ediver = ediver.strip()	
+			try:  
+				int(ediver[0])+1
+			except:
+				ediver="-"
+			if ediver == '-':
+				offset2=offset-0x300
+				f.seek(offset2+0x3060)			
+				ediver = f.read(0x10)
+				ediver = ediver.split(b'\0', 1)[0].decode('utf-8')
+				ediver = (re.sub(r'[\/\\]+', ' ', ediver))
+				ediver = ediver.strip()	
+				try:  
+					int(ediver[0])+1
+					offset=offset2
+				except:
+					ediver="-"			
+			if ediver == '-':
+				try:
+					while (offset2+0x3060)<=0x18600:
+						offset2+=0x100
+						f.seek(offset2+0x3060)	
+						ediver = f.read(0x10)
+						ediver = ediver.split(b'\0', 1)[0].decode('utf-8')
+						ediver = (re.sub(r'[\/\\]+', ' ', ediver))
+						ediver = ediver.strip()	
+						if ediver != '':
+							if str(ediver[0])!='v' and str(ediver[0])!='V':
+								try:  
+									int(ediver[0])+1
+									offset=offset2
+									break
+								except:
+									ediver="-"
+									break		
+				except:
+					ediver="-"					
 			Langue = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14]				
 			for i in Langue:
 				f.seek(offset+i*0x300)	
