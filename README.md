@@ -101,7 +101,9 @@ To install multi-nsp you need a installer compatible with them. Reported compati
 - SX OS rom-menu
 - SX OS installer
 - Blawar’s tinfoil:
-https://github.com/digableinc/tinfoil
+http://tinfoil.io/#download
+- Blawar’s lithium:
+http://tinfoil.io/#download
 
 ## 8. Requirements for 0.8 Beta
 
