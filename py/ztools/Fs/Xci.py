@@ -732,7 +732,7 @@ class Xci(File):
 			meta_nca = Fs.Nca(filepath, 'r+b')
 			sha=meta_nca.calc_pfs0_hash()
 			Print.info(tabs + '- Calculated hash from pfs0: ')
-			Print.info(tabs +'  + '+ str(hx(sha2)))					
+			Print.info(tabs +'  + '+ str(hx(sha)))					
 			meta_nca.flush()
 			meta_nca.close()
 			meta_nca = Fs.Nca(filepath, 'r+b')
