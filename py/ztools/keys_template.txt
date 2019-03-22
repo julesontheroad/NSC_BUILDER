@@ -1,0 +1,20 @@
+aes_kek_generation_source = 
+aes_key_generation_source = 
+titlekek_source = 
+
+key_area_key_application_source = 
+key_area_key_ocean_source = 
+key_area_key_system_source = 
+
+master_key_00 = 
+master_key_01 = 
+master_key_02 = 
+master_key_03 = 
+master_key_04 = 
+master_key_05 = 
+master_key_06 = 
+master_key_07 = 
+
+header_key = 
+
+xci_header_key = 
