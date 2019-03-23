@@ -165,8 +165,8 @@ echo ...........................................................................
 echo Patches the RequiredSystemVersion so console doesn't ask for updates bigger
 echo the required FW to decypher the crypto
 echo.
-echo Input "1" to patch Required System Version in the meta nca
-echo Input "2" to repack folder's files together (multi-content file)
+echo Input "1" to PATCH Required System Version in the meta nca
+echo Input "2" to leave Required System Version UNCHANGED
 echo.
 echo Input "b" to return to AUTO-MODE - CONFIGURATION
 echo Input "0" to return to CONFIG MENU
@@ -723,7 +723,9 @@ echo.
 echo Input "1" to change CARD FORMAT to exfat (Default)
 echo Input "2" to change CARD FORMAT to fat32 for SX OS (xc0 and ns0 files)
 echo Input "3" to change CARD FORMAT to fat32 for all CFW (archive folder)
-
+echo.
+echo Note: Archive folder option exports nsp files as folders and xci files 
+echo splitted files.
 echo.
 echo Input "b" to return to GLOBAL OPTIONS
 echo Input "0" to return to CONFIG MENU
