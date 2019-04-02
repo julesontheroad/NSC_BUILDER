@@ -2906,19 +2906,48 @@ class Nsp(Pfs0):
 			'''	
 								
 								
-	def get_title(self):
+	def get_title(self,baseid):
+		for nca in self:
+			if type(nca) == Nca:	
+				if 	str(nca.header.contentType) == 'Content.META':
+					for f in nca:	
+						for cnmt in f:
+							nca.rewind()
+							f.rewind()
+							cnmt.rewind()
+							titleid=cnmt.readInt64()
+							titleid2 = str(hx(titleid.to_bytes(8, byteorder='big'))) 	
+							titleid2 = titleid2[2:-1]
+							if baseid != titleid2:
+								continue							
+							titleversion = cnmt.read(0x4)
+							cnmt.rewind()
+							cnmt.seek(0xE)
+							offset=cnmt.readInt16()
+							content_entries=cnmt.readInt16()
+							meta_entries=cnmt.readInt16()
+							cnmt.rewind()
+							cnmt.seek(0x20)
+							original_ID=cnmt.readInt64()								
+							min_sversion=cnmt.readInt32()
+							length_of_emeta=cnmt.readInt32()	
+							target=str(nca._path)
+							content_type_cnmt=str(cnmt._path)
+							content_type_cnmt=content_type_cnmt[:-22]									
+							if content_type_cnmt == 'AddOnContent':						
+								DLCnumb=str(titleid2)
+								DLCnumb="0000000000000"+DLCnumb[-3:]									
+								DLCnumb=bytes.fromhex(DLCnumb)
+								DLCnumb=str(int.from_bytes(DLCnumb, byteorder='big'))									
+								DLCnumb=int(DLCnumb)	
+								title = 'DLC number '+str(DLCnumb)		
+								return(title)	
+		title='DLC'							
 		for nca in self:
 			if type(nca) == Nca:
 				if 	str(nca.header.contentType) == 'Content.CONTROL':
-					for f in nca:
-						nca.rewind()
-						f.rewind()	
-						f.seek(0x14200)
-						title = f.read(0x200)		
-						title = title.split(b'\0', 1)[0].decode('utf-8')
-					return(title)
-
-
+					title,editor,ediver,SupLg,regionstr,isdemo=nca.get_langueblock(title)
+					return(title)							
 
 	def gen_nsp_head(self,files,delta,inc_xml,ofolder):
 	
@@ -4062,7 +4091,7 @@ class Nsp(Pfs0):
 				file.rewind()
 				hblock = file.read(0x200)			
 				sha=sha256(hblock).hexdigest()	
-				sec_shalist.append(sha)															
+				sec_shalist.append(sha)		
 																										
 		hfs0 = Fs.Hfs0(None, None)							
 		root_header,upd_header,norm_header,sec_header,rootSize,upd_multiplier,norm_multiplier,sec_multiplier=hfs0.gen_rhfs0_head(upd_list,norm_list,sec_list,sec_fileSizes,sec_shalist)
@@ -4458,12 +4487,151 @@ class Nsp(Pfs0):
 		outf.close()			
 			
 			
-	def get_content(self):
+	def get_content(self,ofolder,vkeypatch):
+		if vkeypatch=='false':
+			vkeypatch=False
 		contentlist=list()
 		ncalist=list()
 		completefilelist=list()
 		for file in self:
 			completefilelist.append(str(file._path))
+		for nca in self:
+			if type(nca) == Nca:
+				if 	str(nca.header.contentType) == 'Content.META':
+					crypto1=nca.header.getCryptoType()
+					crypto2=nca.header.getCryptoType2()	
+					if crypto1 == 2:
+						if crypto1 > crypto2:								
+							keygen=nca.header.getCryptoType()
+						else:			
+							keygen=nca.header.getCryptoType2()	
+					else:			
+						keygen=nca.header.getCryptoType2()				
+					ncalist=list()
+					for f in nca:
+						for cnmt in f:
+							nca.rewind()
+							f.rewind()
+							cnmt.rewind()						
+							titleid=cnmt.readInt64()
+							titleversion = cnmt.read(0x4)
+							cnmt.rewind()
+							cnmt.seek(0xE)
+							offset=cnmt.readInt16()
+							content_entries=cnmt.readInt16()
+							meta_entries=cnmt.readInt16()
+							content_type=str(cnmt._path)
+							content_type=content_type[:-22]	
+							titleid2 = str(hx(titleid.to_bytes(8, byteorder='big'))) 	
+							titleid2 = titleid2[2:-1]	
+							cnmt.seek(0x20)
+							if content_type=='Application':
+								original_ID=titleid2
+								cnmt.readInt64()
+								ttag=''
+								CTYPE='BASE'
+							elif content_type=='Patch':
+								original_ID=cnmt.readInt64()	
+								original_ID=str(hx(original_ID.to_bytes(8, byteorder='big')))
+								original_ID = original_ID[2:-1]	
+								ttag=' [UPD]'
+								CTYPE='UPDATE'
+							elif content_type=='AddOnContent':
+								original_ID=cnmt.readInt64()	
+								original_ID=str(hx(original_ID.to_bytes(8, byteorder='big')))
+								original_ID = original_ID[2:-1]	
+								ttag=' [DLC]'
+								CTYPE='DLC'								
+							else: 
+								original_ID=cnmt.readInt64()	
+								original_ID=str(hx(original_ID.to_bytes(8, byteorder='big')))
+								original_ID = original_ID[2:-1]							
+							cnmt.seek(0x20+offset)			
+							for i in range(content_entries):
+								vhash = cnmt.read(0x20)
+								NcaId = cnmt.read(0x10)
+								size = cnmt.read(0x6)
+								size=int.from_bytes(size, byteorder='little')
+								ncatype = cnmt.read(0x1)
+								unknown = cnmt.read(0x1)		
+							#**************************************************************	
+								version=str(int.from_bytes(titleversion, byteorder='little'))
+								ver=version
+								ver='[v'+ver+']'
+								titleid3 ='['+ titleid2+']'
+								nca_name=str(hx(NcaId))
+								nca_name=nca_name[2:-1]+'.nca'
+								if nca_name in completefilelist:
+									ncalist.append([nca_name,size])			
+							nca_meta=str(nca._path)
+							if nca_meta in completefilelist:	
+								ncalist.append([nca_meta,nca.size])
+								if ofolder != False:
+									target = Fs.Nca(nca, 'r+b')
+									target.rewind()		
+									outf= os.path.join(ofolder, str(nca._path))									
+									fp = open(outf, 'w+b')		
+									for data in iter(lambda: target.read(int(32768)), ""):	
+										fp.write(data)						
+										fp.flush()				
+										if not data:
+											fp.close()									
+											break			
+									target = Fs.Nca(outf, 'r+b')										
+									block = target.read()			
+									nsha=sha256(block).hexdigest()	
+									target.rewind()	
+									if vkeypatch == False:
+										xml=target.xml_gen(ofolder,nsha)	
+									else:
+										xml=target.xml_gen_mod(ofolder,nsha,vkeypatch)									
+									xmlname=nca_meta[:-3]+'xml'
+									xmlsize=os.path.getsize(xml)
+									ncalist.append([xmlname,xmlsize])		
+									target.close()
+									try:
+										os.remove(outf) 	
+									except:
+										pass								
+							titlerights=titleid2+str('0'*15)+str(crypto2)
+							contentlist.append([str(self._path),titleid2,titlerights,keygen,ncalist,CTYPE,version])
+							
+		for file in self:
+			if type(file) == Ticket or file._path.endswith('.cert'):	
+				test=file._path
+				test=test[0:32]
+				for i in contentlist:
+					if i[2]==test:
+						i[4].append([file._path,file.size])
+		'''
+		for i in contentlist:
+			print('Filename: '+i[0])
+			print('TitleID: '+i[1])
+			print('TitleRights: '+i[2])
+			print('Version: '+str(i[6]))				
+			print('Keygen: '+str(i[3]))		
+			print('Content type: '+str(i[5]))			
+			for j in i[4]:
+				print (j)	
+		print("")
+		'''
+
+		return contentlist
+		
+		
+	def get_content_placeholder(self):
+		contentlist=list()
+		ncalist=list()
+		completefilelist=list()
+		for file in self:
+			if type(file) == Nca:
+				if 	str(file.header.contentType) != 'Content.META' and str(file.header.contentType) != 'Content.CONTROL':
+					continue
+				else:	
+					completefilelist.append(str(file._path))					
+			else:
+				completefilelist.append(str(file._path))
+		#print (completefilelist)			
 		for nca in self:
 			if type(nca) == Nca:
 				if 	str(nca.header.contentType) == 'Content.META':
@@ -4547,7 +4715,8 @@ class Nsp(Pfs0):
 						i[4].append([file._path,file.size])
 			elif file._path.endswith('.xml'):	
 				test=file._path
-				test=test[0:-4]+'.nca'
+				#print(test)
+				test=test[:-4]+'.nca'
 				#print(test)
 				for i in contentlist:
 					for j in i[4]:
@@ -4565,15 +4734,228 @@ class Nsp(Pfs0):
 				print (j)	
 		print("")
 		'''
-		return contentlist
-			
-			
-			
-			
-			
-			
-			
-			
+		return contentlist		
+		
+	def append_content(self,outf,target,buffer,t):			
+		indent = 1
+		tabs = '\t' * indent	
+		for file in self:	
+			if str(file._path) == target:
+				if type(file) == Nca:
+					fp = open(outf, 'a+b')			
+					file.rewind()
+					t.write(tabs+'- Appending: ' + str(file._path))			
+					for data in iter(lambda: file.read(int(buffer)), ""):		
+						fp.write(data)
+						t.update(len(data))					
+						fp.flush()				
+						if not data:				
+							break					
+					if str(file.header.contentType) == 'Content.META':
+						target=str(file._path)
+						xmlname=target[:-3]+'xml'	
+						t.write(tabs+'- Appending: ' + xmlname)								
+						dir=os.path.dirname(os.path.abspath(outf))						
+						outf= os.path.join(dir, xmlname)		
+						xml = open(outf, 'rb')		
+						data=xml.read()
+						xml.close()
+						fp.write(data)
+						t.update(len(data))					
+						fp.flush()	
+						try:
+							os.remove(outf) 	
+						except:
+							pass							
+					fp.close()							
+				else:
+					fp = open(outf, 'a+b')			
+					file.rewind()
+					t.write(tabs+'- Appending: ' + str(file._path))			
+					for data in iter(lambda: file.read(int(buffer)), ""):		
+						fp.write(data)
+						t.update(len(data))					
+						fp.flush()				
+						if not data:
+							fp.close()					
+							break	
+						
+	def append_clean_content(self,outf,target,buffer,t,gamecard,keypatch,metapatch,RSV_cap,fat,fx):			
+		indent = 1
+		tabs = '\t' * indent	
+		ticketlist=list()
+		if keypatch != 'false':
+			try:
+				keypatch = int(keypatch)
+			except:
+				print("New keygeneration is no valid integer")		
+		for file in self:
+			if type(file) == Ticket:	
+				masterKeyRev = file.getMasterKeyRevision()
+				titleKeyDec = Keys.decryptTitleKey(file.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(masterKeyRev))
+				rightsId = str(hx(file.getRightsId().to_bytes(16, byteorder='big')))			
+				encryptedkey=file.getTitleKeyBlock().to_bytes(16, byteorder='big')
+				ticketlist.append([masterKeyRev,rightsId,encryptedkey])
+		for file in self:	
+			if str(file._path) == target:
+				if type(file) == Nca:
+					gc_flag=file.header.getgamecard()
+					if gc_flag != 0:
+						if gamecard==False:
+							gc_flag='00'*0x01								
+						else:
+							gc_flag='01'*0x01
+					else:
+						gc_flag='00'*0x01					
+					file.rewind()			
+					crypto1=file.header.getCryptoType()
+					crypto2=file.header.getCryptoType2()	
+					hcrypto = aes128.AESXTS(uhx(Keys.get('header_key')))					
+					if crypto2>crypto1:
+						masterKeyRev=crypto2
+					if crypto2<=crypto1:	
+						masterKeyRev=crypto1						
+					if file.header.getRightsId() != 0:	
+						for i in range(len(ticketlist)):			
+							#print(str(file.header.rightsId))	
+							#print(ticketlist[i][1])								
+							if  str(file.header.rightsId) == ticketlist[i][1]:
+								encryptedkey=ticketlist[i][2]
+								break	
+						titleKeyDec = Keys.decryptTitleKey(encryptedkey, Keys.getMasterKeyIndex(masterKeyRev))
+						t.write("")
+						t.write(tabs+'rightsId =\t' + str(file.header.rightsId))
+						t.write(tabs+'titleKeyDec =\t' + str(hx(titleKeyDec)))
+						t.write(tabs+'masterKeyRev =\t' + hex(masterKeyRev))									
+						t.write("")
+						crypto = aes128.AESECB(Keys.keyAreaKey(Keys.getMasterKeyIndex(masterKeyRev), file.header.keyIndex))							
+						file.rewind()
+						t.write(tabs+'* Appending: ' + str(file._path))		
+						encKeyBlock = crypto.encrypt(titleKeyDec * 4)
+						if keypatch != 'false':					
+							if keypatch < file.header.getCryptoType2():
+								encKeyBlock,crypto1,crypto2=self.get_new_cryptoblock(file, keypatch,encKeyBlock,t)								
+						#t.write(str(hx(encKeyBlock)))
+						newheader=self.get_newheader(file,encKeyBlock,crypto1,crypto2,hcrypto,gc_flag)						
+						#t.write(str(hx(newheader)))
+					if file.header.getRightsId() == 0:				
+						t.write(tabs+'* Appending: ' + str(file._path))	
+						file.rewind()						
+						crypto = aes128.AESECB(Keys.keyAreaKey(Keys.getMasterKeyIndex(masterKeyRev), file.header.keyIndex))					
+						encKeyBlock = file.header.getKeyBlock()	
+						if keypatch != 'false':					
+							if keypatch < file.header.getCryptoType2():
+								encKeyBlock,crypto1,crypto2=self.get_new_cryptoblock(file, keypatch,encKeyBlock,t)								
+						newheader=self.get_newheader(file,encKeyBlock,crypto1,crypto2,hcrypto,gc_flag)						
+					if 	str(file.header.contentType) != 'Content.META':							
+						i=0					
+						sha=sha256()
+						fp = open(outf, 'ab')
+						file.rewind()										
+						for data in iter(lambda: file.read(int(buffer)), ""):	
+							if i==0:				
+								fp.write(newheader)
+								t.update(len(newheader))	
+								sha.update(newheader)						
+								file.seek(0xC00)									
+								i+=1	
+							else:	
+								fp.write(data)
+								t.update(len(data))	
+								sha.update(data)								
+								fp.flush()				
+								if not data:				
+									break	
+						sha=sha.hexdigest()	
+						if 	str(file._path).endswith('.cnmt.nca'):
+							newname=sha[:32]+'.cnmt.nca'		
+						else:	
+							newname=sha[:32]+'.nca'							
+						#t.write(tabs+'new hash: '+sha)
+						#t.write(tabs+'new name: '+newname)					
+						fp.close()								
+					elif str(file.header.contentType) == 'Content.META':
+						metaname = str(file._path)
+						dir=os.path.dirname(os.path.abspath(outf))
+						metafile=os.path.join(dir, metaname)
+						fp = open(metafile, 'w+b')	
+						file.rewind()	
+						i=0		
+						sha=sha256()						
+						for data in iter(lambda: file.read(int(buffer)), ""):	
+							if i==0:				
+								fp.write(newheader)
+								sha.update(newheader)						
+								file.seek(0xC00)									
+								i+=1	
+							else:	
+								fp.write(data)
+								sha.update(data)								
+								fp.flush()				
+								if not data:				
+									break				
+						fp.close()		
+						if metapatch == 'true' or keypatch != 'false':									
+							target = Fs.Nca(metafile, 'r+b')
+							target.rewind()					
+							if 	str(target.header.contentType) == 'Content.META':
+								for pfs0 in target:
+									for cnmt in pfs0:
+										check=str(cnmt._path)
+										check=check[:-22]
+										if check == 'AddOnContent':
+											t.write(tabs+'   > DLC. No RSV to patch')													
+											target.close()										
+										else:	
+											target.close()	
+											minRSV=sq_tools.getMinRSV(keypatch,RSV_cap)
+											if int(minRSV)>int(RSV_cap):
+												RSV_cap=minRSV
+											self.patcher_meta(metafile,RSV_cap,t)
+						target = Fs.Nca(metafile, 'r+b')														
+						target.rewind()															
+						fp = open(outf, 'ab')			
+						file.rewind()	
+						for data in iter(lambda: target.read(int(buffer)), ""):		
+							fp.write(data)
+							t.update(len(data))					
+							fp.flush()				
+							if not data:		
+								target.close()										
+								break	
+						try:
+							os.remove(metafile) 	
+						except:
+							pass										
+						if not outf.endswith('xci'):
+							target=str(file._path)
+							xmlname=target[:-3]+'xml'	
+							t.write(tabs+'* Appending: ' + xmlname)								
+							dir=os.path.dirname(os.path.abspath(outf))						
+							outf= os.path.join(dir, xmlname)		
+							xml = open(outf, 'rb')		
+							data=xml.read()
+							xml.close()
+							fp.write(data)
+							t.update(len(data))					
+							fp.flush()	
+							try:
+								os.remove(outf) 	
+							except:
+								pass																									
+						fp.close()		
+				else:
+					fp = open(outf, 'ab')			
+					file.rewind()
+					t.write(tabs+'* Appending: ' + str(file._path))			
+					for data in iter(lambda: file.read(int(buffer)), ""):		
+						fp.write(data)
+						t.update(len(data))					
+						fp.flush()				
+						if not data:				
+							break	
+						fp.close()				
+	
 	def sp_groupncabyid(self,buffer,ofolder,fat,fx,export):
 		contentlist=list()
 		ncalist=list()
@@ -5224,4 +5606,16 @@ class Nsp(Pfs0):
 		return header,enc_info,sig_padding,fake_CERT,root_header,upd_header,norm_header,sec_header,rootSize,upd_multiplier,norm_multiplier,sec_multiplier
 			
 				
-				
+	def file_hash(self,target):		
+		indent = 1
+		tabs = '\t' * indent	
+		sha=False;sizef=False
+		for file in self:	
+			if str(file._path) == target:
+				file.rewind()
+				hblock = file.read(0x200)			
+				sha=sha256(hblock).hexdigest()	
+				sizef=file.size
+				#print(str(sizef))
+				#return sha,sizef
+		return sha,sizef

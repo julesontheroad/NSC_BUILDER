@@ -5,7 +5,10 @@ from binascii import hexlify as hx, unhexlify as uhx
 import Keys
 import re
 from hashlib import sha256
-
+from struct import pack as pk, unpack as upk
+import Fs
+import aes128
+import sq_tools
 '''	
 versions = 
       0:       "1.0.0",   ->   keygeneration = 0
@@ -858,3 +861,178 @@ def verify_nkeys_startup(fileName):
 			
 	return startup
 	
+
+def gen_nsp_header(files,fileSizes):
+	'''
+	for i in range(len(files)):
+		print (files[i])
+		print (fileSizes[i])	
+	'''	
+	filesNb = len(files)
+	stringTable = '\x00'.join(str(nca) for nca in files)
+	headerSize = 0x10 + (filesNb)*0x18 + len(stringTable)
+	remainder = 0x10 - headerSize%0x10
+	headerSize += remainder
+
+	fileOffsets = [sum(fileSizes[:n]) for n in range(filesNb)]
+	
+	fileNamesLengths = [len(str(nca))+1 for nca in files] # +1 for the \x00
+	stringTableOffsets = [sum(fileNamesLengths[:n]) for n in range(filesNb)]
+	
+	header =  b''
+	header += b'PFS0'
+	header += pk('<I', filesNb)
+	header += pk('<I', len(stringTable)+remainder)
+	header += b'\x00\x00\x00\x00'
+	for n in range(filesNb):
+		header += pk('<Q', fileOffsets[n])
+		header += pk('<Q', fileSizes[n])
+		header += pk('<I', stringTableOffsets[n])
+		header += b'\x00\x00\x00\x00'
+	header += stringTable.encode()
+	header += remainder * b'\x00'
+	
+	return header					
+			
+
+def get_xciheader(oflist,osizelist,sec_hashlist):
+	upd_list=list()
+	upd_fileSizes = list()		
+	norm_list=list()
+	norm_fileSizes = list()			
+	sec_list=oflist
+	sec_fileSizes = osizelist		
+	sec_shalist = sec_hashlist			
+												
+	hfs0 = Fs.Hfs0(None, None)							
+	root_header,upd_header,norm_header,sec_header,rootSize,upd_multiplier,norm_multiplier,sec_multiplier=hfs0.gen_rhfs0_head(upd_list,norm_list,sec_list,sec_fileSizes,sec_shalist)
+	#print (hx(root_header))
+	tot_size=0xF000+rootSize
+	
+	signature=sq_tools.randhex(0x100)
+	signature= bytes.fromhex(signature)
+	
+	sec_offset=root_header[0x90:0x90+0x8]	
+	sec_offset=int.from_bytes(sec_offset, byteorder='little')
+	sec_offset=int((sec_offset+0xF000+0x200)/0x200)
+	sec_offset=sec_offset.to_bytes(4, byteorder='little')
+	back_offset=(0xFFFFFFFF).to_bytes(4, byteorder='little')
+	kek=(0x00).to_bytes(1, byteorder='big')
+	cardsize,access_freq=sq_tools.getGCsize(tot_size)
+	cardsize=cardsize.to_bytes(1, byteorder='big')
+	GC_ver=(0x00).to_bytes(1, byteorder='big')
+	GC_flag=(0x00).to_bytes(1, byteorder='big')
+	pack_id=(0x8750F4C0A9C5A966).to_bytes(8, byteorder='big')
+	valid_data=int(((tot_size-0x1)/0x200))
+	valid_data=valid_data.to_bytes(8, byteorder='little')	
+	
+	try:
+		Keys.get('xci_header_key')
+		key= Keys.get('xci_header_key')
+		key= bytes.fromhex(key)
+		IV=sq_tools.randhex(0x10)
+		IV= bytes.fromhex(IV)
+		xkey=True
+		#print(hx(IV))
+		#print("i'm here") 
+	except:
+		IV=(0x5B408B145E277E81E5BF677C94888D7B).to_bytes(16, byteorder='big')
+		xkey=False
+		#print("i'm here 2") 
+		
+	HFS0_offset=(0xF000).to_bytes(8, byteorder='little')
+	len_rHFS0=(len(root_header)).to_bytes(8, byteorder='little')
+	sha_rheader=sha256(root_header[0x00:0x200]).hexdigest()	
+	sha_rheader=bytes.fromhex(sha_rheader)	
+	sha_ini_data=bytes.fromhex('1AB7C7B263E74E44CD3C68E40F7EF4A4D6571551D043FCA8ECF5C489F2C66E7E')	
+	SM_flag=(0x01).to_bytes(4, byteorder='little')
+	TK_flag=(0x02).to_bytes(4, byteorder='little')		
+	K_flag=(0x0).to_bytes(4, byteorder='little')
+	end_norm = sec_offset	
+	
+	header =  b''
+	header += signature
+	header += b'HEAD'
+	header += sec_offset
+	header += back_offset
+	header += kek
+	header += cardsize
+	header += GC_ver
+	header += GC_flag
+	header += pack_id
+	header += valid_data		
+	header += IV		
+	header += HFS0_offset				
+	header += len_rHFS0		
+	header += sha_rheader	
+	header += sha_ini_data
+	header += SM_flag	
+	header += TK_flag	
+	header += K_flag			
+	header += end_norm		
+	
+	#Game_info
+	if xkey==True:
+		firm_ver='0100000000000000'
+		access_freq=access_freq
+		Read_Wait_Time='88130000'
+		Read_Wait_Time2='00000000'
+		Write_Wait_Time='00000000'		
+		Write_Wait_Time2='00000000'		
+		Firmware_Mode='00110C00'		
+		CUP_Version='5a000200'		
+		Empty1='00000000'
+		Upd_Hash='9bfb03ddbb7c5fca'
+		CUP_Id='1608000000000001'
+		Empty2='00'*0x38	
+		#print(hx(Empty2))
+	
+		firm_ver=bytes.fromhex(firm_ver)	
+		access_freq=bytes.fromhex(access_freq)	
+		Read_Wait_Time=bytes.fromhex(Read_Wait_Time)
+		Read_Wait_Time2=bytes.fromhex(Read_Wait_Time2)
+		Write_Wait_Time=bytes.fromhex(Write_Wait_Time)
+		Write_Wait_Time2=bytes.fromhex(Write_Wait_Time2)		
+		Firmware_Mode=bytes.fromhex(Firmware_Mode)
+		CUP_Version=bytes.fromhex(CUP_Version)
+		Empty1=bytes.fromhex(Empty1)
+		Upd_Hash=bytes.fromhex(Upd_Hash)
+		CUP_Id=bytes.fromhex(CUP_Id)		
+		Empty2=bytes.fromhex(Empty2)	
+	
+		Game_info =  b''
+		Game_info += firm_ver
+		Game_info += access_freq
+		Game_info += Read_Wait_Time
+		Game_info += Read_Wait_Time2		
+		Game_info += Write_Wait_Time
+		Game_info += Write_Wait_Time2
+		Game_info += Firmware_Mode
+		Game_info += CUP_Version
+		Game_info += Empty1
+		Game_info += Upd_Hash
+		Game_info += CUP_Id		
+		Game_info += Empty2	
+		
+		gamecardInfoIV=IV[::-1]	
+		crypto = aes128.AESCBC(key, gamecardInfoIV)
+		enc_info=crypto.encrypt(Game_info)					
+	if xkey==False:
+		enc_info=sq_tools.get_enc_gameinfo(tot_size)
+	
+	#print (hx(enc_info))		
+	
+	#Padding
+	sig_padding='00'*0x6E00
+	sig_padding=bytes.fromhex(sig_padding)		
+	#print (hx(sig_padding))	
+	
+	#CERT
+	fake_CERT='FF'*0x8000
+	fake_CERT=bytes.fromhex(fake_CERT)				
+	#print (hx(fake_CERT))
+
+
+	return header,enc_info,sig_padding,fake_CERT,root_header,upd_header,norm_header,sec_header,rootSize,upd_multiplier,norm_multiplier,sec_multiplier
+
+

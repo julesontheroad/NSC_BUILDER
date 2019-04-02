@@ -21,6 +21,7 @@ from Fs.Rom import Rom
 from Fs.Pfs0 import Pfs0
 from Fs.BaseFs import BaseFs
 from Fs.Ticket import Ticket
+import sq_tools
 
 MEDIA_SIZE = 0x200
 
@@ -698,7 +699,7 @@ class Nca(File):
 				unknown = self.read(0x1)		
 		
 
-	def xml_gen(self, ofolder,nsha):
+	def xml_gen(self,ofolder,nsha):
 		file = None
 		mode = 'rb'
 		crypto1=self.header.getCryptoType()
@@ -827,6 +828,136 @@ class Nca(File):
 			tfile.write('  <OriginalId>'+ original_ID +'</OriginalId>' + '\n')	
 			tfile.write('</ContentMeta>')					
 		return textpath
+
+	def xml_gen_mod(self,ofolder,nsha,keygeneration):
+		file = None
+		mode = 'rb'
+		crypto1=self.header.getCryptoType()
+		crypto2=self.header.getCryptoType2()						
+		for f in self:
+			cryptoType=f.get_cryptoType()
+			cryptoKey=f.get_cryptoKey()	
+			cryptoCounter=f.get_cryptoCounter()
+		pfs0_offset=0xC00+self.header.get_htable_offset()+self.header.get_pfs0_offset()
+		pfs0_size = self.header.get_pfs0_size()		
+		super(Nca, self).open(file, mode, cryptoType, cryptoKey, cryptoCounter)
+		self.seek(pfs0_offset+0x8)
+		pfs0_table_size=self.readInt32()
+		cmt_offset=pfs0_offset+0x28+pfs0_table_size
+		self.seek(cmt_offset)
+		titleid=self.readInt64()
+		titleversion = self.read(0x4)
+		type_n = self.read(0x1)		
+		self.seek(cmt_offset+0xE)
+		offset=self.readInt16()
+		content_entries=self.readInt16()
+		meta_entries=self.readInt16()
+		self.seek(cmt_offset+0x18)		
+		RDSV=self.readInt64()		
+		self.seek(cmt_offset+0x20)
+		original_ID=self.readInt64()
+		self.seek(cmt_offset+0x28)					
+		min_sversion=self.readInt32()
+		length_of_emeta=self.readInt32()		
+		self.seek(cmt_offset+offset+0x20)
+		
+		if str(hx(type_n)) == "b'1'":
+			type='SystemProgram'		
+		if str(hx(type_n)) == "b'2'":
+			type='SystemData'
+		if str(hx(type_n)) == "b'3'":
+			type='SystemUpdate'
+		if str(hx(type_n)) == "b'4'":
+			type='BootImagePackage'		
+		if str(hx(type_n)) == "b'5'":
+			type='BootImagePackageSafe'		
+		if str(hx(type_n)) == "b'80'":
+			type='Application'			
+		if str(hx(type_n)) == "b'81'":
+			type='Patch'
+		if str(hx(type_n)) == "b'82'":
+			type='AddOnContent'
+		if str(hx(type_n)) == "b'83'":
+			type='Delta'
+
+		titleid=str(hx(titleid.to_bytes(8, byteorder='big')))	
+		titleid='0x'+titleid[2:-1]
+		version = str(int.from_bytes(titleversion, byteorder='little'))
+		RDSV=str(RDSV)
+		xmlname = str(self._path)	
+		xmlname = xmlname[:-4] + '.xml'	
+		outfolder = str(ofolder)+'\\'		
+		textpath = os.path.join(outfolder, xmlname)
+		with open(textpath, 'w+') as tfile:			
+			tfile.write('<?xml version="1.0" encoding="utf-8"?>' + '\n')	
+			tfile.write('<ContentMeta>' + '\n')	
+			tfile.write('  <Type>'+ type +'</Type>' + '\n')	
+			tfile.write('  <Id>'+ titleid +'</Id>' + '\n')	
+			tfile.write('  <Version>'+ version +'</Version>' + '\n')
+			tfile.write('  <RequiredDownloadSystemVersion>'+ RDSV +'</RequiredDownloadSystemVersion>' + '\n')	
+			
+		for i in range(content_entries):
+			vhash = self.read(0x20)
+			NcaId = self.read(0x10)
+			size = self.read(0x6)
+			ncatype = self.readInt8()
+			unknown = self.read(0x1)
+			if ncatype==0:
+				type='Meta'		
+			if str(ncatype)=="1":
+				type='Program'		
+			if ncatype==2:
+				type='Data'		
+			if ncatype==3:
+				type='Control'		
+			if ncatype==4:
+				type='HtmlDocument'	
+			if ncatype==5:
+				type='LegalInformation'		
+			if ncatype==6:
+				type='DeltaFragment'						
+				
+			NcaId=str(hx(NcaId))
+			NcaId=NcaId[2:-1]
+			size=str(int.from_bytes(size, byteorder='little'))
+			vhash=str(hx(vhash))
+			vhash=vhash[2:-1]			
+							
+			with open(textpath, 'a') as tfile:	
+				tfile.write('  <Content>' + '\n')	
+				tfile.write('    <Type>'+ type +'</Type>' + '\n')
+				tfile.write('    <Id>'+ NcaId +'</Id>' + '\n')
+				tfile.write('    <Size>'+ size +'</Size>' + '\n')				
+				tfile.write('    <Hash>'+ vhash +'</Hash>' + '\n')	
+				tfile.write('    <KeyGeneration>'+ str(self.header.cryptoType2) +'</KeyGeneration>' + '\n')				
+				tfile.write('  </Content>' + '\n')						
+
+		self.seek(pfs0_offset+pfs0_size-0x20)			
+		digest = str(hx(self.read(0x20)))
+		digest=digest[2:-1]			
+		original_ID=str(hx(original_ID.to_bytes(8, byteorder='big')))
+		original_ID='0x'+original_ID[2:-1]	
+		metaname=os.path.basename(os.path.abspath(self._path))
+		metaname =  metaname[:-9]
+		size=str(os.path.getsize(self._path))		
+		with open(textpath, 'a') as tfile:	
+			tfile.write('  <Content>' + '\n')	
+			tfile.write('    <Type>'+ 'Meta' +'</Type>' + '\n')
+			tfile.write('    <Id>'+ metaname +'</Id>' + '\n')
+			tfile.write('    <Size>'+ size +'</Size>' + '\n')				
+			tfile.write('    <Hash>'+ nsha +'</Hash>' + '\n')				
+			tfile.write('    <KeyGeneration>'+ str(keygeneration) +'</KeyGeneration>' + '\n')					
+			tfile.write('  </Content>' + '\n')						
+			tfile.write('  <Digest>'+ digest +'</Digest>' + '\n')
+			tfile.write('  <KeyGeneration>'+ str(keygeneration) +'</KeyGeneration>' + '\n')
+			min_sversion=sq_tools.getMinRSV(keygeneration,min_sversion)			
+			tfile.write('  <RequiredSystemVersion>'+ str(min_sversion) +'</RequiredSystemVersion>' + '\n')				
+			tfile.write('  <OriginalId>'+ original_ID +'</OriginalId>' + '\n')	
+			tfile.write('</ContentMeta>')					
+		return textpath
+
+
+
 		
 	def ret_xml(self):
 		file = None
@@ -954,11 +1085,12 @@ class Nca(File):
 		xml_string +=('  <OriginalId>'+ original_ID +'</OriginalId>' + '\n')	
 		xml_string +=('</ContentMeta>')	
 		
-		print(xml_string)
+		#print(xml_string)
 		
 		size=len(xml_string)
 		
-		return xmlname,size
+		return xmlname,size,xml_string
+		
 			
 	def printInfo(self, indent = 0):
 		tabs = '\t' * indent
