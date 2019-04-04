@@ -823,7 +823,7 @@ class Nca(File):
 			tfile.write('    <KeyGeneration>'+ str(keygeneration) +'</KeyGeneration>' + '\n')					
 			tfile.write('  </Content>' + '\n')						
 			tfile.write('  <Digest>'+ digest +'</Digest>' + '\n')
-			tfile.write('  <KeyGeneration>'+ str(keygeneration) +'</KeyGeneration>' + '\n')
+			tfile.write('  <KeyGenerationMin>'+ str(keygeneration) +'</KeyGenerationMin>' + '\n')
 			tfile.write('  <RequiredSystemVersion>'+ str(min_sversion) +'</RequiredSystemVersion>' + '\n')				
 			tfile.write('  <OriginalId>'+ original_ID +'</OriginalId>' + '\n')	
 			tfile.write('</ContentMeta>')					
