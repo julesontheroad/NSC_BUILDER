@@ -4487,7 +4487,9 @@ class Nsp(Pfs0):
 		outf.close()			
 			
 			
-	def get_content(self,ofolder,vkeypatch):
+	def get_content(self,ofolder,vkeypatch,delta):
+		indent = 1
+		tabs = '\t' * indent			
 		if vkeypatch=='false':
 			vkeypatch=False
 		contentlist=list()
@@ -4552,7 +4554,7 @@ class Nsp(Pfs0):
 								NcaId = cnmt.read(0x10)
 								size = cnmt.read(0x6)
 								size=int.from_bytes(size, byteorder='little')
-								ncatype = cnmt.read(0x1)
+								ncatype = cnmt.readInt8()
 								unknown = cnmt.read(0x1)		
 							#**************************************************************	
 								version=str(int.from_bytes(titleversion, byteorder='little'))
@@ -4562,7 +4564,11 @@ class Nsp(Pfs0):
 								nca_name=str(hx(NcaId))
 								nca_name=nca_name[2:-1]+'.nca'
 								if nca_name in completefilelist:
-									ncalist.append([nca_name,size])			
+									if delta==False and ncatype==6:	
+										print(tabs+'- Excluding delta fragment '+nca_name)
+										continue	
+									else:		
+										ncalist.append([nca_name,size])								
 							nca_meta=str(nca._path)
 							if nca_meta in completefilelist:	
 								ncalist.append([nca_meta,nca.size])
@@ -4734,9 +4740,10 @@ class Nsp(Pfs0):
 				print (j)	
 		print("")
 		'''
-		return contentlist		
+		return contentlist	
 		
-	def append_content(self,outf,target,buffer,t):			
+	def append_content(self,outf,target,buffer,t,fat,fx,c,index):		
+		block=4294934528		
 		indent = 1
 		tabs = '\t' * indent	
 		for file in self:	
@@ -4746,9 +4753,28 @@ class Nsp(Pfs0):
 					file.rewind()
 					t.write(tabs+'- Appending: ' + str(file._path))			
 					for data in iter(lambda: file.read(int(buffer)), ""):		
-						fp.write(data)
-						t.update(len(data))					
-						fp.flush()				
+						if fat=="fat32" and (c+len(data))>block:	
+							n2=block-c
+							c=0										
+							dat2=data[0x00:0x00+int(n2)]										
+							fp.write(dat2)
+							fp.flush()
+							fp.close()	
+							t.update(len(dat2))											
+							index=index+1
+							outf=outf[0:-1]
+							outf=outf+str(index)
+							fp = open(outf, 'wb')	
+							dat2=data[0x00+int(n2)+1:]
+							fp.write(dat2)						
+							t.update(len(dat2))		
+							c=c+len(dat2)													
+							fp.flush()				
+						else:
+							fp.write(data)
+							t.update(len(data))
+							c=c+len(data)																		
+							fp.flush()									
 						if not data:				
 							break					
 					if str(file.header.contentType) == 'Content.META':
@@ -4760,27 +4786,67 @@ class Nsp(Pfs0):
 						xml = open(outf, 'rb')		
 						data=xml.read()
 						xml.close()
-						fp.write(data)
-						t.update(len(data))					
-						fp.flush()	
+						if fat=="fat32" and (c+len(data))>block:	
+							n2=block-c
+							c=0										
+							dat2=data[0x00:0x00+int(n2)]										
+							fp.write(dat2)
+							fp.flush()
+							fp.close()	
+							t.update(len(dat2))											
+							index=index+1
+							outf=outf[0:-1]
+							outf=outf+str(index)
+							fp = open(outf, 'wb')	
+							dat2=data[0x00+int(n2)+1:]
+							fp.write(dat2)						
+							t.update(len(dat2))		
+							c=c+len(dat2)													
+							fp.flush()															
+						else:
+							fp.write(data)
+							t.update(len(data))
+							c=c+len(data)																		
+							fp.flush()											
 						try:
 							os.remove(outf) 	
 						except:
-							pass							
+							pass																									
 					fp.close()							
 				else:
 					fp = open(outf, 'a+b')			
 					file.rewind()
 					t.write(tabs+'- Appending: ' + str(file._path))			
 					for data in iter(lambda: file.read(int(buffer)), ""):		
-						fp.write(data)
-						t.update(len(data))					
-						fp.flush()				
-						if not data:
-							fp.close()					
+						if fat=="fat32" and (c+len(data))>block:	
+							n2=block-c
+							c=0										
+							dat2=data[0x00:0x00+int(n2)]										
+							fp.write(dat2)
+							fp.flush()
+							fp.close()	
+							t.update(len(dat2))											
+							index=index+1
+							outf=outf[0:-1]
+							outf=outf+str(index)
+							fp = open(outf, 'wb')	
+							dat2=data[0x00+int(n2)+1:]
+							fp.write(dat2)						
+							t.update(len(dat2))		
+							c=c+len(dat2)													
+							fp.flush()															
+						else:
+							fp.write(data)
+							t.update(len(data))
+							c=c+len(data)																		
+							fp.flush()			
+						if not data:				
 							break	
+					fp.close()
+		return outf,index,c								
 						
-	def append_clean_content(self,outf,target,buffer,t,gamecard,keypatch,metapatch,RSV_cap,fat,fx):			
+	def append_clean_content(self,outf,target,buffer,t,gamecard,keypatch,metapatch,RSV_cap,fat,fx,c,index):			
+		block=4294934528
 		indent = 1
 		tabs = '\t' * indent	
 		ticketlist=list()
@@ -4805,6 +4871,11 @@ class Nsp(Pfs0):
 							gc_flag='00'*0x01								
 						else:
 							gc_flag='01'*0x01
+					elif gc_flag == 0:
+						if gamecard==True:
+							gc_flag='01'*0x01								
+						else:
+							gc_flag='00'*0x01							
 					else:
 						gc_flag='00'*0x01					
 					file.rewind()			
@@ -4830,7 +4901,7 @@ class Nsp(Pfs0):
 						t.write("")
 						crypto = aes128.AESECB(Keys.keyAreaKey(Keys.getMasterKeyIndex(masterKeyRev), file.header.keyIndex))							
 						file.rewind()
-						t.write(tabs+'* Appending: ' + str(file._path))		
+						t.write(tabs+'* Appending: ' + str(file._path))
 						encKeyBlock = crypto.encrypt(titleKeyDec * 4)
 						if keypatch != 'false':					
 							if keypatch < file.header.getCryptoType2():
@@ -4847,30 +4918,73 @@ class Nsp(Pfs0):
 							if keypatch < file.header.getCryptoType2():
 								encKeyBlock,crypto1,crypto2=self.get_new_cryptoblock(file, keypatch,encKeyBlock,t)								
 						newheader=self.get_newheader(file,encKeyBlock,crypto1,crypto2,hcrypto,gc_flag)						
-					if 	str(file.header.contentType) != 'Content.META':							
+					if 	str(file.header.contentType) != 'Content.META':				
 						i=0					
 						sha=sha256()
 						fp = open(outf, 'ab')
 						file.rewind()										
 						for data in iter(lambda: file.read(int(buffer)), ""):	
 							if i==0:				
-								fp.write(newheader)
-								t.update(len(newheader))	
-								sha.update(newheader)						
-								file.seek(0xC00)									
-								i+=1	
+								if fat=="fat32" and (c+len(newheader))>block:									
+									n2=block-c
+									c=0
+									dat2=newheader[0x00:0x00+int(n2)]
+									fp.write(dat2)
+									fp.flush()
+									fp.close()	
+									t.update(len(dat2))
+									index=index+1
+									outf=outf[0:-1]
+									outf=outf+str(index)
+									fp = open(outf, 'wb')	
+									dat2=newheader[0x00+int(n2)+1:]
+									fp.write(dat2)						
+									t.update(len(dat2))		
+									c=c+len(dat2)													
+									fp.flush()		
+									sha.update(newheader)		
+									file.seek(0xC00)										
+								else:									
+									fp.write(newheader)
+									t.update(len(newheader))	
+									c=c+len(newheader)													
+									sha.update(newheader)						
+									file.seek(0xC00)									
+									i+=1	
 							else:	
-								fp.write(data)
-								t.update(len(data))	
-								sha.update(data)								
-								fp.flush()				
+								if fat=="fat32" and (c+len(data))>block:	
+									n2=block-c
+									c=0										
+									dat2=data[0x00:0x00+int(n2)]										
+									fp.write(dat2)
+									fp.flush()
+									fp.close()	
+									t.update(len(dat2))											
+									index=index+1
+									outf=outf[0:-1]
+									outf=outf+str(index)
+									fp = open(outf, 'wb')	
+									dat2=data[0x00+int(n2)+1:]
+									fp.write(dat2)						
+									t.update(len(dat2))		
+									c=c+len(dat2)													
+									fp.flush()				
+									sha.update(data)												
+								else:
+									fp.write(data)
+									t.update(len(data))
+									c=c+len(data)																		
+									fp.flush()		
+									sha.update(data)
 								if not data:				
 									break	
 						sha=sha.hexdigest()	
+						'''
 						if 	str(file._path).endswith('.cnmt.nca'):
 							newname=sha[:32]+'.cnmt.nca'		
 						else:	
-							newname=sha[:32]+'.nca'							
+							newname=sha[:32]+'.nca'	
+						'''							
 						#t.write(tabs+'new hash: '+sha)
 						#t.write(tabs+'new name: '+newname)					
 						fp.close()								
@@ -4883,17 +4997,58 @@ class Nsp(Pfs0):
 						i=0		
 						sha=sha256()						
 						for data in iter(lambda: file.read(int(buffer)), ""):	
-							if i==0:				
-								fp.write(newheader)
-								sha.update(newheader)						
-								file.seek(0xC00)									
-								i+=1	
+							if i==0:	
+								if fat=="fat32" and (c+len(newheader))>block:									
+									n2=block-c
+									c=0
+									dat2=newheader[0x00:0x00+int(n2)]
+									fp.write(dat2)
+									fp.flush()
+									fp.close()	
+									t.update(len(dat2))
+									index=index+1
+									outf=outf[0:-1]
+									outf=outf+str(index)
+									fp = open(outf, 'wb')	
+									dat2=newheader[0x00+int(n2)+1:]
+									fp.write(dat2)						
+									t.update(len(dat2))												
+									fp.flush()	
+									sha.update(newheader)												
+								else:														
+									fp.write(newheader)
+									t.update(len(newheader))												
+									c=c+len(newheader)	
+									sha.update(newheader)						
+									file.seek(0xC00)									
+									i+=1	
 							else:	
-								fp.write(data)
-								sha.update(data)								
-								fp.flush()				
+								if fat=="fat32" and (c+len(data))>block:	
+									n2=block-c
+									c=0										
+									dat2=data[0x00:0x00+int(n2)]										
+									fp.write(dat2)
+									fp.flush()
+									fp.close()	
+									t.update(len(dat2))											
+									index=index+1
+									outf=outf[0:-1]
+									outf=outf+str(index)
+									fp = open(outf, 'wb')	
+									dat2=data[0x00+int(n2)+1:]
+									fp.write(dat2)						
+									t.update(len(dat2))		
+									c=c+len(dat2)													
+									fp.flush()				
+									sha.update(data)												
+								else:
+									fp.write(data)
+									t.update(len(data))
+									c=c+len(data)										
+									sha.update(data)								
+									fp.flush()												
 								if not data:				
-									break				
+									break					
 						fp.close()		
 						if metapatch == 'true' or keypatch != 'false':									
 							target = Fs.Nca(metafile, 'r+b')
@@ -4917,9 +5072,30 @@ class Nsp(Pfs0):
 						fp = open(outf, 'ab')			
 						file.rewind()	
 						for data in iter(lambda: target.read(int(buffer)), ""):		
-							fp.write(data)
-							t.update(len(data))					
-							fp.flush()				
+							if fat=="fat32" and (c+len(data))>block:	
+								n2=block-c
+								c=0										
+								dat2=data[0x00:0x00+int(n2)]										
+								fp.write(dat2)
+								fp.flush()
+								fp.close()	
+								t.update(len(dat2))											
+								index=index+1
+								outf=outf[0:-1]
+								outf=outf+str(index)
+								fp = open(outf, 'wb')	
+								dat2=data[0x00+int(n2)+1:]
+								fp.write(dat2)						
+								t.update(len(dat2))		
+								c=c+len(dat2)													
+								fp.flush()				
+								sha.update(data)												
+							else:
+								fp.write(data)
+								t.update(len(data))
+								c=c+len(data)										
+								sha.update(data)								
+								fp.flush()		
 							if not data:		
 								target.close()										
 								break	
@@ -4928,33 +5104,74 @@ class Nsp(Pfs0):
 						except:
 							pass										
 						if not outf.endswith('xci'):
-							target=str(file._path)
-							xmlname=target[:-3]+'xml'	
-							t.write(tabs+'* Appending: ' + xmlname)								
-							dir=os.path.dirname(os.path.abspath(outf))						
-							outf= os.path.join(dir, xmlname)		
-							xml = open(outf, 'rb')		
-							data=xml.read()
-							xml.close()
-							fp.write(data)
-							t.update(len(data))					
-							fp.flush()	
-							try:
-								os.remove(outf) 	
-							except:
-								pass																									
+							test=outf[0:-1]
+							if not test.endswith('xc'): 
+								target=str(file._path)
+								xmlname=target[:-3]+'xml'	
+								t.write(tabs+'* Appending: ' + xmlname)								
+								dir=os.path.dirname(os.path.abspath(outf))						
+								outf= os.path.join(dir, xmlname)		
+								xml = open(outf, 'rb')		
+								data=xml.read()
+								xml.close()
+								if fat=="fat32" and (c+len(data))>block:	
+									n2=block-c
+									c=0										
+									dat2=data[0x00:0x00+int(n2)]										
+									fp.write(dat2)
+									fp.flush()
+									fp.close()	
+									t.update(len(dat2))											
+									index=index+1
+									outf=outf[0:-1]
+									outf=outf+str(index)
+									fp = open(outf, 'wb')	
+									dat2=data[0x00+int(n2)+1:]
+									fp.write(dat2)						
+									t.update(len(dat2))		
+									c=c+len(dat2)													
+									fp.flush()															
+								else:
+									fp.write(data)
+									t.update(len(data))
+									c=c+len(data)																		
+									fp.flush()											
+								try:
+									os.remove(outf) 	
+								except:
+									pass																								
 						fp.close()		
 				else:
 					fp = open(outf, 'ab')			
 					file.rewind()
 					t.write(tabs+'* Appending: ' + str(file._path))			
 					for data in iter(lambda: file.read(int(buffer)), ""):		
-						fp.write(data)
-						t.update(len(data))					
-						fp.flush()				
+						if fat=="fat32" and (c+len(data))>block:	
+							n2=block-c
+							c=0										
+							dat2=data[0x00:0x00+int(n2)]										
+							fp.write(dat2)
+							fp.flush()
+							fp.close()	
+							t.update(len(dat2))											
+							index=index+1
+							outf=outf[0:-1]
+							outf=outf+str(index)
+							fp = open(outf, 'wb')	
+							dat2=data[0x00+int(n2)+1:]
+							fp.write(dat2)						
+							t.update(len(dat2))		
+							c=c+len(dat2)													
+							fp.flush()															
+						else:
+							fp.write(data)
+							t.update(len(data))
+							c=c+len(data)																		
+							fp.flush()			
 						if not data:				
 							break	
-						fp.close()				
+						fp.close()			
+		return outf,index,c									
 	
 	def sp_groupncabyid(self,buffer,ofolder,fat,fx,export):
 		contentlist=list()
@@ -5608,14 +5825,41 @@ class Nsp(Pfs0):
 				
 	def file_hash(self,target):		
 		indent = 1
+		gamecard = False
 		tabs = '\t' * indent	
 		sha=False;sizef=False
-		for file in self:	
+		for file in self:
+			docheck = False		
 			if str(file._path) == target:
 				file.rewind()
 				hblock = file.read(0x200)			
 				sha=sha256(hblock).hexdigest()	
 				sizef=file.size
 				#print(str(sizef))
-				#return sha,sizef
-		return sha,sizef
+				#return sha,sizef				
+			if type(file) == Nca and gamecard==False:			
+				if	file.header.getgamecard() == 1:	
+					gamecard=True
+				else:
+					nca_id=file.header.titleId
+					if nca_id.endswith('000') or nca_id.endswith('800'):
+						if 	str(file.header.contentType) == 'Content.PROGRAM':					
+							docheck=True
+					else:
+						if 	str(file.header.contentType) == 'Content.DATA':				
+							docheck=True				
+					if docheck == True:
+						crypto1=file.header.getCryptoType()
+						crypto2=file.header.getCryptoType2()	
+						if crypto2>crypto1:
+							masterKeyRev=crypto2
+						if crypto2<=crypto1:	
+							masterKeyRev=crypto1	
+						crypto = aes128.AESECB(Keys.keyAreaKey(Keys.getMasterKeyIndex(masterKeyRev), file.header.keyIndex))
+						KB1L=file.header.getKB1L()
+						KB1L = crypto.decrypt(KB1L)	
+						if sum(KB1L) == 0:					
+							gamecard=True				
+		return sha,sizef,gamecard
+		
+		

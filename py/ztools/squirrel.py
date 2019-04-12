@@ -50,6 +50,7 @@ import win32con, win32api
 import shutil
 from tqdm import tqdm
 from datetime import datetime
+import math  
 
 
 if __name__ == '__main__':
@@ -2694,6 +2695,7 @@ if __name__ == '__main__':
 		# ...................................................		
 		if args.direct_multi:
 			indent = 1
+			index = 0
 			tabs = '\t' * indent							
 			if args.buffer:		
 				for input in args.buffer:
@@ -2805,6 +2807,7 @@ if __name__ == '__main__':
 						pass
 					'''
 					prlist=list()	
+					print ('Calculating final content:')
 					for filepath in filelist:
 						if filepath.endswith('.nsp'):
 							#print(filepath)
@@ -2812,9 +2815,16 @@ if __name__ == '__main__':
 								c=list()
 								f = Fs.Nsp(filepath)	
 								if 'nsp' in export or 'cnsp' in export:	
-									contentlist=f.get_content(ofolder,vkeypatch)
+									afolder=False
+									if fat=="fat32" and fx=="folder":
+										afolder=os.path.join(ofolder,"archfolder")
+										if not os.path.exists(afolder):
+											os.makedirs(afolder)			
+										contentlist=f.get_content(afolder,vkeypatch,delta)
+									else:
+										contentlist=f.get_content(ofolder,vkeypatch,delta)									
 								else:	
-									contentlist=f.get_content(False,False)									
+									contentlist=f.get_content(False,False,delta)									
 								f.flush()
 								f.close()		
 								if len(prlist)==0:
@@ -2845,9 +2855,9 @@ if __name__ == '__main__':
 								c=list()
 								f = Fs.Xci(filepath)					
 								if 'nsp' in export or 'cnsp' in export:
-									contentlist=f.get_content(ofolder,vkeypatch)
+									contentlist=f.get_content(ofolder,vkeypatch,delta)
 								else:	
-									contentlist=f.get_content(False,False)									
+									contentlist=f.get_content(False,False,delta)									
 								f.flush()
 								f.close()		
 								if len(prlist)==0:
@@ -2952,29 +2962,37 @@ if __name__ == '__main__':
 								f.close()									
 							else:
 								ctitl='UNKNOWN'							
-							baseid='['+baseid+']'
-							updid='['+updid+']'
-							dlcid='['+dlcid+']'	
+							baseid='['+baseid.upper()+']'
+							updid='['+updid.upper()+']'
+							dlcid='['+dlcid.upper()+']'	
 							if ccount == '(1G)' or ccount == '(1U)' or ccount == '(1D)':
 								ccount=''							
-							if baseid != "":
+							if baseid != "[]":
 								if updver != "":							
 									endname=ctitl+' '+baseid+' '+updver+' '+ccount
 								else:	
 									endname=ctitl+' '+baseid+' '+basever+' '+ccount
-							elif updid !="":
+							elif updid != "[]":
 								endname=ctitl+' '+updid+' '+updver+' '+ccount							
 							else:
 								endname=ctitl+' '+dlcid+' '+dlcver+' '+ccount	
-							print('Filename: '+endname)
+							#print('Filename: '+endname)
 						else:
 							endname=str(f)
 
-				endname = (re.sub(r'[\/\\\:\*\?]+', '', endname))								
+				endname = (re.sub(r'[\/\\\:\*\?]+', '', endname))
+				if endname[-1]==' ':
+					endname=endname[:-1]
+				if fat=="fat32" and fx=="folder":			
+					tfname='filename.txt'		
+					tfname = os.path.join(ofolder, tfname)			
+					with open(tfname,"w", encoding='utf8') as tfile: 	
+						tfile.write(endname)				
 				if 'nsp' in export:
 					oflist=list()
 					osizelist=list()
 					totSize=0
+					c=0
 					for i in range(len(prlist)):
 						for j in prlist[i][4]:
 							oflist.append(j[0])
@@ -2983,15 +3001,36 @@ if __name__ == '__main__':
 					nspheader=sq_tools.gen_nsp_header(oflist,osizelist)						
 					endname_x=endname+'.nsp'								
 					endfile = os.path.join(ofolder, str(endname_x))	
-					print(endfile)						
+					print('Filename: '+endname_x)					
 					#print(hx(nspheader))
 					totSize = len(nspheader) + totSize
 					#print(str(totSize))
+					if totSize <= 4294901760:
+						fat="exfat"			
+					if fat=="fat32":
+						splitnumb=math.ceil(totSize/4294901760)
+						index=0
+						endfile=endfile[:-1]+str(index)
+					if fx=="folder" and fat=="fat32":
+						output_folder = os.path.join(ofolder, "archfolder")			
+						endfile = os.path.join(output_folder, "00")	
+						if not os.path.exists(output_folder):
+							os.makedirs(output_folder)	
+					elif fx=="folder" and fat=="exfat":
+						ext='.xml'
+						if os.path.exists(afolder) and os.path.isdir(afolder):
+							for dirpath, dirnames, filenames in os.walk(afolder):				
+								for filename in [f for f in filenames if f.endswith(ext.lower()) or f.endswith(ext.upper()) or f[:-1].endswith(ext.lower()) or f[:-1].endswith(ext.lower())]:				
+									filename= os.path.join(afolder,filename)	
+									shutil.move(filename,ofolder)	
+						shutil.rmtree(afolder, ignore_errors=True)				
+
 					t = tqdm(total=totSize, unit='B', unit_scale=True, leave=False)			
 					outf = open(endfile, 'w+b')		
 					t.write(tabs+'- Writing NSP header...')							
 					outf.write(nspheader)		
-					t.update(len(nspheader))				
+					t.update(len(nspheader))	
+					c=c+len(nspheader)						
 					outf.close()
 					for filepath in filelist:
 						if filepath.endswith('.nsp'):
@@ -2999,14 +3038,15 @@ if __name__ == '__main__':
 								f = Fs.Nsp(filepath)
 								for file in oflist:		
 									if not file.endswith('xml'):
-										f.append_content(endfile,file,buffer,t)
+										outf,index,c = f.append_content(endfile,file,buffer,t,fat,fx,c,index)
 								f.flush()
 								f.close()		
 							except BaseException as e:
 								Print.error('Exception: ' + str(e))	
 					t.close()								
 				if 'xci' in export:
-					endname_x=endname+'[nscb].xci'								
+					endname_x=endname+'[nscb].xci'		
+					print('Filename: '+endname_x)						
 					endfile = os.path.join(ofolder, endname_x)					
 					oflist=list()
 					osizelist=list()
@@ -3022,15 +3062,17 @@ if __name__ == '__main__':
 								#print(j[1])
 							ototlist.append(j[0])
 					sec_hashlist=list()
+					GClist=list()					
 					for filepath in filelist:
 						if filepath.endswith('.nsp'):
 							try:
 								f = Fs.Nsp(filepath)
 								for file in oflist:
-									sha,size=f.file_hash(file)
+									sha,size,gamecard=f.file_hash(file)
 									if sha != False:
 										sec_hashlist.append(sha)	
-										osizelist.append(size)											
+										osizelist.append(size)
+										GClist.append([file,gamecard])								
 								f.flush()
 								f.close()	
 							except BaseException as e:
@@ -3039,10 +3081,11 @@ if __name__ == '__main__':
 							try:
 								f = Fs.Xci(filepath)
 								for file in oflist:
-									sha,size=f.file_hash(file)
+									sha,size,gamecard=f.file_hash(file)
 									if sha != False:
 										sec_hashlist.append(sha)	
-										osizelist.append(size)											
+										osizelist.append(size)	
+										GClist.append([file,gamecard])											
 								f.flush()
 								f.close()	
 							except BaseException as e:
@@ -3050,7 +3093,13 @@ if __name__ == '__main__':
 					#print(oflist)
 					#print(osizelist)
 					#print(sec_hashlist)
-								
+					if totSize <= 4294901760:
+						fat="exfat"			
+					if fat=="fat32":
+						splitnumb=math.ceil(totSize/4294901760)
+						index=0
+						endfile=endfile[:-1]+str(index)
+						
 					xci_header,game_info,sig_padding,xci_certificate,root_header,upd_header,norm_header,sec_header,rootSize,upd_multiplier,norm_multiplier,sec_multiplier=sq_tools.get_xciheader(oflist,osizelist,sec_hashlist)	 						
 					totSize=len(xci_header)+len(game_info)+len(sig_padding)+len(xci_certificate)+rootSize
 					#print(hx(xci_header))
@@ -3093,24 +3142,33 @@ if __name__ == '__main__':
 					outf.write(sec_header)
 					t.update(len(sec_header))
 					c=c+len(sec_header)	
-					outf.close()					
+					outf.close()			
+				
 					for filepath in filelist:
 						if filepath.endswith('.nsp'):
 							try:
+								GC=False
 								f = Fs.Nsp(filepath)
 								for file in oflist:			
-									if not file.endswith('xml'):								
-										f.append_clean_content(endfile,file,buffer,t,True,vkeypatch,metapatch,RSV_cap,fat,fx)
+									if not file.endswith('xml'):		
+										for i in range(len(GClist)):
+											if GClist[i][0] == file:
+												GC=GClist[i][1]
+										outf,index,c = f.append_clean_content(endfile,file,buffer,t,GC,vkeypatch,metapatch,RSV_cap,fat,fx,c,index)
 								f.flush()
 								f.close()		
 							except BaseException as e:
 								Print.error('Exception: ' + str(e))	
 						if filepath.endswith('.xci'):
 							try:
+								GC=False							
 								f = Fs.Xci(filepath)
 								for file in oflist:	
-									if not file.endswith('xml'):								
-										f.append_clean_content(endfile,file,buffer,t,True,vkeypatch,metapatch,RSV_cap,fat,fx)
+									if not file.endswith('xml'):
+										for i in range(len(GClist)):
+											if GClist[i][0] == file:
+												GC=GClist[i][1]									
+										outf,index,c = f.append_clean_content(endfile,file,buffer,t,GC,vkeypatch,metapatch,RSV_cap,fat,fx,c,index)
 								f.flush()
 								f.close()		
 							except BaseException as e:
@@ -3121,6 +3179,7 @@ if __name__ == '__main__':
 					osizelist=list()
 					ototlist=list()					
 					totSize=0
+					c=0
 					for i in range(len(prlist)):
 						for j in prlist[i][4]:
 							el=j[0]
@@ -3132,17 +3191,38 @@ if __name__ == '__main__':
 								#print(j[1])
 							ototlist.append(j[0])	
 					nspheader=sq_tools.gen_nsp_header(oflist,osizelist)					
-					endname_x=endname+'[rr][nscb].nsp'								
+					endname_x=endname+'[rr][nscb].nsp'		
+					print('Filename: '+endname_x)						
 					endfile = os.path.join(ofolder, endname_x)	
 					#print(endfile)						
 					#print(hx(nspheader))
 					totSize = len(nspheader) + totSize
+					if totSize <= 4294901760:
+						fat="exfat"			
+					if fat=="fat32":
+						splitnumb=math.ceil(totSize/4294901760)
+						index=0
+						endfile=endfile[:-1]+str(index)
+					if fx=="folder" and fat=="fat32":
+						output_folder = os.path.join(ofolder, "archfolder")			
+						endfile = os.path.join(output_folder, "00")	
+						if not os.path.exists(output_folder):
+							os.makedirs(output_folder)		
+					elif fx=="folder" and fat=="exfat":
+						ext='.xml'
+						if os.path.exists(afolder) and os.path.isdir(afolder):
+							for dirpath, dirnames, filenames in os.walk(afolder):				
+								for filename in [f for f in filenames if f.endswith(ext.lower()) or f.endswith(ext.upper()) or f[:-1].endswith(ext.lower()) or f[:-1].endswith(ext.lower())]:				
+									filename= os.path.join(afolder,filename)	
+									shutil.move(filename,ofolder)	
+						shutil.rmtree(afolder, ignore_errors=True)										
 					#print(str(totSize))
 					t = tqdm(total=totSize, unit='B', unit_scale=True, leave=False)			
 					outf = open(endfile, 'w+b')		
 					t.write(tabs+'- Writing NSP header...')							
 					outf.write(nspheader)		
-					t.update(len(nspheader))				
+					t.update(len(nspheader))	
+					c=c+len(nspheader)						
 					outf.close()
 					for filepath in filelist:
 						if filepath.endswith('.nsp'):
@@ -3150,7 +3230,7 @@ if __name__ == '__main__':
 								f = Fs.Nsp(filepath)
 								for file in oflist:			
 									if not file.endswith('xml'):					
-										f.append_clean_content(endfile,file,buffer,t,False,vkeypatch,metapatch,RSV_cap,fat,fx)
+										outf,index,c = f.append_clean_content(endfile,file,buffer,t,False,vkeypatch,metapatch,RSV_cap,fat,fx,c,index)
 								f.flush()
 								f.close()		
 							except BaseException as e:
@@ -3160,7 +3240,7 @@ if __name__ == '__main__':
 								f = Fs.Xci(filepath)
 								for file in oflist:						
 									if not file.endswith('xml'):									
-										f.append_clean_content(endfile,file,buffer,t,False,vkeypatch,metapatch,RSV_cap,fat,fx)
+										outf,index,c = f.append_clean_content(endfile,file,buffer,t,False,vkeypatch,metapatch,RSV_cap,fat,fx,c,index)
 								f.flush()
 								f.close()		
 							except BaseException as e:
@@ -3275,8 +3355,16 @@ if __name__ == '__main__':
 		if args.archive and args.ifolder:		
 			indent = 1
 			tabs = '\t' * indent	
+			if args.text_file:			
+				tfile=args.text_file
+				with open(tfile,"r+", encoding='utf8') as tname: 	
+					name = tname.readline()			
+					name=name+'.nsp'
+				endfolder=args.archive	
+				endfolder = os.path.join(endfolder, name)
+			else:
+				endfolder=args.archive				
 			try:		
-				endfolder=args.archive
 				ruta = args.ifolder
 				if not os.path.exists(endfolder):
 					os.makedirs(endfolder)		
@@ -4051,7 +4139,7 @@ if __name__ == '__main__':
 						try:
 							prlist=list()
 							f = Fs.Nsp(filepath)					
-							contentlist=f.get_content(False,False)
+							contentlist=f.get_content(False,False,True)
 							#print(contentlist)
 							f.flush()
 							f.close()		
@@ -4089,7 +4177,7 @@ if __name__ == '__main__':
 							#f = Fs.Xci(filepath)
 							f = Fs.factory(filepath)
 							f.open(filepath, 'rb')														
-							contentlist=f.get_content(False,False)
+							contentlist=f.get_content(False,False,True)
 							f.flush()
 							f.close()							
 							if len(prlist)==0:

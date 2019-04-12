@@ -12,7 +12,6 @@
 -------------------------------------------------------------------------------------
 "                                POWERED BY SQUIRREL                                "
 "                    BASED IN THE WORK OF BLAWAR AND LUCA FRAGA                     "
-                                 VERSION 0.80 (BETA)
 -------------------------------------------------------------------------------------                   
 Program's github: https://github.com/julesontheroad/NSC_BUILDER
 Blawar's github:  https://github.com/blawar

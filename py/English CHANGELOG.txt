@@ -12,7 +12,6 @@
 -------------------------------------------------------------------------------------
 "                                POWERED BY SQUIRREL                                "
 "                    BASED IN THE WORK OF BLAWAR AND LUCA FRAGA                     "
-                                 VERSION 0.81 (BETA2)
 -------------------------------------------------------------------------------------                   
 Program's github: https://github.com/julesontheroad/NSC_BUILDER
 Blawar's github:  https://github.com/blawar
@@ -22,6 +21,33 @@ Luca Fraga's github: https://github.com/LucaFraga
 ---------------
 0. Changelog
 ---------------
+v0.82- Added direct generation for multi-pack processing and more.
+	*Added direct generation without nca extracting for multi pack processing (mode 2)
+	*Added name calculation for multi pack processing (mode 2)
+	*Added content calculation for for multi pack processing (This replaces update mode
+	 in a better and more efective way) 
+	*Temporarly removed option to fix logo in multi-xci files
+	*Added option to generate multi-nsp including tickets without nca modification.
+	 This files will pass blawar's tinfoil signature check.
+         Notes:
+	 > The mode only includes content from nca files
+	 > If you include unlockers or converts the final file won't pass blawar's tinfoil
+           verification. I'll add an option to prevent inclusion of modified ncas in this mode
+	   in future updates.
+	*Fixed japanese language detection in info functions and db functions for some games.
+	 (Note: Still need to fix the 11 japanese games that give a decoding error when getting
+	  the name)
+	*Several minor bugfixes
+	*Set update mode as LEGACY. Bound to be removed in future versions or to be repurposed
+	 as a content override mode.
+	*New naming follows the following scheme:
+	 name [titleid] [game version] (number of games + number of updates + number of DLCs)
+	*Noticed issues in the fat32 splitter with the new direct building modes so it's disabled
+	in the beta.
+	*Since the splitter was disabled a slighty modified version of 0.80-c was included as 
+	stable if you need to do fat32 splitting use that version.
+	NOTE: In future versions the fat32 splitter will get it's own mode along new trimming
+	functions to avoid interference with the current direct building modes.
 v0.81- BETA 2 direct generation for individual processing and more.
 	*Added direct generation without nca extracting for individual processing (mode 1)
 	*Added direct generation without nca extracting for multi-content splitter (mode3)
