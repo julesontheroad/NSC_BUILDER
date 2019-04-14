@@ -13,6 +13,7 @@ master_key_03 =
 master_key_04 = 
 master_key_05 = 
 master_key_06 = 
+master_key_07 = 
 
 header_key = 
 
