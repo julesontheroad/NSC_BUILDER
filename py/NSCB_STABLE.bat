@@ -365,6 +365,7 @@ if "%manual_intro%" EQU "indiv" ( goto normalmode )
 if "%manual_intro%" EQU "multi" ( goto multimode )
 if "%manual_intro%" EQU "split" ( goto SPLMODE )
 if "%manual_intro%" EQU "update" ( goto UPDMODE )
+
 goto manual_Reentry
 
 :manual_Reentry
@@ -376,6 +377,7 @@ echo Input "2" to enter into multi-pack mode
 echo Input "3" to enter into multi-content splitter mode
 echo Input "4" to enter into update mode
 echo Input "5" to enter into file-info mode
+echo Input "6" to enter DATABASE building mode
 echo Input "0" to enter into configuration mode
 echo .......................................................
 echo.
@@ -386,6 +388,7 @@ if /i "%bs%"=="2" goto multimode
 if /i "%bs%"=="3" goto SPLMODE
 if /i "%bs%"=="4" goto UPDMODE
 if /i "%bs%"=="5" goto INFMODE
+if /i "%bs%"=="6" goto DBMODE
 if /i "%bs%"=="0" goto OPT_CONFIG
 goto manual_Reentry
 
@@ -575,12 +578,6 @@ echo Input "1" to repack list as nsp
 echo Input "2" to repack list as xci
 echo Input "3" to repack list as both
 echo.
-echo Input "0" TO JUST MAKE ZIP FILES!!!!
-echo Input "D" TO GENERATE NUTDB DATABASE
-echo Input "E" TO GENERATE EXTENDED DATABASE
-echo Input "K" TO GENERATE KEYLESS DATABASE
-echo Input "A" TO GENERATE ALL 3 ABOVE DATABASES
-echo.
 ECHO ******************************************
 echo Or Input "b" to return to the list options
 ECHO ******************************************
@@ -594,14 +591,6 @@ if /i "%bs%"=="1" set "vrepack=nsp"
 if /i "%bs%"=="2" set "vrepack=xci"
 if /i "%bs%"=="3" set "vrepack=both"
 if /i "%bs%"=="0" goto s_KeyChange_skip
-if /i "%bs%"=="D" set "dbformat=nutdb"
-if /i "%bs%"=="D" goto s_GENDB
-if /i "%bs%"=="E" set "dbformat=extended"
-if /i "%bs%"=="E" goto s_GENDB
-if /i "%bs%"=="K" set "dbformat=keyless"
-if /i "%bs%"=="K" goto s_GENDB
-if /i "%bs%"=="A" set "dbformat=all"
-if /i "%bs%"=="A" goto s_GENDB
 if %vrepack%=="none" goto s_cl_wrongchoice
 :s_RSV_wrongchoice
 if /i "%skipRSVprompt%"=="true" set "patchRSV=-pv false"
@@ -650,7 +639,6 @@ echo Input "4" to change the keygeneration to 4 (FW 4.0.0-4.1.0)
 echo Input "5" to change the keygeneration to 5 (FW 5.0.0-5.1.0)
 echo Input "6" to change the keygeneration to 6 (FW 6.0.0-6.1.0)
 echo Input "7" to change the keygeneration to 7 (FW 6.2.0)
-echo Input "8" to change top keygeneration to 8 (FW 7.0.0-7.0.1)
 echo.
 ECHO ******************************************
 echo Or Input "b" to return to the list options
@@ -677,33 +665,8 @@ if /i "%bs%"=="6" set "vkey=-kp 6"
 if /i "%bs%"=="6" set "capRSV=--RSVcap 402653494"
 if /i "%bs%"=="7" set "vkey=-kp 7"
 if /i "%bs%"=="7" set "capRSV=--RSVcap 404750336"
-if /i "%bs%"=="8" set "vkey=-kp 8"
-if /i "%bs%"=="8" set "capRSV=--RSVcap 469762048"
 if /i "%vkey%"=="none" echo WRONG CHOICE
 if /i "%vkey%"=="none" goto s_KeyChange_wrongchoice
-
-:s_GENDB
-cls
-call :program_logo
-for /f "tokens=*" %%f in (list.txt) do (
-set "orinput=%%f"
-set "db_file=%prog_dir%INFO\%dbformat%_DB.txt"
-set "dbdir=%prog_dir%INFO\"
-call :nutdb
-more +1 "list.txt">"list.txt.new"
-move /y "list.txt.new" "list.txt" >nul
-call :contador_NF
-)
-ECHO ---------------------------------------------------
-ECHO *********** ALL FILES WERE PROCESSED! *************
-ECHO ---------------------------------------------------
-goto s_exit_choice
-
-:nutdb
-if not exist "%dbdir%" MD "%dbdir%">NUL 2>&1
-%pycommand% "%nut%" --dbformat "%dbformat%" --text_file "%db_file%" -nscdb "%orinput%" 
-exit /B
-
 
 :s_KeyChange_skip
 cls
@@ -1081,7 +1044,6 @@ echo Input "4" to change the keygeneration to 4 (FW 4.0.0-4.1.0)
 echo Input "5" to change the keygeneration to 5 (FW 5.0.0-5.1.0)
 echo Input "6" to change the keygeneration to 6 (FW 6.0.0-6.1.0)
 echo Input "7" to change the keygeneration to 7 (FW 6.2.0)
-echo Input "8" to change top keygeneration to 8 (FW 7.0.0-7.0.1)
 echo.
 ECHO *****************************************
 echo Or Input "b" to return to the option list
@@ -1108,8 +1070,6 @@ if /i "%bs%"=="6" set "vkey=-kp 6"
 if /i "%bs%"=="6" set "capRSV=--RSVcap 402653494"
 if /i "%bs%"=="7" set "vkey=-kp 7"
 if /i "%bs%"=="7" set "capRSV=--RSVcap 404750336"
-if /i "%bs%"=="8" set "vkey=-kp 8"
-if /i "%bs%"=="8" set "capRSV=--RSVcap 469762048"
 if /i "%vkey%"=="none" echo WRONG CHOICE
 if /i "%vkey%"=="none" goto m_KeyChange_wrongchoice
 
@@ -1897,7 +1857,6 @@ echo Input "4" to change the keygeneration to 4 (FW 4.0.0-4.1.0)
 echo Input "5" to change the keygeneration to 5 (FW 5.0.0-5.1.0)
 echo Input "6" to change the keygeneration to 6 (FW 6.0.0-6.1.0)
 echo Input "7" to change the keygeneration to 7 (FW 6.2.0)
-echo Input "8" to change top keygeneration to 8 (FW 7.0.0-7.0.1)
 echo.
 ECHO ******************************************
 echo Or Input "b" to return to the list options
@@ -1924,8 +1883,6 @@ if /i "%bs%"=="6" set "vkey=-kp 6"
 if /i "%bs%"=="6" set "capRSV=--RSVcap 402653494"
 if /i "%bs%"=="7" set "vkey=-kp 7"
 if /i "%bs%"=="7" set "capRSV=--RSVcap 404750336"
-if /i "%bs%"=="8" set "vkey=-kp 8"
-if /i "%bs%"=="8" set "capRSV=--RSVcap 469762048"
 if /i "%vkey%"=="none" echo WRONG CHOICE
 if /i "%vkey%"=="none" goto m_KeyChange_wrongchoice
 
@@ -2022,6 +1979,303 @@ exit /B
 setlocal enabledelayedexpansion
 set /a conta=0
 for /f "tokens=*" %%f in (UPDlist.txt) do (
+set /a conta=!conta! + 1
+)
+echo ...................................................
+echo STILL !conta! FILES TO PROCESS
+echo ...................................................
+PING -n 2 127.0.0.1 >NUL 2>&1
+set /a conta=0
+endlocal
+exit /B
+
+::///////////////////////////////////////////////////
+::///////////////////////////////////////////////////
+:: DB-MODE
+::///////////////////////////////////////////////////
+::///////////////////////////////////////////////////
+:DBMODE
+cls
+call :program_logo
+echo -----------------------------------------------
+echo DATABASE GENERATION MODE ACTIVATED
+echo -----------------------------------------------
+if exist "DBL.txt" goto DBprevlist
+goto DBmanual_INIT
+:DBprevlist
+set conta=0
+for /f "tokens=*" %%f in (DBL.txt) do (
+echo %%f
+) >NUL 2>&1
+setlocal enabledelayedexpansion
+for /f "tokens=*" %%f in (DBL.txt) do (
+set /a conta=!conta! + 1
+) >NUL 2>&1
+if !conta! LEQ 0 ( del DBL.txt )
+endlocal
+if not exist "DBL.txt" goto DBmanual_INIT
+ECHO .......................................................
+ECHO A PREVIOUS LIST WAS FOUND. WHAT DO YOU WANT TO DO?
+:DBprevlist0
+ECHO .......................................................
+echo Input "1" to auto-start processing from the previous list
+echo Input "2" to erase list and make a new one.
+echo Input "3" to continue building the previous list
+echo .......................................................
+echo NOTE: By pressing 3 you'll see the previous list 
+echo before starting the processing the files and you will 
+echo be able to add and delete items from the list
+echo.
+ECHO *************************************************
+echo Or Input "0" to return to the MODE SELECTION MENU
+ECHO *************************************************
+echo.
+set /p bs="Enter your choice: "
+set bs=%bs:"=%
+if /i "%bs%"=="3" goto DBshowlist
+if /i "%bs%"=="2" goto DBdelist
+if /i "%bs%"=="1" goto DBstart_cleaning
+if /i "%bs%"=="0" goto manual_Reentry
+echo.
+echo BAD CHOICE
+goto DBprevlist0
+:DBdelist
+del DBL.txt
+cls
+call :program_logo
+echo -----------------------------------------------
+echo INDIVIDUAL PROCESSING ACTIVATED
+echo -----------------------------------------------
+echo ..................................
+echo YOU'VE DECIDED TO START A NEW LIST
+echo ..................................
+:DBmanual_INIT
+endlocal
+ECHO ***********************************************
+echo Input "0" to return to the MODE SELECTION MENU
+ECHO ***********************************************
+echo.
+set /p bs="PLEASE DRAG A FILE OR FOLDER OVER THE WINDOW AND PRESS ENTER: "
+set bs=%bs:"=%
+if /i "%bs%"=="0" goto manual_Reentry
+set "targt=%bs%"
+dir "%bs%\" >nul 2>nul
+if not errorlevel 1 goto DBcheckfolder
+if exist "%bs%\" goto DBcheckfolder
+goto DBcheckfile
+:DBcheckfolder
+%pycommand% "%nut%" -t nsp -tfile "%prog_dir%DBL.txt" -ff "%targt%"
+%pycommand% "%nut%" -t nsx -tfile "%prog_dir%DBL.txt" -ff "%targt%"
+goto DBcheckagain
+:DBcheckfile
+%pycommand% "%nut%" -t nsp -tfile "%prog_dir%DBL.txt" -ff "%targt%"
+%pycommand% "%nut%" -t nsx -tfile "%prog_dir%DBL.txt" -ff "%targt%"
+goto DBcheckagain
+echo.
+:DBcheckagain
+echo WHAT DO YOU WANT TO DO?
+echo ......................................................................
+echo "DRAG ANOTHER FILE OR FOLDER AND PRESS ENTER TO ADD ITEMS TO THE LIST"
+echo.
+echo Input "1" to start processing
+echo Input "e" to exit
+echo Input "i" to see list of files to process
+echo Input "r" to remove some files (counting from bottom)
+echo Input "z" to remove the whole list
+echo ......................................................................
+ECHO *************************************************
+echo Or Input "0" to return to the MODE SELECTION MENU
+ECHO *************************************************
+echo.
+set /p bs="Drag file/folder or set option: "
+set bs=%bs:"=%
+if /i "%bs%"=="0" goto manual_Reentry
+if /i "%bs%"=="1" goto DBstart_cleaning
+if /i "%bs%"=="e" goto DBsalida
+if /i "%bs%"=="i" goto DBshowlist
+if /i "%bs%"=="r" goto DBr_files
+if /i "%bs%"=="z" del DBL.txt
+set "targt=%bs%"
+dir "%bs%\" >nul 2>nul
+if not errorlevel 1 goto DBcheckfolder
+if exist "%bs%\" goto DBcheckfolder
+goto DBcheckfile
+goto DBsalida
+
+:DBr_files
+set /p bs="Input the number of files you want to remove (from bottom): "
+set bs=%bs:"=%
+
+setlocal enabledelayedexpansion
+set conta=
+for /f "tokens=*" %%f in (DBL.txt) do (
+set /a conta=!conta! + 1
+)
+
+set /a pos1=!conta!-!bs!
+set /a pos2=!conta!
+set string=
+
+:DBupdate_list1
+if !pos1! GTR !pos2! ( goto :DBupdate_list2 ) else ( set /a pos1+=1 )
+set string=%string%,%pos1%
+goto :DBupdate_list1 
+:DBupdate_list2
+set string=%string%,
+set skiplist=%string%
+Set "skip=%skiplist%"
+setlocal DisableDelayedExpansion
+(for /f "tokens=1,*delims=:" %%a in (' findstr /n "^" ^<DBL.txt'
+) do Echo=%skip%|findstr ",%%a," 2>&1>NUL ||Echo=%%b
+)>DBL.txt.new
+endlocal
+move /y "DBL.txt.new" "DBL.txt" >nul
+endlocal
+
+:DBshowlist
+cls
+call :program_logo
+echo -------------------------------------------------
+echo INDIVIDUAL PROCESSING ACTIVATED
+echo -------------------------------------------------
+ECHO -------------------------------------------------
+ECHO                 FILES TO PROCESS 
+ECHO -------------------------------------------------
+for /f "tokens=*" %%f in (DBL.txt) do (
+echo %%f
+)
+setlocal enabledelayedexpansion
+set conta=
+for /f "tokens=*" %%f in (DBL.txt) do (
+set /a conta=!conta! + 1
+)
+echo .................................................
+echo YOU'VE ADDED !conta! FILES TO PROCESS
+echo .................................................
+endlocal
+
+goto DBcheckagain
+
+:DBs_cl_wrongchoice
+echo wrong choice
+echo ............
+:DBstart_cleaning
+echo *******************************************************
+echo CHOOSE WHAT TO DO AFTER PROCESSING THE SELECTED FILES
+echo *******************************************************
+echo Input "1" TO GENERATE NUTDB DATABASE
+echo Input "2" TO GENERATE EXTENDED DATABASE
+echo Input "3" TO GENERATE KEYLESS DATABASE (EXTENDED)
+echo Input "4" TO GENERATE ALL 3 ABOVE DATABASES
+echo Input "Z" TO MAKE ZIP FILES
+echo.
+ECHO ******************************************
+echo Or Input "0" to return to the list options
+ECHO ******************************************
+echo.
+set /p bs="Enter your choice: "
+set bs=%bs:"=%
+set vrepack=none
+if /i "%bs%"=="0" goto DBcheckagain
+if /i "%bs%"=="Z" set "vrepack=zip"
+if /i "%bs%"=="Z" goto DBs_start
+if /i "%bs%"=="1" set "dbformat=nutdb"
+if /i "%bs%"=="1" goto DBs_GENDB
+if /i "%bs%"=="2" set "dbformat=extended"
+if /i "%bs%"=="2" goto DBs_GENDB
+if /i "%bs%"=="3" set "dbformat=keyless"
+if /i "%bs%"=="3" goto DBs_GENDB
+if /i "%bs%"=="4" set "dbformat=all"
+if /i "%bs%"=="4" goto DBs_GENDB
+if %vrepack%=="none" goto DBs_cl_wrongchoice
+
+:DBs_start
+cls
+call :program_logo
+for /f "tokens=*" %%f in (DBL.txt) do (
+set "name=%%~nf"
+set "filename=%%~nxf"
+set "orinput=%%f"
+set "ziptarget=%%f" 
+if "%vrepack%" EQU "zip" ( set "zip_restore=true" )
+if "%%~nxf"=="%%~nf.nsp" call :DBnsp_manual
+if "%%~nxf"=="%%~nf.nsx" call :DBnsp_manual
+if "%%~nxf"=="%%~nf.NSP" call :DBnsp_manual
+if "%%~nxf"=="%%~nf.NSX" call :DBnsp_manual
+more +1 "DBL.txt">"DBL.txt.new"
+move /y "DBL.txt.new" "DBL.txt" >nul
+call :DBcontador_NF
+)
+ECHO ---------------------------------------------------
+ECHO *********** ALL FILES WERE PROCESSED! *************
+ECHO ---------------------------------------------------
+:DBs_exit_choice
+if exist DBL.txt del DBL.txt
+if /i "%va_exit%"=="true" echo PROGRAM WILL CLOSE NOW
+if /i "%va_exit%"=="true" ( PING -n 2 127.0.0.1 >NUL 2>&1 )
+if /i "%va_exit%"=="true" goto salida
+echo.
+echo Input "0" to go back to the mode selection
+echo Input "1" to exit the program
+echo.
+set /p bs="Enter your choice: "
+set bs=%bs:"=%
+if /i "%bs%"=="0" goto manual_Reentry
+if /i "%bs%"=="1" goto salida
+goto s_exit_choice
+
+:DBnsp_manual
+set "filename=%name%"
+set "showname=%orinput%"
+if exist "%w_folder%" rmdir /s /q "%w_folder%" >NUL 2>&1
+MD "%w_folder%"
+call :squirrell
+
+if "%vrepack%" EQU "zip" ( goto nsp_just_zip )
+
+:DBnsp_just_zip
+if "%zip_restore%" EQU "true" ( call :makezip )
+rem call :getname
+if "%vrename%" EQU "true" call :addtags_from_nsp
+if "%zip_restore%" EQU "true" ( goto :nsp_just_zip2 )
+
+:DBnsp_just_zip2
+
+if exist "%w_folder%\*.zip" ( MD "%zip_fold%" ) >NUL 2>&1
+move "%w_folder%\*.zip" "%zip_fold%" >NUL 2>&1
+RD /S /Q "%w_folder%" >NUL 2>&1
+
+echo DONE
+call :thumbup
+call :delay
+
+:DBend_nsp_manual
+exit /B
+
+:DBs_GENDB
+for /f "tokens=*" %%f in (DBL.txt) do (
+set "orinput=%%f"
+set "db_file=%prog_dir%INFO\%dbformat%_DB.txt"
+set "dbdir=%prog_dir%INFO\"
+call :DBGeneration
+more +1 "DBL.txt">"DBL.txt.new"
+move /y "DBL.txt.new" "DBL.txt" >nul
+call :DBcontador_NF
+)
+ECHO ---------------------------------------------------
+ECHO *********** ALL FILES WERE PROCESSED! *************
+ECHO ---------------------------------------------------
+goto DBs_exit_choice
+
+:DBGeneration
+if not exist "%dbdir%" MD "%dbdir%">NUL 2>&1
+%pycommand% "%nut%" --dbformat "%dbformat%" -dbfile "%db_file%" -tfile "%prog_dir%DBL.txt" -nscdb "%orinput%" 
+exit /B
+
+:DBcontador_NF
+setlocal enabledelayedexpansion
+set /a conta=0
+for /f "tokens=*" %%f in (DBL.txt) do (
 set /a conta=!conta! + 1
 )
 echo ...................................................
