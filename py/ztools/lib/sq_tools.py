@@ -148,7 +148,7 @@ def getFWRangeRSV(RSV):
 			version+=str(fth_num)
 		version="("+version+")"
 		return version		
-	elif RSV > 65536:
+	elif RSV > 0:
 		RSV=int(RSV)
 		frst_num=1
 		sec_num=0
