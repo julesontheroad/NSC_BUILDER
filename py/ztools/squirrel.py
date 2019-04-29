@@ -47,7 +47,7 @@ from hashlib import sha256
 from pathlib import Path
 from binascii import hexlify as hx, unhexlify as uhx
 
-if sys.platform == 'win32'
+if sys.platform == 'win32':
 	import win32con, win32api
 import shutil
 from tqdm import tqdm
@@ -3354,7 +3354,7 @@ if __name__ == '__main__':
 		# ...................................................						
 		# Archive to nsp
 		# ...................................................						
-		if sys.platform == 'win32'
+		if sys.platform == 'win32':
 			if args.archive and args.ifolder:		
 				indent = 1
 				tabs = '\t' * indent	
