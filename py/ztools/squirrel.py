@@ -46,7 +46,9 @@ import Nsps
 from hashlib import sha256
 from pathlib import Path
 from binascii import hexlify as hx, unhexlify as uhx
-import win32con, win32api
+
+if sys.platform == 'win32'
+	import win32con, win32api
 import shutil
 from tqdm import tqdm
 from datetime import datetime
@@ -3352,36 +3354,37 @@ if __name__ == '__main__':
 		# ...................................................						
 		# Archive to nsp
 		# ...................................................						
-		if args.archive and args.ifolder:		
-			indent = 1
-			tabs = '\t' * indent	
-			if args.text_file:			
-				tfile=args.text_file
-				with open(tfile,"r+", encoding='utf8') as tname: 	
-					name = tname.readline()			
-					name=name+'.nsp'
-				endfolder=args.archive	
-				endfolder = os.path.join(endfolder, name)
-			else:
-				endfolder=args.archive				
-			try:		
-				ruta = args.ifolder
-				if not os.path.exists(endfolder):
-					os.makedirs(endfolder)		
-				#print (ruta)	
-				#print (os.path.isdir(ruta))
-				print (tabs+"Archiving to output folder...")		
-				if os.path.isdir(ruta) == True:
-					for dirpath, dnames, fnames in os.walk(ruta):
-						#print (fnames)
-						for f in fnames:
-							filepath = os.path.join(ruta, f)
-							#print (f)
-							#win32api.SetFileAttributes(filepath,win32con.FILE_ATTRIBUTE_NORMAL)							
-							shutil.move(filepath,endfolder)	
-				win32api.SetFileAttributes(endfolder,win32con.FILE_ATTRIBUTE_ARCHIVE)							
-			except BaseException as e:
-				Print.error('Exception: ' + str(e))				
+		if sys.platform == 'win32'
+			if args.archive and args.ifolder:		
+				indent = 1
+				tabs = '\t' * indent	
+				if args.text_file:			
+					tfile=args.text_file
+					with open(tfile,"r+", encoding='utf8') as tname: 	
+						name = tname.readline()			
+						name=name+'.nsp'
+					endfolder=args.archive	
+					endfolder = os.path.join(endfolder, name)
+				else:
+					endfolder=args.archive				
+				try:		
+					ruta = args.ifolder
+					if not os.path.exists(endfolder):
+						os.makedirs(endfolder)		
+					#print (ruta)	
+					#print (os.path.isdir(ruta))
+					print (tabs+"Archiving to output folder...")		
+					if os.path.isdir(ruta) == True:
+						for dirpath, dnames, fnames in os.walk(ruta):
+							#print (fnames)
+							for f in fnames:
+								filepath = os.path.join(ruta, f)
+								#print (f)
+								#win32api.SetFileAttributes(filepath,win32con.FILE_ATTRIBUTE_NORMAL)							
+								shutil.move(filepath,endfolder)	
+					win32api.SetFileAttributes(endfolder,win32con.FILE_ATTRIBUTE_ARCHIVE)							
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))				
 		# ...................................................						
 		# Join split files
 		# ...................................................						
