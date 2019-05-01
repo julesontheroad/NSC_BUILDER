@@ -21,6 +21,17 @@ Luca Fraga's github: https://github.com/LucaFraga
 ---------------
 0. Changelog
 ---------------
+v0.83- Unify beta and stable build.
+	*Old modes were unified with the new modes. To access them press "L"(legacy) at
+	startup
+	*An option to enter directly in the legacy modes was added at the startup
+	*For now if fat32 is selected the building is done with the legacy functions
+	*Two new options have been added to the individual processing mode:
+	 -Option 4: Delete deltas from update nsps.
+	  This option creates a new update file when the update has deltas.
+	 -Option 5: File renamer.
+	  This option renames nsp or xci files in several formats accordingly with the 
+	  options selected by the user.
 v0.82- Added direct generation for multi-pack processing and more.
 	*Added direct generation without nca extracting for multi pack processing (mode 2)
 	*Added name calculation for multi pack processing (mode 2)

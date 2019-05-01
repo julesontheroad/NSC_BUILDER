@@ -1448,49 +1448,51 @@ class Nsp(Pfs0):
 		dlclist=sorted(dlclist, key=itemgetter(4))
 		patch_called=list()
 		dlc_called=list()		
-		for i in range(len(applist)):		
-			tid=applist[i][1]		
-			Print.info('------------------------------------------------')
-			Print.info('BASE CONTENT ID: ' + str(tid))	
-			Print.info('------------------------------------------------')
-			Print.info('Name: '+applist[i][3])	
-			Print.info('Editor: '+applist[i][4])	
-			Print.info('------------------------------------------------')
-			print(applist[i][1]+" [BASE]"+" v"+applist[i][2])
-			cupd=0
-			for j in range(len(patchlist)):
-				if tid == patchlist[j][1]:
-					v=patchlist[j][2]
-					v_number=str(int(int(v)/65536))
-					print(patchlist[j][3]+" [UPD]"+" v"+patchlist[j][2]+" -> Patch("+v_number+")")
-					cupd+=1
-					patch_called.append(patchlist[j])
-			cdlc=0					
-			for k in range(len(dlclist)):
-				if tid == dlclist[k][1]:
-					print(dlclist[k][3]+" [DLC "+str(dlclist[k][4])+"]"+" v"+dlclist[k][2])	
-					cdlc+=1		
-					dlc_called.append(dlclist[k])					
-			Print.info('------------------------------------------------')
-			Print.info('CONTENT INCLUDES: 1 BASEGAME '+str(cupd)+' UPDATES '+str(cdlc)+' DLCS')	
-			Print.info('------------------------------------------------')		
-			if len(patchlist) != len(patch_called):
+		if len(applist) != 0:
+			for i in range(len(applist)):		
+				tid=applist[i][1]		
 				Print.info('------------------------------------------------')
-				Print.info('ORPHANED UPDATES:')
-				Print.info('------------------------------------------------')	
-				for j in range(len(patchlist)):	
-					if patchlist[j] not in patch_called:
+				Print.info('BASE CONTENT ID: ' + str(tid))	
+				Print.info('------------------------------------------------')
+				Print.info('Name: '+applist[i][3])	
+				Print.info('Editor: '+applist[i][4])	
+				Print.info('------------------------------------------------')
+				print(applist[i][1]+" [BASE]"+" v"+applist[i][2])
+				cupd=0
+				for j in range(len(patchlist)):
+					if tid == patchlist[j][1]:
 						v=patchlist[j][2]
 						v_number=str(int(int(v)/65536))
-						print(patchlist[j][3]+" [UPD]"+" v"+patchlist[j][2]+" -> Patch("+v_number+")")						
-			if len(dlclist) != len(dlc_called):
+						print(patchlist[j][3]+" [UPD]"+" v"+patchlist[j][2]+" -> Patch("+v_number+")")
+						cupd+=1
+						patch_called.append(patchlist[j])
+				cdlc=0					
+				for k in range(len(dlclist)):
+					if tid == dlclist[k][1]:
+						print(dlclist[k][3]+" [DLC "+str(dlclist[k][4])+"]"+" v"+dlclist[k][2])	
+						cdlc+=1		
+						dlc_called.append(dlclist[k])					
 				Print.info('------------------------------------------------')
-				Print.info('ORPHANED DLCS:')
-				Print.info('------------------------------------------------')	
-				for k in range(len(dlclist)):	
-					if dlclist[k] not in dlc_called:
-						print(dlclist[k][3]+" [DLC "+str(dlclist[k][4])+"]"+" v"+dlclist[k][2])			
-			
+				Print.info('CONTENT INCLUDES: 1 BASEGAME '+str(cupd)+' UPDATES '+str(cdlc)+' DLCS')	
+				Print.info('------------------------------------------------')		
+				if len(patchlist) != len(patch_called):
+					Print.info('------------------------------------------------')
+					Print.info('ORPHANED UPDATES:')
+					Print.info('------------------------------------------------')	
+					for j in range(len(patchlist)):	
+						if patchlist[j] not in patch_called:
+							v=patchlist[j][2]
+							v_number=str(int(int(v)/65536))
+							print(patchlist[j][3]+" [UPD]"+" v"+patchlist[j][2]+" -> Patch("+v_number+")")						
+				if len(dlclist) != len(dlc_called):
+					Print.info('------------------------------------------------')
+					Print.info('ORPHANED DLCS:')
+					Print.info('------------------------------------------------')	
+					for k in range(len(dlclist)):	
+						if dlclist[k] not in dlc_called:
+							print(dlclist[k][3]+" [DLC "+str(dlclist[k][4])+"]"+" v"+dlclist[k][2])
+		else:		
+			print('This option is currently meant for multicontent, that includes at least a base game')
 		
 #READ CNMT FILE WITHOUT EXTRACTION	
 	def read_cnmt(self):
@@ -2948,6 +2950,79 @@ class Nsp(Pfs0):
 				if 	str(nca.header.contentType) == 'Content.CONTROL':
 					title,editor,ediver,SupLg,regionstr,isdemo=nca.get_langueblock(title)
 					return(title)							
+					
+	def get_lang_tag(self,baseid):
+		languetag=False
+		for nca in self:
+			if type(nca) == Nca:	
+				if 	str(nca.header.contentType) == 'Content.META':
+					for f in nca:	
+						for cnmt in f:
+							nca.rewind()
+							f.rewind()
+							cnmt.rewind()
+							titleid=cnmt.readInt64()
+							titleid2 = str(hx(titleid.to_bytes(8, byteorder='big'))) 	
+							titleid2 = titleid2[2:-1]
+							if baseid != titleid2:
+								continue							
+							titleversion = cnmt.read(0x4)
+							cnmt.rewind()
+							cnmt.seek(0xE)
+							offset=cnmt.readInt16()
+							content_entries=cnmt.readInt16()
+							meta_entries=cnmt.readInt16()
+							cnmt.rewind()
+							cnmt.seek(0x20)
+							original_ID=cnmt.readInt64()								
+							min_sversion=cnmt.readInt32()
+							length_of_emeta=cnmt.readInt32()	
+							target=str(nca._path)
+							content_type_cnmt=str(cnmt._path)
+							content_type_cnmt=content_type_cnmt[:-22]									
+							if content_type_cnmt == 'AddOnContent':									
+								return(False)	
+		title='DLC'							
+		for nca in self:
+			if type(nca) == Nca:
+				if 	str(nca.header.contentType) == 'Content.CONTROL':
+					title,editor,ediver,SupLg,regionstr,isdemo=nca.get_langueblock(title)
+					languetag='('
+					if ("US (eng)" or "UK (eng)") in SupLg:
+						languetag=languetag+'En,'
+					if "JP" in SupLg:
+						languetag=languetag+'Jp,'				
+					if ("CAD (fr)" or "FR") in SupLg:
+						languetag=languetag+'Fr,'
+					elif ("CAD (fr)") in SupLg:	
+						languetag=languetag+'CADFr,'		
+					elif ("FR") in SupLg:	
+						languetag=languetag+'Fr,'								
+					if "DE" in SupLg:
+						languetag=languetag+'De,'							
+					if ("LAT (spa)" and "SPA") in SupLg:
+						languetag=languetag+'Es'
+					elif "LAT (spa)" in SupLg:
+						languetag=languetag+'LatEs,'
+					elif "SPA" in SupLg:
+						languetag=languetag+'Es,'									
+					if "IT" in SupLg:
+						languetag=languetag+'It,'					
+					if "DU" in SupLg:
+						languetag=languetag+'Du,'
+					if "POR" in SupLg:
+						languetag=languetag+'Por,'						
+					if "RU" in SupLg:
+						languetag=languetag+'Ru,'	
+					if "KOR" in SupLg:
+						languetag=languetag+'Kor,'							
+					if "TAI" in SupLg:
+						languetag=languetag+'Tw,'	
+					if "CH" in SupLg:
+						languetag=languetag+'Ch,'
+					languetag=languetag[:-1]
+					languetag=languetag+')'			
+					return(languetag)					
 
 	def gen_nsp_head(self,files,delta,inc_xml,ofolder):
 	
@@ -4294,7 +4369,20 @@ class Nsp(Pfs0):
 		newheader=hcrypto.encrypt(header)
 		return newheader		
 					
-	def sp_groupncabyid_ND(self,buffer,ofolder,fat,fx):
+	def sp_groupncabyid_ND(self,buffer,ofolder,fat,fx,incxml):	
+		vfragment=False	
+		for nca in self:
+			if type(nca) == Nca:
+				if 	str(nca.header.contentType) == 'Content.DATA':
+					for f in nca:
+							for file in f:
+								filename = str(file._path)
+								if filename=="fragment":
+									vfragment=True
+									break	
+		if vfragment != True:
+			print("> File doesn't have deltas. Skipping")
+			return
 		contentlist=list()
 		ncalist=list()
 		completefilelist=list()
@@ -4331,8 +4419,14 @@ class Nsp(Pfs0):
 							titleid2 = titleid2[2:-1]	
 							cnmt.seek(0x20)
 							if content_type=='Application':
-								print(titleid2+' is not an update. Skipping')
-								continue
+								original_ID=cnmt.readInt64()	
+								original_ID=str(hx(original_ID.to_bytes(8, byteorder='big')))
+								original_ID = original_ID[2:-1]	
+								ttag=''
+								CTYPE='BASE'					
+								if incxml != "special":
+									print(titleid2+' is not an update. Skipping')
+									continue
 							elif content_type=='Patch':
 								original_ID=cnmt.readInt64()	
 								original_ID=str(hx(original_ID.to_bytes(8, byteorder='big')))
@@ -4340,8 +4434,14 @@ class Nsp(Pfs0):
 								ttag=' [UPD]'
 								CTYPE='UPDATE'
 							elif content_type=='AddOnContent':
-								print(titleid2+'is not an update. Skipping')
-								continue					
+								original_ID=cnmt.readInt64()	
+								original_ID=str(hx(original_ID.to_bytes(8, byteorder='big')))
+								original_ID = original_ID[2:-1]	
+								ttag=' [DLC]'
+								CTYPE='DLC'								
+								if incxml != "special":
+									print(titleid2+' is not an update. Skipping')
+									continue			
 							else: 
 								print(titleid2+' is not an update. Skipping')
 								continue					
@@ -4372,7 +4472,8 @@ class Nsp(Pfs0):
 							tit_name = (re.sub(r'[\/\\\:\*\?\!\"\<\>\|\.\s™©®()\~]+', ' ', tit_name))
 							tit_name = tit_name.strip()
 							tid='['+titleid2+']'
-							filename=tit_name+' '+tid+' '+version+ttag
+							tid=tid.upper()
+							filename=tit_name+' '+tid+' '+version
 							titlerights=titleid2+str('0'*15)+str(crypto2)
 							contentlist.append([filename,titleid2,titlerights,keygen,ncalist,CTYPE])
 							
@@ -4383,14 +4484,14 @@ class Nsp(Pfs0):
 				for i in contentlist:
 					if i[2]==test:
 						i[4].append(file._path)
-			elif file._path.endswith('.xml'):	
+			elif file._path.endswith('.xml') and incxml==True:	
 				test=file._path
 				test=test[0:-4]+'.nca'
 				for i in contentlist:
 					if test in i[4]:
 						i[4].append(file._path)
 	
-		
+		'''
 		for i in contentlist:
 			print("")
 			print('Filename: '+i[0])
@@ -4399,7 +4500,7 @@ class Nsp(Pfs0):
 			print('Keygen: '+str(i[3]))			
 			for j in i[4]:
 				print (j)	
-
+		'''
 		
 		for i in contentlist:
 			self.cd_spl_nsp_ND(buffer,i[0],ofolder,i[4],fat,fx)

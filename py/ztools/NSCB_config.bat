@@ -207,14 +207,15 @@ echo Changes the kegeneration and recalculates the keyblock to use a lower
 echo masterkey to decrypt the nca.
 echo.
 echo Input "f" to not change the keygeneration
-echo Input "0" to change the keygeneration to 0 (FW 1.0)
-echo Input "1" to change the keygeneration to 1 (FW 2.0-2.3)
-echo Input "2" to change the keygeneration to 2 (FW 3.0)
-echo Input "3" to change the keygeneration to 3 (FW 3.0.1-3.02)
-echo Input "4" to change the keygeneration to 4 (FW 4.0.0-4.1.0)
-echo Input "5" to change the keygeneration to 5 (FW 5.0.0-5.1.0)
-echo Input "6" to change the keygeneration to 6 (FW 6.0.0-6.1.0)
-echo Input "7" to change the keygeneration to 7 (FW 6.2.0)
+echo Input "0" to change top keygeneration to 0 (FW 1.0)
+echo Input "1" to change top keygeneration to 1 (FW 2.0-2.3)
+echo Input "2" to change top keygeneration to 2 (FW 3.0)
+echo Input "3" to change top keygeneration to 3 (FW 3.0.1-3.02)
+echo Input "4" to change top keygeneration to 4 (FW 4.0.0-4.1.0)
+echo Input "5" to change top keygeneration to 5 (FW 5.0.0-5.1.0)
+echo Input "6" to change top keygeneration to 6 (FW 6.0.0-6.1.0)
+echo Input "7" to change top keygeneration to 7 (FW 6.2.0)
+echo Input "8" to change top keygeneration to 8 (FW 7.0.0-7.0.1)
 echo.
 echo Input "b" to return to AUTO-MODE - CONFIGURATION
 echo Input "c" to return to CONFIG MENU
@@ -232,6 +233,7 @@ if /i "%bs%"=="4" set "v_KGEN=-kp 4"
 if /i "%bs%"=="5" set "v_KGEN=-kp 5"
 if /i "%bs%"=="6" set "v_KGEN=-kp 6"
 if /i "%bs%"=="7" set "v_KGEN=-kp 7"
+if /i "%bs%"=="7" set "v_KGEN=-kp 8"
 
 if /i "%bs%"=="b" goto sc2
 if /i "%bs%"=="c" goto sc1
@@ -266,6 +268,7 @@ echo Input "7" to skip KEY-GENERATION PROMPT
 echo Input "8" to set file stream BUFFER
 echo Input "9" to set file FAT32\EXFAT options
 echo Input "10" to how to ORGANIZE output files
+echo Input "11" to set NEW MODE OR LEGACY MODE
 echo.
 echo Input "c" to read CURRENT GLOBAL SETTINGS
 echo Input "d" to set DEFAULT GLOBAL SETTINGS
@@ -284,6 +287,7 @@ if /i "%bs%"=="7" goto op_kgprompt
 if /i "%bs%"=="8" goto op_buffer
 if /i "%bs%"=="9" goto op_fat
 if /i "%bs%"=="10" goto op_oforg
+if /i "%bs%"=="11" goto op_nscbmode
 
 if /i "%bs%"=="c" call :curr_set2
 if /i "%bs%"=="c" echo.
@@ -805,6 +809,43 @@ echo.
 pause
 goto sc3
 
+:op_nscbmode
+cls
+call :logo
+echo ***************************************************************************
+echo START PROGRAM WITH NEW MODE OR LEGACY MODE
+echo ***************************************************************************
+echo.
+echo Input "1" to start with NEW MODE (default)
+echo Input "2" to start with LEGACY MODE
+echo.
+echo Input "b" to return to GLOBAL OPTIONS
+echo Input "0" to return to CONFIG MENU
+echo Input "e" to go back to the MAIN PROGRAM
+echo ...........................................................................
+echo.
+set /p bs="Enter your choice: "
+set "v_nscbmode=none"
+if /i "%bs%"=="1" set "v_nscbmode=new"
+if /i "%bs%"=="2" set "v_nscbmode=legacy"
+
+if /i "%bs%"=="b" goto sc3
+if /i "%bs%"=="0" goto sc1
+if /i "%bs%"=="e" goto salida
+
+if "%v_nscbmode%"=="none" echo WRONG CHOICE
+if "%v_nscbmode%"=="none" echo.
+if "%v_nscbmode%"=="none" goto op_nscbmode
+
+set v_nscbmode="NSBMODE=%v_nscbmode%"
+set v_nscbmode="%v_nscbmode%"
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "132" -nl "set %v_nscbmode%" 
+echo.
+%pycommand% "%listmanager%" -rl "%op_file%" -ln "132" -nl "Line in config was changed to: "
+echo.
+pause
+goto sc3
+
 :def_set1
 echo.
 echo **AUTO-MODE OPTIONS**
@@ -928,6 +969,13 @@ set v_oforg="%v_oforg%"
 %pycommand% "%listmanager%" -cl "%op_file%" -ln "125" -nl "set %v_oforg%" 
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "125" -nl "Line in config was changed to: "
 
+REM NSCB MODE
+set "v_nscbmode=new"
+set v_nscbmode="NSBMODE=%v_nscbmode%"
+set v_nscbmode="%v_nscbmode%"
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "132" -nl "set %v_nscbmode%" 
+%pycommand% "%listmanager%" -rl "%op_file%" -ln "132" -nl "Line in config was changed to: "
+
 exit /B
 
 :curr_set1
@@ -984,6 +1032,10 @@ REM FAT format
 REM OUTPUT ORGANIZING format
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "125" -nl "Output organization is set to: "
 
+REM NSCB MODE
+%pycommand% "%listmanager%" -rl "%op_file%" -ln "132" -nl "NSCB mode is set to: "
+
+
 exit /B
 
 
@@ -1027,7 +1079,7 @@ ECHO =============================     BY JULESONTHEROAD     ===================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                                POWERED BY SQUIRREL                                "
 ECHO "                    BASED IN THE WORK OF BLAWAR AND LUCA FRAGA                     "
-ECHO                                     VERSION 0.82
+ECHO                                     VERSION 0.83
 ECHO -------------------------------------------------------------------------------------                   
 ECHO Program's github: https://github.com/julesontheroad/NSC_BUILDER
 ECHO Blawar's github:  https://github.com/blawar

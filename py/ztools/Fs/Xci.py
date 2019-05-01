@@ -4643,7 +4643,84 @@ class Xci(File):
 					if type(nca) == Nca:
 						if 	str(nca.header.contentType) == 'Content.CONTROL':
 							title,editor,ediver,SupLg,regionstr,isdemo=nca.get_langueblock(title)
-							return(title)													
+							return(title)			
+
+	def get_lang_tag(self,baseid):
+		languetag=False	
+		for nspF in self.hfs0:
+			if str(nspF._path)=="secure":
+				for nca in nspF:
+					if type(nca) == Nca:	
+						if 	str(nca.header.contentType) == 'Content.META':
+							for f in nca:	
+								for cnmt in f:
+									nca.rewind()
+									f.rewind()
+									cnmt.rewind()
+									titleid=cnmt.readInt64()
+									titleid2 = str(hx(titleid.to_bytes(8, byteorder='big'))) 	
+									titleid2 = titleid2[2:-1]	
+									if baseid != titleid2:
+										continue
+									titleversion = cnmt.read(0x4)
+									cnmt.rewind()
+									cnmt.seek(0xE)
+									offset=cnmt.readInt16()
+									content_entries=cnmt.readInt16()
+									meta_entries=cnmt.readInt16()
+									cnmt.rewind()
+									cnmt.seek(0x20)
+									original_ID=cnmt.readInt64()								
+									min_sversion=cnmt.readInt32()
+									length_of_emeta=cnmt.readInt32()	
+									target=str(nca._path)
+									content_type_cnmt=str(cnmt._path)
+									content_type_cnmt=content_type_cnmt[:-22]									
+									if content_type_cnmt == 'AddOnContent':									
+										return(False)	
+		title='DLC'							
+		for nspF in self.hfs0:
+			if str(nspF._path)=="secure":
+				for nca in nspF:
+					if type(nca) == Nca:
+						if 	str(nca.header.contentType) == 'Content.CONTROL':
+							title,editor,ediver,SupLg,regionstr,isdemo=nca.get_langueblock(title)
+							languetag='('
+							if ("US (eng)" or "UK (eng)") in SupLg:
+								languetag=languetag+'En,'
+							if "JP" in SupLg:
+								languetag=languetag+'Jp,'				
+							if ("CAD (fr)" or "FR") in SupLg:
+								languetag=languetag+'Fr,'
+							elif ("CAD (fr)") in SupLg:	
+								languetag=languetag+'CADFr,'		
+							elif ("FR") in SupLg:	
+								languetag=languetag+'Fr,'								
+							if "DE" in SupLg:
+								languetag=languetag+'De,'							
+							if ("LAT (spa)" and "SPA") in SupLg:
+								languetag=languetag+'Es'
+							elif "LAT (spa)" in SupLg:
+								languetag=languetag+'LatEs,'
+							elif "SPA" in SupLg:
+								languetag=languetag+'Es,'									
+							if "IT" in SupLg:
+								languetag=languetag+'It,'					
+							if "DU" in SupLg:
+								languetag=languetag+'Du,'
+							if "POR" in SupLg:
+								languetag=languetag+'Por,'						
+							if "RU" in SupLg:
+								languetag=languetag+'Ru,'	
+							if "KOR" in SupLg:
+								languetag=languetag+'Kor,'							
+							if "TAI" in SupLg:
+								languetag=languetag+'Tw,'	
+							if "CH" in SupLg:
+								languetag=languetag+'Ch,'
+							languetag=languetag[:-1]
+							languetag=languetag+')'			
+							return(languetag)										
 						
 	def file_hash(self,target):		
 		indent = 1
@@ -4652,7 +4729,8 @@ class Xci(File):
 		sha=False;sizef=False
 		for nspF in self.hfs0:
 			if str(nspF._path)=="secure":
-				for file in nspF:			
+				for file in nspF:
+					docheck = False					
 					if str(file._path) == target:
 						file.rewind()
 						hblock = file.read(0x200)			

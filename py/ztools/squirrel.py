@@ -185,7 +185,8 @@ if __name__ == '__main__':
 		parser.add_argument('-ND', '--nodelta', nargs='+', help='Exclude deltas')	
 		parser.add_argument('-dbformat', '--dbformat', nargs='+', help='Database format extended, nutdb or keyless-extended')		
 		parser.add_argument('-rn', '--rename', nargs='+', help='Filter with base titleid')		
-		parser.add_argument('-uin', '--userinput', help='Reads a user input')				
+		parser.add_argument('-uin', '--userinput', help='Reads a user input')		
+		parser.add_argument('-incxml', '--includexml', nargs='+', help='Include xml by default true')			
 		# LISTMANAGER
 		parser.add_argument('-cl', '--change_line', help='Change line in text file')
 		parser.add_argument('-rl', '--read_line', help='Read line in text file')		
@@ -201,7 +202,12 @@ if __name__ == '__main__':
 		parser.add_argument('-nint_keys','--nint_keys', help='Verify NS keys')			
 		parser.add_argument('-renf','--renamef', help='Rename file with proper name')	
 		parser.add_argument('-oaid','--onlyaddid', help='Rename file with proper name')		
-
+		parser.add_argument('-renm','--renmode', help='Rename mode (force,skip_corr_tid,skip_if_tid)')		
+		parser.add_argument('-addl','--addlangue', help='Add language string')
+		parser.add_argument('-nover','--noversion', help="Don't add version (false,true,xci_no_v0)")
+		parser.add_argument('-dlcrn','--dlcrname', help="If false keeps base name in dlcs")		
+		parser.add_argument('-cltg','--cleantags', help="Clean tags in filenames")	
+		parser.add_argument('-tgtype','--tagtype', help="Type of tag to remove")			
 		args = parser.parse_args()
 
 		Status.start()
@@ -2406,8 +2412,22 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))	
 			else:
-				fx="files"		
-				
+				fx="files"	
+			if args.includexml:		
+				for input in args.includexml:
+					try:
+						if input == "true":
+							incxml=True
+						elif input == "false":
+							incxml=False
+						elif input == "special":
+							incxml="special"
+						else:
+							incxml=True							
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+			else:
+				incxml=True	
 			if args.erase_deltas:
 				if args.text_file:
 					tfile=args.text_file
@@ -2440,9 +2460,10 @@ if __name__ == '__main__':
 					cskip=True						
 
 				if filepath.endswith(".nsp"):
-					try:				
+					try:			
+						print('Processing: '+filepath)
 						f = Fs.Nsp(filepath)					
-						f.sp_groupncabyid_ND(buffer,ofolder,fat,fx)
+						f.sp_groupncabyid_ND(buffer,ofolder,fat,fx,incxml)
 						f.flush()
 						f.close()		
 					except BaseException as e:
@@ -4066,19 +4087,27 @@ if __name__ == '__main__':
 				Print.error('Exception: ' + str(e))					
 
 				
-				
-				
-		#parser.add_argument('-renf','--renamef', help='Rename file with proper name')	
-
-		if args.renamef:
-			if args.onlyaddid:
-				if args.onlyaddid=="true" or args.onlyaddid == "True" or args.onlyaddid == "TRUE":
-					onaddid=True
+		#parser.add_argument('-cltg','--cleantags', help="Clean tags in filenames")		
+		#parser.add_argument('-tgtype','--tagtype', help="Type of tag to remove")			
+		if args.cleantags:
+			if args.tagtype:
+				if args.tagtype=="[]":
+					tagtype='brackets'
+				if args.tagtype=="()":
+					tagtype='parenthesis'				
 				else:					
-					onaddid=False
+					tagtype=False		
 			else:
-				onaddid=False		
-			ruta=args.renamef
+				tagtype=False		
+			if args.text_file and args.cleantags == 'single':
+				tfile=args.text_file
+				with open(tfile,"r+", encoding='utf8') as filelist: 	
+					ruta = filelist.readline()
+					ruta=os.path.abspath(ruta.rstrip('\n'))											
+					ruta = os.path.abspath(ruta)
+			else:		
+				ruta=args.cleantags
+			#print(ruta)
 			indent = 1
 			tabs = '\t' * indent	
 			if ruta[-1]=='"':
@@ -4132,9 +4161,207 @@ if __name__ == '__main__':
 				for f in filelist:
 					print(f)
 				'''
-				print(len(filelist))
+				print('Items to process: '+str(len(filelist)))
 				counter=len(filelist)
 				for filepath in filelist:
+					basename=str(os.path.basename(os.path.abspath(filepath)))		
+					endname=basename
+					dir=os.path.dirname(os.path.abspath(filepath))						
+					print('Filename: '+basename)
+					if tagtype==False or tagtype=='brackets':
+						tid1=list()
+						tid2=list()
+						tid1=[pos for pos, char in enumerate(filepath) if char == '[']
+						tid2=[pos for pos, char in enumerate(filepath) if char == ']']		
+						if len(tid1)>=len(tid2):
+							lentlist=len(tid1)					
+						elif len(tid1)<len(tid2):
+							lentlist=len(tid2)						
+						for i in range(lentlist):	
+							i1=tid1[i]
+							i2=tid2[i]+1
+							t=filepath[i1:i2]					
+							endname=endname.replace(t,'')
+							endname=endname.replace('  ',' ')
+					if tagtype==False or tagtype=='parenthesis':							
+						tid3=[pos for pos, char in enumerate(endname) if char == '(']
+						tid4=[pos for pos, char in enumerate(endname) if char == ')']									
+						if len(tid3)>=len(tid4):
+							lentlist=len(tid3)					
+						elif len(tid3)<len(tid4):
+							lentlist=len(tid4)								
+						for i in range(lentlist):	
+							i3=tid3[i]
+							i4=tid4[i]+1
+							t=endname[i3:i4]		
+							print('t is '+t)
+							endname=endname.replace(t,'')
+							endname=endname.replace('  ',' ')
+					endname=endname.replace(' .','.')						
+					dir=os.path.dirname(os.path.abspath(filepath))
+					newpath=os.path.join(dir,endname)
+					print('New name: '+endname)					
+					if os.path.exists(newpath) and newpath != filepath:
+						if filepath.endswith('.xci'):
+							endname=endname[:-4]+' (SeemsDuplicate)'+'.xci'
+							newpath=os.path.join(dir,endname)	
+						if filepath.endswith('.nsp'):
+							endname=endname[:-4]+' (SeemsDuplicate)'+'.nsp'
+							newpath=os.path.join(dir,endname)	
+					print('New name: '+endname)
+					try:
+						os.rename(filepath, newpath)			
+						print(tabs+'> File was renamed to: '+endname)		
+					except BaseException as e:	
+						pass
+			except BaseException as e:
+				counter=int(counter)
+				counter-=1
+				Print.error('Exception: ' + str(e))	
+					
+				
+		#parser.add_argument('-renf','--renamef', help='Rename file with proper name')	
+		#parser.add_argument('-oaid','--onlyaddid', help='Rename file with proper name')		
+		#parser.add_argument('-renm','--renmode', help='Rename mode (force,skip_corr_tid,skip_if_tid)')		
+		#parser.add_argument('-addl','--addlangue', help='Add language string')		
+		#parser.add_argument('-nover','--noversion', help="Don't add version (false,true,xci_no_v0)")
+		#parser.add_argument('-dlcrn','--dlcrname', help="If false keeps base name in dlcs")				
+
+		if args.renamef:
+			if args.onlyaddid:
+				if args.onlyaddid=="true" or args.onlyaddid == "True" or args.onlyaddid == "TRUE":
+					onaddid=True
+				else:					
+					onaddid=False
+			else:
+				onaddid=False	
+			if args.addlangue:
+				if args.addlangue=="true" or args.addlangue == "True" or args.addlangue == "TRUE":
+					addlangue=True
+				else:					
+					addlangue=False
+			else:
+				addlangue=False	
+			if args.renmode:
+				if args.renmode=="skip_if_tid":
+					renmode="skip_if_tid"
+				elif args.renmode=="force": 
+					renmode="force"
+				else:
+					renmode="skip_corr_tid"	
+			else:
+				renmode="skip_corr_tid"
+			if args.noversion:
+				if args.noversion=="true" or args.noversion == "True" or args.noversion == "TRUE":
+					nover=True
+				elif args.noversion=="xci_no_v0": 
+					nover="xci_no_v0"
+				else:
+					nover=False	
+			else:
+				nover=False	
+			if args.dlcrname:
+				if args.dlcrname=="true" or args.dlcrname == "True" or args.dlcrname == "TRUE":
+					dlcrname=True
+				elif args.dlcrname=="tag" or args.dlcrname == "Tag" or args.dlcrname == "TAG":
+					dlcrname='tag'				
+				else:
+					dlcrname=False	
+			else:
+				dlcrname=False					
+			if args.text_file and args.renamef == 'single':
+				tfile=args.text_file
+				with open(tfile,"r+", encoding='utf8') as filelist: 	
+					ruta = filelist.readline()
+					ruta=os.path.abspath(ruta.rstrip('\n'))											
+					ruta = os.path.abspath(ruta)
+			else:		
+				ruta=args.renamef
+			#print(ruta)
+			indent = 1
+			tabs = '\t' * indent	
+			if ruta[-1]=='"':
+				ruta=ruta[:-1]
+			if ruta[0]=='"':
+				ruta=ruta[1:]		
+			extlist=list()
+			if args.type:
+				for t in args.type:
+					x='.'+t
+					extlist.append(x)
+					if x[-1]=='*':
+						x=x[:-1]
+						extlist.append(x)
+			#print(extlist)			
+			if args.filter:
+				for f in args.filter:
+					filter=f	
+					
+			filelist=list()						
+			try:
+				fname=""
+				binbin='RECYCLE.BIN'
+				for ext in extlist:
+					#print (ext)
+					if os.path.isdir(ruta):
+						for dirpath, dirnames, filenames in os.walk(ruta):
+							for filename in [f for f in filenames if f.endswith(ext.lower()) or f.endswith(ext.upper()) or f[:-1].endswith(ext.lower()) or f[:-1].endswith(ext.lower())]:
+								fname=""
+								if args.filter:
+									if filter.lower() in filename.lower():
+										fname=filename
+								else:
+									fname=filename
+								if fname != "":
+									if binbin.lower() not in filename.lower():
+										filelist.append(os.path.join(dirpath, filename))
+					else:		
+						if ruta.endswith(ext.lower()) or ruta.endswith(ext.upper()) or ruta[:-1].endswith(ext.lower()) or ruta[:-1].endswith(ext.upper()):
+							filename = ruta
+							fname=""
+							if args.filter:
+								if filter.lower() in filename.lower():
+									fname=filename
+							else:
+								fname=filename		
+							if fname != "":
+								if binbin.lower() not in filename.lower():					
+									filelist.append(filename)	
+				'''					
+				for f in filelist:
+					print(f)
+				'''
+				print('Items to process: '+str(len(filelist)))
+				counter=len(filelist)
+				for filepath in filelist:
+					setskip=False
+					if renmode == "skip_if_tid":
+						tid1=list()
+						tid2=list()
+						tid1=[pos for pos, char in enumerate(filepath) if char == '[']
+						tid2=[pos for pos, char in enumerate(filepath) if char == ']']
+						if len(tid1)>=len(tid2):
+							lentlist=len(tid1)					
+						elif len(tid1)<len(tid2):
+							lentlist=len(tid2)						
+						for i in range(lentlist):	
+							i1=tid1[i]+1
+							i2=tid2[i]
+							t=filepath[i1:i2]
+							if len(t)==16: 
+								try:
+									int(filepath[i1:i2], 16)
+									basename=str(os.path.basename(os.path.abspath(filepath)))
+									print('Filename: '+basename)																
+									print(tabs+'> File already has id: '+filepath[i1:i2])
+									setskip=True
+								except:
+									pass
+					if setskip == True:
+						counter=int(counter)
+						counter-=1
+						print(tabs+'> Still '+str(counter)+' to go')					
+						continue
 					if filepath.endswith('.nsp'):
 						try:
 							prlist=list()
@@ -4256,18 +4483,23 @@ if __name__ == '__main__':
 							check=str('['+baseid+']').upper()	
 							#print(basename)	
 							#print(check)
-							if basename2.find(check) is not -1:				
-								print('Filename: '+basename)										
-								print(tabs+"> File already has id")
-								counter=int(counter)
-								counter-=1
-								print(tabs+'> Still '+str(counter)+' to go')										
-								continue
+							if renmode != "force":
+								if basename2.find(check) is not -1:				
+									print('Filename: '+basename)										
+									print(tabs+"> File already has correct id: "+baseid)
+									counter=int(counter)
+									counter-=1
+									print(tabs+'> Still '+str(counter)+' to go')										
+									continue
 							if filepath.endswith('.xci'):							
 								f = Fs.Xci(basefile)
 							elif filepath.endswith('.nsp'):	
 								f = Fs.Nsp(basefile)						
 							ctitl=f.get_title(baseid)
+							if addlangue==True:
+								languetag=f.get_lang_tag(baseid)
+								if languetag != False:
+									ctitl=ctitl+' '+languetag
 							#print(ctitl)
 							#print(baseid)	
 							f.flush()
@@ -4276,19 +4508,24 @@ if __name__ == '__main__':
 							basename=str(os.path.basename(os.path.abspath(filepath)))
 							basename2=basename.upper()		
 							check=str('['+updid+']').upper()
-							if basename2.find(check) is not -1:						
-								basename=os.path.basename(os.path.abspath(filepath))	
-								print('Filename: '+basename)										
-								print(tabs+"> File already has id")	
-								counter=int(counter)
-								counter-=1
-								print(tabs+'> Still '+str(counter)+' to go')										
-								continue		
+							if renmode != "force":							
+								if basename2.find(check) is not -1:						
+									basename=os.path.basename(os.path.abspath(filepath))	
+									print('Filename: '+basename)										
+									print(tabs+"> File already has correct id: "+updid)	
+									counter=int(counter)
+									counter-=1
+									print(tabs+'> Still '+str(counter)+' to go')										
+									continue		
 							if filepath.endswith('.xci'):								
 								f = Fs.Xci(updfile)	
 							elif filepath.endswith('.nsp'):	
 								f = Fs.Nsp(updfile)						
 							ctitl=f.get_title(updid)
+							if addlangue==True:
+								languetag=f.get_lang_tag(baseid)
+								if languetag != False:
+									ctitl=ctitl+' '+languetag						
 							#print(ctitl)
 							#print(updid)	
 							f.flush()
@@ -4296,21 +4533,74 @@ if __name__ == '__main__':
 						elif dlcid !="":
 							basename=str(os.path.basename(os.path.abspath(filepath)))
 							basename2=basename.upper()		
-							check=str('['+dlcid+']').upper()							
-							if basename2.find(check) is not -1:	
-								print('Filename: '+basename)										
-								print(tabs+"> File already has id")		
-								counter=int(counter)
-								counter-=1
-								print(tabs+'> Still '+str(counter)+' to go')										
-								continue
-							if filepath.endswith('.xci'):								
-								f = Fs.Xci(dlcfile)	
-							elif filepath.endswith('.nsp'):	
-								f = Fs.Nsp(dlcfile)						
-							ctitl=f.get_title(dlcid)
-							f.flush()
-							f.close()									
+							check=str('['+dlcid+']').upper()	
+							if renmode != "force":							
+								if basename2.find(check) is not -1:	
+									print('Filename: '+basename)										
+									print(tabs+"> File already has correct id: "+dlcid)		
+									counter=int(counter)
+									counter-=1
+									print(tabs+'> Still '+str(counter)+' to go')										
+									continue
+								else:	
+									if filepath.endswith('.xci'):								
+										f = Fs.Xci(dlcfile)	
+									elif filepath.endswith('.nsp'):	
+										f = Fs.Nsp(dlcfile)						
+									ctitl=f.get_title(dlcid)
+									f.flush()
+									f.close()										
+							elif dlcrname == False or dlcrname == 'tag':						
+								dlcname=str(os.path.basename(os.path.abspath(filepath)))					
+								tid1=list()
+								tid2=list()
+								tid1=[pos for pos, char in enumerate(filepath) if char == '[']
+								tid2=[pos for pos, char in enumerate(filepath) if char == ']']		
+								if len(tid1)>=len(tid2):
+									lentlist=len(tid1)					
+								elif len(tid1)<len(tid2):
+									lentlist=len(tid2)						
+								for i in range(lentlist):	
+									i1=tid1[i]
+									i2=tid2[i]+1
+									t=filepath[i1:i2]
+									dlcname=dlcname.replace(t,'')
+									dlcname=dlcname.replace('  ',' ')																		
+								tid3=[pos for pos, char in enumerate(dlcname) if char == '(']
+								tid4=[pos for pos, char in enumerate(dlcname) if char == ')']									
+								if len(tid3)>=len(tid4):
+									lentlist=len(tid3)					
+								elif len(tid3)<len(tid4):
+									lentlist=len(tid4)								
+								for i in range(lentlist):	
+									i3=tid3[i]
+									i4=tid4[i]+1
+									t=dlcname[i3:i4]		
+									dlcname=dlcname.replace(t,'')
+									dlcname=dlcname.replace('  ',' ')
+								if dlcname.endswith('.xci') or dlcname.endswith('.nsp'):
+									dlcname=dlcname[:-4]
+								if dlcname.endswith(' '):
+									dlcname=dlcname[:-1]
+								ctitl=dlcname	
+								if dlcrname == 'tag':
+									if filepath.endswith('.xci'):								
+										f = Fs.Xci(dlcfile)	
+									elif filepath.endswith('.nsp'):	
+										f = Fs.Nsp(dlcfile)						
+									dlctag=f.get_title(dlcid)	
+									dlctag='['+dlctag+']'
+									ctitl=ctitl+' '+dlctag
+									f.flush()
+									f.close()											
+							else:	
+								if filepath.endswith('.xci'):								
+									f = Fs.Xci(dlcfile)	
+								elif filepath.endswith('.nsp'):	
+									f = Fs.Nsp(dlcfile)						
+								ctitl=f.get_title(dlcid)
+								f.flush()
+								f.close()				
 						else:
 							ctitl='UNKNOWN'		
 						baseid='['+baseid.upper()+']'
@@ -4325,21 +4615,36 @@ if __name__ == '__main__':
 							if updver != "":	
 								if onaddid==True:
 									endname=basename[:-4]+' '+baseid	
+								elif nover == True and (ccount==''):
+									endname=ctitl+' '+baseid								
 								else:		
 									endname=ctitl+' '+baseid+' '+updver+' '+ccount+' '+mgame
 							else:
 								if onaddid==True:
-									endname=basename[:-4]+' '+baseid	
+									endname=basename[:-4]+' '+baseid
+								elif nover == True and (ccount==''):
+									endname=ctitl+' '+baseid											
+								elif filepath.endswith('.xci') and nover=="xci_no_v0" and ccount=='':
+									if renmode=="force":
+										endname=ctitl+' '+baseid+' '+ccount+' '+mgame										
+									elif onaddid==True:
+										endname=basename[:-4]+' '+baseid
+									else: 	
+										endname=ctitl+' '+baseid+' '+ccount+' '+mgame									
 								else:							
 									endname=ctitl+' '+baseid+' '+basever+' '+ccount+' '+mgame
 						elif updid !="" and updid != "[]":
 							if onaddid==True:
 								endname=basename[:-4]+' '+updid	
+							elif nover == True and (ccount==''):
+								endname=ctitl+' '+updid								
 							else:						
 								endname=ctitl+' '+updid+' '+updver+' '+ccount+' '+mgame							
 						else:
 							if onaddid==True:
 								endname=basename[:-4]+' '+dlcid	
+							elif nover == True and (ccount==''):
+								endname=ctitl+' '+dlcid								
 							else:											
 								endname=ctitl+' '+dlcid+' '+dlcver+' '+ccount+' '+mgame	
 					while endname[-1]==' ':
@@ -4353,12 +4658,20 @@ if __name__ == '__main__':
 					basename=str(os.path.basename(os.path.abspath(filepath)))			
 					dir=os.path.dirname(os.path.abspath(filepath))
 					newpath=os.path.join(dir,endname)
-					if os.path.exists(newpath):
-						endname=basename[:-4]+' (needscheck)'+'.xci'
-						newpath=os.path.join(dir,endname)	
+					if os.path.exists(newpath) and newpath != filepath:
+						if filepath.endswith('.xci'):
+							endname=endname[:-4]+' (SeemsDuplicate)'+'.xci'
+							newpath=os.path.join(dir,endname)	
+						if filepath.endswith('.nsp'):
+							endname=endname[:-4]+' (SeemsDuplicate)'+'.nsp'
+							newpath=os.path.join(dir,endname)								
 					if 	ctitl=='UNKNOWN':
-						endname=basename[:-4]+' (needscheck)'+'.xci'
-						newpath=os.path.join(dir,endname)						
+						if filepath.endswith('.xci'):					
+							endname=basename[:-4]+' (needscheck)'+'.xci'
+							newpath=os.path.join(dir,endname)	
+						if filepath.endswith('.nsp'):
+							endname=basename[:-4]+' (needscheck)'+'.nsp'
+							newpath=os.path.join(dir,endname)						
 					print('Old Filename: '+basename)						
 					print('Filename: '+endname)								
 					os.rename(filepath, newpath)	
