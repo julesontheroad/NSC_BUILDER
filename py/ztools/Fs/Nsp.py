@@ -19,8 +19,7 @@ from tqdm import tqdm
 from Fs.Pfs0 import Pfs0
 from Fs.Ticket import Ticket
 from Fs.Nca import Nca
-import math  
-import win32con, win32api
+import math
 from operator import itemgetter, attrgetter, methodcaller
 #from Cryptodome.Signature import pss
 #from Cryptodome.PublicKey import RSA
