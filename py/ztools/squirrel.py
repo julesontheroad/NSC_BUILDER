@@ -46,7 +46,8 @@ import Nsps
 from hashlib import sha256
 from pathlib import Path
 from binascii import hexlify as hx, unhexlify as uhx
-import win32con, win32api
+if sys.platform == 'win32':
+	import win32con, win32api
 import shutil
 from tqdm import tqdm
 from datetime import datetime
@@ -3400,7 +3401,8 @@ if __name__ == '__main__':
 							#print (f)
 							#win32api.SetFileAttributes(filepath,win32con.FILE_ATTRIBUTE_NORMAL)							
 							shutil.move(filepath,endfolder)	
-				win32api.SetFileAttributes(endfolder,win32con.FILE_ATTRIBUTE_ARCHIVE)							
+				if sys.platform == 'win32':
+					win32api.SetFileAttributes(endfolder,win32con.FILE_ATTRIBUTE_ARCHIVE)							
 			except BaseException as e:
 				Print.error('Exception: ' + str(e))				
 		# ...................................................						
