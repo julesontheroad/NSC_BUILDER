@@ -1891,6 +1891,9 @@ if __name__ == '__main__':
 											if contentlist[j][6] > prlist[i][6]:
 												del prlist[i]
 												prlist.append(contentlist[j])
+												notinlist=False
+											elif contentlist[j][6] == prlist[i][6]:				
+												notinlist=False															
 										else:
 											notinlist=True
 									if notinlist == True:
@@ -2864,6 +2867,9 @@ if __name__ == '__main__':
 												if contentlist[j][6] > prlist[i][6]:
 													del prlist[i]
 													prlist.append(contentlist[j])
+													notinlist=False
+												elif contentlist[j][6] == prlist[i][6]:				
+													notinlist=False															
 											else:
 												notinlist=True
 										if notinlist == True:
@@ -2897,6 +2903,9 @@ if __name__ == '__main__':
 												if contentlist[j][6] > prlist[i][6]:
 													del prlist[i]
 													prlist.append(contentlist[j])
+													notinlist=False
+												elif contentlist[j][6] == prlist[i][6]:				
+													notinlist=False															
 											else:
 												notinlist=True
 										if notinlist == True:
@@ -4387,6 +4396,9 @@ if __name__ == '__main__':
 											if contentlist[j][6] > prlist[i][6]:
 												del prlist[i]
 												prlist.append(contentlist[j])
+												notinlist=False
+											elif contentlist[j][6] == prlist[i][6]:				
+												notinlist=False															
 										else:
 											notinlist=True
 									if notinlist == True:
@@ -4424,6 +4436,9 @@ if __name__ == '__main__':
 											if contentlist[j][6] > prlist[i][6]:
 												del prlist[i]
 												prlist.append(contentlist[j])
+												notinlist=False
+											elif contentlist[j][6] == prlist[i][6]:				
+												notinlist=False															
 										else:
 											notinlist=True
 									if notinlist == True:
