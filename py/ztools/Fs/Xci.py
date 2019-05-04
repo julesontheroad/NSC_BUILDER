@@ -31,6 +31,8 @@ XCI_IV_SIZE = 0x10
 XCI_HASH_SIZE = 0x20
 XCI_GAMECARD_INFO_LENGTH = 0x70
 XCI_GAMECARD_INFO_PADDING_LENGTH = 0x38
+indent = 1
+tabs = '\t' * indent	
 
 class GamecardInfo(File):
 	def __init__(self, file = None):

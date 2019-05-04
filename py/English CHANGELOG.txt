@@ -21,6 +21,7 @@ Luca Fraga's github: https://github.com/LucaFraga
 ---------------
 0. Changelog
 ---------------
+v0.83.c - Fixes error "Exception: name 'tabs' is not defined"
 v0.83.b - Fixes error in direct multi where new update file is included 2 times.
 v0.83- Unify beta and stable build.
 	*Old modes were unified with the new modes. To access them press "L"(legacy) at

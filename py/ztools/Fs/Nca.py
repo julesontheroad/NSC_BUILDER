@@ -24,6 +24,8 @@ from Fs.Ticket import Ticket
 import sq_tools
 
 MEDIA_SIZE = 0x200
+indent = 1
+tabs = '\t' * indent	
 
 
 class SectionTableEntry:

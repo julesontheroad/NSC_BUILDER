@@ -14,6 +14,8 @@ from Fs.BaseFs import BaseFs
 from Fs.Ivfc import Ivfc
 
 MEDIA_SIZE = 0x200
+indent = 1
+tabs = '\t' * indent	
 		
 class Rom(BaseFs):
 	def __init__(self, buffer, path = None, mode = None, cryptoType = -1, cryptoKey = -1, cryptoCounter = -1):

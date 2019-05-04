@@ -3,7 +3,8 @@ import Fs.Type
 from binascii import hexlify as hx, unhexlify as uhx
 import Print
 import Keys
-
+indent = 1
+tabs = '\t' * indent	
 
 class Ticket(File):
 	def __init__(self, path = None, mode = None, cryptoType = -1, cryptoKey = -1, cryptoCounter = -1):

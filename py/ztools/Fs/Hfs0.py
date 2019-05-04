@@ -23,7 +23,8 @@ import Fs
 from tqdm import tqdm
 
 MEDIA_SIZE = 0x200
-
+indent = 1
+tabs = '\t' * indent	
 
 class Hfs0(Pfs0):
 	def __init__(self, path = None, mode = None, cryptoType = -1, cryptoKey = -1, cryptoCounter = -1):

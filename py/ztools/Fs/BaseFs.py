@@ -1,6 +1,8 @@
 from Fs.File import File
 import Print
 from binascii import hexlify as hx, unhexlify as uhx
+indent = 1
+tabs = '\t' * indent
 
 class BaseFs(File):
 	def __init__(self, buffer, path = None, mode = None, cryptoType = -1, cryptoKey = -1, cryptoCounter = -1):		

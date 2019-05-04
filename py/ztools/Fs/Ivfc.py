@@ -17,7 +17,8 @@ import Nsps
 from tqdm import tqdm
 
 MEDIA_SIZE = 0x200
-
+indent = 1
+tabs = '\t' * indent	
 
 class IvfcLevel:
 	def __init__(self, offset, size, blockSize, reserved):

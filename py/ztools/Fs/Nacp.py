@@ -4,6 +4,8 @@ from binascii import hexlify as hx, unhexlify as uhx
 from enum import IntEnum
 import Print
 import Keys
+indent = 1
+tabs = '\t' * indent	
 
 class NacpLanguageType(IntEnum):
 	AmericanEnglish = 0

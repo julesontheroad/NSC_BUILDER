@@ -20,6 +20,8 @@ import Fs
 from tqdm import tqdm
 
 MEDIA_SIZE = 0x200
+indent = 1
+tabs = '\t' * indent	
 
 
 class uHfs0(Pfs0):

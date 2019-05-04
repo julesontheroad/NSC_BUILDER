@@ -19,7 +19,10 @@ from tqdm import tqdm
 from Fs.Pfs0 import Pfs0
 from Fs.Ticket import Ticket
 from Fs.Nca import Nca
-import math
+import math  
+import sys
+if sys.platform == 'win32':
+	import win32con, win32api
 from operator import itemgetter, attrgetter, methodcaller
 #from Cryptodome.Signature import pss
 #from Cryptodome.PublicKey import RSA
@@ -27,6 +30,8 @@ from operator import itemgetter, attrgetter, methodcaller
 #from Cryptodome.Hash import SHA256 as newsha
 
 MEDIA_SIZE = 0x200
+indent = 1
+tabs = '\t' * indent		
 
 class Nsp(Pfs0):
 		

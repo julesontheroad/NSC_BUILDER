@@ -4,6 +4,8 @@ import aes128
 import Print
 import Hex
 from binascii import hexlify as hx, unhexlify as uhx
+indent = 1
+tabs = '\t' * indent	
 
 class BaseFile:
 	def __init__(self, path = None, mode = None, cryptoType = -1, cryptoKey = -1, cryptoCounter = -1):

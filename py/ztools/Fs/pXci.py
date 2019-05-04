@@ -24,6 +24,8 @@ import Print
 from tqdm import tqdm
 
 MEDIA_SIZE = 0x200
+indent = 1
+tabs = '\t' * indent	
 
 class GamecardInfo(File):
 	def __init__(self, file = None):

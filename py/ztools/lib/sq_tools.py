@@ -9,6 +9,8 @@ from struct import pack as pk, unpack as upk
 import Fs
 import aes128
 import sq_tools
+indent = 1
+tabs = '\t' * indent	
 '''	
 versions = 
       0:       "1.0.0",   ->   keygeneration = 0
