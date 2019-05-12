@@ -3020,6 +3020,7 @@ if __name__ == '__main__':
 							print (j[1])		
 						print('////////////////////////////////////////////////////////////')
 					'''
+					tnamefile=False
 					for f in args.direct_multi:
 						if f == 'calculate':
 							#BASE
@@ -3073,8 +3074,12 @@ if __name__ == '__main__':
 										f = Fs.Nsp(basefile)								
 									ctitl=f.get_title(baseid)
 									f.flush()
-									f.close()		
+									f.close()	
+									if ctitl=='DLC' or ctitl=='-':
+										tnamefile=True
 								except:
+									tnamefile=True
+								if tnamefile==True:
 									ctitl=str(os.path.basename(os.path.abspath(basefile)))								
 									tid1=list()
 									tid2=list()
@@ -3125,7 +3130,11 @@ if __name__ == '__main__':
 									ctitl=f.get_title(updid)
 									f.flush()
 									f.close()		
+									if ctitl=='DLC' or ctitl=='-':
+										tnamefile=True
 								except:
+									tnamefile=True
+								if tnamefile==True:									
 									ctitl=str(os.path.basename(os.path.abspath(updfile)))								
 									tid1=list()
 									tid2=list()
@@ -4801,7 +4810,9 @@ if __name__ == '__main__':
 							#print(ctitl)
 							#print(baseid)	
 							f.flush()
-							f.close()										
+							f.close()		
+							if ctitl=='DLC' or ctitl=='-':
+								ctitl=''
 						elif updid !="":
 							basename=str(os.path.basename(os.path.abspath(filepath)))
 							basename2=basename.upper()		
@@ -4827,7 +4838,9 @@ if __name__ == '__main__':
 							#print(ctitl)
 							#print(updid)	
 							f.flush()
-							f.close()									
+							f.close()
+							if ctitl=='DLC' or ctitl=='-':
+								ctitl=''							
 						elif dlcid !="":
 							basename=str(os.path.basename(os.path.abspath(filepath)))
 							basename2=basename.upper()		
@@ -5115,7 +5128,9 @@ if __name__ == '__main__':
 						f = Fs.Nsp(basefile)								
 					ctitl=f.get_title(baseid)
 					f.flush()
-					f.close()										
+					f.close()
+					if ctitl=='DLC' or ctitl=='-':
+						ctitl=''					
 				elif updid !="":
 					if updfile.endswith('.xci'):								
 						f = Fs.Xci(updfile)	
@@ -5123,7 +5138,9 @@ if __name__ == '__main__':
 						f = Fs.Nsp(updfile)							
 					ctitl=f.get_title(updid)
 					f.flush()
-					f.close()									
+					f.close()	
+					if ctitl=='DLC' or ctitl=='-':
+						ctitl=''					
 				elif dlcid !="":
 					ctitl=get_title	
 					if dlcfile.endswith('.xci'):								
