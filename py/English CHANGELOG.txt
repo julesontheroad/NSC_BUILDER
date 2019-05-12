@@ -43,7 +43,7 @@ v0.85- Middlestone update.
 	 installing these xci since they are normally outdated.
 	 NOTE: The card-ncas are not modified so the signature verifies on tinfoil
 	*Added file rebuilder on the individual modes. This rebuilds by cnmt order nsps,
-     doesn't ignore files without deltas, adds cnmt.xml files and erases deltas if 
+         doesn't ignore files without deltas, adds cnmt.xml files and erases deltas if 
 	 selected in the config as the other modes
 	*Delta removal mode now rebuilds by cnmt order and create cnmt.xml files
 	*Delta removal mode now respects original names.
