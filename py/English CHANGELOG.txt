@@ -21,8 +21,37 @@ Luca Fraga's github: https://github.com/LucaFraga
 ---------------
 0. Changelog
 ---------------
-v0.83.c - Fixes error "Exception: name 'tabs' is not defined"
-v0.83.b - Fixes error in direct multi where new update file is included 2 times.
+v0.85- Middlestone update.
+	*Introduced ability to create multiple multixci or multinsp in both auto and 
+	  manual mode based on the base-titleid of games\updates\dlc
+	*Introduced ability to setup jobs for multimode so they can be build in one 
+	 go later. This is useful specially if you want to add several games to xci\nsp
+	*Introduced ability to ignore setup jobs in favour of the current one.
+	*Setup folders for multibuild jobs. Main folder is "lists":
+	 - Subfolder for setup jobs: lists\m_multi
+	 - Subfolder for current jobs: lists\a_multi
+	 Note: The lists are created during the normal operation of the program.
+	*Implemented ability to handle the exceptions for the few asian games that had
+	their title not decoded properly.
+	*Fixed issue for the multicontent splitter where updates\dlcs weren't splitted
+	 as nsp when the output was set to xci
+	*Added ability to output xci data on the databases
+	*Added simplified database option
+	*Added super-xci-trimmer to the individual modes. It'll take off paddings, 
+	 update partition and game updates. It's meant to have minimun scene-xcis
+	 that can be verified with tinfoil which already ignored updates when 
+	 installing these xci since they are normally outdated.
+	 NOTE: The card-ncas are not modified so the signature verifies on tinfoil
+	*Added file rebuilder on the individual modes. This rebuilds by cnmt order nsps,
+     doesn't ignore files without deltas, adds cnmt.xml files and erases deltas if 
+	 selected in the config as the other modes
+	*Delta removal mode now rebuilds by cnmt order and create cnmt.xml files
+	*Delta removal mode now respects original names.
+	*Fat32 mode in the multimode from NSCB-new new now follow the same renaming stile
+	 as the exfat mode
+	*Added more tag-removal options
+	*Added ability to set up delta-removal, xci-supertrimmer or nsp-rebuilder on auto
+	 mode.
 v0.83- Unify beta and stable build.
 	*Old modes were unified with the new modes. To access them press "L"(legacy) at
 	startup

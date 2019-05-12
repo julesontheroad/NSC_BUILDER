@@ -4,6 +4,7 @@ set "prog_dir=%~dp0"
 set "bat_name=%~n0"
 set "ofile_name=%bat_name%_options.cmd"
 Title NSC_Builder v0.83. -- Profile: %ofile_name% -- by JulesOnTheRoad
+set "list_folder=%prog_dir%lists"
 ::-----------------------------------------------------
 ::EDIT THIS VARIABLE TO LINK OTHER OPTION FILE
 ::-----------------------------------------------------
@@ -102,6 +103,8 @@ if exist "%w_folder%" rmdir /s /q "%w_folder%" >NUL 2>&1
 
 ::Check if user is dragging a folder or a file
 if "%~1"=="" goto manual
+if "%vrepack%" EQU "nodelta" goto aut_rebuild_nodeltas
+if "%vrepack%" EQU "rebuild" goto aut_rebuild_nsp
 dir "%~1\" >nul 2>nul
 if not errorlevel 1 goto folder
 if exist "%~1\" goto folder
@@ -109,6 +112,7 @@ goto file
 
 :folder
 if "%fi_rep%" EQU "multi" goto folder_mult_mode
+if "%fi_rep%" EQU "baseid" goto folder_packbyid
 goto folder_ind_mode
 
 ::AUTO MODE. INDIVIDUAL REPACK PROCESSING OPTION.
@@ -320,13 +324,13 @@ if "%vrepack%" EQU "xci" echo.
 if "%vrepack%" EQU "both" echo ......................................
 if "%vrepack%" EQU "both" echo REPACKING FOLDER CONTENT TO NSP
 if "%vrepack%" EQU "both" echo ......................................
-if "%vrepack%" EQU "both" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -fat exfat -fx files %skdelta% -t xci -o "%w_folder%" -tfile "%prog_dir%mlist.txt" -dmul "calculate" )
+if "%vrepack%" EQU "both" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -fat exfat -fx files %skdelta% -t cnsp -o "%w_folder%" -tfile "%prog_dir%mlist.txt" -dmul "calculate" )
 if "%vrepack%" EQU "both" echo.
 
 if "%vrepack%" EQU "both" echo ......................................
 if "%vrepack%" EQU "both" echo REPACKING FOLDER CONTENT TO XCI
 if "%vrepack%" EQU "both" echo ......................................
-if "%vrepack%" EQU "both" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -fat exfat -fx files %skdelta% -t cnsp -o "%w_folder%" -tfile "%prog_dir%mlist.txt" -dmul "calculate" )
+if "%vrepack%" EQU "both" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -fat exfat -fx files %skdelta% -t xci -o "%w_folder%" -tfile "%prog_dir%mlist.txt" -dmul "calculate" )
 if "%vrepack%" EQU "both" echo.
 
 setlocal enabledelayedexpansion
@@ -407,6 +411,52 @@ ECHO ---------------------------------------------------
 ECHO *********** ALL FILES WERE PROCESSED! ************* 
 ECHO ---------------------------------------------------
 goto aut_exit_choice
+
+:folder_packbyid
+::if "%fatype%" EQU "-fat fat32" goto folder_mult_mode_fat32
+call :program_logo
+echo --------------------------------------
+echo Auto-Mode. packing-by-id is set
+echo --------------------------------------
+if exist "%w_folder%" rmdir /s /q "%w_folder%" >NUL 2>&1
+MD "%w_folder%"
+if exist "%prog_dir%mlist.txt" del "%prog_dir%mlist.txt" >NUL 2>&1
+set "mlistfol=%list_folder%\a_multi"
+if not exist "%list_folder%" MD "%list_folder%" >NUL 2>&1
+if not exist "%mlistfol%" MD "%mlistfol%" >NUL 2>&1
+
+echo - Generating filelist
+%pycommand% "%nut%" -t nsp xci -tfile "%prog_dir%mlist.txt" -ff "%~1"
+echo   DONE
+echo - Splitting filelist
+%pycommand% "%nut%" -splid "%mlistfol%" -tfile "%prog_dir%mlist.txt"
+if "%vrepack%" EQU "nsp" set "vrepack=cnsp"
+if "%vrepack%" EQU "both" set "vrepack=cboth"
+goto m_process_jobs2
+
+:aut_rebuild_nodeltas
+call :program_logo
+echo --------------------------------------
+echo Auto-Mode. Rebuild without deltas
+echo --------------------------------------
+if exist "%w_folder%" rmdir /s /q "%w_folder%" >NUL 2>&1
+MD "%w_folder%"
+if exist "%prog_dir%list.txt" del "%prog_dir%list.txt" >NUL 2>&1
+%pycommand% "%nut%" -t nsp xci -tfile "%prog_dir%list.txt" -ff "%~1"
+echo   DONE
+goto s_KeyChange_skip
+
+:aut_rebuild_nsp
+call :program_logo
+echo --------------------------------------
+echo Auto-Mode. Rebuild nsp by cnmt order
+echo --------------------------------------
+if exist "%w_folder%" rmdir /s /q "%w_folder%" >NUL 2>&1
+MD "%w_folder%"
+if exist "%prog_dir%list.txt" del "%prog_dir%list.txt" >NUL 2>&1
+%pycommand% "%nut%" -t nsp xci -tfile "%prog_dir%list.txt" -ff "%~1"
+echo   DONE
+goto s_KeyChange_skip
 
 :file
 call :program_logo
@@ -786,6 +836,8 @@ echo.
 echo SPECIAL OPTIONS:
 echo Input "4" to erase deltas from nsp files
 echo Input "5" to rename xci or nsp files
+echo Input "6" to xci supertrimmer
+echo Input "7" to rebuild nsp by cnmt order
 echo.
 ECHO ******************************************
 echo Or Input "b" to return to the list options
@@ -802,6 +854,10 @@ if /i "%bs%"=="4" set "vrepack=nodelta"
 if /i "%bs%"=="4" goto s_KeyChange_skip
 if /i "%bs%"=="5" set "vrepack=renamef"
 if /i "%bs%"=="5" goto rename
+if /i "%bs%"=="6" set "vrepack=xci_supertrimmer"
+if /i "%bs%"=="6" goto s_KeyChange_skip
+if /i "%bs%"=="7" set "vrepack=rebuild"
+if /i "%bs%"=="7" goto s_KeyChange_skip
 if %vrepack%=="none" goto s_cl_wrongchoice
 :s_RSV_wrongchoice
 if /i "%skipRSVprompt%"=="true" set "patchRSV=-pv false"
@@ -912,11 +968,14 @@ echo Input "1" to ALWAYS rename
 echo Input "2" to NOT RENAME IF [TITLEID] is present
 echo Input "3" to NOT RENAME IF [TITLEID] is equal to the one calculated
 echo Input "4" to ONLY ADD ID
+echo Input "5" to ADD ID + TAGS AND KEEP NAME TILL [
 echo.
 echo Clean tags:
-echo Input "5" to REMOVE [] tags from the filename
-echo Input "6" to REMOVE () tags from the filename
-echo Input "7" to REMOVE [] and () tags from the filename
+echo Input "6" to REMOVE [] tags from the filename
+echo Input "7" to REMOVE () tags from the filename
+echo Input "8" to REMOVE [] and () tags from the filename
+echo Input "9" to REMOVE TITLE FROM FIRST [
+echo Input "10" to REMOVE TITLE FROM FIRST (
 echo.
 ECHO ******************************************
 echo Or Input "0" to return to the list options
@@ -934,13 +993,19 @@ if /i "%bs%"=="3" set "renmode=skip_if_tid"
 if /i "%bs%"=="3" set "oaid=false"
 if /i "%bs%"=="4" set "renmode=skip_corr_tid"
 if /i "%bs%"=="4" set "oaid=true"
+if /i "%bs%"=="5" set "renmode=skip_corr_tid"
+if /i "%bs%"=="5" set "oaid=idtag"
 
-if /i "%bs%"=="5" set "tagtype=[]"
-if /i "%bs%"=="5" goto filecleantags
-if /i "%bs%"=="6" set "tagtype=()"
+if /i "%bs%"=="6" set "tagtype=[]"
 if /i "%bs%"=="6" goto filecleantags
-if /i "%bs%"=="7" set "tagtype=false"
+if /i "%bs%"=="7" set "tagtype=()"
 if /i "%bs%"=="7" goto filecleantags
+if /i "%bs%"=="8" set "tagtype=false"
+if /i "%bs%"=="8" goto filecleantags
+if /i "%bs%"=="9" set "tagtype=["
+if /i "%bs%"=="9" goto filecleantags
+if /i "%bs%"=="10" set "tagtype=("
+if /i "%bs%"=="10" goto filecleantags
 
 if /i "%renmode%"=="none" echo WRONG CHOICE
 if /i "%renmode%"=="none" goto s_rename_wrongchoice1
@@ -1082,7 +1147,8 @@ if "%vrename%" EQU "true" call :addtags_from_nsp
 if "%vrepack%" EQU "nsp" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -fat exfat -fx files %skdelta% -o "%w_folder%" -t "nsp" -dc "%orinput%" -tfile "%prog_dir%list.txt")
 if "%vrepack%" EQU "xci" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -fat exfat -fx files %skdelta% -o "%w_folder%" -t "xci" -dc "%orinput%" -tfile "%prog_dir%list.txt")
 if "%vrepack%" EQU "both" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -fat exfat -fx files %skdelta% -o "%w_folder%" -t "both" -dc "%orinput%" -tfile "%prog_dir%list.txt")
-if "%vrepack%" EQU "nodelta" ( %pycommand% "%nut%" %buffer% -o "%w_folder%" -tfile "%prog_dir%list.txt" --erase_deltas "")
+if "%vrepack%" EQU "nodelta" ( %pycommand% "%nut%" %buffer% --xml_gen "true" -o "%w_folder%" -tfile "%prog_dir%list.txt" --erase_deltas "")
+if "%vrepack%" EQU "rebuild" ( %pycommand% "%nut%" %buffer% %skdelta% --xml_gen "true" -o "%w_folder%" -tfile "%prog_dir%list.txt" --rebuild_nsp "")
 
 move "%w_folder%\*.xci" "%fold_output%" >NUL 2>&1
 move  "%w_folder%\*.xc*" "%fold_output%" >NUL 2>&1
@@ -1156,6 +1222,7 @@ set "showname=%orinput%"
 if "%vrepack%" EQU "nsp" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -fat exfat -fx files %skdelta% -o "%w_folder%" -t "nsp" -dc "%orinput%" -tfile "%prog_dir%list.txt")
 if "%vrepack%" EQU "xci" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -fat exfat -fx files %skdelta% -o "%w_folder%" -t "xci" -dc "%orinput%" -tfile "%prog_dir%list.txt")
 if "%vrepack%" EQU "both" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -fat exfat -fx files %skdelta% -o "%w_folder%" -t "both" -dc "%orinput%" -tfile "%prog_dir%list.txt")
+if "%vrepack%" EQU "xci_supertrimmer" ( %pycommand% "%nut%" %buffer% -o "%w_folder%" -xci_st "%orinput%" -tfile "%prog_dir%list.txt")
 
 if not exist "%fold_output%" MD "%fold_output%" >NUL 2>&1
 
@@ -1236,63 +1303,22 @@ exit /B
 
 :multimode
 if exist %w_folder% RD /S /Q "%w_folder%" >NUL 2>&1
+if exist "%list_folder%\a_multi" RD /S /Q "%list_folder%\a_multi" >NUL 2>&1
 cls
 call :program_logo
 echo -----------------------------------------------
 echo MULTI-REPACK MODE ACTIVATED
 echo -----------------------------------------------
-if exist "mlist.txt" goto multi_prevlist
-goto multi_manual_INIT
-:multi_prevlist
-set conta=0
-for /f "tokens=*" %%f in (mlist.txt) do (
-echo %%f
-) >NUL 2>&1
-setlocal enabledelayedexpansion
-for /f "tokens=*" %%f in (mlist.txt) do (
-set /a conta=!conta! + 1
-) >NUL 2>&1
-if !conta! LEQ 0 ( del mlist.txt )
-endlocal
-if not exist "mlist.txt" goto multi_manual_INIT
-ECHO .......................................................
-ECHO A PREVIOUS LIST WAS FOUND. WHAT DO YOU WANT TO DO?
-:multi_prevlist0
-ECHO .......................................................
-echo Input "1" to auto-start processing from the previous list
-echo Input "2" to erase list and make a new one.
-echo Input "3" to continue building the previous list
-echo .......................................................
-echo NOTE: By pressing 3 you'll see the previous list 
-echo before starting the processing the files and you will 
-echo be able to add and delete items from the list
-echo.
-ECHO *************************************************
-echo Or Input "0" to return to the MODE SELECTION MENU
-ECHO *************************************************
-echo.
-set /p bs="Enter your choice: "
-set bs=%bs:"=%
-if /i "%bs%"=="3" goto multi_showlist
-if /i "%bs%"=="2" goto multi_delist
-if /i "%bs%"=="1" goto multi_start_cleaning
-if /i "%bs%"=="0" goto manual_Reentry
-echo.
-echo BAD CHOICE
-goto multi_prevlist0
-:multi_delist
-del mlist.txt
-cls
-call :program_logo
-echo -----------------------------------------------
-echo MULTI-REPACK MODE ACTIVATED
-echo -----------------------------------------------
-echo ..................................
-echo YOU'VE DECIDED TO START A NEW LIST
-echo ..................................
+if exist "mlist.txt" del "mlist.txt" 
 :multi_manual_INIT
 endlocal
+set skip_list_split="false"
+set "mlistfol=%list_folder%\m_multi"
+echo Drag files or folders to create a list
+echo Note: Remember to press enter after each dile\folder dragged
+echo.
 ECHO ***********************************************
+echo Input "1" to process PREVIOUSLY SAVED JOBS
 echo Input "0" to return to the MODE SELECTION MENU
 ECHO ***********************************************
 echo.
@@ -1303,15 +1329,21 @@ setlocal enabledelayedexpansion
 echo+ >"%uinput%"
 endlocal
 if /i "%eval%"=="0" goto manual_Reentry
+if /i "%eval%"=="1" set skip_list_split="true"
+if /i "%eval%"=="1" goto multi_start_cleaning
 goto multi_checkagain
 echo.
 :multi_checkagain
+set "mlistfol=%list_folder%\a_multi"
 echo WHAT DO YOU WANT TO DO?
 echo ......................................................................
 echo "DRAG ANOTHER FILE OR FOLDER AND PRESS ENTER TO ADD ITEMS TO THE LIST"
 echo.
-echo Input "1" to start processing
+echo Input "1" to start processing current list
+echo Input "2" to add to saved lists and process them
+echo Input "3" to save list for later
 REM echo Input "2" to set a custom logo from a nsp/nca
+echo.
 echo Input "e" to exit
 echo Input "i" to see list of files to process
 echo Input "r" to remove some files (counting from bottom)
@@ -1329,7 +1361,12 @@ echo+ >"%uinput%"
 endlocal
 
 if /i "%eval%"=="0" goto manual_Reentry
+if /i "%eval%"=="1" set "mlistfol=%list_folder%\a_multi"
 if /i "%eval%"=="1" goto multi_start_cleaning
+if /i "%eval%"=="2" set "mlistfol=%list_folder%\m_multi"
+if /i "%eval%"=="2" goto multi_start_cleaning
+if /i "%eval%"=="3" set "mlistfol=%list_folder%\m_multi"
+if /i "%eval%"=="3" goto multi_saved_for_later
 REM if /i "%eval%"=="2" goto multi_set_clogo
 if /i "%eval%"=="e" goto salida
 if /i "%eval%"=="i" goto multi_showlist
@@ -1338,6 +1375,56 @@ if /i "%eval%"=="z" del mlist.txt
 
 goto multi_checkagain
 
+:multi_saved_for_later
+if not exist "%list_folder%" MD "%list_folder%" >NUL 2>&1
+if not exist "%mlistfol%" MD "%mlistfol%" >NUL 2>&1
+echo SAVE LIST JOB FOR ANOTHER TIME
+echo ......................................................................
+echo Input "1" to SAVE the list as a MERGE job (single multifile list)
+echo Input "2" to SAVE the list as a MULTIPLE jobs by baseid of files
+echo.
+ECHO *******************************************
+echo Input "b" to keep building the list
+echo Input "0" to go back to the selection menu
+ECHO *******************************************
+echo.
+set /p bs="Enter your choice: "
+set bs=%bs:"=%
+set vrepack=none
+if /i "%bs%"=="b" goto multi_checkagain
+if /i "%bs%"=="0" goto manual_Reentry
+if /i "%bs%"=="1" goto multi_saved_for_later1
+if /i "%bs%"=="2" ( %pycommand% "%nut%" -splid "%mlistfol%" -tfile "%prog_dir%mlist.txt" )
+if /i "%bs%"=="2" del "%prog_dir%mlist.txt"
+if /i "%bs%"=="2" goto multi_saved_for_later2
+echo WRONG CHOICE!!
+goto multi_saved_for_later
+:multi_saved_for_later1
+echo.
+echo CHOOSE NAME FOR THE JOB
+echo ......................................................................
+echo The list will be saved under the name of your choosing in the list's 
+echo folder ( Route is "program's folder\list\m_multi")
+echo.
+set /p lname="Input name for the list job: "
+set lname=%lname:"=%
+move /y "%prog_dir%mlist.txt" "%mlistfol%\%lname%.txt" >nul
+echo.
+echo JOB SAVED!!!
+:multi_saved_for_later2
+echo.
+echo Input "0" to go back to the mode selection
+echo Input "1" to create other job
+echo Input "2" to exit the program
+echo.
+set /p bs="Enter your choice: "
+set bs=%bs:"=%
+if /i "%bs%"=="0" goto manual_Reentry
+if /i "%bs%"=="1" echo.
+if /i "%bs%"=="1" echo CREATE ANOTHER JOB
+if /i "%bs%"=="1" goto multi_manual_INIT
+if /i "%bs%"=="1" goto salida
+goto multi_saved_for_later2
 
 :multi_r_files
 set /p bs="Input the number of files you want to remove (from bottom): "
@@ -1507,6 +1594,169 @@ if /i "%vkey%"=="none" echo WRONG CHOICE
 if /i "%vkey%"=="none" goto m_KeyChange_wrongchoice
 
 :m_KeyChange_skip
+if not exist "%list_folder%" MD "%list_folder%" >NUL 2>&1
+if not exist "%mlistfol%" MD "%mlistfol%" >NUL 2>&1
+if %skip_list_split% EQU "true" goto m_process_jobs
+echo *******************************************************
+echo HOW DO YOU WANNT TO PROCESS FILES?
+echo *******************************************************
+echo The separate by base id mode is capable to identify the
+echo content that corresponds to each game and create multiple
+echo multi-xci or multi-nsp from the same list file
+echo.
+echo Input "1" to MERGE all files into a single file
+echo Input "2" to SEPARATE into multifiles by baseid
+echo.
+ECHO *****************************************
+echo Or Input "b" to return to the option list
+ECHO *****************************************
+echo.
+set /p bs="Enter your choice: "
+set bs=%bs:"=%
+if /i "%bs%"=="b" goto multi_checkagain
+if /i "%bs%"=="1" move /y "%prog_dir%mlist.txt" "%mlistfol%\mlist.txt" >nul
+if /i "%bs%"=="1" goto m_process_jobs
+if /i "%bs%"=="2" goto m_split_merge
+goto m_KeyChange_skip
+
+:m_split_merge
+cls
+call :program_logo
+%pycommand% "%nut%" -splid "%mlistfol%" -tfile "%prog_dir%mlist.txt"
+goto m_process_jobs2
+:m_process_jobs
+cls
+call :program_logo
+:m_process_jobs2
+dir "%mlistfol%\*.txt" /b  > "%prog_dir%mlist.txt"
+if "%fatype%" EQU "-fat fat32" goto m_process_jobs_fat32
+
+for /f "tokens=*" %%f in (mlist.txt) do (
+set "listname=%%f"
+if "%vrepack%" EQU "cnsp" call :program_logo
+if "%vrepack%" EQU "cnsp" call :m_split_merge_list_name 
+if "%vrepack%" EQU "cnsp" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -fat exfat -fx files %skdelta% -t cnsp -o "%w_folder%" -tfile "%mlistfol%\%%f" -dmul "calculate" )
+
+if "%vrepack%" EQU "xci" call :program_logo
+if "%vrepack%" EQU "xci" call :m_split_merge_list_name
+if "%vrepack%" EQU "xci" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -fat exfat -fx files %skdelta% -t xci -o "%w_folder%" -tfile "%mlistfol%\%%f" -dmul "calculate" )
+
+if "%vrepack%" EQU "nsp" call :program_logo
+if "%vrepack%" EQU "nsp" call :m_split_merge_list_name
+if "%vrepack%" EQU "nsp" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -fat exfat -fx files %skdelta% -t nsp -o "%w_folder%" -tfile "%mlistfol%\%%f" -dmul "calculate" )
+
+if "%vrepack%" EQU "cboth" call :program_logo
+if "%vrepack%" EQU "cboth" call :m_split_merge_list_name
+if "%vrepack%" EQU "cboth" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -fat exfat -fx files %skdelta% -t xci -o "%w_folder%" -tfile "%mlistfol%\%%f" -dmul "calculate" )
+if "%vrepack%" EQU "cboth" call :program_logo
+if "%vrepack%" EQU "cboth" call :m_split_merge_list_name
+if "%vrepack%" EQU "cboth" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -fat exfat -fx files %skdelta% -t cnsp -o "%w_folder%" -tfile "%mlistfol%\%%f" -dmul "calculate" )
+
+if "%vrepack%" EQU "both" call :program_logo
+if "%vrepack%" EQU "both" call :m_split_merge_list_name
+if "%vrepack%" EQU "both" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -fat exfat -fx files %skdelta% -t nsp -o "%w_folder%" -tfile "%mlistfol%\%%f" -dmul "calculate" )
+if "%vrepack%" EQU "both" call :program_logo
+if "%vrepack%" EQU "both" call :m_split_merge_list_name
+if "%vrepack%" EQU "both" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -fat exfat -fx files %skdelta% -t xci -o "%w_folder%" -tfile "%mlistfol%\%%f" -dmul "calculate" )
+more +1 "mlist.txt">"mlist.txt.new"
+move /y "mlist.txt.new" "mlist.txt" >nul
+if exist "%mlistfol%\%%f" del "%mlistfol%\%%f"
+call :multi_contador_NF
+)
+
+setlocal enabledelayedexpansion
+if not exist "%fold_output%" MD "%fold_output%" >NUL 2>&1
+set "gefolder=%fold_output%"
+move "%w_folder%\*.xci" "%gefolder%" >NUL 2>&1
+move  "%w_folder%\*.xc*" "%gefolder%" >NUL 2>&1
+move "%w_folder%\*.nsp" "%gefolder%" >NUL 2>&1
+move "%w_folder%\*.ns*" "%gefolder%" >NUL 2>&1
+if exist "%w_folder%\archfolder" ( %pycommand% "%nut%" -tfile "%w_folder%\filename.txt" -ifo "%w_folder%\archfolder" -archive "%gefolder%" )
+endlocal
+RD /S /Q "%w_folder%" >NUL 2>&1
+if exist "%mlistfol%" RD /S /Q "%mlistfol%" >NUL 2>&1
+if exist mlist.txt del mlist.txt
+goto m_exit_choice
+
+:m_process_jobs_fat32
+CD /d "%prog_dir%"
+set "finalname=tempname"
+cls
+call :program_logo
+for /f "tokens=*" %%f in (mlist.txt) do (
+set "listname=%%f"
+set "list=%mlistfol%\%%f"
+call :m_split_merge_list_name
+call :m_process_jobs_fat32_2
+more +1 "mlist.txt">"mlist.txt.new"
+move /y "mlist.txt.new" "mlist.txt" >nul
+if exist "%mlistfol%\%%f" del "%mlistfol%\%%f"
+call :multi_contador_NF
+)
+goto m_exit_choice
+:m_process_jobs_fat32_2
+if not exist "%w_folder%" MD "%w_folder%" >NUL 2>&1
+copy "%list%" "%w_folder%\list.txt" >NUL 2>&1
+for /f "usebackq tokens=*" %%f in ("%w_folder%\list.txt") do (
+echo %%f
+set "name=%%~nf"
+set "filename=tempname"
+set "orinput=%%f"
+if "%%~nxf"=="%%~nf.nsp" call :multi_nsp_manual
+if "%%~nxf"=="%%~nf.xci" call :multi_xci_manual
+)
+if exist "%w_folder%\list.txt" del "%w_folder%\list.txt"
+if "%vrepack%" EQU "cnsp" ( call "%nsp_lib%" "convert" "%w_folder%" )
+if "%vrepack%" EQU "nsp" ( call "%nsp_lib%" "convert" "%w_folder%" )
+if "%vrepack%" EQU "xci" ( call "%xci_lib%" "repack" "%w_folder%" )
+if "%vrepack%" EQU "cboth" ( call "%nsp_lib%" "convert" "%w_folder%" )
+if "%vrepack%" EQU "cboth" ( call "%xci_lib%" "repack" "%w_folder%" )
+if "%vrepack%" EQU "both" ( call "%nsp_lib%" "convert" "%w_folder%" )
+if "%vrepack%" EQU "both" ( call "%xci_lib%" "repack" "%w_folder%" )
+RD /S /Q "%w_folder%\secure" >NUL 2>&1
+RD /S /Q "%w_folder%\normal" >NUL 2>&1
+if exist "%w_folder%\archfolder" goto m_process_jobs_fat32_3
+if exist "%w_folder%\*.xc*" goto m_process_jobs_fat32_4
+if exist "%w_folder%\*.ns*" goto m_process_jobs_fat32_4
+if exist "%w_folder%\tempname.*" goto m_process_jobs_fat32_4
+:m_process_jobs_fat32_3
+setlocal enabledelayedexpansion
+if not exist "%fold_output%" MD "%fold_output%" >NUL 2>&1
+if exist "%w_folder%\archfolder" ( %pycommand% "%nut%" -ifo "%w_folder%\archfolder" -archive "%fold_output%\tempname.nsp" )
+endlocal
+dir "%fold_output%\tempname.*" /b  > "%w_folder%\templist.txt"
+for /f "usebackq tokens=*" %%f in ("%w_folder%\templist.txt") do (
+%pycommand% "%nut%" --renameftxt "%fold_output%\%%f" -tfile "%list%"
+if exist "%w_folder%\templist.txt" del "%w_folder%\templist.txt"
+)
+
+if exist "%w_folder%\*.xc*" goto m_process_jobs_fat32_4
+if exist "%w_folder%\*.ns*" goto m_process_jobs_fat32_4
+RD /S /Q "%w_folder%" >NUL 2>&1
+exit /B
+
+:m_process_jobs_fat32_4
+dir "%w_folder%\tempname.*" /b  > "%w_folder%\templist.txt"
+for /f "usebackq tokens=*" %%f in ("%w_folder%\templist.txt") do (
+%pycommand% "%nut%" --renameftxt "%w_folder%\%%f" -tfile "%list%"
+)
+setlocal enabledelayedexpansion
+if not exist "%fold_output%" MD "%fold_output%" >NUL 2>&1
+move "%w_folder%\*.xci" "%fold_output%" >NUL 2>&1
+move  "%w_folder%\*.xc*" "%fold_output%" >NUL 2>&1
+move "%w_folder%\*.nsp" "%fold_output%" >NUL 2>&1
+move "%w_folder%\*.ns*" "%fold_output%" >NUL 2>&1
+endlocal
+RD /S /Q "%w_folder%" >NUL 2>&1
+exit /B
+
+:m_split_merge_list_name
+echo *******************************************************
+echo Processing list %listname%
+echo *******************************************************
+exit /B
+
+:m_normal_merge
 if "%fatype%" EQU "-fat fat32" goto m_KeyChange_skip_fat32
 REM For the current beta the filenames are calculted. This code remains commented for future reintegration
 rem echo *******************************************************
@@ -1553,9 +1803,6 @@ move "%w_folder%\*.zip" "%zip_fold%" >NUL 2>&1
 if exist "%w_folder%\archfolder" ( %pycommand% "%nut%" -tfile "%w_folder%\filename.txt" -ifo "%w_folder%\archfolder" -archive "%gefolder%" )
 endlocal
 RD /S /Q "%w_folder%" >NUL 2>&1
-ECHO ---------------------------------------------------
-ECHO *********** ALL FILES WERE PROCESSED! *************
-ECHO ---------------------------------------------------
 goto m_exit_choice
 
 :m_KeyChange_skip_fat32
@@ -1605,12 +1852,12 @@ move "%w_folder%\*.zip" "%zip_fold%" >NUL 2>&1
 if exist "%w_folder%\archfolder" ( %pycommand% "%nut%" -ifo "%w_folder%\archfolder" -archive "%gefolder%\%filename%.nsp" )
 endlocal
 RD /S /Q "%w_folder%" >NUL 2>&1
-ECHO ---------------------------------------------------
-ECHO *********** ALL FILES WERE PROCESSED! *************
-ECHO ---------------------------------------------------
 goto m_exit_choice
 
 :m_exit_choice
+ECHO ---------------------------------------------------
+ECHO *********** ALL FILES WERE PROCESSED! *************
+ECHO ---------------------------------------------------
 if exist mlist.txt del mlist.txt
 if /i "%va_exit%"=="true" echo PROGRAM WILL CLOSE NOW
 if /i "%va_exit%"=="true" ( PING -n 2 127.0.0.1 >NUL 2>&1 )
@@ -1631,8 +1878,6 @@ set "showname=%orinput%"
 call :processing_message
 call :squirrell
 %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -o "%w_folder%\secure" %nf_cleaner% "%orinput%"
-if "%zip_restore%" EQU "true" ( set "ziptarget=%orinput%" )
-if "%zip_restore%" EQU "true" ( call :makezip )
 echo DONE
 call :thumbup
 call :delay
@@ -2119,12 +2364,10 @@ if not errorlevel 1 goto DBcheckfolder
 if exist "%bs%\" goto DBcheckfolder
 goto DBcheckfile
 :DBcheckfolder
-%pycommand% "%nut%" -t nsp -tfile "%prog_dir%DBL.txt" -ff "%targt%"
-%pycommand% "%nut%" -t nsx -tfile "%prog_dir%DBL.txt" -ff "%targt%"
+%pycommand% "%nut%" -t nsp xci nsx -tfile "%prog_dir%DBL.txt" -ff "%targt%"
 goto DBcheckagain
 :DBcheckfile
-%pycommand% "%nut%" -t nsp -tfile "%prog_dir%DBL.txt" -ff "%targt%"
-%pycommand% "%nut%" -t nsx -tfile "%prog_dir%DBL.txt" -ff "%targt%"
+%pycommand% "%nut%" -t nsp xci nsx -tfile "%prog_dir%DBL.txt" -ff "%targt%"
 goto DBcheckagain
 echo.
 :DBcheckagain
@@ -2221,7 +2464,8 @@ echo *******************************************************
 echo Input "1" TO GENERATE NUTDB DATABASE
 echo Input "2" TO GENERATE EXTENDED DATABASE
 echo Input "3" TO GENERATE KEYLESS DATABASE (EXTENDED)
-echo Input "4" TO GENERATE ALL 3 ABOVE DATABASES
+echo Input "4" TO GENERATE SIMPLE DATABASE
+echo Input "5" TO GENERATE ALL 4 ABOVE DATABASES
 echo Input "Z" TO MAKE ZIP FILES
 echo.
 ECHO ******************************************
@@ -2240,8 +2484,10 @@ if /i "%bs%"=="2" set "dbformat=extended"
 if /i "%bs%"=="2" goto DBs_GENDB
 if /i "%bs%"=="3" set "dbformat=keyless"
 if /i "%bs%"=="3" goto DBs_GENDB
-if /i "%bs%"=="4" set "dbformat=all"
+if /i "%bs%"=="4" set "dbformat=simple"
 if /i "%bs%"=="4" goto DBs_GENDB
+if /i "%bs%"=="5" set "dbformat=all"
+if /i "%bs%"=="5" goto DBs_GENDB
 if %vrepack%=="none" goto DBs_cl_wrongchoice
 
 :DBs_start
@@ -2257,6 +2503,8 @@ if "%%~nxf"=="%%~nf.nsp" call :DBnsp_manual
 if "%%~nxf"=="%%~nf.nsx" call :DBnsp_manual
 if "%%~nxf"=="%%~nf.NSP" call :DBnsp_manual
 if "%%~nxf"=="%%~nf.NSX" call :DBnsp_manual
+if "%%~nxf"=="%%~nf.xci" call :DBnsp_manual
+if "%%~nxf"=="%%~nf.XCI" call :DBnsp_manual
 more +1 "DBL.txt">"DBL.txt.new"
 move /y "DBL.txt.new" "DBL.txt" >nul
 call :DBcontador_NF
@@ -2390,7 +2638,7 @@ ECHO =============================     BY JULESONTHEROAD     ===================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                                POWERED BY SQUIRREL                                "
 ECHO "                    BASED IN THE WORK OF BLAWAR AND LUCA FRAGA                     "
-ECHO                                   VERSION 0.83 (NEW)
+ECHO                                   VERSION 0.85 (NEW)
 ECHO -------------------------------------------------------------------------------------                   
 ECHO Program's github: https://github.com/julesontheroad/NSC_BUILDER
 ECHO Blawar's github:  https://github.com/blawar

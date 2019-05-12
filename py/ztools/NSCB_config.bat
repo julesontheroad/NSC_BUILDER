@@ -87,6 +87,8 @@ echo .......................................................
 echo Input "1" to repack as NSP
 echo Input "2" to repack as XCI
 echo Input "3" to repack as BOTH
+echo Input "4" to remove DELTAS from updates
+echo Input "5" to REBUILD NSPS by cnmt order
 echo.
 echo Input "b" to return to AUTO-MODE - CONFIGURATION
 echo Input "0" to return to CONFIG MENU
@@ -98,6 +100,8 @@ set "v_rep=none"
 if /i "%bs%"=="1" set "v_rep=nsp"
 if /i "%bs%"=="2" set "v_rep=xci"
 if /i "%bs%"=="3" set "v_rep=both"
+if /i "%bs%"=="4" set "v_rep=nodelta"
+if /i "%bs%"=="5" set "v_rep=rebuild"
 
 if /i "%bs%"=="b" goto sc2
 if /i "%bs%"=="0" goto sc1
@@ -126,6 +130,7 @@ echo HOW TO TREAT FOLDER'S IN AUTO-MODE
 echo ......................................................................
 echo Input "1" to repack folder's files individually (single-content file)
 echo Input "2" to repack folder's files together (multi-content file)
+echo Input "3" to repack folder's files by BASE ID
 echo.
 echo Input "b" to return to AUTO-MODE - CONFIGURATION
 echo Input "0" to return to CONFIG MENU
@@ -136,6 +141,7 @@ set /p bs="Enter your choice: "
 set "v_fold=none"
 if /i "%bs%"=="1" set "v_fold=indiv"
 if /i "%bs%"=="2" set "v_fold=multi"
+if /i "%bs%"=="3" set "v_fold=baseid"
 
 if /i "%bs%"=="b" goto sc2
 if /i "%bs%"=="0" goto sc1
@@ -1079,7 +1085,7 @@ ECHO =============================     BY JULESONTHEROAD     ===================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                                POWERED BY SQUIRREL                                "
 ECHO "                    BASED IN THE WORK OF BLAWAR AND LUCA FRAGA                     "
-ECHO                                     VERSION 0.83
+ECHO                                     VERSION 0.85
 ECHO -------------------------------------------------------------------------------------                   
 ECHO Program's github: https://github.com/julesontheroad/NSC_BUILDER
 ECHO Blawar's github:  https://github.com/blawar

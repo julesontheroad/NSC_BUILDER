@@ -410,6 +410,64 @@ class Nca(File):
 		super(Nca, self).open(file, mode, cryptoType2, cryptoKey2, cryptoCounter2)
 		self.seek(0xC00+self.header.get_htable_offset())
 		self.write(value)		
+		
+	def test(self,titleKeyDec, file = None, mode = 'rb'):	
+		indent = 1
+		tabs = '\t' * indent
+		self.header = NcaHeader()
+		self.partition(0x0, 0xC00, self.header, Fs.Type.Crypto.XTS, uhx(Keys.get('header_key')))
+		Print.info('partition complete, seeking')
+		self.rewind()
+		self.header.seek(0x400)
+		Print.info('reading')
+		Hex.dump(self.header.read(0x200))
+		#exit()
+
+		for i in range(4):		
+			fs = GetSectionFilesystem(self.header.read(0x200), cryptoKey = titleKeyDec)
+			Print.info('fs type = ' + hex(fs.fsType))
+			Print.info('fs crypto = ' + hex(fs.cryptoType))
+			Print.info('st end offset = ' + str(self.header.sectionTables[i].endOffset - self.header.sectionTables[i].offset))
+			Print.info('fs offset = ' + hex(self.header.sectionTables[i].offset))
+			Print.info('fs section start = ' + hex(fs.sectionStart))
+			Print.info('titleKey = ' + str(hx(titleKeyDec)))		
+			try:
+				self.partition(self.header.sectionTables[i].offset + fs.sectionStart, self.header.sectionTables[i].endOffset - self.header.sectionTables[i].offset, fs, cryptoKey = titleKeyDec)
+			except BaseException as e:
+				pass
+				#Print.info(e)
+				#raise
+
+			if fs.fsType:
+				self.sectionFilesystems.append(fs)			
+		for f in self:
+			print(type(f))
+			cryptoType=f.get_cryptoType()
+			cryptoKey=f.get_cryptoKey()				
+			cryptoCounter=f.get_cryptoCounter()			
+			super(Nca, self).open(file, mode, cryptoType, cryptoKey, cryptoCounter)		
+			for g in f:		
+				print(type(g))				
+				if type(g) == File:				
+					print(str(g._path))
+					print(g.read(0x10))
+					
+	def pr_noenc_check(self, file = None, mode = 'rb'):	
+		indent = 1
+		tabs = '\t' * indent
+		check = False
+		for f in self:
+			#print(type(f))
+			cryptoType=f.get_cryptoType()
+			cryptoKey=f.get_cryptoKey()				
+			cryptoCounter=f.get_cryptoCounter()			
+			super(Nca, self).open(file, mode, cryptoType, cryptoKey, cryptoCounter)		
+			for g in f:					
+				if type(g) == File:		
+					if (str(g._path)) == 'main.npdm':
+						check = True
+						break
+		return check					
 	
 	def get_req_system(self, file = None, mode = 'rb'):	
 		indent = 1
@@ -1201,199 +1259,211 @@ class Nca(File):
 			regionstr=""
 			offset=0x14200
 			for i in Langue:
-				f.seek(offset+i*0x300)
-				test=f.read(0x200)
-				test = test.split(b'\0', 1)[0].decode('utf-8')
-				test = (re.sub(r'[\/\\]+', ' ', test))
-				test = test.strip()
-				test2=f.read(0x100)
-				test2 = test2.split(b'\0', 1)[0].decode('utf-8')
-				test2 = (re.sub(r'[\/\\]+', ' ', test2))
-				test2 = test2.strip()					
-				if test == "" or test2 == "":	
-					offset=0x14400
+				try:
 					f.seek(offset+i*0x300)
 					test=f.read(0x200)
 					test = test.split(b'\0', 1)[0].decode('utf-8')
 					test = (re.sub(r'[\/\\]+', ' ', test))
-					test = test.strip()	
+					test = test.strip()
 					test2=f.read(0x100)
 					test2 = test2.split(b'\0', 1)[0].decode('utf-8')
 					test2 = (re.sub(r'[\/\\]+', ' ', test2))
-					test2 = test2.strip()							
-					if test == "" or test2 == "":					
-						offset=0x14000
-						while offset<=(0x14200+i*0x300):
-							offset=offset+0x100
-							f.seek(offset+i*0x300)
-							test=f.read(0x200)
-							test = test.split(b'\0', 1)[0].decode('utf-8')
-							test = (re.sub(r'[\/\\]+', ' ', test))
-							test = test.strip()
-							test2=f.read(0x100)
-							test2 = test2.split(b'\0', 1)[0].decode('utf-8')
-							test2 = (re.sub(r'[\/\\]+', ' ', test2))
-							test2 = test2.strip()										
-							if test != "" and test2 != "" :	
+					test2 = test2.strip()					
+					if test == "" or test2 == "":	
+						offset=0x14400
+						f.seek(offset+i*0x300)
+						test=f.read(0x200)
+						test = test.split(b'\0', 1)[0].decode('utf-8')
+						test = (re.sub(r'[\/\\]+', ' ', test))
+						test = test.strip()	
+						test2=f.read(0x100)
+						test2 = test2.split(b'\0', 1)[0].decode('utf-8')
+						test2 = (re.sub(r'[\/\\]+', ' ', test2))
+						test2 = test2.strip()							
+						if test == "" or test2 == "":					
+							offset=0x14000
+							while offset<=(0x14200+i*0x300):
+								offset=offset+0x100
+								f.seek(offset+i*0x300)
+								test=f.read(0x200)
+								test = test.split(b'\0', 1)[0].decode('utf-8')
+								test = (re.sub(r'[\/\\]+', ' ', test))
+								test = test.strip()
+								test2=f.read(0x100)
+								test2 = test2.split(b'\0', 1)[0].decode('utf-8')
+								test2 = (re.sub(r'[\/\\]+', ' ', test2))
+								test2 = test2.strip()										
+								if test != "" and test2 != "" :	
+									offset=offset
+									break
+							if test != "":	
 								offset=offset
-								break
+								break			
 						if test != "":	
 							offset=offset
-							break			
-					if test != "":	
-						offset=offset
-						break								
-				else:
-					break
-			f.seek(offset+0x3060)	
-			ediver = f.read(0x10)
-			ediver = ediver.split(b'\0', 1)[0].decode('utf-8')
-			ediver = (re.sub(r'[\/\\]+', ' ', ediver))
-			ediver = ediver.strip()	
-			try:  
-				int(ediver[0])+1
-			except:
-				ediver="-"
-			if ediver == '-':
-				offset2=offset-0x300
-				f.seek(offset2+0x3060)			
+							break								
+					else:
+						break
+				except:
+					pass
+			try:		
+				f.seek(offset+0x3060)	
 				ediver = f.read(0x10)
 				ediver = ediver.split(b'\0', 1)[0].decode('utf-8')
 				ediver = (re.sub(r'[\/\\]+', ' ', ediver))
 				ediver = ediver.strip()	
 				try:  
 					int(ediver[0])+1
-					offset=offset2
 				except:
-					ediver="-"			
-			if ediver == '-':
-				try:
-					while (offset2+0x3060)<=0x18600:
-						offset2+=0x100
-						f.seek(offset2+0x3060)	
-						ediver = f.read(0x10)
-						ediver = ediver.split(b'\0', 1)[0].decode('utf-8')
-						ediver = (re.sub(r'[\/\\]+', ' ', ediver))
-						ediver = ediver.strip()	
-						if ediver != '':
-							if str(ediver[0])!='v' and str(ediver[0])!='V':
-								try:  
-									int(ediver[0])+1
-									offset=offset2
-									break
-								except:
-									ediver="-"
-									break		
-				except:
-					ediver="-"					
-			Langue = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14]				
-			for i in Langue:
-				f.seek(offset+i*0x300)	
-				title = f.read(0x200)		
-				title = title.split(b'\0', 1)[0].decode('utf-8')
-				title = (re.sub(r'[\/\\]+', ' ', title))
-				title = title.strip()
-				if title != "":	
-					if i==0:
-						SupLg.append("US (eng)")
-						regionstr+='1|'
-					if i==1:
-						SupLg.append("UK (eng)")
-						regionstr+='1|'							
-					if i==2:
-						SupLg.append("JP")
-						regionstr+='1|'							
-					if i==3:
-						SupLg.append("FR")	
-						regionstr+='1|'					
-					if i==4:
-						SupLg.append("DE")
-						regionstr+='1|'			
-					if i==5:
-						SupLg.append("LAT (spa)")	
-						regionstr+='1|'						
-					if i==6:
-						SupLg.append("SPA")	
-						regionstr+='1|'				
-					if i==7:
-						SupLg.append("IT")	
-						regionstr+='1|'							
-					if i==8:
-						SupLg.append("DU")	
-						regionstr+='1|'					
-					if i==9:
-						SupLg.append("CAD (fr)")
-						regionstr+='1|'						
-					if i==10:
-						SupLg.append("POR")	
-						regionstr+='1|'						
-					if i==11:
-						SupLg.append("RU")	
-						regionstr+='1|'					
-					if i==12:
-						SupLg.append("KOR")	
-						regionstr+='1|'			
-					if i==13:
-						SupLg.append("TAI")		
-						regionstr+='1|'			
-					if i==14:
-						SupLg.append("CH")	
-						regionstr+='1|'
-				else:
-					regionstr+='0|'	
-			Langue = [0,1,6,5,7,10,3,4,9,8,2,11,12,13,14]						
-			for i in Langue:
-				f.seek(offset+i*0x300)		
-				title = f.read(0x200)
-				editor = f.read(0x100)							
-				title = title.split(b'\0', 1)[0].decode('utf-8')
-				title = (re.sub(r'[\/\\]+', ' ', title))
-				title = title.strip()
-				editor = editor.split(b'\0', 1)[0].decode('utf-8')
-				editor = (re.sub(r'[\/\\]+', ' ', editor))
-				editor = editor.strip()							
-				if title == "":
-					title = 'DLC'
-				if title != 'DLC':
-					title = title
-					f.seek(offset+0x3060)	
+					ediver="-"
+				if ediver == '-':
+					offset2=offset-0x300
+					f.seek(offset2+0x3060)			
 					ediver = f.read(0x10)
 					ediver = ediver.split(b'\0', 1)[0].decode('utf-8')
 					ediver = (re.sub(r'[\/\\]+', ' ', ediver))
 					ediver = ediver.strip()	
-					if ediver == '':
-						try:
-							while (offset+0x3060)<=0x18600:
-								offset+=0x100
-								f.seek(offset+0x3060)	
-								ediver = f.read(0x10)
-								ediver = ediver.split(b'\0', 1)[0].decode('utf-8')
-								ediver = (re.sub(r'[\/\\]+', ' ', ediver))
-								ediver = ediver.strip()	
-								if ediver != '':
-									if str(ediver[0])!='v' and str(ediver[0])!='V':
-										try:  
-											int(ediver[0])+1
-											break
-										except:
-											ediver="-"
-											break		
-						except:
-							ediver="-"
-					f.seek(offset+0x3028)	
-					isdemo = f.readInt8('little')
-					if ediver !='-':
-						if isdemo == 0:
-							isdemo = 0
-						elif isdemo == 1:
-							isdemo = 1
-						elif isdemo == 2:
-							isdemo = 2
+					try:  
+						int(ediver[0])+1
+						offset=offset2
+					except:
+						ediver="-"			
+				if ediver == '-':
+					try:
+						while (offset2+0x3060)<=0x18600:
+							offset2+=0x100
+							f.seek(offset2+0x3060)	
+							ediver = f.read(0x10)
+							ediver = ediver.split(b'\0', 1)[0].decode('utf-8')
+							ediver = (re.sub(r'[\/\\]+', ' ', ediver))
+							ediver = ediver.strip()	
+							if ediver != '':
+								if str(ediver[0])!='v' and str(ediver[0])!='V':
+									try:  
+										int(ediver[0])+1
+										offset=offset2
+										break
+									except:
+										ediver="-"
+										break		
+					except:
+						ediver="-"		
+			except:
+				pass
+			Langue = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14]				
+			for i in Langue:
+				try:
+					f.seek(offset+i*0x300)	
+					title = f.read(0x200)		
+					title = title.split(b'\0', 1)[0].decode('utf-8')
+					title = (re.sub(r'[\/\\]+', ' ', title))
+					title = title.strip()
+					if title != "":	
+						if i==0:
+							SupLg.append("US (eng)")
+							regionstr+='1|'
+						if i==1:
+							SupLg.append("UK (eng)")
+							regionstr+='1|'							
+						if i==2:
+							SupLg.append("JP")
+							regionstr+='1|'							
+						if i==3:
+							SupLg.append("FR")	
+							regionstr+='1|'					
+						if i==4:
+							SupLg.append("DE")
+							regionstr+='1|'			
+						if i==5:
+							SupLg.append("LAT (spa)")	
+							regionstr+='1|'						
+						if i==6:
+							SupLg.append("SPA")	
+							regionstr+='1|'				
+						if i==7:
+							SupLg.append("IT")	
+							regionstr+='1|'							
+						if i==8:
+							SupLg.append("DU")	
+							regionstr+='1|'					
+						if i==9:
+							SupLg.append("CAD (fr)")
+							regionstr+='1|'						
+						if i==10:
+							SupLg.append("POR")	
+							regionstr+='1|'						
+						if i==11:
+							SupLg.append("RU")	
+							regionstr+='1|'					
+						if i==12:
+							SupLg.append("KOR")	
+							regionstr+='1|'			
+						if i==13:
+							SupLg.append("TAI")		
+							regionstr+='1|'			
+						if i==14:
+							SupLg.append("CH")	
+							regionstr+='1|'
+					else:
+						regionstr+='0|'	
+				except:
+					pass
+			Langue = [0,1,6,5,7,10,3,4,9,8,2,11,12,13,14]						
+			for i in Langue:
+				try:
+					f.seek(offset+i*0x300)		
+					title = f.read(0x200)
+					editor = f.read(0x100)							
+					title = title.split(b'\0', 1)[0].decode('utf-8')
+					title = (re.sub(r'[\/\\]+', ' ', title))
+					title = title.strip()
+					editor = editor.split(b'\0', 1)[0].decode('utf-8')
+					editor = (re.sub(r'[\/\\]+', ' ', editor))
+					editor = editor.strip()							
+					if title == "":
+						title = 'DLC'
+					if title != 'DLC':
+						title = title
+						f.seek(offset+0x3060)	
+						ediver = f.read(0x10)
+						ediver = ediver.split(b'\0', 1)[0].decode('utf-8')
+						ediver = (re.sub(r'[\/\\]+', ' ', ediver))
+						ediver = ediver.strip()	
+						if ediver == '':
+							try:
+								while (offset+0x3060)<=0x18600:
+									offset+=0x100
+									f.seek(offset+0x3060)	
+									ediver = f.read(0x10)
+									ediver = ediver.split(b'\0', 1)[0].decode('utf-8')
+									ediver = (re.sub(r'[\/\\]+', ' ', ediver))
+									ediver = ediver.strip()	
+									if ediver != '':
+										if str(ediver[0])!='v' and str(ediver[0])!='V':
+											try:  
+												int(ediver[0])+1
+												break
+											except:
+												ediver="-"
+												break		
+							except:
+								ediver="-"
+						f.seek(offset+0x3028)	
+						isdemo = f.readInt8('little')
+						if ediver !='-':
+							if isdemo == 0:
+								isdemo = 0
+							elif isdemo == 1:
+								isdemo = 1
+							elif isdemo == 2:
+								isdemo = 2
+							else:
+								isdemo = 0
 						else:
 							isdemo = 0
-					else:
-						isdemo = 0
-					return(title,editor,ediver,SupLg,regionstr[:-1],isdemo)
+						return(title,editor,ediver,SupLg,regionstr[:-1],isdemo)
+				except:
+					pass
 		regionstr="0|0|0|0|0|0|0|0|0|0|0|0|0|0"		
 		ediver='-'		
 		return(title,"",ediver,"",regionstr,"")			

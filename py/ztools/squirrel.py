@@ -70,6 +70,7 @@ if __name__ == '__main__':
 		parser.add_argument('--fw_req', nargs='+', help='Get information about fw requirements for NSP\XCI')		
 		parser.add_argument('--Read_xci_head', nargs='+', help='Get information about xci header and cert')				
 		parser.add_argument('-nscdb', '--addtodb', nargs='+', help='Adds content to database')	
+		parser.add_argument('-v', '--verify', nargs='+', help='Verify nsp or xci file')			
 
 		# CNMT Flag funtions		
 		parser.add_argument('--set_cnmt_version', nargs='+', help='Changes cnmt.nca version number')	
@@ -82,11 +83,12 @@ if __name__ == '__main__':
 		parser.add_argument('--create_hfs0', help='create / pack a hfs0')
 		parser.add_argument('--create_rhfs0', help='create / pack a root hfs0')		
 		parser.add_argument('--create_xci', help='create / pack a xci')		
-		parser.add_argument('--xci_super_trim', nargs='+', help='Supertrim xci')	
+		parser.add_argument('-xci_st', '--xci_super_trim', nargs='+', help='Supertrim xci')	
 		parser.add_argument('-dc', '--direct_creation', nargs='+', help='Create directly a nsp or xci')		
 		parser.add_argument('-dmul', '--direct_multi', nargs='+', help='Create directly a multi nsp or xci')		
 		parser.add_argument('-ed', '--erase_deltas', nargs='+', help='Take of deltas from updates')			
-	
+		parser.add_argument('-rbnsp', '--rebuild_nsp', nargs='+', help='Rebuild nsp by cnmt order')			
+
 		# nca/nsp identification
 		parser.add_argument('--ncatitleid', nargs='+', help='Returns titleid from a nca input')
 		parser.add_argument('--ncatype', nargs='+', help='Returns type of a nca file')	
@@ -195,6 +197,7 @@ if __name__ == '__main__':
 		parser.add_argument('-nl', '--new_line', help='new line')
 		parser.add_argument('-ff', '--findfile', help='find different types of files')	
 		parser.add_argument('-fil', '--filter', nargs='+', help='filter using strings')			
+		parser.add_argument('-splid', '--split_list_by_id', nargs='+', help='split a list by file id')		
 		# Archive		
 		if sys.platform == 'win32':
 			parser.add_argument('-archive','--archive', help='Archive to folder')		
@@ -203,13 +206,15 @@ if __name__ == '__main__':
 		# OTHER		
 		parser.add_argument('-nint_keys','--nint_keys', help='Verify NS keys')			
 		parser.add_argument('-renf','--renamef', help='Rename file with proper name')	
+		parser.add_argument('-renftxt','--renameftxt', help='Rename file with proper name using a text list')		
 		parser.add_argument('-oaid','--onlyaddid', help='Rename file with proper name')		
 		parser.add_argument('-renm','--renmode', help='Rename mode (force,skip_corr_tid,skip_if_tid)')		
 		parser.add_argument('-addl','--addlangue', help='Add language string')
 		parser.add_argument('-nover','--noversion', help="Don't add version (false,true,xci_no_v0)")
 		parser.add_argument('-dlcrn','--dlcrname', help="If false keeps base name in dlcs")		
 		parser.add_argument('-cltg','--cleantags', help="Clean tags in filenames")	
-		parser.add_argument('-tgtype','--tagtype', help="Type of tag to remove")			
+		parser.add_argument('-tgtype','--tagtype', help="Type of tag to remove")
+		parser.add_argument('-vorg','--v_organize', help="Aux variable to organize files")		
 		args = parser.parse_args()
 
 		Status.start()
@@ -2345,9 +2350,17 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))	
 			else:
-				for filepath in args.xci_super_trim:
-					dir=os.path.dirname(os.path.abspath(filepath))
-					ofolder = dir+ '\\'+ 'output'
+				if args.text_file:
+					tfile=args.text_file
+					with open(tfile,"r+", encoding='utf8') as filelist: 	
+						filename = filelist.readline()
+						filename=os.path.abspath(filename.rstrip('\n'))		
+						dir=os.path.dirname(os.path.abspath(filename))
+						ofolder = dir+ '\\'+ 'output'
+				else:			
+					for filename in args.xci_super_trim:
+						dir=os.path.dirname(os.path.abspath(filename))
+						ofolder = dir+ '\\'+ 'output'	
 			if args.fat:		
 				for input in args.fat:
 					try:
@@ -2378,8 +2391,7 @@ if __name__ == '__main__':
 		# ...................................................						
 		# Take off deltas
 		# ...................................................						
-		if args.erase_deltas:	
-						
+		if args.erase_deltas:			
 			if args.buffer:		
 				for input in args.buffer:
 					try:
@@ -2388,7 +2400,6 @@ if __name__ == '__main__':
 						Print.error('Exception: ' + str(e))
 			else:
 				buffer = 32768
-	
 			if args.ofolder:		
 				for input in args.ofolder:
 					try:
@@ -2398,44 +2409,18 @@ if __name__ == '__main__':
 			else:
 				for filepath in args.erase_deltas:
 					dir=os.path.dirname(os.path.abspath(filepath))
-					ofolder = os.path.join(dir, 'output')						
-			if args.fat:		
-				for input in args.fat:
+					ofolder = os.path.join(dir, 'output')				
+			if args.xml_gen:		
+				for input in args.xml_gen:
 					try:
-						if input == "fat32":
-							fat="fat32"
+						if input == "true" or input == "True" or input == "TRUE":
+							xml_gen=True
+						elif input == "false" or input == "False" or input == "FALSE":
+							xml_gen=False		
 						else:
-							fat="exfat"
+							xml_gen=False		
 					except BaseException as e:
-						Print.error('Exception: ' + str(e))	
-			else:
-				fat="exfat"		
-			if args.fexport:		
-				for input in args.fexport:
-					try:
-						if input == "files":
-							fx="files"
-						else:
-							fx="folder"
-					except BaseException as e:
-						Print.error('Exception: ' + str(e))	
-			else:
-				fx="files"	
-			if args.includexml:		
-				for input in args.includexml:
-					try:
-						if input == "true":
-							incxml=True
-						elif input == "false":
-							incxml=False
-						elif input == "special":
-							incxml="special"
-						else:
-							incxml=True							
-					except BaseException as e:
-						Print.error('Exception: ' + str(e))	
-			else:
-				incxml=True	
+						Print.error('Exception: ' + str(e))									
 			if args.erase_deltas:
 				if args.text_file:
 					tfile=args.text_file
@@ -2445,38 +2430,132 @@ if __name__ == '__main__':
 				else:
 					for filepath in args.erase_deltas:
 						filepath=filepath
-				if args.type:
-					for input in args.type:							
-						if input == "nsp" or input == "NSP": 	
-							export='nsp'										
-						else:
-							print ("Wrong Type!!!")					
-				else:
-					if filepath.endswith('.nsp'):
-						export='nsp'
-					else:
-						print ("Wrong Type!!!")
-				if args.rename:
-					for newname in args.rename:
-						newname=newname+'.xxx'
-						endfile = os.path.join(ofolder, newname)
-				else:
-					endfile=os.path.basename(os.path.abspath(filepath))					
-				if args.cskip=='False':
-					cskip=False
-				else:
-					cskip=True						
-
+				endfile=os.path.basename(os.path.abspath(filepath))	
+				endfile=os.path.join(ofolder,endfile)	
+				if not os.path.exists(ofolder):
+					os.makedirs(ofolder)						
 				if filepath.endswith(".nsp"):
 					try:			
 						print('Processing: '+filepath)
 						f = Fs.Nsp(filepath)					
-						f.sp_groupncabyid_ND(buffer,ofolder,fat,fx,incxml)
+						f.rebuild(buffer,endfile,False,True,xml_gen)
 						f.flush()
-						f.close()		
+						f.close()									
 					except BaseException as e:
-						Print.error('Exception: ' + str(e))						
-						
+						Print.error('Exception: ' + str(e))				
+
+		# ...................................................						
+		# Rebuild
+		# ...................................................						
+		if args.rebuild_nsp:			
+			skipper=False
+			Damage=False
+			if args.buffer:		
+				for input in args.buffer:
+					try:
+						buffer = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+			else:
+				buffer = 32768
+			if args.text_file:
+				tfile=args.text_file
+				with open(tfile,"r+", encoding='utf8') as filelist: 	
+					filepath = filelist.readline()
+					filepath=os.path.abspath(filepath.rstrip('\n'))						
+			else:
+				for filepath in args.rebuild_nsp:
+					filepath=filepath					
+			if args.nodelta:		
+				for input in args.nodelta:
+					try:
+						if input == "true" or input == "True" or input == "TRUE":
+							delta=False
+						elif input == "false" or input == "False" or input == "FALSE":
+							delta=True		
+						else:
+							delta=False									
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+			else:
+				delta=True							
+			if args.xml_gen:		
+				for input in args.xml_gen:
+					try:
+						if input == "true" or input == "True" or input == "TRUE":
+							xml_gen=True
+						elif input == "false" or input == "False" or input == "FALSE":
+							xml_gen=False		
+						else:
+							xml_gen=False									
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+			else:
+				xml_gen=False								
+			if args.ofolder:		
+				for input in args.ofolder:
+					try:
+						ofolder = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+			else:
+				for filepath in args.rebuild_nsp:
+					dir=os.path.dirname(os.path.abspath(filepath))
+					ofolder = os.path.join(dir, 'output')	
+			if not os.path.exists(ofolder):
+				os.makedirs(ofolder)					
+			endfile=os.path.basename(os.path.abspath(filepath))	
+			endfile=os.path.join(ofolder,endfile)						
+			if args.v_organize != 'false':			
+				base_folder=os.path.join(ofolder,'base')
+				update_folder=os.path.join(ofolder,'updates')
+				dlc_folder=os.path.join(ofolder,'dlcs')		
+				if not os.path.exists(base_folder):
+					os.makedirs(base_folder)	
+				if not os.path.exists(update_folder):
+					os.makedirs(update_folder)	
+				if not os.path.exists(dlc_folder):
+					os.makedirs(dlc_folder)					
+				try:
+					f = Fs.Nsp(filepath)
+					ctype=f.nsptype()
+					#print(ctype)
+					f.flush()
+					f.close()	
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))	
+					Damage=True
+					skipper=True
+					print('Content seems to be damaged')
+				if Damage==False:	
+					if 	ctype=='BASE':		
+						endfile=os.path.basename(os.path.abspath(filepath))	
+						endfile=os.path.join(base_folder,endfile)									
+					elif ctype=='UPDATE':	
+						endfile=os.path.basename(os.path.abspath(filepath))	
+						endfile=os.path.join(update_folder,endfile)					
+					elif ctype=='DLC':	
+						endfile=os.path.basename(os.path.abspath(filepath))	
+						endfile=os.path.join(dlc_folder,endfile)	
+					else:
+						print("Content can't be identified")
+						skipper=True
+					print('Final destination:')
+					print('  > '+endfile)			
+					if os.path.exists(endfile):						
+						skipper=True
+						print("Content exists in final destination. Skipping...")					
+			if args.rebuild_nsp and skipper==False:					
+				if filepath.endswith(".nsp"):
+					try:			
+						print('Processing: '+filepath)
+						f = Fs.Nsp(filepath)					
+						f.rebuild(buffer,endfile,delta,False,xml_gen)
+						f.flush()
+						f.close()									
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))								
+
 		# ...................................................						
 		# Direct NSP OR XCI
 		# ...................................................				
@@ -2865,15 +2944,23 @@ if __name__ == '__main__':
 										notinlist=False
 										for i in range(len(prlist)):
 											#print (contentlist[j][1])
+											#print (prlist[i][1])
 											#print (contentlist[j][6])
+											#print (prlist[i][6])
 											#pass
 											if contentlist[j][1] == prlist[i][1]:
+												#print('true')
+												#print(contentlist[j][6])
+												#print(prlist[i][6])
 												if contentlist[j][6] > prlist[i][6]:
 													del prlist[i]
+													print(prlist[i])
 													prlist.append(contentlist[j])
 													notinlist=False
-												elif contentlist[j][6] == prlist[i][6]:				
-													notinlist=False															
+													break
+												elif contentlist[j][6] <= prlist[i][6]:				
+													notinlist=False	
+													break
 											else:
 												notinlist=True
 										if notinlist == True:
@@ -2901,15 +2988,23 @@ if __name__ == '__main__':
 										notinlist=False
 										for i in range(len(prlist)):
 											#print (contentlist[j][1])
+											#print (prlist[i][1])
 											#print (contentlist[j][6])
+											#print (prlist[i][6])
 											#pass
 											if contentlist[j][1] == prlist[i][1]:
+												#print('true')
+												#print(contentlist[j][6])
+												#print(prlist[i][6])
 												if contentlist[j][6] > prlist[i][6]:
 													del prlist[i]
+													print(prlist[i])
 													prlist.append(contentlist[j])
 													notinlist=False
-												elif contentlist[j][6] == prlist[i][6]:				
-													notinlist=False															
+													break
+												elif contentlist[j][6] <= prlist[i][6]:				
+													notinlist=False
+													break		
 											else:
 												notinlist=True
 										if notinlist == True:
@@ -2971,30 +3066,158 @@ if __name__ == '__main__':
 									dctag=''									
 								ccount='('+bctag+updtag+dctag+')'
 							if baseid != "":
-								if basefile.endswith('.xci'):							
-									f = Fs.Xci(basefile)
-								elif basefile.endswith('.nsp'):	
-									f = Fs.Nsp(basefile)								
-								ctitl=f.get_title(baseid)
-								f.flush()
-								f.close()										
+								try:
+									if basefile.endswith('.xci'):							
+										f = Fs.Xci(basefile)
+									elif basefile.endswith('.nsp'):	
+										f = Fs.Nsp(basefile)								
+									ctitl=f.get_title(baseid)
+									f.flush()
+									f.close()		
+								except:
+									ctitl=str(os.path.basename(os.path.abspath(basefile)))								
+									tid1=list()
+									tid2=list()
+									tid1=[pos for pos, char in enumerate(basefile) if char == '[']
+									tid2=[pos for pos, char in enumerate(basefile) if char == ']']		
+									if len(tid1)>=len(tid2):
+										lentlist=len(tid1)					
+									elif len(tid1)<len(tid2):
+										lentlist=len(tid2)						
+									for i in range(lentlist):	
+										i1=tid1[i]
+										i2=tid2[i]+1
+										t=basefile[i1:i2]					
+										ctitl=ctitl.replace(t,'')
+										ctitl=ctitl.replace('  ',' ')
+									tid3=list()
+									tid4=list()					
+									tid3=[pos for pos, char in enumerate(ctitl) if char == '(']
+									tid4=[pos for pos, char in enumerate(ctitl) if char == ')']									
+									if len(tid3)>=len(tid4):
+										lentlist=len(tid3)					
+									elif len(tid3)<len(tid4):
+										lentlist=len(tid4)								
+									for i in range(lentlist):	
+										i3=tid3[i]
+										i4=tid4[i]+1
+										t=ctitl[i3:i4]		
+										ctitl=ctitl.replace(t,'')
+										ctitl=ctitl.replace('  ',' ')
+									tid5=list()		
+									tid5=[pos for pos, char in enumerate(ctitl) if char == '-']
+									lentlist=len(tid5)	
+									for i in range(lentlist):	
+										i5=tid5[i]+1
+										ctitl=ctitl[i5:]
+										break									
+									ctitl=ctitl[:-4]	
+									if ctitl.endswith(' '):
+										ctitl=ctitl[:-1]	
+									if ctitl.startswith(' '):
+										ctitl=ctitl[1:]	
 							elif updid !="":
-								if updfile.endswith('.xci'):								
-									f = Fs.Xci(updfile)	
-								elif updfile.endswith('.nsp'):	
-									f = Fs.Nsp(updfile)							
-								ctitl=f.get_title(updid)
-								f.flush()
-								f.close()									
+								try:
+									if updfile.endswith('.xci'):								
+										f = Fs.Xci(updfile)	
+									elif updfile.endswith('.nsp'):	
+										f = Fs.Nsp(updfile)							
+									ctitl=f.get_title(updid)
+									f.flush()
+									f.close()		
+								except:
+									ctitl=str(os.path.basename(os.path.abspath(updfile)))								
+									tid1=list()
+									tid2=list()
+									tid1=[pos for pos, char in enumerate(updfile) if char == '[']
+									tid2=[pos for pos, char in enumerate(updfile) if char == ']']		
+									if len(tid1)>=len(tid2):
+										lentlist=len(tid1)					
+									elif len(tid1)<len(tid2):
+										lentlist=len(tid2)						
+									for i in range(lentlist):	
+										i1=tid1[i]
+										i2=tid2[i]+1
+										t=updfile[i1:i2]					
+										ctitl=ctitl.replace(t,'')
+										ctitl=ctitl.replace('  ',' ')
+									tid3=list()
+									tid4=list()					
+									tid3=[pos for pos, char in enumerate(ctitl) if char == '(']
+									tid4=[pos for pos, char in enumerate(ctitl) if char == ')']									
+									if len(tid3)>=len(tid4):
+										lentlist=len(tid3)					
+									elif len(tid3)<len(tid4):
+										lentlist=len(tid4)								
+									for i in range(lentlist):	
+										i3=tid3[i]
+										i4=tid4[i]+1
+										t=ctitl[i3:i4]		
+										ctitl=ctitl.replace(t,'')
+										ctitl=ctitl.replace('  ',' ')
+									tid5=list()		
+									tid5=[pos for pos, char in enumerate(ctitl) if char == '-']
+									lentlist=len(tid5)	
+									for i in range(lentlist):	
+										i5=tid5[i]+1
+										ctitl=ctitl[i5:]
+										break									
+									ctitl=ctitl[:-4]	
+									if ctitl.endswith(' '):
+										ctitl=ctitl[:-1]	
+									if ctitl.startswith(' '):
+										ctitl=ctitl[1:]	
 							elif dlcid !="":
-								ctitl=get_title	
-								if dlcfile.endswith('.xci'):								
-									f = Fs.Xci(dlcfile)	
-								elif dlcfile.endswith('.nsp'):	
-									f = Fs.Nsp(dlcfile)							
-								ctitl=f.get_title(dlcid)
-								f.flush()
-								f.close()									
+								try:
+									ctitl=str(os.path.basename(os.path.abspath(dlcfile)))								
+									tid1=list()
+									tid2=list()
+									tid1=[pos for pos, char in enumerate(dlcfile) if char == '[']
+									tid2=[pos for pos, char in enumerate(dlcfile) if char == ']']		
+									if len(tid1)>=len(tid2):
+										lentlist=len(tid1)					
+									elif len(tid1)<len(tid2):
+										lentlist=len(tid2)						
+									for i in range(lentlist):	
+										i1=tid1[i]
+										i2=tid2[i]+1
+										t=dlcfile[i1:i2]					
+										ctitl=ctitl.replace(t,'')
+										ctitl=ctitl.replace('  ',' ')
+									tid3=list()
+									tid4=list()					
+									tid3=[pos for pos, char in enumerate(ctitl) if char == '(']
+									tid4=[pos for pos, char in enumerate(ctitl) if char == ')']									
+									if len(tid3)>=len(tid4):
+										lentlist=len(tid3)					
+									elif len(tid3)<len(tid4):
+										lentlist=len(tid4)								
+									for i in range(lentlist):	
+										i3=tid3[i]
+										i4=tid4[i]+1
+										t=ctitl[i3:i4]		
+										ctitl=ctitl.replace(t,'')
+										ctitl=ctitl.replace('  ',' ')
+									tid5=list()		
+									tid5=[pos for pos, char in enumerate(ctitl) if char == '-']
+									lentlist=len(tid5)	
+									for i in range(lentlist):	
+										i5=tid5[i]+1
+										ctitl=ctitl[i5:]
+										break									
+									ctitl=ctitl[:-4]	
+									if ctitl.endswith(' '):
+										ctitl=ctitl[:-1]	
+									if ctitl.startswith(' '):
+										ctitl=ctitl[1:]	
+								except:							
+									if dlcfile.endswith('.xci'):								
+										f = Fs.Xci(dlcfile)	
+									elif dlcfile.endswith('.nsp'):	
+										f = Fs.Nsp(dlcfile)							
+									ctitl=f.get_title(dlcid)
+									f.flush()
+									f.close()									
 							else:
 								ctitl='UNKNOWN'							
 							baseid='['+baseid.upper()+']'
@@ -3080,7 +3303,7 @@ if __name__ == '__main__':
 								Print.error('Exception: ' + str(e))	
 					t.close()								
 				if 'xci' in export:
-					endname_x=endname+'[nscb].xci'		
+					endname_x=endname+'.xci'		
 					print('Filename: '+endname_x)						
 					endfile = os.path.join(ofolder, endname_x)					
 					oflist=list()
@@ -3226,7 +3449,7 @@ if __name__ == '__main__':
 								#print(j[1])
 							ototlist.append(j[0])	
 					nspheader=sq_tools.gen_nsp_header(oflist,osizelist)					
-					endname_x=endname+'[rr][nscb].nsp'		
+					endname_x=endname+'[rr].nsp'		
 					print('Filename: '+endname_x)						
 					endfile = os.path.join(ofolder, endname_x)	
 					#print(endfile)						
@@ -3644,6 +3867,8 @@ if __name__ == '__main__':
 						outdb = "nutdb"
 					elif input == "keyless":
 						outdb = "keyless"	
+					elif input == "simple":
+						outdb = "simple"							
 					elif input == "all":
 						outdb = "all"								
 					else:
@@ -3675,6 +3900,23 @@ if __name__ == '__main__':
 							errfile.write(date+' Error in "ADD TO DATABASE" function:'+'\n')	
 							errfile.write("Route "+str(filename)+'\n')							
 							errfile.write('- Exception: ' + str(e)+ '\n')
+				if (filename.lower()).endswith('.xci'):
+					try:
+						infile=r''
+						infile+=filename
+						f = Fs.factory(filename)
+						f.open(filename, 'rb')						
+						f.addtodb(outfile,outdb)
+						f.flush()
+						f.close()
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+						with open(errfile, 'a') as errfile:	
+							now=datetime.now()
+							date=now.strftime("%x")+". "+now.strftime("%X")								
+							errfile.write(date+' Error in "ADD TO DATABASE" function:'+'\n')	
+							errfile.write("Route "+str(filename)+'\n')							
+							errfile.write('- Exception: ' + str(e)+ '\n')							
 							
 		# ...................................................						
 		# Show info
@@ -4108,8 +4350,12 @@ if __name__ == '__main__':
 			if args.tagtype:
 				if args.tagtype=="[]":
 					tagtype='brackets'
-				if args.tagtype=="()":
-					tagtype='parenthesis'				
+				elif args.tagtype=="()":
+					tagtype='parenthesis'	
+				elif args.tagtype=="(":
+					tagtype='('
+				elif args.tagtype=="[":
+					tagtype='['					
 				else:					
 					tagtype=False		
 			else:
@@ -4198,7 +4444,37 @@ if __name__ == '__main__':
 							t=filepath[i1:i2]					
 							endname=endname.replace(t,'')
 							endname=endname.replace('  ',' ')
-					if tagtype==False or tagtype=='parenthesis':							
+					if tagtype=='[':
+						tid1=list()
+						tid2=list()
+						tid1=[pos for pos, char in enumerate(filepath) if char == '[']
+						tid2=[pos for pos, char in enumerate(filepath) if char == ']']		
+						if len(tid1)>=len(tid2):
+							lentlist=len(tid1)					
+						elif len(tid1)<len(tid2):
+							lentlist=len(tid2)						
+						for i in range(lentlist):	
+							i1=tid1[i]
+							i2=tid2[i]+1
+							endname=filepath[:i1]+filepath[-4:]
+							break
+					if tagtype=='(':
+						tid3=list()
+						tid4=list()	
+						tid3=[pos for pos, char in enumerate(endname) if char == '(']
+						tid4=[pos for pos, char in enumerate(endname) if char == ')']		
+						if len(tid3)>=len(tid4):
+							lentlist=len(tid3)					
+						elif len(tid3)<len(tid4):
+							lentlist=len(tid4)						
+						for i in range(lentlist):	
+							i3=tid3[i]
+							i4=tid4[i]+1
+							endname=filepath[:i3]+filepath[-4:]
+							break							
+					if tagtype==False or tagtype=='parenthesis':		
+						tid3=list()
+						tid4=list()					
 						tid3=[pos for pos, char in enumerate(endname) if char == '(']
 						tid4=[pos for pos, char in enumerate(endname) if char == ')']									
 						if len(tid3)>=len(tid4):
@@ -4209,7 +4485,7 @@ if __name__ == '__main__':
 							i3=tid3[i]
 							i4=tid4[i]+1
 							t=endname[i3:i4]		
-							print('t is '+t)
+							#print('t is '+t)
 							endname=endname.replace(t,'')
 							endname=endname.replace('  ',' ')
 					endname=endname.replace(' .','.')						
@@ -4233,8 +4509,7 @@ if __name__ == '__main__':
 				counter=int(counter)
 				counter-=1
 				Print.error('Exception: ' + str(e))	
-					
-				
+								
 		#parser.add_argument('-renf','--renamef', help='Rename file with proper name')	
 		#parser.add_argument('-oaid','--onlyaddid', help='Rename file with proper name')		
 		#parser.add_argument('-renm','--renmode', help='Rename mode (force,skip_corr_tid,skip_if_tid)')		
@@ -4246,6 +4521,8 @@ if __name__ == '__main__':
 			if args.onlyaddid:
 				if args.onlyaddid=="true" or args.onlyaddid == "True" or args.onlyaddid == "TRUE":
 					onaddid=True
+				elif args.onlyaddid=="idtag":
+					onaddid='idtag'					
 				else:					
 					onaddid=False
 			else:
@@ -4636,6 +4913,8 @@ if __name__ == '__main__':
 							if updver != "":	
 								if onaddid==True:
 									endname=basename[:-4]+' '+baseid	
+								elif onaddid=='idtag':
+									endname=basename[:-4]+' '+baseid+' '+updver+' '+ccount+' '+mgame
 								elif nover == True and (ccount==''):
 									endname=ctitl+' '+baseid								
 								else:		
@@ -4643,6 +4922,8 @@ if __name__ == '__main__':
 							else:
 								if onaddid==True:
 									endname=basename[:-4]+' '+baseid
+								elif onaddid=='idtag' and (ccount!=''):
+									endname=basename[:-4]+' '+baseid+' '+ccount+' '+mgame								
 								elif nover == True and (ccount==''):
 									endname=ctitl+' '+baseid											
 								elif filepath.endswith('.xci') and nover=="xci_no_v0" and ccount=='':
@@ -4657,6 +4938,10 @@ if __name__ == '__main__':
 						elif updid !="" and updid != "[]":
 							if onaddid==True:
 								endname=basename[:-4]+' '+updid	
+							elif onaddid=='idtag' and (ccount!=''):	
+								endname=basename+' '+updid+' '+updver+' '+ccount+' '+mgame		
+							elif onaddid=='idtag' and (ccount==''):	
+								endname=basename+' '+updid										
 							elif nover == True and (ccount==''):
 								endname=ctitl+' '+updid								
 							else:						
@@ -4704,8 +4989,345 @@ if __name__ == '__main__':
 				counter=int(counter)
 				counter-=1
 				Print.error('Exception: ' + str(e))	
+				
+		if args.renameftxt:			
+			ruta=args.renameftxt		
+			if args.text_file:
+				tfile=args.text_file
+				filelist=list()
+				tfile=args.text_file
+				with open(tfile,"r+", encoding='utf8') as f: 	
+					for line in f:
+						fp=line.strip()
+						filelist.append(fp)					
+				prlist=list()	
+				print ('Calculating final name:')
+				for filepath in filelist:
+					if filepath.endswith('.nsp'):
+						#print(filepath)
+						try:
+							c=list()
+							f = Fs.Nsp(filepath)									
+							contentlist=f.get_content(False,False,True)									
+							f.flush()
+							f.close()		
+							if len(prlist)==0:
+								for i in contentlist:
+									prlist.append(i)
+								#print (prlist)
+							else:
+								for j in range(len(contentlist)):
+									notinlist=False
+									for i in range(len(prlist)):
+										#print (contentlist[j][1])
+										#print (contentlist[j][6])
+										#pass
+										if contentlist[j][1] == prlist[i][1]:
+											if contentlist[j][6] > prlist[i][6]:
+												del prlist[i]
+												prlist.append(contentlist[j])
+												notinlist=False
+											elif contentlist[j][6] == prlist[i][6]:				
+												notinlist=False															
+										else:
+											notinlist=True
+									if notinlist == True:
+										prlist.append(contentlist[j])	
+						except BaseException as e:
+							Print.error('Exception: ' + str(e))			
+					if filepath.endswith('.xci'):							
+						try:
+							c=list()
+							f = Fs.Xci(filepath)					
+							contentlist=f.get_content(False,False,True)									
+							f.flush()
+							f.close()		
+							if len(prlist)==0:
+								for i in contentlist:
+									prlist.append(i)
+								#print (prlist)
+							else:
+								for j in range(len(contentlist)):
+									notinlist=False
+									for i in range(len(prlist)):
+										#print (contentlist[j][1])
+										#print (contentlist[j][6])
+										#pass
+										if contentlist[j][1] == prlist[i][1]:
+											if contentlist[j][6] > prlist[i][6]:
+												del prlist[i]
+												prlist.append(contentlist[j])
+												notinlist=False
+											elif contentlist[j][6] == prlist[i][6]:				
+												notinlist=False															
+										else:
+											notinlist=True
+									if notinlist == True:
+										prlist.append(contentlist[j])	
+						except BaseException as e:
+							Print.error('Exception: ' + str(e))						
+				basecount=0; basename='';basever='';baseid='';basefile=''
+				updcount=0; updname='';updver='';updid='';updfile=''
+				dlccount=0; dlcname='';dlcver='';dlcid='';dlcfile=''
+				for i in range(len(prlist)):
+					if prlist[i][5] == 'BASE':
+						basecount+=1
+						if baseid == "":
+							basefile=str(prlist[i][0])
+							baseid=str(prlist[i][1])
+							basever='[v'+str(prlist[i][6])+']'
+					if prlist[i][5] == 'UPDATE':
+						updcount+=1
+						endver=str(prlist[i][6])
+						if updid == "":		
+							updfile=str(prlist[i][0])									
+							updid=str(prlist[i][1])		
+							updver='[v'+str(prlist[i][6])+']'										
+					if prlist[i][5] == 'DLC':
+						dlccount+=1
+						if dlcid == "":		
+							dlcfile=str(prlist[i][0])								
+							dlcid=str(prlist[i][1])	
+							dlcver='[v'+str(prlist[i][6])+']'
+					if 	basecount !=0:
+						bctag=str(basecount)+'G'
+					else:
+						bctag=''								
+					if 	updcount !=0:
+						if bctag != '':
+							updtag='+'+str(updcount)+'U'									
+						else:
+							updtag=str(updcount)+'U'
+					else:
+						updtag=''										
+					if 	dlccount !=0:
+						if bctag != '' or updtag != '':
+							dctag='+'+str(dlccount)+'D'	
+						else:										
+							dctag=str(dlccount)+'D'	
+					else:
+						dctag=''									
+					ccount='('+bctag+updtag+dctag+')'
+				if baseid != "":
+					if basefile.endswith('.xci'):							
+						f = Fs.Xci(basefile)
+					elif basefile.endswith('.nsp'):	
+						f = Fs.Nsp(basefile)								
+					ctitl=f.get_title(baseid)
+					f.flush()
+					f.close()										
+				elif updid !="":
+					if updfile.endswith('.xci'):								
+						f = Fs.Xci(updfile)	
+					elif updfile.endswith('.nsp'):	
+						f = Fs.Nsp(updfile)							
+					ctitl=f.get_title(updid)
+					f.flush()
+					f.close()									
+				elif dlcid !="":
+					ctitl=get_title	
+					if dlcfile.endswith('.xci'):								
+						f = Fs.Xci(dlcfile)	
+					elif dlcfile.endswith('.nsp'):	
+						f = Fs.Nsp(dlcfile)							
+					ctitl=f.get_title(dlcid)
+					f.flush()
+					f.close()									
+				else:
+					ctitl='UNKNOWN'							
+				baseid='['+baseid.upper()+']'
+				updid='['+updid.upper()+']'
+				dlcid='['+dlcid.upper()+']'	
+				if ccount == '(1G)' or ccount == '(1U)' or ccount == '(1D)':
+					ccount=''							
+				if baseid != "[]":
+					if updver != "":							
+						endname=ctitl+' '+baseid+' '+updver+' '+ccount
+					else:	
+						endname=ctitl+' '+baseid+' '+basever+' '+ccount
+				elif updid != "[]":
+					endname=ctitl+' '+updid+' '+updver+' '+ccount							
+				else:
+					endname=ctitl+' '+dlcid+' '+dlcver+' '+ccount	
+				#print('Filename: '+endname)
+			else:
+				endname=str(f)
+			endname = (re.sub(r'[\/\\\:\*\?]+', '', endname))
+			if endname[-1]==' ':
+				endname=endname[:-1]	
+			ext=ruta[-4:]
+			endname=endname+ext
+			print('New name: '+endname)		
+			basename=str(os.path.basename(os.path.abspath(ruta)))			
+			dir=os.path.dirname(os.path.abspath(ruta))
+			newpath=os.path.join(dir,endname)				
+			try:
+				os.rename(ruta, newpath)			
+				print(tabs+'> File was renamed to: '+endname)		
+			except BaseException as e:	
+				pass				
+				
+				
+				
+				
+				
 					
+		if args.verify:
+			for filename in args.verify:		
+				if filename.endswith('.nsp') or filename.endswith('.nsx'):
+					try:
+						f = Fs.Nsp(filename, 'rb')
+						f.verify()
+						f.flush()
+						f.close()
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+				if filename.endswith('.xci'):
+					try:
+						f = Fs.factory(filename)
+						f.open(filename, 'rb')
+						f.verify()
+						f.flush()
+						f.close()														
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+						
+		#split_list_by_id						
+		if args.split_list_by_id:						
+			for filepath in args.split_list_by_id:
+				ofolder=os.path.abspath(filepath)
+				if not os.path.exists(ofolder):
+					os.makedirs(ofolder)		
+			baselist=list()		
+			addonlist=list()		
+			updlist=list()
+			if args.text_file:
+				tfile=args.text_file
+				filelist=list()
+				tfile=args.text_file
+				with open(tfile,"r+", encoding='utf8') as f: 	
+					for line in f:
+						fp=line.strip()
+						filelist.append(fp)		
+			'''			
+			for file in filelist:		
+				print(file)
+				pass
+			'''
+			print('- Calculating base-ids for:')			
+			for filepath in filelist:								
+				try:
+					if filepath.endswith('.nsp'):
+						f = Fs.Nsp(filepath)	
+					elif filepath.endswith('.xci'):
+						f = Fs.factory(filepath)
+						f.open(filepath, 'rb')				
+					print(tabs+filepath)
+					validator,contentlist=f.cnmt_get_baseids()	
+					f.flush()
+					f.close()						
+					if validator=='base':
+						baselist.append([filepath,contentlist])
+					elif validator=='update':
+						updlist.append([filepath,contentlist])					
+					else:
+						addonlist.append([filepath,contentlist])								
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))	
+			'''		
+			print('Baselist')
+			for i in baselist:
+				print(i)
+			print(str(len(baselist)))	
+			print('Updlist')
+			for i in updlist:
+				print(i)
+			print(str(len(updlist)))			
+			print('Addonlist')				
+			for i in addonlist:
+				print(i)				
+			print(str(len(addonlist)))	
+			'''
 
+			print('')		
+			print('- Generating lists:')
+			if len(baselist)>0:
+				for i in range(len(baselist)):	
+					lname=''
+					fileslist=list()
+					idlist=baselist[i][1]
+					for k in idlist:
+						lname+='['+k+']'
+					lname=lname.upper()
+					lname+='.txt'
+					fileslist.append(baselist[i][0])
+					for j in range(len(updlist)):		
+						addid=updlist[j][1]
+						addid=addid[0]
+						if addid in idlist:
+							if updlist[j][0] not in fileslist:
+								fileslist.append(updlist[j][0])					
+					for j in range(len(addonlist)):		
+						addid=addonlist[j][1]
+						addid=addid[0]
+						if addid in idlist:
+							if addonlist[j][0] not in fileslist:
+								fileslist.append(addonlist[j][0])
+					endfile=os.path.join(ofolder, lname)
+					print('  > '+endfile)		
+					with open(endfile,"w", encoding='utf8') as tfile: 	
+						for line in fileslist:				
+							try:
+								print(tabs+line)						
+								tfile.write(line+"\n")
+							except:
+								continue
+			elif len(updlist)>0:
+				for i in range(len(updlist)):	
+					lname=''
+					fileslist=list()
+					idlist=updlist[i][1]
+					for k in idlist:
+						k=k[:-3]+'800'
+						lname+='['+k+']'
+					lname=lname.upper()	
+					lname+='.txt'
+					fileslist.append(updlist[i][0])
+					for j in range(len(addonlist)):		
+						addid=addonlist[j][1]
+						addid=addid[0]
+						if addid in idlist:
+							if addonlist[j][0] not in fileslist:
+								fileslist.append(addonlist[j][0])
+					endfile=os.path.join(ofolder, lname)
+					print('  > '+endfile)		
+					with open(endfile,"w", encoding='utf8') as tfile: 	
+						for line in fileslist:				
+							try:
+								print(tabs+line)						
+								tfile.write(line+"\n")
+							except:
+								continue	
+			elif len(addonlist)>0:
+				for i in range(len(addonlist)):	
+					lname=''
+					fileslist=list()
+					idlist=addonlist[i][1]
+					for k in idlist:
+						lname+='['+k+']'
+					lname=lname.upper()	
+					lname+='.txt'
+					fileslist.append(addonlist[i][0])
+					endfile=os.path.join(ofolder, lname)
+					print('  > '+endfile)		
+					with open(endfile,"w", encoding='utf8') as tfile: 	
+						for line in fileslist:				
+							try:
+								print(tabs+line)						
+								tfile.write(line+"\n")
+							except:
+								continue									
+				
 
 		Status.close()		
 	

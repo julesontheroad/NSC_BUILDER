@@ -7,6 +7,7 @@ from struct import pack as pk, unpack as upk
 from Fs.File import File
 from hashlib import sha256
 import Fs.Type
+from Fs import Type
 import os
 import re
 import pathlib
@@ -19,6 +20,8 @@ from tqdm import tqdm
 from Fs.Pfs0 import Pfs0
 from Fs.Ticket import Ticket
 from Fs.Nca import Nca
+from Fs.Nca import NcaHeader
+from Fs.File import MemoryFile
 import math  
 import sys
 if sys.platform == 'win32':
@@ -922,7 +925,21 @@ class Nsp(Pfs0):
 		if not Titles.contains(self.titleId):
 			raise IOError('No title key found in database! ' + self.titleId)
 		ticket = self.ticket()
-		masterKeyRev = ticket.getMasterKeyRevision()
+		for nca in self:	
+			if type(nca) == Nca:		
+				crypto1=nca.header.getCryptoType()
+				crypto2=nca.header.getCryptoType2()	
+				if crypto1 == 2:
+					if crypto1 > crypto2:								
+						masterKeyRev=nca.header.getCryptoType()
+					else:			
+						masterKeyRev=nca.header.getCryptoType2()	
+				else:			
+					masterKeyRev=nca.header.getCryptoType2()	
+				if nca.header.getRightsId() != 0:						
+					break		
+
+					
 		titleKeyDec = Keys.decryptTitleKey(ticket.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(masterKeyRev))
 		rightsId = ticket.getRightsId()
 		titleKey = ticket.getTitleKeyBlock().to_bytes(16, byteorder='big')
@@ -1103,6 +1120,9 @@ class Nsp(Pfs0):
 								content_type='Update'
 								reqtag='- RequiredSystemVersion: '
 								tit_name,editor,ediver,SupLg,regionstr,isdemo = self.inf_get_title(target,offset,content_entries,original_ID)							
+								if tit_name=='DLC':
+									tit_name='-'
+									editor='-'									
 								if isdemo == 1:
 									content_type='Demo Update'
 								if isdemo == 2:
@@ -1115,6 +1135,9 @@ class Nsp(Pfs0):
 								content_type='Game or Application'
 								reqtag='- RequiredSystemVersion: '	
 								tit_name,editor,ediver,SupLg,regionstr,isdemo = self.inf_get_title(target,offset,content_entries,original_ID)	
+								if tit_name=='DLC':
+									tit_name='-'
+									editor='-'									
 								if isdemo == 1:
 									content_type='Demo'
 								if isdemo == 2:
@@ -1435,6 +1458,9 @@ class Nsp(Pfs0):
 							content_type_cnmt=content_type_cnmt[:-22]	
 							if content_type_cnmt == 'Application':
 								tit_name,editor,ediver,SupLg,regionstr,isdemo = self.inf_get_title(target,offset,content_entries,original_ID)							
+								if tit_name=='DLC':
+									tit_name='-'
+									editor='-'								
 								applist.append([target,titleid,version,tit_name,editor])
 							if content_type_cnmt == 'Patch':
 								patchlist.append([target,original_ID,version,titleid])
@@ -2403,6 +2429,9 @@ class Nsp(Pfs0):
 								content_type='Update'
 								reqtag='- RequiredSystemVersion: '
 								tit_name,editor,ediver,SupLg,regionstr,isdemo = self.inf_get_title(target,offset,content_entries,original_ID)							
+								if tit_name=='DLC':
+									tit_name='-'
+									editor='-'						
 								if isdemo == 1:
 									content_type='Demo Update'
 								if isdemo == 2:
@@ -2414,7 +2443,10 @@ class Nsp(Pfs0):
 							if content_type_cnmt == 'Application':
 								content_type='Base Game or Application'
 								reqtag='- RequiredSystemVersion: '	
-								tit_name,editor,ediver,SupLg,regionstr,isdemo = self.inf_get_title(target,offset,content_entries,original_ID)	
+								tit_name,editor,ediver,SupLg,regionstr,isdemo = self.inf_get_title(target,offset,content_entries,original_ID)
+								if tit_name=='DLC':
+									tit_name='-'
+									editor='-'	
 								if isdemo == 1:
 									content_type='Demo'
 								if isdemo == 2:
@@ -2445,6 +2477,9 @@ class Nsp(Pfs0):
 								content_type='Update'
 								reqtag='- RequiredSystemVersion: '
 								tit_name,editor,ediver,SupLg,regionstr,isdemo = self.inf_get_title(target,offset,content_entries,original_ID)							
+								if tit_name=='DLC':
+									tit_name='-'
+									editor='-'									
 								if isdemo == 1:
 									content_type='Demo Update'
 								if isdemo == 2:
@@ -2457,6 +2492,9 @@ class Nsp(Pfs0):
 								content_type='Base Game or Application'
 								reqtag='- RequiredSystemVersion: '	
 								tit_name,editor,ediver,SupLg,regionstr,isdemo = self.inf_get_title(target,offset,content_entries,original_ID)	
+								if tit_name=='DLC':
+									tit_name='-'
+									editor='-'											
 								if isdemo == 1:
 									content_type='Demo'
 								if isdemo == 2:
@@ -3005,7 +3043,7 @@ class Nsp(Pfs0):
 					if "DE" in SupLg:
 						languetag=languetag+'De,'							
 					if ("LAT (spa)" and "SPA") in SupLg:
-						languetag=languetag+'Es'
+						languetag=languetag+'Es,'
 					elif "LAT (spa)" in SupLg:
 						languetag=languetag+'LatEs,'
 					elif "SPA" in SupLg:
@@ -3400,7 +3438,7 @@ class Nsp(Pfs0):
 		print("")
 		print("Closing file. Please wait")		
 		outf.close()				
-				
+
 #///////////////////////////////////////////////////								
 #ADD TO DATABASE
 #///////////////////////////////////////////////////					
@@ -3451,12 +3489,17 @@ class Nsp(Pfs0):
 								ckey=self.getdbkey(titlerights)
 							target=str(nca._path)
 							tit_name,editor,ediver,SupLg,regionstr,isdemo = self.inf_get_title(target,offset,content_entries,original_ID)
+							if tit_name=='DLC' and (str(titlerights).endswith('000') or str(titlerights).endswith('800')):
+								tit_name='-'
+								editor='-'
 							if dbtype == 'extended' or dbtype == 'all':
 								dbstring=self.getdbstr(titleid2,titlerights,ckey,content_type,tit_name,version,crypto1,crypto2,keygen,min_sversion,RSV_rq[1:-1],RS_number,MinRSV,regionstr,ediver,editor,isdemo)
 							if dbtype == 'keyless' or dbtype == 'all':
 								kdbstring=self.getkeylessdbstr(titleid2,titlerights,ckey,content_type,tit_name,version,crypto1,crypto2,keygen,min_sversion,RSV_rq[1:-1],RS_number,MinRSV,regionstr,ediver,editor,isdemo)
 							if dbtype == 'nutdb' or dbtype == 'all':	
 								ndbstring=self.getnutdbstr(titleid2,titlerights,ckey,content_type,tit_name,version,regionstr,isdemo)
+							if dbtype == 'simple' or dbtype == 'all':								
+								simplbstr=self.simplbstr(titlerights,ckey,tit_name)
 							print ("- Processing: "+ str(self._path))
 							print("")
 							if dbtype == 'extended':
@@ -3467,7 +3510,10 @@ class Nsp(Pfs0):
 								self.appendtodb(kdbstring,ofile,dbtype)	
 							if dbtype == 'nutdb':
 								print("NUTDB DB STRING:")									
-								self.appendtodb(ndbstring,ofile,dbtype)		
+								self.appendtodb(ndbstring,ofile,dbtype)	
+							if dbtype == 'simple':
+								print("SIMPLE DB STRING:")									
+								self.appendtodb(simplbstr,ofile,dbtype)										
 							if dbtype == 'all':		
 								dir=os.path.dirname(os.path.abspath(ofile))	
 								edbf='extended_DB.txt'	
@@ -3476,6 +3522,8 @@ class Nsp(Pfs0):
 								ndbf = os.path.join(dir, ndbf)	
 								kdbfile='keyless_DB.txt'	
 								kdbfile = os.path.join(dir, kdbfile)
+								simpbfile='simple_DB.txt'	
+								simpbfile = os.path.join(dir, simpbfile)								
 								print("EXTENDED DB STRING:")
 								self.appendtodb(dbstring,edbf,"extended")
 								print("")
@@ -3483,7 +3531,10 @@ class Nsp(Pfs0):
 								self.appendtodb(kdbstring,kdbfile,"keyless")
 								print("")
 								print("NUTDB DB STRING:")								
-								self.appendtodb(ndbstring,ndbf,"nutdb")										
+								self.appendtodb(ndbstring,ndbf,"nutdb")		
+								print("")
+								print("SIMPLE DB STRING:")								
+								self.appendtodb(simplbstr,simpbfile,"simple")										
 							print("")
 
 						
@@ -3491,9 +3542,12 @@ class Nsp(Pfs0):
 		titleKeyDec='0'
 		nca_id=''
 		self.rewind()
+		tr=''
 		for nca in self:
-			if type(nca) == Nca:	
-				if nca.header.getRightsId() != 0:		
+			if type(nca) == Nca:		
+				if nca.header.getRightsId() != 0:
+					crypto1=nca.header.getCryptoType()
+					crypto2=nca.header.getCryptoType2()								
 					nca_id=nca.header.titleId
 					nca_id=nca_id.lower()
 					if original_ID==nca_id:
@@ -3508,27 +3562,61 @@ class Nsp(Pfs0):
 							return tr,titleKeyDec
 					else:
 						tr=str(nca.header.rightsId)
-						tr = tr[2:-1]	
-						return tr,titleKeyDec									
-				if nca.header.getRightsId() == 0:								
-					if	nca.header.getgamecard() == 0:				
-						crypto1=nca.header.getCryptoType()
-						crypto2=nca.header.getCryptoType2()		
-						if crypto1>crypto2:
-							masterKeyRev = crypto1
+						tr = tr[2:-1]
+						titleKeyDec='00000000000000000000000000000000'																		
+				if nca.header.getRightsId() == 0:	
+					crypto1=nca.header.getCryptoType()
+					crypto2=nca.header.getCryptoType2()		
+					nca_id=nca.header.titleId
+					nca_id=nca_id.lower()			
+					if original_ID==nca_id:								
+						if	nca.header.getgamecard() == 0:					
+							if crypto1>crypto2:
+								masterKeyRev = crypto1
+							else:
+								masterKeyRev = crypto2		
+							key = Keys.keyAreaKey(Keys.getMasterKeyIndex(masterKeyRev), nca.header.keyIndex)
+							crypto = aes128.AESECB(key)							
+							KB1L=nca.header.getKB1L()
+							KB1L = crypto.decrypt(KB1L)
+							if sum(KB1L) != 0:		
+								encKeyBlock = nca.header.getKeyBlock()							
+								decKeyBlock = crypto.decrypt(encKeyBlock[:16])							
+								titleKeyDec = hx(Keys.encryptTitleKey(decKeyBlock, Keys.getMasterKeyIndex(masterKeyRev)))
+								titleKeyDec=str(titleKeyDec)[2:-1]
+								tr=cnmt_id+'000000000000000'+str(crypto2)
+								check=tr[:16]										
+								if check.endswith('000') and content_type=='Application':							
+									return tr,titleKeyDec
+								if check.endswith('800') and content_type=='Patch':								
+									return tr,titleKeyDec
+					elif cnmt_id==nca_id:								
+						if	nca.header.getgamecard() == 0:					
+							if crypto1>crypto2:
+								masterKeyRev = crypto1
+							else:
+								masterKeyRev = crypto2		
+							key = Keys.keyAreaKey(Keys.getMasterKeyIndex(masterKeyRev), nca.header.keyIndex)
+							crypto = aes128.AESECB(key)							
+							KB1L=nca.header.getKB1L()
+							KB1L = crypto.decrypt(KB1L)
+							if sum(KB1L) != 0:		
+								encKeyBlock = nca.header.getKeyBlock()							
+								decKeyBlock = crypto.decrypt(encKeyBlock[:16])							
+								titleKeyDec = hx(Keys.encryptTitleKey(decKeyBlock, Keys.getMasterKeyIndex(masterKeyRev)))
+								titleKeyDec=str(titleKeyDec)[2:-1]
+								tr=cnmt_id+'000000000000000'+str(crypto2)
+								check=tr[:16]
+								if not check.endswith('000') and not tr.endswith('800') and content_type=='AddOnContent':								
+									return tr,titleKeyDec										
+							else:
+								tr=cnmt_id+'000000000000000'+str(crypto2)	
 						else:
-							masterKeyRev = crypto2		
-						key = Keys.keyAreaKey(Keys.getMasterKeyIndex(masterKeyRev), nca.header.keyIndex)
-						crypto = aes128.AESECB(key)							
-						KB1L=nca.header.getKB1L()
-						KB1L = crypto.decrypt(KB1L)
-						if sum(KB1L) != 0:		
-							encKeyBlock = nca.header.getKeyBlock()							
-							decKeyBlock = crypto.decrypt(encKeyBlock[:16])							
-							titleKeyDec = hx(Keys.encryptTitleKey(decKeyBlock, Keys.getMasterKeyIndex(masterKeyRev)))
-							titleKeyDec=str(titleKeyDec)[2:-1]
-							tr=cnmt_id+'000000000000000'+str(crypto2)
-							return tr,titleKeyDec						
+							tr=cnmt_id+'000000000000000'+str(crypto2)	
+		if tr=='':								
+			tr=cnmt_id+'000000000000000'+str(crypto2)									
+		titleKeyDec='00000000000000000000000000000000'				
+		return tr,titleKeyDec			
 								
 	def getdbkey(self,titlerights):	
 		for ticket in self:		
@@ -3693,7 +3781,14 @@ class Nsp(Pfs0):
 		else:
 			Regionvar="-"		
 		dbstr+=Regionvar	
-		return dbstr	
+		return dbstr
+
+	def simplbstr(self,titlerights,ckey,tit_name):	
+		dbstr=str()
+		dbstr+=str(titlerights).upper()+'|'
+		dbstr+=str(ckey).upper()+'|'	
+		dbstr+=str(tit_name)
+		return dbstr			
 
 	def appendtodb(self,dbstring,ofile,dbtype):
 		if dbtype == 'extended':
@@ -3701,7 +3796,9 @@ class Nsp(Pfs0):
 		if dbtype == 'keyless':
 			initdb='id|rightsId|keygeneration|RSV|RGV|ContentType|baseName|editor|version|cversion|us|uk|jp|fr|de|lat|spa|it|du|cad|por|ru|kor|tai|ch'		
 		if dbtype == 'nutdb':
-			initdb='id|rightsId|key|isUpdate|isDLC|isDemo|baseName|name|version|region'		
+			initdb='id|rightsId|key|isUpdate|isDLC|isDemo|baseName|name|version|region'	
+		if dbtype == 'simple':
+			initdb='rightsId|key|name'					
 		if not os.path.exists(ofile):
 			with open(ofile, 'a') as dbfile:			
 				dbfile.write(initdb+ '\n')
@@ -4371,8 +4468,211 @@ class Nsp(Pfs0):
 		header += encKeyBlock
 		header += rawhead[0x340:]
 		newheader=hcrypto.encrypt(header)
-		return newheader		
+		return newheader			
+
+	def rebuild(self,buffer,filepath,delta,ndskip,xml_gen):	
+		ofolder=os.path.dirname(os.path.abspath(filepath))	
+		if ndskip==True:
+			vfragment=False	
+			for nca in self:
+				if type(nca) == Nca:
+					if 	str(nca.header.contentType) == 'Content.DATA':
+						try:
+							for f in nca:
+									for file in f:
+										filename = str(file._path)
+										if filename=="fragment":
+											vfragment=True
+											break	
+						except:
+							pass
+			if vfragment != True:
+				print("> File doesn't have deltas. Skipping")
+				return				
+		contentlist=list()
+		ncalist=list()
+		completefilelist=list()
+		xmlsize=0
+		self.rewind()
+		for file in self:
+			completefilelist.append(str(file._path))
+		self.rewind()		
+		for nca in self:
+			if type(nca) == Nca:
+				if 	str(nca.header.contentType) == 'Content.META':
+					for f in nca:
+						for cnmt in f:
+							nca.rewind()
+							f.rewind()
+							cnmt.rewind()						
+							titleid=cnmt.readInt64()
+							titleversion = cnmt.read(0x4)
+							cnmt.rewind()
+							cnmt.seek(0xE)
+							offset=cnmt.readInt16()
+							content_entries=cnmt.readInt16()
+							meta_entries=cnmt.readInt16()
+							content_type=str(cnmt._path)
+							content_type=content_type[:-22]	
+							titleid2 = str(hx(titleid.to_bytes(8, byteorder='big'))) 	
+							titleid2 = titleid2[2:-1]	
+							cnmt.seek(0x20)
+							if content_type=='Application':
+								original_ID=cnmt.readInt64()	
+								original_ID=str(hx(original_ID.to_bytes(8, byteorder='big')))
+								original_ID = original_ID[2:-1]	
+								ttag=''
+								CTYPE='BASE'					
+							elif content_type=='Patch':
+								original_ID=cnmt.readInt64()	
+								original_ID=str(hx(original_ID.to_bytes(8, byteorder='big')))
+								original_ID = original_ID[2:-1]	
+								ttag=' [UPD]'
+								CTYPE='UPDATE'
+							elif content_type=='AddOnContent':
+								original_ID=cnmt.readInt64()	
+								original_ID=str(hx(original_ID.to_bytes(8, byteorder='big')))
+								original_ID = original_ID[2:-1]	
+								ttag=' [DLC]'
+								CTYPE='DLC'									
+							else: 
+								print(titleid2+' is not an update. Skipping')
+								continue					
+							cnmt.seek(0x20+offset)			
+							for i in range(content_entries):
+								vhash = cnmt.read(0x20)
+								NcaId = cnmt.read(0x10)
+								size = cnmt.read(0x6)
+								ncatype = cnmt.readInt8()
+								unknown = cnmt.read(0x1)							
+							#**************************************************************	
+								version=str(int.from_bytes(titleversion, byteorder='little'))
+								version='[v'+version+']'
+								titleid3 ='['+ titleid2+']'
+								nca_name=str(hx(NcaId))
+								nca_name=nca_name[2:-1]+'.nca'							
+								if nca_name in completefilelist:
+									if ncatype==6 and delta==False:	
+										print('Skipping delta fragment '+nca_name)
+										continue	
+									else:		
+										contentlist.append(nca_name)			
+							nca_meta=str(nca._path)
+							if nca_meta in completefilelist:	
+								contentlist.append(nca_meta)
+								if xml_gen == True:
+									target = Fs.Nca(nca, 'r+b')
+									target.rewind()		
+									outf= os.path.join(ofolder, str(nca._path))									
+									fp = open(outf, 'w+b')		
+									for data in iter(lambda: target.read(int(32768)), ""):	
+										fp.write(data)						
+										fp.flush()				
+										if not data:
+											fp.close()									
+											break			
+									target = Fs.Nca(outf, 'r+b')										
+									block = target.read()			
+									nsha=sha256(block).hexdigest()	
+									target.rewind()	
+									xml=target.xml_gen(ofolder,nsha)									
+									xmlname=nca_meta[:-3]+'xml'
+									xmlsize=xmlsize+os.path.getsize(xml)
+									contentlist.append(xmlname)									
+									target.close()
+									try:
+										os.remove(outf) 	
+									except:
+										pass			
+							for f in completefilelist:
+								if f.endswith('.tik') or f.endswith('.cert'):
+									test=f[0:16]								
+									if titleid2==test:
+										contentlist.append(f)
+		
+		filesNb = len(contentlist)
+		stringTable = '\x00'.join(str(file) for file in contentlist)
+		headerSize = 0x10 + (filesNb)*0x18 + len(stringTable)
+		remainder = 0x10 - headerSize%0x10
+		headerSize += remainder
+
+		fileSizes = list()				
+		self.rewind()
+		for f in contentlist:	
+			if not f.endswith('.xml'):
+				for file in self:	
+					if file._path==f:			
+						fileSizes.append(file.size)	
+			elif f.endswith('.xml'):						
+				xmlfile= os.path.join(ofolder, f)
+				fileSizes.append(os.path.getsize(xmlfile))					
+		fileOffsets = [sum(fileSizes[:n]) for n in range(filesNb)]
+		fileNamesLengths = [len(str(file))+1 for file in contentlist] # +1 for the \x00
+		stringTableOffsets = [sum(fileNamesLengths[:n]) for n in range(filesNb)]
+		
+		hd =  b''
+		hd += b'PFS0'
+		hd += pk('<I', filesNb)
+		hd += pk('<I', len(stringTable)+remainder)
+		hd += b'\x00\x00\x00\x00'
+		for n in range(filesNb):
+			hd += pk('<Q', fileOffsets[n])
+			hd += pk('<Q', fileSizes[n])
+			hd += pk('<I', stringTableOffsets[n])
+			hd += b'\x00\x00\x00\x00'
+		hd += stringTable.encode()
+		hd += remainder * b'\x00'
+
+		totSize = len(hd)+xmlsize 
+		for f in contentlist:	
+			if not f.endswith('.xml'):
+				for file in self:	
+					if file._path==f:			
+						totSize=totSize+file.size	
+
+		indent = 1
+		rightsId = 0
+		tabs = '\t' * indent
+
+		Print.info("")
+		Print.info('Generating NSP:')	
+		Print.info('Filename: '+filepath)	
+		t = tqdm(total=totSize, unit='B', unit_scale=True, leave=False)		
+		t.write(tabs+'- Writing header...')	
+		outf = open(str(filepath), 'w+b')	
+		outf.write(hd)			
+		t.update(len(hd))
+		for f in contentlist:
+			if not f.endswith('.xml'):		
+				for file in self:
+					if file._path==f:
+						file.rewind()			
+						t.write(tabs+'- Appending: ' + str(file._path))					
+						for data in iter(lambda: file.read(int(buffer)), ""):				
+							outf.write(data)
+							t.update(len(data))
+							outf.flush()
+							if not data:
+								break		
+			elif f.endswith('.xml'):
+				t.write(tabs+'- Appending: ' + f)					
+				dir=os.path.dirname(os.path.abspath(filepath))
+				xmlfile= os.path.join(dir, f)		
+				xml = open(xmlfile, 'rb')		
+				data=xml.read()
+				xml.close()				
+				outf.write(data)
+				t.update(len(data))																	
+				outf.flush()	
+				try:
+					os.remove(xmlfile) 	
+				except:
+					pass					
+		t.close()		
+		print("Closing file. Please wait")		
+		outf.close()							
 					
+				
 	def sp_groupncabyid_ND(self,buffer,ofolder,fat,fx,incxml):	
 		vfragment=False	
 		for nca in self:
@@ -4475,6 +4775,9 @@ class Nsp(Pfs0):
 							tit_name,editor,ediver,SupLg,regionstr,isdemo = self.inf_get_title(target,offset,content_entries,original_ID)
 							tit_name = (re.sub(r'[\/\\\:\*\?\!\"\<\>\|\.\s™©®()\~]+', ' ', tit_name))
 							tit_name = tit_name.strip()
+							if tit_name=='DLC' and (str(titleid2).endswith('000') or str(titleid2).endswith('800')):
+								tit_name='-'
+								editor='-'							
 							tid='['+titleid2+']'
 							tid=tid.upper()
 							filename=tit_name+' '+tid+' '+version
@@ -5357,7 +5660,10 @@ class Nsp(Pfs0):
 							tit_name,editor,ediver,SupLg,regionstr,isdemo = self.inf_get_title(target,offset,content_entries,original_ID)
 							tit_name = (re.sub(r'[\/\\\:\*\?\!\"\<\>\|\.\s™©®()\~]+', ' ', tit_name))
 							tit_name = tit_name.strip()
-							filename=tit_name+' '+version+ttag
+							if tit_name=='DLC' and (str(titleid2).endswith('000') or str(titleid2).endswith('800')):
+								tit_name='-'
+								editor='-'									
+							filename=tit_name+' '+titleid3+' '+version
 							titlerights=titleid2+str('0'*15)+str(crypto2)
 							contentlist.append([filename,titleid2,titlerights,keygen,ncalist,CTYPE])
 							
@@ -5967,4 +6273,310 @@ class Nsp(Pfs0):
 							gamecard=True				
 		return sha,sizef,gamecard
 		
-		
+	def verify(self):		
+		contentlist=list()
+		validfiles=list()
+		listed_files=list()		
+		contentlist=list()
+		veredict=True
+		checktik=False
+		'''
+		for file in self:
+			print(str(file._path))
+		'''	
+		for file in self:
+			if str(file._path).endswith('.nca') or str(file._path).endswith('.tik'):		
+				listed_files.append(str(file._path))
+			if type(file) == Nca or type(file) == Ticket:
+				validfiles.append(str(file._path))				
+				
+		for file in listed_files:	
+			correct=False		
+			if file in validfiles:
+				if file.endswith('cnmt.nca'):
+					for f in self:	
+						if str(f._path) == file:
+							print(str(f.header.titleId)+' - '+str(f.header.contentType))						
+							for nf in f:	
+								nf.rewind()
+								test=nf.read(0x4)	
+								#print(test)														
+								if str(test) == "b'PFS0'":
+									correct=True
+									break	
+							if correct == True:
+								correct = self.verify_enforcer(file)
+				elif file.endswith('.nca'):
+					for f in self:	
+						if str(f._path) == file:
+							print(str(f.header.titleId)+' - '+str(f.header.contentType))				
+							if str(f.header.contentType) != 'Content.PROGRAM':
+								correct = self.verify_enforcer(file)							
+								#f.test(self.nsptitlekeydec())										
+							else:
+								for nf in f:
+									nf.rewind()		
+									'''	
+									for nf2 in nf:
+										nf2.rewind()
+										test2=nf2.read(0x4)
+										print(test2)
+									'''	
+									test=nf.read(0x4)
+									#print(test)												
+									if str(test) == "b'PFS0'":
+										correct=True
+										break	
+									f.rewind()
+								cryptoKey=self.nsptitlekeydec()															
+								if correct == True:
+									correct = self.verify_enforcer(file)
+						if checktik == False:									
+							checktik = self.verify_key(file)									
+								#f.test(self.nsptitlekeydec())									
+				elif file.endswith('.tik'):	
+					print('Content.TICKET')
+					correct = checktik				
+			else:
+				correct=False	
+			if correct==True:
+				if file.endswith('cnmt.nca'):				
+					print(tabs+file+' -> is CORRECT')	
+				else:
+					print(tabs+file+tabs+'  -> is CORRECT')							
+			else:
+				veredict=False			
+				if file.endswith('cnmt.nca'):	
+					print(tabs+file+' -> is CORRUPT')
+				elif file.endswith('nca'):		
+					print(tabs+file+tabs+'  -> is CORRUPT')	
+				elif file.endswith('tik'):		
+					print(tabs+file+tabs+'  -> titlekey is INCORRECT')						
+		for nca in self:
+			if type(nca) == Nca:
+				if 	str(nca.header.contentType) == 'Content.META':		
+					for f in nca:
+						for cnmt in f:	
+							nca.rewind()
+							cnmt.rewind()						
+							titleid=cnmt.readInt64()
+							titleversion = cnmt.read(0x4)
+							cnmt.rewind()
+							cnmt.seek(0xE)
+							offset=cnmt.readInt16()
+							content_entries=cnmt.readInt16()
+							meta_entries=cnmt.readInt16()
+							content_type=str(cnmt._path)
+							content_type=content_type[:-22]	
+							titleid2 = str(hx(titleid.to_bytes(8, byteorder='big'))) 	
+							titleid2 = titleid2[2:-1]	
+							cnmt.seek(0x20)
+							if content_type=='Application':
+								original_ID=titleid2
+								cnmt.readInt64()
+								ttag=''
+								CTYPE='BASE'
+							elif content_type=='Patch':
+								original_ID=cnmt.readInt64()	
+								original_ID=str(hx(original_ID.to_bytes(8, byteorder='big')))
+								original_ID = original_ID[2:-1]	
+								ttag=' [UPD]'
+								CTYPE='UPDATE'
+							elif content_type=='AddOnContent':
+								original_ID=cnmt.readInt64()	
+								original_ID=str(hx(original_ID.to_bytes(8, byteorder='big')))
+								original_ID = original_ID[2:-1]	
+								ttag=' [DLC]'
+								CTYPE='DLC'								
+							else: 
+								original_ID=cnmt.readInt64()	
+								original_ID=str(hx(original_ID.to_bytes(8, byteorder='big')))
+								original_ID = original_ID[2:-1]							
+							cnmt.seek(0x20+offset)			
+							for i in range(content_entries):
+								vhash = cnmt.read(0x20)
+								NcaId = cnmt.read(0x10)
+								size = cnmt.read(0x6)
+								size=int.from_bytes(size, byteorder='little')
+								ncatype = cnmt.readInt8()
+								unknown = cnmt.read(0x1)		
+							#**************************************************************	
+								version=str(int.from_bytes(titleversion, byteorder='little'))
+								ver=version
+								ver='[v'+ver+']'
+								titleid3 ='['+ titleid2+']'
+								nca_name=str(hx(NcaId))
+								nca_name=nca_name[2:-1]+'.nca'
+								if (nca_name not in listed_files and ncatype!=6) or (nca_name not in validfiles and ncatype!=6):
+									veredict = False
+									print (tabs+'Missing file from '+titleid2+': '+nca_name )
+									
+		if veredict == False:
+			print('')
+			print('VEREDICT: NSP FILE IS CORRUPT OR MISSES FILES')
+		if veredict == True:	
+			print('')
+			print('VEREDICT: NSP FILE IS CORRECT')	
+									
+	def verify_enforcer(self,nca):
+
+		for f in self:
+			if str(f._path) == nca:
+				if type(f) == Fs.Nca and f.header.contentType == Type.Content.PROGRAM:
+					for fs in f.sectionFilesystems:
+						if fs.fsType == Type.Fs.PFS0 and fs.cryptoType == Type.Crypto.CTR:
+							f.seek(0)
+							ncaHeader = f.read(0x400)
+
+							sectionHeaderBlock = fs.buffer
+
+							f.seek(fs.offset)
+							pfs0Header = f.read(0x10)
+							return True
+						else:
+							return False			
+				if type(f) == Fs.Nca and f.header.contentType == Type.Content.META:
+					for fs in f.sectionFilesystems:
+						if fs.fsType == Type.Fs.PFS0 and fs.cryptoType == Type.Crypto.CTR:
+							f.seek(0)
+							ncaHeader = f.read(0x400)
+
+							sectionHeaderBlock = fs.buffer
+
+							f.seek(fs.offset)
+							pfs0Header = f.read(0x10)
+							return True
+						else:
+							return False								
+							
+				if type(f) == Fs.Nca:
+					for fs in f.sectionFilesystems:
+						if fs.fsType == Type.Fs.ROMFS and fs.cryptoType == Type.Crypto.CTR:
+							f.seek(0)
+							ncaHeader = f.read(0x400)
+
+							sectionHeaderBlock = fs.buffer
+
+							levelOffset = int.from_bytes(sectionHeaderBlock[0x18:0x20], byteorder='little', signed=False)
+							levelSize = int.from_bytes(sectionHeaderBlock[0x20:0x28], byteorder='little', signed=False)
+
+							offset = fs.offset + levelOffset
+
+							f.seek(offset)
+							pfs0Header = f.read(levelSize)
+							return True
+						else:
+							return False					
+							
+	def verify_key(self,nca):
+		decKey = self.nsptitlekeydec()			
+		for f in self:
+			if str(f._path) == nca:
+				if type(f) == Fs.Nca and f.header.getRightsId() != 0:
+					for fs in f.sectionFilesystems:
+						if fs.fsType == Type.Fs.PFS0 and fs.cryptoType == Type.Crypto.CTR:
+							f.seek(0)
+							ncaHeader = NcaHeader()
+							ncaHeader.open(MemoryFile(f.read(0x400), Type.Crypto.XTS, uhx(Keys.get('header_key'))))							
+							pfs0=fs
+							sectionHeaderBlock = fs.buffer
+							f.seek(fs.offset)
+							pfs0Offset=fs.offset
+							pfs0Header = f.read(0x10)	
+							#print(sectionHeaderBlock[8:12] == b'IVFC')	
+							if sectionHeaderBlock[8:12] == b'IVFC':	
+								#Hex.dump(self.sectionHeaderBlock)
+								#Print.info(hx(self.sectionHeaderBlock[0xc8:0xc8+0x20]).decode('utf-8'))
+								mem = MemoryFile(pfs0Header, Type.Crypto.CTR, decKey, pfs0.cryptoCounter, offset = pfs0Offset)
+								data = mem.read();
+								Hex.dump(data)
+								#print('hash = %s' % str(_sha256(data)))
+								if hx(sectionHeaderBlock[0xc8:0xc8+0x20]).decode('utf-8') == str(_sha256(data)):
+									return True
+								else:
+									return False
+							else:
+								mem = MemoryFile(pfs0Header, Type.Crypto.CTR, decKey, pfs0.cryptoCounter, offset = pfs0Offset)
+								data = mem.read();
+								Hex.dump(data)								
+								magic = mem.read()[0:4]
+								print(magic)
+								if magic != b'PFS0':
+									return False
+							return True			
+						'''	
+						if fs.fsType == Type.Fs.ROMFS and fs.cryptoType == Type.Crypto.CTR:	
+							print('here3')
+							f.seek(0)
+							ncaHeader = NcaHeader()
+							ncaHeader.open(MemoryFile(f.read(0x400), Type.Crypto.XTS, uhx(Keys.get('header_key'))))	
+							romfs=fs	
+							sectionHeaderBlock = fs.buffer
+							f.seek(fs.offset)
+							romfsOffset=fs.offset
+							romfsHeader = f.read(0x10)
+							print(romfsHeader)
+							mem = MemoryFile(romfsHeader, Type.Crypto.CTR, decKey, romfs.cryptoCounter, offset = romfsOffset)
+							magic = mem.read()[0:4]
+							print(hx(magic))
+							return True
+						else:
+							return False		
+						'''	
+	def cnmt_get_baseids(self):			
+		ctype='addon'
+		idlist=list()
+		counter=0		
+		for nca in self:					
+			if type(nca) == Nca:				
+				if 	str(nca.header.contentType) == 'Content.META':
+					for pfs0 in nca:
+						for cnmt in pfs0:
+							cnmt.rewind()							
+							titleid=cnmt.readInt64()
+							titleid2 = str(hx(titleid.to_bytes(8, byteorder='big'))) 	
+							titleid2 = titleid2[2:-1]	
+							if counter>0 and not str(titleid2).endswith('000'):
+								counter+=1
+								break		
+							else:	
+								counter+=1									
+							titleversion = cnmt.read(0x4);cnmt.seek(0xE)
+							offset=cnmt.readInt16();content_entries=cnmt.readInt16()
+							meta_entries=cnmt.readInt16();content_type=str(cnmt._path);content_type=content_type[:-22]						
+							cnmt.seek(0x20)				
+							if content_type=='Application':
+								original_ID=titleid2
+								if original_ID not in idlist:
+									idlist.append(original_ID)
+								ctype='base'
+							elif content_type=='Patch':
+								original_ID=cnmt.readInt64()	
+								original_ID=str(hx(original_ID.to_bytes(8, byteorder='big')))
+								original_ID = original_ID[2:-1]	
+								if original_ID not in idlist:
+									idlist.append(original_ID)
+								ctype='update'		
+							elif content_type=='AddOnContent':
+								original_ID=cnmt.readInt64()	
+								original_ID=str(hx(original_ID.to_bytes(8, byteorder='big')))
+								original_ID = original_ID[2:-1]	
+								if original_ID not in idlist:
+									idlist.append(original_ID)	
+								ctype='addon'		
+							else: 
+								original_ID=cnmt.readInt64()	
+								original_ID=str(hx(original_ID.to_bytes(8, byteorder='big')))
+								original_ID = original_ID[2:-1]		
+								if original_ID not in idlist:
+									idlist.append(original_ID)	
+								ctype='addon'			
+							break				
+						
+		'''								
+		for i in idlist:
+			print(i)
+		'''	
+		return ctype,idlist	
+
+					

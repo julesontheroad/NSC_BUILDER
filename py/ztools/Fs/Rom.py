@@ -48,5 +48,14 @@ class Rom(BaseFs):
 		Hex.dump(level1)
 		'''
 		super(Rom, self).printInfo(indent)
+		
+	def get_cryptoType(self):
+		return self.cryptoType
+		
+	def get_cryptoKey(self):
+		return self.cryptoKey
+
+	def get_cryptoCounter(self):
+		return self.cryptoCounter			
 
 

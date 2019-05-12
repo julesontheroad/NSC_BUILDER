@@ -14,6 +14,7 @@ import sq_tools
 from struct import pack as pk, unpack as upk
 from hashlib import sha256
 import Fs.Type
+from Fs import Type
 import re
 import pathlib
 import Config
@@ -820,12 +821,16 @@ class Xci(File):
 									cnmt.rewind()
 									cnmt.seek(0x20)
 									original_ID=cnmt.readInt64()
+									#cnmt.rewind()
+									#cnmt.seek(0x28)		
+									#cnmt.writeInt64(336592896)
+									cnmt.rewind()
+									cnmt.seek(0x28)					
 									min_sversion=cnmt.readInt32()
 									length_of_emeta=cnmt.readInt32()	
-									Print.info('')	
 									Print.info('...........................................')								
 									Print.info('Reading: ' + str(cnmt._path))
-									Print.info('...........................................')
+									Print.info('...........................................')							
 									Print.info('titleid = ' + str(hx(titleid.to_bytes(8, byteorder='big'))))
 									Print.info('version = ' + str(int.from_bytes(titleversion, byteorder='little')))
 									Print.info('Table offset = '+ str(hx((offset+0x20).to_bytes(2, byteorder='big'))))
@@ -838,6 +843,7 @@ class Xci(File):
 										Print.info('RequiredUpdateNumber = ' + str(min_sversion))
 									if content_name != 'AddOnContent':
 										Print.info('RequiredSystemVersion = ' + str(min_sversion))
+									Print.info('Length of exmeta = ' + str(length_of_emeta))								
 									cnmt.rewind()
 									cnmt.seek(0x20+offset)
 									for i in range(content_entries):
@@ -849,135 +855,135 @@ class Xci(File):
 										NcaId = cnmt.read(0x10)
 										Print.info('NcaId =\t' + str(hx(NcaId)))
 										size = cnmt.read(0x6)
-										Print.info('Size =\t' + str(int.from_bytes(size, byteorder='little')))
+										Print.info('Size =\t' + str(int.from_bytes(size, byteorder='little', signed=True)))
 										ncatype = cnmt.read(0x1)
-										Print.info('ncatype = ' + str(int.from_bytes(ncatype, byteorder='little')))
+										Print.info('ncatype = ' + str(int.from_bytes(ncatype, byteorder='little', signed=True)))
 										unknown = cnmt.read(0x1)	
-										cnmt.seek(0x20+offset+content_entries*0x38+length_of_emeta)			
-										digest = cnmt.read(0x20)
-										Print.info("")	
-										Print.info('digest= '+str(hx(digest)))
-										Print.info("")		
-										cnmt.seek(0x20+offset+content_entries*0x38)										
-										if length_of_emeta>0:
-											Print.info('----------------')			
-											Print.info('Extended meta')	
-											Print.info('----------------')				
-											num_prev_cnmt=cnmt.read(0x4)
-											num_prev_delta=cnmt.read(0x4)
-											num_delta_info=cnmt.read(0x4)
-											num_delta_application =cnmt.read(0x4)	
-											num_previous_content=cnmt.read(0x4)		
-											num_delta_content=cnmt.read(0x4)	
-											cnmt.read(0x4)	
-											Print.info('Number of previous cnmt entries = ' + str(int.from_bytes(num_prev_cnmt, byteorder='little')))	
-											Print.info('Number of previous delta entries = ' + str(int.from_bytes(num_prev_delta, byteorder='little')))	
-											Print.info('Number of delta info entries = ' + str(int.from_bytes(num_delta_info, byteorder='little')))			
-											Print.info('Number of delta application info entries = ' + str(int.from_bytes(num_delta_application, byteorder='little')))	
-											Print.info('Number of previous content entries = ' + str(int.from_bytes(num_previous_content, byteorder='little')))	
-											Print.info('Number of delta content entries = ' + str(int.from_bytes(num_delta_content, byteorder='little')))		
-											for i in range(int.from_bytes(num_prev_cnmt, byteorder='little')):
-												Print.info('...........................................')								
-												Print.info('Previous cnmt records: '+ str(i+1))
-												Print.info('...........................................')				
-												titleid=cnmt.readInt64()	
-												titleversion = cnmt.read(0x4)	
-												type_n = cnmt.read(0x1)					
-												unknown1=cnmt.read(0x3)
-												vhash = cnmt.read(0x20)
-												unknown2=cnmt.read(0x2)
-												unknown3=cnmt.read(0x2)
-												unknown4=cnmt.read(0x4)				
-												Print.info('titleid = ' + str(hx(titleid.to_bytes(8, byteorder='big'))))	
-												Print.info('version = ' + str(int.from_bytes(titleversion, byteorder='little')))
-												Print.info('type number = ' + str(hx(type_n)))	
-												#Print.info('unknown1 = ' + str(int.from_bytes(unknown1, byteorder='little')))			
-												Print.info('hash =\t' + str(hx(vhash)))				
-												Print.info('content nca number = ' + str(int.from_bytes(unknown2, byteorder='little')))				
-												#Print.info('unknown3 = ' + str(int.from_bytes(unknown3, byteorder='little')))				
-												#Print.info('unknown4 = ' + str(int.from_bytes(unknown4, byteorder='little')))
-											for i in range(int.from_bytes(num_prev_delta, byteorder='little')):
-												Print.info('...........................................')								
-												Print.info('Previous delta records: '+ str(i+1))
-												Print.info('...........................................')				
-												oldtitleid=cnmt.readInt64()	
-												newtitleid=cnmt.readInt64()					
-												oldtitleversion = cnmt.read(0x4)	
-												newtitleversion = cnmt.read(0x4)	
-												size = cnmt.read(0x8)
-												unknown1=cnmt.read(0x8)				
-												Print.info('old titleid = ' + str(hx(oldtitleid.to_bytes(8, byteorder='big'))))	
-												Print.info('new titleid = ' + str(hx(newtitleid.to_bytes(8, byteorder='big'))))						
-												Print.info('old version = ' + str(int.from_bytes(oldtitleversion, byteorder='little')))
-												Print.info('new version = ' + str(int.from_bytes(newtitleversion, byteorder='little')))	
-												Print.info('size = ' + str(int.from_bytes(size, byteorder='little', signed=True)))					
-												#Print.info('unknown1 = ' + str(int.from_bytes(unknown1, byteorder='little')))			
-											for i in range(int.from_bytes(num_delta_info, byteorder='little')):
-												Print.info('...........................................')								
-												Print.info('Delta info: '+ str(i+1))
-												Print.info('...........................................')				
-												oldtitleid=cnmt.readInt64()	
-												newtitleid=cnmt.readInt64()					
-												oldtitleversion = cnmt.read(0x4)	
-												newtitleversion = cnmt.read(0x4)	
-												index1=cnmt.readInt64()	
-												index2=cnmt.readInt64()				
-												Print.info('old titleid = ' + str(hx(oldtitleid.to_bytes(8, byteorder='big'))))	
-												Print.info('new titleid = ' + str(hx(newtitleid.to_bytes(8, byteorder='big'))))						
-												Print.info('old version = ' + str(int.from_bytes(oldtitleversion, byteorder='little')))
-												Print.info('new version = ' + str(int.from_bytes(newtitleversion, byteorder='little')))	
-												Print.info('index1 = ' + str(hx(index1.to_bytes(8, byteorder='big'))))	
-												Print.info('index2 = ' + str(hx(index2.to_bytes(8, byteorder='big'))))						
-												#Print.info('unknown1 = ' + str(int.from_bytes(unknown1, byteorder='little')))
-											for i in range(int.from_bytes(num_delta_application, byteorder='little')):
-												Print.info('...........................................')								
-												Print.info('Delta application info: '+ str(i+1))
-												Print.info('...........................................')				
-												OldNcaId = cnmt.read(0x10)
-												NewNcaId = cnmt.read(0x10)		
-												old_size = cnmt.read(0x6)				
-												up2bytes = cnmt.read(0x2)
-												low4bytes = cnmt.read(0x4)
-												unknown1 = cnmt.read(0x2)
-												ncatype = cnmt.read(0x1)	
-												installable = cnmt.read(0x1)
-												unknown2 = cnmt.read(0x4)				
-												Print.info('OldNcaId = ' + str(hx(OldNcaId)))	
-												Print.info('NewNcaId = ' + str(hx(NewNcaId)))	
-												Print.info('Old size = ' +  str(int.from_bytes(old_size, byteorder='little', signed=True)))	
-												Print.info('unknown1 = ' + str(int.from_bytes(unknown1, byteorder='little')))
-												Print.info('ncatype =  ' + str(int.from_bytes(ncatype, byteorder='little', signed=True)))
-												Print.info('installable = ' + str(int.from_bytes(installable, byteorder='little', signed=True)))
-												Print.info('Upper 2 bytes of the new size=' + str(hx(up2bytes)))	
-												Print.info('Lower 4 bytes of the new size=' + str(hx(low4bytes)))					
-												#Print.info('unknown2 =\t' + str(int.from_bytes(unknown2, byteorder='little')))			
+									cnmt.seek(0x20+offset+content_entries*0x38+length_of_emeta)			
+									digest = cnmt.read(0x20)
+									Print.info("")	
+									Print.info('digest= '+str(hx(digest)))
+									Print.info("")		
+									cnmt.seek(0x20+offset+content_entries*0x38)										
+									if length_of_emeta>0:
+										Print.info('----------------')			
+										Print.info('Extended meta')	
+										Print.info('----------------')				
+										num_prev_cnmt=cnmt.read(0x4)
+										num_prev_delta=cnmt.read(0x4)
+										num_delta_info=cnmt.read(0x4)
+										num_delta_application =cnmt.read(0x4)	
+										num_previous_content=cnmt.read(0x4)		
+										num_delta_content=cnmt.read(0x4)	
+										cnmt.read(0x4)	
+										Print.info('Number of previous cnmt entries = ' + str(int.from_bytes(num_prev_cnmt, byteorder='little')))	
+										Print.info('Number of previous delta entries = ' + str(int.from_bytes(num_prev_delta, byteorder='little')))	
+										Print.info('Number of delta info entries = ' + str(int.from_bytes(num_delta_info, byteorder='little')))			
+										Print.info('Number of delta application info entries = ' + str(int.from_bytes(num_delta_application, byteorder='little')))	
+										Print.info('Number of previous content entries = ' + str(int.from_bytes(num_previous_content, byteorder='little')))	
+										Print.info('Number of delta content entries = ' + str(int.from_bytes(num_delta_content, byteorder='little')))		
+										for i in range(int.from_bytes(num_prev_cnmt, byteorder='little')):
+											Print.info('...........................................')								
+											Print.info('Previous cnmt records: '+ str(i+1))
+											Print.info('...........................................')				
+											titleid=cnmt.readInt64()	
+											titleversion = cnmt.read(0x4)	
+											type_n = cnmt.read(0x1)					
+											unknown1=cnmt.read(0x3)
+											vhash = cnmt.read(0x20)
+											unknown2=cnmt.read(0x2)
+											unknown3=cnmt.read(0x2)
+											unknown4=cnmt.read(0x4)				
+											Print.info('titleid = ' + str(hx(titleid.to_bytes(8, byteorder='big'))))	
+											Print.info('version = ' + str(int.from_bytes(titleversion, byteorder='little')))
+											Print.info('type number = ' + str(hx(type_n)))	
+											#Print.info('unknown1 = ' + str(int.from_bytes(unknown1, byteorder='little')))			
+											Print.info('hash =\t' + str(hx(vhash)))				
+											Print.info('content nca number = ' + str(int.from_bytes(unknown2, byteorder='little')))				
+											#Print.info('unknown3 = ' + str(int.from_bytes(unknown3, byteorder='little')))				
+											#Print.info('unknown4 = ' + str(int.from_bytes(unknown4, byteorder='little')))
+										for i in range(int.from_bytes(num_prev_delta, byteorder='little')):
+											Print.info('...........................................')								
+											Print.info('Previous delta records: '+ str(i+1))
+											Print.info('...........................................')				
+											oldtitleid=cnmt.readInt64()	
+											newtitleid=cnmt.readInt64()					
+											oldtitleversion = cnmt.read(0x4)	
+											newtitleversion = cnmt.read(0x4)	
+											size = cnmt.read(0x8)
+											unknown1=cnmt.read(0x8)				
+											Print.info('old titleid = ' + str(hx(oldtitleid.to_bytes(8, byteorder='big'))))	
+											Print.info('new titleid = ' + str(hx(newtitleid.to_bytes(8, byteorder='big'))))						
+											Print.info('old version = ' + str(int.from_bytes(oldtitleversion, byteorder='little')))
+											Print.info('new version = ' + str(int.from_bytes(newtitleversion, byteorder='little')))	
+											Print.info('size = ' + str(int.from_bytes(size, byteorder='little', signed=True)))					
+											#Print.info('unknown1 = ' + str(int.from_bytes(unknown1, byteorder='little')))			
+										for i in range(int.from_bytes(num_delta_info, byteorder='little')):
+											Print.info('...........................................')								
+											Print.info('Delta info: '+ str(i+1))
+											Print.info('...........................................')				
+											oldtitleid=cnmt.readInt64()	
+											newtitleid=cnmt.readInt64()					
+											oldtitleversion = cnmt.read(0x4)	
+											newtitleversion = cnmt.read(0x4)	
+											index1=cnmt.readInt64()	
+											index2=cnmt.readInt64()				
+											Print.info('old titleid = ' + str(hx(oldtitleid.to_bytes(8, byteorder='big'))))	
+											Print.info('new titleid = ' + str(hx(newtitleid.to_bytes(8, byteorder='big'))))						
+											Print.info('old version = ' + str(int.from_bytes(oldtitleversion, byteorder='little')))
+											Print.info('new version = ' + str(int.from_bytes(newtitleversion, byteorder='little')))	
+											Print.info('index1 = ' + str(hx(index1.to_bytes(8, byteorder='big'))))	
+											Print.info('index2 = ' + str(hx(index2.to_bytes(8, byteorder='big'))))						
+											#Print.info('unknown1 = ' + str(int.from_bytes(unknown1, byteorder='little')))
+										for i in range(int.from_bytes(num_delta_application, byteorder='little')):
+											Print.info('...........................................')								
+											Print.info('Delta application info: '+ str(i+1))
+											Print.info('...........................................')				
+											OldNcaId = cnmt.read(0x10)
+											NewNcaId = cnmt.read(0x10)		
+											old_size = cnmt.read(0x6)				
+											up2bytes = cnmt.read(0x2)
+											low4bytes = cnmt.read(0x4)
+											unknown1 = cnmt.read(0x2)
+											ncatype = cnmt.read(0x1)	
+											installable = cnmt.read(0x1)
+											unknown2 = cnmt.read(0x4)				
+											Print.info('OldNcaId = ' + str(hx(OldNcaId)))	
+											Print.info('NewNcaId = ' + str(hx(NewNcaId)))	
+											Print.info('Old size = ' +  str(int.from_bytes(old_size, byteorder='little', signed=True)))	
+											Print.info('unknown1 = ' + str(int.from_bytes(unknown1, byteorder='little')))
+											Print.info('ncatype =  ' + str(int.from_bytes(ncatype, byteorder='little', signed=True)))
+											Print.info('installable = ' + str(int.from_bytes(installable, byteorder='little', signed=True)))
+											Print.info('Upper 2 bytes of the new size=' + str(hx(up2bytes)))	
+											Print.info('Lower 4 bytes of the new size=' + str(hx(low4bytes)))					
+											#Print.info('unknown2 =\t' + str(int.from_bytes(unknown2, byteorder='little')))			
 
-											for i in range(int.from_bytes(num_previous_content, byteorder='little')):
-												Print.info('...........................................')								
-												Print.info('Previous content records: '+ str(i+1))
-												Print.info('...........................................')				
-												NcaId = cnmt.read(0x10)		
-												size = cnmt.read(0x6)				
-												ncatype = cnmt.read(0x1)	
-												unknown1 = cnmt.read(0x1)				
-												Print.info('NcaId = '+ str(hx(NcaId)))	
-												Print.info('Size = '+ str(int.from_bytes(size, byteorder='little', signed=True)))	
-												Print.info('ncatype = '+ str(int.from_bytes(ncatype, byteorder='little', signed=True)))			
-												#Print.info('unknown1 = '+ str(int.from_bytes(unknown1, byteorder='little')))	
-				
-											for i in range(int.from_bytes(num_delta_content, byteorder='little')):
-												Print.info('........................')							
-												Print.info('Delta content entry ' + str(i+1))
-												Print.info('........................')
-												vhash = cnmt.read(0x20)
-												Print.info('hash =\t' + str(hx(vhash)))
-												NcaId = cnmt.read(0x10)
-												Print.info('NcaId =\t' + str(hx(NcaId)))
-												size = cnmt.read(0x6)
-												Print.info('Size =\t' + str(int.from_bytes(size, byteorder='little', signed=True)))
-												ncatype = cnmt.read(0x1)
-												Print.info('ncatype = ' + str(int.from_bytes(ncatype, byteorder='little', signed=True)))
-												unknown = cnmt.read(0x1)
+										for i in range(int.from_bytes(num_previous_content, byteorder='little')):
+											Print.info('...........................................')								
+											Print.info('Previous content records: '+ str(i+1))
+											Print.info('...........................................')				
+											NcaId = cnmt.read(0x10)		
+											size = cnmt.read(0x6)				
+											ncatype = cnmt.read(0x1)	
+											unknown1 = cnmt.read(0x1)				
+											Print.info('NcaId = '+ str(hx(NcaId)))	
+											Print.info('Size = '+ str(int.from_bytes(size, byteorder='little', signed=True)))	
+											Print.info('ncatype = '+ str(int.from_bytes(ncatype, byteorder='little', signed=True)))			
+											#Print.info('unknown1 = '+ str(int.from_bytes(unknown1, byteorder='little')))	
+						
+										for i in range(int.from_bytes(num_delta_content, byteorder='little')):
+											Print.info('........................')							
+											Print.info('Delta content entry ' + str(i+1))
+											Print.info('........................')
+											vhash = cnmt.read(0x20)
+											Print.info('hash =\t' + str(hx(vhash)))
+											NcaId = cnmt.read(0x10)
+											Print.info('NcaId =\t' + str(hx(NcaId)))
+											size = cnmt.read(0x6)
+											Print.info('Size =\t' + str(int.from_bytes(size, byteorder='little', signed=True)))
+											ncatype = cnmt.read(0x1)
+											Print.info('ncatype = ' + str(int.from_bytes(ncatype, byteorder='little', signed=True)))
+											unknown = cnmt.read(0x1)	
 										
 									
 #///////////////////////////////////////////////////								
@@ -1547,6 +1553,9 @@ class Xci(File):
 										content_type='Update'
 										reqtag='- RequiredSystemVersion: '
 										tit_name,editor,ediver,SupLg,regionstr,isdemo = self.inf_get_title(target,offset,content_entries,original_ID)							
+										if tit_name=='DLC':
+											tit_name='-'
+											editor='-'											
 										if isdemo == 1:
 											content_type='Demo Update'
 										if isdemo == 2:
@@ -1559,6 +1568,9 @@ class Xci(File):
 										content_type='Base Game or Application'
 										reqtag='- RequiredSystemVersion: '	
 										tit_name,editor,ediver,SupLg,regionstr,isdemo = self.inf_get_title(target,offset,content_entries,original_ID)	
+										if tit_name=='DLC':
+											tit_name='-'
+											editor='-'												
 										if isdemo == 1:
 											content_type='Demo'
 										if isdemo == 2:
@@ -1897,6 +1909,9 @@ class Xci(File):
 									content_type_cnmt=content_type_cnmt[:-22]	
 									if content_type_cnmt == 'Application':
 										tit_name,editor,ediver,SupLg,regionstr,isdemo = self.inf_get_title(target,offset,content_entries,original_ID)							
+										if tit_name=='DLC':
+											tit_name='-'
+											editor='-'												
 										applist.append([target,titleid,version,tit_name,editor])
 									if content_type_cnmt == 'Patch':
 										patchlist.append([target,original_ID,version,titleid])
@@ -1991,6 +2006,9 @@ class Xci(File):
 										content_type='Update'
 										reqtag='- RequiredSystemVersion: '
 										tit_name,editor,ediver,SupLg,regionstr,isdemo = self.inf_get_title(target,offset,content_entries,original_ID)							
+										if tit_name=='DLC':
+											tit_name='-'
+											editor='-'												
 										if isdemo == 1:
 											content_type='Demo Update'
 										if isdemo == 2:
@@ -2003,6 +2021,9 @@ class Xci(File):
 										content_type='Base Game or Application'
 										reqtag='- RequiredSystemVersion: '	
 										tit_name,editor,ediver,SupLg,regionstr,isdemo = self.inf_get_title(target,offset,content_entries,original_ID)	
+										if tit_name=='DLC':
+											tit_name='-'
+											editor='-'												
 										if isdemo == 1:
 											content_type='Demo'
 										if isdemo == 2:
@@ -2033,6 +2054,9 @@ class Xci(File):
 										content_type='Update'
 										reqtag='- RequiredSystemVersion: '
 										tit_name,editor,ediver,SupLg,regionstr,isdemo = self.inf_get_title(target,offset,content_entries,original_ID)							
+										if tit_name=='DLC':
+											tit_name='-'
+											editor='-'												
 										if isdemo == 1:
 											content_type='Demo Update'
 										if isdemo == 2:
@@ -2045,6 +2069,9 @@ class Xci(File):
 										content_type='Base Game or Application'
 										reqtag='- RequiredSystemVersion: '	
 										tit_name,editor,ediver,SupLg,regionstr,isdemo = self.inf_get_title(target,offset,content_entries,original_ID)	
+										if tit_name=='DLC':
+											tit_name='-'
+											editor='-'												
 										if isdemo == 1:
 											content_type='Demo'
 										if isdemo == 2:
@@ -2452,11 +2479,58 @@ class Xci(File):
 		#print (hx(dec_info))
 	
 	def supertrim(self,buffer,outfile,ofolder,fat):
-
 		indent = 1
 		rightsId = 0
-		tabs = '\t' * indent		
-		xci_header,game_info,sig_padding,xci_certificate,root_header,upd_header,norm_header,sec_header,rootSize,upd_multiplier,norm_multiplier,sec_multiplier	=self.get_header()	 			
+		tabs = '\t' * indent	
+		completefilelist=list()
+		for nspF in self.hfs0:
+			if str(nspF._path)=="secure":
+				for file in nspF:					
+					completefilelist.append(str(file._path))
+		updlist=list()					
+		for nspF in self.hfs0:
+			if str(nspF._path)=="secure":
+				for nca in nspF:					
+					if type(nca) == Nca:
+						if 	str(nca.header.contentType) == 'Content.META':
+							for f in nca:
+								for cnmt in f:
+									nca.rewind()
+									f.rewind()
+									cnmt.rewind()						
+									titleid=cnmt.readInt64()
+									titleversion = cnmt.read(0x4)
+									cnmt.rewind()
+									cnmt.seek(0xE)
+									offset=cnmt.readInt16()
+									content_entries=cnmt.readInt16()
+									meta_entries=cnmt.readInt16()
+									content_type=str(cnmt._path)
+									content_type=content_type[:-22]	
+									titleid2 = str(hx(titleid.to_bytes(8, byteorder='big'))) 	
+									titleid2 = titleid2[2:-1]	
+									cnmt.seek(0x20)
+									if content_type=='Patch':
+										pass
+									else: 
+										break					
+									cnmt.seek(0x20+offset)			
+									for i in range(content_entries):
+										vhash = cnmt.read(0x20)
+										NcaId = cnmt.read(0x10)
+										size = cnmt.read(0x6)
+										ncatype = cnmt.read(0x1)
+										unknown = cnmt.read(0x1)		
+									#**************************************************************	
+										nca_name=str(hx(NcaId))
+										nca_name=nca_name[2:-1]+'.nca'
+										if nca_name in completefilelist:
+											updlist.append(nca_name)			
+									nca_meta=str(nca._path)
+									if nca_meta in completefilelist:	
+										updlist.append(nca_meta)						
+
+		xci_header,game_info,sig_padding,xci_certificate,root_header,upd_header,norm_header,sec_header,rootSize,upd_multiplier,norm_multiplier,sec_multiplier	=self.get_header_supertrimmer(updlist)	 			
 		
 		totSize=len(xci_header)+len(game_info)+len(sig_padding)+len(xci_certificate)+rootSize
 	
@@ -2488,16 +2562,23 @@ class Xci(File):
 									break	
 									
 		Print.info('Generating XCI:')	
+		'''
 		if rightsId	!=0:	
 			Print.info('rightsId =\t' + hex(rightsId))
 			Print.info('titleKeyDec =\t' + str(hx(titleKeyDec)))
 			Print.info('masterKeyRev =\t' + hex(masterKeyRev))									
 		print("")
-		
+		'''
 		if fat=="fat32":
 			splitnumb=math.ceil(totSize/4294934528)
 			index=0
 			outfile=outfile[:-1]+str(index)
+		outfile=outfile.replace(' [Trimmed]','');outfile=outfile.replace(' (Trimmed)','')			
+		outfile=outfile.replace(' [TM]','');outfile=outfile.replace(' (TM)','')				
+		outfile=outfile.replace('[Trimmed]','');outfile=outfile.replace('(Trimmed)','')			
+		outfile=outfile.replace('[TM]','');outfile=outfile.replace('(TM)','')
+		outfile=outfile.replace(' [STR].xci','.xci');outfile=outfile.replace('[STR].xci','.xci')			
+		outfile=outfile.replace('.xci',' [STR].xci')				
 		c=0
 		t = tqdm(total=totSize, unit='B', unit_scale=True, leave=False)
 		t.write(tabs+'- Writing XCI header...')
@@ -2538,11 +2619,14 @@ class Xci(File):
 		outf.write(sec_header)
 		t.update(len(sec_header))
 		c=c+len(sec_header)			
-									
+
 		for nspF in self.hfs0:
 			if str(nspF._path)=="secure":
 				block=4294934528			
 				for nca in nspF:
+					if str(nca._path) in updlist:
+						t.write(tabs+'- Skipping update nca: ' + str(nca._path))					
+						continue
 					#if type(file) == Nca or type(file) == Ticket or file._path.endswith('.cert'):				
 					if type(nca) == Nca:
 						if nca.header.getRightsId() != 0:						
@@ -2745,7 +2829,103 @@ class Xci(File):
 
 		return header,gamecard_info,sig_padding,CERT,root_header,upd_header,norm_header,sec_header,rootSize,upd_multiplier,norm_multiplier,sec_multiplier
 		
+	def get_header_supertrimmer(self,excludelist):
+		upd_list=list()
+		upd_fileSizes = list()		
+		norm_list=list()
+		norm_fileSizes = list()			
+		sec_list=list()
+		sec_fileSizes = list()		
+		sec_shalist = list()			
+		for nspF in self.hfs0:
+			if str(nspF._path)=="secure":
+				for file in nspF:
+					if str(file._path) in excludelist:					
+						continue				
+					#if type(file) == Nca or type(file) == Ticket or file._path.endswith('.cert'):
+					if type(file) == Nca:					
+						sec_list.append(file._path)	
+						if type(file) == Nca:
+							sec_fileSizes.append(file.header.size)
+						#if  type(file) == Ticket or file._path.endswith('.cert'):
+						#	sec_fileSizes.append(file.size)
+						file.rewind()
+						hblock = file.read(0x200)
+						sha=sha256(hblock).hexdigest()	
+						sec_shalist.append(sha)		
+						
+		hfs0 = Fs.Hfs0(None, None)							
+		root_header,upd_header,norm_header,sec_header,rootSize,upd_multiplier,norm_multiplier,sec_multiplier=hfs0.gen_rhfs0_head(upd_list,norm_list,sec_list,sec_fileSizes,sec_shalist)
+		#print (hx(root_header))
+		tot_size=0xF000+rootSize
 		
+		sec_offset=root_header[0x90:0x90+0x8]	
+		sec_offset=int.from_bytes(sec_offset, byteorder='little')
+		sec_offset=int((sec_offset+0xF000+0x200)/0x200)
+		sec_offset=sec_offset.to_bytes(4, byteorder='little')
+		backupOffset=self.backupOffset
+		titleKekIndex = self.titleKekIndex	
+		cardsize,access_freq=sq_tools.getGCsize(tot_size)
+		cardsize=cardsize.to_bytes(1, byteorder='big')
+		gamecardHeaderVersion = self.gamecardHeaderVersion
+		gamecardFlags = self.gamecardFlags
+		packageId = self.packageId
+		validDataEndOffset = self.validDataEndOffset		
+		gamecardInfoIV = self.gamecardInfoIV			
+		secureMode = self.secureMode	
+		titleKeyFlag = self.titleKeyFlag
+		keyFlag = self.keyFlag
+		
+		HFS0_offset=(0xF000).to_bytes(8, byteorder='little')
+		valid_data=int(((tot_size-0x1)/0x200))
+		valid_data=valid_data.to_bytes(8, byteorder='little')		
+		len_rHFS0 = (len(root_header)).to_bytes(8, byteorder='little')
+		sha_rheader	= sha256(root_header[0x00:0x200]).hexdigest()	
+		sha_rheader=bytes.fromhex(sha_rheader)		
+		sha_ini_data = self.hfs0InitialDataHash	
+		end_norm = sec_offset		
+		
+		header =  b''
+		header += self.signature
+		header += self.magic
+		header += sec_offset
+		header += backupOffset.to_bytes(4, byteorder='little')
+		header += titleKekIndex.to_bytes(1, byteorder='little')	
+		header += cardsize
+		header += gamecardHeaderVersion.to_bytes(1, byteorder='little')
+		header += gamecardFlags.to_bytes(1, byteorder='little')
+		header += packageId.to_bytes(8, byteorder='little')
+		header += valid_data	
+		header += self.gamecardInfoIV		
+		header += HFS0_offset				
+		header += len_rHFS0		
+		header += sha_rheader	
+		header += sha_ini_data
+		header += secureMode.to_bytes(4, byteorder='little')	
+		header += titleKeyFlag.to_bytes(4, byteorder='little')
+		header += keyFlag.to_bytes(4, byteorder='little')		
+		header += end_norm				
+		#print (hx(header))	
+
+		self.seek(0x190)
+		gamecard_info=self.read(0x70)	
+		#print (hx(gamecard_info))		
+		sig_padding='00'*0x6E00
+		sig_padding=bytes.fromhex(sig_padding)		
+		#print (hx(sig_padding))	
+		#gamecardCert
+		CERT_padding='FF'*0x7E0C
+		CERT_padding=bytes.fromhex(CERT_padding)				
+		#print (hx(fake_CERT))
+		CERT = b''
+		CERT += self.gamecardCert.signature
+		CERT += self.gamecardCert.magic
+		CERT += self.gamecardCert.unknown1
+		CERT += self.gamecardCert.unknown2		
+		CERT += self.gamecardCert.data
+		CERT += CERT_padding			
+		#print (hx(CERT))	
+		return header,gamecard_info,sig_padding,CERT,root_header,upd_header,norm_header,sec_header,rootSize,upd_multiplier,norm_multiplier,sec_multiplier
 
 	def metapatcher(self,metapatch,RSV_cap,keypatch):					
 		for nspF in self.hfs0:
@@ -3869,8 +4049,11 @@ class Xci(File):
 									tit_name,editor,ediver,SupLg,regionstr,isdemo = self.inf_get_title(target,offset,content_entries,original_ID)
 									tit_name = (re.sub(r'[\/\\\:\*\?\!\"\<\>\|\.\s™©®()\~]+', ' ', tit_name))
 									tit_name = tit_name.strip()
+									if tit_name=='DLC' and (str(titleid2).endswith('000') or str(titleid2).endswith('800')):
+										tit_name='-'
+										editor='-'										
 									tid='['+titleid2+']'
-									filename=tit_name+' '+tid+' '+version+ttag
+									filename=tit_name+' '+tid+' '+version
 									titlerights=titleid2+str('0'*15)+str(crypto2)
 									contentlist.append([filename,titleid2,titlerights,keygen,ncalist,CTYPE])
 		for nspF in self.hfs0:
@@ -3900,15 +4083,19 @@ class Xci(File):
 				print (j)	
 		'''								
 		for i in contentlist:
-			if export == 'both' and i[5] != 'BASE':
-				export='nsp'
 			if export == 'nsp':
 				self.cd_spl_nsp(buffer,i[0],ofolder,i[4],fat,fx)
-			if export == 'xci':			
-				self.cd_spl_xci(buffer,i[0],ofolder,i[4],fat,fx)
+			if export == 'xci':		
+				if  i[5] != 'BASE':
+					self.cd_spl_nsp(buffer,i[0],ofolder,i[4],fat,fx)	
+				else:		
+					self.cd_spl_xci(buffer,i[0],ofolder,i[4],fat,fx)
 			if export == 'both':	
-				self.cd_spl_nsp(buffer,i[0],ofolder,i[4],fat,fx)			
-				self.cd_spl_xci(buffer,i[0],ofolder,i[4],fat,fx)						
+				if  i[5] != 'BASE':
+					self.cd_spl_nsp(buffer,i[0],ofolder,i[4],fat,fx)					
+				else:
+					self.cd_spl_nsp(buffer,i[0],ofolder,i[4],fat,fx)			
+					self.cd_spl_xci(buffer,i[0],ofolder,i[4],fat,fx)						
 						
 	def cd_spl_nsp(self,buffer,outfile,ofolder,filelist,fat,fx):
 		outfile=outfile+'.nsp'	
@@ -4701,7 +4888,7 @@ class Xci(File):
 							if "DE" in SupLg:
 								languetag=languetag+'De,'							
 							if ("LAT (spa)" and "SPA") in SupLg:
-								languetag=languetag+'Es'
+								languetag=languetag+'Es,'
 							elif "LAT (spa)" in SupLg:
 								languetag=languetag+'LatEs,'
 							elif "SPA" in SupLg:
@@ -5140,4 +5327,628 @@ class Xci(File):
 								if not data:				
 									break	
 								fp.close()
-		return outf,index,c						
+		return outf,index,c	
+
+	def cnmt_get_baseids(self):			
+		ctype='addon'
+		idlist=list()		
+		counter=0
+		for nspF in self.hfs0:
+			if str(nspF._path)=="secure":			
+				for nca in nspF:					
+					if type(nca) == Nca:				
+						if 	str(nca.header.contentType) == 'Content.META':
+							for pfs0 in nca:
+								for cnmt in pfs0:
+									cnmt.rewind()							
+									titleid=cnmt.readInt64()
+									titleid2 = str(hx(titleid.to_bytes(8, byteorder='big'))) 	
+									titleid2 = titleid2[2:-1]
+									if counter>0 and not str(titleid2).endswith('000'):
+										counter+=1
+										break
+									else:	
+										counter+=1									
+									titleversion = cnmt.read(0x4);cnmt.seek(0xE)
+									offset=cnmt.readInt16();content_entries=cnmt.readInt16()
+									meta_entries=cnmt.readInt16();content_type=str(cnmt._path);content_type=content_type[:-22]
+									cnmt.seek(0x20)				
+									if content_type=='Application':
+										original_ID=titleid2
+										if original_ID not in idlist:
+											idlist.append(original_ID)
+										ctype='base'
+									elif content_type=='Patch':
+										original_ID=cnmt.readInt64()	
+										original_ID=str(hx(original_ID.to_bytes(8, byteorder='big')))
+										original_ID = original_ID[2:-1]	
+										if original_ID not in idlist:
+											idlist.append(original_ID)		
+										ctype='update'											
+									elif content_type=='AddOnContent':
+										original_ID=cnmt.readInt64()	
+										original_ID=str(hx(original_ID.to_bytes(8, byteorder='big')))
+										original_ID = original_ID[2:-1]	
+										if original_ID not in idlist:
+											idlist.append(original_ID)
+										ctype='addon'											
+									else: 
+										original_ID=cnmt.readInt64()	
+										original_ID=str(hx(original_ID.to_bytes(8, byteorder='big')))
+										original_ID = original_ID[2:-1]		
+										if original_ID not in idlist:
+											idlist.append(original_ID)	
+										ctype='addon'											
+									break
+								break	
+		'''								
+		for i in idlist:
+			print(i)
+		'''	
+		return ctype,idlist	
+
+		
+#///////////////////////////////////////////////////								
+#ADD TO DATABASE
+#///////////////////////////////////////////////////					
+	def addtodb(self,ofile,dbtype):		
+		for nspF in self.hfs0:
+			if str(nspF._path)=="secure":			
+				for nca in nspF:				
+					if type(nca) == Nca:	
+						if 	str(nca.header.contentType) == 'Content.META':
+							for f in nca:
+								for cnmt in f:
+									nca.rewind()
+									f.rewind()
+									cnmt.rewind()						
+									titleid=cnmt.readInt64()
+									titleid2 = str(hx(titleid.to_bytes(8, byteorder='big'))) 	
+									titleid2 = titleid2[2:-1]							
+									titleversion = cnmt.read(0x4)	
+									version=str(int.from_bytes(titleversion, byteorder='little'))							
+									cnmt.seek(0xE)
+									offset=cnmt.readInt16()
+									content_entries=cnmt.readInt16()	
+									content_type=str(cnmt._path)
+									content_type=content_type[:-22]								
+									cnmt.seek(0x20)
+									if content_type=='Application':
+										original_ID=titleid2
+										cnmt.readInt64()	
+									else: 
+										original_ID=cnmt.readInt64()	
+										original_ID=str(hx(original_ID.to_bytes(8, byteorder='big')))
+										original_ID = original_ID[2:-1]
+									min_sversion=cnmt.readInt32()
+									RS_number=int(min_sversion/65536)
+									crypto1=nca.header.getCryptoType()
+									crypto2=nca.header.getCryptoType2()	
+									if crypto1 == 2:
+										if crypto1 > crypto2:								
+											keygen=nca.header.getCryptoType()
+										else:			
+											keygen=nca.header.getCryptoType2()	
+									else:			
+										keygen=nca.header.getCryptoType2()								
+									MinRSV=sq_tools.getMinRSV(keygen,min_sversion)
+									RSV_rq=sq_tools.getFWRangeRSV(min_sversion)						
+									length_of_emeta=cnmt.readInt32()	
+									target=str(nca._path)
+									titlerights,ckey=self.getdbtr(original_ID,content_type,titleid2)
+									if ckey == '0':
+										ckey=self.getdbkey(titlerights)
+									target=str(nca._path)
+									tit_name,editor,ediver,SupLg,regionstr,isdemo = self.inf_get_title(target,offset,content_entries,original_ID)
+									if tit_name=='DLC' and (str(titleid2).endswith('000') or str(titleid2).endswith('800')):
+										tit_name='-'
+										editor='-'											
+									if dbtype == 'extended' or dbtype == 'all':
+										dbstring=self.getdbstr(titleid2,titlerights,ckey,content_type,tit_name,version,crypto1,crypto2,keygen,min_sversion,RSV_rq[1:-1],RS_number,MinRSV,regionstr,ediver,editor,isdemo)
+									if dbtype == 'keyless' or dbtype == 'all':
+										kdbstring=self.getkeylessdbstr(titleid2,titlerights,ckey,content_type,tit_name,version,crypto1,crypto2,keygen,min_sversion,RSV_rq[1:-1],RS_number,MinRSV,regionstr,ediver,editor,isdemo)
+									if dbtype == 'nutdb' or dbtype == 'all':	
+										ndbstring=self.getnutdbstr(titleid2,titlerights,ckey,content_type,tit_name,version,regionstr,isdemo)
+									if dbtype == 'simple' or dbtype == 'all':								
+										simplbstr=self.simplbstr(titlerights,ckey,tit_name)
+									print ("- Processing: "+ str(self._path))
+									print("")
+									if dbtype == 'extended':
+										print("EXTENDED DB STRING:")
+										self.appendtodb(dbstring,ofile,dbtype)
+									if dbtype == 'keyless':
+										print("EXTENDED KEYLESS DB STRING:")								
+										self.appendtodb(kdbstring,ofile,dbtype)	
+									if dbtype == 'nutdb':
+										print("NUTDB DB STRING:")									
+										self.appendtodb(ndbstring,ofile,dbtype)	
+									if dbtype == 'simple':
+										print("SIMPLE DB STRING:")									
+										self.appendtodb(simplbstr,ofile,dbtype)										
+									if dbtype == 'all':		
+										dir=os.path.dirname(os.path.abspath(ofile))	
+										edbf='extended_DB.txt'	
+										edbf = os.path.join(dir, edbf)									
+										ndbf='nutdb_DB.txt'	
+										ndbf = os.path.join(dir, ndbf)	
+										kdbfile='keyless_DB.txt'	
+										kdbfile = os.path.join(dir, kdbfile)
+										simpbfile='simple_DB.txt'	
+										simpbfile = os.path.join(dir, simpbfile)								
+										print("EXTENDED DB STRING:")
+										self.appendtodb(dbstring,edbf,"extended")
+										print("")
+										print("EXTENDED KEYLESS DB STRING:")								
+										self.appendtodb(kdbstring,kdbfile,"keyless")
+										print("")
+										print("NUTDB DB STRING:")								
+										self.appendtodb(ndbstring,ndbf,"nutdb")		
+										print("")
+										print("SIMPLE DB STRING:")								
+										self.appendtodb(simplbstr,simpbfile,"simple")										
+									print("")
+
+						
+	def getdbtr(self,original_ID,content_type,cnmt_id):		
+		titleKeyDec='0'
+		nca_id=''
+		self.rewind()
+		tr=''
+		for nspF in self.hfs0:
+			if str(nspF._path)=="secure":			
+				for nca in nspF:			
+					if type(nca) == Nca:	
+						if nca.header.getRightsId() != 0:
+							crypto1=nca.header.getCryptoType()
+							crypto2=nca.header.getCryptoType2()								
+							nca_id=nca.header.titleId
+							nca_id=nca_id.lower()
+							if original_ID==nca_id:
+								tr=str(nca.header.rightsId)
+								tr = tr[2:-1]		
+								check=tr[:16]
+								if check.endswith('000') and content_type=='Application':							
+									return tr,titleKeyDec
+								if check.endswith('800') and content_type=='Patch':								
+									return tr,titleKeyDec
+								if not check.endswith('000') and not tr.endswith('800') and content_type=='AddOnContent':								
+									return tr,titleKeyDec
+							else:
+								tr=str(nca.header.rightsId)
+								tr = tr[2:-1]
+								titleKeyDec='00000000000000000000000000000000'																		
+						if nca.header.getRightsId() == 0:	
+							crypto1=nca.header.getCryptoType()
+							crypto2=nca.header.getCryptoType2()		
+							nca_id=nca.header.titleId
+							nca_id=nca_id.lower()			
+							if original_ID==nca_id:								
+								if	nca.header.getgamecard() == 0:					
+									if crypto1>crypto2:
+										masterKeyRev = crypto1
+									else:
+										masterKeyRev = crypto2		
+									key = Keys.keyAreaKey(Keys.getMasterKeyIndex(masterKeyRev), nca.header.keyIndex)
+									crypto = aes128.AESECB(key)							
+									KB1L=nca.header.getKB1L()
+									KB1L = crypto.decrypt(KB1L)
+									if sum(KB1L) != 0:		
+										encKeyBlock = nca.header.getKeyBlock()							
+										decKeyBlock = crypto.decrypt(encKeyBlock[:16])							
+										titleKeyDec = hx(Keys.encryptTitleKey(decKeyBlock, Keys.getMasterKeyIndex(masterKeyRev)))
+										titleKeyDec=str(titleKeyDec)[2:-1]
+										tr=cnmt_id+'000000000000000'+str(crypto2)
+										check=tr[:16]										
+										if check.endswith('000') and content_type=='Application':							
+											return tr,titleKeyDec
+										if check.endswith('800') and content_type=='Patch':								
+											return tr,titleKeyDec
+							elif cnmt_id==nca_id:								
+								if	nca.header.getgamecard() == 0:					
+									if crypto1>crypto2:
+										masterKeyRev = crypto1
+									else:
+										masterKeyRev = crypto2		
+									key = Keys.keyAreaKey(Keys.getMasterKeyIndex(masterKeyRev), nca.header.keyIndex)
+									crypto = aes128.AESECB(key)							
+									KB1L=nca.header.getKB1L()
+									KB1L = crypto.decrypt(KB1L)
+									if sum(KB1L) != 0:		
+										encKeyBlock = nca.header.getKeyBlock()							
+										decKeyBlock = crypto.decrypt(encKeyBlock[:16])							
+										titleKeyDec = hx(Keys.encryptTitleKey(decKeyBlock, Keys.getMasterKeyIndex(masterKeyRev)))
+										titleKeyDec=str(titleKeyDec)[2:-1]
+										tr=cnmt_id+'000000000000000'+str(crypto2)
+										check=tr[:16]
+										if not check.endswith('000') and not tr.endswith('800') and content_type=='AddOnContent':								
+											return tr,titleKeyDec										
+									else:
+										tr=cnmt_id+'000000000000000'+str(crypto2)	
+								else:
+									tr=cnmt_id+'000000000000000'+str(crypto2)	
+		if tr=='':								
+			tr=cnmt_id+'000000000000000'+str(crypto2)										
+		titleKeyDec='00000000000000000000000000000000'				
+		return tr,titleKeyDec									
+								
+	def getdbkey(self,titlerights):	
+		for nspF in self.hfs0:
+			if str(nspF._path)=="secure":							
+				for ticket in nspF:		
+					if type(ticket) == Ticket:	
+						tikrights = hex(ticket.getRightsId())
+						tikrights = '0'+tikrights[2:]
+						if titlerights == tikrights:
+							titleKey = ticket.getTitleKeyBlock()	
+							titleKey=str(hx(titleKey.to_bytes(16, byteorder='big')))
+							titleKey=titleKey[2:-1]
+							return str(titleKey)
+
+	def getdbstr(self,titleid,titlerights,ckey,content_type,tit_name,version,crypto1,crypto2,keygen,min_sversion,RSV_rq,RS_number,MinRSV,regionstr,ediver,editor,isdemo):	
+		dbstr=str()
+		dbstr+=str(titleid).upper()+'|'
+		dbstr+=str(titlerights).upper()+'|'
+		dbstr+=str(keygen)+'|'	
+		if content_type == 'AddOnContent':
+			RSV_rq=sq_tools.getFWRangeRSV(MinRSV)
+			RSV_rq=RSV_rq[1:-1]
+			ediver='-'		
+			editor='-'			
+		dbstr+=str(RSV_rq)+'|'	
+		if content_type == 'AddOnContent':	
+			RGV_rq=RS_number
+		else:
+			RGV_rq="0"		
+		dbstr+=str(RGV_rq)+'|'			
+		dbstr+=str(ckey).upper()+'|'	
+		if content_type == 'Application' and isdemo==0:
+			if tit_name == 'DLC':
+				tit_name = '-'
+			dbstr+='GAME|'	
+		elif content_type=='Patch' and isdemo==0:	
+			dbstr+='UPD|'			
+		elif content_type=='AddOnContent':	
+			dbstr+='DLC|'
+			DLCnumb=str(titleid)
+			DLCnumb="0000000000000"+DLCnumb[-3:]									
+			DLCnumb=bytes.fromhex(DLCnumb)
+			DLCnumb=str(int.from_bytes(DLCnumb, byteorder='big'))									
+			DLCnumb=int(DLCnumb)		
+			tit_name="DLC Numb. "+str(DLCnumb)			
+		elif content_type == 'Application' and isdemo!=0:
+			if isdemo == 2:
+				dbstr+='INT DISPLAY|'			
+			else:
+				dbstr+='DEMO|'
+		elif content_type == 'Patch' and isdemo!=0:
+			if isdemo == 2:
+				dbstr+='UPD INT DISPLAY|'	
+			else:
+				dbstr+='UPD DEMO|'	
+		elif content_type == 'Application':
+			dbstr+='DEMO|'
+		elif content_type == 'Patch':
+			dbstr+='UPD DEMO|'				
+		else:
+			dbstr+='-|'							
+		dbstr+=str(tit_name)+'|'
+		dbstr+=str(editor)+'|'		
+		dbstr+=str(version)+'|'	
+		dbstr+=str(ediver)+'|'		
+		dbstr+=regionstr	
+		return dbstr
+		
+	def getkeylessdbstr(self,titleid,titlerights,ckey,content_type,tit_name,version,crypto1,crypto2,keygen,min_sversion,RSV_rq,RS_number,MinRSV,regionstr,ediver,editor,isdemo):	
+		dbstr=str()
+		dbstr+=str(titleid).upper()+'|'
+		dbstr+=str(titlerights).upper()+'|'
+		dbstr+=str(keygen)+'|'	
+		if content_type == 'AddOnContent':
+			RSV_rq=sq_tools.getFWRangeRSV(MinRSV)
+			RSV_rq=RSV_rq[1:-1]
+			ediver='-'
+			editor='-'
+		dbstr+=str(RSV_rq)+'|'	
+		if content_type == 'AddOnContent':	
+			RGV_rq=RS_number
+		else:
+			RGV_rq="0"		
+		dbstr+=str(RGV_rq)+'|'			
+		if content_type == 'Application' and isdemo==0:
+			if tit_name == 'DLC':
+				tit_name = '-'
+			dbstr+='GAME|'	
+		elif content_type=='Patch' and isdemo==0:	
+			dbstr+='UPD|'			
+		elif content_type=='AddOnContent':	
+			dbstr+='DLC|'
+			DLCnumb=str(titleid)
+			DLCnumb="0000000000000"+DLCnumb[-3:]									
+			DLCnumb=bytes.fromhex(DLCnumb)
+			DLCnumb=str(int.from_bytes(DLCnumb, byteorder='big'))									
+			DLCnumb=int(DLCnumb)		
+			tit_name="DLC Numb. "+str(DLCnumb)	
+		elif content_type == 'Application' and isdemo!=0:
+			if isdemo == 2:
+				dbstr+='INT DISPLAY|'			
+			else:
+				dbstr+='DEMO|'
+		elif content_type == 'Patch' and isdemo!=0:
+			if isdemo == 2:
+				dbstr+='UPD INT DISPLAY|'	
+			else:
+				dbstr+='UPD DEMO|'	
+		elif content_type == 'Application':
+			dbstr+='DEMO|'
+		elif content_type == 'Patch':
+			dbstr+='UPD DEMO|'				
+		else:
+			dbstr+='-|'						
+		dbstr+=str(tit_name)+'|'
+		dbstr+=str(editor)+'|'		
+		dbstr+=str(version)+'|'	
+		dbstr+=str(ediver)+'|'		
+		dbstr+=regionstr	
+		return dbstr		
+
+	def getnutdbstr(self,titleid,titlerights,ckey,content_type,tit_name,version,regionstr,isdemo):	
+		dbstr=str()
+		dbstr+=str(titleid).upper()+'|'
+		dbstr+=str(titlerights).upper()+'|'
+		dbstr+=str(ckey).upper()+'|'	
+		if content_type == 'Application' and isdemo==0:
+			if tit_name == 'DLC':
+				tit_name = '-'
+			dbstr+='0|0|0|'	
+		elif content_type=='Patch' and isdemo==0:	
+			dbstr+='1|0|0|'			
+		elif content_type=='AddOnContent':	
+			dbstr+='0|1|0|'	
+			DLCnumb=str(titleid)
+			DLCnumb="0000000000000"+DLCnumb[-3:]									
+			DLCnumb=bytes.fromhex(DLCnumb)
+			DLCnumb=str(int.from_bytes(DLCnumb, byteorder='big'))									
+			DLCnumb=int(DLCnumb)		
+			tit_name="DLC Numb. "+str(DLCnumb)				
+		elif content_type == 'Application' and isdemo!=0:
+			dbstr+='0|0|1|'
+		elif content_type == 'Patch' and isdemo!=0:
+			dbstr+='1|0|1|'	
+		elif content_type == 'Application':
+			dbstr+='0|0|1|'		
+		elif content_type == 'Patch':		
+			dbstr+='1|0|1|'
+		else:
+			dbstr+='-|'			
+		dbstr+=str(tit_name)+'|'
+		dbstr+=str(tit_name)+'|'	
+		dbstr+=str(version)+'|'	
+		if regionstr[0]=="1" and regionstr[2]=="0":
+			Regionvar="US"
+		elif regionstr[0]=="1" and regionstr[2]=="1":
+			Regionvar="WORLD"				
+		elif regionstr[0]=="0" and (regionstr[2]=="1" or regionstr[6]=="1" or regionstr[8]=="1" or regionstr[12]=="1" or regionstr[14]=="1" or regionstr[16]=="1" or regionstr[20]=="1"):
+			Regionvar="EUR"
+		elif regionstr[4]=="1" and (regionstr[24]=="1" or regionstr[26]=="1" or regionstr[28]=="1"):
+			Regionvar="AS"						
+		elif regionstr[4]=="1" and (regionstr[0]=="0" or regionstr[2]=="0"):
+			Regionvar="JAP"
+		else:
+			Regionvar="-"		
+		dbstr+=Regionvar	
+		return dbstr	
+		
+	def simplbstr(self,titlerights,ckey,tit_name):	
+		dbstr=str()
+		dbstr+=str(titlerights).upper()+'|'
+		dbstr+=str(ckey).upper()+'|'	
+		dbstr+=str(tit_name)
+		return dbstr			
+
+	def appendtodb(self,dbstring,ofile,dbtype):
+		if dbtype == 'extended':
+			initdb='id|rightsId|keygeneration|RSV|RGV|key|ContentType|baseName|editor|version|cversion|us|uk|jp|fr|de|lat|spa|it|du|cad|por|ru|kor|tai|ch'	
+		if dbtype == 'keyless':
+			initdb='id|rightsId|keygeneration|RSV|RGV|ContentType|baseName|editor|version|cversion|us|uk|jp|fr|de|lat|spa|it|du|cad|por|ru|kor|tai|ch'		
+		if dbtype == 'nutdb':
+			initdb='id|rightsId|key|isUpdate|isDLC|isDemo|baseName|name|version|region'	
+		if dbtype == 'simple':
+			initdb='rightsId|key|name'					
+		if not os.path.exists(ofile):
+			with open(ofile, 'a') as dbfile:			
+				dbfile.write(initdb+ '\n')
+		with open(ofile, 'ab') as dbfile:
+			print(dbstring)
+			dbfile.write(dbstring.encode('utf-8'))	
+		with open(ofile, 'a') as dbfile:
+			dbfile.write('\n')						
+
+	def verify(self):		
+		contentlist=list()
+		validfiles=list()
+		listed_files=list()		
+		contentlist=list()
+		delta = False
+		veredict = True		
+		for nspF in self.hfs0:
+			if str(nspF._path)=="secure":
+				for file in nspF:
+					if str(file._path).endswith('.nca') or str(file._path).endswith('.tik'):		
+						listed_files.append(str(file._path))
+					if type(file) == Nca or type(file) == Ticket:
+						validfiles.append(str(file._path))				
+				
+		for file in listed_files:	
+			correct=False		
+			if file in validfiles:
+				if file.endswith('cnmt.nca'):
+					for nspF in self.hfs0:
+						if str(nspF._path)=="secure":
+							for f in nspF:	
+								if str(f._path) == file:
+									for nf in f:	
+										nf.rewind()
+										test=nf.read(0x4)	
+										print(str(f.header.titleId)+' - '+str(f.header.contentType))	
+										#print(test)														
+										if str(test) == "b'PFS0'":
+											correct=True
+											break		
+									if correct == True:
+										correct = self.verify_enforcer(file)												
+				elif file.endswith('.nca'):	
+					for nspF in self.hfs0:
+						if str(nspF._path)=="secure":
+							for f in nspF:	
+								if str(f._path) == file:
+									print(str(f.header.titleId)+' - '+str(f.header.contentType))									
+									if str(f.header.contentType) != 'Content.PROGRAM':
+										correct = self.verify_enforcer(file)
+									else:
+										for nf in f:
+											nf.rewind()	
+											test=nf.read(0x4)
+											#print(test)												
+											if str(test) == "b'PFS0'":
+												correct=True
+												break	
+										if correct == True:
+											correct = self.verify_enforcer(file)
+										if correct == True:
+											correct = f.pr_noenc_check()											
+				elif file.endswith('.tik'):	
+					print('Content.TICKET')
+					correct=True													
+			else:
+				correct=False	
+			if correct==True:
+				if file.endswith('cnmt.nca'):				
+					print(tabs+file+' -> is CORRECT')	
+				else:
+					print(tabs+file+tabs+'  -> is CORRECT')							
+			else:
+				veredict=False					
+				if file.endswith('cnmt.nca'):	
+					print(tabs+file+' -> is CORRUPT')
+				else:					
+					print(tabs+file+tabs+'  -> is CORRUPT')	
+		for nspF in self.hfs0:
+			if str(nspF._path)=="secure":
+				for nca in nspF:
+					if type(nca) == Nca:
+						if 	str(nca.header.contentType) == 'Content.META':		
+							for f in nca:
+								for cnmt in f:	
+									nca.rewind()
+									cnmt.rewind()						
+									titleid=cnmt.readInt64()
+									titleversion = cnmt.read(0x4)
+									cnmt.rewind()
+									cnmt.seek(0xE)
+									offset=cnmt.readInt16()
+									content_entries=cnmt.readInt16()
+									meta_entries=cnmt.readInt16()
+									content_type=str(cnmt._path)
+									content_type=content_type[:-22]	
+									titleid2 = str(hx(titleid.to_bytes(8, byteorder='big'))) 	
+									titleid2 = titleid2[2:-1]	
+									cnmt.seek(0x20)
+									if content_type=='Application':
+										original_ID=titleid2
+										cnmt.readInt64()
+										ttag=''
+										CTYPE='BASE'
+									elif content_type=='Patch':
+										original_ID=cnmt.readInt64()	
+										original_ID=str(hx(original_ID.to_bytes(8, byteorder='big')))
+										original_ID = original_ID[2:-1]	
+										ttag=' [UPD]'
+										CTYPE='UPDATE'
+									elif content_type=='AddOnContent':
+										original_ID=cnmt.readInt64()	
+										original_ID=str(hx(original_ID.to_bytes(8, byteorder='big')))
+										original_ID = original_ID[2:-1]	
+										ttag=' [DLC]'
+										CTYPE='DLC'								
+									else: 
+										original_ID=cnmt.readInt64()	
+										original_ID=str(hx(original_ID.to_bytes(8, byteorder='big')))
+										original_ID = original_ID[2:-1]							
+									cnmt.seek(0x20+offset)			
+									for i in range(content_entries):
+										vhash = cnmt.read(0x20)
+										NcaId = cnmt.read(0x10)
+										size = cnmt.read(0x6)
+										size=int.from_bytes(size, byteorder='little')
+										ncatype = cnmt.readInt8()
+										unknown = cnmt.read(0x1)		
+									#**************************************************************	
+										version=str(int.from_bytes(titleversion, byteorder='little'))
+										ver=version
+										ver='[v'+ver+']'
+										titleid3 ='['+ titleid2+']'
+										nca_name=str(hx(NcaId))
+										nca_name=nca_name[2:-1]+'.nca'
+										if (nca_name not in listed_files and ncatype!=6) or (nca_name not in validfiles and ncatype!=6):
+											veredict = False
+											print (tabs+'Missing file from '+titleid2+': '+nca_name )
+											
+		if veredict == False:
+			print('')
+			print('VEREDICT: XCI FILE IS CORRUPT OR MISSES FILES')
+		if veredict == True:	
+			print('')
+			print('VEREDICT: XCI FILE IS CORRECT')			
+
+	def verify_enforcer(self,nca):
+		for nspF in self.hfs0:
+			if str(nspF._path)=="secure":
+				for f in nspF:	
+					if str(f._path) == nca:
+						if type(f) == Fs.Nca and f.header.contentType == Type.Content.PROGRAM:
+							for fs in f.sectionFilesystems:
+								if fs.fsType == Type.Fs.PFS0 and fs.cryptoType == Type.Crypto.CTR:
+									f.seek(0)
+									ncaHeader = f.read(0x400)
+
+									sectionHeaderBlock = fs.buffer
+
+									f.seek(fs.offset)
+									pfs0Header = f.read(0x10)
+									return True
+								else:
+									return False			
+						if type(f) == Fs.Nca and f.header.contentType == Type.Content.META:
+							for fs in f.sectionFilesystems:
+								if fs.fsType == Type.Fs.PFS0 and fs.cryptoType == Type.Crypto.CTR:
+									f.seek(0)
+									ncaHeader = f.read(0x400)
+
+									sectionHeaderBlock = fs.buffer
+
+									f.seek(fs.offset)
+									pfs0Header = f.read(0x10)
+									return True
+								else:
+									return False								
+									
+						if type(f) == Fs.Nca:
+							for fs in f.sectionFilesystems:
+								if fs.fsType == Type.Fs.ROMFS and fs.cryptoType == Type.Crypto.CTR:
+									f.seek(0)
+									ncaHeader = f.read(0x400)
+
+									sectionHeaderBlock = fs.buffer
+
+									levelOffset = int.from_bytes(sectionHeaderBlock[0x18:0x20], byteorder='little', signed=False)
+									levelSize = int.from_bytes(sectionHeaderBlock[0x20:0x28], byteorder='little', signed=False)
+
+									offset = fs.offset + levelOffset
+
+									f.seek(offset)
+									pfs0Header = f.read(levelSize)
+									return True
+								else:
+									return False				
+
+	

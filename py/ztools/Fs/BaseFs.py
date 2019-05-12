@@ -70,3 +70,11 @@ class BaseFs(File):
 		for f in self:
 			f.printInfo(indent+1)
 			Print.info('\n%s\t%s\n' % (tabs, '*' * 64))
+	def get_cryptoType(self):
+		return self.cryptoType
+		
+	def get_cryptoKey(self):
+		return self.cryptoKey
+
+	def get_cryptoCounter(self):
+		return self.cryptoCounter					

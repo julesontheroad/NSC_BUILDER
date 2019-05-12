@@ -21,7 +21,7 @@ endlocal
 del "%w_folder%\cnmt_fileslist.txt" >NUL 2>&1
 
 %pycommand% "%nut%" %buffer% %fatype% %fexport% -ifo "%w_folder%\secure" -c "%w_folder%\%filename%.nsp"
-if exist "%w_folder%\*.ns*" ren "%w_folder%\*.ns*" "%filename%[rr].ns*" >NUL 2>&1
+if exist "%w_folder%\*.ns*" ren "%w_folder%\*.ns*" "%filename%.ns*" >NUL 2>&1
 
 exit /B
 
@@ -40,7 +40,7 @@ endlocal
 del "%w_folder%\cnmt_fileslist.txt" >NUL 2>&1
 
 %pycommand% "%nut%" %buffer% %fatype% %fexport% -ifo "%w_folder%\secure" -c "%w_folder%\%filename%.nsp"
-if exist "%w_folder%\*.ns*" ren "%w_folder%\*.ns*" "%filename%[xc].ns*" >NUL 2>&1
+if exist "%w_folder%\*.ns*" ren "%w_folder%\*.ns*" "%filename%.ns*" >NUL 2>&1
 
 exit /B
 
@@ -56,8 +56,8 @@ for /f "usebackq" %%x in ("!tfolder!\cnmt_fileslist.txt") do set row="!tfolder!\
 %pycommand% "%nut%" -o "!tfolder!\secure" --xml_gen %row% >NUL 2>&1
 del "!tfolder!\cnmt_fileslist.txt"
 
-%pycommand% "%nut%" %buffer% %fatype% %fexport% -ifo "!tfolder!\secure" -c "%w_folder%\!fname![xc].nsp"
-if exist "%w_folder%\*.ns*" ren "%w_folder%\*.ns*" "!fname![xc].ns*" >NUL 2>&1
+%pycommand% "%nut%" %buffer% %fatype% %fexport% -ifo "!tfolder!\secure" -c "%w_folder%\!fname!.nsp"
+if exist "%w_folder%\*.ns*" ren "%w_folder%\*.ns*" "!fname!.ns*" >NUL 2>&1
 
 exit /B
 

@@ -39,7 +39,7 @@ echo Repacking as xci
 echo -------------------------------
 if exist "%w_folder%\secure\*.dat" del "%w_folder%\secure\*.dat" >NUL 2>&1
 if exist "%w_folder%\secure\*.xml" del "%w_folder%\secure\*.xml" >NUL 2>&1
-%pycommand% "%nut%" %buffer% -ifo "%w_folder%" %fatype% --create_xci "%w_folder%\%filename%[xcib].xci"
+%pycommand% "%nut%" %buffer% -ifo "%w_folder%" %fatype% --create_xci "%w_folder%\%filename%.xci"
 exit /B
 
 :sp_xci_repack
