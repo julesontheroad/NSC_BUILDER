@@ -21,6 +21,10 @@ Luca Fraga's github: https://github.com/LucaFraga
 ---------------
 0. Changelog
 ---------------
+v0.85- Fixes several issues:
+	- Redo implementation of direct multi handler for asian names
+	- Solves issue with rebuilder were wrong argument was being used
+	- Solves issue with dlc keys retribal in database for titlerights crypto dlcs		
 v0.85- Middlestone update.
 	*Introduced ability to create multiple multixci or multinsp in both auto and 
 	  manual mode based on the base-titleid of games\updates\dlc
