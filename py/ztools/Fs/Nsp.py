@@ -3562,8 +3562,8 @@ class Nsp(Pfs0):
 							return tr,titleKeyDec
 					else:
 						tr=str(nca.header.rightsId)
-						tr = tr[2:-1]
-						titleKeyDec='00000000000000000000000000000000'																		
+						tr = tr[2:-1]	
+						return tr,titleKeyDec																				
 				if nca.header.getRightsId() == 0:	
 					crypto1=nca.header.getCryptoType()
 					crypto2=nca.header.getCryptoType2()		

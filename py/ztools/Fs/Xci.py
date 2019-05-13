@@ -5490,7 +5490,7 @@ class Xci(File):
 
 						
 	def getdbtr(self,original_ID,content_type,cnmt_id):		
-		titleKeyDec='0'
+		titleKeyDec=''
 		nca_id=''
 		self.rewind()
 		tr=''
@@ -5512,11 +5512,11 @@ class Xci(File):
 								if check.endswith('800') and content_type=='Patch':								
 									return tr,titleKeyDec
 								if not check.endswith('000') and not tr.endswith('800') and content_type=='AddOnContent':								
-									return tr,titleKeyDec
+									return tr,titleKeyDec						
 							else:
 								tr=str(nca.header.rightsId)
-								tr = tr[2:-1]
-								titleKeyDec='00000000000000000000000000000000'																		
+								tr = tr[2:-1]	
+								return tr,titleKeyDec															
 						if nca.header.getRightsId() == 0:	
 							crypto1=nca.header.getCryptoType()
 							crypto2=nca.header.getCryptoType2()		
@@ -5568,7 +5568,8 @@ class Xci(File):
 									tr=cnmt_id+'000000000000000'+str(crypto2)	
 		if tr=='':								
 			tr=cnmt_id+'000000000000000'+str(crypto2)										
-		titleKeyDec='00000000000000000000000000000000'				
+		if titleKeyDec=='':						
+			titleKeyDec='00000000000000000000000000000000'				
 		return tr,titleKeyDec									
 								
 	def getdbkey(self,titlerights):	

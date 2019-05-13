@@ -2505,46 +2505,47 @@ if __name__ == '__main__':
 			if not os.path.exists(ofolder):
 				os.makedirs(ofolder)					
 			endfile=os.path.basename(os.path.abspath(filepath))	
-			endfile=os.path.join(ofolder,endfile)						
-			if args.v_organize != 'false':			
-				base_folder=os.path.join(ofolder,'base')
-				update_folder=os.path.join(ofolder,'updates')
-				dlc_folder=os.path.join(ofolder,'dlcs')		
-				if not os.path.exists(base_folder):
-					os.makedirs(base_folder)	
-				if not os.path.exists(update_folder):
-					os.makedirs(update_folder)	
-				if not os.path.exists(dlc_folder):
-					os.makedirs(dlc_folder)					
-				try:
-					f = Fs.Nsp(filepath)
-					ctype=f.nsptype()
-					#print(ctype)
-					f.flush()
-					f.close()	
-				except BaseException as e:
-					Print.error('Exception: ' + str(e))	
-					Damage=True
-					skipper=True
-					print('Content seems to be damaged')
-				if Damage==False:	
-					if 	ctype=='BASE':		
-						endfile=os.path.basename(os.path.abspath(filepath))	
-						endfile=os.path.join(base_folder,endfile)									
-					elif ctype=='UPDATE':	
-						endfile=os.path.basename(os.path.abspath(filepath))	
-						endfile=os.path.join(update_folder,endfile)					
-					elif ctype=='DLC':	
-						endfile=os.path.basename(os.path.abspath(filepath))	
-						endfile=os.path.join(dlc_folder,endfile)	
-					else:
-						print("Content can't be identified")
+			endfile=os.path.join(ofolder,endfile)		
+			if args.v_organize:				
+				if args.v_organize != 'false':			
+					base_folder=os.path.join(ofolder,'base')
+					update_folder=os.path.join(ofolder,'updates')
+					dlc_folder=os.path.join(ofolder,'dlcs')		
+					if not os.path.exists(base_folder):
+						os.makedirs(base_folder)	
+					if not os.path.exists(update_folder):
+						os.makedirs(update_folder)	
+					if not os.path.exists(dlc_folder):
+						os.makedirs(dlc_folder)					
+					try:
+						f = Fs.Nsp(filepath)
+						ctype=f.nsptype()
+						#print(ctype)
+						f.flush()
+						f.close()	
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+						Damage=True
 						skipper=True
-					print('Final destination:')
-					print('  > '+endfile)			
-					if os.path.exists(endfile):						
-						skipper=True
-						print("Content exists in final destination. Skipping...")					
+						print('Content seems to be damaged')
+					if Damage==False:	
+						if 	ctype=='BASE':		
+							endfile=os.path.basename(os.path.abspath(filepath))	
+							endfile=os.path.join(base_folder,endfile)									
+						elif ctype=='UPDATE':	
+							endfile=os.path.basename(os.path.abspath(filepath))	
+							endfile=os.path.join(update_folder,endfile)					
+						elif ctype=='DLC':	
+							endfile=os.path.basename(os.path.abspath(filepath))	
+							endfile=os.path.join(dlc_folder,endfile)	
+						else:
+							print("Content can't be identified")
+							skipper=True
+						print('Final destination:')
+						print('  > '+endfile)			
+						if os.path.exists(endfile):						
+							skipper=True
+							print("Content exists in final destination. Skipping...")					
 			if args.rebuild_nsp and skipper==False:					
 				if filepath.endswith(".nsp"):
 					try:			
@@ -3027,6 +3028,7 @@ if __name__ == '__main__':
 							basecount=0; basename='';basever='';baseid='';basefile=''
 							updcount=0; updname='';updver='';updid='';updfile=''
 							dlccount=0; dlcname='';dlcver='';dlcid='';dlcfile=''
+							ccount='';bctag='';updtag='';dctag=''
 							for i in range(len(prlist)):
 								if prlist[i][5] == 'BASE':
 									basecount+=1
@@ -4743,6 +4745,7 @@ if __name__ == '__main__':
 						updcount=0; updname='';updver='';updid='';updfile=''
 						dlccount=0; dlcname='';dlcver='';dlcid='';dlcfile=''
 						endname=0; mgame=''
+						ccount='';bctag='';updtag='';dctag=''
 						for i in range(len(prlist)):
 							#print(prlist[i][5])
 							if prlist[i][5] == 'BASE':
@@ -5082,6 +5085,7 @@ if __name__ == '__main__':
 				basecount=0; basename='';basever='';baseid='';basefile=''
 				updcount=0; updname='';updver='';updid='';updfile=''
 				dlccount=0; dlcname='';dlcver='';dlcid='';dlcfile=''
+				ccount='';bctag='';updtag='';dctag=''
 				for i in range(len(prlist)):
 					if prlist[i][5] == 'BASE':
 						basecount+=1
