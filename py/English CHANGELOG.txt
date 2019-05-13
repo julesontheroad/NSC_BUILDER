@@ -21,7 +21,7 @@ Luca Fraga's github: https://github.com/LucaFraga
 ---------------
 0. Changelog
 ---------------
-v0.85- Fixes several issues:
+v0.85b- Fixes several issues:
 	- Redo implementation of direct multi handler for asian names
 	- Solves issue with rebuilder were wrong argument was being used
 	- Solves issue with dlc keys retribal in database for titlerights crypto dlcs		
