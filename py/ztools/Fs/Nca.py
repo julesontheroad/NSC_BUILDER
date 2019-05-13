@@ -62,7 +62,10 @@ class NcaHeader(File):
 		self.keyIndex = None
 		self.size = None
 		self.titleId = None
-		self.sdkVersion = None
+		self.sdkVersion1 = None
+		self.sdkVersion2 = None
+		self.sdkVersion3 = None
+		self.sdkVersion4 = None		
 		self.cryptoType2 = None
 		self.rightsId = None
 		self.titleKeyDec = None
@@ -94,7 +97,10 @@ class NcaHeader(File):
 		self.readInt32() # padding
 		
 
-		self.sdkVersion = self.readInt32()
+		self.sdkVersion1 = self.readInt8()
+		self.sdkVersion2 = self.readInt8()
+		self.sdkVersion3 = self.readInt8()
+		self.sdkVersion4 = self.readInt8()		
 		self.cryptoType2 = self.readInt8()
 		
 		self.read(0xF) # padding
@@ -1171,7 +1177,7 @@ class Nca(File):
 		Print.info(tabs + 'isGameCard = ' + hex(self.header.isGameCard))
 		Print.info(tabs + 'contentType = ' + str(self.header.contentType))
 		#Print.info(tabs + 'cryptoType = ' + str(self.header.getCryptoType()))
-		Print.info(tabs + 'SDK version = ' + str(self.header.sdkVersion))
+		Print.info(tabs + 'SDK version = ' + self.get_sdkversion())
 		Print.info(tabs + 'Size: ' + str(self.header.size))
 		Print.info(tabs + 'Crypto-Type1: ' + str(self.header.cryptoType))
 		Print.info(tabs + 'Crypto-Type2: ' + str(self.header.cryptoType2))
@@ -1467,8 +1473,10 @@ class Nca(File):
 		regionstr="0|0|0|0|0|0|0|0|0|0|0|0|0|0"		
 		ediver='-'		
 		return(title,"",ediver,"",regionstr,"")			
-				
-					
+
+	def get_sdkversion(self):		
+		sdkversion=str(self.header.sdkVersion4)+'.'+str(self.header.sdkVersion3)+'.'+str(self.header.sdkVersion2)+'.'+str(self.header.sdkVersion1)	
+		return sdkversion
 					
 	'''
 	def c_clean(self,ofolder,buffer):

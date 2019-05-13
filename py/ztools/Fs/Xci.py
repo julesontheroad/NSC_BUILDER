@@ -1521,7 +1521,7 @@ class Xci(File):
 						Print.info(str(filename))									
 
 #ADVANCED FILE-LIST			
-	def  adv_file_list(self):
+	def  adv_file_list(self):				
 		contentlist=list()	
 		for nspF in self.hfs0:
 			if str(nspF._path)=="secure":
@@ -1590,7 +1590,9 @@ class Xci(File):
 										else:			
 											keygen=nca.header.getCryptoType2()	
 									else:			
-										keygen=nca.header.getCryptoType2()		
+										keygen=nca.header.getCryptoType2()	
+									programSDKversion,dataSDKversion=self.getsdkvertit(titleid2)											
+									sdkversion=nca.get_sdkversion()
 									MinRSV=sq_tools.getMinRSV(keygen,min_sversion)
 									FW_rq=sq_tools.getFWRangeKG(keygen)
 									RSV_rq=sq_tools.getFWRangeRSV(min_sversion)									
@@ -1603,6 +1605,8 @@ class Xci(File):
 										Print.info("- Name: " + tit_name)
 										Print.info("- Editor: " + editor)
 										Print.info("- Build number: " + str(ediver))
+										Print.info("- Meta SDK version: " + sdkversion)	
+										Print.info("- Program SDK version: " + programSDKversion)										
 										suplangue=str((', '.join(SupLg)))
 										Print.info("- Supported Languages: "+suplangue)
 										Print.info("- Content type: "+content_type)
@@ -1610,7 +1614,7 @@ class Xci(File):
 									if content_type_cnmt == 'AddOnContent':
 										if tit_name != "DLC":
 											Print.info("- Name: " + tit_name)
-											Print.info("- Editor: " + editor)										
+											Print.info("- Editor: " + editor)											
 										Print.info("- Content type: "+"DLC")
 										DLCnumb=str(titleid2)
 										DLCnumb="0000000000000"+DLCnumb[-3:]									
@@ -1619,6 +1623,8 @@ class Xci(File):
 										DLCnumb=int(DLCnumb)
 										Print.info("- DLC number: "+str(DLCnumb)+' -> '+"AddOnContent"+' ('+str(DLCnumb)+')')						
 										Print.info("- DLC version Number: " + version+' -> '+"Version"+' ('+str(v_number)+')')												
+										Print.info("- Meta SDK version: " + sdkversion)		
+										Print.info("- Data SDK version: " + dataSDKversion)											
 									Print.info("")								
 									Print.info("Required Firmware:")			
 									if content_type_cnmt == 'AddOnContent':
@@ -1976,7 +1982,31 @@ class Xci(File):
 #///////////////////////////////////////////////////								
 #INFO ABOUT UPD REQUIREMENTS
 #///////////////////////////////////////////////////	
-	def print_fw_req(self):
+	def getsdkvertit(self,titid):
+		programSDKversion=''
+		dataSDKversion=''
+		for nspF in self.hfs0:
+			if str(nspF._path)=="secure":
+				for nca in nspF:
+					if type(nca) == Nca:
+						nca_id=nca.header.titleId
+						if str(titid[:-3]).upper() == str(nca_id[:-3]).upper():
+							if 	str(nca.header.contentType) == 'Content.PROGRAM':
+								programSDKversion=nca.get_sdkversion()
+								break
+		if 	programSDKversion=='':				
+			for nspF in self.hfs0:
+				if str(nspF._path)=="secure":
+					for nca in nspF:
+						if type(nca) == Nca:
+							nca_id=nca.header.titleId
+							if str(titid[:-3]).upper() == str(nca_id[:-3]).upper():						
+								if 	str(nca.header.contentType) == 'Content.PUBLIC_DATA':
+									dataSDKversion = nca.get_sdkversion()
+									break		
+		return 	programSDKversion,dataSDKversion					
+
+	def print_fw_req(self):	
 		for nspF in self.hfs0:
 			if str(nspF._path)=="secure":
 				for nca in nspF:
@@ -2075,7 +2105,9 @@ class Xci(File):
 										if isdemo == 1:
 											content_type='Demo'
 										if isdemo == 2:
-											content_type='RetailInteractiveDisplay'												
+											content_type='RetailInteractiveDisplay'	
+									programSDKversion,dataSDKversion=self.getsdkvertit(titleid2)											
+									sdkversion=nca.get_sdkversion()													
 									Print.info('-----------------------------')
 									Print.info('CONTENT ID: ' + str(titleid2))	
 									Print.info('-----------------------------')			
@@ -2084,6 +2116,8 @@ class Xci(File):
 										Print.info("- Name: " + tit_name)
 										Print.info("- Editor: " + editor)
 										Print.info("- Build number: " + str(ediver))
+										Print.info("- Meta SDK version: " + sdkversion)	
+										Print.info("- Program SDK version: " + programSDKversion)										
 										suplangue=str((', '.join(SupLg)))
 										Print.info("- Supported Languages: "+suplangue)
 										Print.info("- Content type: "+content_type)
@@ -2092,7 +2126,7 @@ class Xci(File):
 										Print.info("Titleinfo:")
 										if tit_name != "DLC":
 											Print.info("- Name: " + tit_name)
-											Print.info("- Editor: " + editor)										
+											Print.info("- Editor: " + editor)											
 										Print.info("- Content type: "+"DLC")
 										DLCnumb=str(titleid2)
 										DLCnumb="0000000000000"+DLCnumb[-3:]									
@@ -2101,6 +2135,8 @@ class Xci(File):
 										DLCnumb=int(DLCnumb)
 										Print.info("- DLC number: "+str(DLCnumb)+' -> '+"AddOnContent"+' ('+str(DLCnumb)+')')					
 										Print.info("- DLC version Number: " + version+' -> '+"Version"+' ('+str(v_number)+')')
+										Print.info("- Meta SDK version: " + sdkversion)		
+										Print.info("- Data SDK version: " + dataSDKversion)											
 									Print.info("")								
 									Print.info("Required Firmware:")			
 									if content_type_cnmt == 'AddOnContent':
@@ -5430,7 +5466,9 @@ class Xci(File):
 										else:			
 											keygen=nca.header.getCryptoType2()	
 									else:			
-										keygen=nca.header.getCryptoType2()								
+										keygen=nca.header.getCryptoType2()	
+									sdkversion=nca.get_sdkversion()	
+									programSDKversion,dataSDKversion=self.getsdkvertit(titleid2)									
 									MinRSV=sq_tools.getMinRSV(keygen,min_sversion)
 									RSV_rq=sq_tools.getFWRangeRSV(min_sversion)						
 									length_of_emeta=cnmt.readInt32()	
@@ -5444,9 +5482,9 @@ class Xci(File):
 										tit_name='-'
 										editor='-'											
 									if dbtype == 'extended' or dbtype == 'all':
-										dbstring=self.getdbstr(titleid2,titlerights,ckey,content_type,tit_name,version,crypto1,crypto2,keygen,min_sversion,RSV_rq[1:-1],RS_number,MinRSV,regionstr,ediver,editor,isdemo)
+										dbstring=self.getdbstr(titleid2,titlerights,ckey,content_type,tit_name,version,crypto1,crypto2,keygen,min_sversion,RSV_rq[1:-1],RS_number,MinRSV,regionstr,ediver,editor,isdemo,sdkversion,programSDKversion,dataSDKversion)
 									if dbtype == 'keyless' or dbtype == 'all':
-										kdbstring=self.getkeylessdbstr(titleid2,titlerights,ckey,content_type,tit_name,version,crypto1,crypto2,keygen,min_sversion,RSV_rq[1:-1],RS_number,MinRSV,regionstr,ediver,editor,isdemo)
+										kdbstring=self.getkeylessdbstr(titleid2,titlerights,ckey,content_type,tit_name,version,crypto1,crypto2,keygen,min_sversion,RSV_rq[1:-1],RS_number,MinRSV,regionstr,ediver,editor,isdemo,sdkversion,programSDKversion,dataSDKversion)
 									if dbtype == 'nutdb' or dbtype == 'all':	
 										ndbstring=self.getnutdbstr(titleid2,titlerights,ckey,content_type,tit_name,version,regionstr,isdemo)
 									if dbtype == 'simple' or dbtype == 'all':								
@@ -5585,7 +5623,7 @@ class Xci(File):
 							titleKey=titleKey[2:-1]
 							return str(titleKey)
 
-	def getdbstr(self,titleid,titlerights,ckey,content_type,tit_name,version,crypto1,crypto2,keygen,min_sversion,RSV_rq,RS_number,MinRSV,regionstr,ediver,editor,isdemo):	
+	def getdbstr(self,titleid,titlerights,ckey,content_type,tit_name,version,crypto1,crypto2,keygen,min_sversion,RSV_rq,RS_number,MinRSV,regionstr,ediver,editor,isdemo,sdkversion,programSDKversion,dataSDKversion):	
 		dbstr=str()
 		dbstr+=str(titleid).upper()+'|'
 		dbstr+=str(titlerights).upper()+'|'
@@ -5635,11 +5673,16 @@ class Xci(File):
 		dbstr+=str(tit_name)+'|'
 		dbstr+=str(editor)+'|'		
 		dbstr+=str(version)+'|'	
-		dbstr+=str(ediver)+'|'		
+		dbstr+=str(ediver)+'|'
+		dbstr+=sdkversion+'|'
+		if content_type!='AddOnContent':
+			dbstr+=programSDKversion+'|'		
+		else:
+			dbstr+=dataSDKversion+'|'				
 		dbstr+=regionstr	
 		return dbstr
 		
-	def getkeylessdbstr(self,titleid,titlerights,ckey,content_type,tit_name,version,crypto1,crypto2,keygen,min_sversion,RSV_rq,RS_number,MinRSV,regionstr,ediver,editor,isdemo):	
+	def getkeylessdbstr(self,titleid,titlerights,ckey,content_type,tit_name,version,crypto1,crypto2,keygen,min_sversion,RSV_rq,RS_number,MinRSV,regionstr,ediver,editor,isdemo,sdkversion,programSDKversion,dataSDKversion):	
 		dbstr=str()
 		dbstr+=str(titleid).upper()+'|'
 		dbstr+=str(titlerights).upper()+'|'
@@ -5688,8 +5731,13 @@ class Xci(File):
 		dbstr+=str(tit_name)+'|'
 		dbstr+=str(editor)+'|'		
 		dbstr+=str(version)+'|'	
-		dbstr+=str(ediver)+'|'		
-		dbstr+=regionstr	
+		dbstr+=str(ediver)+'|'
+		dbstr+=sdkversion+'|'			
+		if content_type!='AddOnContent':
+			dbstr+=programSDKversion+'|'		
+		else:
+			dbstr+=dataSDKversion+'|'				
+		dbstr+=regionstr
 		return dbstr		
 
 	def getnutdbstr(self,titleid,titlerights,ckey,content_type,tit_name,version,regionstr,isdemo):	
@@ -5748,9 +5796,9 @@ class Xci(File):
 
 	def appendtodb(self,dbstring,ofile,dbtype):
 		if dbtype == 'extended':
-			initdb='id|rightsId|keygeneration|RSV|RGV|key|ContentType|baseName|editor|version|cversion|us|uk|jp|fr|de|lat|spa|it|du|cad|por|ru|kor|tai|ch'	
+			initdb='id|rightsId|keygeneration|RSV|RGV|key|ContentType|baseName|editor|version|cversion|metasdkversion|exesdkversion|us|uk|jp|fr|de|lat|spa|it|du|cad|por|ru|kor|tai|ch'	
 		if dbtype == 'keyless':
-			initdb='id|rightsId|keygeneration|RSV|RGV|ContentType|baseName|editor|version|cversion|us|uk|jp|fr|de|lat|spa|it|du|cad|por|ru|kor|tai|ch'		
+			initdb='id|rightsId|keygeneration|RSV|RGV|ContentType|baseName|editor|version|cversion|metasdkversion|exesdkversion|us|uk|jp|fr|de|lat|spa|it|du|cad|por|ru|kor|tai|ch'		
 		if dbtype == 'nutdb':
 			initdb='id|rightsId|key|isUpdate|isDLC|isDemo|baseName|name|version|region'	
 		if dbtype == 'simple':

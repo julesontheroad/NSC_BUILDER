@@ -685,7 +685,7 @@ class Nsp(Pfs0):
 	def copy_nca_pdata(self,ofolder,buffer):
 		for nca in self:
 			if type(nca) == Nca:
-				if 	str(nca.header.contentType) == 'Content.UNKNOWN':
+				if 	str(nca.header.contentType) == 'Content.PUBLIC_DATA':
 					nca.rewind()
 					filename =  str(nca._path)
 					outfolder = str(ofolder)+'/'
@@ -1090,7 +1090,7 @@ class Nsp(Pfs0):
 				filename =  str(file._path)
 				Print.info(str(filename))
 #ADVANCED FILE-LIST			
-	def  adv_file_list(self):
+	def  adv_file_list(self):		
 		contentlist=list()	
 		for nca in self:
 			size1=0;size2=0;size3=0	
@@ -1158,6 +1158,8 @@ class Nsp(Pfs0):
 									keygen=nca.header.getCryptoType2()	
 							else:			
 								keygen=nca.header.getCryptoType2()		
+							programSDKversion,dataSDKversion=self.getsdkvertit(titleid2)									
+							sdkversion=nca.get_sdkversion()								
 							MinRSV=sq_tools.getMinRSV(keygen,min_sversion)
 							FW_rq=sq_tools.getFWRangeKG(keygen)
 							RSV_rq=sq_tools.getFWRangeRSV(min_sversion)									
@@ -1170,6 +1172,8 @@ class Nsp(Pfs0):
 								Print.info("- Name: " + tit_name)
 								Print.info("- Editor: " + editor)
 								Print.info("- Build number: " + str(ediver))
+								Print.info("- Meta SDK version: " + sdkversion)	
+								Print.info("- Program SDK version: " + programSDKversion)							
 								suplangue=str((', '.join(SupLg)))
 								Print.info("- Supported Languages: "+suplangue)
 								Print.info("- Content type: "+content_type)
@@ -1177,7 +1181,7 @@ class Nsp(Pfs0):
 							if content_type_cnmt == 'AddOnContent':
 								if tit_name != "DLC":
 									Print.info("- Name: " + tit_name)
-									Print.info("- Editor: " + editor)										
+									Print.info("- Editor: " + editor)									
 								Print.info("- Content type: "+"DLC")
 								DLCnumb=str(titleid2)
 								DLCnumb="0000000000000"+DLCnumb[-3:]									
@@ -1185,7 +1189,9 @@ class Nsp(Pfs0):
 								DLCnumb=str(int.from_bytes(DLCnumb, byteorder='big'))									
 								DLCnumb=int(DLCnumb)
 								Print.info("- DLC number: "+str(DLCnumb)+' -> '+"AddOnContent"+' ('+str(DLCnumb)+')')						
-								Print.info("- DLC version Number: " + version+' -> '+"Version"+' ('+str(v_number)+')')												
+								Print.info("- DLC version Number: " + version+' -> '+"Version"+' ('+str(v_number)+')')	
+								Print.info("- Meta SDK version: " + sdkversion)		
+								Print.info("- Data SDK version: " + dataSDKversion)									
 							Print.info("")								
 							Print.info("Required Firmware:")			
 							if content_type_cnmt == 'AddOnContent':
@@ -2401,6 +2407,26 @@ class Nsp(Pfs0):
 #///////////////////////////////////////////////////								
 #INFO ABOUT UPD REQUIREMENTS
 #///////////////////////////////////////////////////	
+	def getsdkvertit(self,titid):
+		programSDKversion=''
+		dataSDKversion=''
+		for nca in self:
+			if type(nca) == Nca:
+				nca_id=nca.header.titleId
+				if str(titid[:-3]).upper() == str(nca_id[:-3]).upper():
+					if 	str(nca.header.contentType) == 'Content.PROGRAM':
+						programSDKversion=nca.get_sdkversion()
+						break
+		if 	programSDKversion=='':				
+			for nca in self:
+				if type(nca) == Nca:
+					nca_id=nca.header.titleId
+					if str(titid[:-3]).upper() == str(nca_id[:-3]).upper():	
+						if 	str(nca.header.contentType) == 'Content.PUBLIC_DATA':
+							dataSDKversion = nca.get_sdkversion()
+							break		
+		return 	programSDKversion,dataSDKversion	
+		
 	def print_fw_req(self):
 		for nca in self:
 			if type(nca) == Nca:
@@ -2498,7 +2524,9 @@ class Nsp(Pfs0):
 								if isdemo == 1:
 									content_type='Demo'
 								if isdemo == 2:
-									content_type='RetailInteractiveDisplay'										
+									content_type='RetailInteractiveDisplay'	
+							programSDKversion,dataSDKversion=self.getsdkvertit(titleid2)										
+							sdkversion=nca.get_sdkversion()											
 							Print.info('-----------------------------')
 							Print.info('CONTENT ID: ' + str(titleid2))	
 							Print.info('-----------------------------')			
@@ -2507,6 +2535,8 @@ class Nsp(Pfs0):
 								Print.info("- Name: " + tit_name)
 								Print.info("- Editor: " + editor)
 								Print.info("- Build number: " + str(ediver))
+								Print.info("- Meta SDK version: " + sdkversion)	
+								Print.info("- Program SDK version: " + programSDKversion)									
 								suplangue=str((', '.join(SupLg)))
 								Print.info("- Supported Languages: "+suplangue)
 								Print.info("- Content type: "+content_type)
@@ -2515,7 +2545,7 @@ class Nsp(Pfs0):
 								Print.info("Titleinfo:")
 								if tit_name != "DLC":
 									Print.info("- Name: " + tit_name)
-									Print.info("- Editor: " + editor)										
+									Print.info("- Editor: " + editor)									
 								Print.info("- Content type: "+"DLC")
 								DLCnumb=str(titleid2)
 								DLCnumb="0000000000000"+DLCnumb[-3:]									
@@ -2524,6 +2554,8 @@ class Nsp(Pfs0):
 								DLCnumb=int(DLCnumb)
 								Print.info("- DLC number: "+str(DLCnumb)+' -> '+"AddOnContent"+' ('+str(DLCnumb)+')')					
 								Print.info("- DLC version Number: " + version+' -> '+"Version"+' ('+str(v_number)+')')
+								Print.info("- Meta SDK version: " + sdkversion)		
+								Print.info("- Data SDK version: " + dataSDKversion)									
 							Print.info("")								
 							Print.info("Required Firmware:")			
 							if content_type_cnmt == 'AddOnContent':
@@ -3479,7 +3511,9 @@ class Nsp(Pfs0):
 								else:			
 									keygen=nca.header.getCryptoType2()	
 							else:			
-								keygen=nca.header.getCryptoType2()								
+								keygen=nca.header.getCryptoType2()
+							sdkversion=nca.get_sdkversion()			
+							programSDKversion,dataSDKversion=self.getsdkvertit(titleid2)							
 							MinRSV=sq_tools.getMinRSV(keygen,min_sversion)
 							RSV_rq=sq_tools.getFWRangeRSV(min_sversion)						
 							length_of_emeta=cnmt.readInt32()	
@@ -3493,9 +3527,9 @@ class Nsp(Pfs0):
 								tit_name='-'
 								editor='-'
 							if dbtype == 'extended' or dbtype == 'all':
-								dbstring=self.getdbstr(titleid2,titlerights,ckey,content_type,tit_name,version,crypto1,crypto2,keygen,min_sversion,RSV_rq[1:-1],RS_number,MinRSV,regionstr,ediver,editor,isdemo)
+								dbstring=self.getdbstr(titleid2,titlerights,ckey,content_type,tit_name,version,crypto1,crypto2,keygen,min_sversion,RSV_rq[1:-1],RS_number,MinRSV,regionstr,ediver,editor,isdemo,sdkversion,programSDKversion,dataSDKversion)
 							if dbtype == 'keyless' or dbtype == 'all':
-								kdbstring=self.getkeylessdbstr(titleid2,titlerights,ckey,content_type,tit_name,version,crypto1,crypto2,keygen,min_sversion,RSV_rq[1:-1],RS_number,MinRSV,regionstr,ediver,editor,isdemo)
+								kdbstring=self.getkeylessdbstr(titleid2,titlerights,ckey,content_type,tit_name,version,crypto1,crypto2,keygen,min_sversion,RSV_rq[1:-1],RS_number,MinRSV,regionstr,ediver,editor,isdemo,sdkversion,programSDKversion,dataSDKversion)
 							if dbtype == 'nutdb' or dbtype == 'all':	
 								ndbstring=self.getnutdbstr(titleid2,titlerights,ckey,content_type,tit_name,version,regionstr,isdemo)
 							if dbtype == 'simple' or dbtype == 'all':								
@@ -3629,7 +3663,7 @@ class Nsp(Pfs0):
 					titleKey=titleKey[2:-1]
 					return str(titleKey)
 
-	def getdbstr(self,titleid,titlerights,ckey,content_type,tit_name,version,crypto1,crypto2,keygen,min_sversion,RSV_rq,RS_number,MinRSV,regionstr,ediver,editor,isdemo):	
+	def getdbstr(self,titleid,titlerights,ckey,content_type,tit_name,version,crypto1,crypto2,keygen,min_sversion,RSV_rq,RS_number,MinRSV,regionstr,ediver,editor,isdemo,sdkversion,programSDKversion,dataSDKversion):	
 		dbstr=str()
 		dbstr+=str(titleid).upper()+'|'
 		dbstr+=str(titlerights).upper()+'|'
@@ -3679,11 +3713,16 @@ class Nsp(Pfs0):
 		dbstr+=str(tit_name)+'|'
 		dbstr+=str(editor)+'|'		
 		dbstr+=str(version)+'|'	
-		dbstr+=str(ediver)+'|'		
-		dbstr+=regionstr	
+		dbstr+=str(ediver)+'|'	
+		dbstr+=sdkversion+'|'		
+		if content_type!='AddOnContent':
+			dbstr+=programSDKversion+'|'		
+		else:
+			dbstr+=dataSDKversion+'|'				
+		dbstr+=regionstr		
 		return dbstr
 		
-	def getkeylessdbstr(self,titleid,titlerights,ckey,content_type,tit_name,version,crypto1,crypto2,keygen,min_sversion,RSV_rq,RS_number,MinRSV,regionstr,ediver,editor,isdemo):	
+	def getkeylessdbstr(self,titleid,titlerights,ckey,content_type,tit_name,version,crypto1,crypto2,keygen,min_sversion,RSV_rq,RS_number,MinRSV,regionstr,ediver,editor,isdemo,sdkversion,programSDKversion,dataSDKversion):	
 		dbstr=str()
 		dbstr+=str(titleid).upper()+'|'
 		dbstr+=str(titlerights).upper()+'|'
@@ -3732,11 +3771,16 @@ class Nsp(Pfs0):
 		dbstr+=str(tit_name)+'|'
 		dbstr+=str(editor)+'|'		
 		dbstr+=str(version)+'|'	
-		dbstr+=str(ediver)+'|'		
+		dbstr+=str(ediver)+'|'	
+		dbstr+=sdkversion+'|'		
+		if content_type!='AddOnContent':
+			dbstr+=programSDKversion+'|'		
+		else:
+			dbstr+=dataSDKversion+'|'				
 		dbstr+=regionstr	
 		return dbstr		
 
-	def getnutdbstr(self,titleid,titlerights,ckey,content_type,tit_name,version,regionstr,isdemo):	
+	def getnutdbstr(self,titleid,titlerights,ckey,content_type,tit_name,version,regionstr,isdemo,):	
 		dbstr=str()
 		dbstr+=str(titleid).upper()+'|'
 		dbstr+=str(titlerights).upper()+'|'
@@ -3792,9 +3836,9 @@ class Nsp(Pfs0):
 
 	def appendtodb(self,dbstring,ofile,dbtype):
 		if dbtype == 'extended':
-			initdb='id|rightsId|keygeneration|RSV|RGV|key|ContentType|baseName|editor|version|cversion|us|uk|jp|fr|de|lat|spa|it|du|cad|por|ru|kor|tai|ch'	
+			initdb='id|rightsId|keygeneration|RSV|RGV|key|ContentType|baseName|editor|version|cversion|metasdkversion|exesdkversion|us|uk|jp|fr|de|lat|spa|it|du|cad|por|ru|kor|tai|ch'	
 		if dbtype == 'keyless':
-			initdb='id|rightsId|keygeneration|RSV|RGV|ContentType|baseName|editor|version|cversion|us|uk|jp|fr|de|lat|spa|it|du|cad|por|ru|kor|tai|ch'		
+			initdb='id|rightsId|keygeneration|RSV|RGV|ContentType|baseName|editor|version|cversion|metasdkversion|exesdkversion|us|uk|jp|fr|de|lat|spa|it|du|cad|por|ru|kor|tai|ch'		
 		if dbtype == 'nutdb':
 			initdb='id|rightsId|key|isUpdate|isDLC|isDemo|baseName|name|version|region'	
 		if dbtype == 'simple':

@@ -6,7 +6,7 @@ class Content(IntEnum):
 	CONTROL = 0x2
 	MANUAL = 0x3
 	DATA = 0x4
-	UNKNOWN = 0x5
+	PUBLIC_DATA = 0x5
 
 class Fs(IntEnum):
 	NONE = 0x0
