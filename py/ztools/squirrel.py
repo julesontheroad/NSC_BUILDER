@@ -572,7 +572,7 @@ if __name__ == '__main__':
 						Print.error('Exception: ' + str(e))	
 				elif test.endswith('.xci'):
 					try:
-						f = Fs.Nsp(filename, 'rb')
+						f = Fs.Xci(filename, 'rb')
 						f.extract_all(ofolder,buffer)
 						f.flush()
 						f.close()
@@ -5254,6 +5254,14 @@ if __name__ == '__main__':
 						f.close()														
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))	
+				if filename.endswith('.nca'):
+					try:
+						f = Fs.Nca(filename, 'rb')
+						f.verify()
+						f.flush()
+						f.close()														
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))							
 						
 		#split_list_by_id						
 		if args.split_list_by_id:						
