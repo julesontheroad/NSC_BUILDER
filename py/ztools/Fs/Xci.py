@@ -324,7 +324,7 @@ class Xci(File):
 						os.makedirs(outfolder)
 					fp = open(filepath, 'w+b')
 					file.rewind()
-					t = tqdm(total=file.header.size, unit='B', unit_scale=True, leave=False)
+					t = tqdm(total=file.size, unit='B', unit_scale=True, leave=False)
 					t.write(tabs+'Copying: ' + str(filename))
 					for data in iter(lambda: file.read(int(buffer)), ""):
 						fp.write(data)
