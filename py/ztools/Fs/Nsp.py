@@ -484,6 +484,30 @@ class Nsp(Pfs0):
 				nca.header.setRightsId(0)
 				nca.header.setKeyBlock(encKeyBlock)
 				Hex.dump(encKeyBlock)
+
+#Extract all files
+	def extract_all(self,ofolder,buffer):
+		indent = 1
+		tabs = '\t' * indent
+		for file in self:
+			file.rewind()
+			filename =  str(file._path)
+			outfolder = str(ofolder)+'/'
+			filepath = os.path.join(outfolder, filename)
+			if not os.path.exists(outfolder):
+				os.makedirs(outfolder)
+			fp = open(filepath, 'w+b')
+			file.rewind()
+			t = tqdm(total=file.header.size, unit='B', unit_scale=True, leave=False)
+			t.write(tabs+'Copying: ' + str(filename))
+			for data in iter(lambda: file.read(int(buffer)), ""):
+				fp.write(data)
+				t.update(len(data))
+				fp.flush()
+				if not data:
+					fp.close()
+					t.close()	
+					break					
 				
 	def copy_ticket(self,ofolder):
 		for ticket in self:

@@ -309,6 +309,32 @@ class Xci(File):
 				break
 		fp.close()
 
+#Extract all files
+	def extract_all(self,ofolder,buffer):
+		indent = 1
+		tabs = '\t' * indent
+		for nspF in self.hfs0:
+			if 'secure' == str(nspF._path):
+				for file in nspF:
+					file.rewind()
+					filename =  str(file._path)
+					outfolder = str(ofolder)+'/'
+					filepath = os.path.join(outfolder, filename)
+					if not os.path.exists(outfolder):
+						os.makedirs(outfolder)
+					fp = open(filepath, 'w+b')
+					file.rewind()
+					t = tqdm(total=file.header.size, unit='B', unit_scale=True, leave=False)
+					t.write(tabs+'Copying: ' + str(filename))
+					for data in iter(lambda: file.read(int(buffer)), ""):
+						fp.write(data)
+						t.update(len(data))
+						fp.flush()
+						if not data:
+							fp.close()
+							t.close()	
+							break	
+		
 #Copy nca files from secure 
 	def copy_nca(self,ofolder,buffer,token,metapatch,keypatch,RSV_cap):
 		if keypatch != 'false':
