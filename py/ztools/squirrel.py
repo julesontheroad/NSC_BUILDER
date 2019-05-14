@@ -565,6 +565,7 @@ if __name__ == '__main__':
 				if test.endswith('.nsp') or test.endswith('.nsx'):
 					try:
 						f = Fs.Nsp(filename, 'rb')
+						f.open(filename, 'rb')						
 						f.extract_all(ofolder,buffer)
 						f.flush()
 						f.close()
