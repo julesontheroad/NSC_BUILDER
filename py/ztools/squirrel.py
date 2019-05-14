@@ -118,6 +118,7 @@ if __name__ == '__main__':
 		parser.add_argument('--cardstate', nargs='+', help='Returns value for isgamecard flag from an nca')	
 		
 		# NSP Copy functions
+		parser.add_argument('-x', '--extract', nargs='+', help='Extracts all files from nsp or xci')		
 		parser.add_argument('--NSP_copy_ticket', nargs='+', help='Extracts ticket from target nsp')
 		parser.add_argument('--NSP_copy_nca', nargs='+', help='Extracts all nca files from target nsp')	
 		parser.add_argument('--NSP_copy_other', nargs='+', help='Extracts all kinds of files different from nca or ticket from target nsp')
@@ -527,7 +528,7 @@ if __name__ == '__main__':
 			else:
 				for filename in args.NSP_copy_ticket:
 					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder =os.path.join(dir, output))
+					ofolder =os.path.join(dir, output)
 			for filename in args.NSP_copy_ticket:
 				try:
 					f = Fs.Nsp(filename, 'rb')
@@ -538,7 +539,48 @@ if __name__ == '__main__':
 					Print.error('Exception: ' + str(e))
 		# ...................................................						
 		# Copy all NCA from NSP file
-		# ...................................................							
+		# ...................................................		
+		if args.extract:
+			if args.ofolder:		
+				for input in args.ofolder:
+					try:
+						ofolder = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+			else:
+				for filename in args.extract:
+					dir=os.path.dirname(os.path.abspath(filename))
+					ofolder =os.path.join(dir, output)
+					
+			if args.buffer:		
+				for input in args.buffer:
+					try:
+						buffer = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+			else:
+				buffer = 32768			
+			for filename in args.extract:
+				test=filename.lower()
+				if test.endswith('.nsp') or test.endswith('.nsx'):
+					try:
+						f = Fs.Nsp(filename, 'rb')
+						f.extract_all(ofolder,buffer)
+						f.flush()
+						f.close()
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+				elif test.endswith('.xci'):
+					try:
+						f = Fs.Nsp(filename, 'rb')
+						f.extract_all(ofolder,buffer)
+						f.flush()
+						f.close()
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))						
+
+
+		
 		if args.NSP_copy_nca:
 			if args.ofolder:		
 				for input in args.ofolder:
@@ -549,7 +591,7 @@ if __name__ == '__main__':
 			else:
 				for filename in args.NSP_copy_nca:
 					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder =os.path.join(dir, output))
+					ofolder =os.path.join(dir, output)
 					
 			if args.buffer:		
 				for input in args.buffer:
@@ -605,7 +647,7 @@ if __name__ == '__main__':
 			else:
 				for filename in args.XCI_copy_hfs0:
 					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder =os.path.join(dir, output))
+					ofolder =os.path.join(dir, output)
 					
 			if args.buffer:		
 				for input in args.buffer:
@@ -634,7 +676,7 @@ if __name__ == '__main__':
 			else:
 				for filename in args.XCI_c_hfs0_update:
 					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder =os.path.join(dir, output))
+					ofolder =os.path.join(dir, output)
 					
 			if args.buffer:		
 				for input in args.buffer:
@@ -663,7 +705,7 @@ if __name__ == '__main__':
 			else:
 				for filename in args.XCI_c_hfs0_normal:
 					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder =os.path.join(dir, output))
+					ofolder =os.path.join(dir, output)
 					
 			if args.buffer:		
 				for input in args.buffer:
@@ -692,7 +734,7 @@ if __name__ == '__main__':
 			else:
 				for filename in args.XCI_c_hfs0_secure:
 					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder =os.path.join(dir, output))
+					ofolder =os.path.join(dir, output)
 					
 			if args.buffer:		
 				for input in args.buffer:
@@ -721,7 +763,7 @@ if __name__ == '__main__':
 			else:
 				for filename in args.XCI_copy_nca_secure:
 					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder =os.path.join(dir, output))
+					ofolder =os.path.join(dir, output)
 					
 			if args.buffer:		
 				for input in args.buffer:
@@ -774,7 +816,7 @@ if __name__ == '__main__':
 			else:
 				for filename in args.C_clean:
 					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder =os.path.join(dir, output))
+					ofolder =os.path.join(dir, output)
 					
 			if args.buffer:		
 				for input in args.buffer:
@@ -827,7 +869,7 @@ if __name__ == '__main__':
 			else:
 				for filename in args.C_clean:
 					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder =os.path.join(dir, output))
+					ofolder =os.path.join(dir, output)
 					
 			if args.buffer:		
 				for input in args.buffer:
@@ -881,7 +923,7 @@ if __name__ == '__main__':
 			else:
 				for filename in args.XCI_copy_rhfs0:
 					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder =os.path.join(dir, output))
+					ofolder =os.path.join(dir, output)
 					
 			if args.buffer:		
 				for input in args.buffer:
@@ -912,7 +954,7 @@ if __name__ == '__main__':
 			else:
 				for filename in args.NSP_copy_other:
 					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder =os.path.join(dir, output))
+					ofolder =os.path.join(dir, output)
 					
 			if args.buffer:		
 				for input in args.buffer:
@@ -944,7 +986,7 @@ if __name__ == '__main__':
 			else:
 				for filename in args.NSP_copy_xml:
 					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder =os.path.join(dir, output))
+					ofolder =os.path.join(dir, output)
 					
 			if args.buffer:		
 				for input in args.buffer:
@@ -975,7 +1017,7 @@ if __name__ == '__main__':
 			else:
 				for filename in args.NSP_copy_cert:
 					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder =os.path.join(dir, output))
+					ofolder =os.path.join(dir, output)
 					
 			if args.buffer:		
 				for input in args.buffer:
@@ -1006,7 +1048,7 @@ if __name__ == '__main__':
 			else:
 				for filename in args.NSP_copy_jpg:
 					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder =os.path.join(dir, output))
+					ofolder =os.path.join(dir, output)
 					
 			if args.buffer:		
 				for input in args.buffer:
@@ -1038,7 +1080,7 @@ if __name__ == '__main__':
 			else:
 				for filename in args.NSP_copy_cnmt:
 					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder =os.path.join(dir, output))
+					ofolder =os.path.join(dir, output)
 					
 			if args.buffer:		
 				for input in args.buffer:
@@ -1080,7 +1122,7 @@ if __name__ == '__main__':
 			else:
 				for filename in args.copy_pfs0_meta:
 					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder =os.path.join(dir, output))
+					ofolder =os.path.join(dir, output)
 					
 			if args.buffer:		
 				for input in args.buffer:
@@ -1112,7 +1154,7 @@ if __name__ == '__main__':
 			else:
 				for filename in args.NSP_copy_ncap:
 					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder =os.path.join(dir, output))
+					ofolder =os.path.join(dir, output)
 					
 			if args.buffer:		
 				for input in args.buffer:
@@ -1145,7 +1187,7 @@ if __name__ == '__main__':
 			else:
 				for filename in args.NSP_copy_nca_meta:
 					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder =os.path.join(dir, output))
+					ofolder =os.path.join(dir, output)
 					
 			if args.buffer:		
 				for input in args.buffer:
@@ -1176,7 +1218,7 @@ if __name__ == '__main__':
 			else:
 				for filename in args.NSP_copy_nca_control:
 					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder =os.path.join(dir, output))
+					ofolder =os.path.join(dir, output)
 					
 			if args.buffer:		
 				for input in args.buffer:
@@ -1207,7 +1249,7 @@ if __name__ == '__main__':
 			else:
 				for filename in args.NSP_copy_nca_manual:
 					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder =os.path.join(dir, output))
+					ofolder =os.path.join(dir, output)
 					
 			if args.buffer:		
 				for input in args.buffer:
@@ -1238,7 +1280,7 @@ if __name__ == '__main__':
 			else:
 				for filename in args.NSP_copy_nca_program:
 					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder =os.path.join(dir, output))
+					ofolder =os.path.join(dir, output)
 					
 			if args.buffer:		
 				for input in args.buffer:
@@ -1269,7 +1311,7 @@ if __name__ == '__main__':
 			else:
 				for filename in args.NSP_copy_nca_data:
 					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder =os.path.join(dir, output))
+					ofolder =os.path.join(dir, output)
 					
 			if args.buffer:		
 				for input in args.buffer:
@@ -1301,7 +1343,7 @@ if __name__ == '__main__':
 			else:
 				for filename in args.NSP_copy_nca_pdata:
 					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder =os.path.join(dir, output))
+					ofolder =os.path.join(dir, output)
 					
 			if args.buffer:		
 				for input in args.buffer:
@@ -1335,7 +1377,7 @@ if __name__ == '__main__':
 			else:
 				for filename in args.NSP_copy_tr_nca:
 					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder =os.path.join(dir, output))
+					ofolder =os.path.join(dir, output)
 					
 			if args.buffer:		
 				for input in args.buffer:
@@ -1367,7 +1409,7 @@ if __name__ == '__main__':
 			else:
 				for filename in args.NSP_copy_ntr_nca:
 					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder =os.path.join(dir, output))
+					ofolder =os.path.join(dir, output)
 					
 			if args.buffer:		
 				for input in args.buffer:
@@ -1404,11 +1446,11 @@ if __name__ == '__main__':
 						filename = filelist.readline()
 						filename=os.path.abspath(filename.rstrip('\n'))		
 						dir=os.path.dirname(os.path.abspath(filename))
-						ofolder =os.path.join(dir, output))
+						ofolder =os.path.join(dir, output)
 				else:		
 					for filename in args.C_clean:
 						dir=os.path.dirname(os.path.abspath(filename))
-						ofolder =os.path.join(dir, output))
+						ofolder =os.path.join(dir, output)
 					
 			if args.buffer:		
 				for input in args.buffer:
@@ -1502,11 +1544,11 @@ if __name__ == '__main__':
 						filename = filelist.readline()
 						filename=os.path.abspath(filename.rstrip('\n'))		
 						dir=os.path.dirname(os.path.abspath(filename))
-						ofolder =os.path.join(dir, output))
+						ofolder =os.path.join(dir, output)
 				else:			
 					for filename in args.C_clean_ND:
 						dir=os.path.dirname(os.path.abspath(filename))
-						ofolder =os.path.join(dir, output))		
+						ofolder =os.path.join(dir, output)		
 			if args.buffer:		
 				for input in args.buffer:
 					try:
@@ -1597,7 +1639,7 @@ if __name__ == '__main__':
 			else:
 				for filename in args.NSP_c_KeyBlock:
 					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder =os.path.join(dir, output))
+					ofolder =os.path.join(dir, output)
 			for filename in args.NSP_c_KeyBlock:
 				try:
 					f = Fs.Nsp(filename, 'rb')
@@ -1655,11 +1697,11 @@ if __name__ == '__main__':
 						filename = filelist.readline()
 						filename=os.path.abspath(filename.rstrip('\n'))	
 						dir=os.path.dirname(os.path.abspath(filename))
-						ofolder =os.path.join(dir, output))	
+						ofolder =os.path.join(dir, output)	
 				else:			
 					for filename in args.splitter:
 						dir=os.path.dirname(os.path.abspath(filename))
-						ofolder =os.path.join(dir, output))		
+						ofolder =os.path.join(dir, output)		
 			if args.buffer:		
 				for input in args.buffer:
 					try:
@@ -1716,7 +1758,7 @@ if __name__ == '__main__':
 			else:
 				for filename in args.updbase:
 					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder =os.path.join(dir, output))		
+					ofolder =os.path.join(dir, output)		
 			if args.buffer:		
 				for input in args.buffer:
 					try:
@@ -1977,7 +2019,7 @@ if __name__ == '__main__':
 			else:
 				for filename in args.license_combo:
 					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder =os.path.join(dir, output))
+					ofolder =os.path.join(dir, output)
 			if args.buffer:		
 				for input in args.buffer:
 					try:
@@ -2009,7 +2051,7 @@ if __name__ == '__main__':
 			else:
 				for filename in args.mlicense_combo:
 					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder =os.path.join(dir, output))
+					ofolder =os.path.join(dir, output)
 			if args.buffer:		
 				for input in args.buffer:
 					try:
@@ -2042,7 +2084,7 @@ if __name__ == '__main__':
 			else:
 				for filename in args.zip_combo:
 					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder =os.path.join(dir, output))
+					ofolder =os.path.join(dir, output)
 			if args.buffer:		
 				for input in args.buffer:
 					try:
@@ -2356,11 +2398,11 @@ if __name__ == '__main__':
 						filename = filelist.readline()
 						filename=os.path.abspath(filename.rstrip('\n'))		
 						dir=os.path.dirname(os.path.abspath(filename))
-						ofolder =os.path.join(dir, output))
+						ofolder =os.path.join(dir, output)
 				else:			
 					for filename in args.xci_super_trim:
 						dir=os.path.dirname(os.path.abspath(filename))
-						ofolder =os.path.join(dir, output))	
+						ofolder =os.path.join(dir, output)	
 			if args.fat:		
 				for input in args.fat:
 					try:
@@ -2592,7 +2634,7 @@ if __name__ == '__main__':
 			else:
 				for filepath in args.direct_creation:
 					dir=os.path.dirname(os.path.abspath(filepath))
-					ofolder =os.path.join(dir, output))		
+					ofolder =os.path.join(dir, output)		
 			if args.fat:		
 				for input in args.fat:
 					try:
@@ -4194,7 +4236,7 @@ if __name__ == '__main__':
 			else:
 				for filename in args.xml_gen:
 					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder =os.path.join(dir, output))					
+					ofolder =os.path.join(dir, output)					
 			for filename in args.xml_gen:
 				if filename.endswith('.nca'):
 					try:
