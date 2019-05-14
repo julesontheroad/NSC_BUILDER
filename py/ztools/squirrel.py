@@ -572,15 +572,14 @@ if __name__ == '__main__':
 						Print.error('Exception: ' + str(e))	
 				elif test.endswith('.xci'):
 					try:
-						f = Fs.Xci(filename, 'rb')
+						f = Fs.factory(filename)
+						f.open(filename, 'rb')
 						f.extract_all(ofolder,buffer)
 						f.flush()
 						f.close()
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))						
 
-
-		
 		if args.NSP_copy_nca:
 			if args.ofolder:		
 				for input in args.ofolder:
