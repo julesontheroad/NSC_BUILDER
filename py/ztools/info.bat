@@ -28,6 +28,7 @@ echo Input "2" to get CONTENT LIST of the xci\nsp
 echo Input "3" to get NUT-INFO of the xci\nsp
 echo Input "4" to get GAME-INFO and FW requirements
 echo Input "5" to READ the CNMT of the xci\nsp
+echo Input "6" to VERIFY file (xci\nsp\nsx\nca)
 echo.
 echo Input "b" to go back to FILE LOADING
 echo Input "0" to go back to the MAIN PROGRAM
@@ -47,6 +48,7 @@ if /i "%bs%"=="2" goto g_content_list
 if /i "%bs%"=="3" goto n_info
 if /i "%bs%"=="4" goto f_info
 if /i "%bs%"=="5" goto r_cnmt
+if /i "%bs%"=="6" goto verify
 
 if /i "%bs%"=="b" goto sc1
 if /i "%bs%"=="0" goto salida
@@ -209,6 +211,35 @@ more +1 "%i_file%">"%i_file%.new"
 move /y "%i_file%.new" "%i_file%" >nul
 ECHO DONE
 goto sc2
+
+:verify
+cls
+call :logo
+echo ********************************************************
+echo VERIFY A NSP\XCI\NCA
+echo ********************************************************
+%pycommand% "%nut%" -v "%targt%"
+echo.
+ECHO ********************************************************
+echo Do you want to print the information to a text file?
+ECHO ********************************************************
+:r_cnmt_wrong
+echo Input "1" to print to text file
+echo Input "2" to NOT print to text file
+echo.
+set /p bs="Enter your choice: "
+if /i "%bs%"=="1" goto r_cnmt_print
+if /i "%bs%"=="2" goto sc2
+echo WRONG CHOICE
+echo.
+goto r_cnmt_wrong
+:r_cnmt_print
+if not exist "%info_dir%" MD "%info_dir%">NUL 2>&1
+set "i_file=%info_dir%\%Name%-verify.txt"
+%pycommand% "%nut%" -v "%targt%">"%i_file%"
+more +1 "%i_file%">"%i_file%.new"
+move /y "%i_file%.new" "%i_file%" >nul
+ECHO DONE
 
 :salida
 exit /B

@@ -22,10 +22,20 @@ from Fs.Pfs0 import Pfs0
 from Fs.BaseFs import BaseFs
 from Fs.Ticket import Ticket
 import sq_tools
+import rsa
 
 MEDIA_SIZE = 0x200
+RSA_PUBLIC_EXPONENT = 0x10001
+FS_HEADER_LENGTH = 0x200
+nca_header_fixed_key_modulus = 0xBFBE406CF4A780E9F07D0C99611D772F96BC4B9E58381B03ABB175499F2B4D5834B005A37522BE1A3F0373AC7068D116B904465EB707912F078B26DEF60007B2B451F80D0A5E58ADEBBC9AD649B964EFA782B5CF6D7013B00F85F6A908AA4D676687FA89FF7590181E6B3DE98A68C92604D980CE3F5E92CE01FF063BF2C1A90CCE026F16BC92420A4164CD52B6344DAEC02EDEA4DF27683CC1A060AD43F3FC86C13E6C46F77C299FFAFDF0E3CE64E735F2F656566F6DF1E242B08340A5C3202BCC9AAECAED4D7030A8701C70FD1363290279EAD2A7AF3528321C7BE62F1AAA407E328C2742FE8278EC0DEBE6834B6D8104401A9E9A67F67229FA04F09DE4F403
 indent = 1
 tabs = '\t' * indent	
+
+from Crypto.Hash import SHA256
+from Crypto.Cipher import AES
+from Crypto.Util import Counter
+from Crypto.PublicKey import RSA 
+from Crypto.Signature import PKCS1_v1_5, PKCS1_PSS
 
 
 class SectionTableEntry:
@@ -1497,4 +1507,30 @@ class Nca(File):
 			if not data:
 				fp.close()
 				break	
-	'''					
+	'''			
+
+	def verify(self):
+		if self._path.endswith('cnmt.nca'):	
+			arrow='  -> '
+		else:
+			arrow=tabs+'     -> ' 		
+		self.rewind()	
+		#print('Signature 1:')
+		sign1 = self.header.signature1
+		#Hex.dump(sign1)		
+		#print('')			
+		#print('Header data:')	
+		self.header.seek(0x200)	
+		headdata = self.header.read(0x200)	
+		
+		#Hex.dump(headdata)
+		pubkey=RSA.RsaKey(n=nca_header_fixed_key_modulus, e=RSA_PUBLIC_EXPONENT)
+		rsapss = PKCS1_PSS.new(pubkey)
+		digest = SHA256.new(headdata)
+		verification=rsapss.verify(digest, sign1)
+		if verification == True:
+			print('- '+self._path+arrow+'is PROPER')
+			return True
+		else:
+			print('- '+self._path+arrow+'was MODIFIED')	
+			return False	

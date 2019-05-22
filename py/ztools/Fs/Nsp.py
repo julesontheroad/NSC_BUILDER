@@ -489,6 +489,7 @@ class Nsp(Pfs0):
 	def extract_all(self,ofolder,buffer):
 		indent = 1
 		tabs = '\t' * indent
+		print("Processing: "+str(self._path))
 		for file in self:
 			file.rewind()
 			filename =  str(file._path)
@@ -946,8 +947,6 @@ class Nsp(Pfs0):
 		return masterKeyRev
 		
 	def nsptitlekeydec(self):				
-		if not Titles.contains(self.titleId):
-			raise IOError('No title key found in database! ' + self.titleId)
 		ticket = self.ticket()
 		for nca in self:	
 			if type(nca) == Nca:		
@@ -6352,11 +6351,19 @@ class Nsp(Pfs0):
 		for file in self:
 			print(str(file._path))
 		'''	
+		print('***************')
+		print('DECRIPTION TEST')
+		print('***************')
 		for file in self:
-			if str(file._path).endswith('.nca') or str(file._path).endswith('.tik'):		
+			if str(file._path).endswith('.nca'):		
 				listed_files.append(str(file._path))
-			if type(file) == Nca or type(file) == Ticket:
+			if type(file) == Nca:
 				validfiles.append(str(file._path))				
+		for file in self:
+			if str(file._path).endswith('.tik'):		
+				listed_files.append(str(file._path))
+			if type(file) == Ticket:
+				validfiles.append(str(file._path))						
 				
 		for file in listed_files:	
 			correct=False		
@@ -6379,7 +6386,12 @@ class Nsp(Pfs0):
 						if str(f._path) == file:
 							print(str(f.header.titleId)+' - '+str(f.header.contentType))				
 							if str(f.header.contentType) != 'Content.PROGRAM':
-								correct = self.verify_enforcer(file)							
+									if f.header.getRightsId() != 0:
+										correct = self.verify_enforcer(file)	
+										if correct == True:
+											correct = self.verify_key(file)	
+									else:
+										correct = self.verify_enforcer(file)	
 								#f.test(self.nsptitlekeydec())										
 							else:
 								for nf in f:
@@ -6398,15 +6410,18 @@ class Nsp(Pfs0):
 									f.rewind()
 								cryptoKey=self.nsptitlekeydec()															
 								if correct == True:
-									correct = self.verify_enforcer(file)
-						if checktik == False:									
-							checktik = self.verify_key(file)									
+									correct = self.verify_enforcer(file)	
+									if correct == True:
+										correct = self.verify_key(file)										
+						if checktik == False:	
+							checktik = self.verify_key(file)
+							#print(checktik)	
 								#f.test(self.nsptitlekeydec())									
 				elif file.endswith('.tik'):	
 					print('Content.TICKET')
 					correct = checktik				
-			else:
-				correct=False	
+				else:
+					correct=False	
 			if correct==True:
 				if file.endswith('cnmt.nca'):				
 					print(tabs+file+' -> is CORRECT')	
@@ -6415,11 +6430,11 @@ class Nsp(Pfs0):
 			else:
 				veredict=False			
 				if file.endswith('cnmt.nca'):	
-					print(tabs+file+' -> is CORRUPT')
+					print(tabs+file+' -> is CORRUPT <<<-')
 				elif file.endswith('nca'):		
-					print(tabs+file+tabs+'  -> is CORRUPT')	
+					print(tabs+file+tabs+'  -> is CORRUPT <<<-')	
 				elif file.endswith('tik'):		
-					print(tabs+file+tabs+'  -> titlekey is INCORRECT')						
+					print(tabs+file+tabs+'  -> titlekey is INCORRECT <<<-')						
 		for nca in self:
 			if type(nca) == Nca:
 				if 	str(nca.header.contentType) == 'Content.META':		
@@ -6485,6 +6500,15 @@ class Nsp(Pfs0):
 		if veredict == True:	
 			print('')
 			print('VEREDICT: NSP FILE IS CORRECT')	
+		return 	veredict				
+			
+	def verify_sig(self):			
+		print('****************')
+		print('SIGNATURE 1 TEST')
+		print('****************')									
+		for f in self:	
+			if type(f) == Nca:		
+				f.verify()
 									
 	def verify_enforcer(self,nca):
 
@@ -6519,7 +6543,7 @@ class Nsp(Pfs0):
 							
 				if type(f) == Fs.Nca:
 					for fs in f.sectionFilesystems:
-						if fs.fsType == Type.Fs.ROMFS and fs.cryptoType == Type.Crypto.CTR:
+						if fs.fsType == Type.Fs.ROMFS and fs.cryptoType == Type.Crypto.CTR or f.header.contentType == Type.Content.MANUAL:
 							f.seek(0)
 							ncaHeader = f.read(0x400)
 
@@ -6553,7 +6577,7 @@ class Nsp(Pfs0):
 							pfs0Header = f.read(0x10)	
 							#print(sectionHeaderBlock[8:12] == b'IVFC')	
 							if sectionHeaderBlock[8:12] == b'IVFC':	
-								#Hex.dump(self.sectionHeaderBlock)
+								Hex.dump(self.sectionHeaderBlock)
 								#Print.info(hx(self.sectionHeaderBlock[0xc8:0xc8+0x20]).decode('utf-8'))
 								mem = MemoryFile(pfs0Header, Type.Crypto.CTR, decKey, pfs0.cryptoCounter, offset = pfs0Offset)
 								data = mem.read();
@@ -6566,12 +6590,13 @@ class Nsp(Pfs0):
 							else:
 								mem = MemoryFile(pfs0Header, Type.Crypto.CTR, decKey, pfs0.cryptoCounter, offset = pfs0Offset)
 								data = mem.read();
-								Hex.dump(data)								
+								#Hex.dump(data)								
 								magic = mem.read()[0:4]
-								print(magic)
+								#print(magic)
 								if magic != b'PFS0':
 									return False
-							return True			
+								else:	
+									return True			
 						'''	
 						if fs.fsType == Type.Fs.ROMFS and fs.cryptoType == Type.Crypto.CTR:	
 							print('here3')

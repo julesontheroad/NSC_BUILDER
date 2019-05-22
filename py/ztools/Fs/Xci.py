@@ -5848,10 +5848,23 @@ class Xci(File):
 		for nspF in self.hfs0:
 			if str(nspF._path)=="secure":
 				for file in nspF:
-					if str(file._path).endswith('.nca') or str(file._path).endswith('.tik'):		
+					if str(file._path).endswith('.nca'):		
 						listed_files.append(str(file._path))
-					if type(file) == Nca or type(file) == Ticket:
-						validfiles.append(str(file._path))				
+					if type(file) == Nca:
+						validfiles.append(str(file._path))					
+				
+		for nspF in self.hfs0:
+			if str(nspF._path)=="secure":
+				for file in nspF:				
+					if str(file._path).endswith('.tik'):		
+						listed_files.append(str(file._path))
+					if type(file) == Ticket:
+						validfiles.append(str(file._path))						
+	
+
+		print('***************')
+		print('DECRIPTION TEST')
+		print('***************')						
 				
 		for file in listed_files:	
 			correct=False		
@@ -5861,10 +5874,10 @@ class Xci(File):
 						if str(nspF._path)=="secure":
 							for f in nspF:	
 								if str(f._path) == file:
+									print(str(f.header.titleId)+' - '+str(f.header.contentType))								
 									for nf in f:	
 										nf.rewind()
-										test=nf.read(0x4)	
-										print(str(f.header.titleId)+' - '+str(f.header.contentType))	
+										test=nf.read(0x4)		
 										#print(test)														
 										if str(test) == "b'PFS0'":
 											correct=True
@@ -5887,6 +5900,7 @@ class Xci(File):
 											if str(test) == "b'PFS0'":
 												correct=True
 												break	
+											f.rewind()												
 										if correct == True:
 											correct = self.verify_enforcer(file)
 										if correct == True:
@@ -5904,9 +5918,9 @@ class Xci(File):
 			else:
 				veredict=False					
 				if file.endswith('cnmt.nca'):	
-					print(tabs+file+' -> is CORRUPT')
+					print(tabs+file+' -> is CORRUPT <<<-')
 				else:					
-					print(tabs+file+tabs+'  -> is CORRUPT')	
+					print(tabs+file+tabs+'  -> is CORRUPT <<<-')	
 		for nspF in self.hfs0:
 			if str(nspF._path)=="secure":
 				for nca in nspF:
@@ -5973,7 +5987,18 @@ class Xci(File):
 			print('VEREDICT: XCI FILE IS CORRUPT OR MISSES FILES')
 		if veredict == True:	
 			print('')
-			print('VEREDICT: XCI FILE IS CORRECT')			
+			print('VEREDICT: XCI FILE IS CORRECT')		
+		return 	veredict	
+			
+	def verify_sig(self):			
+		print('****************')
+		print('SIGNATURE 1 TEST')
+		print('****************')									
+		for nspF in self.hfs0:
+			if str(nspF._path)=="secure":
+				for f in nspF:			
+					if type(f) == Nca:			
+						f.verify()			
 
 	def verify_enforcer(self,nca):
 		for nspF in self.hfs0:
@@ -5985,11 +6010,12 @@ class Xci(File):
 								if fs.fsType == Type.Fs.PFS0 and fs.cryptoType == Type.Crypto.CTR:
 									f.seek(0)
 									ncaHeader = f.read(0x400)
-
+									
 									sectionHeaderBlock = fs.buffer
 
 									f.seek(fs.offset)
 									pfs0Header = f.read(0x10)
+									
 									return True
 								else:
 									return False			
@@ -5998,18 +6024,19 @@ class Xci(File):
 								if fs.fsType == Type.Fs.PFS0 and fs.cryptoType == Type.Crypto.CTR:
 									f.seek(0)
 									ncaHeader = f.read(0x400)
-
+							
 									sectionHeaderBlock = fs.buffer
 
 									f.seek(fs.offset)
 									pfs0Header = f.read(0x10)
+										
 									return True
 								else:
 									return False								
 									
 						if type(f) == Fs.Nca:
 							for fs in f.sectionFilesystems:
-								if fs.fsType == Type.Fs.ROMFS and fs.cryptoType == Type.Crypto.CTR:
+								if fs.fsType == Type.Fs.ROMFS and fs.cryptoType == Type.Crypto.CTR or f.header.contentType == Type.Content.MANUAL:
 									f.seek(0)
 									ncaHeader = f.read(0x400)
 
@@ -6024,6 +6051,6 @@ class Xci(File):
 									pfs0Header = f.read(levelSize)
 									return True
 								else:
-									return False				
+									return False					
 
 	

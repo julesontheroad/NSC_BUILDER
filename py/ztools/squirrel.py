@@ -1997,8 +1997,9 @@ if __name__ == '__main__':
 									t.close()			
 									counter=int(counter)
 									counter-=1									
-									print(tabs+'> Placeholder was created')						
-									print(tabs+'> Still '+str(counter)+' to go')									
+									print(tabs+'> Placeholder was created')		
+									if not args.text_file:	
+										print(tabs+'> Still '+str(counter)+' to go')									
 								except BaseException as e:
 									counter=int(counter)
 									counter-=1								
@@ -4705,7 +4706,8 @@ if __name__ == '__main__':
 					if setskip == True:
 						counter=int(counter)
 						counter-=1
-						print(tabs+'> Still '+str(counter)+' to go')					
+						if not args.text_file:
+							print(tabs+'> Still '+str(counter)+' to go')					
 						continue
 					if filepath.endswith('.nsp'):
 						try:
@@ -4841,7 +4843,8 @@ if __name__ == '__main__':
 									print(tabs+"> File already has correct id: "+baseid)
 									counter=int(counter)
 									counter-=1
-									print(tabs+'> Still '+str(counter)+' to go')										
+									if not args.text_file:
+										print(tabs+'> Still '+str(counter)+' to go')										
 									continue
 							if filepath.endswith('.xci'):							
 								f = Fs.Xci(basefile)
@@ -4869,7 +4872,8 @@ if __name__ == '__main__':
 									print(tabs+"> File already has correct id: "+updid)	
 									counter=int(counter)
 									counter-=1
-									print(tabs+'> Still '+str(counter)+' to go')										
+									if not args.text_file:
+										print(tabs+'> Still '+str(counter)+' to go')										
 									continue		
 							if filepath.endswith('.xci'):								
 								f = Fs.Xci(updfile)	
@@ -4896,7 +4900,8 @@ if __name__ == '__main__':
 									print(tabs+"> File already has correct id: "+dlcid)		
 									counter=int(counter)
 									counter-=1
-									print(tabs+'> Still '+str(counter)+' to go')										
+									if not args.text_file:
+										print(tabs+'> Still '+str(counter)+' to go')										
 									continue
 								else:	
 									if filepath.endswith('.xci'):								
@@ -5041,8 +5046,9 @@ if __name__ == '__main__':
 					os.rename(filepath, newpath)	
 					counter=int(counter)
 					counter-=1
-					print(tabs+'File was renamed')						
-					print(tabs+'> Still '+str(counter)+' to go')				
+					print(tabs+'File was renamed')		
+					if not args.text_file:					
+						print(tabs+'> Still '+str(counter)+' to go')				
 			except BaseException as e:
 				counter=int(counter)
 				counter-=1
@@ -5229,39 +5235,63 @@ if __name__ == '__main__':
 				print(tabs+'> File was renamed to: '+endname)		
 			except BaseException as e:	
 				pass				
-				
-				
-				
-				
-				
-					
-		if args.verify:
-			for filename in args.verify:		
-				if filename.endswith('.nsp') or filename.endswith('.nsx'):
-					try:
-						f = Fs.Nsp(filename, 'rb')
-						f.verify()
-						f.flush()
-						f.close()
-					except BaseException as e:
-						Print.error('Exception: ' + str(e))	
-				if filename.endswith('.xci'):
-					try:
-						f = Fs.factory(filename)
-						f.open(filename, 'rb')
-						f.verify()
-						f.flush()
-						f.close()														
-					except BaseException as e:
-						Print.error('Exception: ' + str(e))	
-				if filename.endswith('.nca'):
-					try:
-						f = Fs.Nca(filename, 'rb')
-						f.verify()
-						f.flush()
-						f.close()														
-					except BaseException as e:
-						Print.error('Exception: ' + str(e))							
+						
+		if args.verify:	
+			if args.text_file:
+				tfile=args.text_file
+				dir=os.path.dirname(os.path.abspath(tfile))
+				if not os.path.exists(dir):
+					os.makedirs(dir)	
+				err='badfiles.txt'			
+				errfile = os.path.join(dir, err)						
+				with open(tfile,"r+", encoding='utf8') as filelist: 	
+					filename = filelist.readline()
+					filename=os.path.abspath(filename.rstrip('\n'))
+			else:				
+				for filename in args.verify:
+					filename=filename						
+			if filename.endswith('.nsp') or filename.endswith('.nsx'):
+				try:
+					f = Fs.Nsp(filename, 'rb')
+					check=f.verify()
+					f.verify_sig()						
+					f.flush()
+					f.close()
+					if args.text_file:						
+						if check == False:
+							with open(errfile, 'a') as errfile:	
+								now=datetime.now()
+								date=now.strftime("%x")+". "+now.strftime("%X")								
+								errfile.write("Filename: "+str(filename)+'\n')
+								errfile.write("IS INCORRECT"+'\n')							
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))	
+			if filename.endswith('.xci'):
+				try:
+					f = Fs.factory(filename)
+					f.open(filename, 'rb')
+					check=f.verify()
+					if not args.text_file:
+						f.verify_sig()	
+					f.flush()
+					f.close()
+					if args.text_file:					
+						if check == False:
+							with open(errfile, 'a') as errfile:	
+								now=datetime.now()
+								date=now.strftime("%x")+". "+now.strftime("%X")								
+								errfile.write("Filename: "+str(filename)+'\n')
+								errfile.write("IS INCORRECT"+'\n')																						
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))	
+			if filename.endswith('.nca'):
+				try:
+					f = Fs.Nca(filename, 'rb')
+					f.verify()
+					f.flush()
+					f.close()														
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))							
 						
 		#split_list_by_id						
 		if args.split_list_by_id:						

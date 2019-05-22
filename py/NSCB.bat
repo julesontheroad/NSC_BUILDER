@@ -645,6 +645,7 @@ echo Input "2" to enter into MULTI-PACK mode
 echo Input "3" to enter into MULTI-CONTENT SPLITTER mode
 echo Input "4" to enter into FILE-INFO mode
 echo Input "5" to enter DATABASE building mode
+echo Input "6" to enter ADVANCE mode
 echo Input "0" to enter into CONFIGURATION mode
 echo.
 echo Input "L" to enter LEGACY MODES
@@ -657,6 +658,7 @@ if /i "%bs%"=="2" goto multimode
 if /i "%bs%"=="3" goto SPLMODE
 if /i "%bs%"=="4" goto INFMODE
 if /i "%bs%"=="5" goto DBMODE
+if /i "%bs%"=="6" call "%prog_dir%ztools\ADV.bat"
 if /i "%bs%"=="L" call "%prog_dir%ztools\LEGACY.bat"
 REM if /i "%bs%"=="7" goto ADVMODE
 if /i "%bs%"=="0" goto OPT_CONFIG
@@ -838,6 +840,7 @@ echo Input "4" to erase deltas from nsp files
 echo Input "5" to rename xci or nsp files
 echo Input "6" to xci supertrimmer
 echo Input "7" to rebuild nsp by cnmt order
+echo Input "8" to verify files
 echo.
 ECHO ******************************************
 echo Or Input "b" to return to the list options
@@ -858,6 +861,8 @@ if /i "%bs%"=="6" set "vrepack=xci_supertrimmer"
 if /i "%bs%"=="6" goto s_KeyChange_skip
 if /i "%bs%"=="7" set "vrepack=rebuild"
 if /i "%bs%"=="7" goto s_KeyChange_skip
+if /i "%bs%"=="8" set "vrepack=verify"
+if /i "%bs%"=="8" goto s_KeyChange_skip
 if %vrepack%=="none" goto s_cl_wrongchoice
 :s_RSV_wrongchoice
 if /i "%skipRSVprompt%"=="true" set "patchRSV=-pv false"
@@ -1149,6 +1154,8 @@ if "%vrepack%" EQU "xci" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRS
 if "%vrepack%" EQU "both" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -fat exfat -fx files %skdelta% -o "%w_folder%" -t "both" -dc "%orinput%" -tfile "%prog_dir%list.txt")
 if "%vrepack%" EQU "nodelta" ( %pycommand% "%nut%" %buffer% --xml_gen "true" -o "%w_folder%" -tfile "%prog_dir%list.txt" --erase_deltas "")
 if "%vrepack%" EQU "rebuild" ( %pycommand% "%nut%" %buffer% %skdelta% --xml_gen "true" -o "%w_folder%" -tfile "%prog_dir%list.txt" --rebuild_nsp "")
+if "%vrepack%" EQU "verify" ( %pycommand% "%nut%" -tfile "%prog_dir%list.txt" -v "")
+if "%vrepack%" EQU "verify" ( goto end_nsp_manual )
 
 move "%w_folder%\*.xci" "%fold_output%" >NUL 2>&1
 move  "%w_folder%\*.xc*" "%fold_output%" >NUL 2>&1
@@ -1223,6 +1230,8 @@ if "%vrepack%" EQU "nsp" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRS
 if "%vrepack%" EQU "xci" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -fat exfat -fx files %skdelta% -o "%w_folder%" -t "xci" -dc "%orinput%" -tfile "%prog_dir%list.txt")
 if "%vrepack%" EQU "both" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -fat exfat -fx files %skdelta% -o "%w_folder%" -t "both" -dc "%orinput%" -tfile "%prog_dir%list.txt")
 if "%vrepack%" EQU "xci_supertrimmer" ( %pycommand% "%nut%" %buffer% -o "%w_folder%" -xci_st "%orinput%" -tfile "%prog_dir%list.txt")
+if "%vrepack%" EQU "verify" ( %pycommand% "%nut%" -tfile "%prog_dir%list.txt" -v "")
+if "%vrepack%" EQU "verify" ( goto end_xci_manual )
 
 if not exist "%fold_output%" MD "%fold_output%" >NUL 2>&1
 
