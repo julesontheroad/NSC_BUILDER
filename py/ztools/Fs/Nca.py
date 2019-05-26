@@ -1509,7 +1509,7 @@ class Nca(File):
 				break	
 	'''			
 
-	def verify(self):
+	def verify(self):		
 		if self._path.endswith('cnmt.nca'):	
 			arrow='  -> '
 		else:
@@ -1530,7 +1530,74 @@ class Nca(File):
 		verification=rsapss.verify(digest, sign1)
 		if verification == True:
 			print('- '+self._path+arrow+'is PROPER')
+			#print(hx(headdata))	
 			return True
 		else:
-			print('- '+self._path+arrow+'was MODIFIED')	
-			return False	
+			crypto1=self.header.getCryptoType()
+			crypto2=self.header.getCryptoType2()	
+			if crypto2>crypto1:
+				masterKeyRev=crypto2
+			if crypto2<=crypto1:	
+				masterKeyRev=crypto1		
+			crypto = aes128.AESECB(Keys.keyAreaKey(Keys.getMasterKeyIndex(masterKeyRev), self.header.keyIndex))			
+			KB1L=self.header.getKB1L()
+			KB1L = crypto.decrypt(KB1L)
+			if sum(KB1L) != 0:						
+				#print(hx(headdata))			
+				checkrights=self.restorehead_tr()
+				if checkrights == True:
+					print('- '+self._path+arrow+'is PROPER. TITLERIGHTS WERE REMOVED')			
+				else:
+					print('- '+self._path+arrow+'was MODIFIED')	
+					print(tabs+'* '+"Not verifiable could've being tampered with")					
+					return False	
+
+	def restorehead_tr(self):	
+		sign1 = self.header.signature1	
+		crypto1=self.header.getCryptoType()
+		crypto2=self.header.getCryptoType2()		
+		nca_id=self.header.titleId	
+		tr=nca_id+'000000000000000'+str(crypto2)	
+		tr=bytes.fromhex(tr)				
+		'''
+		if crypto1>crypto2:
+			masterKeyRev = crypto1
+		else:
+			masterKeyRev = crypto2		
+		masterKeyRev = self.header.getCryptoType2()	
+		encKeyBlock = self.header.getKeyBlock()
+		key = Keys.keyAreaKey(Keys.getMasterKeyIndex(masterKeyRev), self.header.keyIndex)		
+		crypto = aes128.AESECB(key)
+		decKeyBlock = crypto.decrypt(encKeyBlock[:16])			
+		titleKeyEnc = Keys.encryptTitleKey(decKeyBlock, Keys.getMasterKeyIndex(masterKeyRev))
+		'''
+		self.header.seek(0x200)	
+		headdata = b''
+		headdata += self.header.read(0x30)
+		headdata += tr
+		self.header.read(0x10)
+		headdata += self.header.read(0x100-0x40)		
+		headdata += bytes.fromhex('00'*0x10*4)			
+		self.header.seek(0x340)	
+		headdata += self.header.read(0x100-0x40)
+		#print(hx(headdata))
+		#Hex.dump(headdata)				
+		pubkey=RSA.RsaKey(n=nca_header_fixed_key_modulus, e=RSA_PUBLIC_EXPONENT)
+		rsapss = PKCS1_PSS.new(pubkey)
+		digest = SHA256.new(headdata)
+		verification=rsapss.verify(digest, sign1)		
+		if verification == True:
+			return True
+		else:
+			tr2=nca_id[:-3]+'800000000000000000'+str(crypto2)	
+			tr2=bytes.fromhex(tr2)
+			headdata2 = b''
+			headdata2=headdata[0x00:0x30]+tr2+headdata[0x40:]
+			digest2 = SHA256.new(headdata2)
+			verification=rsapss.verify(digest2, sign1)	
+			if verification == True:
+				return True			
+			else:
+				return False			
+		
+		
