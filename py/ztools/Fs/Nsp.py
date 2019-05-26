@@ -6501,13 +6501,25 @@ class Nsp(Pfs0):
 			print('VEREDICT: NSP FILE IS CORRECT')	
 		return 	veredict				
 			
-	def verify_sig(self):			
+	def verify_sig(self):	
+		veredict=True
 		print('****************')
 		print('SIGNATURE 1 TEST')
 		print('****************')									
 		for f in self:	
-			if type(f) == Nca:		
-				f.verify()
+			if type(f) == Nca and f.header.contentType != Type.Content.META:		
+				verify=f.verify()
+				if veredict == True:
+					veredict=verify
+			else:
+				f.verify()		
+		if veredict == False:
+			print('')
+			print("VEREDICT: NSP FILE COULD'VE BEEN TAMPERED WITH")
+		if veredict == True:	
+			print('')
+			print('VEREDICT: NSP FILE IS SAFE')	
+		return 	veredict							
 									
 	def verify_enforcer(self,nca):
 

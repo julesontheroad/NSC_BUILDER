@@ -1558,8 +1558,7 @@ class Nca(File):
 					print('')
 					return False					
 			print('- '+self._path+arrow+'was MODIFIED')		
-			print(tabs+'* '+"NOT VERIFIABLE!!!")	
-			#print(tabs+'* '+"COULD'VE BEEN TAMPERED WITH")				
+			print(tabs+'* '+"NOT VERIFIABLE!!!")		
 			print('')			
 			return False	
 
