@@ -6405,10 +6405,13 @@ class Nsp(Pfs0):
 								if correct == False and f.header.getRightsId() != 0:
 									correct = self.verify_key(file)									
 				elif file.endswith('.tik'):	
+					checktik == False
 					for f in self:	
 						if str(f._path).endswith('.nca'):									
 							if checktik == False and f.header.getRightsId() != 0:
-								checktik = self.verify_key(str(f._path))				
+								checktik = self.verify_key(str(f._path))	
+								if 	checktik == True:
+									break								
 					print('Content.TICKET')
 					correct = checktik				
 				else:

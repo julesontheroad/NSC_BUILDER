@@ -5916,7 +5916,9 @@ class Xci(File):
 							for f in nspF:						
 								if str(f._path).endswith('.nca'):									
 									if checktik == False and f.header.getRightsId() != 0:
-										checktik = self.verify_key(str(f._path))				
+										checktik = self.verify_key(str(f._path))	
+										if 	checktik == True:
+											break
 							print('Content.TICKET')
 							correct = checktik				
 				else:
