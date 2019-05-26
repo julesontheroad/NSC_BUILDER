@@ -16,6 +16,7 @@ import Print
 import Nsps
 from tqdm import tqdm
 import Fs
+from Fs import Type
 from Fs.File import File
 from Fs.Rom import Rom
 from Fs.Pfs0 import Pfs0
@@ -1487,27 +1488,6 @@ class Nca(File):
 	def get_sdkversion(self):		
 		sdkversion=str(self.header.sdkVersion4)+'.'+str(self.header.sdkVersion3)+'.'+str(self.header.sdkVersion2)+'.'+str(self.header.sdkVersion1)	
 		return sdkversion
-					
-	'''
-	def c_clean(self,ofolder,buffer):
-		for f in self:
-			cryptoType=f.get_cryptoType()
-			cryptoKey=f.get_cryptoKey()	
-			cryptoCounter=f.get_cryptoCounter()	
-		filename =  str(self._path)
-		outfolder = str(ofolder)+'/'
-		filepath = os.path.join(outfolder, filename)
-		if not os.path.exists(outfolder):
-			os.makedirs(outfolder)
-		fp = open(filepath, 'w+b')
-		self.rewind()
-		for data in iter(lambda: self.read(int(buffer)), ""):
-			fp.write(data)
-			fp.flush()
-			if not data:
-				fp.close()
-				break	
-	'''			
 
 	def verify(self):		
 		if self._path.endswith('cnmt.nca'):	
@@ -1546,7 +1526,8 @@ class Nca(File):
 				#print(hx(headdata))			
 				checkrights,kgchg=self.restorehead_tr()
 				if checkrights == True:
-					print('- '+self._path+arrow+'is PROPER. TITLERIGHTS WERE REMOVED')	
+					print('- '+self._path+arrow+'is PROPER')	
+					print(tabs+'* '+"TITLERIGHTS WERE REMOVED")						
 					if kgchg == True:
 						print(tabs+'* '+"KEYGENERATION WAS CHANGED")	
 					print('')	
@@ -1559,7 +1540,7 @@ class Nca(File):
 			else:
 				ver,kgchg,cardchange=self.restorehead_ntr()
 				if ver == True:
-					print('- '+self._path+arrow+'is PROPER.')	
+					print('- '+self._path+arrow+'is PROPER')	
 					if kgchg == True:
 						print(tabs+'* '+"KEYGENERATION WAS CHANGED")
 					if cardchange == True:				
@@ -1571,11 +1552,14 @@ class Nca(File):
 					return True	
 				else:
 					print('- '+self._path+arrow+'was MODIFIED')	
-					print(tabs+'* '+"NOT VERIFIABLE COULD'VE BEEN TAMPERED WITH")
+					print(tabs+'* '+"NOT VERIFIABLE!!!")
+					if self.header.contentType == Type.Content.META:
+						print(tabs+'* '+"IF THE REST IS OK RSV WAS MODIFIED (NOTHING TO WORRY ABOUT)")							
 					print('')
 					return False					
 			print('- '+self._path+arrow+'was MODIFIED')		
-			print(tabs+'* '+"NOT VERIFIABLE COULD'VE BEEN TAMPERED WITH")	
+			print(tabs+'* '+"NOT VERIFIABLE!!!")	
+			#print(tabs+'* '+"COULD'VE BEEN TAMPERED WITH")				
 			print('')			
 			return False	
 
