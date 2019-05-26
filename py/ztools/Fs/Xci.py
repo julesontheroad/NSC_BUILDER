@@ -5911,6 +5911,7 @@ class Xci(File):
 										if correct == False and f.header.getRightsId() != 0:
 											correct = self.verify_key(file)											
 				elif file.endswith('.tik'):
+					checktik == False
 					for nspF in self.hfs0:
 						if str(nspF._path)=="secure":
 							for f in nspF:						
