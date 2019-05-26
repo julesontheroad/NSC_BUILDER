@@ -2998,7 +2998,7 @@ if __name__ == '__main__':
 												#print(prlist[i][6])
 												if contentlist[j][6] > prlist[i][6]:
 													del prlist[i]
-													print(prlist[i])
+													#print(prlist[i])
 													prlist.append(contentlist[j])
 													notinlist=False
 													break
@@ -3042,7 +3042,7 @@ if __name__ == '__main__':
 												#print(prlist[i][6])
 												if contentlist[j][6] > prlist[i][6]:
 													del prlist[i]
-													print(prlist[i])
+													#print(prlist[i])
 													prlist.append(contentlist[j])
 													notinlist=False
 													break

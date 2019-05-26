@@ -6345,8 +6345,9 @@ class Nsp(Pfs0):
 		validfiles=list()
 		listed_files=list()		
 		contentlist=list()
-		veredict=True
-		checktik=False
+		delta = False
+		veredict = True		
+		checktik=False	
 		'''
 		for file in self:
 			print(str(file._path))
@@ -6385,23 +6386,11 @@ class Nsp(Pfs0):
 					for f in self:	
 						if str(f._path) == file:
 							print(str(f.header.titleId)+' - '+str(f.header.contentType))				
-							if str(f.header.contentType) != 'Content.PROGRAM':
-									if f.header.getRightsId() != 0:
-										correct = self.verify_enforcer(file)	
-										if correct == True:
-											correct = self.verify_key(file)	
-									else:
-										correct = self.verify_enforcer(file)	
-								#f.test(self.nsptitlekeydec())										
+							if str(f.header.contentType) != 'Content.PROGRAM':	
+								correct = self.verify_enforcer(file)									
 							else:
 								for nf in f:
 									nf.rewind()		
-									'''	
-									for nf2 in nf:
-										nf2.rewind()
-										test2=nf2.read(0x4)
-										print(test2)
-									'''	
 									test=nf.read(0x4)
 									#print(test)												
 									if str(test) == "b'PFS0'":
@@ -6410,14 +6399,16 @@ class Nsp(Pfs0):
 									f.rewind()
 								cryptoKey=self.nsptitlekeydec()															
 								if correct == True:
-									correct = self.verify_enforcer(file)	
-									if correct == True:
-										correct = self.verify_key(file)										
-						if checktik == False:	
-							checktik = self.verify_key(file)
-							#print(checktik)	
-								#f.test(self.nsptitlekeydec())									
+									correct = self.verify_enforcer(file)
+								if correct == False and f.header.getRightsId() == 0:
+									correct = f.pr_noenc_check()		
+								if correct == False and f.header.getRightsId() != 0:
+									correct = self.verify_key(file)									
 				elif file.endswith('.tik'):	
+					for f in self:	
+						if str(f._path).endswith('.nca'):									
+							if checktik == False and f.header.getRightsId() != 0:
+								checktik = self.verify_key(str(f._path))				
 					print('Content.TICKET')
 					correct = checktik				
 				else:
@@ -6590,16 +6581,15 @@ class Nsp(Pfs0):
 							else:
 								mem = MemoryFile(pfs0Header, Type.Crypto.CTR, decKey, pfs0.cryptoCounter, offset = pfs0Offset)
 								data = mem.read();
-								#Hex.dump(data)								
+								Hex.dump(data)								
 								magic = mem.read()[0:4]
 								#print(magic)
 								if magic != b'PFS0':
 									return False
 								else:	
 									return True			
-						'''	
+						
 						if fs.fsType == Type.Fs.ROMFS and fs.cryptoType == Type.Crypto.CTR:	
-							print('here3')
 							f.seek(0)
 							ncaHeader = NcaHeader()
 							ncaHeader.open(MemoryFile(f.read(0x400), Type.Crypto.XTS, uhx(Keys.get('header_key'))))	
@@ -6608,14 +6598,12 @@ class Nsp(Pfs0):
 							f.seek(fs.offset)
 							romfsOffset=fs.offset
 							romfsHeader = f.read(0x10)
-							print(romfsHeader)
 							mem = MemoryFile(romfsHeader, Type.Crypto.CTR, decKey, romfs.cryptoCounter, offset = romfsOffset)
 							magic = mem.read()[0:4]
-							print(hx(magic))
 							return True
 						else:
 							return False		
-						'''	
+							
 	def cnmt_get_baseids(self):			
 		ctype='addon'
 		idlist=list()

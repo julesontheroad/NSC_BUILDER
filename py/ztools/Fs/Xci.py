@@ -3,6 +3,8 @@ from Fs.Hfs0 import Hfs0
 from Fs.Ticket import Ticket
 from Fs.Nca import Nca
 from Fs.File import File
+from Fs.Nca import NcaHeader
+from Fs.File import MemoryFile
 import os
 import Print
 import Keys
@@ -5845,6 +5847,7 @@ class Xci(File):
 		contentlist=list()
 		delta = False
 		veredict = True		
+		checktik=False		
 		for nspF in self.hfs0:
 			if str(nspF._path)=="secure":
 				for file in nspF:
@@ -5903,13 +5906,22 @@ class Xci(File):
 											f.rewind()												
 										if correct == True:
 											correct = self.verify_enforcer(file)
-										if correct == True:
-											correct = f.pr_noenc_check()											
-				elif file.endswith('.tik'):	
-					print('Content.TICKET')
-					correct=True													
-			else:
-				correct=False	
+										if correct == False and f.header.getRightsId() == 0:
+											correct = f.pr_noenc_check()		
+										if correct == False and f.header.getRightsId() != 0:
+											correct = self.verify_key(file)											
+				elif file.endswith('.tik'):
+					for nspF in self.hfs0:
+						if str(nspF._path)=="secure":
+							for f in nspF:						
+								if str(f._path).endswith('.nca'):									
+									if checktik == False and f.header.getRightsId() != 0:
+										checktik = self.verify_key(str(f._path))				
+							print('Content.TICKET')
+							correct = checktik				
+				else:
+					correct=False	
+					
 			if correct==True:
 				if file.endswith('cnmt.nca'):				
 					print(tabs+file+' -> is CORRECT')	
@@ -6051,6 +6063,86 @@ class Xci(File):
 									pfs0Header = f.read(levelSize)
 									return True
 								else:
-									return False					
+									return False	
+
+	def verify_key(self,nca):
+		for nspF in self.hfs0:
+			if str(nspF._path)=="secure":
+				for file in nspF:
+					if type(file) == Ticket:
+						masterKeyRev = file.getMasterKeyRevision()
+						titleKeyDec = Keys.decryptTitleKey(file.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(masterKeyRev))
+						rightsId = file.getRightsId()
+		for nspF in self.hfs0:
+			if str(nspF._path)=="secure":
+				for file in nspF:			
+					if type(file) == Nca:
+						if file.header.getRightsId() != 0:
+							if file.header.getCryptoType2() != masterKeyRev:
+								pass
+								raise IOError('Mismatched masterKeyRevs!')
+		for nspF in self.hfs0:
+			if str(nspF._path)=="secure":
+				for file in nspF:
+					if type(file) == Nca:	
+						if file.header.getRightsId() != 0:		
+							if file.header.getCryptoType2() == 0:
+								if file.header.getCryptoType() == 2:
+									masterKeyRev = 2						
+									titleKeyDec = Keys.decryptTitleKey(ticket.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(masterKeyRev))
+									break		
+		decKey = titleKeyDec			
+		for nspF in self.hfs0:
+			if str(nspF._path)=="secure":
+				for f in nspF:			
+					if str(f._path) == nca:
+						if type(f) == Fs.Nca and f.header.getRightsId() != 0:
+							for fs in f.sectionFilesystems:
+								if fs.fsType == Type.Fs.PFS0 and fs.cryptoType == Type.Crypto.CTR:
+									f.seek(0)
+									ncaHeader = NcaHeader()
+									ncaHeader.open(MemoryFile(f.read(0x400), Type.Crypto.XTS, uhx(Keys.get('header_key'))))							
+									pfs0=fs
+									sectionHeaderBlock = fs.buffer
+									f.seek(fs.offset)
+									pfs0Offset=fs.offset
+									pfs0Header = f.read(0x10)	
+									#print(sectionHeaderBlock[8:12] == b'IVFC')	
+									if sectionHeaderBlock[8:12] == b'IVFC':	
+										Hex.dump(self.sectionHeaderBlock)
+										#Print.info(hx(self.sectionHeaderBlock[0xc8:0xc8+0x20]).decode('utf-8'))
+										mem = MemoryFile(pfs0Header, Type.Crypto.CTR, decKey, pfs0.cryptoCounter, offset = pfs0Offset)
+										data = mem.read();
+										#Hex.dump(data)
+										#print('hash = %s' % str(_sha256(data)))
+										if hx(sectionHeaderBlock[0xc8:0xc8+0x20]).decode('utf-8') == str(_sha256(data)):
+											return True
+										else:
+											return False
+									else:
+										mem = MemoryFile(pfs0Header, Type.Crypto.CTR, decKey, pfs0.cryptoCounter, offset = pfs0Offset)
+										data = mem.read();
+										#Hex.dump(data)								
+										magic = mem.read()[0:4]
+										#print(magic)
+										if magic != b'PFS0':
+											return False
+										else:	
+											return True			
+								
+								if fs.fsType == Type.Fs.ROMFS and fs.cryptoType == Type.Crypto.CTR:	
+									f.seek(0)
+									ncaHeader = NcaHeader()
+									ncaHeader.open(MemoryFile(f.read(0x400), Type.Crypto.XTS, uhx(Keys.get('header_key'))))	
+									romfs=fs	
+									sectionHeaderBlock = fs.buffer
+									f.seek(fs.offset)
+									romfsOffset=fs.offset
+									romfsHeader = f.read(0x10)
+									mem = MemoryFile(romfsHeader, Type.Crypto.CTR, decKey, romfs.cryptoCounter, offset = romfsOffset)
+									magic = mem.read()[0:4]
+									return True
+								else:
+									return False									
 
 	
