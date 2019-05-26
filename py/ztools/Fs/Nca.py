@@ -1544,13 +1544,40 @@ class Nca(File):
 			KB1L = crypto.decrypt(KB1L)
 			if sum(KB1L) != 0:						
 				#print(hx(headdata))			
-				checkrights=self.restorehead_tr()
+				checkrights,kgchg=self.restorehead_tr()
 				if checkrights == True:
-					print('- '+self._path+arrow+'is PROPER. TITLERIGHTS WERE REMOVED')			
+					print('- '+self._path+arrow+'is PROPER. TITLERIGHTS WERE REMOVED')	
+					if kgchg == True:
+						print(tabs+'* '+"KEYGENERATION WAS CHANGED")	
+					print('')	
+					return True	
 				else:
 					print('- '+self._path+arrow+'was MODIFIED')	
-					print(tabs+'* '+"Not verifiable could've being tampered with")					
+					print(tabs+'* '+"NOT VERIFIABLE COULD'VE BEEN TAMPERED WITH")
+					print('')
 					return False	
+			else:
+				ver,kgchg,cardchange=self.restorehead_ntr()
+				if ver == True:
+					print('- '+self._path+arrow+'is PROPER.')	
+					if kgchg == True:
+						print(tabs+'* '+"KEYGENERATION WAS CHANGED")
+					if cardchange == True:				
+						if self.header.getgamecard() != 0:
+							print(tabs+'* '+"ISGAMECARD WAS CHANGED FROM 0 TO 1")
+						else:
+							print(tabs+'* '+"ISGAMECARD WAS CHANGED FROM 1 TO 0")	
+					print('')			
+					return True	
+				else:
+					print('- '+self._path+arrow+'was MODIFIED')	
+					print(tabs+'* '+"NOT VERIFIABLE COULD'VE BEEN TAMPERED WITH")
+					print('')
+					return False					
+			print('- '+self._path+arrow+'was MODIFIED')		
+			print(tabs+'* '+"NOT VERIFIABLE COULD'VE BEEN TAMPERED WITH")	
+			print('')			
+			return False	
 
 	def restorehead_tr(self):	
 		sign1 = self.header.signature1	
@@ -1579,7 +1606,7 @@ class Nca(File):
 		headdata += self.header.read(0x100-0x40)		
 		headdata += bytes.fromhex('00'*0x10*4)			
 		self.header.seek(0x340)	
-		headdata += self.header.read(0x100-0x40)
+		headdata += self.header.read(0x100-0x40)		
 		#print(hx(headdata))
 		#Hex.dump(headdata)				
 		pubkey=RSA.RsaKey(n=nca_header_fixed_key_modulus, e=RSA_PUBLIC_EXPONENT)
@@ -1587,7 +1614,7 @@ class Nca(File):
 		digest = SHA256.new(headdata)
 		verification=rsapss.verify(digest, sign1)		
 		if verification == True:
-			return True
+			return True,False
 		else:
 			tr2=nca_id[:-3]+'800000000000000000'+str(crypto2)	
 			tr2=bytes.fromhex(tr2)
@@ -1596,8 +1623,92 @@ class Nca(File):
 			digest2 = SHA256.new(headdata2)
 			verification=rsapss.verify(digest2, sign1)	
 			if verification == True:
-				return True			
+				return True,False			
 			else:
-				return False			
+				for i in range(8):
+					if i<3:
+						crypto1='0'+str(i)
+						crypto2='00'
+					else:
+						crypto1='02'
+						crypto2='0'+str(i)	
+					tr1=nca_id+'000000000000000'+str(crypto2[1])					
+					tr2=nca_id[:-3]+'800000000000000000'+str(crypto2[1])
+					tr1=bytes.fromhex(tr1);tr2=bytes.fromhex(tr2)
+					crypto1=bytes.fromhex(crypto1);crypto2=bytes.fromhex(crypto2)
+					headdata1 = b''
+					headdata1=headdata[0x00:0x06]+crypto1+headdata[0x07:0x20]+crypto2+headdata[0x21:0x30]+tr1+headdata[0x40:]
+					headdata2 = b''
+					headdata2=headdata1[0x00:0x30]+tr2+headdata[0x40:]		
+					digest1 = SHA256.new(headdata1)
+					digest2 = SHA256.new(headdata2)
+					verification1=rsapss.verify(digest1, sign1)		
+					verification2=rsapss.verify(digest2, sign1)		
+					if verification1 == True or verification2 == True:
+						return True,True
+				return False,False			
 		
-		
+	def restorehead_ntr(self):		
+		sign1 = self.header.signature1		
+		self.header.seek(0x200)	
+		headdata = self.header.read(0x200)
+		card='01';card=bytes.fromhex(card)
+		eshop='00';eshop=bytes.fromhex(eshop)
+		#print(hx(headdata))
+		#Hex.dump(headdata)				
+		pubkey=RSA.RsaKey(n=nca_header_fixed_key_modulus, e=RSA_PUBLIC_EXPONENT)
+		rsapss = PKCS1_PSS.new(pubkey)
+		digest = SHA256.new(headdata)
+		verification=rsapss.verify(digest, sign1)		
+		if	self.header.getgamecard() == 0:		
+			headdata2 = b''
+			headdata2=headdata[0x00:0x04]+eshop+headdata[0x05:]		
+			digest2 = SHA256.new(headdata2)	
+			verification2=rsapss.verify(digest2, sign1)
+			if verification2 == True:
+				return True,False,True			
+		else:
+			headdata2 = b''
+			headdata2=headdata[0x00:0x04]+eshop+headdata[0x05:]	
+			digest2 = SHA256.new(headdata2)
+			verification2=rsapss.verify(digest2, sign1)			
+			if verification2 == True:
+				return True,False,True	
+				
+		crypto1=self.header.getCryptoType()
+		crypto2=self.header.getCryptoType2()	
+		if crypto2>crypto1:
+			masterKeyRev=crypto2
+		if crypto2<=crypto1:	
+			masterKeyRev=crypto1
+		key = Keys.keyAreaKey(Keys.getMasterKeyIndex(masterKeyRev), self.header.keyIndex)				
+		crypto = aes128.AESECB(key)
+		encKeyBlock = self.header.getKeyBlock()
+		decKeyBlock = crypto.decrypt(encKeyBlock)			
+		for i in range(8):
+			if i<3:
+				crypto1='0'+str(i)
+				crypto2='00'
+			else:
+				crypto1='02'
+				crypto2='0'+str(i)	
+			newMasterKeyRev=i
+			key = Keys.keyAreaKey(Keys.getMasterKeyIndex(newMasterKeyRev), self.header.keyIndex)				
+			crypto = aes128.AESECB(key)
+			reEncKeyBlock = crypto.encrypt(decKeyBlock)				
+
+			crypto1=bytes.fromhex(crypto1);crypto2=bytes.fromhex(crypto2)				
+			headdata1 = b''				
+			headdata1=headdata[0x00:0x04]+card+headdata[0x05:0x06]+crypto1+headdata[0x07:0x20]+crypto2+headdata[0x21:0x100]+reEncKeyBlock+headdata[0x140:]
+			#print(hx(headdata1))
+			headdata2 = b''
+			headdata2=headdata[0x00:0x04]+eshop+headdata1[0x05:]	
+			#print(hx(headdata2))
+			digest1 = SHA256.new(headdata1)
+			digest2 = SHA256.new(headdata2)
+			verification1=rsapss.verify(digest1, sign1)		
+			verification2=rsapss.verify(digest2, sign1)	
+			if verification1 == True or verification2 == True:
+				return True,True,False
+		return False,False,False					
+				

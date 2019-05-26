@@ -2893,7 +2893,12 @@ class Nsp(Pfs0):
 		indent2 = 3
 		tabs2 = '\t' * indent2
 		
-		masterKeyRev = nca.header.getCryptoType2()	
+		crypto1=nca.header.getCryptoType()
+		crypto2=nca.header.getCryptoType2()	
+		if crypto2>crypto1:
+			masterKeyRev=crypto2
+		if crypto2<=crypto1:	
+			masterKeyRev=crypto1		
 
 		if type(nca) == Nca:
 			if nca.header.getCryptoType2() != newMasterKeyRev:
@@ -6571,11 +6576,11 @@ class Nsp(Pfs0):
 							pfs0Header = f.read(0x10)	
 							#print(sectionHeaderBlock[8:12] == b'IVFC')	
 							if sectionHeaderBlock[8:12] == b'IVFC':	
-								Hex.dump(self.sectionHeaderBlock)
+								#Hex.dump(self.sectionHeaderBlock)
 								#Print.info(hx(self.sectionHeaderBlock[0xc8:0xc8+0x20]).decode('utf-8'))
 								mem = MemoryFile(pfs0Header, Type.Crypto.CTR, decKey, pfs0.cryptoCounter, offset = pfs0Offset)
 								data = mem.read();
-								Hex.dump(data)
+								#Hex.dump(data)
 								#print('hash = %s' % str(_sha256(data)))
 								if hx(sectionHeaderBlock[0xc8:0xc8+0x20]).decode('utf-8') == str(_sha256(data)):
 									return True
@@ -6584,7 +6589,7 @@ class Nsp(Pfs0):
 							else:
 								mem = MemoryFile(pfs0Header, Type.Crypto.CTR, decKey, pfs0.cryptoCounter, offset = pfs0Offset)
 								data = mem.read();
-								Hex.dump(data)								
+								#Hex.dump(data)								
 								magic = mem.read()[0:4]
 								#print(magic)
 								if magic != b'PFS0':

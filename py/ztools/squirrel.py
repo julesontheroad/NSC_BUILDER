@@ -5272,6 +5272,7 @@ if __name__ == '__main__':
 					f.open(filename, 'rb')
 					check=f.verify()
 					if not args.text_file:
+						print('')
 						f.verify_sig()	
 					f.flush()
 					f.close()

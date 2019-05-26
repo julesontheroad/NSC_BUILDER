@@ -6112,7 +6112,7 @@ class Xci(File):
 									pfs0Header = f.read(0x10)	
 									#print(sectionHeaderBlock[8:12] == b'IVFC')	
 									if sectionHeaderBlock[8:12] == b'IVFC':	
-										Hex.dump(self.sectionHeaderBlock)
+										#Hex.dump(self.sectionHeaderBlock)
 										#Print.info(hx(self.sectionHeaderBlock[0xc8:0xc8+0x20]).decode('utf-8'))
 										mem = MemoryFile(pfs0Header, Type.Crypto.CTR, decKey, pfs0.cryptoCounter, offset = pfs0Offset)
 										data = mem.read();
