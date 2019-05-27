@@ -5254,6 +5254,7 @@ if __name__ == '__main__':
 				try:
 					f = Fs.Nsp(filename, 'rb')
 					check=f.verify()
+					print('')
 					f.verify_sig()						
 					f.flush()
 					f.close()

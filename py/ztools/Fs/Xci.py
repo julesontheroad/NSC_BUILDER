@@ -6012,13 +6012,16 @@ class Xci(File):
 		print('****************')									
 		for nspF in self.hfs0:
 			if str(nspF._path)=="secure":
-				for f in nspF:			
-					if type(f) == Nca and f.header.contentType != Type.Content.META:			
+				for f in nspF:						
+					if type(f) == Nca and f.header.contentType != Type.Content.META:
+						print(str(f.header.titleId)+' - '+str(f.header.contentType))							
 						verify=f.verify()			
 						if veredict == True:
 							veredict=verify
-					else:
+					elif type(f) == Nca:
+						print(str(f.header.titleId)+' - '+str(f.header.contentType))							
 						f.verify()		
+		print('')
 		if veredict == False:
 			print("VEREDICT: XCI FILE COULD'VE BEEN TAMPERED WITH")
 		if veredict == True:	

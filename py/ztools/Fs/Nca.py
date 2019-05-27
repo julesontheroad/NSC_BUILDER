@@ -1489,11 +1489,12 @@ class Nca(File):
 		sdkversion=str(self.header.sdkVersion4)+'.'+str(self.header.sdkVersion3)+'.'+str(self.header.sdkVersion2)+'.'+str(self.header.sdkVersion1)	
 		return sdkversion
 
-	def verify(self):		
+	def verify(self):	
+		indent='    > '
 		if self._path.endswith('cnmt.nca'):	
-			arrow='  -> '
+			arrow='   -> '
 		else:
-			arrow=tabs+'     -> ' 		
+			arrow=tabs+'  -> ' 		
 		self.rewind()	
 		#print('Signature 1:')
 		sign1 = self.header.signature1
@@ -1509,7 +1510,7 @@ class Nca(File):
 		digest = SHA256.new(headdata)
 		verification=rsapss.verify(digest, sign1)
 		if verification == True:
-			print('- '+self._path+arrow+'is PROPER')
+			print(indent+self._path+arrow+'is PROPER')
 			#print(hx(headdata))	
 			return True
 		else:
@@ -1526,38 +1527,35 @@ class Nca(File):
 				#print(hx(headdata))			
 				checkrights,kgchg=self.restorehead_tr()
 				if checkrights == True:
-					print('- '+self._path+arrow+'is PROPER')	
+					print(indent+self._path+arrow+'is PROPER')	
 					print(tabs+'* '+"TITLERIGHTS WERE REMOVED")						
 					if kgchg == True:
-						print(tabs+'* '+"KEYGENERATION WAS CHANGED")	
-					print('')	
+						print(tabs+'* '+"KEYGENERATION WAS CHANGED")		
 					return True	
 				else:
-					print('- '+self._path+arrow+'was MODIFIED')	
+					print(indent+self._path+arrow+'was MODIFIED')	
 					print(tabs+'* '+"NOT VERIFIABLE COULD'VE BEEN TAMPERED WITH")
-					print('')
 					return False	
 			else:
 				ver,kgchg,cardchange=self.restorehead_ntr()
 				if ver == True:
-					print('- '+self._path+arrow+'is PROPER')	
+					print(indent+self._path+arrow+'is PROPER')	
 					if kgchg == True:
 						print(tabs+'* '+"KEYGENERATION WAS CHANGED")
 					if cardchange == True:				
 						if self.header.getgamecard() != 0:
 							print(tabs+'* '+"ISGAMECARD WAS CHANGED FROM 0 TO 1")
 						else:
-							print(tabs+'* '+"ISGAMECARD WAS CHANGED FROM 1 TO 0")	
-					print('')			
+							print(tabs+'* '+"ISGAMECARD WAS CHANGED FROM 1 TO 0")				
 					return True	
 				else:
-					print('- '+self._path+arrow+'was MODIFIED')	
+					print(indent+self._path+arrow+'was MODIFIED')	
 					print(tabs+'* '+"NOT VERIFIABLE!!!")
 					if self.header.contentType == Type.Content.META:
-						print(tabs+'* '+"IF THE REST IS OK RSV WAS MODIFIED (NOTHING TO WORRY ABOUT)")							
-					print('')
+						print(tabs+'* '+"IF THE REST IS OK RSV WAS MODIFIED")	
+						print(tabs+'  '+"(NOTHING TO WORRY ABOUT)")							
 					return False					
-			print('- '+self._path+arrow+'was MODIFIED')		
+			print(indent+self._path+arrow+'was MODIFIED')		
 			print(tabs+'* '+"NOT VERIFIABLE!!!")		
 			print('')			
 			return False	
