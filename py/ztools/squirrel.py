@@ -5237,6 +5237,14 @@ if __name__ == '__main__':
 				pass				
 						
 		if args.verify:	
+			if args.buffer:		
+				for input in args.buffer:
+					try:
+						buffer = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+			else:
+				buffer = 32768				
 			if args.text_file:
 				tfile=args.text_file
 				dir=os.path.dirname(os.path.abspath(tfile))
@@ -5255,7 +5263,10 @@ if __name__ == '__main__':
 					f = Fs.Nsp(filename, 'rb')
 					check=f.verify()
 					print('')
-					f.verify_sig()						
+					if not args.text_file:
+						print('')					
+						f.verify_sig()
+						f.verify_hash_nca(buffer)					
 					f.flush()
 					f.close()
 					if args.text_file:						
@@ -5274,7 +5285,8 @@ if __name__ == '__main__':
 					check=f.verify()
 					if not args.text_file:
 						print('')
-						f.verify_sig()	
+						f.verify_sig()
+						f.verify_hash_nca(buffer)
 					f.flush()
 					f.close()
 					if args.text_file:					

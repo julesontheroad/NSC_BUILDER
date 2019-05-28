@@ -1512,7 +1512,8 @@ class Nca(File):
 		if verification == True:
 			print(indent+self._path+arrow+'is PROPER')
 			#print(hx(headdata))	
-			return True
+			print('')				
+			return True,False,self._path
 		else:
 			crypto1=self.header.getCryptoType()
 			crypto2=self.header.getCryptoType2()	
@@ -1525,19 +1526,26 @@ class Nca(File):
 			KB1L = crypto.decrypt(KB1L)
 			if sum(KB1L) != 0:						
 				#print(hx(headdata))			
-				checkrights,kgchg=self.restorehead_tr()
+				checkrights,kgchg,titlekey,tr,headdata=self.restorehead_tr()
 				if checkrights == True:
 					print(indent+self._path+arrow+'is PROPER')	
-					print(tabs+'* '+"TITLERIGHTS WERE REMOVED")						
-					if kgchg == True:
-						print(tabs+'* '+"KEYGENERATION WAS CHANGED")		
-					return True	
+					print(tabs+'* '+"TITLERIGHTS WERE REMOVED")	
+					if kgchg == False:
+						print(tabs+'* '+"Original titlerights id is : "+(str(hx(tr)).upper())[2:-1])				
+						print(tabs+'* '+"Original titlekey is       : "+(str(hx(titlekey)).upper())[2:-1])					
+					elif kgchg == True:
+						print(tabs+'* '+"KEYGENERATION WAS CHANGED")	
+						print(tabs+'* '+"Original titlerights id is -> "+(str(hx(tr)).upper())[2:-1])
+						print(tabs+'* '+"Original titlekey is -> "+(str(hx(titlekey)).upper())[2:-1])	
+					print('')							
+					return True,headdata,self._path	
 				else:
 					print(indent+self._path+arrow+'was MODIFIED')	
 					print(tabs+'* '+"NOT VERIFIABLE COULD'VE BEEN TAMPERED WITH")
-					return False	
+					print('')						
+					return False,False,self._path	
 			else:
-				ver,kgchg,cardchange=self.restorehead_ntr()
+				ver,kgchg,cardchange,headdata=self.restorehead_ntr()
 				if ver == True:
 					print(indent+self._path+arrow+'is PROPER')	
 					if kgchg == True:
@@ -1546,19 +1554,21 @@ class Nca(File):
 						if self.header.getgamecard() != 0:
 							print(tabs+'* '+"ISGAMECARD WAS CHANGED FROM 0 TO 1")
 						else:
-							print(tabs+'* '+"ISGAMECARD WAS CHANGED FROM 1 TO 0")				
-					return True	
+							print(tabs+'* '+"ISGAMECARD WAS CHANGED FROM 1 TO 0")	
+					print('')								
+					return True,headdata,self._path		
 				else:
 					print(indent+self._path+arrow+'was MODIFIED')	
 					print(tabs+'* '+"NOT VERIFIABLE!!!")
 					if self.header.contentType == Type.Content.META:
 						print(tabs+'* '+"IF THE REST IS OK RSV WAS MODIFIED")	
-						print(tabs+'  '+"(NOTHING TO WORRY ABOUT)")							
-					return False					
+						print(tabs+'  '+"(NOTHING TO WORRY ABOUT)")		
+					print('')							
+					return False,False,self._path					
 			print(indent+self._path+arrow+'was MODIFIED')		
 			print(tabs+'* '+"NOT VERIFIABLE!!!")		
 			print('')			
-			return False	
+			return False,False,self._path		
 
 	def restorehead_tr(self):	
 		sign1 = self.header.signature1	
@@ -1567,18 +1577,17 @@ class Nca(File):
 		nca_id=self.header.titleId	
 		tr=nca_id+'000000000000000'+str(crypto2)	
 		tr=bytes.fromhex(tr)				
-		'''
 		if crypto1>crypto2:
 			masterKeyRev = crypto1
 		else:
 			masterKeyRev = crypto2		
-		masterKeyRev = self.header.getCryptoType2()	
+
 		encKeyBlock = self.header.getKeyBlock()
 		key = Keys.keyAreaKey(Keys.getMasterKeyIndex(masterKeyRev), self.header.keyIndex)		
 		crypto = aes128.AESECB(key)
 		decKeyBlock = crypto.decrypt(encKeyBlock[:16])			
 		titleKeyEnc = Keys.encryptTitleKey(decKeyBlock, Keys.getMasterKeyIndex(masterKeyRev))
-		'''
+
 		self.header.seek(0x200)	
 		headdata = b''
 		headdata += self.header.read(0x30)
@@ -1595,7 +1604,7 @@ class Nca(File):
 		digest = SHA256.new(headdata)
 		verification=rsapss.verify(digest, sign1)		
 		if verification == True:
-			return True,False
+			return True,False,titleKeyEnc,tr,headdata
 		else:
 			tr2=nca_id[:-3]+'800000000000000000'+str(crypto2)	
 			tr2=bytes.fromhex(tr2)
@@ -1604,7 +1613,7 @@ class Nca(File):
 			digest2 = SHA256.new(headdata2)
 			verification=rsapss.verify(digest2, sign1)	
 			if verification == True:
-				return True,False			
+				return True,False,titleKeyEnc,tr2,headdata2			
 			else:
 				for i in range(8):
 					if i<3:
@@ -1613,6 +1622,14 @@ class Nca(File):
 					else:
 						crypto1='02'
 						crypto2='0'+str(i)	
+						
+					masterKeyRev = i	
+					encKeyBlock = self.header.getKeyBlock()
+					key = Keys.keyAreaKey(Keys.getMasterKeyIndex(masterKeyRev), self.header.keyIndex)		
+					crypto = aes128.AESECB(key)
+					decKeyBlock = crypto.decrypt(encKeyBlock[:16])			
+					titleKeyEnc = Keys.encryptTitleKey(decKeyBlock, Keys.getMasterKeyIndex(masterKeyRev))		
+					
 					tr1=nca_id+'000000000000000'+str(crypto2[1])					
 					tr2=nca_id[:-3]+'800000000000000000'+str(crypto2[1])
 					tr1=bytes.fromhex(tr1);tr2=bytes.fromhex(tr2)
@@ -1625,9 +1642,11 @@ class Nca(File):
 					digest2 = SHA256.new(headdata2)
 					verification1=rsapss.verify(digest1, sign1)		
 					verification2=rsapss.verify(digest2, sign1)		
-					if verification1 == True or verification2 == True:
-						return True,True
-				return False,False			
+					if verification1 == True:
+						return True,True,titleKeyEnc,tr1,headdata1
+					if verification2 == True:	
+						return True,True,titleKeyEnc,tr2,headdata2					
+				return False,False,False,False,False			
 		
 	def restorehead_ntr(self):		
 		sign1 = self.header.signature1		
@@ -1647,14 +1666,14 @@ class Nca(File):
 			digest2 = SHA256.new(headdata2)	
 			verification2=rsapss.verify(digest2, sign1)
 			if verification2 == True:
-				return True,False,True			
+				return True,False,True,headdata2			
 		else:
 			headdata2 = b''
 			headdata2=headdata[0x00:0x04]+eshop+headdata[0x05:]	
 			digest2 = SHA256.new(headdata2)
 			verification2=rsapss.verify(digest2, sign1)			
 			if verification2 == True:
-				return True,False,True	
+				return True,False,True,headdata2	
 				
 		crypto1=self.header.getCryptoType()
 		crypto2=self.header.getCryptoType2()	
@@ -1689,7 +1708,11 @@ class Nca(File):
 			digest2 = SHA256.new(headdata2)
 			verification1=rsapss.verify(digest1, sign1)		
 			verification2=rsapss.verify(digest2, sign1)	
-			if verification1 == True or verification2 == True:
-				return True,True,False
-		return False,False,False					
-				
+			if verification1 == True:
+				return True,True,False,headdata1
+			if verification2 == True:
+				return True,True,False,headdata2				
+		return False,False,False,False		
+
+
+		
