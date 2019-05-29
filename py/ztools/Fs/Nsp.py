@@ -6509,7 +6509,7 @@ class Nsp(Pfs0):
 		for f in self:			
 			if type(f) == Nca and f.header.contentType != Type.Content.META:
 				print(str(f.header.titleId)+' - '+str(f.header.contentType))					
-				verify=f.verify()
+				verify,origheader,ncaname=f.verify()
 				if veredict == True:
 					veredict=verify
 			elif type(f) == Nca:
@@ -6590,7 +6590,7 @@ class Nsp(Pfs0):
 							
 				if type(f) == Fs.Nca:
 					for fs in f.sectionFilesystems:
-						if fs.fsType == Type.Fs.ROMFS and fs.cryptoType == Type.Crypto.CTR or f.header.contentType == Type.Content.MANUAL:
+						if fs.fsType == Type.Fs.ROMFS and fs.cryptoType == Type.Crypto.CTR or f.header.contentType == Type.Content.MANUAL or f.header.contentType == Type.Content.DATA:
 							f.seek(0)
 							ncaHeader = f.read(0x400)
 

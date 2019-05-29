@@ -6015,7 +6015,7 @@ class Xci(File):
 				for f in nspF:						
 					if type(f) == Nca and f.header.contentType != Type.Content.META:
 						print(str(f.header.titleId)+' - '+str(f.header.contentType))							
-						verify=f.verify()			
+						verify,origheader,ncaname=f.verify()			
 						if veredict == True:
 							veredict=verify
 					elif type(f) == Nca:
@@ -6027,19 +6027,7 @@ class Xci(File):
 			print('VEREDICT: XCI FILE IS SAFE')	
 		return 	veredict
 
-	'''	
-	def verify_hash_nca(self,buffer):	
-		veredict=True	
-		print('****************')
-		print('HASH TEST')
-		print('****************')									
-		for nspF in self.hfs0:
-			if str(nspF._path)=="secure":
-				for f in nspF:						
-					if type(f) == Nca:
-						print(str(f.header.titleId)+' - '+str(f.header.contentType))							
-						verify=f.hash_check(buffer)		
-	'''					
+				
 	def verify_hash_nca(self,buffer):	
 		veredict=True		
 		print('****************')
@@ -6112,7 +6100,7 @@ class Xci(File):
 									
 						if type(f) == Fs.Nca:
 							for fs in f.sectionFilesystems:
-								if fs.fsType == Type.Fs.ROMFS and fs.cryptoType == Type.Crypto.CTR or f.header.contentType == Type.Content.MANUAL:
+								if fs.fsType == Type.Fs.ROMFS and fs.cryptoType == Type.Crypto.CTR or f.header.contentType == Type.Content.MANUAL or f.header.contentType == Type.Content.DATA:
 									f.seek(0)
 									ncaHeader = f.read(0x400)
 
