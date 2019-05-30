@@ -1501,8 +1501,12 @@ class Nca(File):
 		#Hex.dump(sign1)		
 		#print('')			
 		#print('Header data:')	
+		hcrypto = aes128.AESXTS(uhx(Keys.get('header_key')))
+		self.header.rewind()
+		orig_header= self.header.read(0xC00)	
 		self.header.seek(0x200)	
 		headdata = self.header.read(0x200)	
+		#print(hx(orig_header))
 		
 		#Hex.dump(headdata)
 		pubkey=RSA.RsaKey(n=nca_header_fixed_key_modulus, e=RSA_PUBLIC_EXPONENT)
@@ -1527,6 +1531,12 @@ class Nca(File):
 			if sum(KB1L) != 0:						
 				#print(hx(headdata))			
 				checkrights,kgchg,titlekey,tr,headdata=self.restorehead_tr()
+				if headdata != False:
+					orig_header=orig_header[0x00:0x200]+headdata+orig_header[0x400:]
+					#print(hx(orig_header))
+					orig_header=hcrypto.encrypt(orig_header)
+				else:
+					orig_header = False						
 				if checkrights == True:
 					print(indent+self._path+arrow+'is PROPER')	
 					print(tabs+'* '+"TITLERIGHTS WERE REMOVED")	
@@ -1538,7 +1548,7 @@ class Nca(File):
 						print(tabs+'* '+"Original titlerights id is -> "+(str(hx(tr)).upper())[2:-1])
 						print(tabs+'* '+"Original titlekey is -> "+(str(hx(titlekey)).upper())[2:-1])	
 					print('')							
-					return True,headdata,self._path	
+					return True,orig_header,self._path	
 				else:
 					print(indent+self._path+arrow+'was MODIFIED')	
 					print(tabs+'* '+"NOT VERIFIABLE COULD'VE BEEN TAMPERED WITH")
@@ -1546,6 +1556,12 @@ class Nca(File):
 					return False,False,self._path	
 			else:
 				ver,kgchg,cardchange,headdata=self.restorehead_ntr()
+				if headdata != False:
+					orig_header=orig_header[0x00:0x200]+headdata+orig_header[0x400:]
+					#print(hx(orig_header))
+					orig_header=hcrypto.encrypt(orig_header)					
+				else:
+					orig_header = False				
 				if ver == True:
 					print(indent+self._path+arrow+'is PROPER')	
 					if kgchg == True:
@@ -1556,7 +1572,7 @@ class Nca(File):
 						else:
 							print(tabs+'* '+"ISGAMECARD WAS CHANGED FROM 1 TO 0")	
 					print('')								
-					return True,headdata,self._path		
+					return True,orig_header,self._path		
 				else:
 					print(indent+self._path+arrow+'was MODIFIED')	
 					print(tabs+'* '+"NOT VERIFIABLE!!!")

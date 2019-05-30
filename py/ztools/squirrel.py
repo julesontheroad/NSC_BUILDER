@@ -5265,8 +5265,9 @@ if __name__ == '__main__':
 					print('')
 					if not args.text_file:
 						print('')					
-						f.verify_sig()
-						f.verify_hash_nca(buffer)					
+						veredict,headerlist=f.verify_sig()
+						print('')	
+						f.verify_hash_nca(buffer,headerlist,veredict)					
 					f.flush()
 					f.close()
 					if args.text_file:						
@@ -5285,8 +5286,9 @@ if __name__ == '__main__':
 					check=f.verify()
 					if not args.text_file:
 						print('')
-						f.verify_sig()
-						f.verify_hash_nca(buffer)
+						veredict,headerlist=f.verify_sig()
+						print('')	
+						f.verify_hash_nca(buffer,headerlist,veredict)
 					f.flush()
 					f.close()
 					if args.text_file:					

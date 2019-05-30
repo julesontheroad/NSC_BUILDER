@@ -6007,6 +6007,7 @@ class Xci(File):
 			
 	def verify_sig(self):	
 		veredict=True	
+		headerlist=list()
 		print('****************')
 		print('SIGNATURE 1 TEST')
 		print('****************')									
@@ -6015,20 +6016,22 @@ class Xci(File):
 				for f in nspF:						
 					if type(f) == Nca and f.header.contentType != Type.Content.META:
 						print(str(f.header.titleId)+' - '+str(f.header.contentType))							
-						verify,origheader,ncaname=f.verify()			
+						verify,origheader,ncaname=f.verify()	
+						headerlist.append([ncaname,origheader])						
 						if veredict == True:
 							veredict=verify
 					elif type(f) == Nca:
 						print(str(f.header.titleId)+' - '+str(f.header.contentType))							
-						f.verify()		
+						verify,origheader,ncaname=f.verify()	
+						headerlist.append([ncaname,origheader])			
 		if veredict == False:
 			print("VEREDICT: XCI FILE COULD'VE BEEN TAMPERED WITH")
 		if veredict == True:	
 			print('VEREDICT: XCI FILE IS SAFE')	
-		return 	veredict
+		return 	veredict,headerlist
 
 				
-	def verify_hash_nca(self,buffer):	
+	def verify_hash_nca(self,buffer,headerlist,didverify):	
 		veredict=True		
 		print('****************')
 		print('HASH TEST')
@@ -6037,26 +6040,61 @@ class Xci(File):
 			if str(nspF._path)=="secure":
 				for f in nspF:						
 					if type(f) == Nca:	
+						origheader=False
+						for i in range(len(headerlist)):
+							if str(f._path)==headerlist[i][0]:
+								origheader=headerlist[i][1]
+								break
+						#print(origheader)		
 						print(str(f.header.titleId)+' - '+str(f.header.contentType))
 						ncasize=f.header.size						
-						t = tqdm(total=ncasize, unit='B', unit_scale=True, leave=False)	
-						sha=sha256()												
-						for data in iter(lambda: f.read(int(buffer)), ""):				
-							sha.update(data)
-							t.update(len(data))
-							f.flush()
-							if not data:				
-								break							
+						t = tqdm(total=ncasize, unit='B', unit_scale=True, leave=False)
+						i=0		
+						f.rewind();
+						rawheader=f.read(0xC00)
+						f.rewind()
+						for data in iter(lambda: f.read(int(buffer)), ""):	
+							if i==0:	
+								sha=sha256()
+								f.seek(0xC00)
+								sha.update(rawheader)
+								if origheader != False:
+									sha0=sha256()
+									sha0.update(origheader)	
+								i+=1
+								t.update(len(data))
+								f.flush()
+							else:		
+								sha.update(data)
+								if origheader != False:
+									sha0.update(data)								
+								t.update(len(data))
+								f.flush()
+								if not data:				
+									break							
 						t.close()	
-						sha=sha.hexdigest()		
+						sha=sha.hexdigest()	
+						if origheader != False:
+							sha0=sha0.hexdigest()						
 						print('  - File name: '+f._path)
 						print('  - SHA256: '+sha)
+						if origheader != False:
+							print('  - ORIG_SHA256: '+sha0)						
 						if str(f._path)[:16] == str(sha)[:16]:
 							print('   > FILE IS CORRECT')
+						elif origheader != False:
+							if str(f._path)[:16] == str(sha0)[:16]:		
+								print('   > FILE IS CORRECT')	
+							else:
+								print('   > FILE IS CORRUPT')
+								veredict == False	
+						elif  f.header.contentType == Type.Content.META and didverify == True:		
+							print('   > RSV WAS CHANGED')
+							#print('   > CHECKING INTERNAL HASHES')								
+							print('     * FILE IS CORRECT')								
 						else:
 							print('   > FILE IS CORRUPT')
 							veredict == False
-						t.close()
 						print('')							
 		if veredict == False:
 			print("VEREDICT: XCI FILE IS CORRUPT")
