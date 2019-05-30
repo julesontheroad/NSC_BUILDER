@@ -6526,31 +6526,29 @@ class Nsp(Pfs0):
 		print('****************')
 		print('HASH TEST')
 		print('****************')									
-		for nspF in self.hfs0:
-			if str(nspF._path)=="secure":
-				for f in nspF:						
-					if type(f) == Nca:	
-						print(str(f.header.titleId)+' - '+str(f.header.contentType))
-						ncasize=f.header.size						
-						t = tqdm(total=ncasize, unit='B', unit_scale=True, leave=False)	
-						sha=sha256()												
-						for data in iter(lambda: f.read(int(buffer)), ""):				
-							sha.update(data)
-							t.update(len(data))
-							f.flush()
-							if not data:				
-								break							
-						t.close()	
-						sha=sha.hexdigest()		
-						print('  - File name: '+f._path)
-						print('  - SHA256: '+sha)
-						if str(f._path)[:16] == str(sha)[:16]:
-							print('   > FILE IS CORRECT')
-						else:
-							print('   > FILE IS CORRUPT')
-							veredict == False
-						t.close()
-						print('')							
+		for f in self:						
+			if type(f) == Nca:	
+				print(str(f.header.titleId)+' - '+str(f.header.contentType))
+				ncasize=f.header.size						
+				t = tqdm(total=ncasize, unit='B', unit_scale=True, leave=False)	
+				sha=sha256()												
+				for data in iter(lambda: f.read(int(buffer)), ""):				
+					sha.update(data)
+					t.update(len(data))
+					f.flush()
+					if not data:				
+						break							
+				t.close()	
+				sha=sha.hexdigest()		
+				print('  - File name: '+f._path)
+				print('  - SHA256: '+sha)
+				if str(f._path)[:16] == str(sha)[:16]:
+					print('   > FILE IS CORRECT')
+				else:
+					print('   > FILE IS CORRUPT')
+					veredict == False
+				t.close()
+				print('')							
 		if veredict == False:
 			print("VEREDICT: NSP FILE IS CORRUPT")
 		if veredict == True:	
