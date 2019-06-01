@@ -1489,7 +1489,9 @@ class Nca(File):
 		sdkversion=str(self.header.sdkVersion4)+'.'+str(self.header.sdkVersion3)+'.'+str(self.header.sdkVersion2)+'.'+str(self.header.sdkVersion1)	
 		return sdkversion
 
-	def verify(self):	
+	def verify(self,feed):	
+		if feed == False:
+			feed=''
 		indent='    > '
 		if self._path.endswith('cnmt.nca'):	
 			arrow='   -> '
@@ -1514,10 +1516,9 @@ class Nca(File):
 		digest = SHA256.new(headdata)
 		verification=rsapss.verify(digest, sign1)
 		if verification == True:
-			print(indent+self._path+arrow+'is PROPER')
-			#print(hx(headdata))	
-			print('')				
-			return True,False,self._path
+			message=(indent+self._path+arrow+'is PROPER');print(message);feed+=message+'\n'			
+			#print(hx(headdata))		
+			return True,False,self._path,feed
 		else:
 			crypto1=self.header.getCryptoType()
 			crypto2=self.header.getCryptoType2()	
@@ -1538,22 +1539,20 @@ class Nca(File):
 				else:
 					orig_header = False						
 				if checkrights == True:
-					print(indent+self._path+arrow+'is PROPER')	
-					print(tabs+'* '+"TITLERIGHTS WERE REMOVED")	
+					message=(indent+self._path+arrow+'is PROPER');print(message);feed+=message+'\n'				
+					message=(tabs+'* '+"TITLERIGHTS WERE REMOVED");print(message);feed+=message+'\n'			
 					if kgchg == False:
-						print(tabs+'* '+"Original titlerights id is : "+(str(hx(tr)).upper())[2:-1])				
-						print(tabs+'* '+"Original titlekey is       : "+(str(hx(titlekey)).upper())[2:-1])					
+						message=(tabs+'* '+"Original titlerights id is : "+(str(hx(tr)).upper())[2:-1]);print(message);feed+=message+'\n'						
+						message=(tabs+'* '+"Original titlekey is       : "+(str(hx(titlekey)).upper())[2:-1]);print(message);feed+=message+'\n'						
 					elif kgchg == True:
-						print(tabs+'* '+"KEYGENERATION WAS CHANGED")	
-						print(tabs+'* '+"Original titlerights id is -> "+(str(hx(tr)).upper())[2:-1])
-						print(tabs+'* '+"Original titlekey is -> "+(str(hx(titlekey)).upper())[2:-1])	
-					print('')							
-					return True,orig_header,self._path	
+						message=(tabs+'* '+"KEYGENERATION WAS CHANGED");print(message);feed+=message+'\n'		
+						message=(tabs+'* '+"Original titlerights id is -> "+(str(hx(tr)).upper())[2:-1]);print(message);feed+=message+'\n'		
+						message=(tabs+'* '+"Original titlekey is -> "+(str(hx(titlekey)).upper())[2:-1]);print(message);feed+=message+'\n'				
+					return True,orig_header,self._path,feed	
 				else:
-					print(indent+self._path+arrow+'was MODIFIED')	
-					print(tabs+'* '+"NOT VERIFIABLE COULD'VE BEEN TAMPERED WITH")
-					print('')						
-					return False,False,self._path	
+					message=(indent+self._path+arrow+'was MODIFIED');print(message);feed+=message+'\n'		
+					message=(tabs+'* '+"NOT VERIFIABLE COULD'VE BEEN TAMPERED WITH");print(message);feed+=message+'\n'			
+					return False,False,self._path,feed	
 			else:
 				ver,kgchg,cardchange,headdata=self.restorehead_ntr()
 				if headdata != False:
@@ -1563,28 +1562,25 @@ class Nca(File):
 				else:
 					orig_header = False				
 				if ver == True:
-					print(indent+self._path+arrow+'is PROPER')	
+					message=(indent+self._path+arrow+'is PROPER');print(message);feed+=message+'\n'		
 					if kgchg == True:
-						print(tabs+'* '+"KEYGENERATION WAS CHANGED")
+						message=(tabs+'* '+"KEYGENERATION WAS CHANGED");print(message);feed+=message+'\n'	
 					if cardchange == True:				
 						if self.header.getgamecard() != 0:
-							print(tabs+'* '+"ISGAMECARD WAS CHANGED FROM 0 TO 1")
+							message=(tabs+'* '+"ISGAMECARD WAS CHANGED FROM 0 TO 1");print(message);feed+=message+'\n'	
 						else:
-							print(tabs+'* '+"ISGAMECARD WAS CHANGED FROM 1 TO 0")	
-					print('')								
-					return True,orig_header,self._path		
+							message=(tabs+'* '+"ISGAMECARD WAS CHANGED FROM 1 TO 0");print(message);feed+=message+'\n'									
+					return True,orig_header,self._path,feed		
 				else:
-					print(indent+self._path+arrow+'was MODIFIED')	
-					print(tabs+'* '+"NOT VERIFIABLE!!!")
+					message=(indent+self._path+arrow+'was MODIFIED');print(message);feed+=message+'\n'		
+					message=(tabs+'* '+"NOT VERIFIABLE!!!");print(message);feed+=message+'\n'	
 					if self.header.contentType == Type.Content.META:
-						print(tabs+'* '+"IF THE REST IS OK RSV WAS MODIFIED")	
-						print(tabs+'  '+"(NOTHING TO WORRY ABOUT)")		
-					print('')							
-					return False,False,self._path					
-			print(indent+self._path+arrow+'was MODIFIED')		
-			print(tabs+'* '+"NOT VERIFIABLE!!!")		
-			print('')			
-			return False,False,self._path		
+						message=(tabs+'* '+"IF THE REST IS OK RSV WAS MODIFIED");print(message);feed+=message+'\n'		
+						message=(tabs+'  '+"(NOTHING TO WORRY ABOUT)");print(message);feed+=message+'\n'							
+					return False,False,self._path,feed					
+			message=(indent+self._path+arrow+'was MODIFIED');print(message);feed+=message+'\n'			
+			message=(tabs+'* '+"NOT VERIFIABLE!!!");print(message);feed+=message+'\n'				
+			return False,False,self._path,feed	
 
 	def restorehead_tr(self):	
 		sign1 = self.header.signature1	

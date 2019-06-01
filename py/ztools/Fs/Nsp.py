@@ -6350,16 +6350,13 @@ class Nsp(Pfs0):
 		validfiles=list()
 		listed_files=list()		
 		contentlist=list()
+		feed=''
 		delta = False
 		veredict = True		
-		checktik=False	
-		'''
-		for file in self:
-			print(str(file._path))
-		'''	
-		print('***************')
-		print('DECRIPTION TEST')
-		print('***************')
+		checktik=False		
+		message='***************';print(message);feed+=message+'\n'
+		message='DECRIPTION TEST';print(message);feed+=message+'\n'
+		message='***************';print(message);feed+=message+'\n'	
 		for file in self:
 			if str(file._path).endswith('.nca'):		
 				listed_files.append(str(file._path))
@@ -6377,7 +6374,7 @@ class Nsp(Pfs0):
 				if file.endswith('cnmt.nca'):
 					for f in self:	
 						if str(f._path) == file:
-							print(str(f.header.titleId)+' - '+str(f.header.contentType))						
+							message=(str(f.header.titleId)+' - '+str(f.header.contentType));print(message);feed+=message+'\n'																
 							for nf in f:	
 								nf.rewind()
 								test=nf.read(0x4)	
@@ -6390,7 +6387,7 @@ class Nsp(Pfs0):
 				elif file.endswith('.nca'):
 					for f in self:	
 						if str(f._path) == file:
-							print(str(f.header.titleId)+' - '+str(f.header.contentType))				
+							message=(str(f.header.titleId)+' - '+str(f.header.contentType));print(message);feed+=message+'\n'								
 							if str(f.header.contentType) != 'Content.PROGRAM':	
 								correct = self.verify_enforcer(file)									
 							else:
@@ -6417,23 +6414,23 @@ class Nsp(Pfs0):
 								checktik = self.verify_key(str(f._path))	
 								if 	checktik == True:
 									break								
-					print('Content.TICKET')
+					message=('Content.TICKET');print(message);feed+=message+'\n'												
 					correct = checktik				
 				else:
 					correct=False	
 			if correct==True:
 				if file.endswith('cnmt.nca'):				
-					print(tabs+file+' -> is CORRECT')	
+					message=(tabs+file+' -> is CORRECT');print(message);feed+=message+'\n'					
 				else:
-					print(tabs+file+tabs+'  -> is CORRECT')							
+					message=(tabs+file+tabs+'  -> is CORRECT');print(message);feed+=message+'\n'									
 			else:
 				veredict=False			
 				if file.endswith('cnmt.nca'):	
-					print(tabs+file+' -> is CORRUPT <<<-')
+					message=(tabs+file+' -> is CORRUPT <<<-');print(message);feed+=message+'\n'					
 				elif file.endswith('nca'):		
-					print(tabs+file+tabs+'  -> is CORRUPT <<<-')	
+					message=(tabs+file+tabs+'  -> is CORRUPT <<<-');print(message);feed+=message+'\n'					
 				elif file.endswith('tik'):		
-					print(tabs+file+tabs+'  -> titlekey is INCORRECT <<<-')						
+					message=(tabs+file+tabs+'  -> titlekey is INCORRECT <<<-');print(message);feed+=message+'\n'					
 		for nca in self:
 			if type(nca) == Nca:
 				if 	str(nca.header.contentType) == 'Content.META':		
@@ -6491,44 +6488,48 @@ class Nsp(Pfs0):
 								nca_name=nca_name[2:-1]+'.nca'
 								if (nca_name not in listed_files and ncatype!=6) or (nca_name not in validfiles and ncatype!=6):
 									veredict = False
-									print (tabs+'Missing file from '+titleid2+': '+nca_name )
+									message=(tabs+'Missing file from '+titleid2+': '+nca_name);print(message);feed+=message+'\n'													
 									
 		if veredict == False:
-			print('')
-			print('VEREDICT: NSP FILE IS CORRUPT OR MISSES FILES')
+			message='\nVEREDICT: NSP FILE IS CORRUPT OR MISSES FILES';print(message);feed+=message+'\n'				
 		if veredict == True:	
-			print('')
-			print('VEREDICT: NSP FILE IS CORRECT')	
-		return 	veredict				
+			message='\nVEREDICT: NSP FILE IS CORRECT\n';print(message);feed+=message
+		return veredict,feed			
 			
-	def verify_sig(self):	
-		veredict=True
-		headerlist=list()		
-		print('****************')
-		print('SIGNATURE 1 TEST')
-		print('****************')									
+	def verify_sig(self,feed):	
+		if feed == False:
+			feed=''	
+		veredict=True	
+		headerlist=list()
+		message='***************';print(message);feed+='\n'+message+'\n'
+		message='SIGNATURE 1 TEST';print(message);feed+=message+'\n'
+		message='***************';print(message);feed+=message+'\n'									
 		for f in self:			
 			if type(f) == Nca and f.header.contentType != Type.Content.META:
-				print(str(f.header.titleId)+' - '+str(f.header.contentType))					
-				verify,origheader,ncaname=f.verify()	
+				message=(str(f.header.titleId)+' - '+str(f.header.contentType));print(message);feed+=message+'\n'											
+				verify,origheader,ncaname,feed=f.verify(feed)		
 				headerlist.append([ncaname,origheader])		
 				if veredict == True:
 					veredict=verify
+				message='';print(message);feed+=message+'\n'						
 			elif type(f) == Nca:
-				print(str(f.header.titleId)+' - '+str(f.header.contentType))					
-				verify,origheader,ncaname=f.verify()	
-				headerlist.append([ncaname,origheader])			
+				message=(str(f.header.titleId)+' - '+str(f.header.contentType));print(message);feed+=message+'\n'												
+				verify,origheader,ncaname,feed=f.verify(feed)	
+				headerlist.append([ncaname,origheader])	
+				message='';print(message);feed+=message+'\n'	
 		if veredict == False:
-			print("VEREDICT: NSP FILE COULD'VE BEEN TAMPERED WITH")
+			message=("VEREDICT: NSP FILE COULD'VE BEEN TAMPERED WITH");print(message);feed+=message+'\n'												
 		if veredict == True:	
-			print('VEREDICT: NSP FILE IS SAFE')	
-		return 	veredict,headerlist			
+			message=('VEREDICT: NSP FILE IS SAFE');print(message);feed+=message+'\n'				
+		return 	veredict,headerlist,feed			
 
-	def verify_hash_nca(self,buffer,headerlist,didverify):	
+	def verify_hash_nca(self,buffer,headerlist,didverify,feed):	
 		veredict=True		
-		print('****************')
-		print('HASH TEST')
-		print('****************')									
+		if feed == False:
+			feed=''				
+		message='***************';print(message);feed+='\n'+message+'\n'
+		message=('HASH TEST');print(message);feed+=message+'\n'
+		message='***************';print(message);feed+=message+'\n'			
 		for f in self:						
 			if type(f) == Nca:
 				origheader=False
@@ -6536,7 +6537,7 @@ class Nsp(Pfs0):
 					if str(f._path)==headerlist[i][0]:
 						origheader=headerlist[i][1]
 						break			
-				print(str(f.header.titleId)+' - '+str(f.header.contentType))
+				message=(str(f.header.titleId)+' - '+str(f.header.contentType));print(message);feed+=message+'\n'
 				ncasize=f.header.size						
 				t = tqdm(total=ncasize, unit='B', unit_scale=True, leave=False)	
 				i=0		
@@ -6566,31 +6567,31 @@ class Nsp(Pfs0):
 				sha=sha.hexdigest()	
 				if origheader != False:
 					sha0=sha0.hexdigest()						
-				print('  - File name: '+f._path)
-				print('  - SHA256: '+sha)
+				message=('  - File name: '+f._path);print(message);feed+=message+'\n'
+				message=('  - SHA256: '+sha);print(message);feed+=message+'\n'
 				if origheader != False:
-					print('  - ORIG_SHA256: '+sha0)						
+					message=('  - ORIG_SHA256: '+sha0);print(message);feed+=message+'\n'						
 				if str(f._path)[:16] == str(sha)[:16]:
-					print('   > FILE IS CORRECT')
+					message=('   > FILE IS CORRECT');print(message);feed+=message+'\n'
 				elif origheader != False:
 					if str(f._path)[:16] == str(sha0)[:16]:		
-						print('   > FILE IS CORRECT')	
+						message=('   > FILE IS CORRECT');print(message);feed+=message+'\n'
 					else:
-						print('   > FILE IS CORRUPT')
+						message=('   > FILE IS CORRUPT');print(message);feed+=message+'\n'
 						veredict == False	
 				elif  f.header.contentType == Type.Content.META and didverify == True:		
-					print('   > RSV WAS CHANGED')
+					message=('   > RSV WAS CHANGED');print(message);feed+=message+'\n'
 					#print('   > CHECKING INTERNAL HASHES')								
-					print('     * FILE IS CORRECT')								
+					message=('     * FILE IS CORRECT');print(message);feed+=message+'\n'							
 				else:
-					print('   > FILE IS CORRUPT')
+					message=('   > FILE IS CORRUPT');print(message);feed+=message+'\n'
 					veredict == False
-				print('')							
+				message=('');print(message);feed+=message+'\n'			
 		if veredict == False:
-			print("VEREDICT: NSP FILE IS CORRUPT")
+			message=("VEREDICT: NSP FILE IS CORRUPT");print(message);feed+=message+'\n'
 		if veredict == True:	
-			print('VEREDICT: NSP FILE IS CORRECT')	
-		return 	veredict			
+			message=('VEREDICT: NSP FILE IS CORRECT');print(message);feed+=message+'\n'
+		return 	veredict,feed			
 									
 	def verify_enforcer(self,nca):
 
