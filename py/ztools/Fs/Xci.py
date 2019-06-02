@@ -6175,23 +6175,21 @@ class Xci(File):
 		return check					
 					
 	def verify_key(self,nca,ticket):
-		masterKeyRev=False
 		for nspF in self.hfs0:
 			if str(nspF._path)=="secure":
 				for file in nspF:
 					if type(file) == Nca:
-						if str(file._path) == nca:	
-							crypto1=file.header.getCryptoType()	
-							crypto2=file.header.getCryptoType2()		
-							if crypto1 == 2:
-								if crypto1 > crypto2:								
-									masterKeyRev=file.header.getCryptoType()
-								else:			
-									masterKeyRev=file.header.getCryptoType2()	
+						crypto1=file.header.getCryptoType()	
+						crypto2=file.header.getCryptoType2()					
+						if crypto1 == 2:
+							if crypto1 > crypto2:								
+								masterKeyRev=file.header.getCryptoType()
 							else:			
-								masterKeyRev=file.header.getCryptoType2()
-		if masterKeyRev == False:
-			return False
+								masterKeyRev=file.header.getCryptoType2()	
+						else:			
+							masterKeyRev=file.header.getCryptoType2()	
+						if str(file._path) == nca:						
+							break
 										
 		for nspF in self.hfs0:
 			if str(nspF._path)=="secure":
