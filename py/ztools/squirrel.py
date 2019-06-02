@@ -118,6 +118,7 @@ if __name__ == '__main__':
 		parser.add_argument('--cardstate', nargs='+', help='Returns value for isgamecard flag from an nca')	
 		
 		# NSP Copy functions
+		parser.add_argument('-x', '--extract', nargs='+', help='Extracts all files from nsp or xci')		
 		parser.add_argument('--NSP_copy_ticket', nargs='+', help='Extracts ticket from target nsp')
 		parser.add_argument('--NSP_copy_nca', nargs='+', help='Extracts all nca files from target nsp')	
 		parser.add_argument('--NSP_copy_other', nargs='+', help='Extracts all kinds of files different from nca or ticket from target nsp')
@@ -215,6 +216,7 @@ if __name__ == '__main__':
 		parser.add_argument('-cltg','--cleantags', help="Clean tags in filenames")	
 		parser.add_argument('-tgtype','--tagtype', help="Type of tag to remove")
 		parser.add_argument('-vorg','--v_organize', help="Aux variable to organize files")		
+		parser.add_argument('-vt','--vertype', help="Veryfication type for auto, needs --text_file. Opt: dec,sig,full [DECryption, decryption and SIGnature, previous and hash check]")			
 		args = parser.parse_args()
 
 		Status.start()
@@ -527,7 +529,7 @@ if __name__ == '__main__':
 			else:
 				for filename in args.NSP_copy_ticket:
 					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder =os.path.join(dir, output))
+					ofolder =os.path.join(dir, 'output')
 			for filename in args.NSP_copy_ticket:
 				try:
 					f = Fs.Nsp(filename, 'rb')
@@ -538,7 +540,68 @@ if __name__ == '__main__':
 					Print.error('Exception: ' + str(e))
 		# ...................................................						
 		# Copy all NCA from NSP file
-		# ...................................................							
+		# ...................................................		
+		if args.extract:
+			if args.ofolder:		
+				for input in args.ofolder:
+					try:
+						ofolder = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+			else:
+				if args.text_file:
+					tfile=args.text_file
+					with open(tfile,"r+", encoding='utf8') as filelist: 	
+						filename = filelist.readline()
+						filename=os.path.abspath(filename.rstrip('\n'))		
+						dir=os.path.dirname(os.path.abspath(filename))
+						basename=str(os.path.basename(os.path.abspath(filepath)))							
+						ofolder =os.path.join(dir, 'output')
+						ofolder =os.path.join(dir, 'basename')						
+				else:		
+					for filename in args.extract:
+						dir=os.path.dirname(os.path.abspath(filename))
+						ofolder =os.path.join(dir, 'output')
+			if not os.path.exists(ofolder):
+				os.makedirs(ofolder)						
+			if args.buffer:		
+				for input in args.buffer:
+					try:
+						buffer = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+			else:
+				buffer = 32768			
+				
+			if args.extract:					
+				if args.text_file:
+					tfile=args.text_file
+					with open(tfile,"r+", encoding='utf8') as filelist: 	
+						filename = filelist.readline()
+						filename=os.path.abspath(filename.rstrip('\n'))				
+				else:
+					for filename in args.extract:
+						filename=filename			
+				test=filename.lower()
+				if test.endswith('.nsp') or test.endswith('.nsx'):
+					try:
+						f = Fs.Nsp(filename, 'rb')
+						f.open(filename, 'rb')						
+						f.extract_all(ofolder,buffer)
+						f.flush()
+						f.close()
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+				elif test.endswith('.xci'):
+					try:
+						f = Fs.factory(filename)
+						f.open(filename, 'rb')
+						f.extract_all(ofolder,buffer)
+						f.flush()
+						f.close()
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))						
+
 		if args.NSP_copy_nca:
 			if args.ofolder:		
 				for input in args.ofolder:
@@ -549,7 +612,7 @@ if __name__ == '__main__':
 			else:
 				for filename in args.NSP_copy_nca:
 					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder =os.path.join(dir, output))
+					ofolder =os.path.join(dir, 'output')
 					
 			if args.buffer:		
 				for input in args.buffer:
@@ -605,7 +668,7 @@ if __name__ == '__main__':
 			else:
 				for filename in args.XCI_copy_hfs0:
 					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder =os.path.join(dir, output))
+					ofolder =os.path.join(dir, 'output')
 					
 			if args.buffer:		
 				for input in args.buffer:
@@ -634,7 +697,7 @@ if __name__ == '__main__':
 			else:
 				for filename in args.XCI_c_hfs0_update:
 					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder =os.path.join(dir, output))
+					ofolder =os.path.join(dir, 'output')
 					
 			if args.buffer:		
 				for input in args.buffer:
@@ -663,7 +726,7 @@ if __name__ == '__main__':
 			else:
 				for filename in args.XCI_c_hfs0_normal:
 					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder =os.path.join(dir, output))
+					ofolder =os.path.join(dir, 'output')
 					
 			if args.buffer:		
 				for input in args.buffer:
@@ -692,7 +755,7 @@ if __name__ == '__main__':
 			else:
 				for filename in args.XCI_c_hfs0_secure:
 					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder =os.path.join(dir, output))
+					ofolder =os.path.join(dir, 'output')
 					
 			if args.buffer:		
 				for input in args.buffer:
@@ -721,7 +784,7 @@ if __name__ == '__main__':
 			else:
 				for filename in args.XCI_copy_nca_secure:
 					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder =os.path.join(dir, output))
+					ofolder =os.path.join(dir, 'output')
 					
 			if args.buffer:		
 				for input in args.buffer:
@@ -774,7 +837,7 @@ if __name__ == '__main__':
 			else:
 				for filename in args.C_clean:
 					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder =os.path.join(dir, output))
+					ofolder =os.path.join(dir, 'output')
 					
 			if args.buffer:		
 				for input in args.buffer:
@@ -827,7 +890,7 @@ if __name__ == '__main__':
 			else:
 				for filename in args.C_clean:
 					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder =os.path.join(dir, output))
+					ofolder =os.path.join(dir, 'output')
 					
 			if args.buffer:		
 				for input in args.buffer:
@@ -881,7 +944,7 @@ if __name__ == '__main__':
 			else:
 				for filename in args.XCI_copy_rhfs0:
 					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder =os.path.join(dir, output))
+					ofolder =os.path.join(dir, 'output')
 					
 			if args.buffer:		
 				for input in args.buffer:
@@ -912,7 +975,7 @@ if __name__ == '__main__':
 			else:
 				for filename in args.NSP_copy_other:
 					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder =os.path.join(dir, output))
+					ofolder =os.path.join(dir, 'output')
 					
 			if args.buffer:		
 				for input in args.buffer:
@@ -944,7 +1007,7 @@ if __name__ == '__main__':
 			else:
 				for filename in args.NSP_copy_xml:
 					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder =os.path.join(dir, output))
+					ofolder =os.path.join(dir, 'output')
 					
 			if args.buffer:		
 				for input in args.buffer:
@@ -975,7 +1038,7 @@ if __name__ == '__main__':
 			else:
 				for filename in args.NSP_copy_cert:
 					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder =os.path.join(dir, output))
+					ofolder =os.path.join(dir, 'output')
 					
 			if args.buffer:		
 				for input in args.buffer:
@@ -1006,7 +1069,7 @@ if __name__ == '__main__':
 			else:
 				for filename in args.NSP_copy_jpg:
 					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder =os.path.join(dir, output))
+					ofolder =os.path.join(dir, 'output')
 					
 			if args.buffer:		
 				for input in args.buffer:
@@ -1038,7 +1101,7 @@ if __name__ == '__main__':
 			else:
 				for filename in args.NSP_copy_cnmt:
 					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder =os.path.join(dir, output))
+					ofolder =os.path.join(dir, 'output')
 					
 			if args.buffer:		
 				for input in args.buffer:
@@ -1080,7 +1143,7 @@ if __name__ == '__main__':
 			else:
 				for filename in args.copy_pfs0_meta:
 					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder =os.path.join(dir, output))
+					ofolder =os.path.join(dir, 'output')
 					
 			if args.buffer:		
 				for input in args.buffer:
@@ -1112,7 +1175,7 @@ if __name__ == '__main__':
 			else:
 				for filename in args.NSP_copy_ncap:
 					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder =os.path.join(dir, output))
+					ofolder =os.path.join(dir, 'output')
 					
 			if args.buffer:		
 				for input in args.buffer:
@@ -1145,7 +1208,7 @@ if __name__ == '__main__':
 			else:
 				for filename in args.NSP_copy_nca_meta:
 					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder =os.path.join(dir, output))
+					ofolder =os.path.join(dir, 'output')
 					
 			if args.buffer:		
 				for input in args.buffer:
@@ -1176,7 +1239,7 @@ if __name__ == '__main__':
 			else:
 				for filename in args.NSP_copy_nca_control:
 					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder =os.path.join(dir, output))
+					ofolder =os.path.join(dir, 'output')
 					
 			if args.buffer:		
 				for input in args.buffer:
@@ -1207,7 +1270,7 @@ if __name__ == '__main__':
 			else:
 				for filename in args.NSP_copy_nca_manual:
 					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder =os.path.join(dir, output))
+					ofolder =os.path.join(dir, 'output')
 					
 			if args.buffer:		
 				for input in args.buffer:
@@ -1238,7 +1301,7 @@ if __name__ == '__main__':
 			else:
 				for filename in args.NSP_copy_nca_program:
 					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder =os.path.join(dir, output))
+					ofolder =os.path.join(dir, 'output')
 					
 			if args.buffer:		
 				for input in args.buffer:
@@ -1269,7 +1332,7 @@ if __name__ == '__main__':
 			else:
 				for filename in args.NSP_copy_nca_data:
 					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder =os.path.join(dir, output))
+					ofolder =os.path.join(dir, 'output')
 					
 			if args.buffer:		
 				for input in args.buffer:
@@ -1301,7 +1364,7 @@ if __name__ == '__main__':
 			else:
 				for filename in args.NSP_copy_nca_pdata:
 					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder =os.path.join(dir, output))
+					ofolder =os.path.join(dir, 'output')
 					
 			if args.buffer:		
 				for input in args.buffer:
@@ -1335,7 +1398,7 @@ if __name__ == '__main__':
 			else:
 				for filename in args.NSP_copy_tr_nca:
 					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder =os.path.join(dir, output))
+					ofolder =os.path.join(dir, 'output')
 					
 			if args.buffer:		
 				for input in args.buffer:
@@ -1367,7 +1430,7 @@ if __name__ == '__main__':
 			else:
 				for filename in args.NSP_copy_ntr_nca:
 					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder =os.path.join(dir, output))
+					ofolder =os.path.join(dir, 'output')
 					
 			if args.buffer:		
 				for input in args.buffer:
@@ -1404,11 +1467,11 @@ if __name__ == '__main__':
 						filename = filelist.readline()
 						filename=os.path.abspath(filename.rstrip('\n'))		
 						dir=os.path.dirname(os.path.abspath(filename))
-						ofolder =os.path.join(dir, output))
+						ofolder =os.path.join(dir, 'output')
 				else:		
 					for filename in args.C_clean:
 						dir=os.path.dirname(os.path.abspath(filename))
-						ofolder =os.path.join(dir, output))
+						ofolder =os.path.join(dir, 'output')
 					
 			if args.buffer:		
 				for input in args.buffer:
@@ -1502,11 +1565,11 @@ if __name__ == '__main__':
 						filename = filelist.readline()
 						filename=os.path.abspath(filename.rstrip('\n'))		
 						dir=os.path.dirname(os.path.abspath(filename))
-						ofolder =os.path.join(dir, output))
+						ofolder =os.path.join(dir, 'output')
 				else:			
 					for filename in args.C_clean_ND:
 						dir=os.path.dirname(os.path.abspath(filename))
-						ofolder =os.path.join(dir, output))		
+						ofolder =os.path.join(dir, 'output')		
 			if args.buffer:		
 				for input in args.buffer:
 					try:
@@ -1597,7 +1660,7 @@ if __name__ == '__main__':
 			else:
 				for filename in args.NSP_c_KeyBlock:
 					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder =os.path.join(dir, output))
+					ofolder =os.path.join(dir, 'output')
 			for filename in args.NSP_c_KeyBlock:
 				try:
 					f = Fs.Nsp(filename, 'rb')
@@ -1655,11 +1718,11 @@ if __name__ == '__main__':
 						filename = filelist.readline()
 						filename=os.path.abspath(filename.rstrip('\n'))	
 						dir=os.path.dirname(os.path.abspath(filename))
-						ofolder =os.path.join(dir, output))	
+						ofolder =os.path.join(dir, 'output')	
 				else:			
 					for filename in args.splitter:
 						dir=os.path.dirname(os.path.abspath(filename))
-						ofolder =os.path.join(dir, output))		
+						ofolder =os.path.join(dir, 'output')		
 			if args.buffer:		
 				for input in args.buffer:
 					try:
@@ -1716,7 +1779,7 @@ if __name__ == '__main__':
 			else:
 				for filename in args.updbase:
 					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder =os.path.join(dir, output))		
+					ofolder =os.path.join(dir, 'output')		
 			if args.buffer:		
 				for input in args.buffer:
 					try:
@@ -1955,8 +2018,9 @@ if __name__ == '__main__':
 									t.close()			
 									counter=int(counter)
 									counter-=1									
-									print(tabs+'> Placeholder was created')						
-									print(tabs+'> Still '+str(counter)+' to go')									
+									print(tabs+'> Placeholder was created')		
+									if not args.text_file:	
+										print(tabs+'> Still '+str(counter)+' to go')									
 								except BaseException as e:
 									counter=int(counter)
 									counter-=1								
@@ -1977,7 +2041,7 @@ if __name__ == '__main__':
 			else:
 				for filename in args.license_combo:
 					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder =os.path.join(dir, output))
+					ofolder =os.path.join(dir, 'output')
 			if args.buffer:		
 				for input in args.buffer:
 					try:
@@ -2009,7 +2073,7 @@ if __name__ == '__main__':
 			else:
 				for filename in args.mlicense_combo:
 					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder =os.path.join(dir, output))
+					ofolder =os.path.join(dir, 'output')
 			if args.buffer:		
 				for input in args.buffer:
 					try:
@@ -2042,7 +2106,7 @@ if __name__ == '__main__':
 			else:
 				for filename in args.zip_combo:
 					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder =os.path.join(dir, output))
+					ofolder =os.path.join(dir, 'output')
 			if args.buffer:		
 				for input in args.buffer:
 					try:
@@ -2356,11 +2420,11 @@ if __name__ == '__main__':
 						filename = filelist.readline()
 						filename=os.path.abspath(filename.rstrip('\n'))		
 						dir=os.path.dirname(os.path.abspath(filename))
-						ofolder =os.path.join(dir, output))
+						ofolder =os.path.join(dir, 'output')
 				else:			
 					for filename in args.xci_super_trim:
 						dir=os.path.dirname(os.path.abspath(filename))
-						ofolder =os.path.join(dir, output))	
+						ofolder =os.path.join(dir, 'output')	
 			if args.fat:		
 				for input in args.fat:
 					try:
@@ -2592,7 +2656,7 @@ if __name__ == '__main__':
 			else:
 				for filepath in args.direct_creation:
 					dir=os.path.dirname(os.path.abspath(filepath))
-					ofolder =os.path.join(dir, output))		
+					ofolder =os.path.join(dir, 'output')		
 			if args.fat:		
 				for input in args.fat:
 					try:
@@ -2955,7 +3019,7 @@ if __name__ == '__main__':
 												#print(prlist[i][6])
 												if contentlist[j][6] > prlist[i][6]:
 													del prlist[i]
-													print(prlist[i])
+													#print(prlist[i])
 													prlist.append(contentlist[j])
 													notinlist=False
 													break
@@ -2999,7 +3063,7 @@ if __name__ == '__main__':
 												#print(prlist[i][6])
 												if contentlist[j][6] > prlist[i][6]:
 													del prlist[i]
-													print(prlist[i])
+													#print(prlist[i])
 													prlist.append(contentlist[j])
 													notinlist=False
 													break
@@ -4194,7 +4258,7 @@ if __name__ == '__main__':
 			else:
 				for filename in args.xml_gen:
 					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder =os.path.join(dir, output))					
+					ofolder =os.path.join(dir, 'output')					
 			for filename in args.xml_gen:
 				if filename.endswith('.nca'):
 					try:
@@ -4354,8 +4418,9 @@ if __name__ == '__main__':
 			except BaseException as e:
 				Print.error('Exception: ' + str(e))					
 
-				
-		#parser.add_argument('-cltg','--cleantags', help="Clean tags in filenames")		
+		# ...................................................						
+		# Clean tags in filenames
+		# ...................................................		
 		#parser.add_argument('-tgtype','--tagtype', help="Type of tag to remove")			
 		if args.cleantags:
 			if args.tagtype:
@@ -4510,7 +4575,6 @@ if __name__ == '__main__':
 						if filepath.endswith('.nsp'):
 							endname=endname[:-4]+' (SeemsDuplicate)'+'.nsp'
 							newpath=os.path.join(dir,endname)	
-					print('New name: '+endname)
 					try:
 						os.rename(filepath, newpath)			
 						print(tabs+'> File was renamed to: '+endname)		
@@ -4521,7 +4585,9 @@ if __name__ == '__main__':
 				counter-=1
 				Print.error('Exception: ' + str(e))	
 								
-		#parser.add_argument('-renf','--renamef', help='Rename file with proper name')	
+		# ...................................................						
+		# Rename file with proper name
+		# ...................................................									
 		#parser.add_argument('-oaid','--onlyaddid', help='Rename file with proper name')		
 		#parser.add_argument('-renm','--renmode', help='Rename mode (force,skip_corr_tid,skip_if_tid)')		
 		#parser.add_argument('-addl','--addlangue', help='Add language string')		
@@ -4537,7 +4603,7 @@ if __name__ == '__main__':
 				else:					
 					onaddid=False
 			else:
-				onaddid=False	
+				onaddid=False
 			if args.addlangue:
 				if args.addlangue=="true" or args.addlangue == "True" or args.addlangue == "TRUE":
 					addlangue=True
@@ -4663,7 +4729,8 @@ if __name__ == '__main__':
 					if setskip == True:
 						counter=int(counter)
 						counter-=1
-						print(tabs+'> Still '+str(counter)+' to go')					
+						if not args.text_file:
+							print(tabs+'> Still '+str(counter)+' to go')					
 						continue
 					if filepath.endswith('.nsp'):
 						try:
@@ -4799,7 +4866,8 @@ if __name__ == '__main__':
 									print(tabs+"> File already has correct id: "+baseid)
 									counter=int(counter)
 									counter-=1
-									print(tabs+'> Still '+str(counter)+' to go')										
+									if not args.text_file:
+										print(tabs+'> Still '+str(counter)+' to go')										
 									continue
 							if filepath.endswith('.xci'):							
 								f = Fs.Xci(basefile)
@@ -4827,7 +4895,8 @@ if __name__ == '__main__':
 									print(tabs+"> File already has correct id: "+updid)	
 									counter=int(counter)
 									counter-=1
-									print(tabs+'> Still '+str(counter)+' to go')										
+									if not args.text_file:
+										print(tabs+'> Still '+str(counter)+' to go')										
 									continue		
 							if filepath.endswith('.xci'):								
 								f = Fs.Xci(updfile)	
@@ -4854,7 +4923,8 @@ if __name__ == '__main__':
 									print(tabs+"> File already has correct id: "+dlcid)		
 									counter=int(counter)
 									counter-=1
-									print(tabs+'> Still '+str(counter)+' to go')										
+									if not args.text_file:
+										print(tabs+'> Still '+str(counter)+' to go')										
 									continue
 								else:	
 									if filepath.endswith('.xci'):								
@@ -4924,7 +4994,7 @@ if __name__ == '__main__':
 							mgame='(mgame)'
 						if ccount == '(1G)' or ccount == '(1U)' or ccount == '(1D)':
 							ccount=''
-						basename=str(os.path.basename(os.path.abspath(filepath)))							
+						basename=str(os.path.basename(os.path.abspath(filepath)))
 						if baseid != "" and baseid != "[]":
 							if updver != "":	
 								if onaddid==True:
@@ -4939,7 +5009,9 @@ if __name__ == '__main__':
 								if onaddid==True:
 									endname=basename[:-4]+' '+baseid
 								elif onaddid=='idtag' and (ccount!=''):
-									endname=basename[:-4]+' '+baseid+' '+ccount+' '+mgame								
+									endname=basename[:-4]+' '+baseid+' '+ccount+' '+mgame
+								elif onaddid=='idtag':
+									endname=basename[:-4]+' '+baseid								
 								elif nover == True and (ccount==''):
 									endname=ctitl+' '+baseid											
 								elif filepath.endswith('.xci') and nover=="xci_no_v0" and ccount=='':
@@ -4999,8 +5071,9 @@ if __name__ == '__main__':
 					os.rename(filepath, newpath)	
 					counter=int(counter)
 					counter-=1
-					print(tabs+'File was renamed')						
-					print(tabs+'> Still '+str(counter)+' to go')				
+					print(tabs+'File was renamed')		
+					if not args.text_file:					
+						print(tabs+'> Still '+str(counter)+' to go')				
 			except BaseException as e:
 				counter=int(counter)
 				counter-=1
@@ -5187,31 +5260,233 @@ if __name__ == '__main__':
 				print(tabs+'> File was renamed to: '+endname)		
 			except BaseException as e:	
 				pass				
-				
-				
-				
-				
-				
-					
-		if args.verify:
-			for filename in args.verify:		
-				if filename.endswith('.nsp') or filename.endswith('.nsx'):
+						
+		# ...................................................						
+		# Verify. File verification
+		# ...................................................							
+		if args.verify:	
+			feed=''
+			if args.vertype:	
+				if args.vertype=="dec" or args.vertype=="lv1":
+					vertype="lv1"
+				elif args.vertype=="sig" or args.vertype=="lv2": 
+					vertype="lv2"
+				elif args.vertype=="sig" or args.vertype=="lv3": 
+					vertype="lv3"					
+				else:
+					vertype="lv1"	
+			else:
+				vertype="lv1"
+			if args.buffer:		
+				for var in args.buffer:
 					try:
-						f = Fs.Nsp(filename, 'rb')
-						f.verify()
-						f.flush()
-						f.close()
+						buffer = var
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+			else:
+				buffer = 32768	
+			if args.ofolder:		
+				for var in args.ofolder:
+					try:
+						ofolder = var
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))	
-				if filename.endswith('.xci'):
-					try:
-						f = Fs.factory(filename)
-						f.open(filename, 'rb')
-						f.verify()
-						f.flush()
-						f.close()														
-					except BaseException as e:
-						Print.error('Exception: ' + str(e))	
+			else:
+				for filename in args.verify:
+					dir=os.path.dirname(os.path.abspath(filename))
+					info='INFO'
+					ofolder =os.path.join(dir,info)
+			if not os.path.exists(ofolder):
+				os.makedirs(ofolder)	
+			if args.text_file:
+				tfile=args.text_file
+				dir=os.path.dirname(os.path.abspath(tfile))
+				if not os.path.exists(dir):
+					os.makedirs(dir)	
+				err='badfiles.txt'			
+				errfile = os.path.join(dir, err)						
+				with open(tfile,"r+", encoding='utf8') as filelist: 	
+					filename = filelist.readline()
+					filename=os.path.abspath(filename.rstrip('\n'))
+			else:				
+				for filename in args.verify:
+					filename=filename	
+			basename=str(os.path.basename(os.path.abspath(filename)))			
+			ofile=basename[:-4]+'-verify.txt'
+			infotext=os.path.join(ofolder, ofile)					
+			if filename.endswith('.nsp') or filename.endswith('.nsx'):
+				try:
+					f = Fs.Nsp(filename, 'rb')
+					check,feed=f.verify()
+					if not args.text_file:
+						veredict,headerlist,feed=f.verify_sig(feed)
+						i=0
+						print('\n********************************************************')
+						print('Do you want to verify the hash of the nca files?')
+						print('********************************************************')
+						while i==0:		
+							print('Input "1" to VERIFY hash of files')	
+							print('Input "2" to NOT verify hash  of files\n')												
+							ck=input('Input your answer: ')
+							if ck ==str(1):
+								print('')
+								veredict,feed=f.verify_hash_nca(buffer,headerlist,veredict,feed)
+								f.flush()
+								f.close()
+								i=1
+							elif ck ==str(2):					
+								f.flush()
+								f.close()
+								i=1				
+							else:
+								print('WRONG CHOICE\n')								
+						print('\n********************************************************')
+						print('Do you want to print the information to a text file')
+						print('********************************************************')
+						i=0
+						while i==0:							
+							print('Input "1" to print to text file')	
+							print('Input "2" to NOT print to text file\n')							
+							ck=input('Input your answer: ')	
+							if ck ==str(1):					
+								with open(infotext, 'w') as info:	
+									info.write(feed)	
+								i=1
+							elif ck ==str(2):					
+								i=1				
+							else:
+								print('WRONG CHOICE\n')								
+					elif args.text_file:	
+						if vertype == "lv2":
+							veredict,headerlist,feed=f.verify_sig(feed)	
+							if check == True:
+								check=veredict
+						elif vertype == "lv3":	
+							veredict,headerlist,feed=f.verify_sig(feed)	
+							if check == True:
+								check=veredict						
+							veredict,feed=f.verify_hash_nca(buffer,headerlist,veredict,feed)
+							if check == True:
+								check=veredict							
+						if check == False:
+							with open(errfile, 'a') as errfile:	
+								now=datetime.now()
+								date=now.strftime("%x")+". "+now.strftime("%X")								
+								errfile.write("Filename: "+str(filename)+'\n')
+								errfile.write("IS INCORRECT"+'\n')
+						dir=os.path.dirname(os.path.abspath(tfile))
+						info='INFO'
+						ofolder =os.path.join(dir,info)									
+						infotext=os.path.join(ofolder, ofile)
+						with open(infotext, 'w') as info:	
+							info.write(feed)								
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))	
+					with open(errfile, 'a') as errfile:	
+						now=datetime.now()
+						date=now.strftime("%x")+". "+now.strftime("%X")								
+						errfile.write("Filename: "+str(filename)+'\n')
+						errfile.write('Exception: ' + str(e)+'\n')		
+			if filename.endswith('.xci'):
+				try:
+					f = Fs.factory(filename)
+					f.open(filename, 'rb')
+					check,feed=f.verify()
+					if not args.text_file:
+						veredict,headerlist,feed=f.verify_sig(feed)
+						i=0
+						print('\n********************************************************')
+						print('Do you want to verify the hash of the nca files?')
+						print('********************************************************')
+						while i==0:		
+							print('Input "1" to VERIFY hash of files')	
+							print('Input "2" to NOT verify hash  of files\n')																			
+							check=input('Input your answer: ')	
+							if check ==str(1):
+								print('')
+								veredict,feed=f.verify_hash_nca(buffer,headerlist,veredict,feed)
+								f.flush()
+								f.close()
+								i=1
+							elif check ==str(2):					
+								f.flush()
+								f.close()
+								i=1				
+							else:
+								print('WRONG CHOICE\n')								
+						print('\n********************************************************')
+						print('Do you want to print the information to a text file')
+						print('********************************************************')
+						i=0
+						while i==0:							
+							print('Input "1" to print to text file')	
+							print('Input "2" to NOT print to text file\n')							
+							check=input('Input your answer: ')	
+							if check ==str(1):					
+								with open(infotext, 'w') as info:	
+									info.write(feed)	
+								i=1
+							elif check ==str(2):					
+								i=1				
+							else:
+								print('WRONG CHOICE\n')								
+					elif args.text_file:	
+						if vertype == "lv2":
+							veredict,headerlist,feed=f.verify_sig(feed)	
+							if check == True:
+								check=veredict
+						elif vertype == "lv3":	
+							veredict,headerlist,feed=f.verify_sig(feed)	
+							if check == True:
+								check=veredict						
+							veredict,feed=f.verify_hash_nca(buffer,headerlist,veredict,feed)
+							if check == True:
+								check=veredict						
+						if check == False:
+							with open(errfile, 'a') as errfile:	
+								now=datetime.now()
+								date=now.strftime("%x")+". "+now.strftime("%X")								
+								errfile.write("Filename: "+str(filename)+'\n')
+								errfile.write("IS INCORRECT"+'\n')
+						dir=os.path.dirname(os.path.abspath(tfile))
+						info='INFO'
+						ofolder =os.path.join(dir,info)									
+						infotext=os.path.join(ofolder, ofile)
+						with open(infotext, 'w') as info:	
+							info.write(feed)								
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))	
+					with open(errfile, 'a') as errfile:	
+						now=datetime.now()
+						date=now.strftime("%x")+". "+now.strftime("%X")								
+						errfile.write("Filename: "+str(filename)+'\n')
+						errfile.write('Exception: ' + str(e)+'\n')					
+			if filename.endswith('.nca'):
+				try:
+					f = Fs.Nca(filename, 'rb')
+					verify,origheader,ncaname,feed=f.verify(False)
+					f.flush()
+					f.close()						
+					if args.text_file:					
+						if check == False:
+							with open(errfile, 'a') as errfile:	
+								now=datetime.now()
+								date=now.strftime("%x")+". "+now.strftime("%X")								
+								errfile.write("Filename: "+str(filename)+'\n')
+								errfile.write("IS INCORRECT"+'\n')	
+						dir=os.path.dirname(os.path.abspath(tfile))
+						info='INFO'
+						ofolder =os.path.join(dir,info)									
+						infotext=os.path.join(ofolder, ofile)
+						with open(infotext, 'w') as info:	
+							info.write(feed)							
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))	
+					with open(errfile, 'a') as errfile:	
+						now=datetime.now()
+						date=now.strftime("%x")+". "+now.strftime("%X")								
+						errfile.write("Filename: "+str(filename)+'\n')
+						errfile.write('Exception: ' + str(e)+'\n')							
 						
 		#split_list_by_id						
 		if args.split_list_by_id:						

@@ -484,6 +484,31 @@ class Nsp(Pfs0):
 				nca.header.setRightsId(0)
 				nca.header.setKeyBlock(encKeyBlock)
 				Hex.dump(encKeyBlock)
+
+#Extract all files
+	def extract_all(self,ofolder,buffer):
+		indent = 1
+		tabs = '\t' * indent
+		print("Processing: "+str(self._path))
+		for file in self:
+			file.rewind()
+			filename =  str(file._path)
+			outfolder = str(ofolder)+'/'
+			filepath = os.path.join(outfolder, filename)
+			if not os.path.exists(outfolder):
+				os.makedirs(outfolder)
+			fp = open(filepath, 'w+b')
+			file.rewind()
+			t = tqdm(total=file.size, unit='B', unit_scale=True, leave=False)
+			t.write(tabs+'Copying: ' + str(filename))
+			for data in iter(lambda: file.read(int(buffer)), ""):
+				fp.write(data)
+				t.update(len(data))
+				fp.flush()
+				if not data:
+					fp.close()
+					t.close()	
+					break					
 				
 	def copy_ticket(self,ofolder):
 		for ticket in self:
@@ -922,8 +947,6 @@ class Nsp(Pfs0):
 		return masterKeyRev
 		
 	def nsptitlekeydec(self):				
-		if not Titles.contains(self.titleId):
-			raise IOError('No title key found in database! ' + self.titleId)
 		ticket = self.ticket()
 		for nca in self:	
 			if type(nca) == Nca:		
@@ -2870,7 +2893,12 @@ class Nsp(Pfs0):
 		indent2 = 3
 		tabs2 = '\t' * indent2
 		
-		masterKeyRev = nca.header.getCryptoType2()	
+		crypto1=nca.header.getCryptoType()
+		crypto2=nca.header.getCryptoType2()	
+		if crypto2>crypto1:
+			masterKeyRev=crypto2
+		if crypto2<=crypto1:	
+			masterKeyRev=crypto1		
 
 		if type(nca) == Nca:
 			if nca.header.getCryptoType2() != newMasterKeyRev:
@@ -6322,17 +6350,23 @@ class Nsp(Pfs0):
 		validfiles=list()
 		listed_files=list()		
 		contentlist=list()
-		veredict=True
-		checktik=False
-		'''
+		feed=''
+		delta = False
+		veredict = True		
+		checktik=False		
+		message='***************';print(message);feed+=message+'\n'
+		message='DECRIPTION TEST';print(message);feed+=message+'\n'
+		message='***************';print(message);feed+=message+'\n'	
 		for file in self:
-			print(str(file._path))
-		'''	
-		for file in self:
-			if str(file._path).endswith('.nca') or str(file._path).endswith('.tik'):		
+			if str(file._path).endswith('.nca'):		
 				listed_files.append(str(file._path))
-			if type(file) == Nca or type(file) == Ticket:
+			if type(file) == Nca:
 				validfiles.append(str(file._path))				
+		for file in self:
+			if str(file._path).endswith('.tik'):		
+				listed_files.append(str(file._path))
+			if type(file) == Ticket:
+				validfiles.append(str(file._path))						
 				
 		for file in listed_files:	
 			correct=False		
@@ -6340,7 +6374,7 @@ class Nsp(Pfs0):
 				if file.endswith('cnmt.nca'):
 					for f in self:	
 						if str(f._path) == file:
-							print(str(f.header.titleId)+' - '+str(f.header.contentType))						
+							message=(str(f.header.titleId)+' - '+str(f.header.contentType));print(message);feed+=message+'\n'																
 							for nf in f:	
 								nf.rewind()
 								test=nf.read(0x4)	
@@ -6353,19 +6387,12 @@ class Nsp(Pfs0):
 				elif file.endswith('.nca'):
 					for f in self:	
 						if str(f._path) == file:
-							print(str(f.header.titleId)+' - '+str(f.header.contentType))				
-							if str(f.header.contentType) != 'Content.PROGRAM':
-								correct = self.verify_enforcer(file)							
-								#f.test(self.nsptitlekeydec())										
+							message=(str(f.header.titleId)+' - '+str(f.header.contentType));print(message);feed+=message+'\n'								
+							if str(f.header.contentType) != 'Content.PROGRAM':	
+								correct = self.verify_enforcer(file)									
 							else:
 								for nf in f:
 									nf.rewind()		
-									'''	
-									for nf2 in nf:
-										nf2.rewind()
-										test2=nf2.read(0x4)
-										print(test2)
-									'''	
 									test=nf.read(0x4)
 									#print(test)												
 									if str(test) == "b'PFS0'":
@@ -6375,27 +6402,36 @@ class Nsp(Pfs0):
 								cryptoKey=self.nsptitlekeydec()															
 								if correct == True:
 									correct = self.verify_enforcer(file)
-						if checktik == False:									
-							checktik = self.verify_key(file)									
-								#f.test(self.nsptitlekeydec())									
+								if correct == False and f.header.getRightsId() == 0:
+									correct = f.pr_noenc_check()		
+								if correct == False and f.header.getRightsId() != 0:
+									correct = self.verify_nca_key(file)									
 				elif file.endswith('.tik'):	
-					print('Content.TICKET')
+					tikfile=str(file)				
+					checktik == False
+					for f in self:	
+						if str(f._path).endswith('.nca'):									
+							if checktik == False and f.header.getRightsId() != 0:
+								checktik = self.verify_key(str(f._path),tikfile)	
+								if 	checktik == True:
+									break								
+					message=('Content.TICKET');print(message);feed+=message+'\n'												
 					correct = checktik				
-			else:
-				correct=False	
+				else:
+					correct=False	
 			if correct==True:
 				if file.endswith('cnmt.nca'):				
-					print(tabs+file+' -> is CORRECT')	
+					message=(tabs+file+' -> is CORRECT');print(message);feed+=message+'\n'					
 				else:
-					print(tabs+file+tabs+'  -> is CORRECT')							
+					message=(tabs+file+tabs+'  -> is CORRECT');print(message);feed+=message+'\n'									
 			else:
 				veredict=False			
 				if file.endswith('cnmt.nca'):	
-					print(tabs+file+' -> is CORRUPT')
+					message=(tabs+file+' -> is CORRUPT <<<-');print(message);feed+=message+'\n'					
 				elif file.endswith('nca'):		
-					print(tabs+file+tabs+'  -> is CORRUPT')	
+					message=(tabs+file+tabs+'  -> is CORRUPT <<<-');print(message);feed+=message+'\n'					
 				elif file.endswith('tik'):		
-					print(tabs+file+tabs+'  -> titlekey is INCORRECT')						
+					message=(tabs+file+tabs+'  -> titlekey is INCORRECT <<<-');print(message);feed+=message+'\n'					
 		for nca in self:
 			if type(nca) == Nca:
 				if 	str(nca.header.contentType) == 'Content.META':		
@@ -6453,14 +6489,110 @@ class Nsp(Pfs0):
 								nca_name=nca_name[2:-1]+'.nca'
 								if (nca_name not in listed_files and ncatype!=6) or (nca_name not in validfiles and ncatype!=6):
 									veredict = False
-									print (tabs+'Missing file from '+titleid2+': '+nca_name )
+									message=(tabs+'Missing file from '+titleid2+': '+nca_name);print(message);feed+=message+'\n'													
 									
 		if veredict == False:
-			print('')
-			print('VEREDICT: NSP FILE IS CORRUPT OR MISSES FILES')
+			message='\nVEREDICT: NSP FILE IS CORRUPT OR MISSES FILES';print(message);feed+=message+'\n'				
 		if veredict == True:	
-			print('')
-			print('VEREDICT: NSP FILE IS CORRECT')	
+			message='\nVEREDICT: NSP FILE IS CORRECT\n';print(message);feed+=message
+		return veredict,feed			
+			
+	def verify_sig(self,feed):	
+		if feed == False:
+			feed=''	
+		veredict=True	
+		headerlist=list()
+		message='***************';print(message);feed+='\n'+message+'\n'
+		message='SIGNATURE 1 TEST';print(message);feed+=message+'\n'
+		message='***************';print(message);feed+=message+'\n'									
+		for f in self:			
+			if type(f) == Nca and f.header.contentType != Type.Content.META:
+				message=(str(f.header.titleId)+' - '+str(f.header.contentType));print(message);feed+=message+'\n'											
+				verify,origheader,ncaname,feed=f.verify(feed)		
+				headerlist.append([ncaname,origheader])		
+				if veredict == True:
+					veredict=verify
+				message='';print(message);feed+=message+'\n'						
+			elif type(f) == Nca:
+				message=(str(f.header.titleId)+' - '+str(f.header.contentType));print(message);feed+=message+'\n'												
+				verify,origheader,ncaname,feed=f.verify(feed)	
+				headerlist.append([ncaname,origheader])	
+				message='';print(message);feed+=message+'\n'	
+		if veredict == False:
+			message=("VEREDICT: NSP FILE COULD'VE BEEN TAMPERED WITH");print(message);feed+=message+'\n'												
+		if veredict == True:	
+			message=('VEREDICT: NSP FILE IS SAFE');print(message);feed+=message+'\n'				
+		return 	veredict,headerlist,feed			
+
+	def verify_hash_nca(self,buffer,headerlist,didverify,feed):	
+		veredict=True		
+		if feed == False:
+			feed=''				
+		message='\n***************';print(message);feed+=message+'\n'
+		message=('HASH TEST');print(message);feed+=message+'\n'
+		message='***************';print(message);feed+=message+'\n'			
+		for f in self:						
+			if type(f) == Nca:
+				origheader=False
+				for i in range(len(headerlist)):
+					if str(f._path)==headerlist[i][0]:
+						origheader=headerlist[i][1]
+						break			
+				message=(str(f.header.titleId)+' - '+str(f.header.contentType));print(message);feed+=message+'\n'
+				ncasize=f.header.size						
+				t = tqdm(total=ncasize, unit='B', unit_scale=True, leave=False)	
+				i=0		
+				f.rewind();
+				rawheader=f.read(0xC00)
+				f.rewind()												
+				for data in iter(lambda: f.read(int(buffer)), ""):				
+					if i==0:	
+						sha=sha256()
+						f.seek(0xC00)
+						sha.update(rawheader)
+						if origheader != False:
+							sha0=sha256()
+							sha0.update(origheader)	
+						i+=1
+						t.update(len(data))
+						f.flush()
+					else:		
+						sha.update(data)
+						if origheader != False:
+							sha0.update(data)								
+						t.update(len(data))
+						f.flush()
+						if not data:				
+							break						
+				t.close()	
+				sha=sha.hexdigest()	
+				if origheader != False:
+					sha0=sha0.hexdigest()						
+				message=('  - File name: '+f._path);print(message);feed+=message+'\n'
+				message=('  - SHA256: '+sha);print(message);feed+=message+'\n'
+				if origheader != False:
+					message=('  - ORIG_SHA256: '+sha0);print(message);feed+=message+'\n'						
+				if str(f._path)[:16] == str(sha)[:16]:
+					message=('   > FILE IS CORRECT');print(message);feed+=message+'\n'
+				elif origheader != False:
+					if str(f._path)[:16] == str(sha0)[:16]:		
+						message=('   > FILE IS CORRECT');print(message);feed+=message+'\n'
+					else:
+						message=('   > FILE IS CORRUPT');print(message);feed+=message+'\n'
+						veredict = False	
+				elif  f.header.contentType == Type.Content.META and didverify == True:		
+					message=('   > RSV WAS CHANGED');print(message);feed+=message+'\n'
+					#print('   > CHECKING INTERNAL HASHES')								
+					message=('     * FILE IS CORRECT');print(message);feed+=message+'\n'							
+				else:
+					message=('   > FILE IS CORRUPT');print(message);feed+=message+'\n'
+					veredict = False
+				message=('');print(message);feed+=message+'\n'			
+		if veredict == False:
+			message=("VEREDICT: NSP FILE IS CORRUPT");print(message);feed+=message+'\n'
+		if veredict == True:	
+			message=('VEREDICT: NSP FILE IS CORRECT');print(message);feed+=message+'\n'
+		return 	veredict,feed			
 									
 	def verify_enforcer(self,nca):
 
@@ -6495,7 +6627,7 @@ class Nsp(Pfs0):
 							
 				if type(f) == Fs.Nca:
 					for fs in f.sectionFilesystems:
-						if fs.fsType == Type.Fs.ROMFS and fs.cryptoType == Type.Crypto.CTR:
+						if fs.fsType == Type.Fs.ROMFS and fs.cryptoType == Type.Crypto.CTR or f.header.contentType == Type.Content.MANUAL or f.header.contentType == Type.Content.DATA:
 							f.seek(0)
 							ncaHeader = f.read(0x400)
 
@@ -6510,10 +6642,48 @@ class Nsp(Pfs0):
 							pfs0Header = f.read(levelSize)
 							return True
 						else:
-							return False					
+							return False		
+
+	def verify_nca_key(self,nca):
+		check=False
+		for file in self:	
+			if (file._path).endswith('.tik'):
+				check=self.verify_key(nca,str(file._path))
+				if check==True:
+					break
+		return check									
 							
-	def verify_key(self,nca):
-		decKey = self.nsptitlekeydec()			
+	def verify_key(self,nca,ticket):
+		masterKeyRev=False
+		for file in self:
+			if type(file) == Nca:
+				if str(file._path) == nca:	
+					crypto1=file.header.getCryptoType()	
+					crypto2=file.header.getCryptoType2()		
+					if crypto1 == 2:
+						if crypto1 > crypto2:								
+							masterKeyRev=file.header.getCryptoType()
+						else:			
+							masterKeyRev=file.header.getCryptoType2()	
+					else:			
+						masterKeyRev=file.header.getCryptoType2()
+		if masterKeyRev == False:
+			return False
+
+		for file in self:
+			if type(file) == Ticket:
+				if ticket != False:
+					if str(file._path) == ticket:
+						titleKeyDec = Keys.decryptTitleKey(file.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(masterKeyRev))
+						rightsId = file.getRightsId()
+						break
+				else:
+					ticket = str(file._path)
+					titleKeyDec = Keys.decryptTitleKey(file.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(masterKeyRev))
+					rightsId = file.getRightsId()									
+									
+		decKey = titleKeyDec
+		
 		for f in self:
 			if str(f._path) == nca:
 				if type(f) == Fs.Nca and f.header.getRightsId() != 0:
@@ -6533,7 +6703,7 @@ class Nsp(Pfs0):
 								#Print.info(hx(self.sectionHeaderBlock[0xc8:0xc8+0x20]).decode('utf-8'))
 								mem = MemoryFile(pfs0Header, Type.Crypto.CTR, decKey, pfs0.cryptoCounter, offset = pfs0Offset)
 								data = mem.read();
-								Hex.dump(data)
+								#Hex.dump(data)
 								#print('hash = %s' % str(_sha256(data)))
 								if hx(sectionHeaderBlock[0xc8:0xc8+0x20]).decode('utf-8') == str(_sha256(data)):
 									return True
@@ -6542,15 +6712,15 @@ class Nsp(Pfs0):
 							else:
 								mem = MemoryFile(pfs0Header, Type.Crypto.CTR, decKey, pfs0.cryptoCounter, offset = pfs0Offset)
 								data = mem.read();
-								Hex.dump(data)								
+								#Hex.dump(data)								
 								magic = mem.read()[0:4]
-								print(magic)
+								#print(magic)
 								if magic != b'PFS0':
 									return False
-							return True			
-						'''	
+								else:	
+									return True			
+						
 						if fs.fsType == Type.Fs.ROMFS and fs.cryptoType == Type.Crypto.CTR:	
-							print('here3')
 							f.seek(0)
 							ncaHeader = NcaHeader()
 							ncaHeader.open(MemoryFile(f.read(0x400), Type.Crypto.XTS, uhx(Keys.get('header_key'))))	
@@ -6559,14 +6729,12 @@ class Nsp(Pfs0):
 							f.seek(fs.offset)
 							romfsOffset=fs.offset
 							romfsHeader = f.read(0x10)
-							print(romfsHeader)
 							mem = MemoryFile(romfsHeader, Type.Crypto.CTR, decKey, romfs.cryptoCounter, offset = romfsOffset)
 							magic = mem.read()[0:4]
-							print(hx(magic))
 							return True
 						else:
 							return False		
-						'''	
+							
 	def cnmt_get_baseids(self):			
 		ctype='addon'
 		idlist=list()

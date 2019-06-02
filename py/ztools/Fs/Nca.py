@@ -16,16 +16,27 @@ import Print
 import Nsps
 from tqdm import tqdm
 import Fs
+from Fs import Type
 from Fs.File import File
 from Fs.Rom import Rom
 from Fs.Pfs0 import Pfs0
 from Fs.BaseFs import BaseFs
 from Fs.Ticket import Ticket
 import sq_tools
+import rsa
 
 MEDIA_SIZE = 0x200
+RSA_PUBLIC_EXPONENT = 0x10001
+FS_HEADER_LENGTH = 0x200
+nca_header_fixed_key_modulus = 0xBFBE406CF4A780E9F07D0C99611D772F96BC4B9E58381B03ABB175499F2B4D5834B005A37522BE1A3F0373AC7068D116B904465EB707912F078B26DEF60007B2B451F80D0A5E58ADEBBC9AD649B964EFA782B5CF6D7013B00F85F6A908AA4D676687FA89FF7590181E6B3DE98A68C92604D980CE3F5E92CE01FF063BF2C1A90CCE026F16BC92420A4164CD52B6344DAEC02EDEA4DF27683CC1A060AD43F3FC86C13E6C46F77C299FFAFDF0E3CE64E735F2F656566F6DF1E242B08340A5C3202BCC9AAECAED4D7030A8701C70FD1363290279EAD2A7AF3528321C7BE62F1AAA407E328C2742FE8278EC0DEBE6834B6D8104401A9E9A67F67229FA04F09DE4F403
 indent = 1
 tabs = '\t' * indent	
+
+from Crypto.Hash import SHA256
+from Crypto.Cipher import AES
+from Crypto.Util import Counter
+from Crypto.PublicKey import RSA 
+from Crypto.Signature import PKCS1_v1_5, PKCS1_PSS
 
 
 class SectionTableEntry:
@@ -1477,24 +1488,243 @@ class Nca(File):
 	def get_sdkversion(self):		
 		sdkversion=str(self.header.sdkVersion4)+'.'+str(self.header.sdkVersion3)+'.'+str(self.header.sdkVersion2)+'.'+str(self.header.sdkVersion1)	
 		return sdkversion
+
+	def verify(self,feed):	
+		if feed == False:
+			feed=''
+		indent='    > '
+		if self._path.endswith('cnmt.nca'):	
+			arrow='   -> '
+		else:
+			arrow=tabs+'  -> ' 		
+		self.rewind()	
+		#print('Signature 1:')
+		sign1 = self.header.signature1
+		#Hex.dump(sign1)		
+		#print('')			
+		#print('Header data:')	
+		hcrypto = aes128.AESXTS(uhx(Keys.get('header_key')))
+		self.header.rewind()
+		orig_header= self.header.read(0xC00)	
+		self.header.seek(0x200)	
+		headdata = self.header.read(0x200)	
+		#print(hx(orig_header))
+		
+		#Hex.dump(headdata)
+		pubkey=RSA.RsaKey(n=nca_header_fixed_key_modulus, e=RSA_PUBLIC_EXPONENT)
+		rsapss = PKCS1_PSS.new(pubkey)
+		digest = SHA256.new(headdata)
+		verification=rsapss.verify(digest, sign1)
+		if verification == True:
+			message=(indent+self._path+arrow+'is PROPER');print(message);feed+=message+'\n'			
+			#print(hx(headdata))		
+			return True,False,self._path,feed
+		else:
+			crypto1=self.header.getCryptoType()
+			crypto2=self.header.getCryptoType2()	
+			if crypto2>crypto1:
+				masterKeyRev=crypto2
+			if crypto2<=crypto1:	
+				masterKeyRev=crypto1		
+			crypto = aes128.AESECB(Keys.keyAreaKey(Keys.getMasterKeyIndex(masterKeyRev), self.header.keyIndex))			
+			KB1L=self.header.getKB1L()
+			KB1L = crypto.decrypt(KB1L)
+			if sum(KB1L) != 0:						
+				#print(hx(headdata))			
+				checkrights,kgchg,titlekey,tr,headdata=self.restorehead_tr()
+				if headdata != False:
+					orig_header=orig_header[0x00:0x200]+headdata+orig_header[0x400:]
+					#print(hx(orig_header))
+					orig_header=hcrypto.encrypt(orig_header)
+				else:
+					orig_header = False						
+				if checkrights == True:
+					message=(indent+self._path+arrow+'is PROPER');print(message);feed+=message+'\n'				
+					message=(tabs+'* '+"TITLERIGHTS WERE REMOVED");print(message);feed+=message+'\n'			
+					if kgchg == False:
+						message=(tabs+'* '+"Original titlerights id is : "+(str(hx(tr)).upper())[2:-1]);print(message);feed+=message+'\n'						
+						message=(tabs+'* '+"Original titlekey is       : "+(str(hx(titlekey)).upper())[2:-1]);print(message);feed+=message+'\n'						
+					elif kgchg == True:
+						message=(tabs+'* '+"KEYGENERATION WAS CHANGED");print(message);feed+=message+'\n'		
+						message=(tabs+'* '+"Original titlerights id is -> "+(str(hx(tr)).upper())[2:-1]);print(message);feed+=message+'\n'		
+						message=(tabs+'* '+"Original titlekey is -> "+(str(hx(titlekey)).upper())[2:-1]);print(message);feed+=message+'\n'				
+					return True,orig_header,self._path,feed	
+				else:
+					message=(indent+self._path+arrow+'was MODIFIED');print(message);feed+=message+'\n'		
+					message=(tabs+'* '+"NOT VERIFIABLE COULD'VE BEEN TAMPERED WITH");print(message);feed+=message+'\n'			
+					return False,False,self._path,feed	
+			else:
+				ver,kgchg,cardchange,headdata=self.restorehead_ntr()
+				if headdata != False:
+					orig_header=orig_header[0x00:0x200]+headdata+orig_header[0x400:]
+					#print(hx(orig_header))
+					orig_header=hcrypto.encrypt(orig_header)					
+				else:
+					orig_header = False				
+				if ver == True:
+					message=(indent+self._path+arrow+'is PROPER');print(message);feed+=message+'\n'		
+					if kgchg == True:
+						message=(tabs+'* '+"KEYGENERATION WAS CHANGED");print(message);feed+=message+'\n'	
+					if cardchange == True:				
+						if self.header.getgamecard() != 0:
+							message=(tabs+'* '+"ISGAMECARD WAS CHANGED FROM 0 TO 1");print(message);feed+=message+'\n'	
+						else:
+							message=(tabs+'* '+"ISGAMECARD WAS CHANGED FROM 1 TO 0");print(message);feed+=message+'\n'									
+					return True,orig_header,self._path,feed		
+				else:
+					message=(indent+self._path+arrow+'was MODIFIED');print(message);feed+=message+'\n'		
+					message=(tabs+'* '+"NOT VERIFIABLE!!!");print(message);feed+=message+'\n'	
+					if self.header.contentType == Type.Content.META:
+						message=(tabs+'* '+"IF THE REST IS OK RSV WAS MODIFIED");print(message);feed+=message+'\n'		
+						message=(tabs+'  '+"(NOTHING TO WORRY ABOUT)");print(message);feed+=message+'\n'							
+					return False,False,self._path,feed					
+			message=(indent+self._path+arrow+'was MODIFIED');print(message);feed+=message+'\n'			
+			message=(tabs+'* '+"NOT VERIFIABLE!!!");print(message);feed+=message+'\n'				
+			return False,False,self._path,feed	
+
+	def restorehead_tr(self):	
+		sign1 = self.header.signature1	
+		crypto1=self.header.getCryptoType()
+		crypto2=self.header.getCryptoType2()		
+		nca_id=self.header.titleId	
+		tr=nca_id+'000000000000000'+str(crypto2)	
+		tr=bytes.fromhex(tr)				
+		if crypto1>crypto2:
+			masterKeyRev = crypto1
+		else:
+			masterKeyRev = crypto2		
+
+		encKeyBlock = self.header.getKeyBlock()
+		key = Keys.keyAreaKey(Keys.getMasterKeyIndex(masterKeyRev), self.header.keyIndex)		
+		crypto = aes128.AESECB(key)
+		decKeyBlock = crypto.decrypt(encKeyBlock[:16])			
+		titleKeyEnc = Keys.encryptTitleKey(decKeyBlock, Keys.getMasterKeyIndex(masterKeyRev))
+
+		self.header.seek(0x200)	
+		headdata = b''
+		headdata += self.header.read(0x30)
+		headdata += tr
+		self.header.read(0x10)
+		headdata += self.header.read(0x100-0x40)		
+		headdata += bytes.fromhex('00'*0x10*4)			
+		self.header.seek(0x340)	
+		headdata += self.header.read(0x100-0x40)		
+		#print(hx(headdata))
+		#Hex.dump(headdata)				
+		pubkey=RSA.RsaKey(n=nca_header_fixed_key_modulus, e=RSA_PUBLIC_EXPONENT)
+		rsapss = PKCS1_PSS.new(pubkey)
+		digest = SHA256.new(headdata)
+		verification=rsapss.verify(digest, sign1)		
+		if verification == True:
+			return True,False,titleKeyEnc,tr,headdata
+		else:
+			tr2=nca_id[:-3]+'800000000000000000'+str(crypto2)	
+			tr2=bytes.fromhex(tr2)
+			headdata2 = b''
+			headdata2=headdata[0x00:0x30]+tr2+headdata[0x40:]
+			digest2 = SHA256.new(headdata2)
+			verification=rsapss.verify(digest2, sign1)	
+			if verification == True:
+				return True,False,titleKeyEnc,tr2,headdata2			
+			else:
+				for i in range(8):
+					if i<3:
+						crypto1='0'+str(i)
+						crypto2='00'
+					else:
+						crypto1='02'
+						crypto2='0'+str(i)	
+						
+					masterKeyRev = i	
+					encKeyBlock = self.header.getKeyBlock()
+					key = Keys.keyAreaKey(Keys.getMasterKeyIndex(masterKeyRev), self.header.keyIndex)		
+					crypto = aes128.AESECB(key)
+					decKeyBlock = crypto.decrypt(encKeyBlock[:16])			
+					titleKeyEnc = Keys.encryptTitleKey(decKeyBlock, Keys.getMasterKeyIndex(masterKeyRev))		
 					
-	'''
-	def c_clean(self,ofolder,buffer):
-		for f in self:
-			cryptoType=f.get_cryptoType()
-			cryptoKey=f.get_cryptoKey()	
-			cryptoCounter=f.get_cryptoCounter()	
-		filename =  str(self._path)
-		outfolder = str(ofolder)+'/'
-		filepath = os.path.join(outfolder, filename)
-		if not os.path.exists(outfolder):
-			os.makedirs(outfolder)
-		fp = open(filepath, 'w+b')
-		self.rewind()
-		for data in iter(lambda: self.read(int(buffer)), ""):
-			fp.write(data)
-			fp.flush()
-			if not data:
-				fp.close()
-				break	
-	'''					
+					tr1=nca_id+'000000000000000'+str(crypto2[1])					
+					tr2=nca_id[:-3]+'800000000000000000'+str(crypto2[1])
+					tr1=bytes.fromhex(tr1);tr2=bytes.fromhex(tr2)
+					crypto1=bytes.fromhex(crypto1);crypto2=bytes.fromhex(crypto2)
+					headdata1 = b''
+					headdata1=headdata[0x00:0x06]+crypto1+headdata[0x07:0x20]+crypto2+headdata[0x21:0x30]+tr1+headdata[0x40:]
+					headdata2 = b''
+					headdata2=headdata1[0x00:0x30]+tr2+headdata[0x40:]		
+					digest1 = SHA256.new(headdata1)
+					digest2 = SHA256.new(headdata2)
+					verification1=rsapss.verify(digest1, sign1)		
+					verification2=rsapss.verify(digest2, sign1)		
+					if verification1 == True:
+						return True,True,titleKeyEnc,tr1,headdata1
+					if verification2 == True:	
+						return True,True,titleKeyEnc,tr2,headdata2					
+				return False,False,False,False,False			
+		
+	def restorehead_ntr(self):		
+		sign1 = self.header.signature1		
+		self.header.seek(0x200)	
+		headdata = self.header.read(0x200)
+		card='01';card=bytes.fromhex(card)
+		eshop='00';eshop=bytes.fromhex(eshop)
+		#print(hx(headdata))
+		#Hex.dump(headdata)				
+		pubkey=RSA.RsaKey(n=nca_header_fixed_key_modulus, e=RSA_PUBLIC_EXPONENT)
+		rsapss = PKCS1_PSS.new(pubkey)
+		digest = SHA256.new(headdata)
+		verification=rsapss.verify(digest, sign1)		
+		if	self.header.getgamecard() == 0:		
+			headdata2 = b''
+			headdata2=headdata[0x00:0x04]+eshop+headdata[0x05:]		
+			digest2 = SHA256.new(headdata2)	
+			verification2=rsapss.verify(digest2, sign1)
+			if verification2 == True:
+				return True,False,True,headdata2			
+		else:
+			headdata2 = b''
+			headdata2=headdata[0x00:0x04]+eshop+headdata[0x05:]	
+			digest2 = SHA256.new(headdata2)
+			verification2=rsapss.verify(digest2, sign1)			
+			if verification2 == True:
+				return True,False,True,headdata2	
+				
+		crypto1=self.header.getCryptoType()
+		crypto2=self.header.getCryptoType2()	
+		if crypto2>crypto1:
+			masterKeyRev=crypto2
+		if crypto2<=crypto1:	
+			masterKeyRev=crypto1
+		key = Keys.keyAreaKey(Keys.getMasterKeyIndex(masterKeyRev), self.header.keyIndex)				
+		crypto = aes128.AESECB(key)
+		encKeyBlock = self.header.getKeyBlock()
+		decKeyBlock = crypto.decrypt(encKeyBlock)			
+		for i in range(8):
+			if i<3:
+				crypto1='0'+str(i)
+				crypto2='00'
+			else:
+				crypto1='02'
+				crypto2='0'+str(i)	
+			newMasterKeyRev=i
+			key = Keys.keyAreaKey(Keys.getMasterKeyIndex(newMasterKeyRev), self.header.keyIndex)				
+			crypto = aes128.AESECB(key)
+			reEncKeyBlock = crypto.encrypt(decKeyBlock)				
+
+			crypto1=bytes.fromhex(crypto1);crypto2=bytes.fromhex(crypto2)				
+			headdata1 = b''				
+			headdata1=headdata[0x00:0x04]+card+headdata[0x05:0x06]+crypto1+headdata[0x07:0x20]+crypto2+headdata[0x21:0x100]+reEncKeyBlock+headdata[0x140:]
+			#print(hx(headdata1))
+			headdata2 = b''
+			headdata2=headdata[0x00:0x04]+eshop+headdata1[0x05:]	
+			#print(hx(headdata2))
+			digest1 = SHA256.new(headdata1)
+			digest2 = SHA256.new(headdata2)
+			verification1=rsapss.verify(digest1, sign1)		
+			verification2=rsapss.verify(digest2, sign1)	
+			if verification1 == True:
+				return True,True,False,headdata1
+			if verification2 == True:
+				return True,True,False,headdata2				
+		return False,False,False,False		
+
+
+		
