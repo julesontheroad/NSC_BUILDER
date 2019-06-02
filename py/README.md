@@ -27,6 +27,13 @@ Current version of the program allows you to:
 8.- Lower the masterkey needed to decrypt a game.
 9.- Check out information from a xci and nsp, including the Firmware needed to be able to execute it, the game info, the size of the nca content…
 10.- Repack xci and nsp content in formats compatible with fat32
+11.- Mass build xci files and nsp files in single and multi content format
+12.- Rename nsp,xci files to match it's content
+13.- Verify nsp, nsx, xci y nca files
+14.- Output information in text format
+15.- Extract content of nsp files and secure partition of xci files
+16.- Set jobs for later in multi mode
+17.- Separate jobs by based-titleid in multi mode
 
 ## 4. Batch modes:
 
@@ -42,10 +49,20 @@ The behavior of the auto-mode is configured trough the “Configuration menu in ma
 
 - MODE 0: Configuration mode. Let’s you configure the way the program works in both auto and manual mode.
 - MODE 1: Indidual packing. Let’s you process a list of files and pack them individually
+  * Pack as nsp\xci
+  * Supertrimm xci files
+  * Rename xci or nsp files
+  * Rebuild nsp files in cnmt order and add cnmt.xml
+  * Verify nsp,xci files
 - MODE 2: Multi packing. Let’s you pack a list of files in a single xci or nsp file.
+  * Separate files by basedid
+  * Set up jobs for later
+  * Process previous jobs
 - MODE 3: Multi-Content-Splitter. Let’s you separate content to nsp and xci files.
-- MODE 4: Update mode. Let’s you erase previous updates or dlcs from a multi-content xci or nsp file and add new updates. NOTE: Always use it with multi-content files.
-- MODE 5: File-Info. Let’s you see and export several info about nsp and xci files
+- MODE 4: File-Info. Let’s you see and export several info about nsp and xci files
+- MODE 5: Database Mode. Let’s you mass output information
+- MODE 6: Advanced Mode. Currently extracts nca from xci\nsp (more to be added)
+- L: Legacy Mode. Old functions
 
 ## 6. Configuration mode:
 ### Auto Mode options. (Affects only Auto-Mode)
@@ -94,8 +111,10 @@ This program attempts to modify the minimum data possible in nsp and xci files, 
 - SX OS
 - ReiNX
 https://github.com/Reisyukaku/ReiNX/releases
-- RShadowhand’s starter pack “Singularité", wich is a preconfigured atmosphere, made to auto-launch via Hekate trough fusee primary including the needed patches and some homebrew starters.
+- RShadowhand’s starter pack “Singularité", which is a preconfigured atmosphere, made to auto-launch via Hekate trough fusee primary including the needed patches and some homebrew starters.
 https://github.com/RShadowhand/singularite/releases
+- For kosmos replace hekate for modded hekate with added sigpatches:
+https://github.com/Joonie86/hekate/releases
 
 To install multi-nsp you need a installer compatible with them. Reported compatible installers are:
 - SX OS rom-menu
@@ -105,16 +124,14 @@ https://github.com/digableinc/tinfoil
 - Blawar’s lithium:
 https://github.com/blawar/lithium
 
-## 8. Requirements for 0.8x Beta
+## 8. Requirements 
 
 - A computer with a Window's OS is needed
 - Fill keys_template.txt on the ztools folder and rename it to keys.txt
   You can get a full keyset with Lockpick if your console is at FW6.2 or 
   A friend can lend you the needed keys.
-  If you want to add the xci_header_key a friend will need to lend that    to you.
+  If you want to add the xci_header_key a friend will need to lend it to you.
   https://github.com/shchmue/Lockpick/releases
-- If you get dll missing messages install “Visual C++ Redistributable for Visual Studio 2015” 
-https://www.microsoft.com/en-us/download/details.aspx?id=48145
 
 ## 9. Limitations 
 - You can't make multi-content xci files with more than 8 games. It'll give error when loading in horizon. I suspect it may be a qlauncher limitation so it could work with theme mods but INTRO didn't test it.
@@ -142,6 +159,8 @@ https://github.com/AnalogMan151/splitNSP/releases
 Thx to MadScript77 his great suggestions,specially the idea of profiles for the batch.
 
 Thx to Liam and 0mn0 from old SH discord for always being helpfull.
+
+Thx to evOLved, Cinnabar and a certain dragon for their help and good suggestions.
 
 Thx to XCI-Explorer's creator StudentBlake since his program made easier for me to came up with the fix for hacbuild.
 
