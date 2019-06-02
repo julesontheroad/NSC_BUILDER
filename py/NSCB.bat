@@ -658,12 +658,17 @@ if /i "%bs%"=="2" goto multimode
 if /i "%bs%"=="3" goto SPLMODE
 if /i "%bs%"=="4" goto INFMODE
 if /i "%bs%"=="5" goto DBMODE
-if /i "%bs%"=="6" call "%prog_dir%ztools\ADV.bat"
-if /i "%bs%"=="L" call "%prog_dir%ztools\LEGACY.bat"
-REM if /i "%bs%"=="7" goto ADVMODE
+if /i "%bs%"=="6" goto ADVmode
+if /i "%bs%"=="L" goto LegacyMode
 if /i "%bs%"=="0" goto OPT_CONFIG
 goto manual_Reentry
 
+:ADVmode
+call "%prog_dir%ztools\ADV.bat"
+goto manual_Reentry
+:LegacyMode
+call "%prog_dir%ztools\LEGACY.bat"
+goto manual_Reentry
 REM //////////////////////////////////////////////////
 REM /////////////////////////////////////////////////
 REM START OF MANUAL MODE. INDIVIDUAL PROCESSING

@@ -1,23 +1,6 @@
 @ECHO OFF
 :TOP_INIT
 CD /d "%prog_dir%"
-set "bat_name=%~n0"
-Title NSC_Builder v0.85. -- Profile: %ofile_name% -- by JulesOnTheRoad
-
-::Check if user is dragging a folder or a file
-if "%~1"=="" goto manual
-dir "%~1\" >nul 2>nul
-if not errorlevel 1 goto folder
-if exist "%~1\" goto folder
-goto file
-
-:manual_Reentry
-
-:manual
-endlocal
-
-cls
-call :program_logo
 
 REM //////////////////////////////////////////////////
 REM /////////////////////////////////////////////////
@@ -27,9 +10,9 @@ REM ////////////////////////////////////////////////
 :normalmode
 cls
 call :program_logo
-echo -----------------------------------------------
-echo INDIVIDUAL PROCESSING ACTIVATED
-echo -----------------------------------------------
+echo -------------------------------------------------
+echo ADVANCE MODE ACTIVATED
+echo -------------------------------------------------
 if exist "advlist.txt" goto prevlist
 goto manual_INIT
 :prevlist
@@ -65,7 +48,7 @@ set bs=%bs:"=%
 if /i "%bs%"=="3" goto showlist
 if /i "%bs%"=="2" goto delist
 if /i "%bs%"=="1" goto start_cleaning
-if /i "%bs%"=="0" goto manual_Reentry
+if /i "%bs%"=="0" exit /B
 echo.
 echo BAD CHOICE
 goto prevlist0
@@ -73,9 +56,9 @@ goto prevlist0
 del advlist.txt
 cls
 call :program_logo
-echo -----------------------------------------------
-echo INDIVIDUAL PROCESSING ACTIVATED
-echo -----------------------------------------------
+echo -------------------------------------------------
+echo ADVANCE MODE ACTIVATED
+echo -------------------------------------------------
 echo ..................................
 echo YOU'VE DECIDED TO START A NEW LIST
 echo ..................................
@@ -86,9 +69,7 @@ ECHO ***********************************************
 echo Input "0" to return to the MODE SELECTION MENU
 ECHO ***********************************************
 echo.
-
 %pycommand% "%nut%" -t nsp xci -tfile "%prog_dir%advlist.txt" -uin "%uinput%" -ff "uinput"
-
 set /p eval=<"%uinput%"
 set eval=%eval:"=%
 setlocal enabledelayedexpansion
@@ -126,7 +107,7 @@ if /i "%eval%"=="i" goto showlist
 if /i "%eval%"=="r" goto r_files
 if /i "%eval%"=="z" del advlist.txt
 
-goto exit /B
+goto checkagain
 
 :r_files
 set /p bs="Input the number of files you want to remove (from bottom): "
@@ -162,7 +143,7 @@ endlocal
 cls
 call :program_logo
 echo -------------------------------------------------
-echo INDIVIDUAL PROCESSING ACTIVATED
+echo ADVANCE MODE ACTIVATED
 echo -------------------------------------------------
 ECHO -------------------------------------------------
 ECHO                 FILES TO PROCESS 
@@ -198,7 +179,7 @@ echo.
 set /p bs="Enter your choice: "
 set bs=%bs:"=%
 set vrepack=none
-if /i "%bs%"=="b" goto exit /B
+if /i "%bs%"=="b" goto checkagain
 if /i "%bs%"=="1" goto extract
 if %vrepack%=="none" goto s_cl_wrongchoice
 
@@ -206,12 +187,10 @@ if %vrepack%=="none" goto s_cl_wrongchoice
 :extract
 cls
 call :program_logo
+CD /d "%prog_dir%"
 for /f "tokens=*" %%f in (advlist.txt) do (
-set "name=%%~nf"
-set "filename=%%~nxf"
-set "orinput=%%f"
 
-%pycommand% "%nut%" %buffer% -o "%prog_dir%\extract\%name%" -x "%%f"
+%pycommand% "%nut%" %buffer% -o "%prog_dir%extract" -tfile "%prog_dir%advlist.txt" -x ""
 
 more +1 "advlist.txt">"advlist.txt.new"
 move /y "advlist.txt.new" "advlist.txt" >nul
@@ -313,8 +292,6 @@ exit /B
 
 
 :salida
-::pause
-exit
-
+exit /B
 
 

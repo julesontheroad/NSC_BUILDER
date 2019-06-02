@@ -549,10 +549,21 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))	
 			else:
-				for filename in args.extract:
-					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder =os.path.join(dir, 'output')
-					
+				if args.text_file:
+					tfile=args.text_file
+					with open(tfile,"r+", encoding='utf8') as filelist: 	
+						filename = filelist.readline()
+						filename=os.path.abspath(filename.rstrip('\n'))		
+						dir=os.path.dirname(os.path.abspath(filename))
+						basename=str(os.path.basename(os.path.abspath(filepath)))							
+						ofolder =os.path.join(dir, 'output')
+						ofolder =os.path.join(dir, 'basename')						
+				else:		
+					for filename in args.extract:
+						dir=os.path.dirname(os.path.abspath(filename))
+						ofolder =os.path.join(dir, 'output')
+			if not os.path.exists(ofolder):
+				os.makedirs(ofolder)						
 			if args.buffer:		
 				for input in args.buffer:
 					try:
@@ -561,7 +572,16 @@ if __name__ == '__main__':
 						Print.error('Exception: ' + str(e))
 			else:
 				buffer = 32768			
-			for filename in args.extract:
+				
+			if args.extract:					
+				if args.text_file:
+					tfile=args.text_file
+					with open(tfile,"r+", encoding='utf8') as filelist: 	
+						filename = filelist.readline()
+						filename=os.path.abspath(filename.rstrip('\n'))				
+				else:
+					for filename in args.extract:
+						filename=filename			
 				test=filename.lower()
 				if test.endswith('.nsp') or test.endswith('.nsx'):
 					try:

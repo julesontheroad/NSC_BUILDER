@@ -315,6 +315,7 @@ class Xci(File):
 	def extract_all(self,ofolder,buffer):
 		indent = 1
 		tabs = '\t' * indent
+		print("Processing: "+str(self._path))
 		for nspF in self.hfs0:
 			if 'secure' == str(nspF._path):
 				for file in nspF:
