@@ -11,7 +11,7 @@ set "pycommand=%pycommand%"
 ECHO.
 ECHO Installing dependencies 
 ECHO.
-%pycommand% -m pip install urllib3 unidecode tqdm bs4 tqdm requests image pywin32
+%pycommand% -m pip install urllib3 unidecode tqdm bs4 tqdm requests image pywin32 pycryptodome
 ECHO.
 ECHO **********************************************************************************
 ECHO ---IMPORTANT: Check if dependencies were installed correctly before continuing---
