@@ -216,6 +216,7 @@ if __name__ == '__main__':
 		parser.add_argument('-cltg','--cleantags', help="Clean tags in filenames")	
 		parser.add_argument('-tgtype','--tagtype', help="Type of tag to remove")
 		parser.add_argument('-vorg','--v_organize', help="Aux variable to organize files")		
+		parser.add_argument('-vt','--vertype', help="Veryfication type for auto, needs --text_file. Opt: dec,sig,full [DECryption, decryption and SIGnature, previous and hash check]")			
 		args = parser.parse_args()
 
 		Status.start()
@@ -4397,8 +4398,9 @@ if __name__ == '__main__':
 			except BaseException as e:
 				Print.error('Exception: ' + str(e))					
 
-				
-		#parser.add_argument('-cltg','--cleantags', help="Clean tags in filenames")		
+		# ...................................................						
+		# Clean tags in filenames
+		# ...................................................		
 		#parser.add_argument('-tgtype','--tagtype', help="Type of tag to remove")			
 		if args.cleantags:
 			if args.tagtype:
@@ -4553,7 +4555,6 @@ if __name__ == '__main__':
 						if filepath.endswith('.nsp'):
 							endname=endname[:-4]+' (SeemsDuplicate)'+'.nsp'
 							newpath=os.path.join(dir,endname)	
-					print('New name: '+endname)
 					try:
 						os.rename(filepath, newpath)			
 						print(tabs+'> File was renamed to: '+endname)		
@@ -4564,7 +4565,9 @@ if __name__ == '__main__':
 				counter-=1
 				Print.error('Exception: ' + str(e))	
 								
-		#parser.add_argument('-renf','--renamef', help='Rename file with proper name')	
+		# ...................................................						
+		# Rename file with proper name
+		# ...................................................									
 		#parser.add_argument('-oaid','--onlyaddid', help='Rename file with proper name')		
 		#parser.add_argument('-renm','--renmode', help='Rename mode (force,skip_corr_tid,skip_if_tid)')		
 		#parser.add_argument('-addl','--addlangue', help='Add language string')		
@@ -4580,7 +4583,7 @@ if __name__ == '__main__':
 				else:					
 					onaddid=False
 			else:
-				onaddid=False	
+				onaddid=False
 			if args.addlangue:
 				if args.addlangue=="true" or args.addlangue == "True" or args.addlangue == "TRUE":
 					addlangue=True
@@ -4971,7 +4974,7 @@ if __name__ == '__main__':
 							mgame='(mgame)'
 						if ccount == '(1G)' or ccount == '(1U)' or ccount == '(1D)':
 							ccount=''
-						basename=str(os.path.basename(os.path.abspath(filepath)))							
+						basename=str(os.path.basename(os.path.abspath(filepath)))
 						if baseid != "" and baseid != "[]":
 							if updver != "":	
 								if onaddid==True:
@@ -4986,7 +4989,9 @@ if __name__ == '__main__':
 								if onaddid==True:
 									endname=basename[:-4]+' '+baseid
 								elif onaddid=='idtag' and (ccount!=''):
-									endname=basename[:-4]+' '+baseid+' '+ccount+' '+mgame								
+									endname=basename[:-4]+' '+baseid+' '+ccount+' '+mgame
+								elif onaddid=='idtag':
+									endname=basename[:-4]+' '+baseid								
 								elif nover == True and (ccount==''):
 									endname=ctitl+' '+baseid											
 								elif filepath.endswith('.xci') and nover=="xci_no_v0" and ccount=='':
@@ -5236,8 +5241,22 @@ if __name__ == '__main__':
 			except BaseException as e:	
 				pass				
 						
+		# ...................................................						
+		# Verify. File verification
+		# ...................................................							
 		if args.verify:	
 			feed=''
+			if args.vertype:	
+				if args.vertype=="dec" or args.vertype=="lv1":
+					vertype="lv1"
+				elif args.vertype=="sig" or args.vertype=="lv2": 
+					vertype="lv2"
+				elif args.vertype=="sig" or args.vertype=="lv3": 
+					vertype="lv3"					
+				else:
+					vertype="lv1"	
+			else:
+				vertype="lv1"
 			if args.buffer:		
 				for var in args.buffer:
 					try:
@@ -5288,14 +5307,14 @@ if __name__ == '__main__':
 						while i==0:		
 							print('Input "1" to VERIFY hash of files')	
 							print('Input "2" to NOT verify hash  of files\n')												
-							check=input('Input your answer: ')
-							if check ==str(1):
+							ck=input('Input your answer: ')
+							if ck ==str(1):
 								print('')
 								veredict,feed=f.verify_hash_nca(buffer,headerlist,veredict,feed)
 								f.flush()
 								f.close()
 								i=1
-							elif check ==str(2):					
+							elif ck ==str(2):					
 								f.flush()
 								f.close()
 								i=1				
@@ -5308,24 +5327,46 @@ if __name__ == '__main__':
 						while i==0:							
 							print('Input "1" to print to text file')	
 							print('Input "2" to NOT print to text file\n')							
-							check=input('Input your answer: ')	
-							if check ==str(1):					
+							ck=input('Input your answer: ')	
+							if ck ==str(1):					
 								with open(infotext, 'w') as info:	
 									info.write(feed)	
 								i=1
-							elif check ==str(2):					
+							elif ck ==str(2):					
 								i=1				
 							else:
 								print('WRONG CHOICE\n')								
-					elif args.text_file:					
+					elif args.text_file:	
+						if vertype == "lv2":
+							veredict,headerlist,feed=f.verify_sig(feed)	
+							if check == True:
+								check=veredict
+						elif vertype == "lv3":	
+							veredict,headerlist,feed=f.verify_sig(feed)	
+							if check == True:
+								check=veredict						
+							veredict,feed=f.verify_hash_nca(buffer,headerlist,veredict,feed)
+							if check == True:
+								check=veredict							
 						if check == False:
 							with open(errfile, 'a') as errfile:	
 								now=datetime.now()
 								date=now.strftime("%x")+". "+now.strftime("%X")								
 								errfile.write("Filename: "+str(filename)+'\n')
-								errfile.write("IS INCORRECT"+'\n')	
+								errfile.write("IS INCORRECT"+'\n')
+						dir=os.path.dirname(os.path.abspath(tfile))
+						info='INFO'
+						ofolder =os.path.join(dir,info)									
+						infotext=os.path.join(ofolder, ofile)
+						with open(infotext, 'w') as info:	
+							info.write(feed)								
 				except BaseException as e:
 					Print.error('Exception: ' + str(e))	
+					with open(errfile, 'a') as errfile:	
+						now=datetime.now()
+						date=now.strftime("%x")+". "+now.strftime("%X")								
+						errfile.write("Filename: "+str(filename)+'\n')
+						errfile.write('Exception: ' + str(e)+'\n')		
 			if filename.endswith('.xci'):
 				try:
 					f = Fs.factory(filename)
@@ -5369,23 +5410,63 @@ if __name__ == '__main__':
 								i=1				
 							else:
 								print('WRONG CHOICE\n')								
-					elif args.text_file:					
+					elif args.text_file:	
+						if vertype == "lv2":
+							veredict,headerlist,feed=f.verify_sig(feed)	
+							if check == True:
+								check=veredict
+						elif vertype == "lv3":	
+							veredict,headerlist,feed=f.verify_sig(feed)	
+							if check == True:
+								check=veredict						
+							veredict,feed=f.verify_hash_nca(buffer,headerlist,veredict,feed)
+							if check == True:
+								check=veredict						
 						if check == False:
 							with open(errfile, 'a') as errfile:	
 								now=datetime.now()
 								date=now.strftime("%x")+". "+now.strftime("%X")								
 								errfile.write("Filename: "+str(filename)+'\n')
-								errfile.write("IS INCORRECT"+'\n')																						
+								errfile.write("IS INCORRECT"+'\n')
+						dir=os.path.dirname(os.path.abspath(tfile))
+						info='INFO'
+						ofolder =os.path.join(dir,info)									
+						infotext=os.path.join(ofolder, ofile)
+						with open(infotext, 'w') as info:	
+							info.write(feed)								
 				except BaseException as e:
 					Print.error('Exception: ' + str(e))	
+					with open(errfile, 'a') as errfile:	
+						now=datetime.now()
+						date=now.strftime("%x")+". "+now.strftime("%X")								
+						errfile.write("Filename: "+str(filename)+'\n')
+						errfile.write('Exception: ' + str(e)+'\n')					
 			if filename.endswith('.nca'):
 				try:
 					f = Fs.Nca(filename, 'rb')
-					f.verify()
+					verify,origheader,ncaname,feed=f.verify(False)
 					f.flush()
-					f.close()														
+					f.close()						
+					if args.text_file:					
+						if check == False:
+							with open(errfile, 'a') as errfile:	
+								now=datetime.now()
+								date=now.strftime("%x")+". "+now.strftime("%X")								
+								errfile.write("Filename: "+str(filename)+'\n')
+								errfile.write("IS INCORRECT"+'\n')	
+						dir=os.path.dirname(os.path.abspath(tfile))
+						info='INFO'
+						ofolder =os.path.join(dir,info)									
+						infotext=os.path.join(ofolder, ofile)
+						with open(infotext, 'w') as info:	
+							info.write(feed)							
 				except BaseException as e:
-					Print.error('Exception: ' + str(e))							
+					Print.error('Exception: ' + str(e))	
+					with open(errfile, 'a') as errfile:	
+						now=datetime.now()
+						date=now.strftime("%x")+". "+now.strftime("%X")								
+						errfile.write("Filename: "+str(filename)+'\n')
+						errfile.write('Exception: ' + str(e)+'\n')							
 						
 		#split_list_by_id						
 		if args.split_list_by_id:						

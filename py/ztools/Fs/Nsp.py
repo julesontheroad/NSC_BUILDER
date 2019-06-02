@@ -6405,13 +6405,14 @@ class Nsp(Pfs0):
 								if correct == False and f.header.getRightsId() == 0:
 									correct = f.pr_noenc_check()		
 								if correct == False and f.header.getRightsId() != 0:
-									correct = self.verify_key(file)									
+									correct = self.verify_nca_key(file)									
 				elif file.endswith('.tik'):	
+					tikfile=str(file)				
 					checktik == False
 					for f in self:	
 						if str(f._path).endswith('.nca'):									
 							if checktik == False and f.header.getRightsId() != 0:
-								checktik = self.verify_key(str(f._path))	
+								checktik = self.verify_key(str(f._path),tikfile)	
 								if 	checktik == True:
 									break								
 					message=('Content.TICKET');print(message);feed+=message+'\n'												
@@ -6527,7 +6528,7 @@ class Nsp(Pfs0):
 		veredict=True		
 		if feed == False:
 			feed=''				
-		message='***************';print(message);feed+='\n'+message+'\n'
+		message='\n***************';print(message);feed+=message+'\n'
 		message=('HASH TEST');print(message);feed+=message+'\n'
 		message='***************';print(message);feed+=message+'\n'			
 		for f in self:						
@@ -6578,14 +6579,14 @@ class Nsp(Pfs0):
 						message=('   > FILE IS CORRECT');print(message);feed+=message+'\n'
 					else:
 						message=('   > FILE IS CORRUPT');print(message);feed+=message+'\n'
-						veredict == False	
+						veredict = False	
 				elif  f.header.contentType == Type.Content.META and didverify == True:		
 					message=('   > RSV WAS CHANGED');print(message);feed+=message+'\n'
 					#print('   > CHECKING INTERNAL HASHES')								
 					message=('     * FILE IS CORRECT');print(message);feed+=message+'\n'							
 				else:
 					message=('   > FILE IS CORRUPT');print(message);feed+=message+'\n'
-					veredict == False
+					veredict = False
 				message=('');print(message);feed+=message+'\n'			
 		if veredict == False:
 			message=("VEREDICT: NSP FILE IS CORRUPT");print(message);feed+=message+'\n'
@@ -6641,10 +6642,48 @@ class Nsp(Pfs0):
 							pfs0Header = f.read(levelSize)
 							return True
 						else:
-							return False					
+							return False		
+
+	def verify_nca_key(self,nca):
+		check=False
+		for file in self:	
+			if (file._path).endswith('.tik'):
+				check=self.verify_key(nca,str(file._path))
+				if check==True:
+					break
+		return check									
 							
-	def verify_key(self,nca):
-		decKey = self.nsptitlekeydec()			
+	def verify_key(self,nca,ticket):
+		masterKeyRev=False
+		for file in self:
+			if type(file) == Nca:
+				if str(file._path) == nca:	
+					crypto1=file.header.getCryptoType()	
+					crypto2=file.header.getCryptoType2()		
+					if crypto1 == 2:
+						if crypto1 > crypto2:								
+							masterKeyRev=file.header.getCryptoType()
+						else:			
+							masterKeyRev=file.header.getCryptoType2()	
+					else:			
+						masterKeyRev=file.header.getCryptoType2()
+		if masterKeyRev == False:
+			return False
+
+		for file in self:
+			if type(file) == Ticket:
+				if ticket != False:
+					if str(file._path) == ticket:
+						titleKeyDec = Keys.decryptTitleKey(file.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(masterKeyRev))
+						rightsId = file.getRightsId()
+						break
+				else:
+					ticket = str(file._path)
+					titleKeyDec = Keys.decryptTitleKey(file.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(masterKeyRev))
+					rightsId = file.getRightsId()									
+									
+		decKey = titleKeyDec
+		
 		for f in self:
 			if str(f._path) == nca:
 				if type(f) == Fs.Nca and f.header.getRightsId() != 0:

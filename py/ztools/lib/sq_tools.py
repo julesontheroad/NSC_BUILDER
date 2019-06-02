@@ -38,7 +38,21 @@ versions =
     404750376: "6.2.0-40" ->   keygeneration = 7
 	469762048: "7.0.0"    ->   keygeneration = 8
 	469827584: "7.0.1"    ->   keygeneration = 8  
+	536870912: "8.0.0"    ->   keygeneration = 8
+	536936448: "8.0.1"    ->   keygeneration = 8	
 '''	
+def kgstring():
+	kg=list()
+	kg8=[536936448,536870912,469827584,469762048];kg.append(kg8)	
+	kg7=[404750376,404750336];kg.append(kg7)	
+	kg6=[403701850,402718730,402653544,402653514,402653494];kg.append(kg6)	
+	kg5=[336592976,335675432,335609886,335544750];kg.append(kg5)	
+	kg4=[269484082,268501002,268435656];kg.append(kg4)	
+	kg3=[201457684,201392178];kg.append(kg3)	
+	kg2=[201327002];kg.append(kg2)	
+	kg1=[262164,196628,131162,65796];kg.append(kg1)	
+	kg0=[450,0];kg.append(kg0)
+	return kg
 
 def getTopRSV(keygeneration, RSV):
 	if keygeneration == 0:
@@ -58,7 +72,7 @@ def getTopRSV(keygeneration, RSV):
 	if keygeneration == 7:
 		return 404750376
 	if keygeneration == 8:
-		return 469827584		
+		return 536936448		
 	else:
 		return RSV
 
@@ -109,7 +123,7 @@ def getFWRangeKG(keygeneration):
 	if keygeneration == 7:
 		return "(6.2.0)"
 	if keygeneration == 8:
-		return "(7.0.0 - >7.0.1)"		
+		return "(7.0.0 - >8.0.1)"		
 	else:
 		return "UNKNOWN"			
 	

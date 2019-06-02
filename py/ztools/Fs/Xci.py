@@ -5849,6 +5849,11 @@ class Xci(File):
 		delta = False
 		veredict = True		
 		checktik=False		
+		
+		message='***************';print(message);feed+=message+'\n'
+		message='DECRIPTION TEST';print(message);feed+=message+'\n'
+		message='***************';print(message);feed+=message+'\n'	
+		
 		for nspF in self.hfs0:
 			if str(nspF._path)=="secure":
 				for file in nspF:
@@ -5864,10 +5869,6 @@ class Xci(File):
 						listed_files.append(str(file._path))
 					if type(file) == Ticket:
 						validfiles.append(str(file._path))						
-	
-		message='***************';print(message);feed+=message+'\n'
-		message='DECRIPTION TEST';print(message);feed+=message+'\n'
-		message='***************';print(message);feed+=message+'\n'	
 				
 		for file in listed_files:	
 			correct=False		
@@ -5909,15 +5910,16 @@ class Xci(File):
 										if correct == False and f.header.getRightsId() == 0:
 											correct = f.pr_noenc_check()		
 										if correct == False and f.header.getRightsId() != 0:
-											correct = self.verify_key(file)											
+											correct = self.verify_nca_key(file)											
 				elif file.endswith('.tik'):
+					tikfile=str(file)
 					checktik == False
 					for nspF in self.hfs0:
 						if str(nspF._path)=="secure":
 							for f in nspF:						
 								if str(f._path).endswith('.nca'):									
 									if checktik == False and f.header.getRightsId() != 0:
-										checktik = self.verify_key(str(f._path))	
+										checktik = self.verify_key(str(f._path),tikfile)	
 										if 	checktik == True:
 											break
 							message=('Content.TICKET');print(message);feed+=message+'\n'												
@@ -6039,7 +6041,7 @@ class Xci(File):
 		veredict=True		
 		if feed == False:
 			feed=''			
-		message='***************';print(message);feed+='\n'+message+'\n'
+		message='\n***************';print(message);feed+=message+'\n'
 		message=('HASH TEST');print(message);feed+=message+'\n'
 		message='***************';print(message);feed+=message+'\n'												
 		for nspF in self.hfs0:
@@ -6093,14 +6095,14 @@ class Xci(File):
 								message=('   > FILE IS CORRECT');print(message);feed+=message+'\n'
 							else:
 								message=('   > FILE IS CORRUPT');print(message);feed+=message+'\n'
-								veredict == False	
+								veredict = False	
 						elif  f.header.contentType == Type.Content.META and didverify == True:		
 							message=('   > RSV WAS CHANGED');print(message);feed+=message+'\n'
 							#print('   > CHECKING INTERNAL HASHES')								
 							message=('     * FILE IS CORRECT');print(message);feed+=message+'\n'							
 						else:
 							message=('   > FILE IS CORRUPT');print(message);feed+=message+'\n'
-							veredict == False
+							veredict = False
 						message=('');print(message);feed+=message+'\n'			
 		if veredict == False:
 			message=("VEREDICT: XCI FILE IS CORRUPT");print(message);feed+=message+'\n'
@@ -6160,33 +6162,50 @@ class Xci(File):
 									return True
 								else:
 									return False	
-
-	def verify_key(self,nca):
+	def verify_nca_key(self,nca):
+		check=False
+		for nspF in self.hfs0:
+			if str(nspF._path)=="secure":
+				for file in nspF:	
+					if (file._path).endswith('.tik'):
+						check=self.verify_key(nca,str(file._path))
+						if check==True:
+							break
+		return check					
+					
+	def verify_key(self,nca,ticket):
+		masterKeyRev=False
+		for nspF in self.hfs0:
+			if str(nspF._path)=="secure":
+				for file in nspF:
+					if type(file) == Nca:
+						if str(file._path) == nca:	
+							crypto1=file.header.getCryptoType()	
+							crypto2=file.header.getCryptoType2()		
+							if crypto1 == 2:
+								if crypto1 > crypto2:								
+									masterKeyRev=file.header.getCryptoType()
+								else:			
+									masterKeyRev=file.header.getCryptoType2()	
+							else:			
+								masterKeyRev=file.header.getCryptoType2()
+		if masterKeyRev == False:
+			return False
+										
 		for nspF in self.hfs0:
 			if str(nspF._path)=="secure":
 				for file in nspF:
 					if type(file) == Ticket:
-						masterKeyRev = file.getMasterKeyRevision()
-						titleKeyDec = Keys.decryptTitleKey(file.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(masterKeyRev))
-						rightsId = file.getRightsId()
-		for nspF in self.hfs0:
-			if str(nspF._path)=="secure":
-				for file in nspF:			
-					if type(file) == Nca:
-						if file.header.getRightsId() != 0:
-							if file.header.getCryptoType2() != masterKeyRev:
-								pass
-								raise IOError('Mismatched masterKeyRevs!')
-		for nspF in self.hfs0:
-			if str(nspF._path)=="secure":
-				for file in nspF:
-					if type(file) == Nca:	
-						if file.header.getRightsId() != 0:		
-							if file.header.getCryptoType2() == 0:
-								if file.header.getCryptoType() == 2:
-									masterKeyRev = 2						
-									titleKeyDec = Keys.decryptTitleKey(ticket.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(masterKeyRev))
-									break		
+						if ticket != False:
+							if str(file._path) == ticket:
+								titleKeyDec = Keys.decryptTitleKey(file.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(masterKeyRev))
+								rightsId = file.getRightsId()
+								break
+						else:
+							ticket = str(file._path)
+							titleKeyDec = Keys.decryptTitleKey(file.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(masterKeyRev))
+							rightsId = file.getRightsId()									
+									
 		decKey = titleKeyDec			
 		for nspF in self.hfs0:
 			if str(nspF._path)=="secure":

@@ -862,7 +862,7 @@ if /i "%bs%"=="6" goto s_KeyChange_skip
 if /i "%bs%"=="7" set "vrepack=rebuild"
 if /i "%bs%"=="7" goto s_KeyChange_skip
 if /i "%bs%"=="8" set "vrepack=verify"
-if /i "%bs%"=="8" goto s_KeyChange_skip
+if /i "%bs%"=="8" goto s_vertype
 if %vrepack%=="none" goto s_cl_wrongchoice
 :s_RSV_wrongchoice
 if /i "%skipRSVprompt%"=="true" set "patchRSV=-pv false"
@@ -941,6 +941,41 @@ if /i "%bs%"=="8" set "vkey=-kp 8"
 if /i "%bs%"=="8" set "capRSV=--RSVcap 469762048"
 if /i "%vkey%"=="none" echo WRONG CHOICE
 if /i "%vkey%"=="none" goto s_KeyChange_wrongchoice
+goto s_KeyChange_skip
+
+:s_vertype
+echo *******************************************************
+echo TYPE OF VERIFICATION
+echo *******************************************************
+echo This chooses the level of verification.
+echo DECRYPTION - Files ar readable, ticket's correct
+echo              No file is missing
+echo SIGNATURE  - Check's header against Nintendo Sig1
+echo              Calculates original header for NSCB modifications
+echo HASH       - Check's current and original hash of files and 
+echo              matches them against name of the file
+echo.
+echo NOTE: If you read files on a remote service via a filestream
+echo method decryption or signature are the recommended methods
+echo.
+echo Input "1" to use DECRYPTION verification (fast)
+echo Input "2" to use decryption + SIGNATURE verification (fast)
+echo Input "3" to use decryption + signature + HASH verification (slow)
+echo.
+ECHO ******************************************
+echo Or Input "b" to return to the list options
+ECHO ******************************************
+echo.
+set /p bs="Enter your choice: "
+set bs=%bs:"=%
+set "verif=none"
+if /i "%bs%"=="b" goto checkagain
+if /i "%bs%"=="1" set "verif=lv1"
+if /i "%bs%"=="2" set "verif=lv2"
+if /i "%bs%"=="3" set "verif=lv3"
+if /i "%verif%"=="none" echo WRONG CHOICE
+if /i "%verif%"=="none" echo.
+if /i "%verif%"=="none" goto s_vertype
 
 :s_KeyChange_skip
 cls
@@ -1154,7 +1189,7 @@ if "%vrepack%" EQU "xci" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRS
 if "%vrepack%" EQU "both" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -fat exfat -fx files %skdelta% -o "%w_folder%" -t "both" -dc "%orinput%" -tfile "%prog_dir%list.txt")
 if "%vrepack%" EQU "nodelta" ( %pycommand% "%nut%" %buffer% --xml_gen "true" -o "%w_folder%" -tfile "%prog_dir%list.txt" --erase_deltas "")
 if "%vrepack%" EQU "rebuild" ( %pycommand% "%nut%" %buffer% %skdelta% --xml_gen "true" -o "%w_folder%" -tfile "%prog_dir%list.txt" --rebuild_nsp "")
-if "%vrepack%" EQU "verify" ( %pycommand% "%nut%" -tfile "%prog_dir%list.txt" -v "")
+if "%vrepack%" EQU "verify" ( %pycommand% "%nut%" %buffer% -vt "%verif%" -tfile "%prog_dir%list.txt" -v "")
 if "%vrepack%" EQU "verify" ( goto end_nsp_manual )
 
 move "%w_folder%\*.xci" "%fold_output%" >NUL 2>&1
@@ -1230,7 +1265,7 @@ if "%vrepack%" EQU "nsp" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRS
 if "%vrepack%" EQU "xci" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -fat exfat -fx files %skdelta% -o "%w_folder%" -t "xci" -dc "%orinput%" -tfile "%prog_dir%list.txt")
 if "%vrepack%" EQU "both" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -fat exfat -fx files %skdelta% -o "%w_folder%" -t "both" -dc "%orinput%" -tfile "%prog_dir%list.txt")
 if "%vrepack%" EQU "xci_supertrimmer" ( %pycommand% "%nut%" %buffer% -o "%w_folder%" -xci_st "%orinput%" -tfile "%prog_dir%list.txt")
-if "%vrepack%" EQU "verify" ( %pycommand% "%nut%" -tfile "%prog_dir%list.txt" -v "")
+if "%vrepack%" EQU "verify" ( %pycommand% "%nut%" %buffer% -vt "%verif%" -tfile "%prog_dir%list.txt" -v "")
 if "%vrepack%" EQU "verify" ( goto end_xci_manual )
 
 if not exist "%fold_output%" MD "%fold_output%" >NUL 2>&1
@@ -1635,7 +1670,6 @@ call :program_logo
 goto m_process_jobs2
 :m_process_jobs
 cls
-call :program_logo
 :m_process_jobs2
 dir "%mlistfol%\*.txt" /b  > "%prog_dir%mlist.txt"
 if "%fatype%" EQU "-fat fat32" goto m_process_jobs_fat32
