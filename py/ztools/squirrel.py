@@ -5371,20 +5371,26 @@ if __name__ == '__main__':
 						if check == False:
 							with open(errfile, 'a') as errfile:	
 								now=datetime.now()
-								date=now.strftime("%x")+". "+now.strftime("%X")								
+								date=now.strftime("%x")+". "+now.strftime("%X")									
+								errfile.write(date+'\n')								
 								errfile.write("Filename: "+str(filename)+'\n')
-								errfile.write("IS INCORRECT"+'\n')
+								errfile.write("IS INCORRECT"+'\n')	
 						dir=os.path.dirname(os.path.abspath(tfile))
 						info='INFO'
-						ofolder =os.path.join(dir,info)									
+						subf='MASSVERIFY'
+						ofolder =os.path.join(dir,info)		
+						ofolder =os.path.join(ofolder,subf)	
+						if not os.path.exists(ofolder):
+							os.makedirs(ofolder)							
 						infotext=os.path.join(ofolder, ofile)
 						with open(infotext, 'w') as info:	
-							info.write(feed)								
+							info.write(feed)									
 				except BaseException as e:
 					Print.error('Exception: ' + str(e))	
 					with open(errfile, 'a') as errfile:	
 						now=datetime.now()
 						date=now.strftime("%x")+". "+now.strftime("%X")								
+						errfile.write(date+'\n')		
 						errfile.write("Filename: "+str(filename)+'\n')
 						errfile.write('Exception: ' + str(e)+'\n')		
 			if filename.endswith('.xci'):
@@ -5445,12 +5451,17 @@ if __name__ == '__main__':
 						if check == False:
 							with open(errfile, 'a') as errfile:	
 								now=datetime.now()
-								date=now.strftime("%x")+". "+now.strftime("%X")								
+								date=now.strftime("%x")+". "+now.strftime("%X")							
+								errfile.write(date+'\n')								
 								errfile.write("Filename: "+str(filename)+'\n')
-								errfile.write("IS INCORRECT"+'\n')
+								errfile.write("IS INCORRECT"+'\n')	
 						dir=os.path.dirname(os.path.abspath(tfile))
 						info='INFO'
-						ofolder =os.path.join(dir,info)									
+						subf='MASSVERIFY'
+						ofolder =os.path.join(dir,info)		
+						ofolder =os.path.join(ofolder,subf)	
+						if not os.path.exists(ofolder):
+							os.makedirs(ofolder)							
 						infotext=os.path.join(ofolder, ofile)
 						with open(infotext, 'w') as info:	
 							info.write(feed)								
@@ -5459,6 +5470,7 @@ if __name__ == '__main__':
 					with open(errfile, 'a') as errfile:	
 						now=datetime.now()
 						date=now.strftime("%x")+". "+now.strftime("%X")								
+						errfile.write(date+'\n')								
 						errfile.write("Filename: "+str(filename)+'\n')
 						errfile.write('Exception: ' + str(e)+'\n')					
 			if filename.endswith('.nca'):
@@ -5472,11 +5484,16 @@ if __name__ == '__main__':
 							with open(errfile, 'a') as errfile:	
 								now=datetime.now()
 								date=now.strftime("%x")+". "+now.strftime("%X")								
+								errfile.write(date+'\n')								
 								errfile.write("Filename: "+str(filename)+'\n')
 								errfile.write("IS INCORRECT"+'\n')	
 						dir=os.path.dirname(os.path.abspath(tfile))
 						info='INFO'
-						ofolder =os.path.join(dir,info)									
+						subf='MASSVERIFY'
+						ofolder =os.path.join(dir,info)		
+						ofolder =os.path.join(ofolder,subf)	
+						if not os.path.exists(ofolder):
+							os.makedirs(ofolder)							
 						infotext=os.path.join(ofolder, ofile)
 						with open(infotext, 'w') as info:	
 							info.write(feed)							
@@ -5484,7 +5501,8 @@ if __name__ == '__main__':
 					Print.error('Exception: ' + str(e))	
 					with open(errfile, 'a') as errfile:	
 						now=datetime.now()
-						date=now.strftime("%x")+". "+now.strftime("%X")								
+						date=now.strftime("%x")+". "+now.strftime("%X")						
+						errfile.write(date+'\n')						
 						errfile.write("Filename: "+str(filename)+'\n')
 						errfile.write('Exception: ' + str(e)+'\n')							
 						

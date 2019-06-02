@@ -1184,7 +1184,7 @@ rem set "filename=%name%"
 rem set "showname=%orinput%"
 if "%zip_restore%" EQU "true" ( call :makezip )
 if exist "%w_folder%" rmdir /s /q "%w_folder%" >NUL 2>&1
-MD "%w_folder%"
+MD "%w_folder%" >NUL 2>&1
 call :squirrell
 
 if "%vrename%" EQU "true" call :addtags_from_nsp
