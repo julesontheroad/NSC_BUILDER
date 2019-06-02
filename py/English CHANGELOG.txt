@@ -21,6 +21,54 @@ Luca Fraga's github: https://github.com/LucaFraga
 ---------------
 0. Changelog
 ---------------
+v0.86- File Verification:
+	- Adds file verification system accesible in info and individual modes
+	  * Verification has 3 modes\levels:
+	    Level 1: Decryption test
+		  > Tests that all nca files are readable
+		  > Tests non listed files are missing
+		  > Tests all needed nca files are in the file
+		  > Tests titlekey is correct for titlerights nca files
+	    Level 2: Signature test
+		  > Test files against Nintendo's fixed signature
+		  > Virtually restores header for titlerights removed files
+		  > Virtually restores header for isgamecard changed files	  
+		  > Virtually restores header for keygeneration changed files			  
+		  > Match restore or unrestored headers against Nintendo signature
+		  > Can accurately declare that a file was signed by Nintendo if modified
+    		by NSCB which of course will serve to test safety of converts
+		  > If titlekey was removed it prints original titlekey		  
+		  > Won't work when the files wasn't signed by Nintendo or other
+			convertion methods
+		  > For meta nca files with modified RSV, header restoration is pending
+		    implementation, that will come in next iteration
+	    Level 3: Hash test
+		  > Test files against their listed hash
+		  > Will used the restored header to build a hash for modified files if
+		    needed
+		  > Can accurately declare that a file is not corrupted
+	  * For file info the program will ask if you want to do a hash test afer 
+	    passing level1 and level2 verification
+          > This helps when reading files from the cloud with filestream methods
+            since level1 and level2 is pretty much instant while a hash check is
+			equivalent to a full download.
+		  > Filestream supported methods:
+		    * Raidrive
+			* Google filestream
+			* Rclone mount
+	  * For file info the prints where catched so the text output is instant in 
+        the verification mode. Will be added to other info modes in the future	  
+	  * Verification in individual mode allows for mass verification.
+          > NSCB will ask the level of verification before starting the process
+		  > If a bad file is detected it will be write to badfiles.txt in root
+		  > The verification output for each file is added to INFO\VERIFY
+	  * Also compatible with filestream methods		  
+	- Add Advance mode to add extra functions regularly
+	  * For now only file extraction for nsp\xci was added
+	  * Extraction result is added to the "extract" folder	  
+	- Add SDK numbers in info modes with proper format
+	- Add SDK numbers to extended database
+	- Several other bugfixes
 v0.85b- Fixes several issues:
 	- Redo implementation of direct multi handler for asian names
 	- Solves issue with rebuilder were wrong argument was being used
