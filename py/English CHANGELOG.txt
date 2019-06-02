@@ -29,6 +29,7 @@ v0.86- File Verification:
 		  > Tests non listed files are missing
 		  > Tests all needed nca files are in the file
 		  > Tests titlekey is correct for titlerights nca files
+		  > Compatible with files with multiple tickets
 	    Level 2: Signature test
 		  > Test files against Nintendo's fixed signature
 		  > Virtually restores header for titlerights removed files
