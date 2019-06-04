@@ -15,6 +15,7 @@ set "targt=%bs%"
 for /f "delims=" %%a in ("%bs%") do set "Extension=%%~xa"
 for /f "delims=" %%a in ("%bs%") do set "Name=%%~na"
 if "%Extension%" EQU ".nsp" ( goto sc2 )
+if "%Extension%" EQU ".nsx" ( goto sc2 )
 if "%Extension%" EQU ".xci" ( goto sc2 )
 echo WRONG TYPE OF FILE
 pause
@@ -119,11 +120,6 @@ set "i_file=%info_dir%\%Name%_ID_content.txt"
 ECHO DONE
 goto sc2
 
-
-
-
-
-
 :n_info
 cls
 call :logo
@@ -220,19 +216,8 @@ echo VERIFY A NSP\XCI\NCA
 echo ********************************************************
 %pycommand% "%nut%" -b %buffer% -o "%info_dir%" -v "%targt%" 
 
-rem echo.
-rem ECHO ********************************************************
-rem echo Do you want to print the information to a text file?
-rem ECHO ********************************************************
-rem :r_cnmt_wrong
-rem echo Input "1" to print to text file
-rem echo Input "2" to NOT print to text file
-rem echo.
-rem set /p bs="Enter your choice: "
-rem if /i "%bs%"=="1" goto r_cnmt_print
 goto sc2
-rem echo WRONG CHOICE
-rem echo.
+
 goto r_cnmt_wrong
 :r_cnmt_print
 if not exist "%info_dir%" MD "%info_dir%">NUL 2>&1
