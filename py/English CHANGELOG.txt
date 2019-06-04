@@ -21,6 +21,10 @@ Luca Fraga's github: https://github.com/LucaFraga
 ---------------
 0. Changelog
 ---------------
+v0.86c- Fixes issue when new updates were detected as smaller versions than new updates
+	- For some reason it's value needed to be forced as integer again for detection to
+	  work properly on some cases.
+v0.86b- Quick fix for weird false possitive in ticket check
 v0.86- File Verification:
 	- Adds file verification system accesible in info and individual modes
 	  * Verification has 3 modes\levels:
