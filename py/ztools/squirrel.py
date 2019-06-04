@@ -3017,13 +3017,13 @@ if __name__ == '__main__':
 												#print('true')
 												#print(contentlist[j][6])
 												#print(prlist[i][6])
-												if contentlist[j][6] > prlist[i][6]:
+												if int(contentlist[j][6]) > int(prlist[i][6]):
 													del prlist[i]
 													#print(prlist[i])
 													prlist.append(contentlist[j])
 													notinlist=False
 													break
-												elif contentlist[j][6] <= prlist[i][6]:				
+												elif int(contentlist[j][6]) <= int(prlist[i][6]):				
 													notinlist=False	
 													break
 											else:
@@ -3061,13 +3061,13 @@ if __name__ == '__main__':
 												#print('true')
 												#print(contentlist[j][6])
 												#print(prlist[i][6])
-												if contentlist[j][6] > prlist[i][6]:
+												if int(contentlist[j][6]) > int(prlist[i][6]):
 													del prlist[i]
 													#print(prlist[i])
 													prlist.append(contentlist[j])
 													notinlist=False
 													break
-												elif contentlist[j][6] <= prlist[i][6]:				
+												elif int(contentlist[j][6]) <= int(prlist[i][6]):	
 													notinlist=False
 													break		
 											else:
