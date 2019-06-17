@@ -6398,8 +6398,7 @@ class Nsp(Pfs0):
 									if str(test) == "b'PFS0'":
 										correct=True
 										break	
-									f.rewind()
-								cryptoKey=self.nsptitlekeydec()															
+									f.rewind()														
 								if correct == True:
 									correct = self.verify_enforcer(file)
 								if correct == False and f.header.getRightsId() == 0:
