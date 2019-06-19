@@ -1626,7 +1626,7 @@ class Nca(File):
 			if verification == True:
 				return True,False,titleKeyEnc,tr2,headdata2			
 			else:
-				for i in range(8):
+				for i in range(9):
 					if i<3:
 						crypto1='0'+str(i)
 						crypto2='00'
@@ -1696,7 +1696,7 @@ class Nca(File):
 		crypto = aes128.AESECB(key)
 		encKeyBlock = self.header.getKeyBlock()
 		decKeyBlock = crypto.decrypt(encKeyBlock)			
-		for i in range(8):
+		for i in range(9):
 			if i<3:
 				crypto1='0'+str(i)
 				crypto2='00'

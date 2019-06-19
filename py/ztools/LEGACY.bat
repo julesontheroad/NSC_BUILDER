@@ -2,7 +2,7 @@
 :TOP_INIT
 CD /d "%prog_dir%"
 set "bat_name=%~n0"
-Title NSC_Builder v0.86. -- Profile: %ofile_name% -- by JulesOnTheRoad
+Title NSC_Builder v0.85. -- Profile: %ofile_name% -- by JulesOnTheRoad
 
 ::Check if user is dragging a folder or a file
 if "%~1"=="" goto manual
@@ -550,6 +550,7 @@ echo Input "5" to change top keygeneration to 5 (FW 5.0.0-5.1.0)
 echo Input "6" to change top keygeneration to 6 (FW 6.0.0-6.1.0)
 echo Input "7" to change top keygeneration to 7 (FW 6.2.0)
 echo Input "8" to change top keygeneration to 8 (FW 7.0.0-7.0.1)
+echo Input "9" to change top keygeneration to 9 (FW 8.1.0)
 echo.
 ECHO ******************************************
 echo Or Input "b" to return to the list options
@@ -578,6 +579,8 @@ if /i "%bs%"=="7" set "vkey=-kp 7"
 if /i "%bs%"=="7" set "capRSV=--RSVcap 404750336"
 if /i "%bs%"=="8" set "vkey=-kp 8"
 if /i "%bs%"=="8" set "capRSV=--RSVcap 469762048"
+if /i "%bs%"=="9" set "vkey=-kp 9"
+if /i "%bs%"=="9" set "capRSV=--RSVcap 537919488"
 if /i "%vkey%"=="none" echo WRONG CHOICE
 if /i "%vkey%"=="none" goto s_KeyChange_wrongchoice
 
@@ -958,6 +961,7 @@ echo Input "5" to change top keygeneration to 5 (FW 5.0.0-5.1.0)
 echo Input "6" to change top keygeneration to 6 (FW 6.0.0-6.1.0)
 echo Input "7" to change top keygeneration to 7 (FW 6.2.0)
 echo Input "8" to change top keygeneration to 8 (FW 7.0.0-7.0.1)
+echo Input "9" to change top keygeneration to 9 (FW 8.1.0)
 echo.
 ECHO *****************************************
 echo Or Input "b" to return to the option list
@@ -986,6 +990,8 @@ if /i "%bs%"=="7" set "vkey=-kp 7"
 if /i "%bs%"=="7" set "capRSV=--RSVcap 404750336"
 if /i "%bs%"=="8" set "vkey=-kp 8"
 if /i "%bs%"=="8" set "capRSV=--RSVcap 469762048"
+if /i "%bs%"=="9" set "vkey=-kp 9"
+if /i "%bs%"=="9" set "capRSV=--RSVcap 537919488"
 if /i "%vkey%"=="none" echo WRONG CHOICE
 if /i "%vkey%"=="none" goto m_KeyChange_wrongchoice
 
@@ -1759,6 +1765,7 @@ echo Input "5" to change top keygeneration to 5 (FW 5.0.0-5.1.0)
 echo Input "6" to change top keygeneration to 6 (FW 6.0.0-6.1.0)
 echo Input "7" to change top keygeneration to 7 (FW 6.2.0)
 echo Input "8" to change top keygeneration to 8 (FW 7.0.0-7.0.1)
+echo Input "9" to change top keygeneration to 9 (FW 8.1.0)
 echo.
 ECHO ******************************************
 echo Or Input "b" to return to the list options
@@ -1787,6 +1794,8 @@ if /i "%bs%"=="7" set "vkey=-kp 7"
 if /i "%bs%"=="7" set "capRSV=--RSVcap 404750336"
 if /i "%bs%"=="8" set "vkey=-kp 8"
 if /i "%bs%"=="8" set "capRSV=--RSVcap 469762048"
+if /i "%bs%"=="9" set "vkey=-kp 9"
+if /i "%bs%"=="9" set "capRSV=--RSVcap 537919488"
 if /i "%vkey%"=="none" echo WRONG CHOICE
 if /i "%vkey%"=="none" goto m_KeyChange_wrongchoice
 
@@ -2238,7 +2247,7 @@ ECHO =============================     BY JULESONTHEROAD     ===================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                                POWERED BY SQUIRREL                                "
 ECHO "                    BASED IN THE WORK OF BLAWAR AND LUCA FRAGA                     "
-ECHO                                  VERSION 0.86 (LEGACY)
+ECHO                                  VERSION 0.85 (LEGACY)
 ECHO -------------------------------------------------------------------------------------                   
 ECHO Program's github: https://github.com/julesontheroad/NSC_BUILDER
 ECHO Blawar's github:  https://github.com/blawar

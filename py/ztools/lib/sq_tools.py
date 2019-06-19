@@ -40,9 +40,11 @@ versions =
 	469827584: "7.0.1"    ->   keygeneration = 8  
 	536870912: "8.0.0"    ->   keygeneration = 8
 	536936448: "8.0.1"    ->   keygeneration = 8	
+	537919488: "8.1.0"    ->   keygeneration = 9		
 '''	
 def kgstring():
 	kg=list()
+	kg8=[537919488];kg.append(kg9)		
 	kg8=[536936448,536870912,469827584,469762048];kg.append(kg8)	
 	kg7=[404750376,404750336];kg.append(kg7)	
 	kg6=[403701850,402718730,402653544,402653514,402653494];kg.append(kg6)	
@@ -72,7 +74,9 @@ def getTopRSV(keygeneration, RSV):
 	if keygeneration == 7:
 		return 404750376
 	if keygeneration == 8:
-		return 536936448		
+		return 536936448
+	if keygeneration == 9:
+		return 537919488		
 	else:
 		return RSV
 
@@ -102,6 +106,9 @@ def getMinRSV(keygeneration, RSV):
 	if keygeneration == 8:
 		RSV=7*67108864
 		return RSV	
+	if keygeneration == 9:
+		RSV=8*67108864+1*1048576
+		return RSV			
 	else:
 		return RSV		
 		
@@ -123,7 +130,9 @@ def getFWRangeKG(keygeneration):
 	if keygeneration == 7:
 		return "(6.2.0)"
 	if keygeneration == 8:
-		return "(7.0.0 - >8.0.1)"		
+		return "(7.0.0 - 8.0.1)"	
+	if keygeneration == 9:
+		return "(8.1.0 - >8.1.0)"			
 	else:
 		return "UNKNOWN"			
 	
@@ -571,7 +580,18 @@ def verify_nkeys(fileName):
 				print(tabs+'> Key is valid!!!')
 			else:
 				print(tabs+'> Key is invalid!!! -> PLEASE CHECK YOUR KEYS.TXT!!!')			
-			print('')		
+			print('')	
+
+		if i == 'master_key_08':
+			master_key_08=checkkeys[i][:]
+			print('master_key_08: '+master_key_08)
+			sha=sha256(uhx(master_key_08)).hexdigest()
+			print('  > HEX SHA256: '+sha)	
+			if sha == '2998e2e23609bc2675ff062a2d64af5b1b78dff463b24119d64a1b64f01b2d51':
+				print(tabs+'> Key is valid!!!')
+			else:
+				print(tabs+'> Key is invalid!!! -> PLEASE CHECK YOUR KEYS.TXT!!!')			
+			print('')				
 
 		if i == 'header_key':
 			header_key=checkkeys[i][:]
@@ -678,6 +698,16 @@ def verify_nkeys_startup(fileName):
 		print("master_key_06 is Missing!!!")
 		print("The program won't be able to decrypt games content that uses this key")
 		print("This key represents FW 6.2.0 requirement")
+		startup=True		
+	if 'master_key_07' not in checkkeys:
+		print("master_key_07 is Missing!!!")
+		print("The program won't be able to decrypt games content that uses this key")
+		print("This key represents FW 7.0.0-8.0.1 requirement")
+		startup=True	
+	if 'master_key_08' not in checkkeys:
+		print("master_key_08 is Missing!!!")
+		print("The program won't be able to decrypt games content that uses this key")
+		print("This key represents FW 8.1 requirement")
 		startup=True			
 	else:
 		counter+=1
@@ -685,16 +715,7 @@ def verify_nkeys_startup(fileName):
 	if 'header_key' not in checkkeys:
 		print("header_key is Missing")	
 	if 'xci_header_key' not in checkkeys:	
-		print('OPTIONAL KEY "xci_header_key" is Missing')
-		
-	if 	startup==True:		
-		if 'master_key_07' not in checkkeys:
-			print("master_key_07 is Missing!!!")
-			print("The program won't be able to decrypt games content that uses this key")
-			print("This key represents FW 7.0.0-7.0.1 requirement")	
-			print("This key is not yet public")			
-		else:
-			counter+=1		
+		print('OPTIONAL KEY "xci_header_key" is Missing')	
 
 	while counter<len(checkkeys):
 		if len(str(counter))<2:
@@ -849,6 +870,16 @@ def verify_nkeys_startup(fileName):
 			master_key_07=checkkeys[i][:]
 			sha=sha256(uhx(master_key_07)).hexdigest()
 			if sha != '4ec96b8cb01b8dce382149443430b2b6ebcb2983348afa04a25e53609dabedf6':
+				print('master_key_07: '+aes_kek_generation_source )	
+				print('  > HEX SHA256: '+sha)
+				print(tabs+'> Key is invalid!!! -> PLEASE CHECK YOUR KEYS.TXT!!!')		
+				startup=True				
+			print('')	
+
+		if i == 'master_key_08':
+			master_key_08=checkkeys[i][:]
+			sha=sha256(uhx(master_key_08)).hexdigest()
+			if sha != '2998e2e23609bc2675ff062a2d64af5b1b78dff463b24119d64a1b64f01b2d51':
 				print('master_key_07: '+aes_kek_generation_source )	
 				print('  > HEX SHA256: '+sha)
 				print(tabs+'> Key is invalid!!! -> PLEASE CHECK YOUR KEYS.TXT!!!')		
