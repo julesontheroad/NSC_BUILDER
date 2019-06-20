@@ -21,15 +21,6 @@ Luca Fraga's github: https://github.com/LucaFraga
 ---------------
 0. Changelog
 ---------------
-v0.86d- Adds support for keygeneration 9\masterkey8
-	- Added support for keygeneration 9\masterkey8 in info functions, keys verification,
-	  nsp\xci verifier and keygeneration change function
-	- Fixes issue when squirrel tries to find ticket when user verifies a standard crypto
-          nsp
-	- Added korean language via NSCB_KR by DDinghoya. This file is linked to the profile
-	  NSCB_KR_options.cmd
-	Note: I'm open to translations though for interested translators please wait a little 
-	and i'll implement tools to facilitate changes between versions.
 v0.86c- Fixes issue when new updates were detected as smaller versions than new updates
 	- For some reason it's value needed to be forced as integer again for detection to
 	  work properly on some cases.
