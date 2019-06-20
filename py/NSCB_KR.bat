@@ -3,15 +3,15 @@
 set "prog_dir=%~dp0"
 set "bat_name=%~n0"
 set "ofile_name=%bat_name%_options.cmd"
-Title NSC_Builder v0.86.c -- Profile: %ofile_name% -- by JulesOnTheRoad
+Title NSC_Builder v0.86. -- Profile: %ofile_name% -- by JulesOnTheRoad
 set "list_folder=%prog_dir%lists"
 ::-----------------------------------------------------
-::EDIT THIS VARIABLE TO LINK OTHER OPTION FILE
+::이 옵션을 다른 옵션 파일과 연결되도록 편집하십시오.
 ::-----------------------------------------------------
 set "op_file=%~dp0zconfig\%ofile_name%"
 
 ::-----------------------------------------------------
-::COPY OPTIONS FROM OPTION FILE
+::옵션 파일로부터 복사 옵션
 ::-----------------------------------------------------
 setlocal
 if exist "%op_file%" call "%op_file%" 	  
@@ -60,9 +60,9 @@ set "fold_output=%fold_output%"
 set "zip_fold=%~dp0%zip_fold%"
 )
 ::-----------------------------------------------------
-::SET ABSOLUTE ROUTES
+::절대 경로 설정
 ::-----------------------------------------------------
-::Program full route
+::전체 경로 프로그램하기
 if exist "%~dp0%nut%" set "nut=%~dp0%nut%"
 if exist "%~dp0%xci_lib%"  set "xci_lib=%~dp0%xci_lib%"
 if exist "%~dp0%nsp_lib%"  set "nsp_lib=%~dp0%nsp_lib%"
@@ -73,20 +73,20 @@ if exist "%~dp0%listmanager%"  set "listmanager=%~dp0%listmanager%"
 if exist "%~dp0%batconfig%"  set "batconfig=%~dp0%batconfig%"
 if exist "%~dp0%batdepend%"  set "batdepend=%~dp0%batdepend%"
 if exist "%~dp0%infobat%"  set "infobat=%~dp0%infobat%"
-::Important files full route
+::중요한 파일 전체 경로
 if exist "%~dp0%uinput%"  set "uinput=%~dp0%uinput%"
 if exist "%~dp0%dec_keys%"  set "dec_keys=%~dp0%dec_keys%"
-::Folder output
+::폴더 출력
 CD /d "%~dp0"
 if not exist "%fold_output%" MD "%fold_output%"
 if not exist "%fold_output%" MD "%~dp0%fold_output%"
 if exist "%~dp0%fold_output%"  set "fold_output=%~dp0%fold_output%"
 ::-----------------------------------------------------
-::A LOT OF CHECKS
+::많은 검사
 ::-----------------------------------------------------
-::Option file check
+::옵션 파일 확인
 if not exist "%op_file%" ( goto missing_things )
-::Program checks
+::프로그램 확인
 if not exist "%nut%" ( goto missing_things )
 if not exist "%xci_lib%" ( goto missing_things )
 if not exist "%nsp_lib%" ( goto missing_things )
@@ -96,12 +96,12 @@ if not exist "%hacbuild%" ( goto missing_things )
 if not exist "%listmanager%" ( goto missing_things )
 if not exist "%batconfig%" ( goto missing_things )
 if not exist "%infobat%" ( goto missing_things )
-::Important files check
+::중요한 파일 확인
 if not exist "%dec_keys%" ( goto missing_things )
 ::-----------------------------------------------------
 if exist "%w_folder%" rmdir /s /q "%w_folder%" >NUL 2>&1
 
-::Check if user is dragging a folder or a file
+::사용자가 폴더 또는 파일을 드래그하고 있는지 확인
 if "%~1"=="" goto manual
 if "%vrepack%" EQU "nodelta" goto aut_rebuild_nodeltas
 if "%vrepack%" EQU "rebuild" goto aut_rebuild_nsp
@@ -115,16 +115,16 @@ if "%fi_rep%" EQU "multi" goto folder_mult_mode
 if "%fi_rep%" EQU "baseid" goto folder_packbyid
 goto folder_ind_mode
 
-::AUTO MODE. INDIVIDUAL REPACK PROCESSING OPTION.
+::자동 모드. 개별 리팩 처리 옵션.
 :folder_ind_mode
 if "%fatype%" EQU "-fat fat32" goto folder_ind_mode_fat32
 call :program_logo
 echo --------------------------------------
-echo Auto-Mode. Individual repacking is set
+echo 자동 모드. 개별 재포장이 설정 됨
 echo --------------------------------------
 echo.
 ::*************
-::FOR NSP FILES
+::NSP 파일 용
 ::*************
 for /r "%~1" %%f in (*.nsp) do (
 set "target=%%f"
@@ -163,11 +163,11 @@ move "%w_folder%\*.zip" "%zip_fold%" >NUL 2>&1
 if exist "%w_folder%\archfolder" ( %pycommand% "%nut%" -ifo "%w_folder%\archfolder" -archive "%fold_output%\%filename%.nsp" )
 
 RD /S /Q "%w_folder%" >NUL 2>&1
-echo DONE
+echo 완료
 call :thumbup
 )
 
-::FOR XCI FILES
+::XCI 파일 용
 for /r "%~1" %%f in (*.xci) do (
 if exist "%w_folder%" rmdir /s /q "%w_folder%" >NUL 2>&1
 set "filename=%%~nf"
@@ -193,11 +193,11 @@ move "%w_folder%\*.zip" "%zip_fold%" >NUL 2>&1
 if exist "%w_folder%\archfolder" ( %pycommand% "%nut%" -ifo "%w_folder%\archfolder" -archive "%fold_output%\%filename%.nsp" )
 
 RD /S /Q "%w_folder%" >NUL 2>&1
-echo DONE
+echo 완료
 call :thumbup
 )
 ECHO ---------------------------------------------------
-ECHO *********** ALL FILES WERE PROCESSED! ************* 
+ECHO ********** 모든 파일이 처리되었습니다! ************ 
 ECHO ---------------------------------------------------
 goto aut_exit_choice
 
@@ -205,11 +205,11 @@ goto aut_exit_choice
 CD /d "%prog_dir%"
 call :program_logo
 echo --------------------------------------
-echo Auto-Mode. Individual repacking is set
+echo 자동 모드. 개별 재포장이 설정 됨
 echo --------------------------------------
 echo.
 ::*************
-::FOR NSP FILES
+::NSP 파일 용
 ::*************
 for /r "%~1" %%f in (*.nsp) do (
 set "target=%%f"
@@ -253,11 +253,11 @@ move "%w_folder%\*.zip" "%zip_fold%" >NUL 2>&1
 if exist "%w_folder%\archfolder" ( %pycommand% "%nut%" -ifo "%w_folder%\archfolder" -archive "%gefolder%\%filename%.nsp" )
 endlocal
 RD /S /Q "%w_folder%" >NUL 2>&1
-echo DONE
+echo 완료
 call :thumbup
 )
 
-::FOR XCI FILES
+::XCI 파일 용
 for /r "%~1" %%f in (*.xci) do (
 if exist "%w_folder%" rmdir /s /q "%w_folder%" >NUL 2>&1
 set "filename=%%~nf"
@@ -268,10 +268,10 @@ MD "%w_folder%"
 MD "%w_folder%\secure"
 call :getname
 echo -------------------------------------
-echo Extracting secure partition from xci 
+echo xci에서 보안 파티션 추출하기 
 echo -------------------------------------
 %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -o "%w_folder%\secure" %nf_cleaner% "%%f"
-echo DONE
+echo 완료
 if "%vrename%" EQU "true" ( call :addtags_from_xci )
 if "%vrepack%" EQU "nsp" ( call "%nsp_lib%" "convert" "%w_folder%" )
 if "%vrepack%" EQU "xci" ( call "%xci_lib%" "repack" "%w_folder%" )
@@ -286,49 +286,49 @@ move "%w_folder%\*.ns*" "%fold_output%\!end_folder!" >NUL 2>&1
 if exist "%w_folder%\archfolder" ( %pycommand% "%nut%" -ifo "%w_folder%\archfolder" -archive "%fold_output%\!end_folder!\%filename%.nsp" )
 endlocal
 RD /S /Q "%w_folder%" >NUL 2>&1
-echo DONE
+echo 완료
 call :thumbup
 )
 ECHO ---------------------------------------------------
-ECHO *********** ALL FILES WERE PROCESSED! ************* 
+ECHO ********** 모든 파일이 처리되었습니다! ************ 
 ECHO ---------------------------------------------------
 goto aut_exit_choice
 
-::AUTO MODE. MULTIREPACK PROCESSING OPTION.
+::자동 모드. 멀티팩 처리 옵션..
 :folder_mult_mode
 if "%fatype%" EQU "-fat fat32" goto folder_mult_mode_fat32
 call :program_logo
 echo --------------------------------------
-echo Auto-Mode. Multi-repacking is set
+echo 자동 모드. 멀티-리패킹이 설정 됨
 echo --------------------------------------
 if exist "%w_folder%" rmdir /s /q "%w_folder%" >NUL 2>&1
 MD "%w_folder%"
 if exist "%prog_dir%mlist.txt" del "%prog_dir%mlist.txt" >NUL 2>&1
 
-echo - Generating filelist
+echo - 파일목록 생성
 %pycommand% "%nut%" -t nsp xci -tfile "%prog_dir%mlist.txt" -ff "%~1"
-echo   DONE
+echo   완료
 
 if "%vrepack%" EQU "nsp" echo ......................................
-if "%vrepack%" EQU "nsp" echo REPACKING FOLDER CONTENT TO NSP
+if "%vrepack%" EQU "nsp" echo NSP에 폴더 내용 리패키징
 if "%vrepack%" EQU "nsp" echo ......................................
 if "%vrepack%" EQU "nsp" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -fat exfat -fx files %skdelta% -t cnsp -o "%w_folder%" -tfile "%prog_dir%mlist.txt" -dmul "calculate" )
 if "%vrepack%" EQU "nsp" echo.
 
 if "%vrepack%" EQU "xci" echo ......................................
-if "%vrepack%" EQU "xci" echo REPACKING FOLDER CONTENT TO XCI
+if "%vrepack%" EQU "xci" echo XCI에 폴더 내용 리패키징
 if "%vrepack%" EQU "xci" echo ......................................
 if "%vrepack%" EQU "xci" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -fat exfat -fx files %skdelta% -t xci -o "%w_folder%" -tfile "%prog_dir%mlist.txt" -dmul "calculate" )
 if "%vrepack%" EQU "xci" echo.
 
 if "%vrepack%" EQU "both" echo ......................................
-if "%vrepack%" EQU "both" echo REPACKING FOLDER CONTENT TO NSP
+if "%vrepack%" EQU "both" echo NSP에 폴더 내용 리패키징
 if "%vrepack%" EQU "both" echo ......................................
 if "%vrepack%" EQU "both" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -fat exfat -fx files %skdelta% -t cnsp -o "%w_folder%" -tfile "%prog_dir%mlist.txt" -dmul "calculate" )
 if "%vrepack%" EQU "both" echo.
 
 if "%vrepack%" EQU "both" echo ......................................
-if "%vrepack%" EQU "both" echo REPACKING FOLDER CONTENT TO XCI
+if "%vrepack%" EQU "both" echo XCI에 폴더 내용 리패키징
 if "%vrepack%" EQU "both" echo ......................................
 if "%vrepack%" EQU "both" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -fat exfat -fx files %skdelta% -t xci -o "%w_folder%" -tfile "%prog_dir%mlist.txt" -dmul "calculate" )
 if "%vrepack%" EQU "both" echo.
@@ -348,7 +348,7 @@ if exist "%w_folder%\archfolder" ( %pycommand% "%nut%" -tfile "%w_folder%\filena
 endlocal
 RD /S /Q "%w_folder%" >NUL 2>&1
 ECHO ---------------------------------------------------
-ECHO *********** ALL FILES WERE PROCESSED! ************* 
+ECHO ********** 모든 파일이 처리되었습니다! ************ 
 ECHO ---------------------------------------------------
 call :thumbup
 goto aut_exit_choice
@@ -357,7 +357,7 @@ goto aut_exit_choice
 CD /d "%prog_dir%"
 call :program_logo
 echo --------------------------------------
-echo Auto-Mode. Multi-repacking is set
+echo 자동 모드. 멀티-리패키징이 설정 됨
 echo --------------------------------------
 echo.
 set "filename=%~n1"
@@ -367,7 +367,7 @@ MD "%w_folder%"
 MD "%w_folder%\secure"
 set "end_folder=%filename%"
 set "filename=%filename%[multi]"
-::FOR NSP FILES
+::NSP 파일 용
 for /r "%~1" %%f in (*.nsp) do (
 set "showname=%orinput%"
 call :processing_message
@@ -378,13 +378,13 @@ if "%zip_restore%" EQU "true" ( set "ziptarget=%%f" )
 if "%zip_restore%" EQU "true" ( call :makezip )
 )
 
-::FOR XCI FILES
+::XCI 파일 용
 for /r "%~1" %%f in (*.xci) do (
 echo ------------------------------------
-echo Extracting secure partition from xci
+echo xci에서 보안 파티션 추출하기
 echo ------------------------------------
 %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -o "%w_folder%\secure" %nf_cleaner% "%%f"
-echo DONE
+echo 완료
 )
 if "%vrepack%" EQU "nsp" ( call "%nsp_lib%" "convert" "%w_folder%" )
 if "%vrepack%" EQU "xci" ( call "%xci_lib%" "repack" "%w_folder%" )
@@ -404,11 +404,11 @@ move "%w_folder%\*.zip" "%zip_fold%" >NUL 2>&1
 if exist "%w_folder%\archfolder" ( %pycommand% "%nut%" -ifo "%w_folder%\archfolder" -archive "%gefolder%\%filename%.nsp" )
 endlocal
 RD /S /Q "%w_folder%" >NUL 2>&1
-echo DONE
+echo 완료
 call :thumbup
 )
 ECHO ---------------------------------------------------
-ECHO *********** ALL FILES WERE PROCESSED! ************* 
+ECHO ********** 모든 파일이 처리되었습니다! ************ 
 ECHO ---------------------------------------------------
 goto aut_exit_choice
 
@@ -416,7 +416,7 @@ goto aut_exit_choice
 ::if "%fatype%" EQU "-fat fat32" goto folder_mult_mode_fat32
 call :program_logo
 echo --------------------------------------
-echo Auto-Mode. packing-by-id is set
+echo 자동 모드. packing-by-id가 설정 됨
 echo --------------------------------------
 if exist "%w_folder%" rmdir /s /q "%w_folder%" >NUL 2>&1
 MD "%w_folder%"
@@ -425,10 +425,10 @@ set "mlistfol=%list_folder%\a_multi"
 if not exist "%list_folder%" MD "%list_folder%" >NUL 2>&1
 if not exist "%mlistfol%" MD "%mlistfol%" >NUL 2>&1
 
-echo - Generating filelist
+echo - 파일목록 생성
 %pycommand% "%nut%" -t nsp xci -tfile "%prog_dir%mlist.txt" -ff "%~1"
-echo   DONE
-echo - Splitting filelist
+echo   완료
+echo - 파일목록 나누기
 %pycommand% "%nut%" -splid "%mlistfol%" -tfile "%prog_dir%mlist.txt"
 if "%vrepack%" EQU "nsp" set "vrepack=cnsp"
 if "%vrepack%" EQU "both" set "vrepack=cboth"
@@ -437,25 +437,25 @@ goto m_process_jobs2
 :aut_rebuild_nodeltas
 call :program_logo
 echo --------------------------------------
-echo Auto-Mode. Rebuild without deltas
+echo 자동 모드. 델타 없이 리빌드
 echo --------------------------------------
 if exist "%w_folder%" rmdir /s /q "%w_folder%" >NUL 2>&1
 MD "%w_folder%"
 if exist "%prog_dir%list.txt" del "%prog_dir%list.txt" >NUL 2>&1
 %pycommand% "%nut%" -t nsp xci -tfile "%prog_dir%list.txt" -ff "%~1"
-echo   DONE
+echo   완료
 goto s_KeyChange_skip
 
 :aut_rebuild_nsp
 call :program_logo
 echo --------------------------------------
-echo Auto-Mode. Rebuild nsp by cnmt order
+echo 자동 모드. nsp를 cnmt 오더로 리빌드
 echo --------------------------------------
 if exist "%w_folder%" rmdir /s /q "%w_folder%" >NUL 2>&1
 MD "%w_folder%"
 if exist "%prog_dir%list.txt" del "%prog_dir%list.txt" >NUL 2>&1
 %pycommand% "%nut%" -t nsp xci -tfile "%prog_dir%list.txt" -ff "%~1"
-echo   DONE
+echo   완료
 goto s_KeyChange_skip
 
 :file
@@ -464,8 +464,8 @@ if "%~x1"==".nsp" ( goto nsp )
 if "%~x1"==".xci" ( goto xci )
 if "%~x1"==".*" ( goto other )
 :other
-echo No valid file was dragged. The program only accepts xci or nsp files.
-echo You'll be redirected to manual mode.
+echo 올바른 파일을 드래그하지 않았습니다. 프로그램은 xci 또는 nsp 파일 만 허용합니다.
+echo 수동 모드로 리다이렉션됩니다.
 pause
 goto manual
 
@@ -500,7 +500,7 @@ move "%w_folder%\*.zip" "%zip_fold%" >NUL 2>&1
 if exist "%w_folder%\archfolder" ( %pycommand% "%nut%" -ifo "%w_folder%\archfolder" -archive "%fold_output%\%filename%.nsp" )
 
 RD /S /Q "%w_folder%" >NUL 2>&1
-echo DONE
+echo 완료
 call :thumbup
 goto aut_exit_choice
 
@@ -538,7 +538,7 @@ move "%w_folder%\*.zip" "%zip_fold%" >NUL 2>&1
 if exist "%w_folder%\archfolder" ( %pycommand% "%nut%" -ifo "%w_folder%\archfolder" -archive "%gefolder%\%filename%.nsp" )
 endlocal
 RD /S /Q "%w_folder%" >NUL 2>&1
-echo DONE
+echo 완료
 call :thumbup
 goto aut_exit_choice
 
@@ -570,7 +570,7 @@ move "%w_folder%\*.zip" "%zip_fold%" >NUL 2>&1
 if exist "%w_folder%\archfolder" ( %pycommand% "%nut%" -ifo "%w_folder%\archfolder" -archive "%fold_output%\%filename%.nsp" )
 
 RD /S /Q "%w_folder%" >NUL 2>&1
-echo DONE
+echo 완료
 call :thumbup
 goto aut_exit_choice
 
@@ -585,10 +585,10 @@ MD "%w_folder%"
 MD "%w_folder%\secure"
 call :getname
 echo ------------------------------------
-echo Extracting secure partition from xci 
+echo xci에서 보안 파티션 추출하기 
 echo ------------------------------------
 %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -o "%w_folder%\secure" %nf_cleaner% "%~1"
-echo DONE
+echo 완료
 if "%vrename%" EQU "true" call :addtags_from_xci
 if "%vrepack%" EQU "nsp" ( call "%nsp_lib%" "convert" "%w_folder%" )
 if "%vrepack%" EQU "xci" ( call "%xci_lib%" "repack" "%w_folder%" )
@@ -604,19 +604,19 @@ move "%w_folder%\*.ns*" "%fold_output%\!end_folder!" >NUL 2>&1
 if exist "%w_folder%\archfolder" ( %pycommand% "%nut%" -ifo "%w_folder%\archfolder" -archive "%fold_output%\!end_folder!\%filename%.nsp" )
 endlocal
 RD /S /Q "%w_folder%" >NUL 2>&1
-echo DONE
+echo 완료
 call :thumbup
 goto aut_exit_choice
 
 :aut_exit_choice
-if /i "%va_exit%"=="true" echo PROGRAM WILL CLOSE NOW
+if /i "%va_exit%"=="true" echo 프로그램은 지금 닫을 것입니다.
 if /i "%va_exit%"=="true" ( PING -n 2 127.0.0.1 >NUL 2>&1 )
 if /i "%va_exit%"=="true" goto salida
 echo.
-echo Input "0" to go to the mode selection
-echo Input "1" to exit the program
+echo "0" 모드 선택 돌아가기
+echo "1" 프로그램 종료
 echo.
-set /p bs="Enter your choice: "
+set /p bs="선택 사항을 입력하십시오: "
 set bs=%bs:"=%
 if /i "%bs%"=="0" goto manual_Reentry
 if /i "%bs%"=="1" goto salida
@@ -627,7 +627,7 @@ endlocal
 cls
 call :program_logo
 echo ********************************
-echo YOU'VE ENTERED INTO MANUAL MODE
+echo 수동 모드로 진입했습니다.
 echo ********************************
 if "%manual_intro%" EQU "indiv" ( goto normalmode ) 
 if "%manual_intro%" EQU "multi" ( goto multimode )
@@ -640,18 +640,18 @@ cls
 if "%NSBMODE%" EQU "legacy" call "%prog_dir%ztools\LEGACY.bat"
 call :program_logo
 ECHO .......................................................
-echo Input "1" to process files INDIVIDUALLY
-echo Input "2" to enter into MULTI-PACK mode
-echo Input "3" to enter into MULTI-CONTENT SPLITTER mode
-echo Input "4" to enter into FILE-INFO mode
-echo Input "5" to enter DATABASE building mode
-echo Input "6" to enter ADVANCE mode
-echo Input "0" to enter into CONFIGURATION mode
+echo "1" 개별적 파일 처리
+echo "2" 멀티-팩 모드
+echo "3" 멀티-콘텐츠 분할 모드
+echo "4" 파일-정보 모드
+echo "5" 데이터베이스 빌드 모드
+echo "6" 어드밴스 모드
+echo "0" 구성 모드
 echo.
-echo Input "L" to enter LEGACY MODES
+echo "L" 레거시 모드
 echo .......................................................
 echo.
-set /p bs="Enter your choice: "
+set /p bs="선택 사항을 입력하십시오: "
 set bs=%bs:"=%
 if /i "%bs%"=="1" goto normalmode
 if /i "%bs%"=="2" goto multimode
@@ -678,7 +678,7 @@ REM ////////////////////////////////////////////////
 cls
 call :program_logo
 echo -----------------------------------------------
-echo INDIVIDUAL PROCESSING ACTIVATED
+echo 개별적인 처리가 활성화되었습니다.
 echo -----------------------------------------------
 if exist "list.txt" goto prevlist
 goto manual_INIT
@@ -695,44 +695,44 @@ if !conta! LEQ 0 ( del list.txt )
 endlocal
 if not exist "list.txt" goto manual_INIT
 ECHO .......................................................
-ECHO A PREVIOUS LIST WAS FOUND. WHAT DO YOU WANT TO DO?
+ECHO 이전 목록이 발견되었습니다. 무엇을 하고 싶습니까?
 :prevlist0
 ECHO .......................................................
-echo Input "1" to auto-start processing from the previous list
-echo Input "2" to erase list and make a new one.
-echo Input "3" to continue building the previous list
+echo "1" 이전 목록에서 자동 시작 처리
+echo "2" 목록을 지우고 새 목록 작성
+echo "3" 이전 목록 작성을 계속
 echo .......................................................
-echo NOTE: By pressing 3 you'll see the previous list 
-echo before starting the processing the files and you will 
-echo be able to add and delete items from the list
+echo 참고: 3을 누르면 파일 처리를 시작하기 전에 이전 목록이
+echo 표시되며 목록에서 항목을 추가 및 삭제할 수 있습니다.
+echo
 echo.
-ECHO *************************************************
-echo Or Input "0" to return to the MODE SELECTION MENU
-ECHO *************************************************
+ECHO ****************************************************
+echo 또는 모드 선택 메뉴로 돌아가려면 "0"을 입력하십시오.
+ECHO ****************************************************
 echo.
-set /p bs="Enter your choice: "
+set /p bs="선택 사항을 입력하십시오: "
 set bs=%bs:"=%
 if /i "%bs%"=="3" goto showlist
 if /i "%bs%"=="2" goto delist
 if /i "%bs%"=="1" goto start_cleaning
 if /i "%bs%"=="0" goto manual_Reentry
 echo.
-echo BAD CHOICE
+echo 나쁜 선택
 goto prevlist0
 :delist
 del list.txt
 cls
 call :program_logo
 echo -----------------------------------------------
-echo INDIVIDUAL PROCESSING ACTIVATED
+echo 개별적인 처리가 활성화되었습니다.
 echo -----------------------------------------------
 echo ..................................
-echo YOU'VE DECIDED TO START A NEW LIST
+echo 새 목록을 시작하기로 결정했습니다.
 echo ..................................
 :manual_INIT
 endlocal
 ECHO ***********************************************
-echo Input "0" to return to the MODE SELECTION MENU
+echo 모드 선택 메뉴로 돌아가려면 "0"을 입력하십시오.
 ECHO ***********************************************
 echo.
 %pycommand% "%nut%" -t nsp xci -tfile "%prog_dir%list.txt" -uin "%uinput%" -ff "uinput"
@@ -745,19 +745,19 @@ if /i "%eval%"=="0" goto manual_Reentry
 goto checkagain
 echo.
 :checkagain
-echo WHAT DO YOU WANT TO DO?
-echo ......................................................................
-echo "DRAG ANOTHER FILE OR FOLDER AND PRESS ENTER TO ADD ITEMS TO THE LIST"
+echo 무엇을 하고 싶습니까?
+echo ................................................................................
+echo "다른 파일 또는 폴더를 드래그하고 목록에 항목을 추가하려면 ENTER 키를 누릅니다."
 echo.
-echo Input "1" to start processing
-echo Input "e" to exit
-echo Input "i" to see list of files to process
-echo Input "r" to remove some files (counting from bottom)
-echo Input "z" to remove the whole list
-echo ......................................................................
-ECHO *************************************************
-echo Or Input "0" to return to the MODE SELECTION MENU
-ECHO *************************************************
+echo "1" 프로세스 시작
+echo "e" 종료
+echo "i" 처리 할 파일 목록 보기
+echo "r" 일부 파일을 제거 (하단에서부터 계산)
+echo "z" 전체 목록을 제거
+echo ................................................................................
+ECHO ****************************************************
+echo 또는 모드 선택 메뉴로 돌아가려면 "0"을 입력하십시오.
+ECHO ****************************************************
 echo.
 %pycommand% "%nut%" -t nsp xci -tfile "%prog_dir%list.txt" -uin "%uinput%" -ff "uinput"
 set /p eval=<"%uinput%"
@@ -776,7 +776,7 @@ if /i "%eval%"=="z" del list.txt
 goto checkagain
 
 :r_files
-set /p bs="Input the number of files you want to remove (from bottom): "
+set /p bs="(하단에서) 삭제할 파일 수를 입력하십시오: "
 set bs=%bs:"=%
 
 setlocal enabledelayedexpansion
@@ -809,10 +809,10 @@ endlocal
 cls
 call :program_logo
 echo -------------------------------------------------
-echo INDIVIDUAL PROCESSING ACTIVATED
+echo 개별적인 처리가 활성화되었습니다.
 echo -------------------------------------------------
 ECHO -------------------------------------------------
-ECHO                 FILES TO PROCESS 
+ECHO                 처리 할 파일 
 ECHO -------------------------------------------------
 for /f "tokens=*" %%f in (list.txt) do (
 echo %%f
@@ -823,35 +823,35 @@ for /f "tokens=*" %%f in (list.txt) do (
 set /a conta=!conta! + 1
 )
 echo .................................................
-echo YOU'VE ADDED !conta! FILES TO PROCESS
+echo 처리 할 !conta! 파일을 추가했습니다.
 echo .................................................
 endlocal
 
 goto checkagain
 
 :s_cl_wrongchoice
-echo wrong choice
+echo 틀린 선택
 echo ............
 :start_cleaning
 echo *******************************************************
-echo CHOOSE WHAT TO DO AFTER PROCESSING THE SELECTED FILES
+echo 선택한 파일을 처리한 후 수행할 작업을 선택하십시오.
 echo *******************************************************
-echo Input "1" to repack list as nsp
-echo Input "2" to repack list as xci
-echo Input "3" to repack list as both
+echo "1" nsp로 목록을 리팩
+echo "2" xci로 목록을 리팩
+echo "3" nsp와 xci로 목록을 리팩
 echo.
-echo SPECIAL OPTIONS:
-echo Input "4" to erase deltas from nsp files
-echo Input "5" to rename xci or nsp files
-echo Input "6" to xci supertrimmer
-echo Input "7" to rebuild nsp by cnmt order
-echo Input "8" to verify files
+echo 특수 옵션:
+echo "4" nsp 파일에서 델타를 삭제
+echo "5" xci 또는 nsp 파일의 이름 변경
+echo "6" xci supertrimmer
+echo "7" nsp를 cnmt 오더로 리빌드
+echo "8" 파일을 확인
 echo.
-ECHO ******************************************
-echo Or Input "b" to return to the list options
-ECHO ******************************************
+ECHO *************************************************
+echo 또는 목록 옵션으로 돌아가려면 "b"를 입력하십시오.
+ECHO *************************************************
 echo.
-set /p bs="Enter your choice: "
+set /p bs="선택 사항을 입력하십시오: "
 set bs=%bs:"=%
 set vrepack=none
 if /i "%bs%"=="b" goto checkagain
@@ -873,20 +873,20 @@ if %vrepack%=="none" goto s_cl_wrongchoice
 if /i "%skipRSVprompt%"=="true" set "patchRSV=-pv false"
 if /i "%skipRSVprompt%"=="true" goto s_KeyChange_skip
 echo *******************************************************
-echo DO YOU WANT TO PATCH THE REQUIRED-SYSTEM-VERSION
+echo 필수 시스템 버전을 패치하고 싶습니까?
 echo *******************************************************
-echo If you choose to patch it will be set to match the 
-echo nca crypto so it'll only ask to update your system
-echo in the case it's necessary
+echo 패치를 선택하면 nca 암호화와 일치하도록 설정되므로 
+echo 필요할 경우 시스템을 업데이트하라는 메시지만 표시
+echo 됩니다.
 echo.
-echo Input "0" to don't patch the Required System Version
-echo Input "1" to "PATCH" the Required System Version
+echo "0" 필수 시스템 버전을 패치하지 않음
+echo "1" 필요한 시스템 버전 "패치"
 echo.
-ECHO ******************************************
-echo Or Input "b" to return to the list options
-ECHO ******************************************
+ECHO *************************************************
+echo 또는 목록 옵션으로 돌아가려면 "b"를 입력하십시오.
+ECHO *************************************************
 echo.
-set /p bs="Enter your choice: "
+set /p bs="선택 사항을 입력하십시오: "
 set bs=%bs:"=%
 set "patchRSV=none"
 if /i "%bs%"=="b" goto checkagain
@@ -898,31 +898,31 @@ if /i "%bs%"=="0" goto s_KeyChange_skip
 
 :s_KeyChange_wrongchoice
 echo *******************************************************
-echo SET MAXIMUM KEYGENERATION\RSV ALOWED
+echo 최대 키 생성\RSV 허용 설정
 echo *******************************************************
-echo Depending on your choice keygeneration and RSV will be
-echo lowered to the corresponding keygeneration range in case
-echo read keygeneration value is bigger than the one specified
-echo in the program.
-echo THIS WON'T ALWAYS WORK TO LOWER THE FIRMWARE REQUIREMENT.
+echo 선택한 키 생성에 따라 RSG는 해당 키 생성 범위로 낮춰지며
+echo 읽기 키 생성 값이 프로그램에 지정된 값보다 큰 경우에 발생
+echo 합니다.
+echo
+echo 이 작업은 항상 펌웨어 요구를 낮추기 위해 노력하지 않습니다.
 echo.
-echo Input "f" to not change the keygeneration
-echo Input "0" to change top keygeneration to 0 (FW 1.0)
-echo Input "1" to change top keygeneration to 1 (FW 2.0-2.3)
-echo Input "2" to change top keygeneration to 2 (FW 3.0)
-echo Input "3" to change top keygeneration to 3 (FW 3.0.1-3.02)
-echo Input "4" to change top keygeneration to 4 (FW 4.0.0-4.1.0)
-echo Input "5" to change top keygeneration to 5 (FW 5.0.0-5.1.0)
-echo Input "6" to change top keygeneration to 6 (FW 6.0.0-6.1.0)
-echo Input "7" to change top keygeneration to 7 (FW 6.2.0)
-echo Input "8" to change top keygeneration to 8 (FW 7.0.0-8.0.1)
-echo Input "9" to change top keygeneration to 9 (FW 8.1.0)
+echo "f" 키 생성을 변경하지 않음
+echo "0" 최상위 키 생성을 0으로 변경 (FW 1.0)
+echo "1" 최상위 키 생성을 1로 변경 (FW 2.0-2.3)
+echo "2" 최상위 키 생성을 2로 변경 (FW 3.0)
+echo "3" 최상위 키 생성을 3으로 변경 (FW 3.0.1-3.02)
+echo "4" 최상위 키 생성을 4로 변경 (FW 4.0.0-4.1.0)
+echo "5" 최상위 키 생성을 5로 변경 (FW 5.0.0-5.1.0)
+echo "6" 최상위 키 생성을 6으로 변경 (FW 6.0.0-6.1.0)
+echo "7" 최상위 키 생성을 7로 변경 (FW 6.2.0)
+echo "8" 최상위 키 생성을 8로 변경 (FW 7.0.0-8.0.1)
+echo "9" 최상위 키 생성을 9로 변경 (FW 8.1.0)
 echo.
-ECHO ******************************************
-echo Or Input "b" to return to the list options
-ECHO ******************************************
+ECHO *************************************************
+echo 또는 목록 옵션으로 돌아가려면 "b"를 입력하십시오.
+ECHO *************************************************
 echo.
-set /p bs="Enter your choice: "
+set /p bs="선택 사항을 입력하십시오: "
 set bs=%bs:"=%
 set "vkey=none"
 if /i "%bs%"=="b" goto checkagain
@@ -947,41 +947,41 @@ if /i "%bs%"=="8" set "vkey=-kp 8"
 if /i "%bs%"=="8" set "capRSV=--RSVcap 469762048"
 if /i "%bs%"=="9" set "vkey=-kp 9"
 if /i "%bs%"=="9" set "capRSV=--RSVcap 537919488"
-if /i "%vkey%"=="none" echo WRONG CHOICE
+if /i "%vkey%"=="none" echo 틀린 선택
 if /i "%vkey%"=="none" goto s_KeyChange_wrongchoice
 goto s_KeyChange_skip
 
 :s_vertype
 echo *******************************************************
-echo TYPE OF VERIFICATION
+echo 검증 유형
 echo *******************************************************
-echo This chooses the level of verification.
-echo DECRYPTION - Files ar readable, ticket's correct
-echo              No file is missing
-echo SIGNATURE  - Check's header against Nintendo Sig1
-echo              Calculates original header for NSCB modifications
-echo HASH       - Check's current and original hash of files and 
-echo              matches them against name of the file
+echo 이것은 검증의 수준을 선택합니다.
+echo 암호 해독  - 읽을 수 있는 파일, 티켓이 정확함
+echo              파일이 없습니다.
+echo 서명       - 닌텐도 Sig1에 대한 검증의 헤더
+echo              NSCB 수정에 대한 원래 헤더를 계산
+echo 해쉬       - 파일의 현재 및 원래 해시를 확인하고 
+echo              파일 이름과 일치
 echo.
-echo NOTE: If you read files on a remote service via a filestream
-echo method decryption or signature are the recommended methods
+echo 참고: 파일 스트림 방법을 통해 원격 서비스의 파일을 읽는 경우
+echo 암호 해독 또는 서명을 사용하는 것이 좋습니다.
 echo.
-echo Input "1" to use DECRYPTION verification (fast)
-echo Input "2" to use decryption + SIGNATURE verification (fast)
-echo Input "3" to use decryption + signature + HASH verification (slow)
+echo "1" 암호 해독 검증 사용 (빠름)
+echo "2" 암호 해독 + 서명 확인 (빠름)
+echo "3" 암호 해독 + 서명 + 해시 검증 (느림)
 echo.
-ECHO ******************************************
-echo Or Input "b" to return to the list options
-ECHO ******************************************
+ECHO *************************************************
+echo 또는 목록 옵션으로 돌아가려면 "b"를 입력하십시오.
+ECHO *************************************************
 echo.
-set /p bs="Enter your choice: "
+set /p bs="선택 사항을 입력하십시오: "
 set bs=%bs:"=%
 set "verif=none"
 if /i "%bs%"=="b" goto checkagain
 if /i "%bs%"=="1" set "verif=lv1"
 if /i "%bs%"=="2" set "verif=lv2"
 if /i "%bs%"=="3" set "verif=lv3"
-if /i "%verif%"=="none" echo WRONG CHOICE
+if /i "%verif%"=="none" echo 틀린 선택
 if /i "%verif%"=="none" echo.
 if /i "%verif%"=="none" goto s_vertype
 
@@ -1001,7 +1001,7 @@ move /y "list.txt.new" "list.txt" >nul
 call :contador_NF
 )
 ECHO ---------------------------------------------------
-ECHO *********** ALL FILES WERE PROCESSED! *************
+ECHO ********** 모든 파일이 처리되었습니다! ************
 ECHO ---------------------------------------------------
 goto s_exit_choice
 
@@ -1009,27 +1009,27 @@ goto s_exit_choice
 :s_rename_wrongchoice1
 echo.
 echo *******************************************************
-echo TYPE OF RENAME
+echo 이름 바꾸기의 유형
 echo *******************************************************
-echo Normal modes:
-echo Input "1" to ALWAYS rename
-echo Input "2" to NOT RENAME IF [TITLEID] is present
-echo Input "3" to NOT RENAME IF [TITLEID] is equal to the one calculated
-echo Input "4" to ONLY ADD ID
-echo Input "5" to ADD ID + TAGS AND KEEP NAME TILL [
+echo 일반 모드:
+echo "1" 항상 이름 바꾸기
+echo "2" [TITLEID]가 있는 경우 이름을 바꾸지 않음
+echo "3" [TITLEID]가 계산된 것과 동일하면 이름을 변경하지 않음
+echo "4" ID 만 추가
+echo "5" ADD ID + 태크 추가, [까지 이름 유지
 echo.
-echo Clean tags:
-echo Input "6" to REMOVE [] tags from the filename
-echo Input "7" to REMOVE () tags from the filename
-echo Input "8" to REMOVE [] and () tags from the filename
-echo Input "9" to REMOVE TITLE FROM FIRST [
-echo Input "10" to REMOVE TITLE FROM FIRST (
+echo 지우기 태그:
+echo "6" 파일 이름에서 [] 태그 삭제
+echo "7" 파일 이름에서 () 태그 삭제
+echo "8" 파일 이름에서 []와 () 태그 삭제
+echo "9" 처음 [에서 타이틀 삭제
+echo "10" 처음 (에서 타이틀 삭제
 echo.
-ECHO ******************************************
-echo Or Input "0" to return to the list options
-ECHO ******************************************
+ECHO *************************************************
+echo 또는 목록 옵션으로 돌아가려면 "0"을 입력하십시오.
+ECHO *************************************************
 echo.
-set /p bs="Enter your choice: "
+set /p bs="선택 사항을 입력하십시오: "
 set bs=%bs:"=%
 set "renmode=none"
 if /i "%bs%"=="0" goto checkagain
@@ -1055,25 +1055,25 @@ if /i "%bs%"=="9" goto filecleantags
 if /i "%bs%"=="10" set "tagtype=("
 if /i "%bs%"=="10" goto filecleantags
 
-if /i "%renmode%"=="none" echo WRONG CHOICE
+if /i "%renmode%"=="none" echo 틀린 선택
 if /i "%renmode%"=="none" goto s_rename_wrongchoice1
 echo.
 :s_rename_wrongchoice2
 echo *******************************************************
-echo ADD VERSION NUMBER
+echo 버전 번호 추가
 echo *******************************************************
-echo Adds content version number to filename
+echo 파일 이름에 콘텐츠 버전 번호를 추가합니다.
 echo.
-echo Input "1" to ADD version number
-echo Input "2" to NOT ADD version number
-echo Input "3" to NOT ADD version in xci if VERSION=0
+echo "1" 버전 번호 추가
+echo "2" 버전 번호 추가 안함
+echo "3" VERSION=0인 경우 xci에 버전 추가 안함
 echo.
 ECHO *********************************************
-echo Or Input "b" to return to TYPE OF RENAME
-echo Or Input "0" to return to the list options
+echo 또는 "b" 이름 바꾸기 유형
+echo 또는 "0" 목록 옵션으로 돌아가기
 ECHO *********************************************
 echo.
-set /p bs="Enter your choice: "
+set /p bs="선택 사항을 입력하십시오: "
 set bs=%bs:"=%
 set "nover=none"
 if /i "%bs%"=="0" goto checkagain
@@ -1086,49 +1086,49 @@ if /i "%nover%"=="none" goto s_rename_wrongchoice2
 echo.
 :s_rename_wrongchoice3
 echo *******************************************************
-echo ADD LANGUAGE STRING
+echo 언어 문자열 추가
 echo *******************************************************
-echo Adds language tags for games and updates
+echo 게임 및 업데이트 용 언어 태그 추가
 echo.
-echo Input "1" to NOT ADD language string
-echo Input "2" to ADD language string
+echo "1" 언어 문자열 추가 안함
+echo "2" 언어 문자열 추가
 echo.
-echo Note: Language can't be read from dlcs so this option
-echo won't affect them
+echo 참고: dlc에서 언어를 읽을 수 없으므로 이 옵션은 영향을
+echo 미치지 않습니다.
 echo.
 ECHO *********************************************
-echo Or Input "b" to return to ADD VERSION NUMBER
-echo Or Input "0" to return to the list options
+echo 또는 "b" 버전 번호 추가
+echo 또는 "0" 목록 옵션으로 돌아가기
 ECHO *********************************************
 echo.
-set /p bs="Enter your choice: "
+set /p bs="선택 사항을 입력하십시오: "
 set bs=%bs:"=%
 set "addlangue=none"
 if /i "%bs%"=="0" goto checkagain
 if /i "%bs%"=="b" goto s_rename_wrongchoice2
 if /i "%bs%"=="1" set "addlangue=false"
 if /i "%bs%"=="2" set "addlangue=true"
-if /i "%addlangue%"=="none" echo WRONG CHOICE
+if /i "%addlangue%"=="none" echo 틀린 선택
 if /i "%addlangue%"=="none" goto s_rename_wrongchoice3
 echo.
 :s_rename_wrongchoice4
 echo *******************************************************
-echo KEEP DLC NAMES
+echo DLC 이름 유지
 echo *******************************************************
-echo Either keep name without tags or use DLC NUMBER X as name
-echo NOTE: This is done this way since dlc names can't be read
-echo from file, only dlc numbers
+echo 태그없이 이름을 유지하거나 DLC NUMBER X를 이름으로 사용.
+echo 참고: 이 방법은 dlc 이름을 파일에서 읽을 수 없으므로 dlc
+echo 번호에서만 읽을 수 있습니다.
 echo.
-echo Input "1" to KEEP basename
-echo Input "2" to RENAME as DLC Number
-echo Input "3" to keep basename and ADD DLC NUMBER AS TAG
+echo "1" 기본이름 유지
+echo "2" DLC 번호 이름 바꾸기
+echo "3" 기본이름 유지와 태그와 같이 DLC 번호 추가
 echo.
 ECHO *********************************************
-echo Or Input "b" to return to ADD  KEEP DLC NAMES
-echo Or Input "0" to return to the list options
+echo 또는 "b" DLC 이름 추가
+echo 또는 "0" 목록 옵션으로 돌아가기
 ECHO *********************************************
 echo.
-set /p bs="Enter your choice: "
+set /p bs="선택 사항을 입력하십시오: "
 set bs=%bs:"=%
 set "dlcrname=none"
 if /i "%bs%"=="0" goto checkagain
@@ -1136,7 +1136,7 @@ if /i "%bs%"=="b" goto s_rename_wrongchoice3
 if /i "%bs%"=="1" set "dlcrname=false"
 if /i "%bs%"=="2" set "dlcrname=true"
 if /i "%bs%"=="3" set "dlcrname=tag"
-if /i "%dlcrname%"=="none" echo WRONG CHOICE
+if /i "%dlcrname%"=="none" echo 틀린 선택
 if /i "%dlcrname%"=="none" goto s_rename_wrongchoice4
 echo.
 cls
@@ -1148,7 +1148,7 @@ move /y "list.txt.new" "list.txt" >nul
 call :contador_NF
 )
 ECHO ---------------------------------------------------
-ECHO *********** ALL FILES WERE PROCESSED! *************
+ECHO ********** 모든 파일이 처리되었습니다! ************
 ECHO ---------------------------------------------------
 goto s_exit_choice
 
@@ -1162,20 +1162,20 @@ move /y "list.txt.new" "list.txt" >nul
 call :contador_NF
 )
 ECHO ---------------------------------------------------
-ECHO *********** ALL FILES WERE PROCESSED! *************
+ECHO ********** 모든 파일이 처리되었습니다! ************
 ECHO ---------------------------------------------------
 goto s_exit_choice
 
 :s_exit_choice
 if exist list.txt del list.txt
-if /i "%va_exit%"=="true" echo PROGRAM WILL CLOSE NOW
+if /i "%va_exit%"=="true" echo 프로그램은 지금 닫을 것입니다
 if /i "%va_exit%"=="true" ( PING -n 2 127.0.0.1 >NUL 2>&1 )
 if /i "%va_exit%"=="true" goto salida
 echo.
-echo Input "0" to go back to the mode selection
-echo Input "1" to exit the program
+echo "0" 모드 선택 돌아가기
+echo "1" 프로그램 종료
 echo.
-set /p bs="Enter your choice: "
+set /p bs="선택 사항을 입력하십시오: "
 set bs=%bs:"=%
 if /i "%bs%"=="0" goto manual_Reentry
 if /i "%bs%"=="1" goto salida
@@ -1209,7 +1209,7 @@ move "%w_folder%\*.zip" "%zip_fold%" >NUL 2>&1
 if exist "%w_folder%\archfolder" ( %pycommand% "%nut%" -ifo "%w_folder%\archfolder" -archive "%fold_output%\%filename%.nsp" )
 
 RD /S /Q "%w_folder%" >NUL 2>&1
-echo DONE
+echo 완료
 call :thumbup
 call :delay
 goto end_nsp_manual
@@ -1252,7 +1252,7 @@ move "%w_folder%\*.zip" "%zip_fold%" >NUL 2>&1
 if exist "%w_folder%\archfolder" ( %pycommand% "%nut%" -ifo "%w_folder%\archfolder" -archive "%gefolder%\%filename%.nsp" )
 endlocal
 RD /S /Q "%w_folder%" >NUL 2>&1
-echo DONE
+echo 완료
 call :thumbup
 call :delay
 goto end_nsp_manual
@@ -1287,7 +1287,7 @@ move "%w_folder%\*.zip" "%zip_fold%" >NUL 2>&1
 if exist "%w_folder%\archfolder" ( %pycommand% "%nut%" -ifo "%w_folder%\archfolder" -archive "%fold_output%\%filename%.nsp" )
 
 RD /S /Q "%w_folder%" >NUL 2>&1
-echo DONE
+echo 완료
 call :thumbup
 call :delay
 goto end_xci_manual
@@ -1306,10 +1306,10 @@ MD "%w_folder%"
 MD "%w_folder%\secure"
 call :getname
 echo ------------------------------------
-echo Extracting secure partition from xci
+echo xci에서 보안 파티션 추출하기
 echo ------------------------------------
 %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -o "%w_folder%\secure" %nf_cleaner% "%orinput%"
-echo DONE
+echo 완료
 if "%vrename%" EQU "true" call :addtags_from_xci
 if "%vrepack%" EQU "nsp" ( call "%nsp_lib%" "convert" "%w_folder%" )
 if "%vrepack%" EQU "xci" ( call "%xci_lib%" "repack" "%w_folder%" )
@@ -1325,7 +1325,7 @@ move "%w_folder%\*.ns*" "%fold_output%\!end_folder!" >NUL 2>&1
 if exist "%w_folder%\archfolder" ( %pycommand% "%nut%" -ifo "%w_folder%\archfolder" -archive "%fold_output%\!end_folder!\%filename%.nsp" )
 endlocal
 RD /S /Q "%w_folder%" >NUL 2>&1
-echo DONE
+echo 완료
 call :thumbup
 call :delay
 goto end_xci_manual
@@ -1340,7 +1340,7 @@ for /f "tokens=*" %%f in (list.txt) do (
 set /a conta=!conta! + 1
 )
 echo ...................................................
-echo STILL !conta! FILES TO PROCESS
+echo 여전히 처리할 !conta! 파일
 echo ...................................................
 PING -n 2 127.0.0.1 >NUL 2>&1
 set /a conta=0
@@ -1359,19 +1359,19 @@ if exist "%list_folder%\a_multi" RD /S /Q "%list_folder%\a_multi" >NUL 2>&1
 cls
 call :program_logo
 echo -----------------------------------------------
-echo MULTI-REPACK MODE ACTIVATED
+echo 멀티 리팩 모드 활성화되었습니다
 echo -----------------------------------------------
 if exist "mlist.txt" del "mlist.txt" 
 :multi_manual_INIT
 endlocal
 set skip_list_split="false"
 set "mlistfol=%list_folder%\m_multi"
-echo Drag files or folders to create a list
-echo Note: Remember to press enter after each dile\folder dragged
+echo 목록을 만들려면 파일이나 폴더를 드래그하십시오.
+echo 참고: 각 dile\folder를 드래그 한 후에는 Enter 키를 누르십시오.
 echo.
 ECHO ***********************************************
-echo Input "1" to process PREVIOUSLY SAVED JOBS
-echo Input "0" to return to the MODE SELECTION MENU
+echo "1" 이전에 저장된 작업을 처리
+echo "0" 모드 선택 메뉴 돌아가기
 ECHO ***********************************************
 echo.
 %pycommand% "%nut%" -t nsp xci -tfile "%prog_dir%mlist.txt" -uin "%uinput%" -ff "uinput"
@@ -1387,23 +1387,23 @@ goto multi_checkagain
 echo.
 :multi_checkagain
 set "mlistfol=%list_folder%\a_multi"
-echo WHAT DO YOU WANT TO DO?
-echo ......................................................................
-echo "DRAG ANOTHER FILE OR FOLDER AND PRESS ENTER TO ADD ITEMS TO THE LIST"
+echo 무엇을 하고 싶습니까?
+echo ................................................................................
+echo "다른 파일 또는 폴더를 드래그하고 목록에 항목을 추가하려면 ENTER 키를 누릅니다."
 echo.
-echo Input "1" to start processing current list
-echo Input "2" to add to saved lists and process them
-echo Input "3" to save list for later
+echo "1" 현재 목록 처리를 시작
+echo "2" 저장된 목록에 추가하고 처리
+echo "3" 나중에 저장할 수 있도록 목록 저장
 REM echo Input "2" to set a custom logo from a nsp/nca
 echo.
-echo Input "e" to exit
-echo Input "i" to see list of files to process
-echo Input "r" to remove some files (counting from bottom)
-echo Input "z" to remove the whole list
-echo ......................................................................
-ECHO *************************************************
-echo Or Input "0" to return to the MODE SELECTION MENU
-ECHO *************************************************
+echo "e" 종료
+echo "i" 처리할 파일 목록 보기
+echo "r" 일부 파일 삭제 (하단에서부터 계산)
+echo "z" 전체 목록 삭제
+echo ................................................................................
+ECHO ****************************************************
+echo 또는 모드 선택 메뉴로 돌아가려면 "0"을 입력하십시오.
+ECHO ****************************************************
 echo.
 %pycommand% "%nut%" -t nsp xci -tfile "%prog_dir%mlist.txt" -uin "%uinput%" -ff "uinput"
 set /p eval=<"%uinput%"
@@ -1430,17 +1430,17 @@ goto multi_checkagain
 :multi_saved_for_later
 if not exist "%list_folder%" MD "%list_folder%" >NUL 2>&1
 if not exist "%mlistfol%" MD "%mlistfol%" >NUL 2>&1
-echo SAVE LIST JOB FOR ANOTHER TIME
+echo 다른 시간에 작업 목록 저장
 echo ......................................................................
-echo Input "1" to SAVE the list as a MERGE job (single multifile list)
-echo Input "2" to SAVE the list as a MULTIPLE jobs by baseid of files
+echo "1" MERGE 작업으로 목록을 저장 (단일 다중 파일 목록)
+echo "2" 파일의 baseid에 의해 여러 작업으로 목록을 저장
 echo.
 ECHO *******************************************
-echo Input "b" to keep building the list
-echo Input "0" to go back to the selection menu
+echo "b" 목록 작성을 계속
+echo "0" 선택 메뉴로 돌아가기
 ECHO *******************************************
 echo.
-set /p bs="Enter your choice: "
+set /p bs="선택 사항을 입력하십시오: "
 set bs=%bs:"=%
 set vrepack=none
 if /i "%bs%"=="b" goto multi_checkagain
@@ -1449,27 +1449,27 @@ if /i "%bs%"=="1" goto multi_saved_for_later1
 if /i "%bs%"=="2" ( %pycommand% "%nut%" -splid "%mlistfol%" -tfile "%prog_dir%mlist.txt" )
 if /i "%bs%"=="2" del "%prog_dir%mlist.txt"
 if /i "%bs%"=="2" goto multi_saved_for_later2
-echo WRONG CHOICE!!
+echo 틀린 선택!!
 goto multi_saved_for_later
 :multi_saved_for_later1
 echo.
-echo CHOOSE NAME FOR THE JOB
+echo 작업의 이름을 선택하십시오
 echo ......................................................................
-echo The list will be saved under the name of your choosing in the list's 
-echo folder ( Route is "program's folder\list\m_multi")
+echo 목록은 목록 폴더에서 선택한 이름으로 저장됩니다.
+echo (경로는 "프로그램의 폴더\list\m_multi"입니다)
 echo.
-set /p lname="Input name for the list job: "
+set /p lname="목록 작업의 입력 이름: "
 set lname=%lname:"=%
 move /y "%prog_dir%mlist.txt" "%mlistfol%\%lname%.txt" >nul
 echo.
-echo JOB SAVED!!!
+echo 작업이 저장되었습니다!!!
 :multi_saved_for_later2
 echo.
-echo Input "0" to go back to the mode selection
-echo Input "1" to create other job
-echo Input "2" to exit the program
+echo "0" 모드 선택 돌아가기
+echo "1" 다른 작업 생성
+echo "2" 프로그램 종료
 echo.
-set /p bs="Enter your choice: "
+set /p bs="선택 사항을 입력하십시오: "
 set bs=%bs:"=%
 if /i "%bs%"=="0" goto manual_Reentry
 if /i "%bs%"=="1" echo.
@@ -1479,7 +1479,7 @@ if /i "%bs%"=="1" goto salida
 goto multi_saved_for_later2
 
 :multi_r_files
-set /p bs="Input the number of files you want to remove (from bottom): "
+set /p bs="(하단에서) 삭제할 파일 수를 입력하십시오: "
 set bs=%bs:"=%
 
 setlocal enabledelayedexpansion
@@ -1512,10 +1512,10 @@ endlocal
 cls
 call :program_logo
 echo -------------------------------------------------
-echo MULTI-REPACK MODE ACTIVATED
+echo 멀티 리 팩 모드 활성화되었습니다
 echo -------------------------------------------------
 ECHO -------------------------------------------------
-ECHO                FILES TO PROCESS 
+ECHO                   처리할 파일 
 ECHO -------------------------------------------------
 for /f "tokens=*" %%f in (mlist.txt) do (
 echo %%f
@@ -1526,33 +1526,33 @@ for /f "tokens=*" %%f in (mlist.txt) do (
 set /a conta=!conta! + 1
 )
 echo .................................................
-echo YOU'VE ADDED !conta! FILES TO PROCESS
+echo 처리할 !conta! 파일을 추가했습니다
 echo .................................................
 endlocal
 
 goto multi_checkagain
 
 :m_cl_wrongchoice
-echo wrong choice
+echo 틀린 선택
 echo ............
 :multi_start_cleaning
 echo *******************************************************
-echo CHOOSE WHAT TO DO AFTER PROCESSING THE SELECTED FILES
+echo 선택한 파일을 처리한 후 수행할 작업을 선택하십시오.
 echo *******************************************************
-echo STANDARD CRYPTO OPTIONS:
-echo Input "1" to repack list as Ticketless NSP
-echo Input "2" to repack list as XCI
-echo Input "3" to repack list as both T-NSP and XCI
+echo 표준 비밀 옵션:
+echo "1" 티켓없이 NSP로 목록 리팩
+echo "2" XCI로 목록 리팩
+echo "3" T-NSP 및 XCI로 목록 리팩
 echo.
-echo SPECIAL OPTIONS:
-echo Input "4" to as NSP with only Unmodified eshop nca files
-echo Input "5" to repack list as both NSP-U and XCI
+echo 특수 옵션:
+echo "4" 수정되지 않은 eshop nca 파일과 함꼐하는 NSP
+echo "5" NSP-U와 XCI로 리팩 목록
 echo.
-ECHO *****************************************
-echo Or Input "b" to return to the option list
-ECHO *****************************************
+ECHO *************************************************
+echo 또는 옵션 목록으로 돌아가려면 "b"를 입력하십시오.
+ECHO *************************************************
 echo.
-set /p bs="Enter your choice: "
+set /p bs="선택 사항을 입력하십시오: "
 set bs=%bs:"=%
 set vrepack=none
 if /i "%bs%"=="b" goto multi_checkagain
@@ -1570,20 +1570,20 @@ if /i "%skipRSVprompt%"=="true" set "patchRSV=-pv false"
 if /i "%skipRSVprompt%"=="true" set "vkey=-kp false"
 if /i "%skipRSVprompt%"=="true" goto m_KeyChange_skip
 echo *******************************************************
-echo DO YOU WANT TO PATCH THE REQUIRED-SYSTEM-VERSION
+echo 필수 시스템 버전을 패치하고 싶습니까?
 echo *******************************************************
-echo If you choose to patch it will be set to match the 
-echo nca crypto so it'll only ask to update your system
-echo in the case it's necessary
+echo 패치를 선택하면 nca 암호와 일치하도록 설정되므로 
+echo 필요할 경우 시스템을 업데이트하라는 메시지만 표시
+echo 됩니다.
 echo.
-echo Input "0" to don't patch the Required System Version
-echo Input "1" to "PATCH" the Required System Version
+echo "0" 필수 시스템 버전을 패치하지 않음
+echo "1" 필요한 시스템 버전 "패치"
 echo.
-ECHO *****************************************
-echo Or Input "b" to return to the option list
-ECHO *****************************************
+ECHO *************************************************
+echo 또는 옵션 목록으로 돌아가려면 "b"를 입력하십시오.
+ECHO *************************************************
 echo.
-set /p bs="Enter your choice: "
+set /p bs="선택 사항을 입력하십시오: "
 set bs=%bs:"=%
 set patchRSV=none
 if /i "%bs%"=="b" goto multi_checkagain
@@ -1596,31 +1596,31 @@ if /i "%bs%"=="0" goto m_KeyChange_skip
 
 :m_KeyChange_wrongchoice
 echo *******************************************************
-echo SET MAXIMUM KEYGENERATION\RSV ALOWED
+echo 최대 키 생성\RSV 허용 설정
 echo *******************************************************
-echo Depending on your choice keygeneration and RSV will be
-echo lowered to the corresponding keygeneration range in case
-echo read keygeneration value is bigger than the one specified
-echo in the program.
-echo THIS WON'T ALWAYS WORK TO LOWER THE FIRMWARE REQUIREMENT.
+echo 선택한 키 생성에 따라 RSG는 해당 키 생성 범위로 낮춰지며
+echo 읽기 키 생성 값이 프로그램에 지정된 값보다 큰 경우에 발생
+echo 합니다.
+echo
+echo 이 작업은 항상 펌웨어 요구를 낮추기 위해 노력하지 않습니다.
 echo.
-echo Input "f" to not change the keygeneration
-echo Input "0" to change top keygeneration to 0 (FW 1.0)
-echo Input "1" to change top keygeneration to 1 (FW 2.0-2.3)
-echo Input "2" to change top keygeneration to 2 (FW 3.0)
-echo Input "3" to change top keygeneration to 3 (FW 3.0.1-3.02)
-echo Input "4" to change top keygeneration to 4 (FW 4.0.0-4.1.0)
-echo Input "5" to change top keygeneration to 5 (FW 5.0.0-5.1.0)
-echo Input "6" to change top keygeneration to 6 (FW 6.0.0-6.1.0)
-echo Input "7" to change top keygeneration to 7 (FW 6.2.0)
-echo Input "8" to change top keygeneration to 8 (FW 7.0.0-8.0.1)
-echo Input "9" to change top keygeneration to 9 (FW 8.1.0)
+echo "f" 키 생성을 변경하지 않음
+echo "0" 최상위 키 생성을 0으로 변경 (FW 1.0)
+echo "1" 최상위 키 생성을 1로 변경 (FW 2.0-2.3)
+echo "2" 최상위 키 생성을 2로 변경 (FW 3.0)
+echo "3" 최상위 키 생성을 3으로 변경 (FW 3.0.1-3.02)
+echo "4" 최상위 키 생성을 4으로 변경 (FW 4.0.0-4.1.0)
+echo "5" 최상위 키 생성을 5로 변경 (FW 5.0.0-5.1.0)
+echo "6" 최상위 키 생성을 6으로 변경 (FW 6.0.0-6.1.0)
+echo "7" 최상위 키 생성을 7로 변경 (FW 6.2.0)
+echo "8" 최상위 키 생성을 8로 변경 (FW 7.0.0-8.0.1)
+echo "9" 최상위 키 생성을 9로 변경 (FW 8.1.0)
 echo.
-ECHO *****************************************
-echo Or Input "b" to return to the option list
-ECHO *****************************************
+ECHO *************************************************
+echo 또는 옵션 목록으로 돌아가려면 "b"를 입력하십시오.
+ECHO *************************************************
 echo.
-set /p bs="Enter your choice: "
+set /p bs="선택 사항을 입력하십시오: "
 set bs=%bs:"=%
 set "vkey=none"
 if /i "%bs%"=="b" goto multi_checkagain
@@ -1653,20 +1653,20 @@ if not exist "%list_folder%" MD "%list_folder%" >NUL 2>&1
 if not exist "%mlistfol%" MD "%mlistfol%" >NUL 2>&1
 if %skip_list_split% EQU "true" goto m_process_jobs
 echo *******************************************************
-echo HOW DO YOU WANNT TO PROCESS FILES?
+echo 어떻게 파일 처리 방법을 하기 원합니까?
 echo *******************************************************
-echo The separate by base id mode is capable to identify the
-echo content that corresponds to each game and create multiple
-echo multi-xci or multi-nsp from the same list file
+echo 분리 된 기본 ID 모드는 각 게임에 해당하는 콘텐츠를 식별
+echo 하고 동일한 목록 파일에서 여러 개의 멀티-xci 또는 멀티
+echo nsp를 만들 수 있습니다.
 echo.
-echo Input "1" to MERGE all files into a single file
-echo Input "2" to SEPARATE into multifiles by baseid
+echo "1" 모든 파일을 단일 파일에 병합
+echo "2" baseid로 다중 파일에 분리
 echo.
-ECHO *****************************************
-echo Or Input "b" to return to the option list
-ECHO *****************************************
+ECHO *************************************************
+echo 또는 옵션 목록으로 돌아가려면 "b"를 입력하십시오.
+ECHO *************************************************
 echo.
-set /p bs="Enter your choice: "
+set /p bs="선택 사항을 입력하십시오: "
 set bs=%bs:"=%
 if /i "%bs%"=="b" goto multi_checkagain
 if /i "%bs%"=="1" move /y "%prog_dir%mlist.txt" "%mlistfol%\mlist.txt" >nul
@@ -1806,7 +1806,7 @@ exit /B
 
 :m_split_merge_list_name
 echo *******************************************************
-echo Processing list %listname%
+echo %listname% 목록 처리
 echo *******************************************************
 exit /B
 
@@ -1862,12 +1862,12 @@ goto m_exit_choice
 :m_KeyChange_skip_fat32
 CD /d "%prog_dir%"
 echo *******************************************************
-echo ENTER FINAL FILENAME FOR THE OUTPUT FILE
+echo 출력 파일의 최종 파일 이름 입력
 echo *******************************************************
 echo.
-echo Or Input "b" to return to the option list
+echo 또는 옵션 목록으로 돌아가려면 "b"를 입력하십시오.
 echo.
-set /p bs="Please type the name without extension: "
+set /p bs="확장명없이 이름을 입력하십시오: "
 set finalname=%bs:"=%
 if /i "%finalname%"=="b" goto multi_checkagain
 
@@ -1910,17 +1910,17 @@ goto m_exit_choice
 
 :m_exit_choice
 ECHO ---------------------------------------------------
-ECHO *********** ALL FILES WERE PROCESSED! *************
+ECHO ********** 모든 파일이 처리되었습니다! ************
 ECHO ---------------------------------------------------
 if exist mlist.txt del mlist.txt
-if /i "%va_exit%"=="true" echo PROGRAM WILL CLOSE NOW
+if /i "%va_exit%"=="true" echo 프로그램은 지금 닫을 것입니다.
 if /i "%va_exit%"=="true" ( PING -n 2 127.0.0.1 >NUL 2>&1 )
 if /i "%va_exit%"=="true" goto salida
 echo.
-echo Input "0" to go back to the mode selection
-echo Input "1" to exit the program
+echo "0" 모드 선택 돌아가기
+echo "1" 프로그램 종료
 echo.
-set /p bs="Enter your choice: "
+set /p bs="선택 사항을 입력하십시오: "
 set bs=%bs:"=%
 if /i "%bs%"=="0" goto manual_Reentry
 if /i "%bs%"=="1" goto salida
@@ -1932,7 +1932,7 @@ set "showname=%orinput%"
 call :processing_message
 call :squirrell
 %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -o "%w_folder%\secure" %nf_cleaner% "%orinput%"
-echo DONE
+echo 완료
 call :thumbup
 call :delay
 exit /B
@@ -1947,10 +1947,10 @@ MD "%w_folder%\normal" >NUL 2>&1
 MD "%w_folder%\update" >NUL 2>&1
 call :getname
 echo ------------------------------------
-echo Extracting secure partition from xci
+echo xci에서 보안 파티션 추출하기
 echo ------------------------------------
 %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -o "%w_folder%\secure" %nf_cleaner% "%orinput%"
-echo DONE
+echo 완료
 call :thumbup
 call :delay
 exit /B
@@ -1962,7 +1962,7 @@ for /f "tokens=*" %%f in (mlist.txt) do (
 set /a conta=!conta! + 1
 )
 echo ...................................................
-echo STILL !conta! FILES TO PROCESS
+echo 여전히 처리할 !conta! 파일
 echo ...................................................
 PING -n 2 127.0.0.1 >NUL 2>&1
 set /a conta=0
@@ -1975,16 +1975,16 @@ REM unaccessed for future modification and reintegration
 cls
 call :program_logo
 echo ------------------------------------------
-echo Set custom logo or predominant game
+echo 커스텀 로고 또는 주요한 게임 설정
 echo ------------------------------------------
-echo Indicated for multi-game xci. 
-echo Currently custom logos and names are set dragging a nsp or control nca
-echo That way the program will copy the control nca in the normal partition
-echo If you don't add a custom logo the logo will be set from one of your games
+echo 멀티 게임 xci로 표시됩니다. 
+echo 현재 커스텀 로고 및 이름은 nsp 또는 nca 제어를 드래그를 위해 설정됩니다.
+echo 그런 식으로 프로그램은 정상 파티션에서 nca 컨트롤을 복사합니다.
+echo 커스텀 로고를 추가하지 않으면 로고가 게임 중 하나에서 설정됩니다.
 echo ..........................................
-echo Input "b" to go back to the list builder
+echo 목록 빌더로 돌아가려면 "b"를 입력하십시오.
 echo ..........................................
-set /p bs="OR DRAG A NSP OR NCA FILE OVER THE WINDOW AND PRESS ENTER: "
+set /p bs="윈도우 위에 NSP 또는 NCA 파일을 드래그하고 Enter 키를 누릅니다: "
 set bs=%bs:"=%
 if /i "%bs%"=="b" ( goto multi_checkagain )
 if exist "%bs%" ( goto multi_checklogo )
@@ -2019,7 +2019,7 @@ if "%nsptype%" EQU "DLC" ( goto multi_set_clogo )
 MD "%w_folder%\normal" >NUL 2>&1
 %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -o "%w_folder%\normal" --NSP_copy_nca_control "%custlogo%"
 echo ................
-echo "EXTRACTED LOGO"
+echo "추출된 로고"
 echo ................
 echo.
 goto multi_checkagain
@@ -2032,7 +2032,7 @@ if exist "%w_folder%\normal" RD /S /Q "%w_folder%\normal" >NUL 2>&1
 set /p ncatype=<"%w_folder%\ncatype.txt"
 del "%w_folder%\ncatype.txt"
 if "%ncatype%" NEQ "Content.CONTROL" echo.
-if "%ncatype%" NEQ "Content.CONTROL" echo ---NCA IS NOT A CONTROL TYPE---
+if "%ncatype%" NEQ "Content.CONTROL" echo ---NCA는 제어 유형이 아닙니다---
 if "%ncatype%" NEQ "Content.CONTROL" echo.
 if "%ncatype%" NEQ "Content.CONTROL" ( goto multi_set_clogo )
 MD "%w_folder%\normal" >NUL 2>&1
@@ -2053,7 +2053,7 @@ cls
 call :program_logo
 if exist %w_folder% RD /S /Q "%w_folder%" >NUL 2>&1
 echo -----------------------------------------------
-echo SPLITTER MODE ACTIVATED
+echo 분할 모드 작동
 echo -----------------------------------------------
 if exist "splist.txt" goto sp_prevlist
 goto sp_manual_INIT
@@ -2070,22 +2070,22 @@ if !conta! LEQ 0 ( del splist.txt )
 endlocal
 if not exist "splist.txt" goto sp_manual_INIT
 ECHO .......................................................
-ECHO A PREVIOUS LIST WAS FOUND. WHAT DO YOU WANT TO DO?
+ECHO 이전 목록이 발견되었습니다. 무엇을 하고 싶습니까?
 :sp_prevlist0
 ECHO .......................................................
-echo Input "1" to auto-start processing from the previous list
-echo Input "2" to erase list and make a new one.
-echo Input "3" to continue building the previous list
+echo "1" 이전 목록에서 자동 시작 처리
+echo "2" 목록을 지우고 새 목록 작성
+echo "3" 이전 목록 작성 계속
 echo .......................................................
-echo NOTE: By pressing 3 you'll see the previous list 
-echo before starting the processing the files and you will 
-echo be able to add and delete items from the list
+echo 참고: 3을 누르면 파일 처리를 시작하기 전에 이전 목록이
+echo 표시되고 목록에서 항목을 추가 및 삭제할 수 있습니다.
+echo
 echo.
-ECHO *************************************************
-echo Or Input "0" to return to the MODE SELECTION MENU
-ECHO *************************************************
+ECHO ****************************************************
+echo 또는 모드 선택 메뉴로 돌아가려면 "0"을 입력하십시오.
+ECHO ****************************************************
 echo.
-set /p bs="Enter your choice: "
+set /p bs="선택 사항을 입력하십시오: "
 set bs=%bs:"=%
 if /i "%bs%"=="3" goto sp_showlist
 if /i "%bs%"=="2" goto sp_delist
@@ -2099,15 +2099,15 @@ del splist.txt
 cls
 call :program_logo
 echo -----------------------------------------------
-echo SPLITTER MODE ACTIVATED
+echo 분할 모드가 활성화되었습니다
 echo -----------------------------------------------
-echo ..................................
-echo YOU'VE DECIDED TO START A NEW LIST
-echo ..................................
+echo ......................................
+echo 새로운 목록을 시작하기로 결정했습니다.
+echo ......................................
 :sp_manual_INIT
 endlocal
 ECHO ***********************************************
-echo Input "0" to return to the MODE SELECTION MENU
+echo 모드 선택 메뉴로 돌아가려면 "0"을 입력하십시오.
 ECHO ***********************************************
 echo.
 %pycommand% "%nut%" -t nsp xci -tfile "%prog_dir%splist.txt" -uin "%uinput%" -ff "uinput"
@@ -2121,19 +2121,19 @@ if /i "%eval%"=="0" goto manual_Reentry
 
 echo.
 :sp_checkagain
-echo WHAT DO YOU WANT TO DO?
-echo ......................................................................
-echo "DRAG ANOTHER FILE OR FOLDER AND PRESS ENTER TO ADD ITEMS TO THE LIST"
+echo 무엇을 하고 싶습니까?
+echo ...............................................................................
+echo "다른 파일 또는 폴더를 드래그하고 목록에 항목을 추가하려면 ENTER 키를 누릅니다"
 echo.
-echo Input "1" to start processing
-echo Input "e" to exit
-echo Input "i" to see list of files to process
-echo Input "r" to remove some files (counting from bottom)
-echo Input "z" to remove the whole list
-echo ......................................................................
-ECHO *************************************************
-echo Or Input "0" to return to the MODE SELECTION MENU
-ECHO *************************************************
+echo "1" 프로세스 시작
+echo "e" 종료
+echo "i" 처리할 파일 목록 보기
+echo "r" 일부 파일을 삭제 (하단에서부터 계산)
+echo "z" 전체 목록을 삭제
+echo ...............................................................................
+ECHO ****************************************************
+echo 또는 모드 선택 메뉴로 돌아가려면 "0"을 입력하십시오.
+ECHO ****************************************************
 echo.
 %pycommand% "%nut%" -t nsp xci -tfile "%prog_dir%splist.txt" -uin "%uinput%" -ff "uinput"
 set /p eval=<"%uinput%"
@@ -2152,7 +2152,7 @@ if /i "%eval%"=="z" del splist.txt
 goto sp_checkagain
 
 :sp_r_files
-set /p bs="Input the number of files you want to remove (from bottom): "
+set /p bs="(하단에서) 삭제할 파일 수를 입력하십시오: "
 set bs=%bs:"=%
 
 setlocal enabledelayedexpansion
@@ -2185,10 +2185,10 @@ endlocal
 cls
 call :program_logo
 echo -------------------------------------------------
-echo SPLITTER MODE ACTIVATED
+echo 불할 모드가 활성화되었습니다
 echo -------------------------------------------------
 ECHO -------------------------------------------------
-ECHO                FILES TO PROCESS 
+ECHO                   처리할 파일 
 ECHO -------------------------------------------------
 for /f "tokens=*" %%f in (splist.txt) do (
 echo %%f
@@ -2199,28 +2199,28 @@ for /f "tokens=*" %%f in (splist.txt) do (
 set /a conta=!conta! + 1
 )
 echo .................................................
-echo YOU'VE ADDED !conta! FILES TO PROCESS
+echo 처리할 !conta! 파일을 추가했습니다.
 echo .................................................
 endlocal
 
 goto sp_checkagain
 
 :sp_cl_wrongchoice
-echo wrong choice
+echo 틀린 선택
 echo ............
 :sp_start_cleaning
 echo *******************************************************
-echo CHOOSE WHAT TO DO AFTER PROCESSING THE SELECTED FILES
+echo 선택한 파일을 처리한 후 수행할 작업을 선택하십시오.
 echo *******************************************************
-echo Input "1" to repack list as nsp
-echo Input "2" to repack list as xci
-echo Input "3" to repack list as both
+echo "1" nsp로 목록 리팩
+echo "2" xci로 목록 리팩
+echo "3" nsp와 xci로 목록 리팩
 echo.
-ECHO ******************************************
-echo Or Input "b" to return to the list options
-ECHO ******************************************
+ECHO *************************************************
+echo 또는 목록 옵션으로 돌아가려면 "b"를 입력하십시오.
+ECHO *************************************************
 echo.
-set /p bs="Enter your choice: "
+set /p bs="선택 사항을 입력하십시오: "
 set bs=%bs:"=%
 set vrepack=none
 if /i "%bs%"=="b" goto sp_checkagain
@@ -2254,18 +2254,18 @@ endlocal
 call :sp_contador_NF
 )
 ECHO ---------------------------------------------------
-ECHO *********** ALL FILES WERE PROCESSED! *************
+ECHO ********** 모든 파일이 처리되었습니다! ************
 ECHO ---------------------------------------------------
 :SPLIT_exit_choice
 if exist splist.txt del splist.txt
-if /i "%va_exit%"=="true" echo PROGRAM WILL CLOSE NOW
+if /i "%va_exit%"=="true" echo 프로그램은 지금 닫을 것입니다.
 if /i "%va_exit%"=="true" ( PING -n 2 127.0.0.1 >NUL 2>&1 )
 if /i "%va_exit%"=="true" goto salida
 echo.
-echo Input "0" to go back to the mode selection
-echo Input "1" to exit the program
+echo "0" 모드 선택 돌아가기
+echo "1" 프로그램 종료
 echo.
-set /p bs="Enter your choice: "
+set /p bs="선택 사항을 입력하십시오: "
 set bs=%bs:"=%
 if /i "%bs%"=="0" goto manual_Reentry
 if /i "%bs%"=="1" goto salida
@@ -2336,7 +2336,7 @@ for /f "tokens=*" %%f in (splist.txt) do (
 set /a conta=!conta! + 1
 )
 echo ...................................................
-echo STILL !conta! FILES TO PROCESS
+echo 아직도 처리할 !conta! 파일
 echo ...................................................
 PING -n 2 127.0.0.1 >NUL 2>&1
 set /a conta=0
@@ -2352,7 +2352,7 @@ exit /B
 cls
 call :program_logo
 echo -----------------------------------------------
-echo DATABASE GENERATION MODE ACTIVATED
+echo 데이터베이스 생성 모드 활성화되었습니다
 echo -----------------------------------------------
 if exist "DBL.txt" goto DBprevlist
 goto DBmanual_INIT
@@ -2369,47 +2369,47 @@ if !conta! LEQ 0 ( del DBL.txt )
 endlocal
 if not exist "DBL.txt" goto DBmanual_INIT
 ECHO .......................................................
-ECHO A PREVIOUS LIST WAS FOUND. WHAT DO YOU WANT TO DO?
+ECHO 이전 목록이 발견되었습니다. 뭐엇을 하고 싶습니까?
 :DBprevlist0
 ECHO .......................................................
-echo Input "1" to auto-start processing from the previous list
-echo Input "2" to erase list and make a new one.
-echo Input "3" to continue building the previous list
+echo "1" 이전 목록에서 자동 시작 처리
+echo "2" 목록을 지우고 새 목록 작성
+echo "3" 이전 목록 작성을 계속
 echo .......................................................
-echo NOTE: By pressing 3 you'll see the previous list 
-echo before starting the processing the files and you will 
-echo be able to add and delete items from the list
+echo 참고: 3을 누르면 파일 처리를 시작하기 전에 이전 목록이
+echo 표시되며 목록에서 항목을 추가 및 삭제할 수 있습니다.
+echo
 echo.
-ECHO *************************************************
-echo Or Input "0" to return to the MODE SELECTION MENU
-ECHO *************************************************
+ECHO ****************************************************
+echo 또는 모드 선택 메뉴로 돌아가려면 "0"을 입력하십시오.
+ECHO ****************************************************
 echo.
-set /p bs="Enter your choice: "
+set /p bs="선택 사항을 입력하십시오: "
 set bs=%bs:"=%
 if /i "%bs%"=="3" goto DBshowlist
 if /i "%bs%"=="2" goto DBdelist
 if /i "%bs%"=="1" goto DBstart_cleaning
 if /i "%bs%"=="0" goto manual_Reentry
 echo.
-echo BAD CHOICE
+echo 나쁜 선택
 goto DBprevlist0
 :DBdelist
 del DBL.txt
 cls
 call :program_logo
 echo -----------------------------------------------
-echo INDIVIDUAL PROCESSING ACTIVATED
+echo 개별적인 처리가 활성화되었습니다.
 echo -----------------------------------------------
 echo ..................................
-echo YOU'VE DECIDED TO START A NEW LIST
+echo 새 목록을 시작하기로 결정했습니다.
 echo ..................................
 :DBmanual_INIT
 endlocal
 ECHO ***********************************************
-echo Input "0" to return to the MODE SELECTION MENU
+echo 모드 선택 메뉴로 돌아가려면 "0"을 입력하십시오.
 ECHO ***********************************************
 echo.
-set /p bs="PLEASE DRAG A FILE OR FOLDER OVER THE WINDOW AND PRESS ENTER: "
+set /p bs="윈도우 위로 파일이나 폴더를 드래그하여 ENTER를 누르십시오: "
 set bs=%bs:"=%
 if /i "%bs%"=="0" goto manual_Reentry
 set "targt=%bs%"
@@ -2425,21 +2425,21 @@ goto DBcheckagain
 goto DBcheckagain
 echo.
 :DBcheckagain
-echo WHAT DO YOU WANT TO DO?
-echo ......................................................................
-echo "DRAG ANOTHER FILE OR FOLDER AND PRESS ENTER TO ADD ITEMS TO THE LIST"
+echo 무엇을 하고 싶습니까?
+echo ................................................................................
+echo "다른 파일 또는 폴더를 드래그하고 목록에 항목을 추가하려면 ENTER 키를 누릅니다."
 echo.
-echo Input "1" to start processing
-echo Input "e" to exit
-echo Input "i" to see list of files to process
-echo Input "r" to remove some files (counting from bottom)
-echo Input "z" to remove the whole list
-echo ......................................................................
-ECHO *************************************************
-echo Or Input "0" to return to the MODE SELECTION MENU
-ECHO *************************************************
+echo "1" 프로세스 시작
+echo "e" 종료
+echo "i" 처리할 파일 목록 보기
+echo "r" 일부 파일 삭제 (하단에서부터 계산)
+echo "z" 전체 목록 삭제
+echo ................................................................................
+ECHO ****************************************************
+echo 또는 모드 선택 메뉴로 돌아가려면 "0"을 입력하십시오.
+ECHO ****************************************************
 echo.
-set /p bs="Drag file/folder or set option: "
+set /p bs="파일/폴더 드래그 또는 옵션 설정: "
 set bs=%bs:"=%
 if /i "%bs%"=="0" goto manual_Reentry
 if /i "%bs%"=="1" goto DBstart_cleaning
@@ -2455,7 +2455,7 @@ goto DBcheckfile
 goto DBsalida
 
 :DBr_files
-set /p bs="Input the number of files you want to remove (from bottom): "
+set /p bs="(하단에서) 삭제할 파일 수를 입력하십시오: "
 set bs=%bs:"=%
 
 setlocal enabledelayedexpansion
@@ -2488,10 +2488,10 @@ endlocal
 cls
 call :program_logo
 echo -------------------------------------------------
-echo INDIVIDUAL PROCESSING ACTIVATED
+echo 개별적인 처리가 활성화되었습니다.
 echo -------------------------------------------------
 ECHO -------------------------------------------------
-ECHO                 FILES TO PROCESS 
+ECHO                    처리할 파일 
 ECHO -------------------------------------------------
 for /f "tokens=*" %%f in (DBL.txt) do (
 echo %%f
@@ -2502,7 +2502,7 @@ for /f "tokens=*" %%f in (DBL.txt) do (
 set /a conta=!conta! + 1
 )
 echo .................................................
-echo YOU'VE ADDED !conta! FILES TO PROCESS
+echo 처리할 !conta! 파일을 추가했습니다
 echo .................................................
 endlocal
 
@@ -2513,20 +2513,20 @@ echo wrong choice
 echo ............
 :DBstart_cleaning
 echo *******************************************************
-echo CHOOSE WHAT TO DO AFTER PROCESSING THE SELECTED FILES
+echo 선택한 파일을 처리한 후 수행할 작업을 선택하십시오.
 echo *******************************************************
-echo Input "1" TO GENERATE NUTDB DATABASE
-echo Input "2" TO GENERATE EXTENDED DATABASE
-echo Input "3" TO GENERATE KEYLESS DATABASE (EXTENDED)
-echo Input "4" TO GENERATE SIMPLE DATABASE
-echo Input "5" TO GENERATE ALL 4 ABOVE DATABASES
-echo Input "Z" TO MAKE ZIP FILES
+echo "1" NUTDB 데이터베이스 생성
+echo "2" 확장 데이터베이스 생성
+echo "3" 키가 없는 데이터베이스 생성 (확장)
+echo "4" 간단한 데이터베이스 생성
+echo "5" 위의 모든 4 개의 데이터베이스 생성
+echo "Z" ZIP 파일 만들기
 echo.
-ECHO ******************************************
-echo Or Input "0" to return to the list options
-ECHO ******************************************
+ECHO *************************************************
+echo 또는 목록 옵션으로 돌아가려면 "0"을 입력하십시오.
+ECHO *************************************************
 echo.
-set /p bs="Enter your choice: "
+set /p bs="선택 사항을 입력하십시오: "
 set bs=%bs:"=%
 set vrepack=none
 if /i "%bs%"=="0" goto DBcheckagain
@@ -2564,18 +2564,18 @@ move /y "DBL.txt.new" "DBL.txt" >nul
 call :DBcontador_NF
 )
 ECHO ---------------------------------------------------
-ECHO *********** ALL FILES WERE PROCESSED! *************
+ECHO ********** 모든 파일이 처리되었습니다! ************
 ECHO ---------------------------------------------------
 :DBs_exit_choice
 if exist DBL.txt del DBL.txt
-if /i "%va_exit%"=="true" echo PROGRAM WILL CLOSE NOW
+if /i "%va_exit%"=="true" echo 프로그램은 지금 닫을 것입니다.
 if /i "%va_exit%"=="true" ( PING -n 2 127.0.0.1 >NUL 2>&1 )
 if /i "%va_exit%"=="true" goto salida
 echo.
-echo Input "0" to go back to the mode selection
-echo Input "1" to exit the program
+echo "0" 모드 선택 돌아가기
+echo "1" 프로그램 종료
 echo.
-set /p bs="Enter your choice: "
+set /p bs="선택 사항을 입력하십시오: "
 set bs=%bs:"=%
 if /i "%bs%"=="0" goto manual_Reentry
 if /i "%bs%"=="1" goto salida
@@ -2602,7 +2602,7 @@ if exist "%w_folder%\*.zip" ( MD "%zip_fold%" ) >NUL 2>&1
 move "%w_folder%\*.zip" "%zip_fold%" >NUL 2>&1
 RD /S /Q "%w_folder%" >NUL 2>&1
 
-echo DONE
+echo 완료
 call :thumbup
 call :delay
 
@@ -2620,7 +2620,7 @@ move /y "DBL.txt.new" "DBL.txt" >nul
 call :DBcontador_NF
 )
 ECHO ---------------------------------------------------
-ECHO *********** ALL FILES WERE PROCESSED! *************
+ECHO ********** 모든 파일이 처리되었습니다! ************
 ECHO ---------------------------------------------------
 goto DBs_exit_choice
 
@@ -2636,7 +2636,7 @@ for /f "tokens=*" %%f in (DBL.txt) do (
 set /a conta=!conta! + 1
 )
 echo ...................................................
-echo STILL !conta! FILES TO PROCESS
+echo 여전히 처리할 !conta! 파일
 echo ...................................................
 PING -n 2 127.0.0.1 >NUL 2>&1
 set /a conta=0
@@ -2685,19 +2685,19 @@ ECHO                / / / (__  ) /__     / /_/ / /_/ / / / /_/ /  __/ /
 ECHO               /_/ /_/____/\___/____/_.___/\__,_/_/_/\__,_/\___/_/     
 ECHO                              /_____/                                  
 ECHO -------------------------------------------------------------------------------------
-ECHO                         NINTENDO SWITCH CLEANER AND BUILDER
-ECHO                      (THE XCI MULTI CONTENT BUILDER AND MORE)
+ECHO                             닌텐도 스위치 클리너 및 빌더
+ECHO                            (XCI 다중 콘텐츠 빌더 및 기타)
 ECHO -------------------------------------------------------------------------------------
-ECHO =============================     BY JULESONTHEROAD     =============================
+ECHO =============================    JULESONTHEROAD 제작    =============================
 ECHO -------------------------------------------------------------------------------------
-ECHO "                                POWERED BY SQUIRREL                                "
-ECHO "                    BASED IN THE WORK OF BLAWAR AND LUCA FRAGA                     "
-ECHO                                   VERSION 0.86 (NEW)
+ECHO "                             다람쥐의 지원을 받는 NSCB                             "
+ECHO "                      BLAWAR 및 LUCA FRAGA 작업을 기반으로 작업                    "
+ECHO                                   버전 0.86 (신규)
 ECHO -------------------------------------------------------------------------------------                   
-ECHO Program's github: https://github.com/julesontheroad/NSC_BUILDER
-ECHO Blawar's github:  https://github.com/blawar
-ECHO Blawar's tinfoil: https://github.com/digableinc/tinfoil
-ECHO Luca Fraga's github: https://github.com/LucaFraga
+ECHO Program의 github: https://github.com/julesontheroad/NSC_BUILDER
+ECHO Blawar의 github:  https://github.com/blawar
+ECHO Blawar의 tinfoil: https://github.com/digableinc/tinfoil
+ECHO Luca Fraga의 github: https://github.com/LucaFraga
 ECHO -------------------------------------------------------------------------------------
 exit /B
 
@@ -2716,7 +2716,7 @@ echo (____@)  \
 echo (__o)_    \
 echo       \    \
 echo.
-echo HOPE YOU HAVE A FUN TIME
+echo 즐거운 시간이 되길 바랍니다.
 echo.
 exit /B
 
@@ -2750,7 +2750,7 @@ exit /B
 
 :makezip
 echo.
-echo Making zip for %ziptarget%
+echo %ziptarget%에 대한 zip 만들기
 echo.
 %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -o "%w_folder%\zip" --zip_combo "%ziptarget%"
 %pycommand% "%nut%" -o "%w_folder%\zip" --NSP_c_KeyBlock "%ziptarget%"
@@ -2832,29 +2832,26 @@ exit /B
 :missing_things
 call :program_logo
 echo ....................................
-echo You're missing the following things:
+echo 다음과 같은 것들이 누락되었습니다. :
 echo ....................................
 echo.
-if not exist "%op_file%" echo - The config file is not correctly pointed or is missing.
-if not exist "%nut%" echo - "nut_RTR.py" is not correctly pointed or is missing.
-if not exist "%xci_lib%" echo - "XCI.bat" is not correctly pointed or is missing.
-if not exist "%nsp_lib%" echo - "NSP.bat" is not correctly pointed or is missing.
-if not exist "%zip%" echo - "7za.exe" is not correctly pointed or is missing.
+if not exist "%op_file%" echo - 구성 파일이 올바르게 지정되지 않았거나 누락되었습니다.
+if not exist "%nut%" echo - "nut_RTR.py"가 올바르게 지정되지 않았거나 누락되었습니다.
+if not exist "%xci_lib%" echo - "XCI.bat"이 올바르게 지정되지 않았거나 누락되었습니다.
+if not exist "%nsp_lib%" echo - "NSP.bat"이 올바르게 지정되지 않았거나 누락되었습니다.
+if not exist "%zip%" echo - "7za.exe"가 올바르게 지정되지 않았거나 누락되었습니다.
 
-if not exist "%hacbuild%" echo - "hacbuild.exe" is not correctly pointed or is missing.
-if not exist "%listmanager%" echo - "listmanager.py" is not correctly pointed or is missing.
-if not exist "%batconfig%" echo - "NSCB_config.bat" is not correctly pointed or is missing.
-if not exist "%infobat%" echo - "info.bat" is not correctly pointed or is missing.
+if not exist "%hacbuild%" echo - "hacbuild.exe"가 올바르게 지정되지 않았거나 누락되었습니다.
+if not exist "%listmanager%" echo - "listmanager.py"가 올바르게 지정되지 않았거나 누락되었습니다.
+if not exist "%batconfig%" echo - "NSCB_config.bat"이 올바르게 지정되지 않았거나 누락되었습니다.
+if not exist "%infobat%" echo - "info.bat"이 올바르게 지정되지 않았거나 누락되었습니다.
 ::File full route
-if not exist "%dec_keys%" echo - "keys.txt" is not correctly pointed or is missing.
+if not exist "%dec_keys%" echo - "keys.txt"가 올바르게 지정되지 않았거나 누락되었습니다.
 echo.
 pause
-echo Program will exit now
+echo 프로그램이 지금 종료됩니다.
 PING -n 2 127.0.0.1 >NUL 2>&1
 goto salida
 :salida
 ::pause
 exit
-
-
-
