@@ -915,7 +915,7 @@ echo Input "4" to change top keygeneration to 4 (FW 4.0.0-4.1.0)
 echo Input "5" to change top keygeneration to 5 (FW 5.0.0-5.1.0)
 echo Input "6" to change top keygeneration to 6 (FW 6.0.0-6.1.0)
 echo Input "7" to change top keygeneration to 7 (FW 6.2.0)
-echo Input "8" to change top keygeneration to 8 (FW 7.0.0-7.0.1)
+echo Input "8" to change top keygeneration to 8 (FW 7.0.0-8.0.1)
 echo Input "9" to change top keygeneration to 9 (FW 8.1.0)
 echo.
 ECHO ******************************************
@@ -1613,7 +1613,7 @@ echo Input "4" to change top keygeneration to 4 (FW 4.0.0-4.1.0)
 echo Input "5" to change top keygeneration to 5 (FW 5.0.0-5.1.0)
 echo Input "6" to change top keygeneration to 6 (FW 6.0.0-6.1.0)
 echo Input "7" to change top keygeneration to 7 (FW 6.2.0)
-echo Input "8" to change top keygeneration to 8 (FW 7.0.0-7.0.1)
+echo Input "8" to change top keygeneration to 8 (FW 7.0.0-8.0.1)
 echo Input "9" to change top keygeneration to 9 (FW 8.1.0)
 echo.
 ECHO *****************************************

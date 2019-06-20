@@ -915,7 +915,8 @@ echo "4" 최상위 키 생성을 4로 변경 (FW 4.0.0-4.1.0)
 echo "5" 최상위 키 생성을 5로 변경 (FW 5.0.0-5.1.0)
 echo "6" 최상위 키 생성을 6으로 변경 (FW 6.0.0-6.1.0)
 echo "7" 최상위 키 생성을 7로 변경 (FW 6.2.0)
-echo "8" 최상위 키 생성을 8로 변경 (FW 7.0.0-7.0.1)
+echo "8" 최상위 키 생성을 8로 변경 (FW 7.0.0-8.0.1)
+echo "9" 최상위 키 생성을 9로 변경 (FW 8.1.0)
 echo.
 ECHO *************************************************
 echo 또는 목록 옵션으로 돌아가려면 "b"를 입력하십시오.
@@ -944,6 +945,8 @@ if /i "%bs%"=="7" set "vkey=-kp 7"
 if /i "%bs%"=="7" set "capRSV=--RSVcap 404750336"
 if /i "%bs%"=="8" set "vkey=-kp 8"
 if /i "%bs%"=="8" set "capRSV=--RSVcap 469762048"
+if /i "%bs%"=="9" set "vkey=-kp 9"
+if /i "%bs%"=="9" set "capRSV=--RSVcap 537919488"
 if /i "%vkey%"=="none" echo 틀린 선택
 if /i "%vkey%"=="none" goto s_KeyChange_wrongchoice
 goto s_KeyChange_skip
@@ -1610,7 +1613,8 @@ echo "4" 최상위 키 생성을 4으로 변경 (FW 4.0.0-4.1.0)
 echo "5" 최상위 키 생성을 5로 변경 (FW 5.0.0-5.1.0)
 echo "6" 최상위 키 생성을 6으로 변경 (FW 6.0.0-6.1.0)
 echo "7" 최상위 키 생성을 7로 변경 (FW 6.2.0)
-echo "8" 최상위 키 생성을 8로 변경 (FW 7.0.0-7.0.1)
+echo "8" 최상위 키 생성을 8로 변경 (FW 7.0.0-8.0.1)
+echo "9" 최상위 키 생성을 9로 변경 (FW 8.1.0)
 echo.
 ECHO *************************************************
 echo 또는 옵션 목록으로 돌아가려면 "b"를 입력하십시오.
@@ -1639,6 +1643,8 @@ if /i "%bs%"=="7" set "vkey=-kp 7"
 if /i "%bs%"=="7" set "capRSV=--RSVcap 404750336"
 if /i "%bs%"=="8" set "vkey=-kp 8"
 if /i "%bs%"=="8" set "capRSV=--RSVcap 469762048"
+if /i "%bs%"=="9" set "vkey=-kp 9"
+if /i "%bs%"=="9" set "capRSV=--RSVcap 537919488"
 if /i "%vkey%"=="none" echo WRONG CHOICE
 if /i "%vkey%"=="none" goto m_KeyChange_wrongchoice
 
