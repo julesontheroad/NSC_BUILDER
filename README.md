@@ -145,10 +145,9 @@ https://github.com/blawar/lithium
 
 - A computer with a Window's OS is needed
 - Fill keys_template.txt on the ztools folder and rename it to keys.txt
-  You can get a full keyset with Lockpick if your console is at FW6.2 or 
-  A friend can lend you the needed keys.
+  You can get a full keyset with Lockpick RCM if your console is at FW 8.1 or a friend can lend you the needed keys.
   If you want to add the xci_header_key a friend will need to lend it to you.
-  https://github.com/shchmue/Lockpick/releases
+https://github.com/shchmue/Lockpick_RCM/releases
 
 ## 9. Limitations 
 - You can't make multi-content xci files with more than 8 games. It'll give error when loading in horizon. I suspect it may be a qlauncher limitation so it could work with theme mods but INTRO didn't test it.
