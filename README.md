@@ -18,21 +18,37 @@ It also helps in the conversion from nsp to xci files allowing to not install ti
 
 Current version of the program allows you to:
 1.- Make multi-content xci or nsp files.
+
 2.- Erase titlerights encryption from nsp files.
+
 3.- Build xci files without the “update partition” which means they take less space on your storage.
+
 4.- Take off deltas from updates
+
 5.- Split multi content back into xci or nsp files
+
 6.- Change the packing of the content between xci and nsp 
+
 7.- Lower the Required System Version to the actual encryption of the game.
+
 8.- Lower the masterkey needed to decrypt a game.
+
 9.- Check out information from a xci and nsp, including the Firmware needed to be able to execute it, the game info, the size of the nca content…
+
 10.- Repack xci and nsp content in formats compatible with fat32
+
 11.- Mass build xci files and nsp files in single and multi content format
+
 12.- Rename nsp,xci files to match it's content
+
 13.- Verify nsp, nsx, xci y nca files
+
 14.- Output information in text format
+
 15.- Extract content of nsp files and secure partition of xci files
+
 16.- Set jobs for later in multi mode
+
 17.- Separate jobs by based-titleid in multi mode
 
 ## 4. Batch modes:
