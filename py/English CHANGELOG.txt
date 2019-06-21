@@ -21,6 +21,7 @@ Luca Fraga's github: https://github.com/LucaFraga
 ---------------
 0. Changelog
 ---------------
+v0.86e- Fixes NSCB.bat that got messed up when merging beta and master branches
 v0.86d- Adds support for keygeneration 9\masterkey8
 	- Added support for keygeneration 9\masterkey8 in info functions, keys verification,
 	  nsp\xci verifier and keygeneration change function

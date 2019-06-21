@@ -3,7 +3,7 @@
 set "prog_dir=%~dp0"
 set "bat_name=%~n0"
 set "ofile_name=%bat_name%_options.cmd"
-Title NSC_Builder v0.86. -- Profile: %ofile_name% -- by JulesOnTheRoad
+Title NSC_Builder v0.86.e -- Profile: %ofile_name% -- by JulesOnTheRoad
 set "list_folder=%prog_dir%lists"
 ::-----------------------------------------------------
 ::이 옵션을 다른 옵션 파일과 연결되도록 편집하십시오.
