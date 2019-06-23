@@ -208,6 +208,8 @@ if __name__ == '__main__':
 		parser.add_argument('-nint_keys','--nint_keys', help='Verify NS keys')			
 		parser.add_argument('-renf','--renamef', help='Rename file with proper name')	
 		parser.add_argument('-renftxt','--renameftxt', help='Rename file with proper name using a text list')		
+		parser.add_argument('-snz','--sanitize', help='Remove unreadable characters from names')			
+		parser.add_argument('-roma','--romanize', help='Translate kanji and extendid kanji to romaji and sanitize name')			
 		parser.add_argument('-oaid','--onlyaddid', help='Rename file with proper name')		
 		parser.add_argument('-renm','--renmode', help='Rename mode (force,skip_corr_tid,skip_if_tid)')		
 		parser.add_argument('-addl','--addlangue', help='Add language string')
@@ -3312,8 +3314,15 @@ if __name__ == '__main__':
 							#print('Filename: '+endname)
 						else:
 							endname=str(f)
-
 				endname = (re.sub(r'[\/\\\:\*\?]+', '', endname))
+				endname = re.sub(r'[™©®`~^´ªº¢£€¥$ƒ±¬½¼«»±•²‰œæÆ³]', '', endname)					
+				endname = re.sub(r'[Ⅲ]', 'III', endname)					
+				endname = re.sub(r'[àâá@äå]', 'a', endname);endname = re.sub(r'[ÀÂÁ@ÄÅ]', 'A', endname)
+				endname = re.sub(r'[èêéë]', 'e', endname);endname = re.sub(r'[ÈÊÉË]', 'E', endname)
+				endname = re.sub(r'[ìîíï]', 'i', endname);endname = re.sub(r'[ÌÎÍÏ]', 'I', endname)
+				endname = re.sub(r'[òôóöø]', 'o', endname);endname = re.sub(r'[ÒÔÓÖØ]', 'O', endname)
+				endname = re.sub(r'[ùûúü]', 'u', endname);endname = re.sub(r'[ÙÛÚÜ]', 'U', endname)		
+				endname=re.sub(' +', ' ',endname)					
 				if endname[-1]==' ':
 					endname=endname[:-1]
 				if fat=="fat32" and fx=="folder":			
@@ -5044,7 +5053,15 @@ if __name__ == '__main__':
 					while endname[-1]==' ':
 						endname=endname[:-1]					
 					#endname = re.sub(r'[\/\\\:\*\?\"\<\>\|\.\s™©®()\~]+', ' ', endname)							
-					endname = (re.sub(r'[\/\\\:\*\?]+', '', endname))	
+					endname = (re.sub(r'[\/\\\:\*\?]+', '', endname))					
+					endname = re.sub(r'[™©®`~^´ªº¢£€¥$ƒ±¬½¼«»±•²‰œæÆ³]', '', endname)	
+					endname = re.sub(r'[Ⅲ]', 'III', endname)					
+					endname = re.sub(r'[àâá@äå]', 'a', endname);endname = re.sub(r'[ÀÂÁ@ÄÅ]', 'A', endname)
+					endname = re.sub(r'[èêéë]', 'e', endname);endname = re.sub(r'[ÈÊÉË]', 'E', endname)
+					endname = re.sub(r'[ìîíï]', 'i', endname);endname = re.sub(r'[ÌÎÍÏ]', 'I', endname)
+					endname = re.sub(r'[òôóöø]', 'o', endname);endname = re.sub(r'[ÒÔÓÖØ]', 'O', endname)
+					endname = re.sub(r'[ùûúü]', 'u', endname);endname = re.sub(r'[ÙÛÚÜ]', 'U', endname)		
+					endname=re.sub(' +', ' ',endname)						
 					if filepath.endswith('.xci'):								
 						endname=endname+'.xci'
 					elif filepath.endswith('.nsp'):						
@@ -5247,6 +5264,14 @@ if __name__ == '__main__':
 			else:
 				endname=str(f)
 			endname = (re.sub(r'[\/\\\:\*\?]+', '', endname))
+			endname = re.sub(r'[™©®`~^´ªº¢£€¥$ƒ±¬½¼«»±•²‰œæÆ³]', '', endname)				
+			endname = re.sub(r'[Ⅲ]', 'III', endname)					
+			endname = re.sub(r'[àâá@äå]', 'a', endname);endname = re.sub(r'[ÀÂÁ@ÄÅ]', 'A', endname)
+			endname = re.sub(r'[èêéë]', 'e', endname);endname = re.sub(r'[ÈÊÉË]', 'E', endname)
+			endname = re.sub(r'[ìîíï]', 'i', endname);endname = re.sub(r'[ÌÎÍÏ]', 'I', endname)
+			endname = re.sub(r'[òôóöø]', 'o', endname);endname = re.sub(r'[ÒÔÓÖØ]', 'O', endname)
+			endname = re.sub(r'[ùûúü]', 'u', endname);endname = re.sub(r'[ÙÛÚÜ]', 'U', endname)		
+			endname=re.sub(' +', ' ',endname)			
 			if endname[-1]==' ':
 				endname=endname[:-1]	
 			ext=ruta[-4:]
@@ -5260,7 +5285,14 @@ if __name__ == '__main__':
 				print(tabs+'> File was renamed to: '+endname)		
 			except BaseException as e:	
 				pass				
-						
+					
+
+		#parser.add_argument('-snz','--sanitize', help='Remove unreadable characters from names')			
+		#parser.add_argument('-roma','--romanize', help='Translate kanji and extendid kanji to romaji and sanitize name')	
+
+
+
+					
 		# ...................................................						
 		# Verify. File verification
 		# ...................................................							
