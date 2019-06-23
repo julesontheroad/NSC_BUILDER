@@ -23,7 +23,6 @@ from Fs.Pfs0 import Pfs0
 from Fs.BaseFs import BaseFs
 from Fs.Ticket import Ticket
 import sq_tools
-from kanaconv import KanaConv
 import pykakasi
 
 MEDIA_SIZE = 0x200
