@@ -23,6 +23,8 @@ from Fs.Pfs0 import Pfs0
 from Fs.BaseFs import BaseFs
 from Fs.Ticket import Ticket
 import sq_tools
+from kanaconv import KanaConv
+import pykakasi
 
 MEDIA_SIZE = 0x200
 RSA_PUBLIC_EXPONENT = 0x10001
@@ -1323,11 +1325,21 @@ class Nca(File):
 				except:
 					pass
 			try:		
-				f.seek(offset+0x3060)	
+				f.seek(offset+0x3060)
 				ediver = f.read(0x10)
-				ediver = ediver.split(b'\0', 1)[0].decode('utf-8')
-				ediver = (re.sub(r'[\/\\]+', ' ', ediver))
-				ediver = ediver.strip()	
+				#print('here2')
+				#print(hx(ediver))
+				try:
+					ediver = ediver.split(b'\0', 1)[0].decode('utf-8')
+					ediver = (re.sub(r'[\/\\]+', ' ', ediver))
+					ediver = ediver.strip()	
+				except:
+					offset=0x16900-0x300*14
+					f.seek(offset+0x3060)
+					ediver = f.read(0x10)
+					ediver = ediver.split(b'\0', 1)[0].decode('utf-8')
+					ediver = (re.sub(r'[\/\\]+', ' ', ediver))
+					ediver = ediver.strip()						
 				try:  
 					int(ediver[0])+1
 				except:
@@ -1415,7 +1427,7 @@ class Nca(File):
 							SupLg.append("KOR")	
 							regionstr+='1|'			
 						if i==13:
-							SupLg.append("TAI")		
+							SupLg.append("ZH (ch)")		
 							regionstr+='1|'			
 						if i==14:
 							SupLg.append("CH")	
@@ -1477,6 +1489,36 @@ class Nca(File):
 								isdemo = 0
 						else:
 							isdemo = 0
+						if i == 2:					
+							kakasi = pykakasi.kakasi()
+							kakasi.setMode("H", "a")
+							kakasi.setMode("K", "a")
+							kakasi.setMode("J", "a")
+							kakasi.setMode("s", True)
+							kakasi.setMode("E", "a")
+							kakasi.setMode("a", None)
+							kakasi.setMode("C", False)
+							converter = kakasi.getConverter()
+							title=converter.do(title)	
+							title=title[0].upper()+title[1:]
+							editor=converter.do(editor)		
+							editor=editor[0].upper()+editor[1:]		
+						if i == 14 or i == 13 or i==12:					
+							kakasi = pykakasi.kakasi()
+							kakasi.setMode("H", "a")
+							kakasi.setMode("K", "a")
+							kakasi.setMode("J", "a")
+							kakasi.setMode("s", True)
+							kakasi.setMode("E", "a")
+							kakasi.setMode("a", None)
+							kakasi.setMode("C", False)
+							converter = kakasi.getConverter()
+							title=converter.do(title)	
+							title=title[0].upper()+title[1:]
+							editor=converter.do(editor)		
+							editor=editor[0].upper()+editor[1:]	
+							title=re.sub(' +', ' ',title)
+							editor=re.sub(' +', ' ',editor)
 						return(title,editor,ediver,SupLg,regionstr[:-1],isdemo)
 				except:
 					pass
