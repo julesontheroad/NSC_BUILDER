@@ -1115,6 +1115,7 @@ class Nsp(Pfs0):
 #ADVANCED FILE-LIST			
 	def  adv_file_list(self):		
 		contentlist=list()	
+		feed=''
 		for nca in self:
 			size1=0;size2=0;size3=0	
 			if type(nca) == Nca:	
@@ -1186,55 +1187,53 @@ class Nsp(Pfs0):
 							MinRSV=sq_tools.getMinRSV(keygen,min_sversion)
 							FW_rq=sq_tools.getFWRangeKG(keygen)
 							RSV_rq=sq_tools.getFWRangeRSV(min_sversion)									
-							RSV_rq_min=sq_tools.getFWRangeRSV(MinRSV)								
-							Print.info('-----------------------------')
-							Print.info('CONTENT ID: ' + str(titleid2))	
-							Print.info('-----------------------------')			
-							if content_type_cnmt != 'AddOnContent':									
-								Print.info("Titleinfo:")							
-								Print.info("- Name: " + tit_name)
-								Print.info("- Editor: " + editor)
-								Print.info("- Build number: " + str(ediver))
-								Print.info("- Meta SDK version: " + sdkversion)	
-								Print.info("- Program SDK version: " + programSDKversion)							
+							RSV_rq_min=sq_tools.getFWRangeRSV(MinRSV)	
+							message=('-----------------------------');print(message);feed+=message+'\n'	
+							message=('CONTENT ID: ' + str(titleid2));print(message);feed+=message+'\n'									
+							message=('-----------------------------');print(message);feed+=message+'\n'									
+							if content_type_cnmt != 'AddOnContent':		
+								message=("Titleinfo:");print(message);feed+=message+'\n'
+								message=("- Name: " + tit_name);print(message);feed+=message+'\n'
+								message=("- Editor: " + editor);print(message);feed+=message+'\n'
+								message=("- Build number: " + str(ediver));print(message);feed+=message+'\n'								
+								message=("- Meta SDK version: " + sdkversion);print(message);feed+=message+'\n'	
+								message=("- Program SDK version: " + programSDKversion);print(message);feed+=message+'\n'
 								suplangue=str((', '.join(SupLg)))
-								Print.info("- Supported Languages: "+suplangue)
-								Print.info("- Content type: "+content_type)
-								Print.info("- Version: " + version+' -> '+content_type_cnmt+' ('+str(v_number)+')')
+								message=("- Supported Languages: "+suplangue);print(message);feed+=message+'\n'								
+								message=("- Content type: "+content_type);print(message);feed+=message+'\n'	
+								message=("- Version: " + version+' -> '+content_type_cnmt+' ('+str(v_number)+')');print(message);feed+=message+'\n'								
 							if content_type_cnmt == 'AddOnContent':
 								if tit_name != "DLC":
-									Print.info("- Name: " + tit_name)
-									Print.info("- Editor: " + editor)									
-								Print.info("- Content type: "+"DLC")
+									message=("- Name: " + tit_name);print(message);feed+=message+'\n'
+									message=("- Editor: " + editor);print(message);feed+=message+'\n'	
+								message=("- Content type: "+"DLC");print(message);feed+=message+'\n'									
 								DLCnumb=str(titleid2)
 								DLCnumb="0000000000000"+DLCnumb[-3:]									
 								DLCnumb=bytes.fromhex(DLCnumb)
 								DLCnumb=str(int.from_bytes(DLCnumb, byteorder='big'))									
 								DLCnumb=int(DLCnumb)
-								Print.info("- DLC number: "+str(DLCnumb)+' -> '+"AddOnContent"+' ('+str(DLCnumb)+')')						
-								Print.info("- DLC version Number: " + version+' -> '+"Version"+' ('+str(v_number)+')')	
-								Print.info("- Meta SDK version: " + sdkversion)		
-								Print.info("- Data SDK version: " + dataSDKversion)									
-							Print.info("")								
-							Print.info("Required Firmware:")			
+								message=("- DLC number: "+str(DLCnumb)+' -> '+"AddOnContent"+' ('+str(DLCnumb)+')');print(message);feed+=message+'\n'
+								message=("- DLC version Number: " + version+' -> '+"Version"+' ('+str(v_number)+')');print(message);feed+=message+'\n'
+								message=("- Meta SDK version: " + sdkversion);print(message);feed+=message+'\n'
+								message=("- Data SDK version: " + dataSDKversion);print(message);feed+=message+'\n'								
+							message=("\nRequired Firmware:");print(message);feed+=message+'\n'									
 							if content_type_cnmt == 'AddOnContent':
 								if v_number == 0:
-									Print.info("- Required game version: " + str(min_sversion)+' -> '+"Application"+' ('+str(RS_number)+')')									
+									message=("- Required game version: " + str(min_sversion)+' -> '+"Application"+' ('+str(RS_number)+')');print(message);feed+=message+'\n'																
 								if v_number > 0:
-									Print.info("- Required game version: " + str(min_sversion)+' -> '+"Patch"+' ('+str(RS_number)+')')																									
+									message=("- Required game version: " + str(min_sversion)+' -> '+"Patch"+' ('+str(RS_number)+')');print(message);feed+=message+'\n'																																	
 							else:
-								Print.info(reqtag + str(min_sversion)+" -> " +RSV_rq)						
-							Print.info('- Encryption (keygeneration): ' + str(keygen)+" -> " +FW_rq)
-							if content_type_cnmt != 'AddOnContent':							
-								Print.info('- Patchable to: ' + str(MinRSV)+" -> " + RSV_rq_min)
+								message=(reqtag + str(min_sversion)+" -> " +RSV_rq);print(message);feed+=message+'\n'	
+							message=('- Encryption (keygeneration): ' + str(keygen)+" -> " +FW_rq);print(message);feed+=message+'\n'								
+							if content_type_cnmt != 'AddOnContent':	
+								message=('- Patchable to: ' + str(MinRSV)+" -> " + RSV_rq_min);print(message);feed+=message+'\n'															
 							else:
-								Print.info('- Patchable to: DLC -> no RSV to patch')	
-							Print.info("")									
+								message=('- Patchable to: DLC -> no RSV to patch\n');print(message);feed+=message+'\n'																														
 							ncalist = list()
-							ncasize = 0							
-							Print.info('......................')							
-							Print.info('NCA FILES (NON DELTAS)')	
-							Print.info('......................')							
+							ncasize = 0		
+							message=('......................');print(message);feed+=message+'\n'		
+							message=('NCA FILES (NON DELTAS)');print(message);feed+=message+'\n'
+							message=('......................');print(message);feed+=message+'\n'													
 							for i in range(content_entries):
 								vhash = cnmt.read(0x20)
 								NcaId = cnmt.read(0x10)
@@ -1246,7 +1245,8 @@ class Nsp(Pfs0):
 								if ncatype != 6:									
 									nca_name=str(hx(NcaId))
 									nca_name=nca_name[2:-1]+'.nca'
-									ncasize=ncasize+self.print_nca_by_title(nca_name,ncatype)
+									s1=0;s1,feed=self.print_nca_by_title(nca_name,ncatype,feed)									
+									ncasize=ncasize+s1
 									ncalist.append(nca_name[:-4])
 									contentlist.append(nca_name)									
 								if ncatype == 6:
@@ -1256,13 +1256,14 @@ class Nsp(Pfs0):
 									contentlist.append(nca_name)										
 							nca_meta=str(nca._path)
 							ncalist.append(nca_meta[:-4])	
-							contentlist.append(nca_meta)							
-							ncasize=ncasize+self.print_nca_by_title(nca_meta,0)
+							contentlist.append(nca_meta)
+							s1=0;s1,feed=self.print_nca_by_title(nca_meta,0,feed)							
+							ncasize=ncasize+s1
 							size1=ncasize
 							size_pr=sq_tools.getSize(ncasize)		
 							bigtab="\t"*7
-							Print.info(bigtab+"  --------------------")								
-							Print.info(bigtab+'  TOTAL SIZE: '+size_pr)	
+							message=(bigtab+"  --------------------");print(message);feed+=message+'\n'		
+							message=(bigtab+'  TOTAL SIZE: '+size_pr);print(message);feed+=message+'\n'									
 							if self.actually_has_deltas(ncalist)=="true":
 								cnmt.rewind()
 								cnmt.seek(0x20+offset)
@@ -1273,10 +1274,10 @@ class Nsp(Pfs0):
 									ncatype = cnmt.read(0x1)
 									ncatype = int.from_bytes(ncatype, byteorder='little')		
 									unknown = cnmt.read(0x1)								
-									if ncatype == 6:							
-										Print.info('......................')							
-										Print.info('NCA FILES (DELTAS)')	
-										Print.info('......................')	
+									if ncatype == 6:	
+										message=('......................');print(message);feed+=message+'\n'
+										message=('NCA FILES (DELTAS)');print(message);feed+=message+'\n'										
+										message=('......................');print(message);feed+=message+'\n'											
 										break
 								cnmt.rewind()
 								cnmt.seek(0x20+offset)
@@ -1291,34 +1292,36 @@ class Nsp(Pfs0):
 									if ncatype == 6:
 										nca_name=str(hx(NcaId))
 										nca_name=nca_name[2:-1]+'.nca'
-										ncasize=ncasize+self.print_nca_by_title(nca_name,ncatype)
+										s1=0;s1,feed=self.print_nca_by_title(nca_name,ncatype,feed)
+										ncasize=ncasize
 								size2=ncasize
 								size_pr=sq_tools.getSize(ncasize)		
 								bigtab="\t"*7
-								Print.info(bigtab+"  --------------------")								
-								Print.info(bigtab+'  TOTAL SIZE: '+size_pr)	
-							if self.actually_has_other(titleid2,ncalist)=="true":								
-								Print.info('......................')							
-								Print.info('OTHER TYPES OF FILES')	
-								Print.info('......................')
-								othersize = 0								
-								othersize=othersize+self.print_xml_by_title(ncalist,contentlist)	
-								othersize=othersize+self.print_tac_by_title(titleid2,contentlist)
-								othersize=othersize+self.print_jpg_by_title(ncalist,contentlist)
+								message=(bigtab+"  --------------------");print(message);feed+=message+'\n'
+								message=(bigtab+'  TOTAL SIZE: '+size_pr);print(message);feed+=message+'\n'										
+							if self.actually_has_other(titleid2,ncalist)=="true":	
+								message=('......................');print(message);feed+=message+'\n'
+								message=('OTHER TYPES OF FILES');print(message);feed+=message+'\n'										
+								message=('......................');print(message);feed+=message+'\n'							
+								othersize=0;os1=0;os2=0;os3=0
+								os1,feed=self.print_xml_by_title(ncalist,contentlist,feed)
+								os2,feed=self.print_tac_by_title(titleid2,contentlist,feed)
+								os3,feed=self.print_jpg_by_title(ncalist,contentlist,feed)
+								othersize=othersize+os1+os2+os3	
 								size3=othersize								
 								size_pr=sq_tools.getSize(othersize)							
 								bigtab="\t"*7
-								Print.info(bigtab+"  --------------------")								
-								Print.info(bigtab+'  TOTAL SIZE: '+size_pr)
+								message=(bigtab+"  --------------------");print(message);feed+=message+'\n'
+								message=(bigtab+'  TOTAL SIZE: '+size_pr);print(message);feed+=message+'\n'										
 					finalsize=size1+size2+size3	
 					size_pr=sq_tools.getSize(finalsize)	
-					Print.info("/////////////////////////////////////")							
-					Print.info('   FULL CONTENT TOTAL SIZE: '+size_pr+"   ")
-					Print.info("/////////////////////////////////////")	
-		self.printnonlisted(contentlist)
+					message=("/////////////////////////////////////");print(message);feed+=message+'\n'
+					message=('   FULL CONTENT TOTAL SIZE: '+size_pr+"   ");print(message);feed+=message+'\n'						
+					message=("/////////////////////////////////////");print(message);feed+=message+'\n'					
+		self.printnonlisted(contentlist,feed)
 					
 																				
-	def print_nca_by_title(self,nca_name,ncatype):	
+	def print_nca_by_title(self,nca_name,ncatype,feed):	
 		tab="\t"
 		for nca in self:
 			if type(nca) == Nca:
@@ -1330,11 +1333,11 @@ class Nsp(Pfs0):
 					content=content[8:]+": "
 					ncatype=sq_tools.getTypeFromCNMT(ncatype)	
 					if ncatype != "Meta: ":
-						Print.info("- "+ncatype+tab+str(filename)+tab+tab+"Size: "+size_pr)	
+						message=("- "+ncatype+tab+str(filename)+tab+tab+"Size: "+size_pr);print(message);feed+=message+'\n'						
 					else:
-						Print.info("- "+ncatype+tab+str(filename)+tab+"Size: "+size_pr)		
-					return size		
-	def print_xml_by_title(self,ncalist,contentlist):	
+						message=("- "+ncatype+tab+str(filename)+tab+"Size: "+size_pr);print(message);feed+=message+'\n'					
+					return size,feed		
+	def print_xml_by_title(self,ncalist,contentlist,feed):	
 		tab="\t"
 		size2return=0
 		for file in self:
@@ -1344,11 +1347,11 @@ class Nsp(Pfs0):
 				filename =  str(file._path)	
 				xml=filename[:-4]
 				if xml in ncalist:
-					Print.info("- XML: "+tab*2+str(filename)+tab+"Size: "+size_pr)
+					message=("- XML: "+tab*2+str(filename)+tab+"Size: "+size_pr);print(message);feed+=message+'\n'
 					contentlist.append(filename)	
 					size2return=size+size2return			
-		return size2return						
-	def print_tac_by_title(self,titleid,contentlist):		
+		return size2return,feed						
+	def print_tac_by_title(self,titleid,contentlist,feed):		
 		tab="\t"	
 		size2return=0		
 		for ticket in self:
@@ -1358,7 +1361,7 @@ class Nsp(Pfs0):
 				filename =  str(ticket._path)
 				tik=filename[:-20]
 				if tik == titleid:
-					Print.info("- Ticket: "+tab+str(filename)+tab*2+"Size: "+size_pr)	
+					message=("- Ticket: "+tab+str(filename)+tab*2+"Size: "+size_pr);print(message);feed+=message+'\n'				
 					contentlist.append(filename)					
 					size2return=size+size2return													
 		for cert in self:					
@@ -1368,11 +1371,11 @@ class Nsp(Pfs0):
 				filename = str(cert._path)
 				cert_id =filename[:-21]
 				if cert_id == titleid:
-					Print.info("- Cert: "+tab+str(filename)+tab*2+"Size: "+size_pr)
+					message=("- Cert: "+tab+str(filename)+tab*2+"Size: "+size_pr);print(message);feed+=message+'\n'
 					contentlist.append(filename)					
 					size2return=size+size2return
-		return size2return				
-	def print_jpg_by_title(self,ncalist,contentlist):	
+		return size2return,feed			
+	def print_jpg_by_title(self,ncalist,contentlist,feed):	
 		size2return=0
 		tab="\t"
 		for file in self:
@@ -1382,10 +1385,10 @@ class Nsp(Pfs0):
 				filename =  str(file._path)	
 				jpg=filename[:32]
 				if jpg in ncalist:
-					Print.info("- JPG: "+tab*2+"..."+str(filename[-38:])+tab+"Size: "+size_pr)		
+					message=("- JPG: "+tab*2+"..."+str(filename[-38:])+tab+"Size: "+size_pr);print(message);feed+=message+'\n'
 					contentlist.append(filename)					
 					size2return=size+size2return
-		return size2return		
+		return size2return,feed
 	def actually_has_deltas(self,ncalist):	
 		vfragment="false"	
 		for nca in self:
@@ -1427,7 +1430,7 @@ class Nsp(Pfs0):
 					vother="true"	
 					break	
 		return vother					
-	def printnonlisted(self,contentlist):
+	def printnonlisted(self,contentlist,feed):
 		tab="\t"	
 		list_nonlisted="false"
 		for file in self:
@@ -1435,24 +1438,25 @@ class Nsp(Pfs0):
 			if not filename in contentlist:
 				list_nonlisted="true"
 		if list_nonlisted == "true":
-			Print.info('-----------------------------------')
-			Print.info('FILES NOT LINKED TO CONTENT IN NSP')
-			Print.info('-----------------------------------')	
+			message=('-----------------------------------');print(message);feed+=message+'\n'
+			message=('FILES NOT LINKED TO CONTENT IN NSP');print(message);feed+=message+'\n'			
+			message=('-----------------------------------');print(message);feed+=message+'\n'
 			totsnl=0
 			for file in self:
 				filename =  str(file._path)
 				if not filename in contentlist:
 					totsnl=totsnl+file.size
-					size_pr=sq_tools.getSize(file.size)						
-					Print.info(str(filename)+3*tab+"Size: "+size_pr)		
+					size_pr=sq_tools.getSize(file.size)		
+					message=(str(filename)+3*tab+"Size: "+size_pr);print(message);feed+=message+'\n'							
 			bigtab="\t"*7
-			size_pr=sq_tools.getSize(totsnl)					
-			Print.info(bigtab+"  --------------------")								
-			Print.info(bigtab+'  TOTAL SIZE: '+size_pr)		
-
+			size_pr=sq_tools.getSize(totsnl)		
+			message=(bigtab+"  --------------------");print(message);feed+=message+'\n'			
+			message=(bigtab+'  TOTAL SIZE: '+size_pr);print(message);feed+=message+'\n'		
+		return feed				
 
 #ADVANCED FILE-LIST			
 	def  adv_content_list(self):
+		feed=''
 		applist=list();	applist_ID=list()		
 		patchlist=list(); patchlist_ID=list()	
 		dlclist=list();	dlclist_ID=list()
@@ -1510,48 +1514,48 @@ class Nsp(Pfs0):
 		if len(applist) != 0:
 			for i in range(len(applist)):		
 				tid=applist[i][1]		
-				Print.info('------------------------------------------------')
-				Print.info('BASE CONTENT ID: ' + str(tid))	
-				Print.info('------------------------------------------------')
-				Print.info('Name: '+applist[i][3])	
-				Print.info('Editor: '+applist[i][4])	
-				Print.info('------------------------------------------------')
-				print(applist[i][1]+" [BASE]"+" v"+applist[i][2])
+				message='------------------------------------------------';print(message);feed+='\n'+message+'\n'
+				message='BASE CONTENT ID: ' + str(tid);print(message);feed+='\n'+message+'\n'
+				message='------------------------------------------------';print(message);feed+='\n'+message+'\n'				
+				message='Name: '+applist[i][3];print(message);feed+='\n'+message+'\n'
+				message='Editor: '+applist[i][4];print(message);feed+='\n'+message+'\n'
+				message='------------------------------------------------';print(message);feed+='\n'+message+'\n'
+				message=applist[i][1]+" [BASE]"+" v"+applist[i][2];print(message);feed+='\n'+message+'\n'				
 				cupd=0
 				for j in range(len(patchlist)):
 					if tid == patchlist[j][1]:
 						v=patchlist[j][2]
 						v_number=str(int(int(v)/65536))
-						print(patchlist[j][3]+" [UPD]"+" v"+patchlist[j][2]+" -> Patch("+v_number+")")
+						message=patchlist[j][3]+" [UPD]"+" v"+patchlist[j][2]+" -> Patch("+v_number+")";print(message);feed+='\n'+message+'\n'								
 						cupd+=1
 						patch_called.append(patchlist[j])
 				cdlc=0					
 				for k in range(len(dlclist)):
 					if tid == dlclist[k][1]:
-						print(dlclist[k][3]+" [DLC "+str(dlclist[k][4])+"]"+" v"+dlclist[k][2])	
+						message=dlclist[k][3]+" [DLC "+str(dlclist[k][4])+"]"+" v"+dlclist[k][2];print(message);feed+='\n'+message+'\n'								
 						cdlc+=1		
-						dlc_called.append(dlclist[k])					
-				Print.info('------------------------------------------------')
-				Print.info('CONTENT INCLUDES: 1 BASEGAME '+str(cupd)+' UPDATES '+str(cdlc)+' DLCS')	
-				Print.info('------------------------------------------------')		
+						dlc_called.append(dlclist[k])	
+				message='------------------------------------------------';print(message);feed+='\n'+message+'\n'
+				message='CONTENT INCLUDES: 1 BASEGAME '+str(cupd)+' UPDATES '+str(cdlc)+' DLCS';print(message);feed+='\n'+message+'\n'				
+				message='------------------------------------------------';print(message);feed+='\n'+message+'\n'				
 				if len(patchlist) != len(patch_called):
-					Print.info('------------------------------------------------')
-					Print.info('ORPHANED UPDATES:')
-					Print.info('------------------------------------------------')	
+					message='------------------------------------------------';print(message);feed+='\n'+message+'\n'	
+					message='ORPHANED UPDATES:';print(message);feed+='\n'+message+'\n'						
+					message='------------------------------------------------';print(message);feed+='\n'+message+'\n'					
 					for j in range(len(patchlist)):	
 						if patchlist[j] not in patch_called:
 							v=patchlist[j][2]
 							v_number=str(int(int(v)/65536))
-							print(patchlist[j][3]+" [UPD]"+" v"+patchlist[j][2]+" -> Patch("+v_number+")")						
+							message=patchlist[j][3]+" [UPD]"+" v"+patchlist[j][2]+" -> Patch("+v_number+")";print(message);feed+='\n'+message+'\n'														
 				if len(dlclist) != len(dlc_called):
-					Print.info('------------------------------------------------')
-					Print.info('ORPHANED DLCS:')
-					Print.info('------------------------------------------------')	
+					message='------------------------------------------------';print(message);feed+='\n'+message+'\n'
+					message='ORPHANED DLCS:';print(message);feed+='\n'+message+'\n'					
+					message='------------------------------------------------';print(message);feed+='\n'+message+'\n'	
 					for k in range(len(dlclist)):	
 						if dlclist[k] not in dlc_called:
-							print(dlclist[k][3]+" [DLC "+str(dlclist[k][4])+"]"+" v"+dlclist[k][2])
-		else:		
-			print('This option is currently meant for multicontent, that includes at least a base game')
+							message=dlclist[k][3]+" [DLC "+str(dlclist[k][4])+"]"+" v"+dlclist[k][2];print(message);feed+='\n'+message+'\n'
+		else:	
+			message='This option is currently meant for multicontent, that includes at least a base game';print(message);feed+='\n'+message+'\n'
 		
 #READ CNMT FILE WITHOUT EXTRACTION	
 	def read_cnmt(self):
@@ -6488,10 +6492,26 @@ class Nsp(Pfs0):
 								nca_name=nca_name[2:-1]+'.nca'
 								if (nca_name not in listed_files and ncatype!=6) or (nca_name not in validfiles and ncatype!=6):
 									veredict = False
-									message=(tabs+'Missing file from '+titleid2+': '+nca_name);print(message);feed+=message+'\n'													
+									message=('\n- Missing file from '+titleid2+': '+nca_name);print(message);feed+=message+'\n'
+
+		ticketlist=list()
+		for ticket in self:
+			if type(ticket) == Ticket:		
+				ticketlist.append(ticket._path)
+		titlerights=list()							
+		for nca in self:
+			if type(nca) == Nca:
+				if nca.header.getRightsId() != 0:		
+					rightsId = hx(nca.header.getRightsId().to_bytes(0x10, byteorder='big')).decode('utf-8').upper()
+					if rightsId not in titlerights:
+						titlerights.append(rightsId)
+						if titlerights not in ticketlist:			
+							mtick=rightsId+'.tik'
+							message=('\n- File has titlerights!!! Missing ticket: '+mtick);print(message);feed+=message+'\n'
+							veredict = False
 									
 		if veredict == False:
-			message='\nVEREDICT: NSP FILE IS CORRUPT OR MISSES FILES';print(message);feed+=message+'\n'				
+			message='\nVEREDICT: NSP FILE IS CORRUPT OR MISSES FILES\n';print(message);feed+=message+'\n'				
 		if veredict == True:	
 			message='\nVEREDICT: NSP FILE IS CORRECT\n';print(message);feed+=message
 		return veredict,feed			
@@ -6501,9 +6521,9 @@ class Nsp(Pfs0):
 			feed=''	
 		veredict=True	
 		headerlist=list()
-		message='***************';print(message);feed+='\n'+message+'\n'
+		message='****************';print(message);feed+='\n'+message+'\n'
 		message='SIGNATURE 1 TEST';print(message);feed+=message+'\n'
-		message='***************';print(message);feed+=message+'\n'									
+		message='****************';print(message);feed+=message+'\n'									
 		for f in self:			
 			if type(f) == Nca and f.header.contentType != Type.Content.META:
 				message=(str(f.header.titleId)+' - '+str(f.header.contentType));print(message);feed+=message+'\n'											

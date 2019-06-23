@@ -6000,10 +6000,30 @@ class Xci(File):
 										nca_name=nca_name[2:-1]+'.nca'
 										if (nca_name not in listed_files and ncatype!=6) or (nca_name not in validfiles and ncatype!=6):
 											veredict = False
-											message=(tabs+'Missing file from '+titleid2+': '+nca_name);print(message);feed+=message+'\n'													
+											message=('\n- Missing file from '+titleid2+': '+nca_name);print(message);feed+=message+'\n'
+											
+		ticketlist=list()
+		for nspF in self.hfs0:
+			if str(nspF._path)=="secure":				
+				for ticket in nspF:
+					if type(ticket) == Ticket:		
+						ticketlist.append(ticket._path)
+		titlerights=list()			
+		for nspF in self.hfs0:
+			if str(nspF._path)=="secure":
+				for nca in nspF:		
+					if type(nca) == Nca:
+						if nca.header.getRightsId() != 0:		
+							rightsId = hx(nca.header.getRightsId().to_bytes(0x10, byteorder='big')).decode('utf-8').upper()
+							if rightsId not in titlerights:
+								titlerights.append(rightsId)
+								if titlerights not in ticketlist:			
+									mtick=rightsId+'.tik'
+									message=('\n- File has titlerights!!! Missing ticket: '+mtick);print(message);feed+=message+'\n'
+									veredict = False									
 											
 		if veredict == False:
-			message='\nVEREDICT: XCI FILE IS CORRUPT OR MISSES FILES';print(message);feed+=message+'\n'				
+			message='\nVEREDICT: XCI FILE IS CORRUPT OR MISSES FILES\n';print(message);feed+=message+'\n'				
 		if veredict == True:	
 			message='\nVEREDICT: XCI FILE IS CORRECT\n';print(message);feed+=message	
 		return veredict,feed	
