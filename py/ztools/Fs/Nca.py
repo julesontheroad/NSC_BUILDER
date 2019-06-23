@@ -1516,8 +1516,8 @@ class Nca(File):
 							title=title[0].upper()+title[1:]
 							editor=converter.do(editor)		
 							editor=editor[0].upper()+editor[1:]	
-							title=re.sub(' +', ' ',title)
-							editor=re.sub(' +', ' ',editor)
+						title=re.sub(' +', ' ',title)
+						editor=re.sub(' +', ' ',editor)
 						return(title,editor,ediver,SupLg,regionstr[:-1],isdemo)
 				except:
 					pass
