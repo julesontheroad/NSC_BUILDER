@@ -1653,7 +1653,7 @@ if not exist "%list_folder%" MD "%list_folder%" >NUL 2>&1
 if not exist "%mlistfol%" MD "%mlistfol%" >NUL 2>&1
 if %skip_list_split% EQU "true" goto m_process_jobs
 echo *******************************************************
-echo HOW DO YOU WANNT TO PROCESS FILES?
+echo HOW DO YOU WANT TO PROCESS THE FILES?
 echo *******************************************************
 echo The separate by base id mode is capable to identify the
 echo content that corresponds to each game and create multiple
