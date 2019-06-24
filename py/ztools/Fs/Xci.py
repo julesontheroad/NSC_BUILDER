@@ -6016,7 +6016,7 @@ class Xci(File):
 				for nca in nspF:		
 					if type(nca) == Nca:
 						if nca.header.getRightsId() != 0:		
-							rightsId = hx(nca.header.getRightsId().to_bytes(0x10, byteorder='big')).decode('utf-8').upper()
+							rightsId = hx(nca.header.getRightsId().to_bytes(0x10, byteorder='big')).decode('utf-8').lower()
 							if rightsId not in titlerights:
 								titlerights.append(rightsId)
 								if titlerights not in ticketlist:			
