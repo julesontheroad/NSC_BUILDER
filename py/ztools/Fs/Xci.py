@@ -905,10 +905,10 @@ class Xci(File):
 										num_delta_content=cnmt.read(0x4)	
 										cnmt.read(0x4)	
 										message='Number of previous cnmt entries = ' + str(int.from_bytes(num_prev_cnmt, byteorder='little'));feed+='\n'+message+'\n'								
-										message='Number of previous delta entries = ' + str(int.from_bytes(num_prev_delta, byteorder='little');feed+='\n'+message+'\n'									
+										message='Number of previous delta entries = ' + str(int.from_bytes(num_prev_delta, byteorder='little'));feed+='\n'+message+'\n'									
 										message='Number of delta info entries = ' + str(int.from_bytes(num_delta_info, byteorder='little'));feed+='\n'+message+'\n'									
 										message='Number of previous content entries = ' + str(int.from_bytes(num_previous_content, byteorder='little'));feed+='\n'+message+'\n'	
-										message='Number of delta content entries = ' + str(int.from_bytes(num_delta_content, byteorder='little'))';feed+='\n'+message+'\n'										
+										message='Number of delta content entries = ' + str(int.from_bytes(num_delta_content, byteorder='little'));feed+='\n'+message+'\n'										
 										for i in range(int.from_bytes(num_prev_cnmt, byteorder='little')):
 											message='...........................................';feed+='\n'+message+'\n'									
 											message='Previous cnmt records: '+ str(i+1);feed+='\n'+message+'\n'		
@@ -1875,7 +1875,7 @@ class Xci(File):
 							vother="true"	
 							break	
 		return vother					
-	def printnonlisted(self,contentlist):
+	def printnonlisted(self,contentlist,feed):
 		tab="\t"	
 		list_nonlisted="false"
 		for nspF in self.hfs0:
@@ -1904,7 +1904,8 @@ class Xci(File):
 		return feed		
 		
 #ADVANCED FILE-LIST			
-	def  adv_content_list(self):
+	def adv_content_list(self):
+		feed=''
 		applist=list();	applist_ID=list()		
 		patchlist=list(); patchlist_ID=list()	
 		dlclist=list();	dlclist_ID=list()
