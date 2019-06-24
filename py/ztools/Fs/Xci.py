@@ -6019,8 +6019,8 @@ class Xci(File):
 							rightsId = hx(nca.header.getRightsId().to_bytes(0x10, byteorder='big')).decode('utf-8').lower()
 							if rightsId not in titlerights:
 								titlerights.append(rightsId)
-								if titlerights not in ticketlist:			
-									mtick=rightsId+'.tik'
+								mtick=rightsId+'.tik'
+								if mtick not in ticketlist:		
 									message=('\n- File has titlerights!!! Missing ticket: '+mtick);print(message);feed+=message+'\n'
 									veredict = False									
 											

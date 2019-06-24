@@ -6492,7 +6492,7 @@ class Nsp(Pfs0):
 		ticketlist=list()
 		for ticket in self:
 			if type(ticket) == Ticket:		
-				ticketlist.append(ticket._path)
+				ticketlist.append(str(ticket._path))
 		titlerights=list()							
 		for nca in self:
 			if type(nca) == Nca:
@@ -6500,8 +6500,8 @@ class Nsp(Pfs0):
 					rightsId = hx(nca.header.getRightsId().to_bytes(0x10, byteorder='big')).decode('utf-8').lower()
 					if rightsId not in titlerights:
 						titlerights.append(rightsId)
-						if titlerights not in ticketlist:			
-							mtick=rightsId+'.tik'
+						mtick=rightsId+'.tik'
+						if mtick not in ticketlist:			
 							message=('\n- File has titlerights!!! Missing ticket: '+mtick);print(message);feed+=message+'\n'
 							veredict = False
 									
