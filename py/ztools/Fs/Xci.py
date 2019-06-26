@@ -876,42 +876,42 @@ class Xci(File):
 									message='...........................................';print(message);feed+='\n'+message+'\n'	
 									message='Reading: ' + str(cnmt._path);print(message);feed+='\n'+message+'\n'							
 									message='...........................................';print(message);feed+='\n'+message+'\n'
-									message='Titleid = ' + str(hx(titleid.to_bytes(8, byteorder='big')));print(message);feed+='\n'+message+'\n'							
+									message='Titleid = ' + (str(hx(titleid.to_bytes(8, byteorder='big')))[2:-1]).upper();print(message);feed+='\n'+message+'\n'							
 									message='Version = ' + str(int.from_bytes(titleversion, byteorder='little'));print(message);feed+='\n'+message+'\n'
 									message='Table offset = '+ str(hx((offset+0x20).to_bytes(2, byteorder='big')));print(message);feed+='\n'+message+'\n'
 									message='Number of content = '+ str(content_entries);print(message);feed+='\n'+message+'\n'
 									message='Number of meta entries = '+ str(meta_entries);print(message);feed+='\n'+message+'\n'
-									message='Application id\Patch id = ' + str(hx(original_ID.to_bytes(8, byteorder='big')));print(message);feed+='\n'+message+'\n'							
+									message='Application id\Patch id = ' + (str(hx(original_ID.to_bytes(8, byteorder='big')))[2:-1]).upper();print(message);feed+='\n'+message+'\n'							
 									content_name=str(cnmt._path)
 									content_name=content_name[:-22]				
 									if content_name == 'AddOnContent':
 										message='RequiredUpdateNumber = ' + str(min_sversion);print(message);feed+='\n'+message+'\n'							
 									if content_name != 'AddOnContent':
-										message='RequiredSystemVersion = ' + str(min_sversion);feed+='\n'+message+'\n'	
-									message='Length of exmeta = ' + str(length_of_emeta);feed+='\n'+message+'\n'																
+										message='RequiredSystemVersion = ' + str(min_sversion);print(message);feed+='\n'+message+'\n'	
+									message='Length of exmeta = ' + str(length_of_emeta);print(message);feed+='\n'+message+'\n'																
 									cnmt.rewind()
 									cnmt.seek(0x20+offset)
 									for i in range(content_entries):
-										message='........................';feed+='\n'+message+'\n'		
-										message='Content number ' + str(i+1);feed+='\n'+message+'\n'																
-										message='........................';feed+='\n'+message+'\n'										
+										message='........................';print(message);feed+='\n'+message+'\n'		
+										message='Content number ' + str(i+1);print(message);feed+='\n'+message+'\n'																
+										message='........................';print(message);feed+='\n'+message+'\n'										
 										vhash = cnmt.read(0x20)
-										message='hash =\t' + str(hx(vhash));feed+='\n'+message+'\n'									
+										message='hash =\t' + str(hx(vhash));print(message);feed+='\n'+message+'\n'									
 										NcaId = cnmt.read(0x10)
-										message='NcaId =\t' + str(hx(NcaId));feed+='\n'+message+'\n'											
+										message='NcaId =\t' + str(hx(NcaId));print(message);feed+='\n'+message+'\n'											
 										size = cnmt.read(0x6)
-										message='Size =\t' + str(int.from_bytes(size, byteorder='little', signed=True));feed+='\n'+message+'\n'								
+										message='Size =\t' + str(int.from_bytes(size, byteorder='little', signed=True));print(message);feed+='\n'+message+'\n'								
 										ncatype = cnmt.read(0x1)
-										message='ncatype = ' + str(int.from_bytes(ncatype, byteorder='little', signed=True));feed+='\n'+message+'\n'								
+										message='ncatype = ' + str(int.from_bytes(ncatype, byteorder='little', signed=True));print(message);feed+='\n'+message+'\n'								
 										unknown = cnmt.read(0x1)	
 									cnmt.seek(0x20+offset+content_entries*0x38+length_of_emeta)			
 									digest = cnmt.read(0x20)
-									message='\ndigest= '+str(hx(digest))+'\n';feed+='\n'+message+'\n'									
+									message='\ndigest= '+str(hx(digest))+'\n';print(message);feed+='\n'+message+'\n'									
 									cnmt.seek(0x20+offset+content_entries*0x38)										
 									if length_of_emeta>0:
-										message='----------------';feed+='\n'+message+'\n'
-										message='Extended meta';feed+='\n'+message+'\n'								
-										message='----------------';feed+='\n'+message+'\n'											
+										message='----------------';print(message);feed+='\n'+message+'\n'
+										message='Extended meta';print(message);feed+='\n'+message+'\n'								
+										message='----------------';print(message);feed+='\n'+message+'\n'											
 										num_prev_cnmt=cnmt.read(0x4)
 										num_prev_delta=cnmt.read(0x4)
 										num_delta_info=cnmt.read(0x4)
@@ -919,15 +919,15 @@ class Xci(File):
 										num_previous_content=cnmt.read(0x4)		
 										num_delta_content=cnmt.read(0x4)	
 										cnmt.read(0x4)	
-										message='Number of previous cnmt entries = ' + str(int.from_bytes(num_prev_cnmt, byteorder='little'));feed+='\n'+message+'\n'								
-										message='Number of previous delta entries = ' + str(int.from_bytes(num_prev_delta, byteorder='little'));feed+='\n'+message+'\n'									
-										message='Number of delta info entries = ' + str(int.from_bytes(num_delta_info, byteorder='little'));feed+='\n'+message+'\n'									
-										message='Number of previous content entries = ' + str(int.from_bytes(num_previous_content, byteorder='little'));feed+='\n'+message+'\n'	
-										message='Number of delta content entries = ' + str(int.from_bytes(num_delta_content, byteorder='little'));feed+='\n'+message+'\n'										
+										message='Number of previous cnmt entries = ' + str(int.from_bytes(num_prev_cnmt, byteorder='little'));print(message);feed+='\n'+message+'\n'								
+										message='Number of previous delta entries = ' + str(int.from_bytes(num_prev_delta, byteorder='little'));print(message);feed+='\n'+message+'\n'									
+										message='Number of delta info entries = ' + str(int.from_bytes(num_delta_info, byteorder='little'));print(message);feed+='\n'+message+'\n'									
+										message='Number of previous content entries = ' + str(int.from_bytes(num_previous_content, byteorder='little'));print(message);feed+='\n'+message+'\n'	
+										message='Number of delta content entries = ' + str(int.from_bytes(num_delta_content, byteorder='little'));print(message);feed+='\n'+message+'\n'										
 										for i in range(int.from_bytes(num_prev_cnmt, byteorder='little')):
-											message='...........................................';feed+='\n'+message+'\n'									
-											message='Previous cnmt records: '+ str(i+1);feed+='\n'+message+'\n'		
-											message='...........................................';feed+='\n'+message+'\n'										
+											message='...........................................';print(message);feed+='\n'+message+'\n'									
+											message='Previous cnmt records: '+ str(i+1);print(message);feed+='\n'+message+'\n'		
+											message='...........................................';print(message);feed+='\n'+message+'\n'										
 											titleid=cnmt.readInt64()	
 											titleversion = cnmt.read(0x4)	
 											type_n = cnmt.read(0x1)					
@@ -936,31 +936,31 @@ class Xci(File):
 											unknown2=cnmt.read(0x2)
 											unknown3=cnmt.read(0x2)
 											unknown4=cnmt.read(0x4)	
-											message='Titleid = ' + str(hx(titleid.to_bytes(8, byteorder='big')));feed+='\n'+message+'\n'
-											message='Version = ' + str(int.from_bytes(titleversion, byteorder='little'));feed+='\n'+message+'\n'	
-											message='Type number = ' + str(hx(type_n));feed+='\n'+message+'\n'	
-											message='Hash =\t' + str(hx(vhash));feed+='\n'+message+'\n'	
-											message='Content nca number = ' + str(int.from_bytes(unknown2, byteorder='little'));feed+='\n'+message+'\n'										
+											message='Titleid = ' + str(hx(titleid.to_bytes(8, byteorder='big')));print(message);feed+='\n'+message+'\n'
+											message='Version = ' + str(int.from_bytes(titleversion, byteorder='little'));print(message);feed+='\n'+message+'\n'	
+											message='Type number = ' + str(hx(type_n));print(message);feed+='\n'+message+'\n'	
+											message='Hash =\t' + str(hx(vhash));print(message);feed+='\n'+message+'\n'	
+											message='Content nca number = ' + str(int.from_bytes(unknown2, byteorder='little'));print(message);feed+='\n'+message+'\n'										
 										for i in range(int.from_bytes(num_prev_delta, byteorder='little')):
-											message='...........................................';feed+='\n'+message+'\n'	
-											message='Previous delta records: '+ str(i+1);feed+='\n'+message+'\n'										
-											message='...........................................';feed+='\n'+message+'\n'												
+											message='...........................................';print(message);feed+='\n'+message+'\n'	
+											message='Previous delta records: '+ str(i+1);print(message);feed+='\n'+message+'\n'										
+											message='...........................................';print(message);feed+='\n'+message+'\n'												
 											oldtitleid=cnmt.readInt64()	
 											newtitleid=cnmt.readInt64()					
 											oldtitleversion = cnmt.read(0x4)	
 											newtitleversion = cnmt.read(0x4)	
 											size = cnmt.read(0x8)
 											unknown1=cnmt.read(0x8)		
-											message='Old titleid = ' + str(hx(oldtitleid.to_bytes(8, byteorder='big')));feed+='\n'+message+'\n'	
-											message='New titleid = ' + str(hx(newtitleid.to_bytes(8, byteorder='big')));feed+='\n'+message+'\n'	
-											message='Old version = ' + str(int.from_bytes(oldtitleversion, byteorder='little'));feed+='\n'+message+'\n'	
-											message='New version = ' + str(int.from_bytes(newtitleversion, byteorder='little'));feed+='\n'+message+'\n'	
-											message='Size = ' + str(int.from_bytes(size, byteorder='little', signed=True));feed+='\n'+message+'\n'				
+											message='Old titleid = ' + str(hx(oldtitleid.to_bytes(8, byteorder='big')));print(message);feed+='\n'+message+'\n'	
+											message='New titleid = ' + str(hx(newtitleid.to_bytes(8, byteorder='big')));print(message);feed+='\n'+message+'\n'	
+											message='Old version = ' + str(int.from_bytes(oldtitleversion, byteorder='little'));print(message);feed+='\n'+message+'\n'	
+											message='New version = ' + str(int.from_bytes(newtitleversion, byteorder='little'));print(message);feed+='\n'+message+'\n'	
+											message='Size = ' + str(int.from_bytes(size, byteorder='little', signed=True));print(message);feed+='\n'+message+'\n'				
 											#Print.info('unknown1 = ' + str(int.from_bytes(unknown1, byteorder='little')))			
 										for i in range(int.from_bytes(num_delta_info, byteorder='little')):
-											message='...........................................';feed+='\n'+message+'\n'	
-											message='Delta info: '+ str(i+1);feed+='\n'+message+'\n'	
-											message='...........................................';feed+='\n'+message+'\n'										
+											message='...........................................';print(message);feed+='\n'+message+'\n'	
+											message='Delta info: '+ str(i+1);print(message);feed+='\n'+message+'\n'	
+											message='...........................................';print(message);feed+='\n'+message+'\n'										
 											oldtitleid=cnmt.readInt64()	
 											newtitleid=cnmt.readInt64()					
 											oldtitleversion = cnmt.read(0x4)	
@@ -975,9 +975,9 @@ class Xci(File):
 											Print.info('index2 = ' + str(hx(index2.to_bytes(8, byteorder='big'))))						
 											#Print.info('unknown1 = ' + str(int.from_bytes(unknown1, byteorder='little')))
 										for i in range(int.from_bytes(num_delta_application, byteorder='little')):
-											message='...........................................';feed+='\n'+message+'\n'	
-											message='Delta application info: '+ str(i+1);feed+='\n'+message+'\n'	
-											message='...........................................';feed+='\n'+message+'\n'											
+											message='...........................................';print(message);feed+='\n'+message+'\n'	
+											message='Delta application info: '+ str(i+1);print(message);feed+='\n'+message+'\n'	
+											message='...........................................';print(message);feed+='\n'+message+'\n'											
 											OldNcaId = cnmt.read(0x10)
 											NewNcaId = cnmt.read(0x10)		
 											old_size = cnmt.read(0x6)				
@@ -997,29 +997,29 @@ class Xci(File):
 											Print.info('Lower 4 bytes of the new size=' + str(hx(low4bytes)))					
 											#Print.info('unknown2 =\t' + str(int.from_bytes(unknown2, byteorder='little')))			
 										for i in range(int.from_bytes(num_previous_content, byteorder='little')):
-											message='...........................................';feed+='\n'+message+'\n'	
-											message='Previous content records: '+ str(i+1);feed+='\n'+message+'\n'	
-											message='...........................................';feed+='\n'+message+'\n'	
+											message='...........................................';print(message);feed+='\n'+message+'\n'	
+											message='Previous content records: '+ str(i+1);print(message);feed+='\n'+message+'\n'	
+											message='...........................................';print(message);feed+='\n'+message+'\n'	
 											NcaId = cnmt.read(0x10)		
 											size = cnmt.read(0x6)				
 											ncatype = cnmt.read(0x1)	
 											unknown1 = cnmt.read(0x1)	
-											message='NcaId = '+ str(hx(NcaId));feed+='\n'+message+'\n'	
-											message='Size = '+ str(int.from_bytes(size, byteorder='little', signed=True));feed+='\n'+message+'\n'	
-											message='Ncatype = '+ str(int.from_bytes(ncatype, byteorder='little', signed=True));feed+='\n'+message+'\n'											
+											message='NcaId = '+ str(hx(NcaId));print(message);feed+='\n'+message+'\n'	
+											message='Size = '+ str(int.from_bytes(size, byteorder='little', signed=True));print(message);feed+='\n'+message+'\n'	
+											message='Ncatype = '+ str(int.from_bytes(ncatype, byteorder='little', signed=True));print(message);feed+='\n'+message+'\n'											
 											#Print.info('unknown1 = '+ str(int.from_bytes(unknown1, byteorder='little')))	
 										for i in range(int.from_bytes(num_delta_content, byteorder='little')):
-											message='...........................................';feed+='\n'+message+'\n'	
-											message='Delta content entry ' + str(i+1);feed+='\n'+message+'\n'	
-											message='...........................................';feed+='\n'+message+'\n'									
+											message='...........................................';print(message);feed+='\n'+message+'\n'	
+											message='Delta content entry ' + str(i+1);print(message);feed+='\n'+message+'\n'	
+											message='...........................................';print(message);feed+='\n'+message+'\n'									
 											vhash = cnmt.read(0x20)
-											message='Hash =\t' + str(hx(vhash));feed+='\n'+message+'\n'										
+											message='Hash =\t' + str(hx(vhash));print(message);feed+='\n'+message+'\n'										
 											NcaId = cnmt.read(0x10)
-											message='NcaId =\t' + str(hx(NcaId));feed+='\n'+message+'\n'										
+											message='NcaId =\t' + str(hx(NcaId));print(message);feed+='\n'+message+'\n'										
 											size = cnmt.read(0x6)
-											message='Size =\t' + str(int.from_bytes(size, byteorder='little', signed=True));feed+='\n'+message+'\n'									
+											message='Size =\t' + str(int.from_bytes(size, byteorder='little', signed=True));print(message);feed+='\n'+message+'\n'									
 											ncatype = cnmt.read(0x1)
-											message='ncatype = ' + str(int.from_bytes(ncatype, byteorder='little', signed=True));feed+='\n'+message+'\n'											
+											message='ncatype = ' + str(int.from_bytes(ncatype, byteorder='little', signed=True));print(message);feed+='\n'+message+'\n'											
 											unknown = cnmt.read(0x1)		
 		return feed						
 										
