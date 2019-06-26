@@ -5,6 +5,9 @@ from Fs.Nca import Nca
 from Fs.File import File
 from Fs.Nca import NcaHeader
 from Fs.File import MemoryFile
+import Fs.Type
+from Fs import Type
+from Fs.Nacp import Nacp
 import os
 import Print
 import Keys
@@ -15,8 +18,6 @@ import Hex
 import sq_tools
 from struct import pack as pk, unpack as upk
 from hashlib import sha256
-import Fs.Type
-from Fs import Type
 import re
 import pathlib
 import Config
@@ -825,8 +826,22 @@ class Xci(File):
 				for ticket in nspF:
 					if type(ticket) == Ticket:
 						return 'TRUE'	
-				return 'FALSE'			
-		
+				return 'FALSE'	
+
+#READ NACP FILE WITHOUT EXTRACTION	
+	def read_nacp(self):
+		for nspF in self.hfs0:
+			if str(nspF._path)=="secure":
+				for nca in nspF:	
+					if type(nca) == Nca:
+						if 	str(nca.header.contentType) == 'Content.CONTROL':
+							offset=nca.get_ncap_offset()
+							for f in nca:
+								f.seek(offset)
+								nacp = Nacp()	
+								nacp.open(MemoryFile(f.read(),32768*2))	
+								nacp.printInfo()
+								#Hex.dump(offset)					
 
 #READ CNMT FILE WITHOUT EXTRACTION	
 	def read_cnmt(self):

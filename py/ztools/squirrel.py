@@ -66,6 +66,7 @@ if __name__ == '__main__':
 		parser.add_argument('--ADVfilelist', nargs='+', help='Prints ADVANCED file list from NSP\XCI secure partition')		
 		parser.add_argument('--ADVcontentlist', nargs='+', help='Prints ADVANCED content list from NSP\XCI arranged by base titleid')			
 		parser.add_argument('--Read_cnmt', nargs='+', help='Read cnmt file inside NSP\XCI')
+		parser.add_argument('--Read_nacp', nargs='+', help='Read ncap file inside NSP\XCI')				
 		parser.add_argument('--Read_hfs0', nargs='+', help='Read hfs0')		
 		parser.add_argument('--fw_req', nargs='+', help='Get information about fw requirements for NSP\XCI')		
 		parser.add_argument('--Read_xci_head', nargs='+', help='Get information about xci header and cert')				
@@ -118,7 +119,8 @@ if __name__ == '__main__':
 		parser.add_argument('--cardstate', nargs='+', help='Returns value for isgamecard flag from an nca')	
 		
 		# NSP Copy functions
-		parser.add_argument('-x', '--extract', nargs='+', help='Extracts all files from nsp or xci')		
+		parser.add_argument('-x', '--extract', nargs='+', help='Extracts all files from nsp or xci')
+		parser.add_argument('-raw_x', '--raw_extraction', nargs='+', help='Extracts files without checking readability, useful when there is bad files')
 		parser.add_argument('--NSP_copy_ticket', nargs='+', help='Extracts ticket from target nsp')
 		parser.add_argument('--NSP_copy_nca', nargs='+', help='Extracts all nca files from target nsp')	
 		parser.add_argument('--NSP_copy_other', nargs='+', help='Extracts all kinds of files different from nca or ticket from target nsp')
@@ -3301,23 +3303,28 @@ if __name__ == '__main__':
 							updid='['+updid.upper()+']'
 							dlcid='['+dlcid.upper()+']'	
 							if ccount == '(1G)' or ccount == '(1U)' or ccount == '(1D)':
-								ccount=''							
+								ccount=''	
+							targetnormal=list()		
 							if baseid != "[]":
 								if updver != "":							
 									endname=ctitl+' '+baseid+' '+updver+' '+ccount
+									targetnormal.append([baseid[1:-1],updver[2:-1]])
 								else:	
 									endname=ctitl+' '+baseid+' '+basever+' '+ccount
+									targetnormal.append([baseid[1:-1],basever[2:-1]])									
 							elif updid != "[]":
-								endname=ctitl+' '+updid+' '+updver+' '+ccount							
+								endname=ctitl+' '+updid+' '+updver+' '+ccount		
+								targetnormal.append([updid[1:-1],updver[2:-1]])										
 							else:
 								endname=ctitl+' '+dlcid+' '+dlcver+' '+ccount	
+								targetnormal.append([dlcid[1:-1],dlcver[2:-1]])									
 							#print('Filename: '+endname)
 						else:
 							endname=str(f)
 				endname = (re.sub(r'[\/\\\:\*\?]+', '', endname))
 				endname = re.sub(r'[™©®`~^´ªº¢£€¥$ƒ±¬½¼«»±•²‰œæÆ³]', '', endname)					
 				endname = re.sub(r'[Ⅲ]', 'III', endname)					
-				endname = re.sub(r'[àâá@äå]', 'a', endname);endname = re.sub(r'[ÀÂÁ@ÄÅ]', 'A', endname)
+				endname = re.sub(r'[àâá@äå]', 'a', endname);endname = re.sub(r'[ÀÂÁÄÅ]', 'A', endname)
 				endname = re.sub(r'[èêéë]', 'e', endname);endname = re.sub(r'[ÈÊÉË]', 'E', endname)
 				endname = re.sub(r'[ìîíï]', 'i', endname);endname = re.sub(r'[ÌÎÍÏ]', 'I', endname)
 				endname = re.sub(r'[òôóöø]', 'o', endname);endname = re.sub(r'[ÒÔÓÖØ]', 'O', endname)
@@ -4025,7 +4032,125 @@ if __name__ == '__main__':
 						Print.info('min: ' + str(j.readInt64()))
 				#f.flush()
 				#f.close()
-				'''				
+				'''			
+
+		# ...................................................						
+		# Read ncap inside nsp or xci
+		# ...................................................					
+
+		if args.Read_nacp:
+			for filename in args.Read_nacp:
+				if filename.endswith('.nsp'):
+					try:
+						f = Fs.Nsp(filename, 'rb')
+						f.read_nacp()
+						f.flush()
+						f.close()
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+				if filename.endswith('.xci'):
+					try:
+						f = Fs.factory(filename)
+						f.open(filename, 'rb')
+						f.read_nacp()
+						f.flush()
+						f.close()														
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+				if filename.endswith('.nca'):
+					try:
+						f = Fs.Nca(filename, 'rb')
+						f.read_nacp()
+						f.flush()
+						f.close()												
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+						
+		# ......................................................................						
+		# Raw extraction. For cases when a file is bad and triggers a exception
+		# ......................................................................						
+						
+		if args.raw_extraction:			
+			for filename in args.raw_extraction:			
+				if filename.endswith('.nsp'):
+					dir=os.path.dirname(os.path.abspath(filename))
+					ofolder =os.path.join(dir, 'output')	
+					if not os.path.exists(ofolder):
+						os.makedirs(ofolder)						
+					try:
+						with open(filename, 'r+b') as f:			
+							data=f.read(int(8*1024))						
+						try:
+							head=data[0:4]
+							n_files=(data[4:8])
+							n_files=int.from_bytes(n_files, byteorder='little')		
+							st_size=(data[8:12])
+							st_size=int.from_bytes(st_size, byteorder='little')		
+							junk=(data[12:16])
+							offset=(0x10 + n_files * 0x18)
+							stringTable=(data[offset:offset+st_size])
+							stringEndOffset = st_size
+							headerSize = 0x10 + 0x18 * n_files + st_size
+							#print(head)
+							#print(str(n_files))
+							#print(str(st_size))	
+							#print(str((stringTable)))		
+							files_list=list()
+							for i in range(n_files):
+								i = n_files - i - 1
+								pos=0x10 + i * 0x18
+								offset = data[pos:pos+8]
+								offset=int.from_bytes(offset, byteorder='little')			
+								size = data[pos+8:pos+16]
+								size=int.from_bytes(size, byteorder='little')			
+								nameOffset = data[pos+16:pos+20] # just the offset
+								nameOffset=int.from_bytes(nameOffset, byteorder='little')			
+								name = stringTable[nameOffset:stringEndOffset].decode('utf-8').rstrip(' \t\r\n\0')
+								stringEndOffset = nameOffset
+								junk2 = data[pos+20:pos+24] # junk data
+								#print(name)
+								#print(offset)	
+								#print(size)	
+								files_list.append([name,offset,size])	
+							files_list.reverse()	
+						except IOError as e:
+							print(e, file=sys.stderr)		
+						#print(files_list)	
+						for i in range(len(files_list)):
+							#print(files_list[i][0])
+							#print(files_list[i][1])
+							#print(files_list[i][2])	
+							off1=headerSize+files_list[i][1]
+							off2=off1+files_list[i][2]
+							filepath = os.path.join(ofolder, files_list[i][0])	
+							fp = open(filepath, 'w+b')		
+							s=0
+							for j in range(len(files_list)):
+								s=s+files_list[j][2]
+							#print(filepath)
+							t = tqdm(total=s, unit='B', unit_scale=True, leave=False)
+							with open(filename, 'r+b') as f:												
+								f.seek(off1)
+								c=0;buffer=32768
+								t.write(tabs+'Copying: ' + str(files_list[i][0]))
+								for data in iter(lambda: f.read(int(buffer)), ""):
+									fp.write(data)	
+									fp.flush()
+									c=len(data)+c
+									t.update(len(data))
+									if c+len(data)>off2:
+										data=f.read(off2-c)
+										t.update(len(data))
+										t.close()
+										fp.close()
+										break
+									if not data:
+										t.close()
+										fp.close()
+										break										
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))								
+						
 		# ...................................................						
 		# Read cnmt inside nsp or xci
 		# ...................................................					
@@ -5056,7 +5181,7 @@ if __name__ == '__main__':
 					endname = (re.sub(r'[\/\\\:\*\?]+', '', endname))					
 					endname = re.sub(r'[™©®`~^´ªº¢£€¥$ƒ±¬½¼«»±•²‰œæÆ³]', '', endname)	
 					endname = re.sub(r'[Ⅲ]', 'III', endname)					
-					endname = re.sub(r'[àâá@äå]', 'a', endname);endname = re.sub(r'[ÀÂÁ@ÄÅ]', 'A', endname)
+					endname = re.sub(r'[àâá@äå]', 'a', endname);endname = re.sub(r'[ÀÂÁÄÅ]', 'A', endname)
 					endname = re.sub(r'[èêéë]', 'e', endname);endname = re.sub(r'[ÈÊÉË]', 'E', endname)
 					endname = re.sub(r'[ìîíï]', 'i', endname);endname = re.sub(r'[ÌÎÍÏ]', 'I', endname)
 					endname = re.sub(r'[òôóöø]', 'o', endname);endname = re.sub(r'[ÒÔÓÖØ]', 'O', endname)
@@ -5266,7 +5391,7 @@ if __name__ == '__main__':
 			endname = (re.sub(r'[\/\\\:\*\?]+', '', endname))
 			endname = re.sub(r'[™©®`~^´ªº¢£€¥$ƒ±¬½¼«»±•²‰œæÆ³]', '', endname)				
 			endname = re.sub(r'[Ⅲ]', 'III', endname)					
-			endname = re.sub(r'[àâá@äå]', 'a', endname);endname = re.sub(r'[ÀÂÁ@ÄÅ]', 'A', endname)
+			endname = re.sub(r'[àâá@äå]', 'a', endname);endname = re.sub(r'[ÀÂÁÄÅ]', 'A', endname)
 			endname = re.sub(r'[èêéë]', 'e', endname);endname = re.sub(r'[ÈÊÉË]', 'E', endname)
 			endname = re.sub(r'[ìîíï]', 'i', endname);endname = re.sub(r'[ÌÎÍÏ]', 'I', endname)
 			endname = re.sub(r'[òôóöø]', 'o', endname);endname = re.sub(r'[ÒÔÓÖØ]', 'O', endname)

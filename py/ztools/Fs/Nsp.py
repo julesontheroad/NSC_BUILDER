@@ -20,6 +20,7 @@ from tqdm import tqdm
 from Fs.Pfs0 import Pfs0
 from Fs.Ticket import Ticket
 from Fs.Nca import Nca
+from Fs.Nacp import Nacp
 from Fs.Nca import NcaHeader
 from Fs.File import MemoryFile
 import math  
@@ -1558,6 +1559,20 @@ class Nsp(Pfs0):
 		else:	
 			message='This option is currently meant for multicontent, that includes at least a base game';print(message);feed+='\n'+message+'\n'
 		return feed		
+		
+#READ NACP FILE WITHOUT EXTRACTION	
+	def read_nacp(self):
+		for nca in self:
+			if type(nca) == Nca:
+				if 	str(nca.header.contentType) == 'Content.CONTROL':
+					offset=nca.get_ncap_offset()
+					for f in nca:
+						f.seek(offset)
+						nacp = Nacp()	
+						nacp.open(MemoryFile(f.read(),32768*2))	
+						nacp.printInfo()
+						#Hex.dump(offset)
+
 		
 #READ CNMT FILE WITHOUT EXTRACTION	
 	def read_cnmt(self):

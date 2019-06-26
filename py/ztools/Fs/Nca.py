@@ -1266,6 +1266,122 @@ class Nca(File):
 					fp.close()
 					break	
 					
+	def get_ncap_offset(self):
+		for f in self:
+			self.rewind()					
+			f.rewind()	
+			Langue = list()	
+			Langue = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14]
+			SupLg=list()
+			regionstr=""
+			offset=0x14200
+			for i in Langue:
+				try:
+					f.seek(offset+i*0x300)
+					test=f.read(0x200)
+					test = test.split(b'\0', 1)[0].decode('utf-8')
+					test = (re.sub(r'[\/\\]+', ' ', test))
+					test = test.strip()
+					test2=f.read(0x100)
+					test2 = test2.split(b'\0', 1)[0].decode('utf-8')
+					test2 = (re.sub(r'[\/\\]+', ' ', test2))
+					test2 = test2.strip()					
+					if test == "" or test2 == "":	
+						offset=0x14400
+						f.seek(offset+i*0x300)
+						test=f.read(0x200)
+						test = test.split(b'\0', 1)[0].decode('utf-8')
+						test = (re.sub(r'[\/\\]+', ' ', test))
+						test = test.strip()	
+						test2=f.read(0x100)
+						test2 = test2.split(b'\0', 1)[0].decode('utf-8')
+						test2 = (re.sub(r'[\/\\]+', ' ', test2))
+						test2 = test2.strip()							
+						if test == "" or test2 == "":					
+							offset=0x14000
+							while offset<=(0x14200+i*0x300):
+								offset=offset+0x100
+								f.seek(offset+i*0x300)
+								test=f.read(0x200)
+								test = test.split(b'\0', 1)[0].decode('utf-8')
+								test = (re.sub(r'[\/\\]+', ' ', test))
+								test = test.strip()
+								test2=f.read(0x100)
+								test2 = test2.split(b'\0', 1)[0].decode('utf-8')
+								test2 = (re.sub(r'[\/\\]+', ' ', test2))
+								test2 = test2.strip()										
+								if test != "" and test2 != "" :	
+									offset=offset
+									break
+							if test != "":	
+								offset=offset
+								break			
+						if test != "":	
+							offset=offset
+							break								
+					else:
+						break
+				except:
+					pass
+			try:		
+				f.seek(offset+0x3060)
+				ediver = f.read(0x10)
+				#print('here2')
+				#print(hx(ediver))
+				try:
+					ediver = ediver.split(b'\0', 1)[0].decode('utf-8')
+					ediver = (re.sub(r'[\/\\]+', ' ', ediver))
+					ediver = ediver.strip()	
+				except:
+					offset=0x16900-0x300*14
+					f.seek(offset+0x3060)
+					ediver = f.read(0x10)
+					ediver = ediver.split(b'\0', 1)[0].decode('utf-8')
+					ediver = (re.sub(r'[\/\\]+', ' ', ediver))
+					ediver = ediver.strip()						
+				try:  
+					int(ediver[0])+1
+				except:
+					ediver="-"
+				if ediver == '-':
+					offset2=offset-0x300
+					f.seek(offset2+0x3060)			
+					ediver = f.read(0x10)
+					ediver = ediver.split(b'\0', 1)[0].decode('utf-8')
+					ediver = (re.sub(r'[\/\\]+', ' ', ediver))
+					ediver = ediver.strip()	
+					try:  
+						int(ediver[0])+1
+						offset=offset2
+					except:
+						ediver="-"			
+				if ediver == '-':
+					try:
+						while (offset2+0x3060)<=0x18600:
+							offset2+=0x100
+							f.seek(offset2+0x3060)	
+							ediver = f.read(0x10)
+							ediver = ediver.split(b'\0', 1)[0].decode('utf-8')
+							ediver = (re.sub(r'[\/\\]+', ' ', ediver))
+							ediver = ediver.strip()	
+							if ediver != '':
+								if str(ediver[0])!='v' and str(ediver[0])!='V':
+									try:  
+										int(ediver[0])+1
+										offset=offset2
+										break
+									except:
+										ediver="-"
+										break		
+					except:
+						ediver="-"		
+			except:
+				pass
+			f.seek(offset)
+			#data=f.read()
+		return offset
+					
+					
 	def get_langueblock(self,title):
 		for f in self:
 			self.rewind()					
