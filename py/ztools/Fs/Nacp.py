@@ -4,6 +4,7 @@ from binascii import hexlify as hx, unhexlify as uhx
 from enum import IntEnum
 import Print
 import Keys
+import re
 indent = 1
 tabs = '\t' * indent	
 
@@ -114,13 +115,34 @@ class Nacp(File):
 		self.languages[i].name = self.read(0x200)
 		self.languages[i].name = self.languages[i].name.split(b'\0', 1)[0].decode('utf-8')
 		return self.languages[i].name
-		
-		
+
 	def getPublisher(self, i):
 		self.seek(i * 0x300 + 0x200)
 		self.languages[i].publisher = self.read(0x100)
 		self.languages[i].publisher = self.languages[i].publisher.split(b'\0', 1)[0].decode('utf-8')
-		return self.languages[i].publisher
+		return self.languages[i].publisher			
+		
+	def par_getNameandPub(self, data):
+		Langue = list()	
+		Langue = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14]	
+		for i in Langue:
+			off1=i*0x300;off2=off1+0x200;off3=off2+0x100
+			title=data[off1:off2]
+			title = title.split(b'\0', 1)[0].decode('utf-8')
+			title = (re.sub(r'[\/\\]+', ' ', title))
+			title = title.strip()
+			if title == '':
+				continue
+			else:
+				editor=data[off2:off3]						
+				editor = editor.split(b'\0', 1)[0].decode('utf-8')
+				editor = (re.sub(r'[\/\\]+', ' ', editor))
+				editor = editor.strip()	
+				print('..........................')					
+				print('Language: '+ str(NacpLanguageType(i)).replace('NacpLanguageType.', ''))
+				print('..........................')				
+				print('- Name: '+ title)
+				print('- Publisher: '+ editor)		
 		
 		
 	def getIsbn(self):
@@ -128,6 +150,10 @@ class Nacp(File):
 		self.isbn = self.read(0x24).split(b'\0', 1)[0].decode('utf-8')
 		return self.isbn
 		
+	def par_Isbn(self, data):
+		isbn=data.split(b'\0', 1)[0].decode('utf-8')
+		if isbn != '':
+			print('- Isbn: ' + str(isbn))
 		
 	def getStartupUserAccount(self):
 		self.seek(0x3025)

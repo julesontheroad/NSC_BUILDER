@@ -1569,8 +1569,11 @@ class Nsp(Pfs0):
 					for f in nca:
 						f.seek(offset)
 						nacp = Nacp()	
-						nacp.open(MemoryFile(f.read(),32768*2))	
-						nacp.printInfo()
+						nacp.par_getNameandPub(f.read(0x300*15))
+						f.seek(offset+0x3000)
+						nacp.par_Isbn(f.read(0x24))						
+						#nacp.open(MemoryFile(f.read(),32768*2))	
+						#nacp.printInfo()
 						#Hex.dump(offset)
 
 		
