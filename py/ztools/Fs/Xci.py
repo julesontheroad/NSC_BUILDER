@@ -5865,7 +5865,7 @@ class Xci(File):
 		contentlist=list()
 		feed=''
 		delta = False
-		veredict = True		
+		verdict = True		
 		checktik=False		
 		
 		message='***************';print(message);feed+=message+'\n'
@@ -5951,7 +5951,7 @@ class Xci(File):
 				else:
 					message=(tabs+file+tabs+'  -> is CORRECT');print(message);feed+=message+'\n'									
 			else:
-				veredict=False					
+				verdict=False					
 				if file.endswith('cnmt.nca'):	
 					message=(tabs+file+' -> is CORRUPT <<<-');print(message);feed+=message+'\n'					
 				elif file.endswith('nca'):		
@@ -6016,7 +6016,7 @@ class Xci(File):
 										nca_name=str(hx(NcaId))
 										nca_name=nca_name[2:-1]+'.nca'
 										if (nca_name not in listed_files and ncatype!=6) or (nca_name not in validfiles and ncatype!=6):
-											veredict = False
+											verdict = False
 											message=('\n- Missing file from '+titleid2+': '+nca_name);print(message);feed+=message+'\n'
 											
 		ticketlist=list()
@@ -6037,18 +6037,18 @@ class Xci(File):
 								mtick=rightsId+'.tik'
 								if mtick not in ticketlist:		
 									message=('\n- File has titlerights!!! Missing ticket: '+mtick);print(message);feed+=message+'\n'
-									veredict = False									
+									verdict = False									
 											
-		if veredict == False:
-			message='\nVEREDICT: XCI FILE IS CORRUPT OR MISSES FILES\n';print(message);feed+=message+'\n'				
-		if veredict == True:	
-			message='\nVEREDICT: XCI FILE IS CORRECT\n';print(message);feed+=message	
-		return veredict,feed	
+		if verdict == False:
+			message='\nVERDICT: XCI FILE IS CORRUPT OR MISSES FILES\n';print(message);feed+=message+'\n'				
+		if verdict == True:	
+			message='\nVERDICT: XCI FILE IS CORRECT\n';print(message);feed+=message	
+		return verdict,feed	
 			
 	def verify_sig(self,feed):	
 		if feed == False:
 			feed=''	
-		veredict=True	
+		verdict=True	
 		headerlist=list()
 		message='***************';print(message);feed+='\n'+message+'\n'
 		message='SIGNATURE 1 TEST';print(message);feed+=message+'\n'
@@ -6060,23 +6060,23 @@ class Xci(File):
 						message=(str(f.header.titleId)+' - '+str(f.header.contentType));print(message);feed+=message+'\n'											
 						verify,origheader,ncaname,feed=f.verify(feed)	
 						headerlist.append([ncaname,origheader])						
-						if veredict == True:
-							veredict=verify
+						if verdict == True:
+							verdict=verify
 						message='';print(message);feed+=message+'\n'							
 					elif type(f) == Nca:
 						message=(str(f.header.titleId)+' - '+str(f.header.contentType));print(message);feed+=message+'\n'												
 						verify,origheader,ncaname,feed=f.verify(feed)	
 						headerlist.append([ncaname,origheader])
 						message='';print(message);feed+=message+'\n'	
-		if veredict == False:
-			message=("VEREDICT: XCI FILE COULD'VE BEEN TAMPERED WITH");print(message);feed+=message+'\n'												
-		if veredict == True:
-			message=('VEREDICT: XCI FILE IS SAFE');print(message);feed+=message+'\n'				
-		return 	veredict,headerlist,feed
+		if verdict == False:
+			message=("VERDICT: XCI FILE COULD'VE BEEN TAMPERED WITH");print(message);feed+=message+'\n'												
+		if verdict == True:
+			message=('VERDICT: XCI FILE IS SAFE');print(message);feed+=message+'\n'				
+		return 	verdict,headerlist,feed
 
 				
 	def verify_hash_nca(self,buffer,headerlist,didverify,feed):	
-		veredict=True		
+		verdict=True		
 		if feed == False:
 			feed=''			
 		message='\n***************';print(message);feed+=message+'\n'
@@ -6133,20 +6133,20 @@ class Xci(File):
 								message=('   > FILE IS CORRECT');print(message);feed+=message+'\n'
 							else:
 								message=('   > FILE IS CORRUPT');print(message);feed+=message+'\n'
-								veredict = False	
+								verdict = False	
 						elif  f.header.contentType == Type.Content.META and didverify == True:		
 							message=('   > RSV WAS CHANGED');print(message);feed+=message+'\n'
 							#print('   > CHECKING INTERNAL HASHES')								
 							message=('     * FILE IS CORRECT');print(message);feed+=message+'\n'							
 						else:
 							message=('   > FILE IS CORRUPT');print(message);feed+=message+'\n'
-							veredict = False
+							verdict = False
 						message=('');print(message);feed+=message+'\n'			
-		if veredict == False:
-			message=("VEREDICT: XCI FILE IS CORRUPT");print(message);feed+=message+'\n'
-		if veredict == True:	
-			message=('VEREDICT: XCI FILE IS CORRECT');print(message);feed+=message+'\n'
-		return 	veredict,feed						
+		if verdict == False:
+			message=("VERDICT: XCI FILE IS CORRUPT");print(message);feed+=message+'\n'
+		if verdict == True:	
+			message=('VERDICT: XCI FILE IS CORRECT');print(message);feed+=message+'\n'
+		return 	verdict,feed						
 		
 	def verify_enforcer(self,nca):
 		for nspF in self.hfs0:

@@ -5575,7 +5575,7 @@ if __name__ == '__main__':
 					f = Fs.Nsp(filename, 'rb')
 					check,feed=f.verify()
 					if not args.text_file:
-						veredict,headerlist,feed=f.verify_sig(feed)
+						verdict,headerlist,feed=f.verify_sig(feed)
 						i=0
 						print('\n********************************************************')
 						print('Do you want to verify the hash of the nca files?')
@@ -5586,7 +5586,7 @@ if __name__ == '__main__':
 							ck=input('Input your answer: ')
 							if ck ==str(1):
 								print('')
-								veredict,feed=f.verify_hash_nca(buffer,headerlist,veredict,feed)
+								verdict,feed=f.verify_hash_nca(buffer,headerlist,verdict,feed)
 								f.flush()
 								f.close()
 								i=1
@@ -5614,16 +5614,16 @@ if __name__ == '__main__':
 								print('WRONG CHOICE\n')								
 					elif args.text_file:	
 						if vertype == "lv2":
-							veredict,headerlist,feed=f.verify_sig(feed)	
+							verdict,headerlist,feed=f.verify_sig(feed)	
 							if check == True:
-								check=veredict
+								check=verdict
 						elif vertype == "lv3":	
-							veredict,headerlist,feed=f.verify_sig(feed)	
+							verdict,headerlist,feed=f.verify_sig(feed)	
 							if check == True:
-								check=veredict						
-							veredict,feed=f.verify_hash_nca(buffer,headerlist,veredict,feed)
+								check=verdict						
+							verdict,feed=f.verify_hash_nca(buffer,headerlist,verdict,feed)
 							if check == True:
-								check=veredict							
+								check=verdict							
 						if check == False:
 							with open(errfile, 'a') as errfile:	
 								now=datetime.now()
@@ -5655,7 +5655,7 @@ if __name__ == '__main__':
 					f.open(filename, 'rb')
 					check,feed=f.verify()
 					if not args.text_file:
-						veredict,headerlist,feed=f.verify_sig(feed)
+						verdict,headerlist,feed=f.verify_sig(feed)
 						i=0
 						print('\n********************************************************')
 						print('Do you want to verify the hash of the nca files?')
@@ -5666,7 +5666,7 @@ if __name__ == '__main__':
 							check=input('Input your answer: ')	
 							if check ==str(1):
 								print('')
-								veredict,feed=f.verify_hash_nca(buffer,headerlist,veredict,feed)
+								verdict,feed=f.verify_hash_nca(buffer,headerlist,verdict,feed)
 								f.flush()
 								f.close()
 								i=1
@@ -5694,16 +5694,16 @@ if __name__ == '__main__':
 								print('WRONG CHOICE\n')								
 					elif args.text_file:	
 						if vertype == "lv2":
-							veredict,headerlist,feed=f.verify_sig(feed)	
+							verdict,headerlist,feed=f.verify_sig(feed)	
 							if check == True:
-								check=veredict
+								check=verdict
 						elif vertype == "lv3":	
-							veredict,headerlist,feed=f.verify_sig(feed)	
+							verdict,headerlist,feed=f.verify_sig(feed)	
 							if check == True:
-								check=veredict						
-							veredict,feed=f.verify_hash_nca(buffer,headerlist,veredict,feed)
+								check=verdict						
+							verdict,feed=f.verify_hash_nca(buffer,headerlist,verdict,feed)
 							if check == True:
-								check=veredict						
+								check=verdict						
 						if check == False:
 							with open(errfile, 'a') as errfile:	
 								now=datetime.now()
