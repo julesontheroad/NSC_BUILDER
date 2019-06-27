@@ -212,7 +212,7 @@ if __name__ == '__main__':
 		parser.add_argument('-renf','--renamef', help='Rename file with proper name')	
 		parser.add_argument('-renftxt','--renameftxt', help='Rename file with proper name using a text list')		
 		parser.add_argument('-snz','--sanitize', help='Remove unreadable characters from names')			
-		parser.add_argument('-roma','--romanize', help='Translate kanji and extended kanji to romaji and sanitize name')			
+		parser.add_argument('-roma','--romanize', help='Translate kanji and extended kanna to romaji and sanitize name')			
 		parser.add_argument('-oaid','--onlyaddid', help='Rename file with proper name')		
 		parser.add_argument('-renm','--renmode', help='Rename mode (force,skip_corr_tid,skip_if_tid)')		
 		parser.add_argument('-addl','--addlangue', help='Add language string')
@@ -5414,7 +5414,7 @@ if __name__ == '__main__':
 					
 
 		#parser.add_argument('-snz','--sanitize', help='Remove unreadable characters from names')			
-		#parser.add_argument('-roma','--romanize', help='Translate kanji and extended kanji to romaji and sanitize name')	
+		#parser.add_argument('-roma','--romanize', help='Translate kanji and extended kanna to romaji and sanitize name')	
 		if args.sanitize:
 			san=True; rom=False
 			route=args.sanitize
