@@ -52,6 +52,7 @@ import shutil
 from tqdm import tqdm
 from datetime import datetime
 import math  
+import pykakasi
 
 
 if __name__ == '__main__':
@@ -5414,9 +5415,107 @@ if __name__ == '__main__':
 
 		#parser.add_argument('-snz','--sanitize', help='Remove unreadable characters from names')			
 		#parser.add_argument('-roma','--romanize', help='Translate kanji and extendid kanji to romaji and sanitize name')	
-
-
-
+		if args.sanitize:
+			san=True; rom=False
+			route=args.sanitize
+		elif args.romanize:
+			san=True; rom=True
+			route=args.romanize
+		else:
+			route=False
+		if route != False:
+			if args.text_file and route == 'single':
+				tfile=args.text_file
+				with open(tfile,"r+", encoding='utf8') as filelist: 	
+					ruta = filelist.readline()
+					ruta=os.path.abspath(ruta.rstrip('\n'))											
+					ruta = os.path.abspath(ruta)
+			else:		
+				ruta=route
+			if ruta[-1]=='"':
+				ruta=ruta[:-1]
+			if ruta[0]=='"':
+				ruta=ruta[1:]		
+			extlist=list()
+			if args.type:
+				for t in args.type:
+					x='.'+t
+					extlist.append(x)
+					if x[-1]=='*':
+						x=x[:-1]
+						extlist.append(x)	
+			filelist=list()						
+			try:
+				fname=""
+				binbin='RECYCLE.BIN'
+				for ext in extlist:
+					#print (ext)
+					if os.path.isdir(ruta):
+						for dirpath, dirnames, filenames in os.walk(ruta):
+							for filename in [f for f in filenames if f.endswith(ext.lower()) or f.endswith(ext.upper()) or f[:-1].endswith(ext.lower()) or f[:-1].endswith(ext.lower())]:
+								fname=""
+								if args.filter:
+									if filter.lower() in filename.lower():
+										fname=filename
+								else:
+									fname=filename
+								if fname != "":
+									if binbin.lower() not in filename.lower():
+										filelist.append(os.path.join(dirpath, filename))
+					else:		
+						if ruta.endswith(ext.lower()) or ruta.endswith(ext.upper()) or ruta[:-1].endswith(ext.lower()) or ruta[:-1].endswith(ext.upper()):
+							filename = ruta
+							fname=""
+							if args.filter:
+								if filter.lower() in filename.lower():
+									fname=filename
+							else:
+								fname=filename		
+							if fname != "":
+								if binbin.lower() not in filename.lower():					
+									filelist.append(filename)	
+				print('Items to process: '+str(len(filelist)))
+				counter=len(filelist)						
+				for filepath in filelist:
+					basename=str(os.path.basename(os.path.abspath(filepath)))
+					dir=os.path.dirname(os.path.abspath(filepath))					
+					print('Processing: '+filepath)		
+					endname=basename	
+					if rom == True:					
+						kakasi = pykakasi.kakasi()
+						kakasi.setMode("H", "a")
+						kakasi.setMode("K", "a")
+						kakasi.setMode("J", "a")
+						kakasi.setMode("s", True)
+						kakasi.setMode("E", "a")
+						kakasi.setMode("a", None)
+						kakasi.setMode("C", False)
+						converter = kakasi.getConverter()
+						endname=converter.do(endname)	
+						endname=endname[0].upper()+endname[1:]	
+					elif san == True:
+						endname = (re.sub(r'[\/\\\:\*\?]+', '', endname))					
+						endname = re.sub(r'[™©®`~^´ªº¢£€¥$ƒ±¬½¼«»±•²‰œæÆ³]', '', endname)	
+						endname = re.sub(r'[Ⅲ]', 'III', endname)					
+						endname = re.sub(r'[àâá@äå]', 'a', endname);endname = re.sub(r'[ÀÂÁÄÅ]', 'A', endname)
+						endname = re.sub(r'[èêéë]', 'e', endname);endname = re.sub(r'[ÈÊÉË]', 'E', endname)
+						endname = re.sub(r'[ìîíï]', 'i', endname);endname = re.sub(r'[ÌÎÍÏ]', 'I', endname)
+						endname = re.sub(r'[òôóöø]', 'o', endname);endname = re.sub(r'[ÒÔÓÖØ]', 'O', endname)
+						endname = re.sub(r'[ùûúü]', 'u', endname);endname = re.sub(r'[ÙÛÚÜ]', 'U', endname)		
+						endname=re.sub(' +', ' ',endname)		
+					newpath=os.path.join(dir,endname)					
+					print('Old Filename: '+basename)
+					print('Filename: '+endname)						
+					os.rename(filepath, newpath)	
+					counter=int(counter)
+					counter-=1
+					print(tabs+'File was renamed')					
+					if not args.text_file:					
+						print(tabs+'> Still '+str(counter)+' to go')
+			except BaseException as e:
+				counter=int(counter)
+				counter-=1
+				Print.error('Exception: ' + str(e))							
 					
 		# ...................................................						
 		# Verify. File verification

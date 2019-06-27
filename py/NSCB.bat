@@ -1018,12 +1018,16 @@ echo Input "3" to NOT RENAME IF [TITLEID] is equal to the one calculated
 echo Input "4" to ONLY ADD ID
 echo Input "5" to ADD ID + TAGS AND KEEP NAME TILL [
 echo.
+echo Sanitize:
+echo Input "6" to REMOVE BAD characters from the file name
+echo Input "7" to convert japanese\chinese to ROMAJI
+echo.
 echo Clean tags:
-echo Input "6" to REMOVE [] tags from the filename
-echo Input "7" to REMOVE () tags from the filename
-echo Input "8" to REMOVE [] and () tags from the filename
-echo Input "9" to REMOVE TITLE FROM FIRST [
-echo Input "10" to REMOVE TITLE FROM FIRST (
+echo Input "8" to REMOVE [] tags from the filename
+echo Input "9" to REMOVE () tags from the filename
+echo Input "10" to REMOVE [] and () tags from the filename
+echo Input "11" to REMOVE TITLE FROM FIRST [
+echo Input "12" to REMOVE TITLE FROM FIRST (
 echo.
 ECHO ******************************************
 echo Or Input "0" to return to the list options
@@ -1043,17 +1047,19 @@ if /i "%bs%"=="4" set "renmode=skip_corr_tid"
 if /i "%bs%"=="4" set "oaid=true"
 if /i "%bs%"=="5" set "renmode=skip_corr_tid"
 if /i "%bs%"=="5" set "oaid=idtag"
+if /i "%bs%"=="6" goto sanitize
+if /i "%bs%"=="7" goto romaji
 
-if /i "%bs%"=="6" set "tagtype=[]"
-if /i "%bs%"=="6" goto filecleantags
-if /i "%bs%"=="7" set "tagtype=()"
-if /i "%bs%"=="7" goto filecleantags
-if /i "%bs%"=="8" set "tagtype=false"
+if /i "%bs%"=="8" set "tagtype=[]"
 if /i "%bs%"=="8" goto filecleantags
-if /i "%bs%"=="9" set "tagtype=["
+if /i "%bs%"=="9" set "tagtype=()"
 if /i "%bs%"=="9" goto filecleantags
-if /i "%bs%"=="10" set "tagtype=("
+if /i "%bs%"=="10" set "tagtype=false"
 if /i "%bs%"=="10" goto filecleantags
+if /i "%bs%"=="11" set "tagtype=["
+if /i "%bs%"=="11" goto filecleantags
+if /i "%bs%"=="12" set "tagtype=("
+if /i "%bs%"=="12" goto filecleantags
 
 if /i "%renmode%"=="none" echo WRONG CHOICE
 if /i "%renmode%"=="none" goto s_rename_wrongchoice1
@@ -1151,6 +1157,35 @@ ECHO ---------------------------------------------------
 ECHO *********** ALL FILES WERE PROCESSED! *************
 ECHO ---------------------------------------------------
 goto s_exit_choice
+
+:sanitize
+cls
+call :program_logo
+for /f "tokens=*" %%f in (list.txt) do (
+%pycommand% "%nut%" -snz "single" -tfile "%prog_dir%list.txt" -t xci nsp
+more +1 "list.txt">"list.txt.new"
+move /y "list.txt.new" "list.txt" >nul
+call :contador_NF
+)
+ECHO ---------------------------------------------------
+ECHO *********** ALL FILES WERE PROCESSED! *************
+ECHO ---------------------------------------------------
+goto s_exit_choice
+
+:romaji
+cls
+call :program_logo
+for /f "tokens=*" %%f in (list.txt) do (
+%pycommand% "%nut%" -roma "single" -tfile "%prog_dir%list.txt" -t xci nsp
+more +1 "list.txt">"list.txt.new"
+move /y "list.txt.new" "list.txt" >nul
+call :contador_NF
+)
+ECHO ---------------------------------------------------
+ECHO *********** ALL FILES WERE PROCESSED! *************
+ECHO ---------------------------------------------------
+goto s_exit_choice
+
 
 :filecleantags
 cls
