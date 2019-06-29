@@ -644,8 +644,8 @@ echo Input "1" to process files INDIVIDUALLY
 echo Input "2" to enter into MULTI-PACK mode
 echo Input "3" to enter into MULTI-CONTENT SPLITTER mode
 echo Input "4" to enter into FILE-INFO mode
-echo Input "5" to enter DATABASE building mode
-echo Input "6" to enter ADVANCE mode
+echo Input "5" to enter into DATABASE building mode
+echo Input "6" to enter into ADVANCED mode
 echo Input "0" to enter into CONFIGURATION mode
 echo.
 echo Input "L" to enter LEGACY MODES
