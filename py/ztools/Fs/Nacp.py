@@ -5,6 +5,7 @@ from enum import IntEnum
 import Print
 import Keys
 import re
+import pykakasi
 indent = 1
 tabs = '\t' * indent	
 
@@ -138,9 +139,32 @@ class Nacp(File):
 				editor = editor.split(b'\0', 1)[0].decode('utf-8')
 				editor = (re.sub(r'[\/\\]+', ' ', editor))
 				editor = editor.strip()	
-				print('..........................')					
+				if i == 2:					
+					kakasi = pykakasi.kakasi()
+					kakasi.setMode("H", "a")
+					kakasi.setMode("K", "a")
+					kakasi.setMode("J", "a")
+					kakasi.setMode("s", True)
+					kakasi.setMode("E", "a")
+					kakasi.setMode("a", None)
+					kakasi.setMode("C", False)
+					converter = kakasi.getConverter()
+					title=converter.do(title)	
+					title=title[0].upper()+title[1:]
+					editor=converter.do(editor)		
+					editor=editor[0].upper()+editor[1:]		
+				if i == 14 or i == 13 or i==12:					
+					kakasi = pykakasi.kakasi()
+					kakasi.setMode("H", "a")
+					kakasi.setMode("K", "a")
+					kakasi.setMode("J", "a")
+					kakasi.setMode("s", True)
+					kakasi.setMode("E", "a")
+					kakasi.setMode("a", None)
+					kakasi.setMode("C", False)				
+				print('...............................')					
 				print('Language: '+ str(NacpLanguageType(i)).replace('NacpLanguageType.', ''))
-				print('..........................')				
+				print('...............................')				
 				print('- Name: '+ title)
 				print('- Publisher: '+ editor)		
 		
@@ -155,6 +179,19 @@ class Nacp(File):
 		if isbn != '':
 			print('- Isbn: ' + str(isbn))
 		
+	def par_getStartupUserAccount(self, data):
+		b=data
+		if b == 0:
+			StartupUserAccount = 'None'
+		elif b == 1:
+			StartupUserAccount = 'Required'
+		elif b == 2:
+			StartupUserAccount = 'RequiredWithNetworkServiceAccountAvailable'
+		else:
+			StartupUserAccount = 'Unknown'
+		print('- StartupUserAccount: ' + str(StartupUserAccount))
+		
+		
 	def getStartupUserAccount(self):
 		self.seek(0x3025)
 		b = self.readInt8('little')
@@ -167,7 +204,16 @@ class Nacp(File):
 		else:
 			self.startupUserAccount = 'Unknown'
 		return self.startupUserAccount
-		
+
+	def par_getUserAccountSwitchLock(self, data):
+		b=data
+		if b == 0:
+			userAccountSwitchLock = 'Disable'
+		elif b == 1:
+			userAccountSwitchLock = 'Enable'
+		else:
+			userAccountSwitchLock = 'Unknown'
+		print('- UserAccountSwitchLock: ' + str(userAccountSwitchLock))		
 		
 	def getUserAccountSwitchLock(self):
 		self.seek(0x3026)
@@ -180,6 +226,16 @@ class Nacp(File):
 			self.userAccountSwitchLock = 'Unknown'
 		return self.userAccountSwitchLock
 		
+	def par_getAddOnContentRegistrationType(self, data):
+		b=data
+		if b == 0:
+			addOnContentRegistrationType = 'AllOnLaunch'
+		elif b == 1:
+			addOnContentRegistrationType = 'OnDemand'
+		else:
+			addOnContentRegistrationType = 'Unknown'
+		print('- AddOnContentRegistrationType: ' + str(addOnContentRegistrationType))			
+		
 		
 	def getAddOnContentRegistrationType(self):
 		self.seek(0x3027)
@@ -191,6 +247,18 @@ class Nacp(File):
 		else:
 			self.addOnContentRegistrationType = 'Unknown'
 		return self.addOnContentRegistrationType
+		
+	def par_getContentType(self, data):
+		b=data
+		if b == 0:
+			content_type = 'False'
+		elif b == 1:
+			content_type = 'Demo'
+		elif b == 2:
+			content_type = 'RetailInteractiveDisplay'
+		else:
+			content_type = 'Unknown'
+		print('- IsDemo: ' + str(content_type))			
 		
 		
 	def getAttribute(self):
@@ -206,6 +274,16 @@ class Nacp(File):
 			self.attribute = 'Unknown'
 		return self.attribute
 		
+	def par_getParentalControl(self, data):
+		b=data
+		if b == 0:
+			parentalControl = 'None'
+		elif b == 1:
+			parentalControl = 'FreeCommunication'
+		else:
+			parentalControl = 'Unknown'
+		print('- ParentalControl: ' + str(parentalControl))			
+		
 		
 	def getParentalControl(self):
 		self.seek(0x3030)
@@ -218,6 +296,16 @@ class Nacp(File):
 			self.parentalControl = 'Unknown'
 		return self.parentalControl
 		
+	def par_getScreenshot(self, data):
+		b=data
+		if b == 0:
+			screenshot = 'Allowed'
+		elif b == 1:
+			screenshot = 'Denied'
+		else:
+			screenshot = 'Unknown'
+		print('- Screenshots: ' + str(screenshot))				
+		
 		
 	def getScreenshot(self):
 		self.seek(0x3034)
@@ -229,7 +317,18 @@ class Nacp(File):
 		else:
 			self.screenshot = 'Unknown'
 		return self.screenshot
-		
+
+	def par_getVideoCapture(self, data):
+		b=data
+		if b == 0:
+			videoCapture = 'Disabled'
+		elif b == 1:
+			videoCapture = 'Manual'
+		elif b == 2:
+			videoCapture = 'Enabled'
+		else:
+			videoCapture = 'Unknown'
+		print('- VideoCapture: ' + str(videoCapture))			
 		
 	def getVideoCapture(self):
 		self.seek(0x3035)
@@ -244,6 +343,15 @@ class Nacp(File):
 			self.videoCapture = 'Unknown'
 		return self.videoCapture
 		
+	def par_dataLossConfirmation(self, data):
+		b=data
+		if b == 0:
+			dataLossConfirmation = 'None'
+		elif b == 1:
+			dataLossConfirmation = 'Required'
+		else:
+			dataLossConfirmation = 'Unknown'
+		print('- DataLossConfirmation: ' + str(dataLossConfirmation))		
 		
 	def getDataLossConfirmation(self):
 		self.seek(0x3036)
@@ -256,7 +364,19 @@ class Nacp(File):
 			self.dataLossConfirmation = 'Unknown'
 		return self.dataLossConfirmation
 		
-		
+
+	def par_getPlayLogPolicy(self, data):
+		b=data
+		if b == 0:
+			playLogPolicy = 'All'
+		elif b == 1:
+			playLogPolicy = 'LogOnly'
+		elif b == 2:
+			playLogPolicy = 'None'
+		else:
+			playLogPolicy = 'Unknown'
+		print('- PlayLogPolicy: ' + str(playLogPolicy))		
+
 	def getPlayLogPolicy(self):
 		self.seek(0x3037)
 		b = self.readInt8('little')
@@ -270,12 +390,49 @@ class Nacp(File):
 			self.playLogPolicy = 'Unknown'
 		return self.playLogPolicy
 		
-		
+	def par_getPresenceGroupId(self, data):
+		b=data
+		print('- PresenceGroupId: ' + '0x' + hex(data).replace('0x', '').zfill(16))			
+
 	def getPresenceGroupId(self):
 		self.seek(0x3038)
 		self.presenceGroupId = self.readInt64('little')
-		return self.presenceGroupId
-		
+		return self.presenceGroupId	
+
+	def par_getRatingAge(self,data,i):
+		b=data
+		if b == 0:
+			age = '0'
+		elif b == 3:
+			age = '3'
+		elif b == 4:
+			age = '4'
+		elif b == 6:
+			age = '6'
+		elif b == 7:
+			age = '7'
+		elif b == 8:
+			age = '8'
+		elif b == 10:
+			age = '10'
+		elif b == 12:
+			age = '12'
+		elif b == 13:
+			age = '13'
+		elif b == 14:
+			age = '14'
+		elif b == 15:
+			age = '15'
+		elif b == 16:
+			age = '16'
+		elif b == 17:
+			age = '17'
+		elif b == 18:
+			age = '18'
+		else:
+			age = 'Unknown'
+		if age != 'Unknown':			
+			print('- '+str(OrganizationType(i)).replace('OrganizationType.', '') + ' Rating: '+ str(age))	
 		
 	def getRatingAge(self, i):
 		self.seek(i + 0x3040)
@@ -311,69 +468,121 @@ class Nacp(File):
 		else:
 			self.ages[i].age = 'Unknown'
 		return self.ages[i].age
-		
+
+	def par_getDisplayVersion(self, data):
+		b=data
+		print('- Build Number: ' + data.split(b'\0', 1)[0].decode('utf-8'))			
 		
 	def getDisplayVersion(self):
 		self.seek(0x3060)
 		self.displayVersion = self.read(0xF)
 		self.displayVersion = self.displayVersion.split(b'\0', 1)[0].decode('utf-8')
 		return self.displayVersion
-		
+
+	def par_getAddOnContentBaseId(self, data):
+		b=data
+		print('- AddOnContentBaseId: ' + '0x' + (hex(data).replace('0x', '').zfill(16)).upper())
 		
 	def getAddOnContentBaseId(self):
 		self.seek(0x3070)
 		self.addOnContentBaseId = self.readInt64('little')
 		return self.addOnContentBaseId
 
+	def par_getSaveDataOwnerId(self, data):
+		b=data
+		print('- SaveDataOwnerId: ' + '0x' + (hex(data).replace('0x', '').zfill(16)).upper())
 		
 	def getSaveDataOwnerId(self):
 		self.seek(0x3078)
 		self.saveDataOwnerId = self.readInt64('little')
 		return self.saveDataOwnerId
-		
+
+	def par_getUserAccountSaveDataSize(self, data):
+		b=data
+		print('- UserAccountSaveDataSize: ' + '0x' + (hex(data).replace('0x', '').zfill(16)).upper())		
 		
 	def getUserAccountSaveDataSize(self):
 		self.seek(0x3080)
 		self.userAccountSaveDataSize = self.readInt64('little')
 		return self.userAccountSaveDataSize
-		
+
+	def par_getUserAccountSaveDataJournalSize(self, data):
+		b=data
+		print('- UserAccountSaveDataJournalSize: ' + '0x' + (hex(data).replace('0x', '').zfill(16)).upper())		
 	
 	def getUserAccountSaveDataJournalSize(self):
 		self.seek(0x3088)
 		self.userAccountSaveDataJournalSize = self.readInt64('little')
 		return self.userAccountSaveDataJournalSize
-		
+
+	def par_getDeviceSaveDataSize(self, data):
+		b=data
+		if data==0:
+			pass
+		else:		
+			print('- DeviceSaveDataSize: ' + '0x' + (hex(data).replace('0x', '').zfill(16)).upper())				
 		
 	def getDeviceSaveDataSize(self):
 		self.seek(0x3090)
 		self.deviceSaveDataSize = self.readInt64('little')
 		return self.deviceSaveDataSize
-		
+
+	def par_getDeviceSaveDataJournalSize(self, data):
+		b=data
+		if data==0:
+			pass
+		else:		
+			print('- DeviceSaveDataJournalSize: ' + '0x' + (hex(data).replace('0x', '').zfill(16)).upper())					
 		
 	def getDeviceSaveDataJournalSize(self):
 		self.seek(0x3098)
 		self.deviceSaveDataJournalSize = self.readInt64('little')
 		return self.deviceSaveDataJournalSize
-		
-		
+	
+	def par_getBcatDeliveryCacheStorageSize(self, data):
+		b=data
+		if data==0:
+			pass
+		else:
+			print('- BcatDeliveryCacheStorageSize: ' + '0x' + (hex(data).replace('0x', '').zfill(16)).upper())					
+
 	def getBcatDeliveryCacheStorageSize(self):
 		self.seek(0x30A0)
 		self.bcatDeliveryCacheStorageSize = self.readInt64('little')
 		return self.bcatDeliveryCacheStorageSize
 		
+	def par_getApplicationErrorCodeCategory(self, data):
+		b=data
+		applicationErrorCodeCategory = data.split(b'\0', 1)[0].decode('utf-8')
+		if applicationErrorCodeCategory == '':
+			pass	
+		else:			
+			print('- ApplicationErrorCodeCategory: ' + applicationErrorCodeCategory)					
 		
 	def getApplicationErrorCodeCategory(self):
 		self.seek(0x30A8)
 		self.applicationErrorCodeCategory = self.read(0x7).split(b'\0', 1)[0].decode('utf-8')
 		return self.applicationErrorCodeCategory
 		
+	def par_getLocalCommunicationId(self, data):
+		b=data
+		print('- LocalCommunicationId: ' + '0x' + (hex(data).replace('0x', '').zfill(16)).upper())					
 		
 	def getLocalCommunicationId(self):
 		self.seek(0x30B0)
 		self.localCommunicationId = self.readInt64('little')
 		return self.localCommunicationId
 
-		
+	def par_getLogoType(self, data):
+		b=data
+		if b == 0:
+			logoType = 'LicensedByNintendo'
+		elif b == 2:
+			logoType = 'Nintendo'
+		else:
+			logoType = 'Unknown'		
+		print('- LogoType: ' + logoType)					
+				
 	def getLogoType(self):
 		self.seek(0x30F0)
 		b = self.readInt8('little')
@@ -384,7 +593,16 @@ class Nacp(File):
 		else:
 			self.logoType = 'Unknown'
 		return self.logoType
-		
+
+	def par_getLogoHandling(self, data):
+		b=data
+		if b == 0:
+			logoHandling = 'Auto'
+		elif b == 1:
+			logoHandling = 'Manual'
+		else:
+			logoHandling = 'Unknown'	
+		print('- LogoHandling: ' + logoHandling)				
 		
 	def getLogoHandling(self):
 		self.seek(0x30F1)
@@ -397,6 +615,15 @@ class Nacp(File):
 			self.logoHandling = 'Unknown'
 		return self.logoHandling
 		
+	def par_getRuntimeAddOnContentInstall(self, data):
+		b=data
+		if b == 0:
+			runtimeAddOnContentInstall = 'Deny'
+		elif b == 1:
+			runtimeAddOnContentInstall = 'AllowAppend'
+		else:
+			runtimeAddOnContentInstall = 'Unknown'
+		print('- RuntimeAddOnContentInstall: ' + runtimeAddOnContentInstall)		
 		
 	def getRuntimeAddOnContentInstall(self):
 		self.seek(0x30F2)
@@ -409,7 +636,16 @@ class Nacp(File):
 			self.runtimeAddOnContentInstall = 'Unknown'
 		return self.runtimeAddOnContentInstall
 		
-		
+	def par_getCrashReport(self, data):
+		b=data
+		if b == 0:
+			crashReport = 'Deny'
+		elif b == 1:
+			crashReport = 'Allow'
+		else:
+			crashReport = 'Unknown'
+		print('- CrashReport: ' + crashReport)		
+
 	def getCrashReport(self):
 		self.seek(0x30F6)
 		b = self.readInt8('little')
@@ -420,7 +656,16 @@ class Nacp(File):
 		else:
 			self.crashReport = 'Unknown'
 		return self.crashReport
-		
+
+	def par_getHdcp(self, data):
+		b=data
+		if b == 0:
+			hdcp = 'None'
+		elif b == 1:
+			hdcp = 'Required'
+		else:
+			hdcp = 'Unknown'
+		print('- HDCP: ' + hdcp)			
 		
 	def getHdcp(self):
 		self.seek(0x30F7)
@@ -433,79 +678,152 @@ class Nacp(File):
 			self.hdcp = 'Unknown'
 		return self.hdcp
 		
-		
+	def par_getSeedForPseudoDeviceId(self, data):
+		print('- SeedForPseudoDeviceId: ' + '0x' + (hex(data).replace('0x', '').zfill(16)).upper())					
+
 	def getSeedForPseudoDeviceId(self):
 		self.seek(0x30F8)
 		self.seedForPseudoDeviceId = self.readInt64('little')
 		return self.seedForPseudoDeviceId
 		
-		
+	def par_getBcatPassphrase(self, data):
+		bcatPassphrase = data.split(b'\0', 1)[0].decode('utf-8')		
+		if bcatPassphrase == 0:
+			pass
+		elif str(bcatPassphrase) == '':
+			pass
+		else:		
+			print('- BcatPassphrase: ' + bcatPassphrase)					
+
 	def getBcatPassphrase(self):
 		self.seek(0x3100)
 		self.bcatPassphrase = self.read(0x40).split(b'\0', 1)[0].decode('utf-8')
 		return self.bcatPassphrase
-		
+	
+	def par_UserAccountSaveDataSizeMax(self, data):
+		if data == 0:
+			pass	
+		else:
+			print('- UserAccountSaveDataSizeMax: ' + '0x' + (hex(data).replace('0x', '').zfill(16)).upper())						
 		
 	def getUserAccountSaveDataSizeMax(self):
 		self.seek(0x3148)
 		self.userAccountSaveDataSizeMax = self.readInt64('little')
 		return self.userAccountSaveDataSizeMax
 		
-		
+	def par_UserAccountSaveDataJournalSizeMax(self, data):
+		if data == 0:
+			pass	
+		else:	
+			print('- UserAccountSaveDataJournalSizeMax: ' + '0x' + (hex(data).replace('0x', '').zfill(16)).upper())						
+			
 	def getUserAccountSaveDataJournalSizeMax(self):
 		self.seek(0x3150)
 		self.userAccountSaveDataJournalSizeMax = self.readInt64('little')
 		return self.userAccountSaveDataJournalSizeMax
 		
-		
+	def par_getDeviceSaveDataSizeMax(self, data):
+		if data == 0:
+			pass	
+		else:	
+			print('- DeviceSaveDataSizeMax: ' + '0x' + (hex(data).replace('0x', '').zfill(16)).upper())						
+			
 	def getDeviceSaveDataSizeMax(self):
 		self.seek(0x3158)
 		self.deviceSaveDataSizeMax = self.readInt64('little')
 		return self.deviceSaveDataSizeMax
-		
-		
+	
+	def par_getDeviceSaveDataJournalSizeMax(self, data):
+		if data == 0:
+			pass	
+		else:	
+			print('- DeviceSaveDataJournalSizeMax: ' + '0x' + (hex(data).replace('0x', '').zfill(16)).upper())						
+			
 	def getDeviceSaveDataJournalSizeMax(self):
 		self.seek(0x3160)
 		self.deviceSaveDataJournalSizeMax = self.readInt64('little')
 		return self.deviceSaveDataJournalSizeMax
-		
-		
+
+	def par_getTemporaryStorageSize(self, data):
+		if data == 0:
+			pass	
+		else:	
+			print('- TemporaryStorageSize: ' + '0x' + (hex(data).replace('0x', '').zfill(16)).upper())						
+			
 	def getTemporaryStorageSize(self):
 		self.seek(0x3168)
 		self.temporaryStorageSize = self.readInt64('little')
 		return self.temporaryStorageSize
-		
-		
+
+	def par_getCacheStorageSize(self, data):
+		if data == 0:
+			pass	
+		else:	
+			print('- CacheStorageSize: ' + '0x' + (hex(data).replace('0x', '').zfill(16)).upper())						
+
 	def getCacheStorageSize(self):
 		self.seek(0x3170)
 		self.cacheStorageSize = self.readInt64('little')
 		return self.cacheStorageSize
-		
-		
+	
+	def par_getCacheStorageJournalSize(self, data):
+		if data == 0:
+			pass	
+		else:	
+			print('- CacheStorageJournalSize: ' + '0x' + (hex(data).replace('0x', '').zfill(16)).upper())						
+	
 	def getCacheStorageJournalSize(self):
 		self.seek(0x3178)
 		self.cacheStorageJournalSize = self.readInt64('little')
 		return self.cacheStorageJournalSize
-		
+
+	def par_getCacheStorageDataAndJournalSizeMax(self, data):
+		if data == 0:
+			pass	
+		else:	
+			print('- CacheStorageDataAndJournalSizeMax: ' + '0x' + (hex(data).replace('0x', '').zfill(16)).upper())						
+			
 		
 	def getCacheStorageDataAndJournalSizeMax(self):
 		self.seek(0x3180)
 		self.cacheStorageDataAndJournalSizeMax = self.readInt32('little')
 		return self.cacheStorageDataAndJournalSizeMax
 		
-		
+	def par_getCacheStorageIndexMax(self, data):
+		if data == 0:
+			pass	
+		else:	
+			print('- CacheStorageIndexMax: ' + '0x' + (hex(data).replace('0x', '').zfill(16)).upper())						
+				
 	def getCacheStorageIndexMax(self):
 		self.seek(0x3188)
 		self.cacheStorageIndexMax = self.readInt16('little')
 		return self.cacheStorageIndexMax
 		
+	def par_getPlayLogQueryableApplicationId(self, data):
+		if data == 0:
+			pass	
+		else:	
+			print('- PlayLogQueryableApplicationId: ' + '0x' + (hex(data).replace('0x', '').zfill(16)).upper())						
+						
 		
 	def getPlayLogQueryableApplicationId(self):
 		self.seek(0x3190)
 		self.playLogQueryableApplicationId = self.readInt64('little')
 		return self.playLogQueryableApplicationId
 		
-		
+	def par_getPlayLogQueryCapability(self, data):
+		b = data
+		if b == 0:
+			playLogQueryCapability = 'None'
+		elif b == 1:
+			playLogQueryCapability = 'WhiteList'
+		elif b == 2:
+			playLogQueryCapability = 'All'
+		else:
+			playLogQueryCapability = 'Unknown'
+		print('- PlayLogQueryCapability: ' + playLogQueryCapability)	
+							
 	def getPlayLogQueryCapability(self):
 		self.seek(0x3210)
 		b = self.readInt8('little')
@@ -518,6 +836,16 @@ class Nacp(File):
 		else:
 			self.playLogQueryCapability = 'Unknown'
 		return self.playLogQueryCapability
+		
+	def par_getRepair(self, data):
+		b = data
+		if b == 0:
+			repair = 'None'
+		elif b == 1:
+			repair = 'SuppressGameCardAccess'
+		else:
+			repair = 'Unknown'
+		print('- Repair: ' + repair)			
 			
 	
 	def getRepair(self):
@@ -530,14 +858,25 @@ class Nacp(File):
 		else:
 			self.repair = 'Unknown'
 		return self.repair
-		
+	
+	def par_getProgramIndex(self, data):
+		print('- ProgramIndex: ' + str(data))				
 		
 	def getProgramIndex(self):
 		self.seek(0x3212)
 		self.programIndex = self.readInt8('little')
 		return self.programIndex
 		
-		
+	def par_getRequiredNetworkServiceLicenseOnLaunch(self, data):
+		b = data
+		if b == 0:
+			requiredNetworkServiceLicenseOnLaunch = 'None'
+		elif b == 1:
+			requiredNetworkServiceLicenseOnLaunch = 'Common'
+		else:
+			requiredNetworkServiceLicenseOnLaunch = 'Unknown'
+		print('- RequiredNetworkServiceLicenseOnLaunch: ' + requiredNetworkServiceLicenseOnLaunch)
+	
 	def getRequiredNetworkServiceLicenseOnLaunch(self):
 		self.seek(0x3213)
 		b = self.readInt8('little')
