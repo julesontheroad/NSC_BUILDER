@@ -25,6 +25,7 @@ from Fs.Nca import NcaHeader
 from Fs.File import MemoryFile
 import math  
 import sys
+import shutil
 if sys.platform == 'win32':
 	import win32con, win32api
 from operator import itemgetter, attrgetter, methodcaller
@@ -6699,6 +6700,7 @@ class Nsp(Pfs0):
 								fp = Fs.Nca(tempfile, 'r+b')
 								progress=True
 								verify,origheader,ncapath,feed,origkg=fp.verify(feed,targetkg,rsv_endcheck,progress,t)	
+								fp.close()
 								t.update(1)	
 								if verify == True:
 									t.close()	
@@ -6706,6 +6708,7 @@ class Nsp(Pfs0):
 									message=(tabs+'* '+"THE CNMT FILE IS CORRECT");print(message);feed+=message+'\n'										
 									if origheader != False:	
 										hlisthash=True;i=0
+										fp = Fs.Nca(tempfile, 'r+b')
 										for data in iter(lambda: fp.read(int(32768)), ""):											
 											if i==0:
 												sha0=sha256()
@@ -6721,19 +6724,20 @@ class Nsp(Pfs0):
 													cnmtdidverify=True
 													break	
 									break
-						else:break				
+						else:break	
 				if hlisthash == True:
 					sha0=sha0.hexdigest()
 					hlisthash=sha0
 				headerlist.append([ncaname,origheader,hlisthash])	
-				message='';print(message);feed+=message+'\n'	
+				message='';print(message);feed+=message+'\n'		
+		try:
+			shutil.rmtree(tmpfolder)
+		except:pass						
 		if verdict == False:
 			message=("VERDICT: NSP FILE COULD'VE BEEN TAMPERED WITH");print(message);feed+=message+'\n'												
 		if verdict == True:	
 			message=('VERDICT: NSP FILE IS SAFE');print(message);feed+=message+'\n'				
 		return 	verdict,headerlist,feed			
-
-
 
 	def find_addecuatekg(self,ncameta,keygenerationlist):
 		ncalist=list()

@@ -25,6 +25,7 @@ import Print
 from tqdm import tqdm
 import math  
 from operator import itemgetter, attrgetter, methodcaller
+import shutil
 #from Cryptodome.Cipher import PKCS1_v1_5 #Add new dependency Cryptodome
 
 MEDIA_SIZE = 0x200
@@ -6217,7 +6218,8 @@ class Xci(File):
 										fp.close()	
 										fp = Fs.Nca(tempfile, 'r+b')
 										progress=True
-										verify,origheader,ncapath,feed,origkg=fp.verify(feed,targetkg,rsv_endcheck,progress,t)	
+										verify,origheader,ncapath,feed,origkg=fp.verify(feed,targetkg,rsv_endcheck,progress,t)
+										fp.close()		
 										t.update(1)	
 										if verify == True:
 											t.close()	
@@ -6225,6 +6227,7 @@ class Xci(File):
 											message=(tabs+'* '+"THE CNMT FILE IS CORRECT");print(message);feed+=message+'\n'										
 											if origheader != False:	
 												hlisthash=True;i=0
+												fp = Fs.Nca(tempfile, 'r+b')
 												for data in iter(lambda: fp.read(int(32768)), ""):											
 													if i==0:
 														sha0=sha256()
@@ -6240,12 +6243,15 @@ class Xci(File):
 															cnmtdidverify=True
 															break	
 											break
-								else:break				
+								else:break							
 						if hlisthash == True:
 							sha0=sha0.hexdigest()
 							hlisthash=sha0
 						headerlist.append([ncaname,origheader,hlisthash])	
-						message='';print(message);feed+=message+'\n'
+						message='';print(message);feed+=message+'\n'	
+		try:
+			shutil.rmtree(tmpfolder)
+		except:pass								
 		if verdict == False:
 			message=("VERDICT: XCI FILE COULD'VE BEEN TAMPERED WITH");print(message);feed+=message+'\n'												
 		if verdict == True:
