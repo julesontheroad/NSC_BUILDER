@@ -6645,18 +6645,23 @@ class Nsp(Pfs0):
 					kglist=sq_tools.kgstring()
 					numb=0;topkg=len(kglist)
 					for kg in kglist:
-						if topkg >= targetkg:	
+						topkg-=1
+						if topkg >= origkg:	
 							for verNumber in kg:
 								numb+=1
-					t = tqdm(total=numb, unit='RSV', unit_scale=True, leave=False)					
+					cnmtdidverify=False			
+					t = tqdm(total=numb, unit='RSV', unit_scale=True, leave=False)
+					topkg=len(kglist)					
 					for kg in kglist:
+						if cnmtdidverify == True:
+							break
 						topkg-=1
 						#print(topkg)
-						if topkg >= targetkg:
+						if topkg >= origkg:
 							c=0;rsv_endcheck=False
 							for verNumber in kg:
 								c+=1
-								if topkg == targetkg:
+								if topkg == origkg:
 									if c == len(kg):
 										rsv_endcheck=True
 								#print(verNumber)
@@ -6691,13 +6696,14 @@ class Nsp(Pfs0):
 								fp.header.set_hblock_hash(sha3)
 								fp.flush()
 								fp.close()	
-								fp = Fs.Nca(tempfile, 'r+b')		
+								fp = Fs.Nca(tempfile, 'r+b')
 								progress=True
 								verify,origheader,ncapath,feed,origkg=fp.verify(feed,targetkg,rsv_endcheck,progress,t)	
-								t.update(1)								
+								t.update(1)	
 								if verify == True:
 									t.close()	
 									message=(tabs+'* '+"RSV WAS CHANGED FROM "+str(verNumber)+" TO "+str(minrsv));print(message);feed+=message+'\n'	
+									message=(tabs+'* '+"THE CNMT FILE IS CORRECT");print(message);feed+=message+'\n'										
 									if origheader != False:	
 										hlisthash=True;i=0
 										for data in iter(lambda: fp.read(int(32768)), ""):											
@@ -6710,7 +6716,9 @@ class Nsp(Pfs0):
 											else:		
 												sha0.update(data)								
 												fp.flush()
-												if not data:				
+												if not data:
+													fp.close()												
+													cnmtdidverify=True
 													break	
 									break
 						else:break				

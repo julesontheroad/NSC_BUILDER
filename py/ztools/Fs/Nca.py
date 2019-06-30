@@ -1728,9 +1728,9 @@ class Nca(File):
 						message=(indent+self._path+arrow+'is PROPER');print(message);feed+=message+'\n'	
 					else:
 						if progress != False:
-							message=(tabs+'* '+"CNMT FILE is PROPER");bar.write(message);feed+=message+'\n'	
+							message=(tabs+'* '+"ORIGIN OF CNMT FILE IS PROPER");bar.write(message);feed+=message+'\n'	
 						else:
-							message=(tabs+'* '+"CNMT FILE is PROPER");print(message);feed+=message+'\n'					
+							message=(tabs+'* '+"ORIGIN OF CNMT FILE IS PROPER");print(message);feed+=message+'\n'					
 					if kgchg == True:
 						if progress != False:
 							message=(tabs+'* '+"KEYGENERATION WAS CHANGED FROM "+str(orkg)+" TO "+str(currkg));bar.write(message);feed+=message+'\n'	
@@ -1950,7 +1950,6 @@ class Nca(File):
 					else:
 						crypto1='02'
 						crypto2='0'+str(i)	
-						
 					masterKeyRev = i	
 					encKeyBlock = self.header.getKeyBlock()
 					key = Keys.keyAreaKey(Keys.getMasterKeyIndex(masterKeyRev), self.header.keyIndex)		
