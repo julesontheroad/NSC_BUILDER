@@ -6124,7 +6124,7 @@ class Xci(File):
 			message='\nVERDICT: XCI FILE IS CORRECT\n';print(message);feed+=message	
 		return verdict,feed	
 			
-	def verify_sig(self,feed):	
+	def verify_sig(self,feed,tmpfolder):	
 		if feed == False:
 			feed=''	
 		verdict=True	
@@ -6142,7 +6142,8 @@ class Xci(File):
 						if verdict == True:
 							verdict=verify
 						message='';print(message);feed+=message+'\n'							
-					elif type(f) == Nca:
+				for f in self:	
+					if type(f) == Nca and f.header.contentType == Type.Content.META:
 						message=(str(f.header.titleId)+' - '+str(f.header.contentType));print(message);feed+=message+'\n'												
 						verify,origheader,ncaname,feed=f.verify(feed)	
 						headerlist.append([ncaname,origheader])

@@ -5545,6 +5545,7 @@ if __name__ == '__main__':
 				for var in args.ofolder:
 					try:
 						ofolder = var
+						tmpfolder =os.path.join(ofolder,'tmp')
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))	
 			else:
@@ -5552,6 +5553,7 @@ if __name__ == '__main__':
 					dir=os.path.dirname(os.path.abspath(filename))
 					info='INFO'
 					ofolder =os.path.join(dir,info)
+					tmpfolder =os.path.join(dir,'tmp')
 			if not os.path.exists(ofolder):
 				os.makedirs(ofolder)	
 			if args.text_file:
@@ -5575,7 +5577,7 @@ if __name__ == '__main__':
 					f = Fs.Nsp(filename, 'rb')
 					check,feed=f.verify()
 					if not args.text_file:
-						verdict,headerlist,feed=f.verify_sig(feed)
+						verdict,headerlist,feed=f.verify_sig(feed,tmpfolder)
 						i=0
 						print('\n********************************************************')
 						print('Do you want to verify the hash of the nca files?')
@@ -5614,11 +5616,11 @@ if __name__ == '__main__':
 								print('WRONG CHOICE\n')								
 					elif args.text_file:	
 						if vertype == "lv2":
-							verdict,headerlist,feed=f.verify_sig(feed)	
+							verdict,headerlist,feed=f.verify_sig(feed,tmpfolder)	
 							if check == True:
 								check=verdict
 						elif vertype == "lv3":	
-							verdict,headerlist,feed=f.verify_sig(feed)	
+							verdict,headerlist,feed=f.verify_sig(feed,tmpfolder)	
 							if check == True:
 								check=verdict						
 							verdict,feed=f.verify_hash_nca(buffer,headerlist,verdict,feed)
@@ -5655,7 +5657,7 @@ if __name__ == '__main__':
 					f.open(filename, 'rb')
 					check,feed=f.verify()
 					if not args.text_file:
-						verdict,headerlist,feed=f.verify_sig(feed)
+						verdict,headerlist,feed=f.verify_sig(feed,tmpfolder)
 						i=0
 						print('\n********************************************************')
 						print('Do you want to verify the hash of the nca files?')
@@ -5694,11 +5696,11 @@ if __name__ == '__main__':
 								print('WRONG CHOICE\n')								
 					elif args.text_file:	
 						if vertype == "lv2":
-							verdict,headerlist,feed=f.verify_sig(feed)	
+							verdict,headerlist,feed=f.verify_sig(feed,tmpfolder)	
 							if check == True:
 								check=verdict
 						elif vertype == "lv3":	
-							verdict,headerlist,feed=f.verify_sig(feed)	
+							verdict,headerlist,feed=f.verify_sig(feed,tmpfolder)	
 							if check == True:
 								check=verdict						
 							verdict,feed=f.verify_hash_nca(buffer,headerlist,verdict,feed)

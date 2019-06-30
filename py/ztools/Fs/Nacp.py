@@ -253,7 +253,7 @@ class Nacp(File):
 		if b == 0:
 			content_type = 'False'
 		elif b == 1:
-			content_type = 'Demo'
+			content_type = 'True'
 		elif b == 2:
 			content_type = 'RetailInteractiveDisplay'
 		else:

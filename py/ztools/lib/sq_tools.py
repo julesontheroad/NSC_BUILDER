@@ -30,6 +30,7 @@ versions =
     335675432: "5.0.2",   ->   keygeneration = 5
     336592976: "5.1.0",   ->   keygeneration = 5
     402653494: "6.0.0-4", ->   keygeneration = 6 
+    402653184: "6.0.0",   ->   keygeneration = 6
     402653514: "6.0.0",   ->   keygeneration = 6
     402653544: "6.0.0",   ->   keygeneration = 6
     402718730: "6.0.1",   ->   keygeneration = 6
@@ -42,12 +43,12 @@ versions =
 	536936448: "8.0.1"    ->   keygeneration = 8	
 	537919488: "8.1.0"    ->   keygeneration = 9		
 '''	
-def kgstring():
+def kgstring(kg=list()):
 	kg=list()
-	kg8=[537919488];kg.append(kg9)		
+	kg9=[537919488];kg.append(kg9)		
 	kg8=[536936448,536870912,469827584,469762048];kg.append(kg8)	
-	kg7=[404750376,404750336];kg.append(kg7)	
-	kg6=[403701850,402718730,402653544,402653514,402653494];kg.append(kg6)	
+	kg7=[404750336];kg.append(kg7)	
+	kg6=[403701850,402718730,402653184];kg.append(kg6)	
 	kg5=[336592976,335675432,335609886,335544750];kg.append(kg5)	
 	kg4=[269484082,268501002,268435656];kg.append(kg4)	
 	kg3=[201457684,201392178];kg.append(kg3)	

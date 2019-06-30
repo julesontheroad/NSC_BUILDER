@@ -521,7 +521,7 @@ class Nca(File):
 		min_sversion=self.readInt32()
 		#Print.info('Original RequiredSystemVersion = ' + str(min_sversion))
 		self.seek(cmt_offset+0x28)	
-		self.writeInt64(verNumber)
+		self.writeInt32(verNumber)
 		self.seek(cmt_offset+0x28)	
 		min_sversion=self.readInt32()
 		#Print.info(tabs + 'New RequiredSystemVersion = ' + str(min_sversion))
@@ -1645,7 +1645,7 @@ class Nca(File):
 		sdkversion=str(self.header.sdkVersion4)+'.'+str(self.header.sdkVersion3)+'.'+str(self.header.sdkVersion2)+'.'+str(self.header.sdkVersion1)	
 		return sdkversion
 
-	def verify(self,feed):	
+	def verify(self,feed,targetkg=False,endcheck=False,progress=False,bar=False):	
 		if feed == False:
 			feed=''
 		indent='    > '
@@ -1671,18 +1671,18 @@ class Nca(File):
 		rsapss = PKCS1_PSS.new(pubkey)
 		digest = SHA256.new(headdata)
 		verification=rsapss.verify(digest, sign1)
+		crypto1=self.header.getCryptoType()
+		crypto2=self.header.getCryptoType2()	
+		if crypto2>crypto1:
+			masterKeyRev=crypto2
+		if crypto2<=crypto1:	
+			masterKeyRev=crypto1		
+		currkg=masterKeyRev		
 		if verification == True:
 			message=(indent+self._path+arrow+'is PROPER');print(message);feed+=message+'\n'			
 			#print(hx(headdata))		
-			return True,False,self._path,feed
+			return True,False,self._path,feed,currkg
 		else:
-			crypto1=self.header.getCryptoType()
-			crypto2=self.header.getCryptoType2()	
-			if crypto2>crypto1:
-				masterKeyRev=crypto2
-			if crypto2<=crypto1:	
-				masterKeyRev=crypto1		
-			currkg=masterKeyRev
 			crypto = aes128.AESECB(Keys.keyAreaKey(Keys.getMasterKeyIndex(masterKeyRev), self.header.keyIndex))			
 			KB1L=self.header.getKB1L()
 			KB1L = crypto.decrypt(KB1L)
@@ -1705,13 +1705,17 @@ class Nca(File):
 						message=(tabs+'* '+"KEYGENERATION WAS CHANGED FROM "+str(orkg)+" TO "+str(currkg));print(message);feed+=message+'\n'		
 						message=(tabs+'* '+"Original titlerights id is -> "+(str(hx(tr)).upper())[2:-1]);print(message);feed+=message+'\n'		
 						message=(tabs+'* '+"Original titlekey is -> "+(str(hx(titlekey)).upper())[2:-1]);print(message);feed+=message+'\n'				
-					return True,orig_header,self._path,feed	
+					return True,orig_header,self._path,feed,orkg	
 				else:
 					message=(indent+self._path+arrow+'was MODIFIED');print(message);feed+=message+'\n'		
 					message=(tabs+'* '+"NOT VERIFIABLE COULD'VE BEEN TAMPERED WITH");print(message);feed+=message+'\n'			
-					return False,False,self._path,feed	
+					return False,False,self._path,feed,False	
 			else:
-				ver,kgchg,cardchange,headdata,orkg=self.restorehead_ntr()
+				if targetkg != False:
+					if self.header.contentType == Type.Content.META:
+						ver,kgchg,cardchange,headdata,orkg=self.verify_cnmt_withkg(targetkg)					
+				else:
+					ver,kgchg,cardchange,headdata,orkg=self.restorehead_ntr()				
 				if headdata != False:
 					orig_header=orig_header[0x00:0x200]+headdata+orig_header[0x400:]
 					#print(hx(orig_header))
@@ -1719,31 +1723,139 @@ class Nca(File):
 				else:
 					orig_header = False				
 				if ver == True:
-					message=(indent+self._path+arrow+'is PROPER');print(message);feed+=message+'\n'		
+					chkkg=currkg
+					if targetkg == False:
+						message=(indent+self._path+arrow+'is PROPER');print(message);feed+=message+'\n'	
+					else:
+						if progress != False:
+							message=(tabs+'* '+"CNMT FILE is PROPER");bar.write(message);feed+=message+'\n'	
+						else:
+							message=(tabs+'* '+"CNMT FILE is PROPER");print(message);feed+=message+'\n'					
 					if kgchg == True:
-						message=(tabs+'* '+"KEYGENERATION WAS CHANGED FROM "+str(orkg)+" TO "+str(currkg));print(message);feed+=message+'\n'	
+						if progress != False:
+							message=(tabs+'* '+"KEYGENERATION WAS CHANGED FROM "+str(orkg)+" TO "+str(currkg));bar.write(message);feed+=message+'\n'	
+						else:
+							message=(tabs+'* '+"KEYGENERATION WAS CHANGED FROM "+str(orkg)+" TO "+str(currkg));print(message);feed+=message+'\n'	
+						chkkg=orkg	
 					if cardchange == True:				
 						if self.header.getgamecard() != 0:
-							message=(tabs+'* '+"ISGAMECARD WAS CHANGED FROM 0 TO 1");print(message);feed+=message+'\n'	
+							if progress != False:
+								message=(tabs+'* '+"ISGAMECARD WAS CHANGED FROM 0 TO 1");bar.write(message);feed+=message+'\n'								
+							else:
+								message=(tabs+'* '+"ISGAMECARD WAS CHANGED FROM 0 TO 1");print(message);feed+=message+'\n'	
 						else:
-							message=(tabs+'* '+"ISGAMECARD WAS CHANGED FROM 1 TO 0");print(message);feed+=message+'\n'									
-					return True,orig_header,self._path,feed		
+							if progress != False:
+								message=(tabs+'* '+"ISGAMECARD WAS CHANGED FROM 1 TO 0");bar.write(message);feed+=message+'\n'								
+							else:						
+								message=(tabs+'* '+"ISGAMECARD WAS CHANGED FROM 1 TO 0");print(message);feed+=message+'\n'									
+					return True,orig_header,self._path,feed,chkkg		
 				else:
-					message=(indent+self._path+arrow+'was MODIFIED');print(message);feed+=message+'\n'		
-					message=(tabs+'* '+"NOT VERIFIABLE!!!");print(message);feed+=message+'\n'	
-					if self.header.contentType == Type.Content.META:
-						message=(tabs+'* '+"IF THE REST IS OK RSV WAS MODIFIED");print(message);feed+=message+'\n'	
-						message=(tabs+'  '+"> CHECKING INTERNAL HASHES:");print(message);feed+=message+'\n'
-						feed,correct=self.check_cnmt_hashes(feed)
+					if targetkg == False:
+						message=(indent+self._path+arrow+'needs RSV check');print(message);feed+=message+'\n'	
+						message=(tabs+'* '+"CHECKING INTERNAL HASHES");print(message);feed+=message+'\n'						
+						feed,correct=self.check_cnmt_hashes(feed)						
 						if correct == True:
-							message=(tabs+'* '+"NOTHING TO WORRY ABOUT");print(message);feed+=message+'\n'
+							message=(tabs+'* '+"INTERNAL HASHES MATCH");print(message);feed+=message+'\n'
 						if correct == False:
-							message=(tabs+'* '+"INTERNAL HASH MISSMATCH");print(message);feed+=message+'\n'							
-					return False,False,self._path,feed					
+							message=(tabs+'* '+"INTERNAL HASH MISSMATCH");print(message);feed+=message+'\n'	
+							message=(tabs+'* '+"BAD CNMT FILE!!!");print(message);feed+=message+'\n'	
+							return 'BADCNMT',False,self._path,feed,False							
+					else:	
+						if endcheck == False:
+							pass
+						elif endcheck == True:
+							message=(indent+self._path+arrow+'was MODIFIED');print(message);feed+=message+'\n'		
+							message=(tabs+'* '+"NOT VERIFIABLE!!!");print(message);feed+=message+'\n'							
+					return False,False,self._path,feed,False					
 			message=(indent+self._path+arrow+'was MODIFIED');print(message);feed+=message+'\n'			
 			message=(tabs+'* '+"NOT VERIFIABLE!!!");print(message);feed+=message+'\n'				
-			return False,False,self._path,feed	
-
+			return False,False,self._path,feed,False	
+			
+	def verify_cnmt_withkg(self,targetkg):	
+		targetkg=int(targetkg)	
+		sign1 = self.header.signature1		
+		self.header.seek(0x200)	
+		headdata = self.header.read(0x200)
+		card='01';card=bytes.fromhex(card)
+		eshop='00';eshop=bytes.fromhex(eshop)
+		#print(hx(headdata))
+		#Hex.dump(headdata)				
+		pubkey=RSA.RsaKey(n=nca_header_fixed_key_modulus, e=RSA_PUBLIC_EXPONENT)
+		rsapss = PKCS1_PSS.new(pubkey)
+		digest = SHA256.new(headdata)
+		verification=rsapss.verify(digest, sign1)	
+		crypto1=self.header.getCryptoType()
+		crypto2=self.header.getCryptoType2()	
+		if crypto2>crypto1:
+			masterKeyRev=crypto2
+		if crypto2<=crypto1:	
+			masterKeyRev=crypto1	
+		if	self.header.getgamecard() == 0:		
+			headdata2 = b''
+			headdata2=headdata[0x00:0x04]+eshop+headdata[0x05:]		
+			digest2 = SHA256.new(headdata2)	
+			verification2=rsapss.verify(digest2, sign1)
+			if verification2 == True:
+				return True,False,False,headdata2,masterKeyRev	
+			else:	
+				headdata2 = b''
+				headdata2=headdata[0x00:0x04]+card+headdata[0x05:]		
+				digest2 = SHA256.new(headdata2)	
+				verification2=rsapss.verify(digest2, sign1)	
+				if verification2 == True:
+					return True,False,True,headdata2,masterKeyRev					
+		else:
+			headdata2 = b''
+			headdata2=headdata[0x00:0x04]+eshop+headdata[0x05:]	
+			digest2 = SHA256.new(headdata2)
+			verification2=rsapss.verify(digest2, sign1)			
+			if verification2 == True:
+				return True,False,True,headdata2,masterKeyRev	
+			else:	
+				headdata2 = b''
+				headdata2=headdata[0x00:0x04]+card+headdata[0x05:]		
+				digest2 = SHA256.new(headdata2)	
+				verification2=rsapss.verify(digest2, sign1)	
+				if verification2 == True:
+					return True,False,False,headdata2,masterKeyRev					
+				
+		key = Keys.keyAreaKey(Keys.getMasterKeyIndex(masterKeyRev), self.header.keyIndex)				
+		crypto = aes128.AESECB(key)
+		encKeyBlock = self.header.getKeyBlock()
+		decKeyBlock = crypto.decrypt(encKeyBlock)				
+		newMasterKeyRev=targetkg
+		key = Keys.keyAreaKey(Keys.getMasterKeyIndex(newMasterKeyRev), self.header.keyIndex)				
+		crypto = aes128.AESECB(key)
+		reEncKeyBlock = crypto.encrypt(decKeyBlock)		
+		i=targetkg
+		if i<3:
+			crypto1='0'+str(i)
+			crypto2='00'
+		else:
+			crypto1='02'
+			crypto2='0'+str(i)	
+		crypto1=bytes.fromhex(crypto1);crypto2=bytes.fromhex(crypto2)				
+		headdata1 = b''				
+		headdata1=headdata[0x00:0x04]+card+headdata[0x05:0x06]+crypto1+headdata[0x07:0x20]+crypto2+headdata[0x21:0x100]+reEncKeyBlock+headdata[0x140:]
+		#print(hx(headdata1))
+		headdata2 = b''
+		headdata2=headdata[0x00:0x04]+eshop+headdata1[0x05:]	
+		#print(hx(headdata2))
+		digest1 = SHA256.new(headdata1)
+		digest2 = SHA256.new(headdata2)
+		verification1=rsapss.verify(digest1, sign1)		
+		verification2=rsapss.verify(digest2, sign1)	
+		if verification1 == True:
+			if	self.header.getgamecard() == 0:					
+				return True,True,True,headdata1,newMasterKeyRev
+			else:
+				return True,True,False,headdata1,newMasterKeyRev				
+		if verification2 == True:
+			if	self.header.getgamecard() == 0:					
+				return True,True,False,headdata2,newMasterKeyRev	
+			else:				
+				return True,True,True,headdata2,newMasterKeyRev						
+		return False,False,False,False,masterKeyRev	
 			
 	def check_cnmt_hashes(self,feed):		
 		sha=self.calc_pfs0_hash()
@@ -1780,7 +1892,7 @@ class Nca(File):
 			#print(hx(sha3))				
 			#print(hx(sha3_get))
 			correct=False			
-		return feed,correct		
+		return feed,correct			
 			
 	def restorehead_tr(self):	
 		sign1 = self.header.signature1	
@@ -1827,7 +1939,11 @@ class Nca(File):
 			if verification == True:
 				return True,False,titleKeyEnc,tr2,headdata2,masterKeyRev			
 			else:
+				nlist=list()
 				for i in range(9):
+					nlist.append(i)
+				sorted(nlist, key=int, reverse=True)		
+				for i in nlist:
 					if i<3:
 						crypto1='0'+str(i)
 						crypto2='00'
@@ -1905,13 +2021,20 @@ class Nca(File):
 				digest2 = SHA256.new(headdata2)	
 				verification2=rsapss.verify(digest2, sign1)	
 				if verification2 == True:
-					return True,False,False,headdata2,masterKeyRev					
-				
+					return True,False,False,headdata2,masterKeyRev
+				else:
+					pass
+		if self.header.contentType == Type.Content.META:
+			return False,False,False,False,masterKeyRev
 		key = Keys.keyAreaKey(Keys.getMasterKeyIndex(masterKeyRev), self.header.keyIndex)				
 		crypto = aes128.AESECB(key)
 		encKeyBlock = self.header.getKeyBlock()
-		decKeyBlock = crypto.decrypt(encKeyBlock)			
+		decKeyBlock = crypto.decrypt(encKeyBlock)	
+		nlist=list()
 		for i in range(9):
+			nlist.append(i)
+		sorted(nlist, key=int, reverse=True)		
+		for i in nlist:
 			if i<3:
 				crypto1='0'+str(i)
 				crypto2='00'
@@ -1922,7 +2045,6 @@ class Nca(File):
 			key = Keys.keyAreaKey(Keys.getMasterKeyIndex(newMasterKeyRev), self.header.keyIndex)				
 			crypto = aes128.AESECB(key)
 			reEncKeyBlock = crypto.encrypt(decKeyBlock)				
-
 			crypto1=bytes.fromhex(crypto1);crypto2=bytes.fromhex(crypto2)				
 			headdata1 = b''				
 			headdata1=headdata[0x00:0x04]+card+headdata[0x05:0x06]+crypto1+headdata[0x07:0x20]+crypto2+headdata[0x21:0x100]+reEncKeyBlock+headdata[0x140:]
@@ -1930,21 +2052,20 @@ class Nca(File):
 			headdata2 = b''
 			headdata2=headdata[0x00:0x04]+eshop+headdata1[0x05:]	
 			#print(hx(headdata2))
-			digest1 = SHA256.new(headdata1)
-			digest2 = SHA256.new(headdata2)
-			verification1=rsapss.verify(digest1, sign1)		
-			verification2=rsapss.verify(digest2, sign1)	
-			if verification1 == True:
-				if	self.header.getgamecard() == 0:					
-					return True,True,True,headdata1,newMasterKeyRev
-				else:
-					return True,True,False,headdata1,newMasterKeyRev				
-			if verification2 == True:
-				if	self.header.getgamecard() == 0:					
-					return True,True,False,headdata2,newMasterKeyRev	
-				else:				
-					return True,True,True,headdata2,newMasterKeyRev						
+			if self.header.contentType != Type.Content.META: 
+				digest1 = SHA256.new(headdata1)
+				digest2 = SHA256.new(headdata2)
+				verification1=rsapss.verify(digest1, sign1)		
+				verification2=rsapss.verify(digest2, sign1)	
+				if verification1 == True:
+					if	self.header.getgamecard() == 0:					
+						return True,True,True,headdata1,newMasterKeyRev
+					else:
+						return True,True,False,headdata1,newMasterKeyRev				
+				if verification2 == True:
+					if	self.header.getgamecard() == 0:					
+						return True,True,False,headdata2,newMasterKeyRev	
+					else:				
+						return True,True,True,headdata2,newMasterKeyRev	       
 		return False,False,False,False,masterKeyRev	
-
-
 		

@@ -216,6 +216,7 @@ call :logo
 echo ********************************************************
 echo SHOW NACP DATA FROM CONTROL NCA IN NSP\XCI
 echo ********************************************************
+echo (Implementation of 0Liam's NACP library)        
 %pycommand% "%nut%" --Read_nacp "%targt%"
 echo.
 ECHO ********************************************************

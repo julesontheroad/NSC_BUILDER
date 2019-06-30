@@ -2979,7 +2979,7 @@ class Nsp(Pfs0):
 # Change MKREV_NCA
 #///////////////////////////////////////////////////						
 		
-	def change_mkrev_nca(self, nca, newMasterKeyRev):
+	def change_mkrev_nca(self, nca, newMasterKeyRev,silent=False):
 	
 		indent = 2
 		tabs = '\t' * indent
@@ -2995,17 +2995,20 @@ class Nsp(Pfs0):
 
 		if type(nca) == Nca:
 			if nca.header.getCryptoType2() != newMasterKeyRev:
-				Print.info(tabs + '-----------------------------------')
-				Print.info(tabs + 'Changing keygeneration from %d to %s' % ( nca.header.getCryptoType2(), str(newMasterKeyRev)))
-				Print.info(tabs + '-----------------------------------')
+				if silent == False:
+					Print.info(tabs + '-----------------------------------')
+					Print.info(tabs + 'Changing keygeneration from %d to %s' % ( nca.header.getCryptoType2(), str(newMasterKeyRev)))
+					Print.info(tabs + '-----------------------------------')
 				encKeyBlock = nca.header.getKeyBlock()
 				if sum(encKeyBlock) != 0:
 					key = Keys.keyAreaKey(Keys.getMasterKeyIndex(masterKeyRev), nca.header.keyIndex)
-					Print.info(tabs2 + '+ decrypting with %s (%d, %d)' % (str(hx(key)), Keys.getMasterKeyIndex(masterKeyRev), nca.header.keyIndex))
+					if silent == False:
+						Print.info(tabs2 + '+ decrypting with %s (%d, %d)' % (str(hx(key)), Keys.getMasterKeyIndex(masterKeyRev), nca.header.keyIndex))
 					crypto = aes128.AESECB(key)
 					decKeyBlock = crypto.decrypt(encKeyBlock)
 					key = Keys.keyAreaKey(Keys.getMasterKeyIndex(newMasterKeyRev), nca.header.keyIndex)
-					Print.info(tabs2 + '+ encrypting with %s (%d, %d)' % (str(hx(key)), Keys.getMasterKeyIndex(newMasterKeyRev), nca.header.keyIndex))
+					if silent == False:
+						Print.info(tabs2 + '+ encrypting with %s (%d, %d)' % (str(hx(key)), Keys.getMasterKeyIndex(newMasterKeyRev), nca.header.keyIndex))
 					crypto = aes128.AESECB(key)
 					reEncKeyBlock = crypto.encrypt(decKeyBlock)
 					nca.header.setKeyBlock(reEncKeyBlock)
@@ -3017,8 +3020,9 @@ class Nsp(Pfs0):
 					nca.header.setCryptoType2(0)					
 				if newMasterKeyRev < 2:
 					nca.header.setCryptoType(newMasterKeyRev)
-					nca.header.setCryptoType2(0)	
-				Print.info(tabs2 + 'DONE')		
+					nca.header.setCryptoType2(0)
+				if silent == False:	
+					Print.info(tabs2 + 'DONE')		
 
 #///////////////////////////////////////////////////								
 #PATCH META FUNCTION
@@ -6605,32 +6609,159 @@ class Nsp(Pfs0):
 			message='\nVERDICT: NSP FILE IS CORRECT\n';print(message);feed+=message
 		return verdict,feed			
 			
-	def verify_sig(self,feed):	
+	def verify_sig(self,feed,tmpfolder):	
+		hlisthash=False
 		if feed == False:
 			feed=''	
 		verdict=True	
 		headerlist=list()
+		keygenerationlist=list()
 		message='****************';print(message);feed+='\n'+message+'\n'
 		message='SIGNATURE 1 TEST';print(message);feed+=message+'\n'
 		message='****************';print(message);feed+=message+'\n'									
 		for f in self:			
 			if type(f) == Nca and f.header.contentType != Type.Content.META:
 				message=(str(f.header.titleId)+' - '+str(f.header.contentType));print(message);feed+=message+'\n'											
-				verify,origheader,ncaname,feed=f.verify(feed)		
-				headerlist.append([ncaname,origheader])		
+				verify,origheader,ncaname,feed,origkg=f.verify(feed)		
+				headerlist.append([ncaname,origheader,hlisthash])		
+				keygenerationlist.append([ncaname,origkg])
 				if verdict == True:
 					verdict=verify
-				message='';print(message);feed+=message+'\n'						
-			elif type(f) == Nca:
-				message=(str(f.header.titleId)+' - '+str(f.header.contentType));print(message);feed+=message+'\n'												
-				verify,origheader,ncaname,feed=f.verify(feed)	
-				headerlist.append([ncaname,origheader])	
+				message='';print(message);feed+=message+'\n'	
+		for f in self:	
+			if type(f) == Nca and f.header.contentType == Type.Content.META:
+				meta_nca=f._path
+				f.rewind();meta_dat=f.read()
+				message=(str(f.header.titleId)+' - '+str(f.header.contentType));print(message);feed+=message+'\n'	
+				targetkg,minrsv=self.find_addecuatekg(meta_nca,keygenerationlist)
+				verify,origheader,ncaname,feed,origkg=f.verify(feed)
+				#print(targetkg)				
+				if verify == False:
+					tempfile=os.path.join(tmpfolder,meta_nca)
+					if not os.path.exists(tmpfolder):
+						os.makedirs(tmpfolder)	
+					fp = open(tempfile, 'w+b')
+					fp.write(meta_dat);fp.flush();fp.close()
+					kglist=sq_tools.kgstring()
+					numb=0;topkg=len(kglist)
+					for kg in kglist:
+						if topkg >= targetkg:	
+							for verNumber in kg:
+								numb+=1
+					t = tqdm(total=numb, unit='RSV', unit_scale=True, leave=False)					
+					for kg in kglist:
+						topkg-=1
+						#print(topkg)
+						if topkg >= targetkg:
+							c=0;rsv_endcheck=False
+							for verNumber in kg:
+								c+=1
+								if topkg == targetkg:
+									if c == len(kg):
+										rsv_endcheck=True
+								#print(verNumber)
+								fp = Fs.Nca(tempfile, 'r+b')
+								fp.write_req_system(verNumber)
+								fp.flush()
+								fp.close()
+								############################
+								fp = Fs.Nca(tempfile, 'r+b')
+								sha=fp.calc_pfs0_hash()
+								fp.flush()
+								fp.close()
+								fp = Fs.Nca(tempfile, 'r+b')
+								fp.set_pfs0_hash(sha)
+								fp.flush()
+								fp.close()
+								############################
+								fp = Fs.Nca(tempfile, 'r+b')
+								sha2=fp.calc_htable_hash()
+								fp.flush()
+								fp.close()						
+								fp = Fs.Nca(tempfile, 'r+b')
+								fp.header.set_htable_hash(sha2)
+								fp.flush()
+								fp.close()
+								########################
+								fp = Fs.Nca(tempfile, 'r+b')
+								sha3=fp.header.calculate_hblock_hash()
+								fp.flush()
+								fp.close()						
+								fp = Fs.Nca(tempfile, 'r+b')
+								fp.header.set_hblock_hash(sha3)
+								fp.flush()
+								fp.close()	
+								fp = Fs.Nca(tempfile, 'r+b')		
+								progress=True
+								verify,origheader,ncapath,feed,origkg=fp.verify(feed,targetkg,rsv_endcheck,progress,t)	
+								t.update(1)								
+								if verify == True:
+									t.close()	
+									message=(tabs+'* '+"RSV WAS CHANGED FROM "+str(verNumber)+" TO "+str(minrsv));print(message);feed+=message+'\n'	
+									if origheader != False:	
+										hlisthash=True;i=0
+										for data in iter(lambda: fp.read(int(32768)), ""):											
+											if i==0:
+												sha0=sha256()
+												sha0.update(origheader)	
+												i+=1
+												fp.flush()												
+												fp.seek(0xC00)
+											else:		
+												sha0.update(data)								
+												fp.flush()
+												if not data:				
+													break	
+									break
+						else:break				
+				if hlisthash == True:
+					sha0=sha0.hexdigest()
+					hlisthash=sha0
+				headerlist.append([ncaname,origheader,hlisthash])	
 				message='';print(message);feed+=message+'\n'	
 		if verdict == False:
 			message=("VERDICT: NSP FILE COULD'VE BEEN TAMPERED WITH");print(message);feed+=message+'\n'												
 		if verdict == True:	
 			message=('VERDICT: NSP FILE IS SAFE');print(message);feed+=message+'\n'				
 		return 	verdict,headerlist,feed			
+
+
+
+	def find_addecuatekg(self,ncameta,keygenerationlist):
+		ncalist=list()
+		for nca in self:
+			if type(nca) == Nca:
+				if 	str(nca.header.contentType) == 'Content.META':	
+					if nca._path == ncameta:
+						for f in nca:
+							for cnmt in f:	
+								nca.rewind()
+								cnmt.rewind()						
+								titleid=cnmt.readInt64()
+								titleversion = cnmt.read(0x4)					
+								cnmt.rewind()
+								cnmt.seek(0xE)
+								offset=cnmt.readInt16()
+								content_entries=cnmt.readInt16()
+								cnmt.seek(0x20)
+								original_ID=cnmt.readInt64()								
+								min_sversion=cnmt.readInt32()								
+								cnmt.seek(0x20+offset)			
+								for i in range(content_entries):
+									vhash = cnmt.read(0x20)
+									NcaId = cnmt.read(0x10)
+									ncaname=(str(hx(NcaId)))[2:-1]+'.nca'
+									for i in range(len(keygenerationlist)):
+										if ncaname == keygenerationlist[i][0]:
+											if keygenerationlist[i][1] != False:
+												return keygenerationlist[i][1],min_sversion
+									else:
+										size = cnmt.read(0x6)
+										size=int.from_bytes(size, byteorder='little')
+										ncatype = cnmt.readInt8()
+										unknown = cnmt.read(0x1)
+		return False,False		
+
 
 	def verify_hash_nca(self,buffer,headerlist,didverify,feed):	
 		verdict=True		
@@ -6645,6 +6776,7 @@ class Nsp(Pfs0):
 				for i in range(len(headerlist)):
 					if str(f._path)==headerlist[i][0]:
 						origheader=headerlist[i][1]
+						listedhash=headerlist[i][2]
 						break			
 				message=(str(f.header.titleId)+' - '+str(f.header.contentType));print(message);feed+=message+'\n'
 				ncasize=f.header.size						
@@ -6658,7 +6790,7 @@ class Nsp(Pfs0):
 						sha=sha256()
 						f.seek(0xC00)
 						sha.update(rawheader)
-						if origheader != False:
+						if origheader != False and listedhash == False:
 							sha0=sha256()
 							sha0.update(origheader)	
 						i+=1
@@ -6666,7 +6798,7 @@ class Nsp(Pfs0):
 						f.flush()
 					else:		
 						sha.update(data)
-						if origheader != False:
+						if origheader != False and listedhash == False:
 							sha0.update(data)								
 						t.update(len(data))
 						f.flush()
@@ -6674,7 +6806,9 @@ class Nsp(Pfs0):
 							break						
 				t.close()	
 				sha=sha.hexdigest()	
-				if origheader != False:
+				if listedhash != False:
+					sha0=listedhash
+				elif origheader != False:
 					sha0=sha0.hexdigest()						
 				message=('  - File name: '+f._path);print(message);feed+=message+'\n'
 				message=('  - SHA256: '+sha);print(message);feed+=message+'\n'
