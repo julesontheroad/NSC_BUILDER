@@ -1,2 +1,5 @@
-
 py/ztools/keys.txt
+py/INFO
+py/NSCB_output
+py/ztools/Fs/__pycache__
+py/ztools/lib/__pycache__
