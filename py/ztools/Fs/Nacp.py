@@ -123,7 +123,7 @@ class Nacp(File):
 		self.languages[i].publisher = self.languages[i].publisher.split(b'\0', 1)[0].decode('utf-8')
 		return self.languages[i].publisher			
 		
-	def par_getNameandPub(self, data):
+	def par_getNameandPub(self, data, feed =''):
 		Langue = list()	
 		Langue = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14]	
 		for i in Langue:
@@ -161,12 +161,13 @@ class Nacp(File):
 					kakasi.setMode("s", True)
 					kakasi.setMode("E", "a")
 					kakasi.setMode("a", None)
-					kakasi.setMode("C", False)				
-				print('...............................')					
-				print('Language: '+ str(NacpLanguageType(i)).replace('NacpLanguageType.', ''))
-				print('...............................')				
-				print('- Name: '+ title)
-				print('- Publisher: '+ editor)		
+					kakasi.setMode("C", False)			
+				message=('...............................');print(message);feed+=message+'\n'
+				message=('Language: '+ str(NacpLanguageType(i)).replace('NacpLanguageType.', ''));print(message);feed+=message+'\n'				
+				message=('...............................');print(message);feed+=message+'\n'					
+				message=('- Name: '+ title);print(message);feed+=message+'\n'					
+				message=('- Publisher: '+ editor);print(message);feed+=message+'\n'
+		return feed			
 		
 		
 	def getIsbn(self):
@@ -174,12 +175,13 @@ class Nacp(File):
 		self.isbn = self.read(0x24).split(b'\0', 1)[0].decode('utf-8')
 		return self.isbn
 		
-	def par_Isbn(self, data):
+	def par_Isbn(self, data, feed =''):
 		isbn=data.split(b'\0', 1)[0].decode('utf-8')
 		if isbn != '':
-			print('- Isbn: ' + str(isbn))
+			message=('- Isbn: ' + str(isbn));print(message);feed+=message+'\n'		
+		return feed			
 		
-	def par_getStartupUserAccount(self, data):
+	def par_getStartupUserAccount(self, data, feed =''):
 		b=data
 		if b == 0:
 			StartupUserAccount = 'None'
@@ -189,7 +191,8 @@ class Nacp(File):
 			StartupUserAccount = 'RequiredWithNetworkServiceAccountAvailable'
 		else:
 			StartupUserAccount = 'Unknown'
-		print('- StartupUserAccount: ' + str(StartupUserAccount))
+		message=('- StartupUserAccount: ' + str(StartupUserAccount));print(message);feed+=message+'\n'				
+		return feed			
 		
 		
 	def getStartupUserAccount(self):
@@ -205,7 +208,7 @@ class Nacp(File):
 			self.startupUserAccount = 'Unknown'
 		return self.startupUserAccount
 
-	def par_getUserAccountSwitchLock(self, data):
+	def par_getUserAccountSwitchLock(self, data, feed =''):
 		b=data
 		if b == 0:
 			userAccountSwitchLock = 'Disable'
@@ -213,7 +216,8 @@ class Nacp(File):
 			userAccountSwitchLock = 'Enable'
 		else:
 			userAccountSwitchLock = 'Unknown'
-		print('- UserAccountSwitchLock: ' + str(userAccountSwitchLock))		
+		message=('- UserAccountSwitchLock: ' + str(userAccountSwitchLock));print(message);feed+=message+'\n'		
+		return feed			
 		
 	def getUserAccountSwitchLock(self):
 		self.seek(0x3026)
@@ -226,7 +230,7 @@ class Nacp(File):
 			self.userAccountSwitchLock = 'Unknown'
 		return self.userAccountSwitchLock
 		
-	def par_getAddOnContentRegistrationType(self, data):
+	def par_getAddOnContentRegistrationType(self, data, feed =''):
 		b=data
 		if b == 0:
 			addOnContentRegistrationType = 'AllOnLaunch'
@@ -234,7 +238,8 @@ class Nacp(File):
 			addOnContentRegistrationType = 'OnDemand'
 		else:
 			addOnContentRegistrationType = 'Unknown'
-		print('- AddOnContentRegistrationType: ' + str(addOnContentRegistrationType))			
+		message=('- AddOnContentRegistrationType: ' + str(addOnContentRegistrationType));print(message);feed+=message+'\n'	
+		return feed			
 		
 		
 	def getAddOnContentRegistrationType(self):
@@ -248,7 +253,7 @@ class Nacp(File):
 			self.addOnContentRegistrationType = 'Unknown'
 		return self.addOnContentRegistrationType
 		
-	def par_getContentType(self, data):
+	def par_getContentType(self, data, feed =''):
 		b=data
 		if b == 0:
 			content_type = 'False'
@@ -258,7 +263,8 @@ class Nacp(File):
 			content_type = 'RetailInteractiveDisplay'
 		else:
 			content_type = 'Unknown'
-		print('- IsDemo: ' + str(content_type))			
+		message=('- IsDemo: ' + str(content_type));print(message);feed+=message+'\n'	
+		return feed			
 		
 		
 	def getAttribute(self):
@@ -274,7 +280,7 @@ class Nacp(File):
 			self.attribute = 'Unknown'
 		return self.attribute
 		
-	def par_getParentalControl(self, data):
+	def par_getParentalControl(self, data, feed =''):
 		b=data
 		if b == 0:
 			parentalControl = 'None'
@@ -282,7 +288,8 @@ class Nacp(File):
 			parentalControl = 'FreeCommunication'
 		else:
 			parentalControl = 'Unknown'
-		print('- ParentalControl: ' + str(parentalControl))			
+		message=('- ParentalControl: ' + str(parentalControl));print(message);feed+=message+'\n'				
+		return feed			
 		
 		
 	def getParentalControl(self):
@@ -296,7 +303,7 @@ class Nacp(File):
 			self.parentalControl = 'Unknown'
 		return self.parentalControl
 		
-	def par_getScreenshot(self, data):
+	def par_getScreenshot(self, data, feed =''):
 		b=data
 		if b == 0:
 			screenshot = 'Allowed'
@@ -304,7 +311,8 @@ class Nacp(File):
 			screenshot = 'Denied'
 		else:
 			screenshot = 'Unknown'
-		print('- Screenshots: ' + str(screenshot))				
+		message=('- Screenshots: ' + str(screenshot));print(message);feed+=message+'\n'
+		return feed			
 		
 		
 	def getScreenshot(self):
@@ -318,7 +326,7 @@ class Nacp(File):
 			self.screenshot = 'Unknown'
 		return self.screenshot
 
-	def par_getVideoCapture(self, data):
+	def par_getVideoCapture(self, data, feed =''):
 		b=data
 		if b == 0:
 			videoCapture = 'Disabled'
@@ -328,7 +336,8 @@ class Nacp(File):
 			videoCapture = 'Enabled'
 		else:
 			videoCapture = 'Unknown'
-		print('- VideoCapture: ' + str(videoCapture))			
+		message=('- VideoCapture: ' + str(videoCapture));print(message);feed+=message+'\n'	
+		return feed			
 		
 	def getVideoCapture(self):
 		self.seek(0x3035)
@@ -343,7 +352,7 @@ class Nacp(File):
 			self.videoCapture = 'Unknown'
 		return self.videoCapture
 		
-	def par_dataLossConfirmation(self, data):
+	def par_dataLossConfirmation(self, data, feed =''):
 		b=data
 		if b == 0:
 			dataLossConfirmation = 'None'
@@ -351,7 +360,8 @@ class Nacp(File):
 			dataLossConfirmation = 'Required'
 		else:
 			dataLossConfirmation = 'Unknown'
-		print('- DataLossConfirmation: ' + str(dataLossConfirmation))		
+		message=('- DataLossConfirmation: ' + str(dataLossConfirmation));print(message);feed+=message+'\n'
+		return feed			
 		
 	def getDataLossConfirmation(self):
 		self.seek(0x3036)
@@ -365,7 +375,7 @@ class Nacp(File):
 		return self.dataLossConfirmation
 		
 
-	def par_getPlayLogPolicy(self, data):
+	def par_getPlayLogPolicy(self, data, feed =''):
 		b=data
 		if b == 0:
 			playLogPolicy = 'All'
@@ -375,7 +385,8 @@ class Nacp(File):
 			playLogPolicy = 'None'
 		else:
 			playLogPolicy = 'Unknown'
-		print('- PlayLogPolicy: ' + str(playLogPolicy))		
+		message=('- PlayLogPolicy: ' + str(playLogPolicy));print(message);feed+=message+'\n'
+		return feed			
 
 	def getPlayLogPolicy(self):
 		self.seek(0x3037)
@@ -390,16 +401,17 @@ class Nacp(File):
 			self.playLogPolicy = 'Unknown'
 		return self.playLogPolicy
 		
-	def par_getPresenceGroupId(self, data):
+	def par_getPresenceGroupId(self, data, feed =''):
 		b=data
-		print('- PresenceGroupId: ' + '0x' + hex(data).replace('0x', '').zfill(16))			
+		message=('- PresenceGroupId: ' + '0x' + hex(data).replace('0x', '').zfill(16));print(message);feed+=message+'\n'
+		return feed			
 
 	def getPresenceGroupId(self):
 		self.seek(0x3038)
 		self.presenceGroupId = self.readInt64('little')
 		return self.presenceGroupId	
 
-	def par_getRatingAge(self,data,i):
+	def par_getRatingAge(self,data,i,feed=''):
 		b=data
 		if b == 0:
 			age = '0'
@@ -431,8 +443,9 @@ class Nacp(File):
 			age = '18'
 		else:
 			age = 'Unknown'
-		if age != 'Unknown':			
-			print('- '+str(OrganizationType(i)).replace('OrganizationType.', '') + ' Rating: '+ str(age))	
+		if age != 'Unknown':
+			message=('- '+str(OrganizationType(i)).replace('OrganizationType.', '') + ' Rating: '+ str(age));print(message);feed+=message+'\n'
+		return feed				
 		
 	def getRatingAge(self, i):
 		self.seek(i + 0x3040)
@@ -469,9 +482,10 @@ class Nacp(File):
 			self.ages[i].age = 'Unknown'
 		return self.ages[i].age
 
-	def par_getDisplayVersion(self, data):
+	def par_getDisplayVersion(self, data, feed =''):
 		b=data
-		print('- Build Number: ' + data.split(b'\0', 1)[0].decode('utf-8'))			
+		message=('- Build Number: ' + data.split(b'\0', 1)[0].decode('utf-8'));print(message);feed+=message+'\n'
+		return feed			
 		
 	def getDisplayVersion(self):
 		self.seek(0x3060)
@@ -479,109 +493,119 @@ class Nacp(File):
 		self.displayVersion = self.displayVersion.split(b'\0', 1)[0].decode('utf-8')
 		return self.displayVersion
 
-	def par_getAddOnContentBaseId(self, data):
+	def par_getAddOnContentBaseId(self, data, feed =''):
 		b=data
-		print('- AddOnContentBaseId: ' + '0x' + (hex(data).replace('0x', '').zfill(16)).upper())
+		message=('- AddOnContentBaseId: ' + '0x' + (hex(data).replace('0x', '').zfill(16)).upper());print(message);feed+=message+'\n'
+		return feed			
 		
 	def getAddOnContentBaseId(self):
 		self.seek(0x3070)
 		self.addOnContentBaseId = self.readInt64('little')
 		return self.addOnContentBaseId
 
-	def par_getSaveDataOwnerId(self, data):
+	def par_getSaveDataOwnerId(self, data, feed =''):
 		b=data
-		print('- SaveDataOwnerId: ' + '0x' + (hex(data).replace('0x', '').zfill(16)).upper())
+		message=('- SaveDataOwnerId: ' + '0x' + (hex(data).replace('0x', '').zfill(16)).upper());print(message);feed+=message+'\n'
+		return feed			
 		
 	def getSaveDataOwnerId(self):
 		self.seek(0x3078)
 		self.saveDataOwnerId = self.readInt64('little')
 		return self.saveDataOwnerId
 
-	def par_getUserAccountSaveDataSize(self, data):
+	def par_getUserAccountSaveDataSize(self, data, feed =''):
 		b=data
-		print('- UserAccountSaveDataSize: ' + '0x' + (hex(data).replace('0x', '').zfill(16)).upper())		
+		message=('- UserAccountSaveDataSize: ' + '0x' + (hex(data).replace('0x', '').zfill(16)).upper());print(message);feed+=message+'\n'				
+		return feed			
 		
 	def getUserAccountSaveDataSize(self):
 		self.seek(0x3080)
 		self.userAccountSaveDataSize = self.readInt64('little')
 		return self.userAccountSaveDataSize
 
-	def par_getUserAccountSaveDataJournalSize(self, data):
+	def par_getUserAccountSaveDataJournalSize(self, data, feed =''):
 		b=data
-		print('- UserAccountSaveDataJournalSize: ' + '0x' + (hex(data).replace('0x', '').zfill(16)).upper())		
+		message=('- UserAccountSaveDataJournalSize: ' + '0x' + (hex(data).replace('0x', '').zfill(16)).upper());print(message);feed+=message+'\n'				
+		return feed			
 	
 	def getUserAccountSaveDataJournalSize(self):
 		self.seek(0x3088)
 		self.userAccountSaveDataJournalSize = self.readInt64('little')
 		return self.userAccountSaveDataJournalSize
 
-	def par_getDeviceSaveDataSize(self, data):
+	def par_getDeviceSaveDataSize(self, data, feed =''):
 		b=data
 		if data==0:
 			pass
-		else:		
-			print('- DeviceSaveDataSize: ' + '0x' + (hex(data).replace('0x', '').zfill(16)).upper())				
+		else:
+			message=('- DeviceSaveDataSize: ' + '0x' + (hex(data).replace('0x', '').zfill(16)).upper());print(message);feed+=message+'\n'
+		return feed				
 		
 	def getDeviceSaveDataSize(self):
 		self.seek(0x3090)
 		self.deviceSaveDataSize = self.readInt64('little')
 		return self.deviceSaveDataSize
 
-	def par_getDeviceSaveDataJournalSize(self, data):
+	def par_getDeviceSaveDataJournalSize(self, data, feed =''):
 		b=data
 		if data==0:
 			pass
-		else:		
-			print('- DeviceSaveDataJournalSize: ' + '0x' + (hex(data).replace('0x', '').zfill(16)).upper())					
+		else:	
+			message=('- DeviceSaveDataJournalSize: ' + '0x' + (hex(data).replace('0x', '').zfill(16)).upper());print(message);feed+=message+'\n'			
+		return feed				
 		
 	def getDeviceSaveDataJournalSize(self):
 		self.seek(0x3098)
 		self.deviceSaveDataJournalSize = self.readInt64('little')
 		return self.deviceSaveDataJournalSize
 	
-	def par_getBcatDeliveryCacheStorageSize(self, data):
+	def par_getBcatDeliveryCacheStorageSize(self, data, feed =''):
 		b=data
 		if data==0:
 			pass
 		else:
-			print('- BcatDeliveryCacheStorageSize: ' + '0x' + (hex(data).replace('0x', '').zfill(16)).upper())					
+			message=('- BcatDeliveryCacheStorageSize: ' + '0x' + (hex(data).replace('0x', '').zfill(16)).upper());print(message);feed+=message+'\n'					
+		return feed				
 
 	def getBcatDeliveryCacheStorageSize(self):
 		self.seek(0x30A0)
 		self.bcatDeliveryCacheStorageSize = self.readInt64('little')
 		return self.bcatDeliveryCacheStorageSize
 		
-	def par_getApplicationErrorCodeCategory(self, data):
+	def par_getApplicationErrorCodeCategory(self, data, feed =''):
 		b=data
 		applicationErrorCodeCategory = data.split(b'\0', 1)[0].decode('utf-8')
 		if applicationErrorCodeCategory == '':
 			pass	
-		else:			
-			print('- ApplicationErrorCodeCategory: ' + applicationErrorCodeCategory)					
+		else:	
+			message=('- ApplicationErrorCodeCategory: ' + applicationErrorCodeCategory);print(message);feed+=message+'\n'
+		return feed				
 		
 	def getApplicationErrorCodeCategory(self):
 		self.seek(0x30A8)
 		self.applicationErrorCodeCategory = self.read(0x7).split(b'\0', 1)[0].decode('utf-8')
 		return self.applicationErrorCodeCategory
 		
-	def par_getLocalCommunicationId(self, data):
+	def par_getLocalCommunicationId(self, data, feed =''):
 		b=data
-		print('- LocalCommunicationId: ' + '0x' + (hex(data).replace('0x', '').zfill(16)).upper())					
+		message=('- LocalCommunicationId: ' + '0x' + (hex(data).replace('0x', '').zfill(16)).upper());print(message);feed+=message+'\n'
+		return feed			
 		
 	def getLocalCommunicationId(self):
 		self.seek(0x30B0)
 		self.localCommunicationId = self.readInt64('little')
 		return self.localCommunicationId
 
-	def par_getLogoType(self, data):
+	def par_getLogoType(self, data, feed =''):
 		b=data
 		if b == 0:
 			logoType = 'LicensedByNintendo'
 		elif b == 2:
 			logoType = 'Nintendo'
 		else:
-			logoType = 'Unknown'		
-		print('- LogoType: ' + logoType)					
+			logoType = 'Unknown'
+		message=('- LogoType: ' + logoType);print(message);feed+=message+'\n'		
+		return feed			
 				
 	def getLogoType(self):
 		self.seek(0x30F0)
@@ -594,15 +618,16 @@ class Nacp(File):
 			self.logoType = 'Unknown'
 		return self.logoType
 
-	def par_getLogoHandling(self, data):
+	def par_getLogoHandling(self, data, feed =''):
 		b=data
 		if b == 0:
 			logoHandling = 'Auto'
 		elif b == 1:
 			logoHandling = 'Manual'
 		else:
-			logoHandling = 'Unknown'	
-		print('- LogoHandling: ' + logoHandling)				
+			logoHandling = 'Unknown'
+		message=('- LogoHandling: ' + logoHandling);print(message);feed+=message+'\n'				
+		return feed			
 		
 	def getLogoHandling(self):
 		self.seek(0x30F1)
@@ -615,7 +640,7 @@ class Nacp(File):
 			self.logoHandling = 'Unknown'
 		return self.logoHandling
 		
-	def par_getRuntimeAddOnContentInstall(self, data):
+	def par_getRuntimeAddOnContentInstall(self, data, feed =''):
 		b=data
 		if b == 0:
 			runtimeAddOnContentInstall = 'Deny'
@@ -623,7 +648,8 @@ class Nacp(File):
 			runtimeAddOnContentInstall = 'AllowAppend'
 		else:
 			runtimeAddOnContentInstall = 'Unknown'
-		print('- RuntimeAddOnContentInstall: ' + runtimeAddOnContentInstall)		
+		message=('- RuntimeAddOnContentInstall: ' + runtimeAddOnContentInstall);print(message);feed+=message+'\n'			
+		return feed			
 		
 	def getRuntimeAddOnContentInstall(self):
 		self.seek(0x30F2)
@@ -636,7 +662,7 @@ class Nacp(File):
 			self.runtimeAddOnContentInstall = 'Unknown'
 		return self.runtimeAddOnContentInstall
 		
-	def par_getCrashReport(self, data):
+	def par_getCrashReport(self, data, feed =''):
 		b=data
 		if b == 0:
 			crashReport = 'Deny'
@@ -644,7 +670,8 @@ class Nacp(File):
 			crashReport = 'Allow'
 		else:
 			crashReport = 'Unknown'
-		print('- CrashReport: ' + crashReport)		
+		message=('- CrashReport: ' + crashReport);print(message);feed+=message+'\n'
+		return feed			
 
 	def getCrashReport(self):
 		self.seek(0x30F6)
@@ -657,7 +684,7 @@ class Nacp(File):
 			self.crashReport = 'Unknown'
 		return self.crashReport
 
-	def par_getHdcp(self, data):
+	def par_getHdcp(self, data, feed =''):
 		b=data
 		if b == 0:
 			hdcp = 'None'
@@ -665,7 +692,8 @@ class Nacp(File):
 			hdcp = 'Required'
 		else:
 			hdcp = 'Unknown'
-		print('- HDCP: ' + hdcp)			
+		message=('- HDCP: ' + hdcp);print(message);feed+=message+'\n'		
+		return feed			
 		
 	def getHdcp(self):
 		self.seek(0x30F7)
@@ -678,110 +706,120 @@ class Nacp(File):
 			self.hdcp = 'Unknown'
 		return self.hdcp
 		
-	def par_getSeedForPseudoDeviceId(self, data):
-		print('- SeedForPseudoDeviceId: ' + '0x' + (hex(data).replace('0x', '').zfill(16)).upper())					
+	def par_getSeedForPseudoDeviceId(self, data, feed =''):
+		message=('- SeedForPseudoDeviceId: ' + '0x' + (hex(data).replace('0x', '').zfill(16)).upper());print(message);feed+=message+'\n'				
+		return feed			
 
 	def getSeedForPseudoDeviceId(self):
 		self.seek(0x30F8)
 		self.seedForPseudoDeviceId = self.readInt64('little')
 		return self.seedForPseudoDeviceId
 		
-	def par_getBcatPassphrase(self, data):
+	def par_getBcatPassphrase(self, data, feed =''):
 		bcatPassphrase = data.split(b'\0', 1)[0].decode('utf-8')		
 		if bcatPassphrase == 0:
 			pass
 		elif str(bcatPassphrase) == '':
 			pass
 		else:		
-			print('- BcatPassphrase: ' + bcatPassphrase)					
+			message=('- BcatPassphrase: ' + bcatPassphrase);print(message);feed+=message+'\n'				
+		return feed				
 
 	def getBcatPassphrase(self):
 		self.seek(0x3100)
 		self.bcatPassphrase = self.read(0x40).split(b'\0', 1)[0].decode('utf-8')
 		return self.bcatPassphrase
 	
-	def par_UserAccountSaveDataSizeMax(self, data):
+	def par_UserAccountSaveDataSizeMax(self, data, feed =''):
 		if data == 0:
 			pass	
 		else:
-			print('- UserAccountSaveDataSizeMax: ' + '0x' + (hex(data).replace('0x', '').zfill(16)).upper())						
+			message=('- UserAccountSaveDataSizeMax: ' + '0x' + (hex(data).replace('0x', '').zfill(16)).upper());print(message);feed+=message+'\n'	
+		return feed				
 		
 	def getUserAccountSaveDataSizeMax(self):
 		self.seek(0x3148)
 		self.userAccountSaveDataSizeMax = self.readInt64('little')
 		return self.userAccountSaveDataSizeMax
 		
-	def par_UserAccountSaveDataJournalSizeMax(self, data):
+	def par_UserAccountSaveDataJournalSizeMax(self, data, feed =''):
 		if data == 0:
 			pass	
 		else:	
-			print('- UserAccountSaveDataJournalSizeMax: ' + '0x' + (hex(data).replace('0x', '').zfill(16)).upper())						
+			message=('- UserAccountSaveDataJournalSizeMax: ' + '0x' + (hex(data).replace('0x', '').zfill(16)).upper());print(message);feed+=message+'\n'
+		return feed				
 			
 	def getUserAccountSaveDataJournalSizeMax(self):
 		self.seek(0x3150)
 		self.userAccountSaveDataJournalSizeMax = self.readInt64('little')
 		return self.userAccountSaveDataJournalSizeMax
 		
-	def par_getDeviceSaveDataSizeMax(self, data):
+	def par_getDeviceSaveDataSizeMax(self, data, feed =''):
 		if data == 0:
 			pass	
 		else:	
-			print('- DeviceSaveDataSizeMax: ' + '0x' + (hex(data).replace('0x', '').zfill(16)).upper())						
+			message=('- DeviceSaveDataSizeMax: ' + '0x' + (hex(data).replace('0x', '').zfill(16)).upper());print(message);feed+=message+'\n'		
+		return feed				
 			
 	def getDeviceSaveDataSizeMax(self):
 		self.seek(0x3158)
 		self.deviceSaveDataSizeMax = self.readInt64('little')
 		return self.deviceSaveDataSizeMax
 	
-	def par_getDeviceSaveDataJournalSizeMax(self, data):
+	def par_getDeviceSaveDataJournalSizeMax(self, data, feed =''):
 		if data == 0:
 			pass	
 		else:	
-			print('- DeviceSaveDataJournalSizeMax: ' + '0x' + (hex(data).replace('0x', '').zfill(16)).upper())						
+			message=('- DeviceSaveDataJournalSizeMax: ' + '0x' + (hex(data).replace('0x', '').zfill(16)).upper());print(message);feed+=message+'\n'			
+		return feed				
 			
 	def getDeviceSaveDataJournalSizeMax(self):
 		self.seek(0x3160)
 		self.deviceSaveDataJournalSizeMax = self.readInt64('little')
 		return self.deviceSaveDataJournalSizeMax
 
-	def par_getTemporaryStorageSize(self, data):
+	def par_getTemporaryStorageSize(self, data, feed =''):
 		if data == 0:
 			pass	
 		else:	
-			print('- TemporaryStorageSize: ' + '0x' + (hex(data).replace('0x', '').zfill(16)).upper())						
+			message=('- TemporaryStorageSize: ' + '0x' + (hex(data).replace('0x', '').zfill(16)).upper());print(message);feed+=message+'\n'		
+		return feed				
 			
 	def getTemporaryStorageSize(self):
 		self.seek(0x3168)
 		self.temporaryStorageSize = self.readInt64('little')
 		return self.temporaryStorageSize
 
-	def par_getCacheStorageSize(self, data):
+	def par_getCacheStorageSize(self, data, feed =''):
 		if data == 0:
 			pass	
 		else:	
-			print('- CacheStorageSize: ' + '0x' + (hex(data).replace('0x', '').zfill(16)).upper())						
+			message=('- CacheStorageSize: ' + '0x' + (hex(data).replace('0x', '').zfill(16)).upper());print(message);feed+=message+'\n'		
+		return feed				
 
 	def getCacheStorageSize(self):
 		self.seek(0x3170)
 		self.cacheStorageSize = self.readInt64('little')
 		return self.cacheStorageSize
 	
-	def par_getCacheStorageJournalSize(self, data):
+	def par_getCacheStorageJournalSize(self, data, feed =''):
 		if data == 0:
 			pass	
 		else:	
-			print('- CacheStorageJournalSize: ' + '0x' + (hex(data).replace('0x', '').zfill(16)).upper())						
+			message=('- CacheStorageJournalSize: ' + '0x' + (hex(data).replace('0x', '').zfill(16)).upper());print(message);feed+=message+'\n'	
+		return feed				
 	
 	def getCacheStorageJournalSize(self):
 		self.seek(0x3178)
 		self.cacheStorageJournalSize = self.readInt64('little')
 		return self.cacheStorageJournalSize
 
-	def par_getCacheStorageDataAndJournalSizeMax(self, data):
+	def par_getCacheStorageDataAndJournalSizeMax(self, data, feed =''):
 		if data == 0:
 			pass	
 		else:	
-			print('- CacheStorageDataAndJournalSizeMax: ' + '0x' + (hex(data).replace('0x', '').zfill(16)).upper())						
+			message=('- CacheStorageDataAndJournalSizeMax: ' + '0x' + (hex(data).replace('0x', '').zfill(16)).upper());print(message);feed+=message+'\n'
+		return feed				
 			
 		
 	def getCacheStorageDataAndJournalSizeMax(self):
@@ -789,22 +827,24 @@ class Nacp(File):
 		self.cacheStorageDataAndJournalSizeMax = self.readInt32('little')
 		return self.cacheStorageDataAndJournalSizeMax
 		
-	def par_getCacheStorageIndexMax(self, data):
+	def par_getCacheStorageIndexMax(self, data, feed =''):
 		if data == 0:
 			pass	
 		else:	
-			print('- CacheStorageIndexMax: ' + '0x' + (hex(data).replace('0x', '').zfill(16)).upper())						
+			message=('- CacheStorageIndexMax: ' + '0x' + (hex(data).replace('0x', '').zfill(16)).upper());print(message);feed+=message+'\n'	
+		return feed				
 				
 	def getCacheStorageIndexMax(self):
 		self.seek(0x3188)
 		self.cacheStorageIndexMax = self.readInt16('little')
 		return self.cacheStorageIndexMax
 		
-	def par_getPlayLogQueryableApplicationId(self, data):
+	def par_getPlayLogQueryableApplicationId(self, data, feed =''):
 		if data == 0:
 			pass	
 		else:	
-			print('- PlayLogQueryableApplicationId: ' + '0x' + (hex(data).replace('0x', '').zfill(16)).upper())						
+			message=('- PlayLogQueryableApplicationId: ' + '0x' + (hex(data).replace('0x', '').zfill(16)).upper());print(message);feed+=message+'\n'
+		return feed				
 						
 		
 	def getPlayLogQueryableApplicationId(self):
@@ -812,7 +852,7 @@ class Nacp(File):
 		self.playLogQueryableApplicationId = self.readInt64('little')
 		return self.playLogQueryableApplicationId
 		
-	def par_getPlayLogQueryCapability(self, data):
+	def par_getPlayLogQueryCapability(self, data, feed =''):
 		b = data
 		if b == 0:
 			playLogQueryCapability = 'None'
@@ -822,7 +862,8 @@ class Nacp(File):
 			playLogQueryCapability = 'All'
 		else:
 			playLogQueryCapability = 'Unknown'
-		print('- PlayLogQueryCapability: ' + playLogQueryCapability)	
+			message=('- PlayLogQueryCapability: ' + playLogQueryCapability);print(message);feed+=message+'\n'	
+		return feed			
 							
 	def getPlayLogQueryCapability(self):
 		self.seek(0x3210)
@@ -837,7 +878,7 @@ class Nacp(File):
 			self.playLogQueryCapability = 'Unknown'
 		return self.playLogQueryCapability
 		
-	def par_getRepair(self, data):
+	def par_getRepair(self, data, feed =''):
 		b = data
 		if b == 0:
 			repair = 'None'
@@ -845,7 +886,8 @@ class Nacp(File):
 			repair = 'SuppressGameCardAccess'
 		else:
 			repair = 'Unknown'
-		print('- Repair: ' + repair)			
+		message=('- Repair: ' + repair);print(message);feed+=message+'\n'
+		return feed			
 			
 	
 	def getRepair(self):
@@ -859,15 +901,16 @@ class Nacp(File):
 			self.repair = 'Unknown'
 		return self.repair
 	
-	def par_getProgramIndex(self, data):
-		print('- ProgramIndex: ' + str(data))				
+	def par_getProgramIndex(self, data, feed =''):
+		message=('- ProgramIndex: ' + str(data));print(message);feed+=message+'\n'			
+		return feed			
 		
 	def getProgramIndex(self):
 		self.seek(0x3212)
 		self.programIndex = self.readInt8('little')
 		return self.programIndex
 		
-	def par_getRequiredNetworkServiceLicenseOnLaunch(self, data):
+	def par_getRequiredNetworkServiceLicenseOnLaunch(self, data, feed =''):
 		b = data
 		if b == 0:
 			requiredNetworkServiceLicenseOnLaunch = 'None'
@@ -875,7 +918,8 @@ class Nacp(File):
 			requiredNetworkServiceLicenseOnLaunch = 'Common'
 		else:
 			requiredNetworkServiceLicenseOnLaunch = 'Unknown'
-		print('- RequiredNetworkServiceLicenseOnLaunch: ' + requiredNetworkServiceLicenseOnLaunch)
+		message=('- RequiredNetworkServiceLicenseOnLaunch: ' + requiredNetworkServiceLicenseOnLaunch);print(message);feed+=message+'\n'
+		return feed			
 	
 	def getRequiredNetworkServiceLicenseOnLaunch(self):
 		self.seek(0x3213)
