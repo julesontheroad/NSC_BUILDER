@@ -299,7 +299,7 @@ if /i "%bs%"=="4" goto UPDMODE
 if /i "%bs%"=="5" goto INFMODE
 if /i "%bs%"=="6" goto DBMODE
 if /i "%bs%"=="0" goto OPT_CONFIG
-if /i "%bs%"=="N" goto exit /B
+if /i "%bs%"=="N" exit /B
 goto manual_Reentry
 
 REM //////////////////////////////////////////////////
