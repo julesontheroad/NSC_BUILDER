@@ -3856,70 +3856,256 @@ if __name__ == '__main__':
 		# Show advance filelist
 		# ...................................................	
 		if args.ADVfilelist:
-			for filename in args.ADVfilelist:
-				if filename.endswith('.nsp'):
+			if args.ofolder:		
+				for var in args.ofolder:
 					try:
-						f = Fs.Nsp(filename, 'rb')
-						f.adv_file_list()
-						f.flush()
-						f.close()
+						ofolder = var
 					except BaseException as e:
-						Print.error('Exception: ' + str(e))
-				if filename.endswith('.xci'):
-					try:
-						f = Fs.factory(filename)
-						f.open(filename, 'rb')
-						f.adv_file_list()
-						f.flush()
-						f.close()
-					except BaseException as e:
-						Print.error('Exception: ' + str(e))		
+						Print.error('Exception: ' + str(e))	
+			else:
+				for filename in args.ADVfilelist:
+					dir=os.path.dirname(os.path.abspath(filename))	
+					info='INFO'
+					ofolder =os.path.join(dir,info)
+			if not os.path.exists(ofolder):
+				os.makedirs(ofolder)						
+			if args.text_file:
+				tfile=args.text_file
+				dir=os.path.dirname(os.path.abspath(tfile))
+				if not os.path.exists(dir):
+					os.makedirs(dir)	
+				err='badfiles.txt'			
+				errfile = os.path.join(dir, err)						
+				with open(tfile,"r+", encoding='utf8') as filelist: 	
+					filename = filelist.readline()
+					filename=os.path.abspath(filename.rstrip('\n'))
+			else:									
+				for filename in args.ADVfilelist:
+					filename=filename
+			basename=str(os.path.basename(os.path.abspath(filename)))					
+			ofile=basename[:-4]+'-Fcontent.txt'
+			infotext=os.path.join(ofolder, ofile)
+			if filename.endswith('.nsp'):
+				try:
+					f = Fs.Nsp(filename, 'rb')
+					feed=f.adv_file_list()
+					f.flush()
+					f.close()
+					if not args.text_file:						
+						print('\n********************************************************')
+						print('Do you want to print the information to a text file')
+						print('********************************************************')
+						i=0
+						while i==0:							
+							print('Input "1" to print to text file')	
+							print('Input "2" to NOT print to text file\n')							
+							ck=input('Input your answer: ')	
+							if ck ==str(1):					
+								with open(infotext, 'w') as info:	
+									info.write(feed)	
+								i=1
+							elif ck ==str(2):					
+								i=1				
+							else:
+								print('WRONG CHOICE\n')										
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))
+			if filename.endswith('.xci'):
+				try:
+					f = Fs.factory(filename)
+					f.open(filename, 'rb')
+					feed=f.adv_file_list()
+					f.flush()
+					f.close()
+					if not args.text_file:						
+						print('\n********************************************************')
+						print('Do you want to print the information to a text file')
+						print('********************************************************')
+						i=0
+						while i==0:							
+							print('Input "1" to print to text file')	
+							print('Input "2" to NOT print to text file\n')							
+							ck=input('Input your answer: ')	
+							if ck ==str(1):					
+								with open(infotext, 'w') as info:	
+									info.write(feed)	
+								i=1
+							elif ck ==str(2):					
+								i=1				
+							else:
+								print('WRONG CHOICE\n')																
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))		
 
 		# ...................................................						
 		# Show advance filelist
 		# ...................................................	
 		if args.ADVcontentlist:
-			for filename in args.ADVcontentlist:
-				if filename.endswith('.nsp'):
+			if args.ofolder:		
+				for var in args.ofolder:
 					try:
-						f = Fs.Nsp(filename, 'rb')
-						f.adv_content_list()
-						f.flush()
-						f.close()
+						ofolder = var
 					except BaseException as e:
-						Print.error('Exception: ' + str(e))
-				if filename.endswith('.xci'):
-					try:
-						f = Fs.factory(filename)
-						f.open(filename, 'rb')
-						f.adv_content_list()
-						f.flush()
-						f.close()
-					except BaseException as e:
-						Print.error('Exception: ' + str(e))								
+						Print.error('Exception: ' + str(e))	
+			else:
+				for filename in args.ADVcontentlist:
+					dir=os.path.dirname(os.path.abspath(filename))	
+					info='INFO'
+					ofolder =os.path.join(dir,info)		
+			if not os.path.exists(ofolder):
+				os.makedirs(ofolder)			
+			if args.text_file:
+				tfile=args.text_file
+				dir=os.path.dirname(os.path.abspath(tfile))
+				if not os.path.exists(dir):
+					os.makedirs(dir)	
+				err='badfiles.txt'			
+				errfile = os.path.join(dir, err)						
+				with open(tfile,"r+", encoding='utf8') as filelist: 	
+					filename = filelist.readline()
+					filename=os.path.abspath(filename.rstrip('\n'))
+			else:									
+				for filename in args.ADVcontentlist:
+					filename=filename		
+			basename=str(os.path.basename(os.path.abspath(filename)))					
+			ofile=basename[:-4]+'_ID_content.txt'
+			infotext=os.path.join(ofolder, ofile)		
+			if filename.endswith('.nsp'):
+				try:
+					f = Fs.Nsp(filename, 'rb')
+					feed=f.adv_content_list()
+					f.flush()
+					f.close()
+					if not args.text_file:						
+						print('\n********************************************************')
+						print('Do you want to print the information to a text file')
+						print('********************************************************')
+						i=0
+						while i==0:							
+							print('Input "1" to print to text file')	
+							print('Input "2" to NOT print to text file\n')							
+							ck=input('Input your answer: ')	
+							if ck ==str(1):					
+								with open(infotext, 'w') as info:	
+									info.write(feed)	
+								i=1
+							elif ck ==str(2):					
+								i=1				
+							else:
+								print('WRONG CHOICE\n')						
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))
+			if filename.endswith('.xci'):
+				try:
+					f = Fs.factory(filename)
+					f.open(filename, 'rb')
+					feed=f.adv_content_list()
+					f.flush()
+					f.close()
+					if not args.text_file:						
+						print('\n********************************************************')
+						print('Do you want to print the information to a text file')
+						print('********************************************************')
+						i=0
+						while i==0:							
+							print('Input "1" to print to text file')	
+							print('Input "2" to NOT print to text file\n')							
+							ck=input('Input your answer: ')	
+							if ck ==str(1):					
+								with open(infotext, 'w') as info:	
+									info.write(feed)	
+								i=1
+							elif ck ==str(2):					
+								i=1				
+							else:
+								print('WRONG CHOICE\n')							
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))								
 								
 		# ...................................................						
 		# FW REQ INFO
 		# ...................................................	
 		if args.fw_req:
-			for filename in args.fw_req:
-				if filename.endswith('.nsp'):
+			if args.ofolder:		
+				for var in args.ofolder:
 					try:
-						f = Fs.Nsp(filename, 'rb')
-						f.print_fw_req()
-						f.flush()
-						f.close()
+						ofolder = var
 					except BaseException as e:
-						Print.error('Exception: ' + str(e))
-				if filename.endswith('.xci'):
-					try:
-						f = Fs.factory(filename)
-						f.open(filename, 'rb')
-						f.print_fw_req()
-						f.flush()
-						f.close()
-					except BaseException as e:
-						Print.error('Exception: ' + str(e))									
+						Print.error('Exception: ' + str(e))	
+			else:
+				for filename in args.fw_req:
+					dir=os.path.dirname(os.path.abspath(filename))	
+					info='INFO'
+					ofolder =os.path.join(dir,info)
+			if not os.path.exists(ofolder):
+				os.makedirs(ofolder)						
+			if args.text_file:
+				tfile=args.text_file
+				dir=os.path.dirname(os.path.abspath(tfile))
+				if not os.path.exists(dir):
+					os.makedirs(dir)	
+				err='badfiles.txt'			
+				errfile = os.path.join(dir, err)						
+				with open(tfile,"r+", encoding='utf8') as filelist: 	
+					filename = filelist.readline()
+					filename=os.path.abspath(filename.rstrip('\n'))
+			else:									
+				for filename in args.fw_req:
+					filename=filename
+			basename=str(os.path.basename(os.path.abspath(filename)))					
+			ofile=basename[:-4]+'-fwinfo.txt'
+			infotext=os.path.join(ofolder, ofile)		
+			if filename.endswith('.nsp'):
+				try:
+					f = Fs.Nsp(filename, 'rb')
+					feed=f.print_fw_req()
+					f.flush()
+					f.close()
+					if not args.text_file:						
+						print('\n********************************************************')
+						print('Do you want to print the information to a text file')
+						print('********************************************************')
+						i=0
+						while i==0:							
+							print('Input "1" to print to text file')	
+							print('Input "2" to NOT print to text file\n')							
+							ck=input('Input your answer: ')	
+							if ck ==str(1):					
+								with open(infotext, 'w') as info:	
+									info.write(feed)	
+								i=1
+							elif ck ==str(2):					
+								i=1				
+							else:
+								print('WRONG CHOICE\n')
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))
+			if filename.endswith('.xci'):
+				try:
+					f = Fs.factory(filename)
+					f.open(filename, 'rb')
+					feed=f.print_fw_req()
+					f.flush()
+					f.close()
+					if not args.text_file:						
+						print('\n********************************************************')
+						print('Do you want to print the information to a text file')
+						print('********************************************************')
+						i=0
+						while i==0:							
+							print('Input "1" to print to text file')	
+							print('Input "2" to NOT print to text file\n')							
+							ck=input('Input your answer: ')	
+							if ck ==str(1):					
+								with open(infotext, 'w') as info:	
+									info.write(feed)	
+								i=1
+							elif ck ==str(2):					
+								i=1				
+							else:
+								print('WRONG CHOICE\n')					
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))									
 		# ...................................................						
 		# XCI HEADER
 		# ...................................................	
@@ -4040,33 +4226,96 @@ if __name__ == '__main__':
 		# ...................................................					
 
 		if args.Read_nacp:
-			for filename in args.Read_nacp:
-				if filename.endswith('.nsp'):
+			if args.ofolder:		
+				for var in args.ofolder:
 					try:
-						f = Fs.Nsp(filename, 'rb')
-						f.read_nacp()
-						f.flush()
-						f.close()
-					except BaseException as e:
-						Print.error('Exception: ' + str(e))
-				if filename.endswith('.xci'):
-					try:
-						f = Fs.factory(filename)
-						f.open(filename, 'rb')
-						f.read_nacp()
-						f.flush()
-						f.close()														
-					except BaseException as e:
-						Print.error('Exception: ' + str(e))
-				if filename.endswith('.nca'):
-					try:
-						f = Fs.Nca(filename, 'rb')
-						f.read_nacp()
-						f.flush()
-						f.close()												
+						ofolder = var
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))	
-						
+			else:
+				for filename in args.Read_nacp:
+					dir=os.path.dirname(os.path.abspath(filename))	
+					info='INFO'
+					ofolder =os.path.join(dir,info)
+			if not os.path.exists(ofolder):
+				os.makedirs(ofolder)						
+			if args.text_file:
+				tfile=args.text_file
+				dir=os.path.dirname(os.path.abspath(tfile))
+				if not os.path.exists(dir):
+					os.makedirs(dir)	
+				err='badfiles.txt'			
+				errfile = os.path.join(dir, err)						
+				with open(tfile,"r+", encoding='utf8') as filelist: 	
+					filename = filelist.readline()
+					filename=os.path.abspath(filename.rstrip('\n'))
+			else:									
+				for filename in args.Read_nacp:
+					filename=filename
+			basename=str(os.path.basename(os.path.abspath(filename)))					
+			ofile=basename[:-4]+'-nacp.txt'
+			infotext=os.path.join(ofolder, ofile)		
+			if filename.endswith('.nsp'):
+				try:
+					f = Fs.Nsp(filename, 'rb')
+					feed=f.read_nacp()
+					f.flush()
+					f.close()
+					if not args.text_file:						
+						print('\n********************************************************')
+						print('Do you want to print the information to a text file')
+						print('********************************************************')
+						i=0
+						while i==0:							
+							print('Input "1" to print to text file')	
+							print('Input "2" to NOT print to text file\n')							
+							ck=input('Input your answer: ')	
+							if ck ==str(1):					
+								with open(infotext, 'w') as info:	
+									info.write(feed)	
+								i=1
+							elif ck ==str(2):					
+								i=1				
+							else:
+								print('WRONG CHOICE\n')								
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))
+			if filename.endswith('.xci'):
+				try:
+					f = Fs.factory(filename)
+					f.open(filename, 'rb')
+					feed=f.read_nacp()
+					f.flush()
+					f.close()
+					if not args.text_file:						
+						print('\n********************************************************')
+						print('Do you want to print the information to a text file')
+						print('********************************************************')
+						i=0
+						while i==0:							
+							print('Input "1" to print to text file')	
+							print('Input "2" to NOT print to text file\n')							
+							ck=input('Input your answer: ')	
+							if ck ==str(1):					
+								with open(infotext, 'w') as info:	
+									info.write(feed)	
+								i=1
+							elif ck ==str(2):					
+								i=1				
+							else:
+								print('WRONG CHOICE\n')								
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))
+			'''		
+			if filename.endswith('.nca'):
+				try:
+					f = Fs.Nca(filename, 'rb')
+					feed=f.read_nacp()
+					f.flush()
+					f.close()												
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))	
+			'''		
 		# ......................................................................						
 		# Raw extraction. For cases when a file is bad and triggers a exception
 		# ......................................................................						
@@ -4157,32 +4406,111 @@ if __name__ == '__main__':
 		# ...................................................					
 
 		if args.Read_cnmt:
-			for filename in args.Read_cnmt:
-				if filename.endswith('.nsp'):
+			if args.ofolder:		
+				for var in args.ofolder:
 					try:
-						f = Fs.Nsp(filename, 'rb')
-						f.read_cnmt()
-						f.flush()
-						f.close()
+						ofolder = var
 					except BaseException as e:
-						Print.error('Exception: ' + str(e))
-				if filename.endswith('.xci'):
-					try:
-						f = Fs.factory(filename)
-						f.open(filename, 'rb')
-						f.read_cnmt()
-						f.flush()
-						f.close()														
-					except BaseException as e:
-						Print.error('Exception: ' + str(e))
-				if filename.endswith('.nca'):
-					try:
-						f = Fs.Nca(filename, 'rb')
-						f.read_cnmt()
-						f.flush()
-						f.close()												
-					except BaseException as e:
-						Print.error('Exception: ' + str(e))						
+						Print.error('Exception: ' + str(e))	
+			else:
+				for filename in args.Read_cnmt:
+					dir=os.path.dirname(os.path.abspath(filename))	
+					info='INFO'
+					ofolder =os.path.join(dir,info)
+			if not os.path.exists(ofolder):
+				os.makedirs(ofolder)						
+			if args.text_file:
+				tfile=args.text_file
+				dir=os.path.dirname(os.path.abspath(tfile))
+				if not os.path.exists(dir):
+					os.makedirs(dir)	
+				err='badfiles.txt'			
+				errfile = os.path.join(dir, err)						
+				with open(tfile,"r+", encoding='utf8') as filelist: 	
+					filename = filelist.readline()
+					filename=os.path.abspath(filename.rstrip('\n'))
+			else:									
+				for filename in args.Read_cnmt:
+					filename=filename
+			basename=str(os.path.basename(os.path.abspath(filename)))					
+			ofile=basename[:-4]+'-meta.txt'
+			infotext=os.path.join(ofolder, ofile)		
+			if filename.endswith('.nsp'):
+				try:
+					f = Fs.Nsp(filename, 'rb')
+					feed=f.read_cnmt()
+					f.flush()
+					f.close()
+					if not args.text_file:						
+						print('\n********************************************************')
+						print('Do you want to print the information to a text file')
+						print('********************************************************')
+						i=0
+						while i==0:							
+							print('Input "1" to print to text file')	
+							print('Input "2" to NOT print to text file\n')							
+							ck=input('Input your answer: ')	
+							if ck ==str(1):					
+								with open(infotext, 'w') as info:	
+									info.write(feed)	
+								i=1
+							elif ck ==str(2):					
+								i=1				
+							else:
+								print('WRONG CHOICE\n')						
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))
+			if filename.endswith('.xci'):
+				try:
+					f = Fs.factory(filename)
+					f.open(filename, 'rb')
+					feed=f.read_cnmt()
+					f.flush()
+					f.close()		
+					if not args.text_file:						
+						print('\n********************************************************')
+						print('Do you want to print the information to a text file')
+						print('********************************************************')
+						i=0
+						while i==0:							
+							print('Input "1" to print to text file')	
+							print('Input "2" to NOT print to text file\n')							
+							ck=input('Input your answer: ')	
+							if ck ==str(1):					
+								with open(infotext, 'w') as info:	
+									info.write(feed)	
+								i=1
+							elif ck ==str(2):					
+								i=1				
+							else:
+								print('WRONG CHOICE\n')						
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))
+			if filename.endswith('.nca'):
+				try:
+					f = Fs.Nca(filename, 'rb')
+					feed=f.read_cnmt()
+					f.flush()
+					f.close()		
+					if not args.text_file:						
+						print('\n********************************************************')
+						print('Do you want to print the information to a text file')
+						print('********************************************************')
+						i=0
+						while i==0:							
+							print('Input "1" to print to text file')	
+							print('Input "2" to NOT print to text file\n')							
+							ck=input('Input your answer: ')	
+							if ck ==str(1):					
+								with open(infotext, 'w') as info:	
+									info.write(feed)	
+								i=1
+							elif ck ==str(2):					
+								i=1				
+							else:
+								print('WRONG CHOICE\n')						
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))						
 						
 		# ...................................................						
 		# Change Required System Version in a nca file

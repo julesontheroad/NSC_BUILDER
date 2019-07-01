@@ -841,9 +841,9 @@ class Xci(File):
 								f.seek(offset)
 								nacp = Nacp()	
 								feed=nacp.par_getNameandPub(f.read(0x300*15),feed)
-								message='...............................';print(message);feed+='\n'+message+'\n'	
-								message='NACP FLAGS';print(message);feed+='\n'+message+'\n'						
-								message='...............................';print(message);feed+='\n'+message+'\n'
+								message='...............................';print(message);feed+=message+'\n'	
+								message='NACP FLAGS';print(message);feed+=message+'\n'						
+								message='...............................';print(message);feed+=message+'\n'
 								f.seek(offset+0x3000)							
 								feed=nacp.par_Isbn(f.read(0x24),feed)		
 								f.seek(offset+0x3025)							
@@ -859,15 +859,15 @@ class Xci(File):
 								feed=nacp.par_getPresenceGroupId(f.readInt64('little'),feed)
 								f.seek(offset+0x3040)
 								listages=list()
-								message='...............................';print(message);feed+='\n'+message+'\n'						
-								message='Age Ratings';print(message);feed+='\n'+message+'\n'	
-								message='...............................';print(message);feed+='\n'+message+'\n'						
+								message='...............................';print(message);feed+=message+'\n'						
+								message='Age Ratings';print(message);feed+=message+'\n'	
+								message='...............................';print(message);feed+=message+'\n'						
 								for i in range(12):
 									feed=nacp.par_getRatingAge(f.readInt8('little'),i,feed)
 								f.seek(offset+0x3060)		
-								message='...............................';print(message);feed+='\n'+message+'\n'						
-								message='NACP ATTRIBUTES';print(message);feed+='\n'+message+'\n'	
-								message='...............................';print(message);feed+='\n'+message+'\n'							
+								message='...............................';print(message);feed+=message+'\n'						
+								message='NACP ATTRIBUTES';print(message);feed+=message+'\n'	
+								message='...............................';print(message);feed+=message+'\n'							
 								feed=nacp.par_getDisplayVersion(f.read(0xF),feed)		
 								f.seek(offset+0x3070)							
 								feed=nacp.par_getAddOnContentBaseId(f.readInt64('little'),feed)
@@ -922,7 +922,8 @@ class Xci(File):
 								#nacp.open(MemoryFile(f.read(),32768*2))	
 								#nacp.printInfo()
 								#Hex.dump(offset)				
-
+		return feed
+		
 #READ CNMT FILE WITHOUT EXTRACTION	
 	def read_cnmt(self):
 		feed=''	

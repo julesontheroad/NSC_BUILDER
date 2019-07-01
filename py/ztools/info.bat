@@ -72,26 +72,7 @@ call :logo
 echo ********************************************************
 echo SHOW NSP FILE CONTENT OR XCI SECURE PARTITION CONTENT
 echo ********************************************************
-%pycommand% "%nut%" --ADVfilelist "%targt%"
-echo.
-ECHO ********************************************************
-echo Do you want to print the information to a text file?
-ECHO ********************************************************
-:g_file_contentwrong
-echo Input "1" to print to text file
-echo Input "2" to NOT print to text file
-echo.
-set /p bs="Enter your choice: "
-if /i "%bs%"=="1" goto g_file_content_print
-if /i "%bs%"=="2" goto sc2
-echo WRONG CHOICE
-echo.
-goto g_file_contentwrong
-:g_file_content_print
-if not exist "%info_dir%" MD "%info_dir%">NUL 2>&1
-set "i_file=%info_dir%\%Name%-Fcontent.txt"
-%pycommand% "%nut%" --ADVfilelist "%targt%">"%i_file%"
-ECHO DONE
+%pycommand% "%nut%" -o "%info_dir%" --ADVfilelist "%targt%"
 goto sc2
 
 :g_content_list
@@ -100,26 +81,7 @@ call :logo
 echo ********************************************************
 echo SHOW NSP OR XCI CONTENT ARRANGED BY ID
 echo ********************************************************
-%pycommand% "%nut%" --ADVcontentlist "%targt%"
-echo.
-ECHO ********************************************************
-echo Do you want to print the information to a text file?
-ECHO ********************************************************
-:g_content_list_wrong
-echo Input "1" to print to text file
-echo Input "2" to NOT print to text file
-echo.
-set /p bs="Enter your choice: "
-if /i "%bs%"=="1" goto g_content_list_print
-if /i "%bs%"=="2" goto sc2
-echo WRONG CHOICE
-echo.
-goto g_content_list_wrong
-:g_content_list_print
-if not exist "%info_dir%" MD "%info_dir%">NUL 2>&1
-set "i_file=%info_dir%\%Name%_ID_content.txt"
-%pycommand% "%nut%" --ADVcontentlist "%targt%">"%i_file%"
-ECHO DONE
+%pycommand% "%nut%" -o "%info_dir%" --ADVcontentlist "%targt%"
 goto sc2
 
 :n_info
@@ -158,26 +120,7 @@ call :logo
 echo ********************************************************
 echo SHOW INFORMATION AND DATA ABOUT THE REQUIRED FIRMWARE
 echo ********************************************************
-%pycommand% "%nut%" --fw_req "%targt%"
-
-ECHO ********************************************************
-echo Do you want to print the information to a text file?
-ECHO ********************************************************
-:f_info_wrong
-echo Input "1" to print to text file
-echo Input "2" to NOT print to text file
-echo.
-set /p bs="Enter your choice: "
-if /i "%bs%"=="1" goto f_info_print
-if /i "%bs%"=="2" goto sc2
-echo WRONG CHOICE
-echo.
-goto f_info_wrong
-:f_info_print
-if not exist "%info_dir%" MD "%info_dir%">NUL 2>&1
-set "i_file=%info_dir%\%Name%-fwinfo.txt"
-%pycommand% "%nut%" --fw_req "%targt%">"%i_file%"
-ECHO DONE
+%pycommand% "%nut%" -o "%info_dir%" --fw_req "%targt%"
 goto sc2
 
 :r_cnmt
@@ -186,28 +129,7 @@ call :logo
 echo ********************************************************
 echo SHOW CMT DATA FROM META NCA IN NSP\XCI
 echo ********************************************************
-%pycommand% "%nut%" --Read_cnmt "%targt%"
-echo.
-ECHO ********************************************************
-echo Do you want to print the information to a text file?
-ECHO ********************************************************
-:r_cnmt_wrong
-echo Input "1" to print to text file
-echo Input "2" to NOT print to text file
-echo.
-set /p bs="Enter your choice: "
-if /i "%bs%"=="1" goto r_cnmt_print
-if /i "%bs%"=="2" goto sc2
-echo WRONG CHOICE
-echo.
-goto r_cnmt_wrong
-:r_cnmt_print
-if not exist "%info_dir%" MD "%info_dir%">NUL 2>&1
-set "i_file=%info_dir%\%Name%-meta.txt"
-%pycommand% "%nut%" --Read_cnmt "%targt%">"%i_file%"
-more +1 "%i_file%">"%i_file%.new"
-move /y "%i_file%.new" "%i_file%" >nul
-ECHO DONE
+%pycommand% "%nut%" -o "%info_dir%" --Read_cnmt "%targt%"
 goto sc2
 
 :r_nacp
@@ -217,28 +139,7 @@ echo ********************************************************
 echo SHOW NACP DATA FROM CONTROL NCA IN NSP\XCI
 echo ********************************************************
 echo IMPLEMENTATION OF 0LIAM'S NACP LIBRARY
-%pycommand% "%nut%" --Read_nacp "%targt%"
-echo.
-ECHO ********************************************************
-echo Do you want to print the information to a text file?
-ECHO ********************************************************
-:r_nacp_wrong
-echo Input "1" to print to text file
-echo Input "2" to NOT print to text file
-echo.
-set /p bs="Enter your choice: "
-if /i "%bs%"=="1" goto r_nacp_print
-if /i "%bs%"=="2" goto sc2
-echo WRONG CHOICE
-echo.
-goto r_nacp_wrong
-:r_nacp_print
-if not exist "%info_dir%" MD "%info_dir%">NUL 2>&1
-set "i_file=%info_dir%\%Name%-nacp.txt"
-%pycommand% "%nut%" --Read_nacp "%targt%">"%i_file%"
-more +1 "%i_file%">"%i_file%.new"
-move /y "%i_file%.new" "%i_file%" >nul
-ECHO DONE
+%pycommand% "%nut%" -o "%info_dir%" --Read_nacp "%targt%"
 goto sc2
 
 :verify
