@@ -21,12 +21,43 @@ Luca Fraga's github: https://github.com/LucaFraga
 ---------------
 0. Changelog
 ---------------
+v0.87- Sanitation of names, romaji convertion and improvements in verification
+	- Automated removal of bad characters on names in direct-multi function
+	- Added option to convert japanese and asian names to romaji in direct-multi name
+	  This is set by default due to the Horizon system having issues with these characters
+	- New ption in global options to remove the romaji conversion
+	- New renaming options for renamer function:
+	  * Name sanitazion -> Removes bad characters on filenames.
+	  * Romanize -> Converts kanji\extended kanna\chinese to romaji (japanese romanization)
+	- Force romaji in prints in info functions for compatibility with windows CMD console
+	- Fix issue with info functions,database,renamer,... reading filenames when only 
+	  chinese language is present in the control nca file.
+	- Added RSV verification to the verifier.
+      * If a meta file was modified by NSCB the program will be	able to detect the original
+	    RSV
+	  * By restoring the RSV it will be able to restore the header and match it against the
+	    Nintendo Private Signature (Signature1) fully authenticating the file.
+	  * Oppens the road to a soon to be implemented FILE RESTORATION MODE
+	- Improved verification prints
+	  * Better detection for isgamecard changes
+	  * Now the program will print the original keygeneration of the file and the new 
+	    keygeneration
+	  * Added check that will show if a ticket is missing when titlerights are present on a
+        nca file. (For example a preload without the ticket)
+	- Better verification speeds:
+	  * Some assumptions are taken to speed up verification with keygeneration and RSV changer
+	    These assumptions are made taken into account the way NSCB works and probabilities.
+	  * If squirrel is used by external programs verification times may change.
+	- Added NACP reader for control nca files without NSP\XCI extraction:	  
+	  * The implementation is based on 0Liam's NCAP reader and 90% his work
+	- Added fast prints for every info function instead of nut info by catching the screen prints
+	  * Nut info is planned to be refactored
 v0.86e- Fixes NSCB.bat that got messed up when merging beta and master branches
 v0.86d- Adds support for keygeneration 9\masterkey8
 	- Added support for keygeneration 9\masterkey8 in info functions, keys verification,
 	  nsp\xci verifier and keygeneration change function
 	- Fixes issue when squirrel tries to find ticket when user verifies a standard crypto
-          nsp
+      nsp
 	- Added korean language via NSCB_KR by DDinghoya. This file is linked to the profile
 	  NSCB_KR_options.cmd
 	Note: I'm open to translations though for interested translators please wait a little 

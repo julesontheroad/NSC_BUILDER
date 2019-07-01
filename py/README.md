@@ -26,6 +26,7 @@ Current version of the program allows you to:
 7.- Lower the Required System Version to the actual encryption of the game.
 8.- Lower the masterkey needed to decrypt a game.
 9.- Check out information from a xci and nsp, including the Firmware needed to be able to execute it, the game info, the size of the nca content…
+10.- Check data from nacp and cnmt files without extracting them from nsp\xci
 10.- Repack xci and nsp content in formats compatible with fat32
 11.- Mass build xci files and nsp files in single and multi content format
 12.- Rename nsp,xci files to match it's content
@@ -34,6 +35,7 @@ Current version of the program allows you to:
 15.- Extract content of nsp files and secure partition of xci files
 16.- Set jobs for later in multi mode
 17.- Separate jobs by based-titleid in multi mode
+18.- Remove bad characters from filenames (sanitize) or convert asian names to romaji
 
 ## 4. Batch modes:
 
@@ -60,6 +62,13 @@ The behavior of the auto-mode is configured trough the “Configuration menu in ma
   * Process previous jobs
 - MODE 3: Multi-Content-Splitter. Let’s you separate content to nsp and xci files.
 - MODE 4: File-Info. Let’s you see and export several info about nsp and xci files
+  * 1. Data about included files in nsp\xci
+  * 2. Data about content ids in file
+  * 3. Nut info as implemented by nut by blawar
+  * 4. Information about firmware requirements and other game data
+  * 5. Read cnmt file from meta nca
+  * 6. Read nacp file from control nca
+  * 7. Verify files with ability of detecting NSCB changes over them
 - MODE 5: Database Mode. Let’s you mass output information
 - MODE 6: Advanced Mode. Currently extracts nca from xci\nsp (more to be added)
 - L: Legacy Mode. Old functions
@@ -87,7 +96,7 @@ The behavior of the auto-mode is configured trough the “Configuration menu in ma
 - Let’s you choose the name and location of the output folder
 #### DELTA files treatment
 - Let’s you choose if you’re going to pack delta NCA files or not. Set to false by default.
-#### ZIP configuration
+#### ZIP configuration (currently unused)
 - Let’s you choose if you want to create a zip storing some file information. Set to false by default.
 #### AUTO-EXIT configuration
 - Let’s you choose if the cmd window closes after completing the job.
@@ -100,10 +109,15 @@ Pack xci or nsp in fat32 compatible formats or exfat format.
 - Change CARD FORMAT to exfat (Default)
 - Change CARD FORMAT to fat32 for SX OS (xc0 and ns0 files)
 - Change CARD FORMAT to fat32 for all CFW (archive folder)
-
-#### How to ORGANIZE output files
+#### How to ORGANIZE output files (currently unused for new modes)
 - Organize files separetely (default)
 - Organize files in folders set by content
+#### Set New Mode or Legacy Mode
+- Use new more advance methods (default)
+- Use old file processing methods
+#### ROMANIZE names when using direct-multi
+- Convert names to romaji (default)
+- Read names from file and keep asian namings when they're read
 
 ## 7. Important
 
@@ -111,10 +125,10 @@ This program attempts to modify the minimum data possible in nsp and xci files, 
 - SX OS
 - ReiNX
 https://github.com/Reisyukaku/ReiNX/releases
-- RShadowhand’s starter pack “Singularité", which is a preconfigured atmosphere, made to auto-launch via Hekate trough fusee primary including the needed patches and some homebrew starters.
-https://github.com/RShadowhand/singularite/releases
-- For kosmos replace hekate for modded hekate with added sigpatches:
-https://github.com/Joonie86/hekate/releases
+- For Kosmos use joonie86 sigpatches and Hekate5.0 or joonie86 Hekate Mod "a.k.a J"
+https://github.com/Joonie86/hekate/releases/tag/5.0.0J
+- For atmosphere use the4n sigpatches
+https://gbatemp.net/attachments/2-0-0-8-1-0-zip.170607/
 
 To install multi-nsp you need a installer compatible with them. Reported compatible installers are:
 - SX OS rom-menu
@@ -151,6 +165,8 @@ b.) Hacbuild: The xci repacking functions are based on hacbuild's code, made by 
 
 - Revised hacbuild by me: https://github.com/julesontheroad/hacbuild
 
+c.) Big thx to 0Liam for his constant 
+
 Also thanks to:
 
 AnalogMan. He made splitNSP.py, figured the needed block size for Horizon format splitted nsps (wich differs from the splitted xci block size) and the need to archive the folders)
@@ -158,10 +174,8 @@ https://github.com/AnalogMan151/splitNSP/releases
 
 Thx to MadScript77 his great suggestions,specially the idea of profiles for the batch.
 
-Thx to Liam and 0mn0 from old SH discord for always being helpfull.
+Thx to 0mn0 and the old SH crew for always being helpful.
 
 Thx to evOLved, Cinnabar and a certain dragon for their help and good suggestions.
-
-Thx to XCI-Explorer's creator StudentBlake since his program made easier for me to came up with the fix for hacbuild.
 
 Also thanks to all members from gbatemp, elotrolado.net and my friends at discord ;)
