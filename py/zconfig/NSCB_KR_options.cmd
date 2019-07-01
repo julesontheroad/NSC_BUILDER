@@ -82,7 +82,6 @@ set "zip_restore=false"
 ::OPTION 8: PATCH IF KEYGENERATION IS BIGGER THAN
 ::--------------------------------------------------------------
 :: CHANGE ENCRYPTION TO THE SET KEYGENERATION IN AUTO-MODE
-::
 :: Don't change encryption -> vkey = false
 :: "1.0.0"			  	   -> vkey = 0
 :: "2.0.0 - 2.3.0"         -> vkey = 1
@@ -91,8 +90,9 @@ set "zip_restore=false"
 :: "4.0.0 - 4.1.0"		   -> vkey = 4
 :: "5.0.0 - 5.1.0" 		   -> vkey = 5
 :: "6.0.0-4 - 6.1.0" 	   -> vkey = 6 
-:: "6.2.0 - ?"	  	 	   -> vkey = 7
-
+:: "6.2.0"	    	 	   -> vkey = 7
+:: "7.0.0 - 8.01"	  	   -> vkey = 8
+:: "6.2.0 - ?"	  	 	   -> vkey = 9
 set "vkey=-kp false"
 
 ::--------------------------------------------------------------
@@ -131,3 +131,10 @@ set "oforg=inline"
 ::SETS THE PROGRAM STARTUP FOR NEW MODES OR LEGACY MODES
 ::value is new or legacy
 set "NSBMODE=new"
+
+::--------------------------------------------------------------
+::OPTION 15: ROMANIZE JAPANESE AND CHINESE TITLES
+::--------------------------------------------------------------
+::romanice ->TRUE
+::don't romanize -> FALSE
+set "romaji=TRUE"
