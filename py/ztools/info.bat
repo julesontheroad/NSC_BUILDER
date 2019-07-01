@@ -8,7 +8,7 @@ echo ********************************************************
 echo.
 echo -- Input "0" to go back to the MAIN PROGRAM --
 echo.
-set /p bs="OR DRAG A XCI OR NSP FILE AND PRESS ENTER: "
+set /p bs="OR DRAG A XCI\NSP\NSX\NCA FILE AND PRESS ENTER: "
 set bs=%bs:"=%
 if /i "%bs%"=="0" goto salida
 set "targt=%bs%"
@@ -17,7 +17,7 @@ for /f "delims=" %%a in ("%bs%") do set "Name=%%~na"
 if "%Extension%" EQU ".nsp" ( goto sc2 )
 if "%Extension%" EQU ".nsx" ( goto sc2 )
 if "%Extension%" EQU ".xci" ( goto sc2 )
-if "%Extension%" EQU ".nca" ( goto sc2 )
+if "%Extension%" EQU ".nca" ( goto sc3 )
 echo WRONG TYPE OF FILE
 pause
 goto sc1
@@ -44,7 +44,9 @@ set bs=%bs:"=%
 for /f "delims=" %%a in ("%bs%") do set "Extension=%%~xa"
 if "%Extension%" EQU ".*" ( goto wch )
 if "%Extension%" EQU ".nsp" ( goto snfi )
+if "%Extension%" EQU ".nsx" ( goto snfi )
 if "%Extension%" EQU ".xci" ( goto snfi )
+if "%Extension%" EQU ".nca" ( goto snfi_nca ) 
 
 if /i "%bs%"=="1" goto g_file_content
 if /i "%bs%"=="2" goto g_content_list
@@ -150,8 +152,108 @@ echo ********************************************************
 echo VERIFY A NSP\XCI\NCA
 echo ********************************************************
 %pycommand% "%nut%" -b %buffer% -o "%info_dir%" -v "%targt%" 
-
 goto sc2
+
+:sc3
+cls
+call :logo
+echo .......................................................
+echo Input "1" to get NUT-INFO of the xci\nsp
+echo Input "2" to READ the CNMT of the xci\nsp
+echo Input "3" to READ the NACP of the xci\nsp
+echo Input "4" to VERIFY file (xci\nsp\nsx\nca)
+echo.
+echo Input "b" to go back to FILE LOADING
+echo Input "0" to go back to the MAIN PROGRAM
+echo.
+echo --- Or DRAG a New File to change the current target ---
+echo .......................................................
+echo.
+set /p bs="Enter your choice: "
+set bs=%bs:"=%
+for /f "delims=" %%a in ("%bs%") do set "Extension=%%~xa"
+if "%Extension%" EQU ".*" ( goto wch_nca )
+if "%Extension%" EQU ".nca" ( goto snfi_nca )
+if "%Extension%" EQU ".nsp" ( goto snfi )
+if "%Extension%" EQU ".nsx" ( goto snfi )
+if "%Extension%" EQU ".xci" ( goto snfi )
+
+if /i "%bs%"=="1" goto n_info_nca
+if /i "%bs%"=="2" goto r_cnmt_nca
+if /i "%bs%"=="3" goto r_nacp_nca
+if /i "%bs%"=="4" goto verify_nca
+
+if /i "%bs%"=="b" goto sc1
+if /i "%bs%"=="0" goto salida
+goto wch
+
+:snfi_nca
+for /f "delims=" %%a in ("%bs%") do set "Name=%%~na"
+set "targt=%bs%"
+goto sc3
+:wch_nca
+echo WRONG CHOICE
+pause
+goto sc3
+
+:n_info_nca
+cls
+call :logo
+echo ********************************************************
+echo NUT - INFO BY BLAWAR
+echo ********************************************************
+%pycommand% "%nut%" -i "%targt%"
+echo.
+ECHO ********************************************************
+echo Do you want to print the information to a text file?
+ECHO ********************************************************
+:n_info_wrong_nca
+echo Input "1" to print to text file
+echo Input "2" to NOT print to text file
+echo.
+set /p bs="Enter your choice: "
+if /i "%bs%"=="1" goto n_info_print_nca
+if /i "%bs%"=="2" goto sc3
+echo WRONG CHOICE
+echo.
+goto n_info_wrong_nca
+:n_info_print_nca
+if not exist "%info_dir%" MD "%info_dir%">NUL 2>&1
+set "i_file=%info_dir%\%Name%-info.txt"
+%pycommand% "%nut%" -i "%targt%">"%i_file%"
+more +2 "%i_file%">"%i_file%.new"
+move /y "%i_file%.new" "%i_file%" >nul
+ECHO DONE
+goto sc3
+
+:r_cnmt_nca
+cls
+call :logo
+echo ********************************************************
+echo SHOW CMT DATA FROM META NCA IN NSP\XCI
+echo ********************************************************
+%pycommand% "%nut%" -o "%info_dir%" --Read_cnmt "%targt%"
+goto sc3
+
+:r_nacp_nca
+cls
+call :logo
+echo ********************************************************
+echo SHOW NACP DATA FROM CONTROL NCA IN NSP\XCI
+echo ********************************************************
+echo IMPLEMENTATION OF 0LIAM'S NACP LIBRARY
+%pycommand% "%nut%" -o "%info_dir%" --Read_nacp "%targt%"
+goto sc3
+
+:verify_nca
+cls
+call :logo
+echo ********************************************************
+echo VERIFY A NSP\XCI\NCA
+echo ********************************************************
+%pycommand% "%nut%" -b %buffer% -o "%info_dir%" -v "%targt%" 
+goto sc3
+
 
 :salida
 exit /B

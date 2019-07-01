@@ -4306,16 +4306,38 @@ if __name__ == '__main__':
 								print('WRONG CHOICE\n')								
 				except BaseException as e:
 					Print.error('Exception: ' + str(e))
-			'''		
 			if filename.endswith('.nca'):
 				try:
 					f = Fs.Nca(filename, 'rb')
-					feed=f.read_nacp()
-					f.flush()
-					f.close()												
+					if 	str(f.header.contentType) == 'Content.CONTROL':
+						feed=f.read_nacp()
+						f.flush()
+						f.close()	
+					else:	
+						basename=str(os.path.basename(os.path.abspath(filename)))
+						basename=basename.lower()
+						feed=''
+						message=basename+' is not a TYPE CONTROL NCA';print(message);feed+=message+'\n'					
+					if not args.text_file:						
+						print('\n********************************************************')
+						print('Do you want to print the information to a text file')
+						print('********************************************************')
+						i=0
+						while i==0:							
+							print('Input "1" to print to text file')	
+							print('Input "2" to NOT print to text file\n')							
+							ck=input('Input your answer: ')	
+							if ck ==str(1):					
+								with open(infotext, 'w') as info:	
+									info.write(feed)	
+								i=1
+							elif ck ==str(2):					
+								i=1				
+							else:
+								print('WRONG CHOICE\n')							
 				except BaseException as e:
 					Print.error('Exception: ' + str(e))	
-			'''		
+
 		# ......................................................................						
 		# Raw extraction. For cases when a file is bad and triggers a exception
 		# ......................................................................						
@@ -4498,23 +4520,23 @@ if __name__ == '__main__':
 						basename=basename.lower()
 						feed=''
 						message=basename+' is not a TYPE META NCA';print(message);feed+=message+'\n'
-						if not args.text_file:						
-							print('\n********************************************************')
-							print('Do you want to print the information to a text file')
-							print('********************************************************')
-							i=0
-							while i==0:							
-								print('Input "1" to print to text file')	
-								print('Input "2" to NOT print to text file\n')							
-								ck=input('Input your answer: ')	
-								if ck ==str(1):					
-									with open(infotext, 'w') as info:	
-										info.write(feed)	
-									i=1
-								elif ck ==str(2):					
-									i=1				
-								else:
-									print('WRONG CHOICE\n')	
+					if not args.text_file:						
+						print('\n********************************************************')
+						print('Do you want to print the information to a text file')
+						print('********************************************************')
+						i=0
+						while i==0:							
+							print('Input "1" to print to text file')	
+							print('Input "2" to NOT print to text file\n')							
+							ck=input('Input your answer: ')	
+							if ck ==str(1):					
+								with open(infotext, 'w') as info:	
+									info.write(feed)	
+								i=1
+							elif ck ==str(2):					
+								i=1				
+							else:
+								print('WRONG CHOICE\n')	
 				except BaseException as e:
 					Print.error('Exception: ' + str(e))						
 						
@@ -6070,11 +6092,53 @@ if __name__ == '__main__':
 			if filename.endswith('.nca'):
 				try:
 					f = Fs.Nca(filename, 'rb')
-					verify,origheader,ncaname,feed=f.verify(False)
+					ver_,origheader,ncaname,feed,currkg=f.verify(False)
 					f.flush()
-					f.close()						
-					if args.text_file:					
-						if check == False:
+					f.close()
+					if not args.text_file:
+						i=0
+						print('\n********************************************************')
+						print('Do you want to verify the hash of the nca files?')
+						print('********************************************************')
+						while i==0:		
+							print('Input "1" to VERIFY hash of files')	
+							print('Input "2" to NOT verify hash  of files\n')																			
+							check=input('Input your answer: ')	
+							if check ==str(1):
+								print('')
+								f = Fs.Nca(filename, 'rb')
+								verdict,feed=f.verify_hash_nca(buffer,origheader,ver_,feed)
+								f.flush()
+								f.close()
+								i=1
+							elif check ==str(2):
+								i=1				
+							else:
+								print('WRONG CHOICE\n')								
+						print('\n********************************************************')
+						print('Do you want to print the information to a text file')
+						print('********************************************************')
+						i=0
+						while i==0:							
+							print('Input "1" to print to text file')	
+							print('Input "2" to NOT print to text file\n')							
+							check=input('Input your answer: ')	
+							if check ==str(1):					
+								with open(infotext, 'w') as info:	
+									info.write(feed)	
+								i=1
+							elif check ==str(2):					
+								i=1				
+							else:
+								print('WRONG CHOICE\n')			
+					if args.text_file:	
+						f = Fs.Nca(filename, 'rb')					
+						verdict,feed=f.verify_hash_nca(buffer,origheader,ver_,feed)	
+						f.flush()
+						f.close()						
+						if ver_ == True:
+							ver_=verdict						
+						if ver_ == False:
 							with open(errfile, 'a') as errfile:	
 								now=datetime.now()
 								date=now.strftime("%x")+". "+now.strftime("%X")								

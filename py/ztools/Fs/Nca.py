@@ -22,6 +22,7 @@ from Fs.Rom import Rom
 from Fs.Pfs0 import Pfs0
 from Fs.BaseFs import BaseFs
 from Fs.Ticket import Ticket
+from Fs.Nacp import Nacp
 import sq_tools
 import pykakasi
 
@@ -2061,4 +2062,158 @@ class Nca(File):
 					else:				
 						return True,True,True,headdata2,newMasterKeyRev	       
 		return False,False,False,False,masterKeyRev	
+
+#READ NACP FILE WITHOUT EXTRACTION	
+	def read_nacp(self,feed=''):
+		if 	str(self.header.contentType) == 'Content.CONTROL':
+			offset=self.get_ncap_offset()
+			for f in self:
+				f.seek(offset)
+				nacp = Nacp()	
+				feed=nacp.par_getNameandPub(f.read(0x300*15),feed)
+				message='...............................';print(message);feed+=message+'\n'	
+				message='NACP FLAGS';print(message);feed+=message+'\n'						
+				message='...............................';print(message);feed+=message+'\n'
+				f.seek(offset+0x3000)							
+				feed=nacp.par_Isbn(f.read(0x24),feed)		
+				f.seek(offset+0x3025)							
+				feed=nacp.par_getStartupUserAccount(f.readInt8('little'),feed)	
+				feed=nacp.par_getUserAccountSwitchLock(f.readInt8('little'),feed)		
+				feed=nacp.par_getAddOnContentRegistrationType(f.readInt8('little'),feed)						
+				feed=nacp.par_getContentType(f.readInt8('little'),feed)	
+				feed=nacp.par_getParentalControl(f.readInt8('little'),feed)
+				feed=nacp.par_getScreenshot(f.readInt8('little'),feed)
+				feed=nacp.par_getVideoCapture(f.readInt8('little'),feed)
+				feed=nacp.par_dataLossConfirmation(f.readInt8('little'),feed)
+				feed=nacp.par_getPlayLogPolicy(f.readInt8('little'),feed)
+				feed=nacp.par_getPresenceGroupId(f.readInt64('little'),feed)
+				f.seek(offset+0x3040)
+				listages=list()
+				message='...............................';print(message);feed+=message+'\n'						
+				message='Age Ratings';print(message);feed+=message+'\n'	
+				message='...............................';print(message);feed+=message+'\n'						
+				for i in range(12):
+					feed=nacp.par_getRatingAge(f.readInt8('little'),i,feed)
+				f.seek(offset+0x3060)		
+				message='...............................';print(message);feed+=message+'\n'						
+				message='NACP ATTRIBUTES';print(message);feed+=message+'\n'	
+				message='...............................';print(message);feed+=message+'\n'							
+				feed=nacp.par_getDisplayVersion(f.read(0xF),feed)		
+				f.seek(offset+0x3070)							
+				feed=nacp.par_getAddOnContentBaseId(f.readInt64('little'),feed)
+				f.seek(offset+0x3078)							
+				feed=nacp.par_getSaveDataOwnerId(f.readInt64('little'),feed)
+				f.seek(offset+0x3080)							
+				feed=nacp.par_getUserAccountSaveDataSize(f.readInt64('little'),feed)	
+				f.seek(offset+0x3088)								
+				feed=nacp.par_getUserAccountSaveDataJournalSize(f.readInt64('little'),feed)	
+				f.seek(offset+0x3090)	
+				feed=nacp.par_getDeviceSaveDataSize(f.readInt64('little'),feed)	
+				f.seek(offset+0x3098)	
+				feed=nacp.par_getDeviceSaveDataJournalSize(f.readInt64('little'),feed)	
+				f.seek(offset+0x30A0)	
+				feed=nacp.par_getBcatDeliveryCacheStorageSize(f.readInt64('little'),feed)		
+				f.seek(offset+0x30A8)	
+				feed=nacp.par_getApplicationErrorCodeCategory(f.read(0x07),feed)	
+				f.seek(offset+0x30B0)
+				feed=nacp.par_getLocalCommunicationId(f.readInt64('little'),feed)	
+				f.seek(offset+0x30F0)
+				feed=nacp.par_getLogoType(f.readInt8('little'),feed)							
+				feed=nacp.par_getLogoHandling(f.readInt8('little'),feed)		
+				feed=nacp.par_getRuntimeAddOnContentInstall(f.readInt8('little'),feed)	
+				feed=nacp.par_getCrashReport(f.readInt8('little'),feed)	
+				feed=nacp.par_getHdcp(f.readInt8('little'),feed)		
+				feed=nacp.par_getSeedForPseudoDeviceId(f.readInt64('little'),feed)	
+				f.seek(offset+0x3100)			
+				feed=nacp.par_getBcatPassphrase(f.read(0x40),feed)	
+				f.seek(offset+0x3148)			
+				feed=nacp.par_UserAccountSaveDataSizeMax(f.readInt64('little'),feed)						
+				f.seek(offset+0x3150)			
+				feed=nacp.par_UserAccountSaveDataJournalSizeMax(f.readInt64('little'),feed)
+				f.seek(offset+0x3158)			
+				feed=nacp.par_getDeviceSaveDataSizeMax(f.readInt64('little'),feed)
+				f.seek(offset+0x3160)			
+				feed=nacp.par_getDeviceSaveDataJournalSizeMax(f.readInt64('little'),feed)							
+				f.seek(offset+0x3168)			
+				feed=nacp.par_getTemporaryStorageSize(f.readInt64('little'),feed)		
+				feed=nacp.par_getCacheStorageSize(f.readInt64('little'),feed)			
+				f.seek(offset+0x3178)		
+				feed=nacp.par_getCacheStorageJournalSize(f.readInt64('little'),feed)							
+				feed=nacp.par_getCacheStorageDataAndJournalSizeMax(f.readInt64('little'),feed)		
+				f.seek(offset+0x3188)	
+				feed=nacp.par_getCacheStorageIndexMax(f.readInt64('little'),feed)		
+				feed=nacp.par_getPlayLogQueryableApplicationId(f.readInt64('little'),feed)		
+				f.seek(offset+0x3210)	
+				feed=nacp.par_getPlayLogQueryCapability(f.readInt8('little'),feed)	
+				feed=nacp.par_getRepair(f.readInt8('little'),feed)	
+				feed=nacp.par_getProgramIndex(f.readInt8('little'),feed)	
+				feed=nacp.par_getRequiredNetworkServiceLicenseOnLaunch(f.readInt8('little'),feed)	
+				#f.seek(offset+0x3000)						
+				#nacp.open(MemoryFile(f.read(),32768*2))	
+				#nacp.printInfo()
+				#Hex.dump(offset)
+		return feed				
+
+	def verify_hash_nca(self,buffer,origheader,didverify,feed):
+		verdict=True; basename=str(os.path.basename(os.path.abspath(self._path)))			
+		if feed == False:
+			feed=''				
+		message='***************';print(message);feed+=message+'\n'
+		message=('HASH TEST');print(message);feed+=message+'\n'
+		message='***************';print(message);feed+=message+'\n'			
 		
+		message=(str(self.header.titleId)+' - '+str(self.header.contentType));print(message);feed+=message+'\n'
+		ncasize=self.header.size						
+		t = tqdm(total=ncasize, unit='B', unit_scale=True, leave=False)	
+		i=0		
+		self.rewind();
+		rawheader=self.read(0xC00)
+		self.rewind()												
+		for data in iter(lambda: self.read(int(buffer)), ""):				
+			if i==0:	
+				sha=sha256()
+				self.seek(0xC00)
+				sha.update(rawheader)
+				if origheader != False:
+					sha0=sha256()
+					sha0.update(origheader)	
+				i+=1
+				t.update(len(data))
+				self.flush()
+			else:		
+				sha.update(data)
+				if origheader != False:
+					sha0.update(data)								
+				t.update(len(data))
+				self.flush()
+				if not data:				
+					break						
+		t.close()	
+		sha=sha.hexdigest()	
+		if origheader != False:
+			sha0=sha0.hexdigest()				
+		message=('  - File name: '+basename);print(message);feed+=message+'\n'
+		message=('  - SHA256: '+sha);print(message);feed+=message+'\n'
+		if origheader != False:
+			message=('  - ORIG_SHA256: '+sha0);print(message);feed+=message+'\n'						
+		if str(basename)[:16] == str(sha)[:16]:
+			message=('   > FILE IS CORRECT');print(message);feed+=message+'\n'
+		elif origheader != False:
+			if str(basename)[:16] == str(sha0)[:16]:		
+				message=('   > FILE IS CORRECT');print(message);feed+=message+'\n'
+			else:
+				message=('   > FILE IS CORRUPT');print(message);feed+=message+'\n'
+				verdict = False	
+		elif  self.header.contentType == Type.Content.META and didverify == True:		
+			message=('   > RSV WAS CHANGED');print(message);feed+=message+'\n'
+			#print('   > CHECKING INTERNAL HASHES')								
+			message=('     * FILE IS CORRECT');print(message);feed+=message+'\n'							
+		else:
+			message=('   > FILE IS CORRUPT');print(message);feed+=message+'\n'
+			verdict = False
+		message=('');print(message);feed+=message+'\n'			
+		if verdict == False:
+			message=("VERDICT: NCA FILE IS CORRUPT");print(message);feed+=message+'\n'
+		if verdict == True:	
+			message=('VERDICT: NCA FILE IS CORRECT');print(message);feed+=message+'\n'
+		return 	verdict,feed					
