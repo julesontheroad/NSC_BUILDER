@@ -5644,13 +5644,14 @@ if __name__ == '__main__':
 						with open(infotext, 'w') as info:	
 							info.write(feed)									
 				except BaseException as e:
-					Print.error('Exception: ' + str(e))	
-					with open(errfile, 'a') as errfile:	
-						now=datetime.now()
-						date=now.strftime("%x")+". "+now.strftime("%X")								
-						errfile.write(date+'\n')		
-						errfile.write("Filename: "+str(filename)+'\n')
-						errfile.write('Exception: ' + str(e)+'\n')		
+					Print.error('Exception: ' + str(e))
+					if args.text_file:	
+						with open(errfile, 'a') as errfile:	
+							now=datetime.now()
+							date=now.strftime("%x")+". "+now.strftime("%X")								
+							errfile.write(date+'\n')		
+							errfile.write("Filename: "+str(filename)+'\n')
+							errfile.write('Exception: ' + str(e)+'\n')		
 			if filename.endswith('.xci'):
 				try:
 					f = Fs.factory(filename)
@@ -5724,13 +5725,14 @@ if __name__ == '__main__':
 						with open(infotext, 'w') as info:	
 							info.write(feed)								
 				except BaseException as e:
-					Print.error('Exception: ' + str(e))	
-					with open(errfile, 'a') as errfile:	
-						now=datetime.now()
-						date=now.strftime("%x")+". "+now.strftime("%X")								
-						errfile.write(date+'\n')								
-						errfile.write("Filename: "+str(filename)+'\n')
-						errfile.write('Exception: ' + str(e)+'\n')					
+					Print.error('Exception: ' + str(e))
+					if args.text_file:					
+						with open(errfile, 'a') as errfile:	
+							now=datetime.now()
+							date=now.strftime("%x")+". "+now.strftime("%X")								
+							errfile.write(date+'\n')								
+							errfile.write("Filename: "+str(filename)+'\n')
+							errfile.write('Exception: ' + str(e)+'\n')					
 			if filename.endswith('.nca'):
 				try:
 					f = Fs.Nca(filename, 'rb')
@@ -5757,12 +5759,13 @@ if __name__ == '__main__':
 							info.write(feed)							
 				except BaseException as e:
 					Print.error('Exception: ' + str(e))	
-					with open(errfile, 'a') as errfile:	
-						now=datetime.now()
-						date=now.strftime("%x")+". "+now.strftime("%X")						
-						errfile.write(date+'\n')						
-						errfile.write("Filename: "+str(filename)+'\n')
-						errfile.write('Exception: ' + str(e)+'\n')							
+					if args.text_file:					
+						with open(errfile, 'a') as errfile:	
+							now=datetime.now()
+							date=now.strftime("%x")+". "+now.strftime("%X")						
+							errfile.write(date+'\n')						
+							errfile.write("Filename: "+str(filename)+'\n')
+							errfile.write('Exception: ' + str(e)+'\n')							
 						
 		#split_list_by_id						
 		if args.split_list_by_id:						
