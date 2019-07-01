@@ -17,6 +17,7 @@ for /f "delims=" %%a in ("%bs%") do set "Name=%%~na"
 if "%Extension%" EQU ".nsp" ( goto sc2 )
 if "%Extension%" EQU ".nsx" ( goto sc2 )
 if "%Extension%" EQU ".xci" ( goto sc2 )
+if "%Extension%" EQU ".nca" ( goto sc2 )
 echo WRONG TYPE OF FILE
 pause
 goto sc1

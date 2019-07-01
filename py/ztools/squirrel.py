@@ -4489,26 +4489,32 @@ if __name__ == '__main__':
 			if filename.endswith('.nca'):
 				try:
 					f = Fs.Nca(filename, 'rb')
-					feed=f.read_cnmt()
-					f.flush()
-					f.close()		
-					if not args.text_file:						
-						print('\n********************************************************')
-						print('Do you want to print the information to a text file')
-						print('********************************************************')
-						i=0
-						while i==0:							
-							print('Input "1" to print to text file')	
-							print('Input "2" to NOT print to text file\n')							
-							ck=input('Input your answer: ')	
-							if ck ==str(1):					
-								with open(infotext, 'w') as info:	
-									info.write(feed)	
-								i=1
-							elif ck ==str(2):					
-								i=1				
-							else:
-								print('WRONG CHOICE\n')						
+					if 	str(f.header.contentType) == 'Content.META':
+						feed=f.read_cnmt()
+						f.flush()
+						f.close()
+					else:
+						basename=str(os.path.basename(os.path.abspath(filename)))
+						basename=basename.lower()
+						feed=''
+						message=basename+' is not a TYPE META NCA';print(message);feed+=message+'\n'
+						if not args.text_file:						
+							print('\n********************************************************')
+							print('Do you want to print the information to a text file')
+							print('********************************************************')
+							i=0
+							while i==0:							
+								print('Input "1" to print to text file')	
+								print('Input "2" to NOT print to text file\n')							
+								ck=input('Input your answer: ')	
+								if ck ==str(1):					
+									with open(infotext, 'w') as info:	
+										info.write(feed)	
+									i=1
+								elif ck ==str(2):					
+									i=1				
+								else:
+									print('WRONG CHOICE\n')	
 				except BaseException as e:
 					Print.error('Exception: ' + str(e))						
 						
