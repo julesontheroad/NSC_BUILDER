@@ -1377,7 +1377,7 @@ class Nca(File):
 		return offset
 					
 					
-	def get_langueblock(self,title):
+	def get_langueblock(self,title,roman=True):
 		for f in self:
 			self.rewind()					
 			f.rewind()	
@@ -1599,34 +1599,38 @@ class Nca(File):
 								isdemo = 0
 						else:
 							isdemo = 0
-						if i == 2:					
-							kakasi = pykakasi.kakasi()
-							kakasi.setMode("H", "a")
-							kakasi.setMode("K", "a")
-							kakasi.setMode("J", "a")
-							kakasi.setMode("s", True)
-							kakasi.setMode("E", "a")
-							kakasi.setMode("a", None)
-							kakasi.setMode("C", False)
-							converter = kakasi.getConverter()
-							title=converter.do(title)	
-							title=title[0].upper()+title[1:]
-							editor=converter.do(editor)		
-							editor=editor[0].upper()+editor[1:]		
-						if i == 14 or i == 13 or i==12:					
-							kakasi = pykakasi.kakasi()
-							kakasi.setMode("H", "a")
-							kakasi.setMode("K", "a")
-							kakasi.setMode("J", "a")
-							kakasi.setMode("s", True)
-							kakasi.setMode("E", "a")
-							kakasi.setMode("a", None)
-							kakasi.setMode("C", False)
-							converter = kakasi.getConverter()
-							title=converter.do(title)	
-							title=title[0].upper()+title[1:]
-							editor=converter.do(editor)		
-							editor=editor[0].upper()+editor[1:]	
+						if i == 2:	
+							if roman == True:
+								kakasi = pykakasi.kakasi()
+								kakasi.setMode("H", "a")
+								kakasi.setMode("K", "a")
+								kakasi.setMode("J", "a")
+								kakasi.setMode("s", True)
+								kakasi.setMode("E", "a")
+								kakasi.setMode("a", None)
+								kakasi.setMode("C", False)
+								converter = kakasi.getConverter()
+								title=converter.do(title)	
+								title=title[0].upper()+title[1:]
+								editor=converter.do(editor)		
+								editor=editor[0].upper()+editor[1:]	
+							else:pass		
+						if i == 14 or i == 13 or i==12:	
+							if roman == True:						
+								kakasi = pykakasi.kakasi()
+								kakasi.setMode("H", "a")
+								kakasi.setMode("K", "a")
+								kakasi.setMode("J", "a")
+								kakasi.setMode("s", True)
+								kakasi.setMode("E", "a")
+								kakasi.setMode("a", None)
+								kakasi.setMode("C", False)
+								converter = kakasi.getConverter()
+								title=converter.do(title)	
+								title=title[0].upper()+title[1:]
+								editor=converter.do(editor)		
+								editor=editor[0].upper()+editor[1:]	
+							else:pass									
 						title=re.sub(' +', ' ',title)
 						editor=re.sub(' +', ' ',editor)
 						return(title,editor,ediver,SupLg,regionstr[:-1],isdemo)

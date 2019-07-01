@@ -4949,7 +4949,7 @@ class Xci(File):
 		return contentlist										
 						
 						
-	def get_title(self,baseid):
+	def get_title(self,baseid,roman=True):
 		for nspF in self.hfs0:
 			if str(nspF._path)=="secure":
 				for nca in nspF:
@@ -4993,7 +4993,7 @@ class Xci(File):
 				for nca in nspF:
 					if type(nca) == Nca:
 						if 	str(nca.header.contentType) == 'Content.CONTROL':
-							title,editor,ediver,SupLg,regionstr,isdemo=nca.get_langueblock(title)
+							title,editor,ediver,SupLg,regionstr,isdemo=nca.get_langueblock(title,roman)
 							return(title)			
 
 	def get_lang_tag(self,baseid):

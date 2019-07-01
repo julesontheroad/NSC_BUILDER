@@ -2883,7 +2883,15 @@ if __name__ == '__main__':
 						Print.error('Exception: ' + str(e))
 			else:
 				buffer = 32768
-	
+			if args.romanize:
+				for input in args.ofolder:
+					roman=str(input).upper()
+					if roman == "FALSE":
+						roman = False
+					else:
+						roman = True
+			else:
+				roman = True						
 			if args.ofolder:		
 				for input in args.ofolder:
 					try:
@@ -3143,7 +3151,7 @@ if __name__ == '__main__':
 										f = Fs.Xci(basefile)
 									elif basefile.endswith('.nsp'):	
 										f = Fs.Nsp(basefile)								
-									ctitl=f.get_title(baseid)
+									ctitl=f.get_title(baseid,roman)
 									f.flush()
 									f.close()	
 									if ctitl=='DLC' or ctitl=='-':
@@ -3198,7 +3206,7 @@ if __name__ == '__main__':
 										f = Fs.Xci(updfile)	
 									elif updfile.endswith('.nsp'):	
 										f = Fs.Nsp(updfile)							
-									ctitl=f.get_title(updid)
+									ctitl=f.get_title(updid,roman)
 									f.flush()
 									f.close()		
 									if ctitl=='DLC' or ctitl=='-':
@@ -3295,7 +3303,7 @@ if __name__ == '__main__':
 										f = Fs.Xci(dlcfile)	
 									elif dlcfile.endswith('.nsp'):	
 										f = Fs.Nsp(dlcfile)							
-									ctitl=f.get_title(dlcid)
+									ctitl=f.get_title(dlcid,roman)
 									f.flush()
 									f.close()									
 							else:

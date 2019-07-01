@@ -3108,7 +3108,7 @@ class Nsp(Pfs0):
 			'''	
 								
 								
-	def get_title(self,baseid):
+	def get_title(self,baseid,roman=True):
 		for nca in self:
 			if type(nca) == Nca:	
 				if 	str(nca.header.contentType) == 'Content.META':
@@ -3148,7 +3148,7 @@ class Nsp(Pfs0):
 		for nca in self:
 			if type(nca) == Nca:
 				if 	str(nca.header.contentType) == 'Content.CONTROL':
-					title,editor,ediver,SupLg,regionstr,isdemo=nca.get_langueblock(title)
+					title,editor,ediver,SupLg,regionstr,isdemo=nca.get_langueblock(title,roman)
 					return(title)							
 					
 	def get_lang_tag(self,baseid):
