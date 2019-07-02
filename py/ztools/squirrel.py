@@ -5587,7 +5587,16 @@ if __name__ == '__main__':
 				Print.error('Exception: ' + str(e))	
 				
 		if args.renameftxt:			
-			ruta=args.renameftxt		
+			ruta=args.renameftxt
+			if args.romanize:
+				for input in args.ofolder:
+					roman=str(input).upper()
+					if roman == "FALSE":
+						roman = False
+					else:
+						roman = True
+			else:
+				roman = True			
 			if args.text_file:
 				tfile=args.text_file
 				filelist=list()
@@ -5753,6 +5762,18 @@ if __name__ == '__main__':
 				#print('Filename: '+endname)
 			else:
 				endname=str(f)
+			if rom == True:					
+				kakasi = pykakasi.kakasi()
+				kakasi.setMode("H", "a")
+				kakasi.setMode("K", "a")
+				kakasi.setMode("J", "a")
+				kakasi.setMode("s", True)
+				kakasi.setMode("E", "a")
+				kakasi.setMode("a", None)
+				kakasi.setMode("C", False)
+				converter = kakasi.getConverter()
+				endname=converter.do(endname)	
+				endname=endname[0].upper()+endname[1:]						
 			endname = (re.sub(r'[\/\\\:\*\?]+', '', endname))
 			endname = re.sub(r'[™©®`~^´ªº¢£€¥$ƒ±¬½¼«»±•²‰œæÆ³]', '', endname)				
 			endname = re.sub(r'[Ⅲ]', 'III', endname)					

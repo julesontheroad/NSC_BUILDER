@@ -1816,7 +1816,7 @@ if exist "%w_folder%\archfolder" ( %pycommand% "%nut%" -ifo "%w_folder%\archfold
 endlocal
 dir "%fold_output%\tempname.*" /b  > "%w_folder%\templist.txt"
 for /f "usebackq tokens=*" %%f in ("%w_folder%\templist.txt") do (
-%pycommand% "%nut%" --renameftxt "%fold_output%\%%f" -tfile "%list%"
+%pycommand% "%nut%" -roma %romaji% --renameftxt "%fold_output%\%%f" -tfile "%list%"
 if exist "%w_folder%\templist.txt" del "%w_folder%\templist.txt"
 )
 
@@ -1828,7 +1828,7 @@ exit /B
 :m_process_jobs_fat32_4
 dir "%w_folder%\tempname.*" /b  > "%w_folder%\templist.txt"
 for /f "usebackq tokens=*" %%f in ("%w_folder%\templist.txt") do (
-%pycommand% "%nut%" --renameftxt "%w_folder%\%%f" -tfile "%list%"
+%pycommand% "%nut%" -roma %romaji% --renameftxt "%w_folder%\%%f" -tfile "%list%"
 )
 setlocal enabledelayedexpansion
 if not exist "%fold_output%" MD "%fold_output%" >NUL 2>&1
