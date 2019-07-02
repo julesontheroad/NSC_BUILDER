@@ -5,6 +5,9 @@ from Fs.Nca import Nca
 from Fs.File import File
 from Fs.Nca import NcaHeader
 from Fs.File import MemoryFile
+import Fs.Type
+from Fs import Type
+from Fs.Nacp import Nacp
 import os
 import Print
 import Keys
@@ -15,8 +18,6 @@ import Hex
 import sq_tools
 from struct import pack as pk, unpack as upk
 from hashlib import sha256
-import Fs.Type
-from Fs import Type
 import re
 import pathlib
 import Config
@@ -24,6 +25,7 @@ import Print
 from tqdm import tqdm
 import math  
 from operator import itemgetter, attrgetter, methodcaller
+import shutil
 #from Cryptodome.Cipher import PKCS1_v1_5 #Add new dependency Cryptodome
 
 MEDIA_SIZE = 0x200
@@ -825,11 +827,106 @@ class Xci(File):
 				for ticket in nspF:
 					if type(ticket) == Ticket:
 						return 'TRUE'	
-				return 'FALSE'			
-		
+				return 'FALSE'	
 
+#READ NACP FILE WITHOUT EXTRACTION	
+	def read_nacp(self,feed=''):
+		for nspF in self.hfs0:
+			if str(nspF._path)=="secure":
+				for nca in nspF:	
+					if type(nca) == Nca:
+						if 	str(nca.header.contentType) == 'Content.CONTROL':
+							offset=nca.get_ncap_offset()
+							for f in nca:
+								f.seek(offset)
+								nacp = Nacp()	
+								feed=nacp.par_getNameandPub(f.read(0x300*15),feed)
+								message='...............................';print(message);feed+=message+'\n'	
+								message='NACP FLAGS';print(message);feed+=message+'\n'						
+								message='...............................';print(message);feed+=message+'\n'
+								f.seek(offset+0x3000)							
+								feed=nacp.par_Isbn(f.read(0x24),feed)		
+								f.seek(offset+0x3025)							
+								feed=nacp.par_getStartupUserAccount(f.readInt8('little'),feed)	
+								feed=nacp.par_getUserAccountSwitchLock(f.readInt8('little'),feed)		
+								feed=nacp.par_getAddOnContentRegistrationType(f.readInt8('little'),feed)						
+								feed=nacp.par_getContentType(f.readInt8('little'),feed)	
+								feed=nacp.par_getParentalControl(f.readInt8('little'),feed)
+								feed=nacp.par_getScreenshot(f.readInt8('little'),feed)
+								feed=nacp.par_getVideoCapture(f.readInt8('little'),feed)
+								feed=nacp.par_dataLossConfirmation(f.readInt8('little'),feed)
+								feed=nacp.par_getPlayLogPolicy(f.readInt8('little'),feed)
+								feed=nacp.par_getPresenceGroupId(f.readInt64('little'),feed)
+								f.seek(offset+0x3040)
+								listages=list()
+								message='...............................';print(message);feed+=message+'\n'						
+								message='Age Ratings';print(message);feed+=message+'\n'	
+								message='...............................';print(message);feed+=message+'\n'						
+								for i in range(12):
+									feed=nacp.par_getRatingAge(f.readInt8('little'),i,feed)
+								f.seek(offset+0x3060)		
+								message='...............................';print(message);feed+=message+'\n'						
+								message='NACP ATTRIBUTES';print(message);feed+=message+'\n'	
+								message='...............................';print(message);feed+=message+'\n'							
+								feed=nacp.par_getDisplayVersion(f.read(0xF),feed)		
+								f.seek(offset+0x3070)							
+								feed=nacp.par_getAddOnContentBaseId(f.readInt64('little'),feed)
+								f.seek(offset+0x3078)							
+								feed=nacp.par_getSaveDataOwnerId(f.readInt64('little'),feed)
+								f.seek(offset+0x3080)							
+								feed=nacp.par_getUserAccountSaveDataSize(f.readInt64('little'),feed)	
+								f.seek(offset+0x3088)								
+								feed=nacp.par_getUserAccountSaveDataJournalSize(f.readInt64('little'),feed)	
+								f.seek(offset+0x3090)	
+								feed=nacp.par_getDeviceSaveDataSize(f.readInt64('little'),feed)	
+								f.seek(offset+0x3098)	
+								feed=nacp.par_getDeviceSaveDataJournalSize(f.readInt64('little'),feed)	
+								f.seek(offset+0x30A0)	
+								feed=nacp.par_getBcatDeliveryCacheStorageSize(f.readInt64('little'),feed)		
+								f.seek(offset+0x30A8)	
+								feed=nacp.par_getApplicationErrorCodeCategory(f.read(0x07),feed)	
+								f.seek(offset+0x30B0)
+								feed=nacp.par_getLocalCommunicationId(f.readInt64('little'),feed)	
+								f.seek(offset+0x30F0)
+								feed=nacp.par_getLogoType(f.readInt8('little'),feed)							
+								feed=nacp.par_getLogoHandling(f.readInt8('little'),feed)		
+								feed=nacp.par_getRuntimeAddOnContentInstall(f.readInt8('little'),feed)	
+								feed=nacp.par_getCrashReport(f.readInt8('little'),feed)	
+								feed=nacp.par_getHdcp(f.readInt8('little'),feed)		
+								feed=nacp.par_getSeedForPseudoDeviceId(f.readInt64('little'),feed)	
+								f.seek(offset+0x3100)			
+								feed=nacp.par_getBcatPassphrase(f.read(0x40),feed)	
+								f.seek(offset+0x3148)			
+								feed=nacp.par_UserAccountSaveDataSizeMax(f.readInt64('little'),feed)						
+								f.seek(offset+0x3150)			
+								feed=nacp.par_UserAccountSaveDataJournalSizeMax(f.readInt64('little'),feed)
+								f.seek(offset+0x3158)			
+								feed=nacp.par_getDeviceSaveDataSizeMax(f.readInt64('little'),feed)
+								f.seek(offset+0x3160)			
+								feed=nacp.par_getDeviceSaveDataJournalSizeMax(f.readInt64('little'),feed)							
+								f.seek(offset+0x3168)			
+								feed=nacp.par_getTemporaryStorageSize(f.readInt64('little'),feed)		
+								feed=nacp.par_getCacheStorageSize(f.readInt64('little'),feed)			
+								f.seek(offset+0x3178)		
+								feed=nacp.par_getCacheStorageJournalSize(f.readInt64('little'),feed)							
+								feed=nacp.par_getCacheStorageDataAndJournalSizeMax(f.readInt64('little'),feed)		
+								f.seek(offset+0x3188)	
+								feed=nacp.par_getCacheStorageIndexMax(f.readInt64('little'),feed)		
+								feed=nacp.par_getPlayLogQueryableApplicationId(f.readInt64('little'),feed)		
+								f.seek(offset+0x3210)	
+								feed=nacp.par_getPlayLogQueryCapability(f.readInt8('little'),feed)	
+								feed=nacp.par_getRepair(f.readInt8('little'),feed)	
+								feed=nacp.par_getProgramIndex(f.readInt8('little'),feed)	
+								feed=nacp.par_getRequiredNetworkServiceLicenseOnLaunch(f.readInt8('little'),feed)	
+								#f.seek(offset+0x3000)						
+								#nacp.open(MemoryFile(f.read(),32768*2))	
+								#nacp.printInfo()
+								#Hex.dump(offset)				
+		return feed
+		
 #READ CNMT FILE WITHOUT EXTRACTION	
 	def read_cnmt(self):
+		feed=''	
 		for nspF in self.hfs0:
 			if str(nspF._path)=="secure":
 				for nca in nspF:
@@ -857,47 +954,45 @@ class Xci(File):
 									cnmt.seek(0x28)					
 									min_sversion=cnmt.readInt32()
 									length_of_emeta=cnmt.readInt32()	
-									Print.info('...........................................')								
-									Print.info('Reading: ' + str(cnmt._path))
-									Print.info('...........................................')							
-									Print.info('titleid = ' + str(hx(titleid.to_bytes(8, byteorder='big'))))
-									Print.info('version = ' + str(int.from_bytes(titleversion, byteorder='little')))
-									Print.info('Table offset = '+ str(hx((offset+0x20).to_bytes(2, byteorder='big'))))
-									Print.info('number of content = '+ str(content_entries))
-									Print.info('number of meta entries = '+ str(meta_entries))
-									Print.info('Application id\Patch id = ' + str(hx(original_ID.to_bytes(8, byteorder='big'))))
+									message='...........................................';print(message);feed+=message+'\n'	
+									message='Reading: ' + str(cnmt._path);print(message);feed+=message+'\n'							
+									message='...........................................';print(message);feed+=message+'\n'
+									message='Titleid = ' + (str(hx(titleid.to_bytes(8, byteorder='big')))[2:-1]).upper();print(message);feed+=message+'\n'							
+									message='Version = ' + str(int.from_bytes(titleversion, byteorder='little'));print(message);feed+=message+'\n'
+									message='Table offset = '+ str(hx((offset+0x20).to_bytes(2, byteorder='big')));print(message);feed+=message+'\n'
+									message='Number of content = '+ str(content_entries);print(message);feed+=message+'\n'
+									message='Number of meta entries = '+ str(meta_entries);print(message);feed+=message+'\n'
+									message='Application id\Patch id = ' + (str(hx(original_ID.to_bytes(8, byteorder='big')))[2:-1]).upper();print(message);feed+=message+'\n'							
 									content_name=str(cnmt._path)
 									content_name=content_name[:-22]				
 									if content_name == 'AddOnContent':
-										Print.info('RequiredUpdateNumber = ' + str(min_sversion))
+										message='RequiredUpdateNumber = ' + str(min_sversion);print(message);feed+=message+'\n'							
 									if content_name != 'AddOnContent':
-										Print.info('RequiredSystemVersion = ' + str(min_sversion))
-									Print.info('Length of exmeta = ' + str(length_of_emeta))								
+										message='RequiredSystemVersion = ' + str(min_sversion);print(message);feed+=message+'\n'	
+									message='Length of exmeta = ' + str(length_of_emeta);print(message);feed+=message+'\n'																
 									cnmt.rewind()
 									cnmt.seek(0x20+offset)
 									for i in range(content_entries):
-										Print.info('........................')							
-										Print.info('Content number ' + str(i+1))
-										Print.info('........................')
+										message='........................';print(message);feed+=message+'\n'		
+										message='Content number ' + str(i+1);print(message);feed+=message+'\n'																
+										message='........................';print(message);feed+=message+'\n'										
 										vhash = cnmt.read(0x20)
-										Print.info('hash =\t' + str(hx(vhash)))
+										message='Hash =\t' + str(hx(vhash));print(message);feed+=message+'\n'									
 										NcaId = cnmt.read(0x10)
-										Print.info('NcaId =\t' + str(hx(NcaId)))
+										message='NcaId =\t' + str(hx(NcaId));print(message);feed+=message+'\n'											
 										size = cnmt.read(0x6)
-										Print.info('Size =\t' + str(int.from_bytes(size, byteorder='little', signed=True)))
+										message='Size =\t' + str(int.from_bytes(size, byteorder='little', signed=True));print(message);feed+=message+'\n'								
 										ncatype = cnmt.read(0x1)
-										Print.info('ncatype = ' + str(int.from_bytes(ncatype, byteorder='little', signed=True)))
+										message='Ncatype = ' + str(int.from_bytes(ncatype, byteorder='little', signed=True));print(message);feed+=message+'\n'								
 										unknown = cnmt.read(0x1)	
 									cnmt.seek(0x20+offset+content_entries*0x38+length_of_emeta)			
 									digest = cnmt.read(0x20)
-									Print.info("")	
-									Print.info('digest= '+str(hx(digest)))
-									Print.info("")		
+									message='\ndigest= '+str(hx(digest))+'\n';print(message);feed+=message+'\n'									
 									cnmt.seek(0x20+offset+content_entries*0x38)										
 									if length_of_emeta>0:
-										Print.info('----------------')			
-										Print.info('Extended meta')	
-										Print.info('----------------')				
+										message='----------------';print(message);feed+=message+'\n'
+										message='Extended meta';print(message);feed+=message+'\n'								
+										message='----------------';print(message);feed+=message+'\n'											
 										num_prev_cnmt=cnmt.read(0x4)
 										num_prev_delta=cnmt.read(0x4)
 										num_delta_info=cnmt.read(0x4)
@@ -905,16 +1000,15 @@ class Xci(File):
 										num_previous_content=cnmt.read(0x4)		
 										num_delta_content=cnmt.read(0x4)	
 										cnmt.read(0x4)	
-										Print.info('Number of previous cnmt entries = ' + str(int.from_bytes(num_prev_cnmt, byteorder='little')))	
-										Print.info('Number of previous delta entries = ' + str(int.from_bytes(num_prev_delta, byteorder='little')))	
-										Print.info('Number of delta info entries = ' + str(int.from_bytes(num_delta_info, byteorder='little')))			
-										Print.info('Number of delta application info entries = ' + str(int.from_bytes(num_delta_application, byteorder='little')))	
-										Print.info('Number of previous content entries = ' + str(int.from_bytes(num_previous_content, byteorder='little')))	
-										Print.info('Number of delta content entries = ' + str(int.from_bytes(num_delta_content, byteorder='little')))		
+										message='Number of previous cnmt entries = ' + str(int.from_bytes(num_prev_cnmt, byteorder='little'));print(message);feed+=message+'\n'								
+										message='Number of previous delta entries = ' + str(int.from_bytes(num_prev_delta, byteorder='little'));print(message);feed+=message+'\n'									
+										message='Number of delta info entries = ' + str(int.from_bytes(num_delta_info, byteorder='little'));print(message);feed+=message+'\n'									
+										message='Number of previous content entries = ' + str(int.from_bytes(num_previous_content, byteorder='little'));print(message);feed+=message+'\n'	
+										message='Number of delta content entries = ' + str(int.from_bytes(num_delta_content, byteorder='little'));print(message);feed+=message+'\n'										
 										for i in range(int.from_bytes(num_prev_cnmt, byteorder='little')):
-											Print.info('...........................................')								
-											Print.info('Previous cnmt records: '+ str(i+1))
-											Print.info('...........................................')				
+											message='...........................................';print(message);feed+=message+'\n'									
+											message='Previous cnmt records: '+ str(i+1);print(message);feed+=message+'\n'		
+											message='...........................................';print(message);feed+=message+'\n'										
 											titleid=cnmt.readInt64()	
 											titleversion = cnmt.read(0x4)	
 											type_n = cnmt.read(0x1)					
@@ -922,52 +1016,49 @@ class Xci(File):
 											vhash = cnmt.read(0x20)
 											unknown2=cnmt.read(0x2)
 											unknown3=cnmt.read(0x2)
-											unknown4=cnmt.read(0x4)				
-											Print.info('titleid = ' + str(hx(titleid.to_bytes(8, byteorder='big'))))	
-											Print.info('version = ' + str(int.from_bytes(titleversion, byteorder='little')))
-											Print.info('type number = ' + str(hx(type_n)))	
-											#Print.info('unknown1 = ' + str(int.from_bytes(unknown1, byteorder='little')))			
-											Print.info('hash =\t' + str(hx(vhash)))				
-											Print.info('content nca number = ' + str(int.from_bytes(unknown2, byteorder='little')))				
-											#Print.info('unknown3 = ' + str(int.from_bytes(unknown3, byteorder='little')))				
-											#Print.info('unknown4 = ' + str(int.from_bytes(unknown4, byteorder='little')))
+											unknown4=cnmt.read(0x4)	
+											message='Titleid = ' + str(hx(titleid.to_bytes(8, byteorder='big')));print(message);feed+=message+'\n'
+											message='Version = ' + str(int.from_bytes(titleversion, byteorder='little'));print(message);feed+=message+'\n'	
+											message='Type number = ' + str(hx(type_n));print(message);feed+=message+'\n'	
+											message='Hash =\t' + str(hx(vhash));print(message);feed+=message+'\n'	
+											message='Content nca number = ' + str(int.from_bytes(unknown2, byteorder='little'));print(message);feed+=message+'\n'										
 										for i in range(int.from_bytes(num_prev_delta, byteorder='little')):
-											Print.info('...........................................')								
-											Print.info('Previous delta records: '+ str(i+1))
-											Print.info('...........................................')				
+											message='...........................................';print(message);feed+=message+'\n'	
+											message='Previous delta records: '+ str(i+1);print(message);feed+=message+'\n'										
+											message='...........................................';print(message);feed+=message+'\n'												
 											oldtitleid=cnmt.readInt64()	
 											newtitleid=cnmt.readInt64()					
 											oldtitleversion = cnmt.read(0x4)	
 											newtitleversion = cnmt.read(0x4)	
 											size = cnmt.read(0x8)
-											unknown1=cnmt.read(0x8)				
-											Print.info('old titleid = ' + str(hx(oldtitleid.to_bytes(8, byteorder='big'))))	
-											Print.info('new titleid = ' + str(hx(newtitleid.to_bytes(8, byteorder='big'))))						
-											Print.info('old version = ' + str(int.from_bytes(oldtitleversion, byteorder='little')))
-											Print.info('new version = ' + str(int.from_bytes(newtitleversion, byteorder='little')))	
-											Print.info('size = ' + str(int.from_bytes(size, byteorder='little', signed=True)))					
+											unknown1=cnmt.read(0x8)		
+											message='Old titleid = ' + str(hx(oldtitleid.to_bytes(8, byteorder='big')));print(message);feed+=message+'\n'	
+											message='New titleid = ' + str(hx(newtitleid.to_bytes(8, byteorder='big')));print(message);feed+=message+'\n'	
+											message='Old version = ' + str(int.from_bytes(oldtitleversion, byteorder='little'));print(message);feed+=message+'\n'	
+											message='New version = ' + str(int.from_bytes(newtitleversion, byteorder='little'));print(message);feed+=message+'\n'	
+											message='Size = ' + str(int.from_bytes(size, byteorder='little', signed=True));print(message);feed+=message+'\n'				
 											#Print.info('unknown1 = ' + str(int.from_bytes(unknown1, byteorder='little')))			
 										for i in range(int.from_bytes(num_delta_info, byteorder='little')):
-											Print.info('...........................................')								
-											Print.info('Delta info: '+ str(i+1))
-											Print.info('...........................................')				
+											message='...........................................';print(message);feed+=message+'\n'	
+											message='Delta info: '+ str(i+1);print(message);feed+=message+'\n'	
+											message='...........................................';print(message);feed+=message+'\n'										
 											oldtitleid=cnmt.readInt64()	
 											newtitleid=cnmt.readInt64()					
 											oldtitleversion = cnmt.read(0x4)	
 											newtitleversion = cnmt.read(0x4)	
 											index1=cnmt.readInt64()	
-											index2=cnmt.readInt64()				
-											Print.info('old titleid = ' + str(hx(oldtitleid.to_bytes(8, byteorder='big'))))	
-											Print.info('new titleid = ' + str(hx(newtitleid.to_bytes(8, byteorder='big'))))						
-											Print.info('old version = ' + str(int.from_bytes(oldtitleversion, byteorder='little')))
-											Print.info('new version = ' + str(int.from_bytes(newtitleversion, byteorder='little')))	
-											Print.info('index1 = ' + str(hx(index1.to_bytes(8, byteorder='big'))))	
-											Print.info('index2 = ' + str(hx(index2.to_bytes(8, byteorder='big'))))						
+											index2=cnmt.readInt64()		
+											message='Old titleid = ' + str(hx(oldtitleid.to_bytes(8, byteorder='big')));print(message);feed+=message+'\n'	
+											message='New titleid = ' + str(hx(newtitleid.to_bytes(8, byteorder='big')));print(message);feed+=message+'\n'	
+											message='Old version = ' + str(int.from_bytes(oldtitleversion, byteorder='little'));print(message);feed+=message+'\n'	
+											message='New version = ' + str(int.from_bytes(newtitleversion, byteorder='little'));print(message);feed+=message+'\n'	
+											message='Index1 = ' + str(hx(index1.to_bytes(8, byteorder='big')));print(message);feed+=message+'\n'
+											message='Index2 = ' + str(hx(index2.to_bytes(8, byteorder='big')));print(message);feed+=message+'\n'					
 											#Print.info('unknown1 = ' + str(int.from_bytes(unknown1, byteorder='little')))
 										for i in range(int.from_bytes(num_delta_application, byteorder='little')):
-											Print.info('...........................................')								
-											Print.info('Delta application info: '+ str(i+1))
-											Print.info('...........................................')				
+											message='...........................................';print(message);feed+=message+'\n'	
+											message='Delta application info: '+ str(i+1);print(message);feed+=message+'\n'	
+											message='...........................................';print(message);feed+=message+'\n'											
 											OldNcaId = cnmt.read(0x10)
 											NewNcaId = cnmt.read(0x10)		
 											old_size = cnmt.read(0x6)				
@@ -976,43 +1067,41 @@ class Xci(File):
 											unknown1 = cnmt.read(0x2)
 											ncatype = cnmt.read(0x1)	
 											installable = cnmt.read(0x1)
-											unknown2 = cnmt.read(0x4)				
-											Print.info('OldNcaId = ' + str(hx(OldNcaId)))	
-											Print.info('NewNcaId = ' + str(hx(NewNcaId)))	
-											Print.info('Old size = ' +  str(int.from_bytes(old_size, byteorder='little', signed=True)))	
-											Print.info('unknown1 = ' + str(int.from_bytes(unknown1, byteorder='little')))
-											Print.info('ncatype =  ' + str(int.from_bytes(ncatype, byteorder='little', signed=True)))
-											Print.info('installable = ' + str(int.from_bytes(installable, byteorder='little', signed=True)))
-											Print.info('Upper 2 bytes of the new size=' + str(hx(up2bytes)))	
-											Print.info('Lower 4 bytes of the new size=' + str(hx(low4bytes)))					
-											#Print.info('unknown2 =\t' + str(int.from_bytes(unknown2, byteorder='little')))			
-
+											unknown2 = cnmt.read(0x4)		
+											message='OldNcaId = ' + str(hx(OldNcaId));print(message);feed+=message+'\n'	
+											message='NewNcaId = ' + str(hx(NewNcaId));print(message);feed+=message+'\n'	
+											message='Old size = ' +  str(int.from_bytes(old_size, byteorder='little', signed=True));print(message);feed+=message+'\n'	
+											message='Unknown1 = ' + str(int.from_bytes(unknown1, byteorder='little'));print(message);feed+=message+'\n'	
+											message='Ncatype =  ' + str(int.from_bytes(ncatype, byteorder='little', signed=True));print(message);feed+=message+'\n'	
+											message='Installable = ' + str(int.from_bytes(installable, byteorder='little'));print(message);feed+=message+'\n'	
+											message='Upper 2 bytes of the new size=' + str(hx(up2bytes));print(message);feed+=message+'\n'	
+											message='Lower 4 bytes of the new size=' + str(hx(low4bytes));print(message);feed+=message+'\n'			
 										for i in range(int.from_bytes(num_previous_content, byteorder='little')):
-											Print.info('...........................................')								
-											Print.info('Previous content records: '+ str(i+1))
-											Print.info('...........................................')				
+											message='...........................................';print(message);feed+=message+'\n'	
+											message='Previous content records: '+ str(i+1);print(message);feed+=message+'\n'	
+											message='...........................................';print(message);feed+=message+'\n'	
 											NcaId = cnmt.read(0x10)		
 											size = cnmt.read(0x6)				
 											ncatype = cnmt.read(0x1)	
-											unknown1 = cnmt.read(0x1)				
-											Print.info('NcaId = '+ str(hx(NcaId)))	
-											Print.info('Size = '+ str(int.from_bytes(size, byteorder='little', signed=True)))	
-											Print.info('ncatype = '+ str(int.from_bytes(ncatype, byteorder='little', signed=True)))			
+											unknown1 = cnmt.read(0x1)	
+											message='NcaId = '+ str(hx(NcaId));print(message);feed+=message+'\n'	
+											message='Size = '+ str(int.from_bytes(size, byteorder='little', signed=True));print(message);feed+=message+'\n'	
+											message='Ncatype = '+ str(int.from_bytes(ncatype, byteorder='little', signed=True));print(message);feed+=message+'\n'											
 											#Print.info('unknown1 = '+ str(int.from_bytes(unknown1, byteorder='little')))	
-						
 										for i in range(int.from_bytes(num_delta_content, byteorder='little')):
-											Print.info('........................')							
-											Print.info('Delta content entry ' + str(i+1))
-											Print.info('........................')
+											message='...........................................';print(message);feed+=message+'\n'	
+											message='Delta content entry ' + str(i+1);print(message);feed+=message+'\n'	
+											message='...........................................';print(message);feed+=message+'\n'									
 											vhash = cnmt.read(0x20)
-											Print.info('hash =\t' + str(hx(vhash)))
+											message='Hash =\t' + str(hx(vhash));print(message);feed+=message+'\n'										
 											NcaId = cnmt.read(0x10)
-											Print.info('NcaId =\t' + str(hx(NcaId)))
+											message='NcaId =\t' + str(hx(NcaId));print(message);feed+=message+'\n'										
 											size = cnmt.read(0x6)
-											Print.info('Size =\t' + str(int.from_bytes(size, byteorder='little', signed=True)))
+											message='Size =\t' + str(int.from_bytes(size, byteorder='little', signed=True));print(message);feed+=message+'\n'									
 											ncatype = cnmt.read(0x1)
-											Print.info('ncatype = ' + str(int.from_bytes(ncatype, byteorder='little', signed=True)))
-											unknown = cnmt.read(0x1)	
+											message='Ncatype = ' + str(int.from_bytes(ncatype, byteorder='little', signed=True));print(message);feed+=message+'\n'											
+											unknown = cnmt.read(0x1)		
+		return feed						
 										
 									
 #///////////////////////////////////////////////////								
@@ -1552,6 +1641,7 @@ class Xci(File):
 #ADVANCED FILE-LIST			
 	def  adv_file_list(self):				
 		contentlist=list()	
+		feed=''
 		for nspF in self.hfs0:
 			if str(nspF._path)=="secure":
 				for nca in nspF:
@@ -1584,26 +1674,26 @@ class Xci(File):
 										tit_name,editor,ediver,SupLg,regionstr,isdemo = self.inf_get_title(target,offset,content_entries,original_ID)							
 										if tit_name=='DLC':
 											tit_name='-'
-											editor='-'											
+											editor='-'									
 										if isdemo == 1:
 											content_type='Demo Update'
 										if isdemo == 2:
-											content_type='RetailInteractiveDisplay Update'											
+											content_type='RetailInteractiveDisplay Update'									
 									if content_type_cnmt == 'AddOnContent':
 										content_type='DLC'
 										reqtag='- RequiredUpdateNumber: '
 										tit_name,editor,ediver,SupLg,regionstr,isdemo = self.inf_get_title(target,offset,content_entries,original_ID)	
 									if content_type_cnmt == 'Application':
-										content_type='Base Game or Application'
+										content_type='Game or Application'
 										reqtag='- RequiredSystemVersion: '	
 										tit_name,editor,ediver,SupLg,regionstr,isdemo = self.inf_get_title(target,offset,content_entries,original_ID)	
 										if tit_name=='DLC':
 											tit_name='-'
-											editor='-'												
+											editor='-'									
 										if isdemo == 1:
 											content_type='Demo'
 										if isdemo == 2:
-											content_type='RetailInteractiveDisplay'												
+											content_type='RetailInteractiveDisplay'									
 									cnmt.rewind()							
 									cnmt.seek(0x20+offset)
 									titleid2 = str(hx(titleid.to_bytes(8, byteorder='big'))) 	
@@ -1619,61 +1709,59 @@ class Xci(File):
 										else:			
 											keygen=nca.header.getCryptoType2()	
 									else:			
-										keygen=nca.header.getCryptoType2()	
-									programSDKversion,dataSDKversion=self.getsdkvertit(titleid2)											
-									sdkversion=nca.get_sdkversion()
+										keygen=nca.header.getCryptoType2()		
+									programSDKversion,dataSDKversion=self.getsdkvertit(titleid2)									
+									sdkversion=nca.get_sdkversion()								
 									MinRSV=sq_tools.getMinRSV(keygen,min_sversion)
 									FW_rq=sq_tools.getFWRangeKG(keygen)
 									RSV_rq=sq_tools.getFWRangeRSV(min_sversion)									
-									RSV_rq_min=sq_tools.getFWRangeRSV(MinRSV)								
-									Print.info('-----------------------------')
-									Print.info('CONTENT ID: ' + str(titleid2))	
-									Print.info('-----------------------------')			
-									if content_type_cnmt != 'AddOnContent':									
-										Print.info("Titleinfo:")							
-										Print.info("- Name: " + tit_name)
-										Print.info("- Editor: " + editor)
-										Print.info("- Build number: " + str(ediver))
-										Print.info("- Meta SDK version: " + sdkversion)	
-										Print.info("- Program SDK version: " + programSDKversion)										
+									RSV_rq_min=sq_tools.getFWRangeRSV(MinRSV)	
+									message=('-----------------------------');print(message);feed+=message+'\n'	
+									message=('CONTENT ID: ' + str(titleid2));print(message);feed+=message+'\n'									
+									message=('-----------------------------');print(message);feed+=message+'\n'									
+									if content_type_cnmt != 'AddOnContent':		
+										message=("Titleinfo:");print(message);feed+=message+'\n'
+										message=("- Name: " + tit_name);print(message);feed+=message+'\n'
+										message=("- Editor: " + editor);print(message);feed+=message+'\n'
+										message=("- Build number: " + str(ediver));print(message);feed+=message+'\n'								
+										message=("- Meta SDK version: " + sdkversion);print(message);feed+=message+'\n'	
+										message=("- Program SDK version: " + programSDKversion);print(message);feed+=message+'\n'
 										suplangue=str((', '.join(SupLg)))
-										Print.info("- Supported Languages: "+suplangue)
-										Print.info("- Content type: "+content_type)
-										Print.info("- Version: " + version+' -> '+content_type_cnmt+' ('+str(v_number)+')')
+										message=("- Supported Languages: "+suplangue);print(message);feed+=message+'\n'								
+										message=("- Content type: "+content_type);print(message);feed+=message+'\n'	
+										message=("- Version: " + version+' -> '+content_type_cnmt+' ('+str(v_number)+')');print(message);feed+=message+'\n'								
 									if content_type_cnmt == 'AddOnContent':
 										if tit_name != "DLC":
-											Print.info("- Name: " + tit_name)
-											Print.info("- Editor: " + editor)											
-										Print.info("- Content type: "+"DLC")
+											message=("- Name: " + tit_name);print(message);feed+=message+'\n'
+											message=("- Editor: " + editor);print(message);feed+=message+'\n'	
+										message=("- Content type: "+"DLC");print(message);feed+=message+'\n'									
 										DLCnumb=str(titleid2)
 										DLCnumb="0000000000000"+DLCnumb[-3:]									
 										DLCnumb=bytes.fromhex(DLCnumb)
 										DLCnumb=str(int.from_bytes(DLCnumb, byteorder='big'))									
 										DLCnumb=int(DLCnumb)
-										Print.info("- DLC number: "+str(DLCnumb)+' -> '+"AddOnContent"+' ('+str(DLCnumb)+')')						
-										Print.info("- DLC version Number: " + version+' -> '+"Version"+' ('+str(v_number)+')')												
-										Print.info("- Meta SDK version: " + sdkversion)		
-										Print.info("- Data SDK version: " + dataSDKversion)											
-									Print.info("")								
-									Print.info("Required Firmware:")			
+										message=("- DLC number: "+str(DLCnumb)+' -> '+"AddOnContent"+' ('+str(DLCnumb)+')');print(message);feed+=message+'\n'
+										message=("- DLC version Number: " + version+' -> '+"Version"+' ('+str(v_number)+')');print(message);feed+=message+'\n'
+										message=("- Meta SDK version: " + sdkversion);print(message);feed+=message+'\n'
+										message=("- Data SDK version: " + dataSDKversion);print(message);feed+=message+'\n'								
+									message=("\nRequired Firmware:");print(message);feed+=message+'\n'									
 									if content_type_cnmt == 'AddOnContent':
 										if v_number == 0:
-											Print.info("- Required game version: " + str(min_sversion)+' -> '+"Application"+' ('+str(RS_number)+')')									
+											message=("- Required game version: " + str(min_sversion)+' -> '+"Application"+' ('+str(RS_number)+')');print(message);feed+=message+'\n'																
 										if v_number > 0:
-											Print.info("- Required game version: " + str(min_sversion)+' -> '+"Patch"+' ('+str(RS_number)+')')																									
+											message=("- Required game version: " + str(min_sversion)+' -> '+"Patch"+' ('+str(RS_number)+')');print(message);feed+=message+'\n'																																	
 									else:
-										Print.info(reqtag + str(min_sversion)+" -> " +RSV_rq)						
-									Print.info('- Encryption (keygeneration): ' + str(keygen)+" -> " +FW_rq)
-									if content_type_cnmt != 'AddOnContent':							
-										Print.info('- Patchable to: ' + str(MinRSV)+" -> " + RSV_rq_min)
+										message=(reqtag + str(min_sversion)+" -> " +RSV_rq);print(message);feed+=message+'\n'	
+									message=('- Encryption (keygeneration): ' + str(keygen)+" -> " +FW_rq);print(message);feed+=message+'\n'								
+									if content_type_cnmt != 'AddOnContent':	
+										message=('- Patchable to: ' + str(MinRSV)+" -> " + RSV_rq_min);print(message);feed+=message+'\n'															
 									else:
-										Print.info('- Patchable to: DLC -> no RSV to patch')	
-									Print.info("")						
+										message=('- Patchable to: DLC -> no RSV to patch\n');print(message);feed+=message+'\n'																														
 									ncalist = list()
-									ncasize = 0							
-									Print.info('......................')							
-									Print.info('NCA FILES (NON DELTAS)')	
-									Print.info('......................')							
+									ncasize = 0		
+									message=('......................');print(message);feed+=message+'\n'		
+									message=('NCA FILES (NON DELTAS)');print(message);feed+=message+'\n'
+									message=('......................');print(message);feed+=message+'\n'													
 									for i in range(content_entries):
 										vhash = cnmt.read(0x20)
 										NcaId = cnmt.read(0x10)
@@ -1685,7 +1773,8 @@ class Xci(File):
 										if ncatype != 6:									
 											nca_name=str(hx(NcaId))
 											nca_name=nca_name[2:-1]+'.nca'
-											ncasize=ncasize+self.print_nca_by_title(nca_name,ncatype)
+											s1=0;s1,feed=self.print_nca_by_title(nca_name,ncatype,feed)									
+											ncasize=ncasize+s1
 											ncalist.append(nca_name[:-4])
 											contentlist.append(nca_name)									
 										if ncatype == 6:
@@ -1695,13 +1784,14 @@ class Xci(File):
 											contentlist.append(nca_name)										
 									nca_meta=str(nca._path)
 									ncalist.append(nca_meta[:-4])	
-									contentlist.append(nca_meta)							
-									ncasize=ncasize+self.print_nca_by_title(nca_meta,0)
+									contentlist.append(nca_meta)
+									s1=0;s1,feed=self.print_nca_by_title(nca_meta,0,feed)							
+									ncasize=ncasize+s1
 									size1=ncasize
 									size_pr=sq_tools.getSize(ncasize)		
 									bigtab="\t"*7
-									Print.info(bigtab+"  --------------------")								
-									Print.info(bigtab+'  TOTAL SIZE: '+size_pr)	
+									message=(bigtab+"  --------------------");print(message);feed+=message+'\n'		
+									message=(bigtab+'  TOTAL SIZE: '+size_pr);print(message);feed+=message+'\n'									
 									if self.actually_has_deltas(ncalist)=="true":
 										cnmt.rewind()
 										cnmt.seek(0x20+offset)
@@ -1712,10 +1802,10 @@ class Xci(File):
 											ncatype = cnmt.read(0x1)
 											ncatype = int.from_bytes(ncatype, byteorder='little')		
 											unknown = cnmt.read(0x1)								
-											if ncatype == 6:							
-												Print.info('......................')							
-												Print.info('NCA FILES (DELTAS)')	
-												Print.info('......................')	
+											if ncatype == 6:	
+												message=('......................');print(message);feed+=message+'\n'
+												message=('NCA FILES (DELTAS)');print(message);feed+=message+'\n'										
+												message=('......................');print(message);feed+=message+'\n'											
 												break
 										cnmt.rewind()
 										cnmt.seek(0x20+offset)
@@ -1730,34 +1820,36 @@ class Xci(File):
 											if ncatype == 6:
 												nca_name=str(hx(NcaId))
 												nca_name=nca_name[2:-1]+'.nca'
-												ncasize=ncasize+self.print_nca_by_title(nca_name,ncatype)
+												s1=0;s1,feed=self.print_nca_by_title(nca_name,ncatype,feed)
+												ncasize=ncasize
 										size2=ncasize
 										size_pr=sq_tools.getSize(ncasize)		
 										bigtab="\t"*7
-										Print.info(bigtab+"  --------------------")								
-										Print.info(bigtab+'  TOTAL SIZE: '+size_pr)	
-									if self.actually_has_other(titleid2,ncalist)=="true":								
-										Print.info('......................')							
-										Print.info('OTHER TYPES OF FILES')	
-										Print.info('......................')
-										othersize = 0								
-										othersize=othersize+self.print_xml_by_title(ncalist,contentlist)	
-										othersize=othersize+self.print_tac_by_title(titleid2,contentlist)
-										othersize=othersize+self.print_jpg_by_title(ncalist,contentlist)
+										message=(bigtab+"  --------------------");print(message);feed+=message+'\n'
+										message=(bigtab+'  TOTAL SIZE: '+size_pr);print(message);feed+=message+'\n'										
+									if self.actually_has_other(titleid2,ncalist)=="true":	
+										message=('......................');print(message);feed+=message+'\n'
+										message=('OTHER TYPES OF FILES');print(message);feed+=message+'\n'										
+										message=('......................');print(message);feed+=message+'\n'							
+										othersize=0;os1=0;os2=0;os3=0
+										os1,feed=self.print_xml_by_title(ncalist,contentlist,feed)
+										os2,feed=self.print_tac_by_title(titleid2,contentlist,feed)
+										os3,feed=self.print_jpg_by_title(ncalist,contentlist,feed)
+										othersize=othersize+os1+os2+os3	
 										size3=othersize								
 										size_pr=sq_tools.getSize(othersize)							
 										bigtab="\t"*7
-										Print.info(bigtab+"  --------------------")								
-										Print.info(bigtab+'  TOTAL SIZE: '+size_pr)
+										message=(bigtab+"  --------------------");print(message);feed+=message+'\n'
+										message=(bigtab+'  TOTAL SIZE: '+size_pr);print(message);feed+=message+'\n'										
 							finalsize=size1+size2+size3	
 							size_pr=sq_tools.getSize(finalsize)	
-							Print.info("/////////////////////////////////////")							
-							Print.info('   FULL CONTENT TOTAL SIZE: '+size_pr+"   ")
-							Print.info("/////////////////////////////////////")	
-							Print.info("")								
-				self.printnonlisted(contentlist)
+							message=("/////////////////////////////////////");print(message);feed+=message+'\n'
+							message=('   FULL CONTENT TOTAL SIZE: '+size_pr+"   ");print(message);feed+=message+'\n'						
+							message=("/////////////////////////////////////");print(message);feed+=message+'\n'					
+				self.printnonlisted(contentlist,feed)	
+		return feed				
 																				
-	def print_nca_by_title(self,nca_name,ncatype):	
+	def print_nca_by_title(self,nca_name,ncatype,feed):	
 		tab="\t"
 		for nspF in self.hfs0:
 			if str(nspF._path)=="secure":
@@ -1771,11 +1863,11 @@ class Xci(File):
 							content=content[8:]+": "
 							ncatype=sq_tools.getTypeFromCNMT(ncatype)	
 							if ncatype != "Meta: ":
-								Print.info("- "+ncatype+tab+str(filename)+tab+tab+"Size: "+size_pr)	
+								message=("- "+ncatype+tab+str(filename)+tab+tab+"Size: "+size_pr);print(message);feed+=message+'\n'						
 							else:
-								Print.info("- "+ncatype+tab+str(filename)+tab+"Size: "+size_pr)		
-							return size		
-	def print_xml_by_title(self,ncalist,contentlist):	
+								message=("- "+ncatype+tab+str(filename)+tab+"Size: "+size_pr);print(message);feed+=message+'\n'					
+							return size,feed		
+	def print_xml_by_title(self,ncalist,contentlist,feed):	
 		tab="\t"
 		size2return=0
 		for nspF in self.hfs0:
@@ -1787,11 +1879,11 @@ class Xci(File):
 						filename =  str(file._path)	
 						xml=filename[:-4]
 						if xml in ncalist:
-							Print.info("- XML: "+tab*2+str(filename)+tab+"Size: "+size_pr)
+							message=("- XML: "+tab*2+str(filename)+tab+"Size: "+size_pr);print(message);feed+=message+'\n'
 							contentlist.append(filename)	
 							size2return=size+size2return			
-		return size2return						
-	def print_tac_by_title(self,titleid,contentlist):		
+		return size2return,feed									
+	def print_tac_by_title(self,titleid,contentlist,feed):		
 		tab="\t"	
 		size2return=0	
 		for nspF in self.hfs0:
@@ -1803,7 +1895,7 @@ class Xci(File):
 						filename =  str(ticket._path)
 						tik=filename[:-20]
 						if tik == titleid:
-							Print.info("- Ticket: "+tab+str(filename)+tab*2+"Size: "+size_pr)	
+							message=("- Ticket: "+tab+str(filename)+tab*2+"Size: "+size_pr);print(message);feed+=message+'\n'				
 							contentlist.append(filename)					
 							size2return=size+size2return													
 				for cert in nspF:						
@@ -1813,11 +1905,11 @@ class Xci(File):
 						filename = str(cert._path)
 						cert_id =filename[:-21]
 						if cert_id == titleid:
-							Print.info("- Cert: "+tab+str(filename)+tab*2+"Size: "+size_pr)
+							message=("- Cert: "+tab+str(filename)+tab*2+"Size: "+size_pr);print(message);feed+=message+'\n'
 							contentlist.append(filename)					
 							size2return=size+size2return
-		return size2return				
-	def print_jpg_by_title(self,ncalist,contentlist):	
+		return size2return,feed						
+	def print_jpg_by_title(self,ncalist,contentlist,feed):	
 		size2return=0
 		tab="\t"
 		for nspF in self.hfs0:
@@ -1829,10 +1921,10 @@ class Xci(File):
 						filename =  str(file._path)	
 						jpg=filename[:32]
 						if jpg in ncalist:
-							Print.info("- JPG: "+tab*2+"..."+str(filename[-38:])+tab+"Size: "+size_pr)		
+							message=("- JPG: "+tab*2+"..."+str(filename[-38:])+tab+"Size: "+size_pr);print(message);feed+=message+'\n'
 							contentlist.append(filename)					
 							size2return=size+size2return
-		return size2return		
+		return size2return,feed		
 	def actually_has_deltas(self,ncalist):	
 		vfragment="false"	
 		for nspF in self.hfs0:
@@ -1878,7 +1970,7 @@ class Xci(File):
 							vother="true"	
 							break	
 		return vother					
-	def printnonlisted(self,contentlist):
+	def printnonlisted(self,contentlist,feed):
 		tab="\t"	
 		list_nonlisted="false"
 		for nspF in self.hfs0:
@@ -1888,9 +1980,9 @@ class Xci(File):
 					if not filename in contentlist:
 						list_nonlisted="true"
 		if list_nonlisted == "true":
-			Print.info('-----------------------------------')
-			Print.info('FILES NOT LINKED TO CONTENT IN NSP')
-			Print.info('-----------------------------------')	
+			message=('-----------------------------------');print(message);feed+=message+'\n'
+			message=('FILES NOT LINKED TO CONTENT IN NSP');print(message);feed+=message+'\n'			
+			message=('-----------------------------------');print(message);feed+=message+'\n'
 			totsnl=0
 			for nspF in self.hfs0:
 				if str(nspF._path)=="secure":		
@@ -1899,18 +1991,19 @@ class Xci(File):
 						if not filename in contentlist:
 							totsnl=totsnl+file.size
 							size_pr=sq_tools.getSize(file.size)						
-							Print.info(str(filename)+3*tab+"Size: "+size_pr)		
+							message=(str(filename)+3*tab+"Size: "+size_pr);print(message);feed+=message+'\n'	
 			bigtab="\t"*7
 			size_pr=sq_tools.getSize(totsnl)					
-			Print.info(bigtab+"  --------------------")								
-			Print.info(bigtab+'  TOTAL SIZE: '+size_pr)			
-
+			message=(bigtab+"  --------------------");print(message);feed+=message+'\n'			
+			message=(bigtab+'  TOTAL SIZE: '+size_pr);print(message);feed+=message+'\n'				
+		return feed		
+		
 #ADVANCED FILE-LIST			
-	def  adv_content_list(self):
+	def adv_content_list(self):
+		feed=''
 		applist=list();	applist_ID=list()		
 		patchlist=list(); patchlist_ID=list()	
 		dlclist=list();	dlclist_ID=list()
-		
 		for nspF in self.hfs0:
 			if str(nspF._path)=="secure":
 				for nca in nspF:
@@ -1918,7 +2011,7 @@ class Xci(File):
 					if type(nca) == Nca:	
 						if 	str(nca.header.contentType) == 'Content.META':
 							for f in nca:
-								for cnmt in f:		
+								for cnmt in f:
 									nca.rewind()
 									f.rewind()
 									cnmt.rewind()
@@ -1946,7 +2039,7 @@ class Xci(File):
 										tit_name,editor,ediver,SupLg,regionstr,isdemo = self.inf_get_title(target,offset,content_entries,original_ID)							
 										if tit_name=='DLC':
 											tit_name='-'
-											editor='-'												
+											editor='-'								
 										applist.append([target,titleid,version,tit_name,editor])
 									if content_type_cnmt == 'Patch':
 										patchlist.append([target,original_ID,version,titleid])
@@ -1959,53 +2052,57 @@ class Xci(File):
 										DLCnumb=int(DLCnumb)
 										dlclist.append([target,original_ID,version,titleid,DLCnumb])
 
-		applist=sorted(applist, key=itemgetter(1))
-		patchlist=sorted(patchlist, key=itemgetter(1))		
-		dlclist=sorted(dlclist, key=itemgetter(4))
-		patch_called=list()
-		dlc_called=list()		
-		for i in range(len(applist)):		
-			tid=applist[i][1]		
-			Print.info('------------------------------------------------')
-			Print.info('BASE CONTENT ID: ' + str(tid))	
-			Print.info('------------------------------------------------')
-			Print.info('Name: '+applist[i][3])	
-			Print.info('Editor: '+applist[i][4])	
-			Print.info('------------------------------------------------')
-			print(applist[i][1]+" [BASE]"+" v"+applist[i][2])
-			cupd=0
-			for j in range(len(patchlist)):
-				if tid == patchlist[j][1]:
-					v=patchlist[j][2]
-					v_number=str(int(int(v)/65536))
-					print(patchlist[j][3]+" [UPD]"+" v"+patchlist[j][2]+" -> Patch("+v_number+")")
-					cupd+=1
-					patch_called.append(patchlist[j])
-			cdlc=0					
-			for k in range(len(dlclist)):
-				if tid == dlclist[k][1]:
-					print(dlclist[k][3]+" [DLC "+str(dlclist[k][4])+"]"+" v"+dlclist[k][2])	
-					cdlc+=1		
-					dlc_called.append(dlclist[k])					
-			Print.info('------------------------------------------------')
-			Print.info('CONTENT INCLUDES: 1 BASEGAME '+str(cupd)+' UPDATES '+str(cdlc)+' DLCS')	
-			Print.info('------------------------------------------------')		
-			if len(patchlist) != len(patch_called):
-				Print.info('------------------------------------------------')
-				Print.info('ORPHANED UPDATES:')
-				Print.info('------------------------------------------------')	
-				for j in range(len(patchlist)):	
-					if patchlist[j] not in patch_called:
-						v=patchlist[j][2]
-						v_number=str(int(int(v)/65536))
-						print(patchlist[j][3]+" [UPD]"+" v"+patchlist[j][2]+" -> Patch("+v_number+")")						
-			if len(dlclist) != len(dlc_called):
-				Print.info('------------------------------------------------')
-				Print.info('ORPHANED DLCS:')
-				Print.info('------------------------------------------------')	
-				for k in range(len(dlclist)):	
-					if dlclist[k] not in dlc_called:
-						print(dlclist[k][3]+" [DLC "+str(dlclist[k][4])+"]"+" v"+dlclist[k][2])		
+				applist=sorted(applist, key=itemgetter(1))
+				patchlist=sorted(patchlist, key=itemgetter(1))		
+				dlclist=sorted(dlclist, key=itemgetter(4))
+				patch_called=list()
+				dlc_called=list()		
+				if len(applist) != 0:
+					for i in range(len(applist)):		
+						tid=applist[i][1]		
+						message='------------------------------------------------';print(message);feed+=message+'\n'
+						message='BASE CONTENT ID: ' + str(tid);print(message);feed+=message+'\n'
+						message='------------------------------------------------';print(message);feed+=message+'\n'				
+						message='Name: '+applist[i][3];print(message);feed+=message+'\n'
+						message='Editor: '+applist[i][4];print(message);feed+=message+'\n'
+						message='------------------------------------------------';print(message);feed+=message+'\n'
+						message=applist[i][1]+" [BASE]"+" v"+applist[i][2];print(message);feed+=message+'\n'				
+						cupd=0
+						for j in range(len(patchlist)):
+							if tid == patchlist[j][1]:
+								v=patchlist[j][2]
+								v_number=str(int(int(v)/65536))
+								message=patchlist[j][3]+" [UPD]"+" v"+patchlist[j][2]+" -> Patch("+v_number+")";print(message);feed+=message+'\n'								
+								cupd+=1
+								patch_called.append(patchlist[j])
+						cdlc=0					
+						for k in range(len(dlclist)):
+							if tid == dlclist[k][1]:
+								message=dlclist[k][3]+" [DLC "+str(dlclist[k][4])+"]"+" v"+dlclist[k][2];print(message);feed+=message+'\n'								
+								cdlc+=1		
+								dlc_called.append(dlclist[k])	
+						message='------------------------------------------------';print(message);feed+=message+'\n'
+						message='CONTENT INCLUDES: 1 BASEGAME '+str(cupd)+' UPDATES '+str(cdlc)+' DLCS';print(message);feed+=message+'\n'				
+						message='------------------------------------------------';print(message);feed+=message+'\n'				
+						if len(patchlist) != len(patch_called):
+							message='------------------------------------------------';print(message);feed+=message+'\n'	
+							message='ORPHANED UPDATES:';print(message);feed+=message+'\n'						
+							message='------------------------------------------------';print(message);feed+=message+'\n'					
+							for j in range(len(patchlist)):	
+								if patchlist[j] not in patch_called:
+									v=patchlist[j][2]
+									v_number=str(int(int(v)/65536))
+									message=patchlist[j][3]+" [UPD]"+" v"+patchlist[j][2]+" -> Patch("+v_number+")";print(message);feed+=message+'\n'														
+						if len(dlclist) != len(dlc_called):
+							message='------------------------------------------------';print(message);feed+=message+'\n'
+							message='ORPHANED DLCS:';print(message);feed+=message+'\n'					
+							message='------------------------------------------------';print(message);feed+=message+'\n'	
+							for k in range(len(dlclist)):	
+								if dlclist[k] not in dlc_called:
+									message=dlclist[k][3]+" [DLC "+str(dlclist[k][4])+"]"+" v"+dlclist[k][2];print(message);feed+=message+'\n'
+				else:	
+					message='This option is currently meant for multicontent, that includes at least a base game';print(message);feed+=message+'\n'	
+		return feed						
 				
 				
 #///////////////////////////////////////////////////								
@@ -2036,6 +2133,7 @@ class Xci(File):
 		return 	programSDKversion,dataSDKversion					
 
 	def print_fw_req(self):	
+		feed=''	
 		for nspF in self.hfs0:
 			if str(nspF._path)=="secure":
 				for nca in nspF:
@@ -2067,11 +2165,11 @@ class Xci(File):
 										tit_name,editor,ediver,SupLg,regionstr,isdemo = self.inf_get_title(target,offset,content_entries,original_ID)							
 										if tit_name=='DLC':
 											tit_name='-'
-											editor='-'												
+											editor='-'						
 										if isdemo == 1:
 											content_type='Demo Update'
 										if isdemo == 2:
-											content_type='RetailInteractiveDisplay Update'											
+											content_type='RetailInteractiveDisplay Update'									
 									if content_type_cnmt == 'AddOnContent':
 										content_type='DLC'
 										reqtag='- RequiredUpdateNumber: '
@@ -2079,14 +2177,14 @@ class Xci(File):
 									if content_type_cnmt == 'Application':
 										content_type='Base Game or Application'
 										reqtag='- RequiredSystemVersion: '	
-										tit_name,editor,ediver,SupLg,regionstr,isdemo = self.inf_get_title(target,offset,content_entries,original_ID)	
+										tit_name,editor,ediver,SupLg,regionstr,isdemo = self.inf_get_title(target,offset,content_entries,original_ID)
 										if tit_name=='DLC':
 											tit_name='-'
-											editor='-'												
+											editor='-'	
 										if isdemo == 1:
 											content_type='Demo'
 										if isdemo == 2:
-											content_type='RetailInteractiveDisplay'											
+											content_type='RetailInteractiveDisplay'									
 									cnmt.rewind()							
 									cnmt.seek(0x20+offset)
 									titleid2 = str(hx(titleid.to_bytes(8, byteorder='big'))) 	
@@ -2115,11 +2213,11 @@ class Xci(File):
 										tit_name,editor,ediver,SupLg,regionstr,isdemo = self.inf_get_title(target,offset,content_entries,original_ID)							
 										if tit_name=='DLC':
 											tit_name='-'
-											editor='-'												
+											editor='-'									
 										if isdemo == 1:
 											content_type='Demo Update'
 										if isdemo == 2:
-											content_type='RetailInteractiveDisplay Update'												
+											content_type='RetailInteractiveDisplay Update'										
 									if content_type_cnmt == 'AddOnContent':
 										content_type='DLC'
 										reqtag='- RequiredUpdateNumber: '
@@ -2130,57 +2228,56 @@ class Xci(File):
 										tit_name,editor,ediver,SupLg,regionstr,isdemo = self.inf_get_title(target,offset,content_entries,original_ID)	
 										if tit_name=='DLC':
 											tit_name='-'
-											editor='-'												
+											editor='-'											
 										if isdemo == 1:
 											content_type='Demo'
 										if isdemo == 2:
 											content_type='RetailInteractiveDisplay'	
-									programSDKversion,dataSDKversion=self.getsdkvertit(titleid2)											
-									sdkversion=nca.get_sdkversion()													
-									Print.info('-----------------------------')
-									Print.info('CONTENT ID: ' + str(titleid2))	
-									Print.info('-----------------------------')			
-									if content_type_cnmt != 'AddOnContent':									
-										Print.info("Titleinfo:")							
-										Print.info("- Name: " + tit_name)
-										Print.info("- Editor: " + editor)
-										Print.info("- Build number: " + str(ediver))
-										Print.info("- Meta SDK version: " + sdkversion)	
-										Print.info("- Program SDK version: " + programSDKversion)										
+									programSDKversion,dataSDKversion=self.getsdkvertit(titleid2)										
+									sdkversion=nca.get_sdkversion()						
+									message=('-----------------------------');print(message);feed+=message+'\n'								
+									message=('CONTENT ID: ' + str(titleid2));print(message);feed+=message+'\n'	
+									message=('-----------------------------');print(message);feed+=message+'\n'				
+									if content_type_cnmt != 'AddOnContent':	
+										message=("Titleinfo:");print(message);feed+=message+'\n'								
+										message=("- Name: " + tit_name);print(message);feed+=message+'\n'								
+										message=("- Editor: " + editor);print(message);feed+=message+'\n'	
+										message=("- Build number: " + str(ediver));print(message);feed+=message+'\n'
+										message=("- Meta SDK version: " + sdkversion);print(message);feed+=message+'\n'
+										message=("- Program SDK version: " + programSDKversion);print(message);feed+=message+'\n'									
 										suplangue=str((', '.join(SupLg)))
-										Print.info("- Supported Languages: "+suplangue)
-										Print.info("- Content type: "+content_type)
-										Print.info("- Version: " + version+' -> '+content_type_cnmt+' ('+str(v_number)+')')									
+										message=("- Supported Languages: "+suplangue);print(message);feed+=message+'\n'									
+										message=("- Content type: "+content_type);print(message);feed+=message+'\n'									
+										message=("- Version: " + version+' -> '+content_type_cnmt+' ('+str(v_number)+')');print(message);feed+=message+'\n'																
 									if content_type_cnmt == 'AddOnContent':
-										Print.info("Titleinfo:")
+										message=("Titleinfo:");print(message);feed+=message+'\n'								
 										if tit_name != "DLC":
-											Print.info("- Name: " + tit_name)
-											Print.info("- Editor: " + editor)											
-										Print.info("- Content type: "+"DLC")
+											message=("- Name: " + tit_name);print(message);feed+=message+'\n'								
+											message=("- Editor: " + editor);print(message);feed+=message+'\n'
+										message=("- Content type: "+"DLC");print(message);feed+=message+'\n'							
 										DLCnumb=str(titleid2)
 										DLCnumb="0000000000000"+DLCnumb[-3:]									
 										DLCnumb=bytes.fromhex(DLCnumb)
 										DLCnumb=str(int.from_bytes(DLCnumb, byteorder='big'))									
 										DLCnumb=int(DLCnumb)
-										Print.info("- DLC number: "+str(DLCnumb)+' -> '+"AddOnContent"+' ('+str(DLCnumb)+')')					
-										Print.info("- DLC version Number: " + version+' -> '+"Version"+' ('+str(v_number)+')')
-										Print.info("- Meta SDK version: " + sdkversion)		
-										Print.info("- Data SDK version: " + dataSDKversion)											
-									Print.info("")								
-									Print.info("Required Firmware:")			
+										message=("- DLC number: "+str(DLCnumb)+' -> '+"AddOnContent"+' ('+str(DLCnumb)+')');print(message);feed+=message+'\n'								
+										message=("- DLC version Number: " + version+' -> '+"Version"+' ('+str(v_number)+')');print(message);feed+=message+'\n'								
+										message=("- Meta SDK version: " + sdkversion);print(message);feed+=message+'\n'								
+										message=("- Data SDK version: " + dataSDKversion);print(message);feed+=message+'\n'															
+									message=("\nRequired Firmware:");print(message);feed+=message+'\n'								
 									if content_type_cnmt == 'AddOnContent':
 										if v_number == 0:
-											Print.info("- Required game version: " + str(RSversion)+' -> '+"Application"+' ('+str(RS_number)+')')									
+											message=("- Required game version: " + str(RSversion)+' -> '+"Application"+' ('+str(RS_number)+')');print(message);feed+=message+'\n'																	
 										if v_number > 0:
-											Print.info("- Required game version: " + str(RSversion)+' -> '+"Patch"+' ('+str(RS_number)+')')																									
+											message=("- Required game version: " + str(RSversion)+' -> '+"Patch"+' ('+str(RS_number)+')');print(message);feed+=message+'\n'																																																
 									else:
-										Print.info(reqtag + str(RSversion)+" -> " +RSV_rq)						
-									Print.info('- Encryption (keygeneration): ' + str(keygen)+" -> " +FW_rq)
-									if content_type_cnmt != 'AddOnContent':							
-										Print.info('- Patchable to: ' + str(MinRSV)+" -> " + RSV_rq_min)
+										message=(reqtag + str(RSversion)+" -> " +RSV_rq);print(message);feed+=message+'\n'	
+									message=('- Encryption (keygeneration): ' + str(keygen)+" -> " +FW_rq);print(message);feed+=message+'\n'								
+									if content_type_cnmt != 'AddOnContent':	
+										message=('- Patchable to: ' + str(MinRSV)+" -> " + RSV_rq_min);print(message);feed+=message+'\n'							
 									else:
-										Print.info('- Patchable to: DLC -> no RSV to patch')	
-									Print.info("")											
+										message=('- Patchable to: DLC -> no RSV to patch\n');print(message);feed+=message+'\n'																					
+		return feed										
 						
 	def inf_get_title(self,target,offset,content_entries,original_ID):
 		content_type=''
@@ -4852,7 +4949,7 @@ class Xci(File):
 		return contentlist										
 						
 						
-	def get_title(self,baseid):
+	def get_title(self,baseid,roman=True):
 		for nspF in self.hfs0:
 			if str(nspF._path)=="secure":
 				for nca in nspF:
@@ -4896,7 +4993,7 @@ class Xci(File):
 				for nca in nspF:
 					if type(nca) == Nca:
 						if 	str(nca.header.contentType) == 'Content.CONTROL':
-							title,editor,ediver,SupLg,regionstr,isdemo=nca.get_langueblock(title)
+							title,editor,ediver,SupLg,regionstr,isdemo=nca.get_langueblock(title,roman)
 							return(title)			
 
 	def get_lang_tag(self,baseid):
@@ -5848,7 +5945,7 @@ class Xci(File):
 		contentlist=list()
 		feed=''
 		delta = False
-		veredict = True		
+		verdict = True		
 		checktik=False		
 		
 		message='***************';print(message);feed+=message+'\n'
@@ -5934,7 +6031,7 @@ class Xci(File):
 				else:
 					message=(tabs+file+tabs+'  -> is CORRECT');print(message);feed+=message+'\n'									
 			else:
-				veredict=False					
+				verdict=False					
 				if file.endswith('cnmt.nca'):	
 					message=(tabs+file+' -> is CORRUPT <<<-');print(message);feed+=message+'\n'					
 				elif file.endswith('nca'):		
@@ -5999,47 +6096,207 @@ class Xci(File):
 										nca_name=str(hx(NcaId))
 										nca_name=nca_name[2:-1]+'.nca'
 										if (nca_name not in listed_files and ncatype!=6) or (nca_name not in validfiles and ncatype!=6):
-											veredict = False
-											message=(tabs+'Missing file from '+titleid2+': '+nca_name);print(message);feed+=message+'\n'													
+											verdict = False
+											message=('\n- Missing file from '+titleid2+': '+nca_name);print(message);feed+=message+'\n'
 											
-		if veredict == False:
-			message='\nVEREDICT: XCI FILE IS CORRUPT OR MISSES FILES';print(message);feed+=message+'\n'				
-		if veredict == True:	
-			message='\nVEREDICT: XCI FILE IS CORRECT\n';print(message);feed+=message	
-		return veredict,feed	
-			
-	def verify_sig(self,feed):	
-		if feed == False:
-			feed=''	
-		veredict=True	
-		headerlist=list()
-		message='***************';print(message);feed+='\n'+message+'\n'
-		message='SIGNATURE 1 TEST';print(message);feed+=message+'\n'
-		message='***************';print(message);feed+=message+'\n'											
+		ticketlist=list()
+		for nspF in self.hfs0:
+			if str(nspF._path)=="secure":				
+				for ticket in nspF:
+					if type(ticket) == Ticket:		
+						ticketlist.append(ticket._path)
+		titlerights=list()			
 		for nspF in self.hfs0:
 			if str(nspF._path)=="secure":
-				for f in nspF:						
+				for nca in nspF:		
+					if type(nca) == Nca:
+						if nca.header.getRightsId() != 0:		
+							rightsId = hx(nca.header.getRightsId().to_bytes(0x10, byteorder='big')).decode('utf-8').lower()
+							if rightsId not in titlerights:
+								titlerights.append(rightsId)
+								mtick=rightsId+'.tik'
+								if mtick not in ticketlist:		
+									message=('\n- File has titlerights!!! Missing ticket: '+mtick);print(message);feed+=message+'\n'
+									verdict = False									
+											
+		if verdict == False:
+			message='\nVERDICT: XCI FILE IS CORRUPT OR MISSES FILES\n';print(message);feed+=message+'\n'				
+		if verdict == True:	
+			message='\nVERDICT: XCI FILE IS CORRECT\n';print(message);feed+=message	
+		return verdict,feed	
+			
+	def verify_sig(self,feed,tmpfolder):	
+		hlisthash=False	
+		if feed == False:
+			feed=''	
+		verdict=True	
+		headerlist=list()
+		keygenerationlist=list()		
+		message='***************';print(message);feed+='\n'+message+'\n'
+		message='SIGNATURE 1 TEST';print(message);feed+=message+'\n'
+		message='***************';print(message);feed+=message+'\n'		
+		for nspF in self.hfs0:
+			if str(nspF._path)=="secure":
+				for f in nspF:					
 					if type(f) == Nca and f.header.contentType != Type.Content.META:
 						message=(str(f.header.titleId)+' - '+str(f.header.contentType));print(message);feed+=message+'\n'											
-						verify,origheader,ncaname,feed=f.verify(feed)	
-						headerlist.append([ncaname,origheader])						
-						if veredict == True:
-							veredict=verify
-						message='';print(message);feed+=message+'\n'							
-					elif type(f) == Nca:
-						message=(str(f.header.titleId)+' - '+str(f.header.contentType));print(message);feed+=message+'\n'												
-						verify,origheader,ncaname,feed=f.verify(feed)	
-						headerlist.append([ncaname,origheader])
+						verify,origheader,ncaname,feed,origkg=f.verify(feed)		
+						headerlist.append([ncaname,origheader,hlisthash])		
+						keygenerationlist.append([ncaname,origkg])
+						if verdict == True:
+							verdict=verify
 						message='';print(message);feed+=message+'\n'	
-		if veredict == False:
-			message=("VEREDICT: XCI FILE COULD'VE BEEN TAMPERED WITH");print(message);feed+=message+'\n'												
-		if veredict == True:
-			message=('VEREDICT: XCI FILE IS SAFE');print(message);feed+=message+'\n'				
-		return 	veredict,headerlist,feed
+		for nspF in self.hfs0:
+			if str(nspF._path)=="secure":
+				for f in nspF:
+					if type(f) == Nca and f.header.contentType == Type.Content.META:
+						meta_nca=f._path
+						f.rewind();meta_dat=f.read()
+						message=(str(f.header.titleId)+' - '+str(f.header.contentType));print(message);feed+=message+'\n'	
+						targetkg,minrsv=self.find_addecuatekg(meta_nca,keygenerationlist)
+						verify,origheader,ncaname,feed,origkg=f.verify(feed)
+						#print(targetkg)				
+						if verify == False:
+							tempfile=os.path.join(tmpfolder,meta_nca)
+							if not os.path.exists(tmpfolder):
+								os.makedirs(tmpfolder)	
+							fp = open(tempfile, 'w+b')
+							fp.write(meta_dat);fp.flush();fp.close()
+							kglist=sq_tools.kgstring()
+							numb=0;topkg=len(kglist)
+							for kg in kglist:
+								topkg-=1
+								if topkg >= origkg:	
+									for verNumber in kg:
+										numb+=1
+							cnmtdidverify=False			
+							t = tqdm(total=numb, unit='RSV', unit_scale=True, leave=False)
+							topkg=len(kglist)					
+							for kg in kglist:
+								if cnmtdidverify == True:
+									break
+								topkg-=1
+								#print(topkg)
+								if topkg >= origkg:
+									c=0;rsv_endcheck=False
+									for verNumber in kg:
+										c+=1
+										if topkg == origkg:
+											if c == len(kg):
+												rsv_endcheck=True
+										#print(verNumber)
+										fp = Fs.Nca(tempfile, 'r+b')
+										fp.write_req_system(verNumber)
+										fp.flush()
+										fp.close()
+										############################
+										fp = Fs.Nca(tempfile, 'r+b')
+										sha=fp.calc_pfs0_hash()
+										fp.flush()
+										fp.close()
+										fp = Fs.Nca(tempfile, 'r+b')
+										fp.set_pfs0_hash(sha)
+										fp.flush()
+										fp.close()
+										############################
+										fp = Fs.Nca(tempfile, 'r+b')
+										sha2=fp.calc_htable_hash()
+										fp.flush()
+										fp.close()						
+										fp = Fs.Nca(tempfile, 'r+b')
+										fp.header.set_htable_hash(sha2)
+										fp.flush()
+										fp.close()
+										########################
+										fp = Fs.Nca(tempfile, 'r+b')
+										sha3=fp.header.calculate_hblock_hash()
+										fp.flush()
+										fp.close()						
+										fp = Fs.Nca(tempfile, 'r+b')
+										fp.header.set_hblock_hash(sha3)
+										fp.flush()
+										fp.close()	
+										fp = Fs.Nca(tempfile, 'r+b')
+										progress=True
+										verify,origheader,ncapath,feed,origkg=fp.verify(feed,targetkg,rsv_endcheck,progress,t)
+										fp.close()		
+										t.update(1)	
+										if verify == True:
+											t.close()	
+											message=(tabs+'* '+"RSV WAS CHANGED FROM "+str(verNumber)+" TO "+str(minrsv));print(message);feed+=message+'\n'	
+											message=(tabs+'* '+"THE CNMT FILE IS CORRECT");print(message);feed+=message+'\n'										
+											if origheader != False:	
+												hlisthash=True;i=0
+												fp = Fs.Nca(tempfile, 'r+b')
+												for data in iter(lambda: fp.read(int(32768)), ""):											
+													if i==0:
+														sha0=sha256()
+														sha0.update(origheader)	
+														i+=1
+														fp.flush()												
+														fp.seek(0xC00)
+													else:		
+														sha0.update(data)								
+														fp.flush()
+														if not data:
+															fp.close()												
+															cnmtdidverify=True
+															break	
+											break
+								else:break							
+						if hlisthash == True:
+							sha0=sha0.hexdigest()
+							hlisthash=sha0
+						headerlist.append([ncaname,origheader,hlisthash])	
+						message='';print(message);feed+=message+'\n'	
+		try:
+			shutil.rmtree(tmpfolder)
+		except:pass								
+		if verdict == False:
+			message=("VERDICT: XCI FILE COULD'VE BEEN TAMPERED WITH");print(message);feed+=message+'\n'												
+		if verdict == True:
+			message=('VERDICT: XCI FILE IS SAFE');print(message);feed+=message+'\n'				
+		return 	verdict,headerlist,feed
 
-				
+	def find_addecuatekg(self,ncameta,keygenerationlist):
+		ncalist=list()
+		for nspF in self.hfs0:
+			if str(nspF._path)=="secure":
+				for nca in nspF:		
+					if type(nca) == Nca:
+						if 	str(nca.header.contentType) == 'Content.META':	
+							if nca._path == ncameta:
+								for f in nca:
+									for cnmt in f:	
+										nca.rewind()
+										cnmt.rewind()						
+										titleid=cnmt.readInt64()
+										titleversion = cnmt.read(0x4)					
+										cnmt.rewind()
+										cnmt.seek(0xE)
+										offset=cnmt.readInt16()
+										content_entries=cnmt.readInt16()
+										cnmt.seek(0x20)
+										original_ID=cnmt.readInt64()								
+										min_sversion=cnmt.readInt32()								
+										cnmt.seek(0x20+offset)			
+										for i in range(content_entries):
+											vhash = cnmt.read(0x20)
+											NcaId = cnmt.read(0x10)
+											ncaname=(str(hx(NcaId)))[2:-1]+'.nca'
+											for i in range(len(keygenerationlist)):
+												if ncaname == keygenerationlist[i][0]:
+													if keygenerationlist[i][1] != False:
+														return keygenerationlist[i][1],min_sversion
+											else:
+												size = cnmt.read(0x6)
+												size=int.from_bytes(size, byteorder='little')
+												ncatype = cnmt.readInt8()
+												unknown = cnmt.read(0x1)
+		return False,False		
+
 	def verify_hash_nca(self,buffer,headerlist,didverify,feed):	
-		veredict=True		
+		verdict=True		
 		if feed == False:
 			feed=''			
 		message='\n***************';print(message);feed+=message+'\n'
@@ -6096,20 +6353,20 @@ class Xci(File):
 								message=('   > FILE IS CORRECT');print(message);feed+=message+'\n'
 							else:
 								message=('   > FILE IS CORRUPT');print(message);feed+=message+'\n'
-								veredict = False	
+								verdict = False	
 						elif  f.header.contentType == Type.Content.META and didverify == True:		
 							message=('   > RSV WAS CHANGED');print(message);feed+=message+'\n'
 							#print('   > CHECKING INTERNAL HASHES')								
 							message=('     * FILE IS CORRECT');print(message);feed+=message+'\n'							
 						else:
 							message=('   > FILE IS CORRUPT');print(message);feed+=message+'\n'
-							veredict = False
+							verdict = False
 						message=('');print(message);feed+=message+'\n'			
-		if veredict == False:
-			message=("VEREDICT: XCI FILE IS CORRUPT");print(message);feed+=message+'\n'
-		if veredict == True:	
-			message=('VEREDICT: XCI FILE IS CORRECT');print(message);feed+=message+'\n'
-		return 	veredict,feed						
+		if verdict == False:
+			message=("VERDICT: XCI FILE IS CORRUPT");print(message);feed+=message+'\n'
+		if verdict == True:	
+			message=('VERDICT: XCI FILE IS CORRECT');print(message);feed+=message+'\n'
+		return 	verdict,feed						
 		
 	def verify_enforcer(self,nca):
 		for nspF in self.hfs0:

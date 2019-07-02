@@ -22,7 +22,9 @@ from Fs.Rom import Rom
 from Fs.Pfs0 import Pfs0
 from Fs.BaseFs import BaseFs
 from Fs.Ticket import Ticket
+from Fs.Nacp import Nacp
 import sq_tools
+import pykakasi
 
 MEDIA_SIZE = 0x200
 RSA_PUBLIC_EXPONENT = 0x10001
@@ -520,7 +522,7 @@ class Nca(File):
 		min_sversion=self.readInt32()
 		#Print.info('Original RequiredSystemVersion = ' + str(min_sversion))
 		self.seek(cmt_offset+0x28)	
-		self.writeInt64(verNumber)
+		self.writeInt32(verNumber)
 		self.seek(cmt_offset+0x28)	
 		min_sversion=self.readInt32()
 		#Print.info(tabs + 'New RequiredSystemVersion = ' + str(min_sversion))
@@ -597,6 +599,7 @@ class Nca(File):
 			f_reserved= self.read(0x4)
 
 	def read_cnmt(self, file = None, mode = 'rb'):
+		feed=''
 		for f in self:
 			cryptoType=f.get_cryptoType()
 			cryptoKey=f.get_cryptoKey()	
@@ -619,45 +622,42 @@ class Nca(File):
 		original_ID=self.readInt64()
 		self.seek(cmt_offset+0x28)					
 		min_sversion=self.readInt32()
-		length_of_emeta=self.readInt32()		
-		Print.info('')	
-		Print.info('...........................................')								
-		Print.info('Reading: ' + str(self._path))
-		Print.info('...........................................')							
-		Print.info('titleid = ' + str(hx(titleid.to_bytes(8, byteorder='big'))))
-		Print.info('version = ' + str(int.from_bytes(titleversion, byteorder='little')))
-		Print.info('type number = ' + str(hx(type_n)))		
-		Print.info('Table offset = '+ str(hx((offset+0x20).to_bytes(2, byteorder='big'))))
-		Print.info('number of content = '+ str(content_entries))
-		Print.info('number of meta entries = '+ str(meta_entries))
-		Print.info('Application id\Patch id = ' + str(hx(original_ID.to_bytes(8, byteorder='big'))))
-		Print.info('RequiredVersion = ' + str(min_sversion))
-		Print.info('Length of exmeta = ' + str(length_of_emeta))		
+		length_of_emeta=self.readInt32()	
+		basename=str(os.path.basename(os.path.abspath(self._path)))
+		message='...........................................';print(message);feed+=message+'\n'	
+		message='Reading: ' + str(basename);print(message);feed+=message+'\n'							
+		message='...........................................';print(message);feed+=message+'\n'						
+		message='Titleid = ' + (str(hx(titleid.to_bytes(8, byteorder='big')))[2:-1]).upper();print(message);feed+=message+'\n'							
+		message='Version = ' + str(int.from_bytes(titleversion, byteorder='little'));print(message);feed+=message+'\n'
+		message='Table offset = '+ str(hx((offset+0x20).to_bytes(2, byteorder='big')));print(message);feed+=message+'\n'
+		message='Number of content = '+ str(content_entries);print(message);feed+=message+'\n'
+		message='Number of meta entries = '+ str(meta_entries);print(message);feed+=message+'\n'
+		message='Application id\Patch id = ' + (str(hx(original_ID.to_bytes(8, byteorder='big')))[2:-1]).upper();print(message);feed+=message+'\n'	
+		message='RequiredVersion = ' + str(min_sversion);print(message);feed+=message+'\n'	
+		message='Length of exmeta = ' + str(length_of_emeta);print(message);feed+=message+'\n'		
 		self.seek(cmt_offset+offset+0x20)
 		for i in range(content_entries):
-			Print.info('........................')							
-			Print.info('Content number ' + str(i+1))
-			Print.info('........................')
+			message='........................';print(message);feed+=message+'\n'		
+			message='Content number ' + str(i+1);print(message);feed+=message+'\n'																
+			message='........................';print(message);feed+=message+'\n'
 			vhash = self.read(0x20)
-			Print.info('hash =\t' + str(hx(vhash)))
+			message='Hash =\t' + str(hx(vhash));print(message);feed+=message+'\n'									
 			NcaId = self.read(0x10)
-			Print.info('NcaId =\t' + str(hx(NcaId)))
+			message='NcaId =\t' + str(hx(NcaId));print(message);feed+=message+'\n'											
 			size = self.read(0x6)
-			Print.info('Size =\t' + str(int.from_bytes(size, byteorder='little', signed=True)))
+			message='Size =\t' + str(int.from_bytes(size, byteorder='little', signed=True));print(message);feed+=message+'\n'								
 			ncatype = self.read(0x1)
-			Print.info('ncatype = ' + str(int.from_bytes(ncatype, byteorder='little', signed=True)))
+			message='Ncatype = ' + str(int.from_bytes(ncatype, byteorder='little', signed=True));print(message);feed+=message+'\n'								
 			unknown = self.read(0x1)	
 			
 		self.seek(pfs0_offset+pfs0_size-0x20)			
 		digest = self.read(0x20)
-		Print.info("")	
-		Print.info('digest= '+str(hx(digest)))
-		Print.info("")		
+		message='\ndigest= '+str(hx(digest))+'\n';print(message);feed+=message+'\n'									
 		self.seek(cmt_offset+offset+0x20+content_entries*0x38)			
 		if length_of_emeta>0:
-			Print.info('----------------')			
-			Print.info('Extended meta')	
-			Print.info('----------------')				
+			message='----------------';print(message);feed+=message+'\n'
+			message='Extended meta';print(message);feed+=message+'\n'								
+			message='----------------';print(message);feed+=message+'\n'			
 			num_prev_cnmt=self.read(0x4)
 			num_prev_delta=self.read(0x4)
 			num_delta_info=self.read(0x4)
@@ -665,16 +665,15 @@ class Nca(File):
 			num_previous_content=self.read(0x4)		
 			num_delta_content=self.read(0x4)	
 			self.read(0x4)	
-			Print.info('Number of previous cnmt entries = ' + str(int.from_bytes(num_prev_cnmt, byteorder='little')))	
-			Print.info('Number of previous delta entries = ' + str(int.from_bytes(num_prev_delta, byteorder='little')))	
-			Print.info('Number of delta info entries = ' + str(int.from_bytes(num_delta_info, byteorder='little')))			
-			Print.info('Number of delta application info entries = ' + str(int.from_bytes(num_delta_application, byteorder='little')))	
-			Print.info('Number of previous content entries = ' + str(int.from_bytes(num_previous_content, byteorder='little')))	
-			Print.info('Number of delta content entries = ' + str(int.from_bytes(num_delta_content, byteorder='little')))			
+			message='Number of previous cnmt entries = ' + str(int.from_bytes(num_prev_cnmt, byteorder='little'));print(message);feed+=message+'\n'								
+			message='Number of previous delta entries = ' + str(int.from_bytes(num_prev_delta, byteorder='little'));print(message);feed+=message+'\n'									
+			message='Number of delta info entries = ' + str(int.from_bytes(num_delta_info, byteorder='little'));print(message);feed+=message+'\n'									
+			message='Number of previous content entries = ' + str(int.from_bytes(num_previous_content, byteorder='little'));print(message);feed+=message+'\n'	
+			message='Number of delta content entries = ' + str(int.from_bytes(num_delta_content, byteorder='little'));print(message);feed+=message+'\n'					
 			for i in range(int.from_bytes(num_prev_cnmt, byteorder='little')):
-				Print.info('...........................................')								
-				Print.info('Previous cnmt records: '+ str(i+1))
-				Print.info('...........................................')				
+				message='...........................................';print(message);feed+=message+'\n'									
+				message='Previous cnmt records: '+ str(i+1);print(message);feed+=message+'\n'		
+				message='...........................................';print(message);feed+=message+'\n'				
 				titleid=self.readInt64()	
 				titleversion = self.read(0x4)	
 				type_n = self.read(0x1)					
@@ -683,51 +682,48 @@ class Nca(File):
 				unknown2=self.read(0x2)
 				unknown3=self.read(0x2)
 				unknown4=self.read(0x4)				
-				Print.info('titleid = ' + str(hx(titleid.to_bytes(8, byteorder='big'))))	
-				Print.info('version = ' + str(int.from_bytes(titleversion, byteorder='little')))
-				Print.info('type number = ' + str(hx(type_n)))	
-				#Print.info('unknown1 = ' + str(int.from_bytes(unknown1, byteorder='little')))			
-				Print.info('hash =\t' + str(hx(vhash)))				
-				Print.info('content nca number = ' + str(int.from_bytes(unknown2, byteorder='little')))				
-				#Print.info('unknown3 = ' + str(int.from_bytes(unknown3, byteorder='little')))				
-				#Print.info('unknown4 = ' + str(int.from_bytes(unknown4, byteorder='little')))
+				message='Titleid = ' + str(hx(titleid.to_bytes(8, byteorder='big')));print(message);feed+=message+'\n'
+				message='Version = ' + str(int.from_bytes(titleversion, byteorder='little'));print(message);feed+=message+'\n'	
+				message='Type number = ' + str(hx(type_n));print(message);feed+=message+'\n'	
+				message='Hash =\t' + str(hx(vhash));print(message);feed+=message+'\n'	
+				message='Content nca number = ' + str(int.from_bytes(unknown2, byteorder='little'));print(message);feed+=message+'\n'	
 			for i in range(int.from_bytes(num_prev_delta, byteorder='little')):
-				Print.info('...........................................')								
-				Print.info('Previous delta records: '+ str(i+1))
-				Print.info('...........................................')				
+				message='...........................................';print(message);feed+=message+'\n'	
+				message='Previous delta records: '+ str(i+1);print(message);feed+=message+'\n'										
+				message='...........................................';print(message);feed+=message+'\n'						
 				oldtitleid=self.readInt64()	
 				newtitleid=self.readInt64()					
 				oldtitleversion = self.read(0x4)	
 				newtitleversion = self.read(0x4)	
 				size = self.read(0x8)
 				unknown1=self.read(0x8)				
-				Print.info('old titleid = ' + str(hx(oldtitleid.to_bytes(8, byteorder='big'))))	
-				Print.info('new titleid = ' + str(hx(newtitleid.to_bytes(8, byteorder='big'))))						
-				Print.info('old version = ' + str(int.from_bytes(oldtitleversion, byteorder='little')))
-				Print.info('new version = ' + str(int.from_bytes(newtitleversion, byteorder='little')))	
-				Print.info('size = ' + str(int.from_bytes(size, byteorder='little', signed=True)))					
+				message='Old titleid = ' + str(hx(oldtitleid.to_bytes(8, byteorder='big')));print(message);feed+=message+'\n'	
+				message='New titleid = ' + str(hx(newtitleid.to_bytes(8, byteorder='big')));print(message);feed+=message+'\n'	
+				message='Old version = ' + str(int.from_bytes(oldtitleversion, byteorder='little'));print(message);feed+=message+'\n'	
+				message='New version = ' + str(int.from_bytes(newtitleversion, byteorder='little'));print(message);feed+=message+'\n'	
+				message='Size = ' + str(int.from_bytes(size, byteorder='little', signed=True));print(message);feed+=message+'\n'					
 				#Print.info('unknown1 = ' + str(int.from_bytes(unknown1, byteorder='little')))			
 			for i in range(int.from_bytes(num_delta_info, byteorder='little')):
-				Print.info('...........................................')								
-				Print.info('Delta info: '+ str(i+1))
-				Print.info('...........................................')				
+				message='...........................................';print(message);feed+=message+'\n'	
+				message='Delta info: '+ str(i+1);print(message);feed+=message+'\n'	
+				message='...........................................';print(message);feed+=message+'\n'					
 				oldtitleid=self.readInt64()	
 				newtitleid=self.readInt64()					
 				oldtitleversion = self.read(0x4)	
 				newtitleversion = self.read(0x4)	
 				index1=self.readInt64()	
 				index2=self.readInt64()				
-				Print.info('old titleid = ' + str(hx(oldtitleid.to_bytes(8, byteorder='big'))))	
-				Print.info('new titleid = ' + str(hx(newtitleid.to_bytes(8, byteorder='big'))))						
-				Print.info('old version = ' + str(int.from_bytes(oldtitleversion, byteorder='little')))
-				Print.info('new version = ' + str(int.from_bytes(newtitleversion, byteorder='little')))	
-				Print.info('index1 = ' + str(hx(index1.to_bytes(8, byteorder='big'))))	
-				Print.info('index2 = ' + str(hx(index2.to_bytes(8, byteorder='big'))))						
+				message='Old titleid = ' + str(hx(oldtitleid.to_bytes(8, byteorder='big')));print(message);feed+=message+'\n'	
+				message='New titleid = ' + str(hx(newtitleid.to_bytes(8, byteorder='big')));print(message);feed+=message+'\n'	
+				message='Old version = ' + str(int.from_bytes(oldtitleversion, byteorder='little'));print(message);feed+=message+'\n'	
+				message='New version = ' + str(int.from_bytes(newtitleversion, byteorder='little'));print(message);feed+=message+'\n'	
+				message='Index1 = ' + str(hx(index1.to_bytes(8, byteorder='big')));print(message);feed+=message+'\n'
+				message='Index2 = ' + str(hx(index2.to_bytes(8, byteorder='big')));print(message);feed+=message+'\n'						
 				#Print.info('unknown1 = ' + str(int.from_bytes(unknown1, byteorder='little')))
 			for i in range(int.from_bytes(num_delta_application, byteorder='little')):
-				Print.info('...........................................')								
-				Print.info('Delta application info: '+ str(i+1))
-				Print.info('...........................................')				
+				message='...........................................';print(message);feed+=message+'\n'	
+				message='Delta application info: '+ str(i+1);print(message);feed+=message+'\n'	
+				message='...........................................';print(message);feed+=message+'\n'						
 				OldNcaId = self.read(0x10)
 				NewNcaId = self.read(0x10)		
 				old_size = self.read(0x6)				
@@ -737,43 +733,43 @@ class Nca(File):
 				ncatype = self.read(0x1)	
 				installable = self.read(0x1)
 				unknown2 = self.read(0x4)				
-				Print.info('OldNcaId =\t' + str(hx(OldNcaId)))	
-				Print.info('NewNcaId =\t' + str(hx(NewNcaId)))	
-				Print.info('Old size =\t' +  str(int.from_bytes(old_size, byteorder='little', signed=True)))	
-				Print.info('unknown1 =\t' + str(int.from_bytes(unknown1, byteorder='little')))
-				Print.info('ncatype =\t' + str(int.from_bytes(ncatype, byteorder='little', signed=True)))
-				Print.info('installable =\t' + str(int.from_bytes(installable, byteorder='little', signed=True)))
-				Print.info('Upper 2 bytes of the new size=\t' + str(hx(up2bytes)))	
-				Print.info('Lower 4 bytes of the new size=\t' + str(hx(low4bytes)))					
+				message='OldNcaId = ' + str(hx(OldNcaId));print(message);feed+=message+'\n'	
+				message='NewNcaId = ' + str(hx(NewNcaId));print(message);feed+=message+'\n'	
+				message='Old size = ' +  str(int.from_bytes(old_size, byteorder='little', signed=True));print(message);feed+=message+'\n'	
+				message='Unknown1 = ' + str(int.from_bytes(unknown1, byteorder='little'));print(message);feed+=message+'\n'	
+				message='Ncatype =  ' + str(int.from_bytes(ncatype, byteorder='little', signed=True));print(message);feed+=message+'\n'	
+				message='Installable = ' + str(int.from_bytes(installable, byteorder='little'));print(message);feed+=message+'\n'	
+				message='Upper 2 bytes of the new size=' + str(hx(up2bytes));print(message);feed+=message+'\n'	
+				message='Lower 4 bytes of the new size=' + str(hx(low4bytes));print(message);feed+=message+'\n'
 				#Print.info('unknown2 =\t' + str(int.from_bytes(unknown2, byteorder='little')))			
 
 			for i in range(int.from_bytes(num_previous_content, byteorder='little')):
-				Print.info('...........................................')								
-				Print.info('Previous content records: '+ str(i+1))
-				Print.info('...........................................')				
+				message='...........................................';print(message);feed+=message+'\n'	
+				message='Previous content records: '+ str(i+1);print(message);feed+=message+'\n'	
+				message='...........................................';print(message);feed+=message+'\n'				
 				NcaId = self.read(0x10)		
 				size = self.read(0x6)				
 				ncatype = self.read(0x1)	
 				unknown1 = self.read(0x1)				
-				Print.info('NcaId = '+ str(hx(NcaId)))	
-				Print.info('Size = '+ str(int.from_bytes(size, byteorder='little', signed=True)))	
-				Print.info('ncatype = '+ str(int.from_bytes(ncatype, byteorder='little', signed=True)))			
+				message='NcaId = '+ str(hx(NcaId));print(message);feed+=message+'\n'	
+				message='Size = '+ str(int.from_bytes(size, byteorder='little', signed=True));print(message);feed+=message+'\n'	
+				message='Ncatype = '+ str(int.from_bytes(ncatype, byteorder='little', signed=True));print(message);feed+=message+'\n'		
 				#Print.info('unknown1 = '+ str(int.from_bytes(unknown1, byteorder='little')))	
 				
 			for i in range(int.from_bytes(num_delta_content, byteorder='little')):
-				Print.info('........................')							
-				Print.info('Delta content entry ' + str(i+1))
-				Print.info('........................')
+				message='...........................................';print(message);feed+=message+'\n'	
+				message='Delta content entry ' + str(i+1);print(message);feed+=message+'\n'	
+				message='...........................................';print(message);feed+=message+'\n'		
 				vhash = self.read(0x20)
-				Print.info('hash =\t' + str(hx(vhash)))
+				message='Hash =\t' + str(hx(vhash));print(message);feed+=message+'\n'										
 				NcaId = self.read(0x10)
-				Print.info('NcaId =\t' + str(hx(NcaId)))
+				message='NcaId =\t' + str(hx(NcaId));print(message);feed+=message+'\n'										
 				size = self.read(0x6)
-				Print.info('Size =\t' + str(int.from_bytes(size, byteorder='little', signed=True)))
+				message='Size =\t' + str(int.from_bytes(size, byteorder='little', signed=True));print(message);feed+=message+'\n'									
 				ncatype = self.read(0x1)
-				Print.info('ncatype = ' + str(int.from_bytes(ncatype, byteorder='little', signed=True)))
+				message='Ncatype = ' + str(int.from_bytes(ncatype, byteorder='little', signed=True));print(message);feed+=message+'\n'											
 				unknown = self.read(0x1)		
-		
+		return feed
 
 	def xml_gen(self,ofolder,nsha):
 		file = None
@@ -1265,7 +1261,7 @@ class Nca(File):
 					fp.close()
 					break	
 					
-	def get_langueblock(self,title):
+	def get_ncap_offset(self):
 		for f in self:
 			self.rewind()					
 			f.rewind()	
@@ -1323,11 +1319,137 @@ class Nca(File):
 				except:
 					pass
 			try:		
-				f.seek(offset+0x3060)	
+				f.seek(offset+0x3060)
 				ediver = f.read(0x10)
-				ediver = ediver.split(b'\0', 1)[0].decode('utf-8')
-				ediver = (re.sub(r'[\/\\]+', ' ', ediver))
-				ediver = ediver.strip()	
+				#print('here2')
+				#print(hx(ediver))
+				try:
+					ediver = ediver.split(b'\0', 1)[0].decode('utf-8')
+					ediver = (re.sub(r'[\/\\]+', ' ', ediver))
+					ediver = ediver.strip()	
+				except:
+					offset=0x16900-0x300*14
+					f.seek(offset+0x3060)
+					ediver = f.read(0x10)
+					ediver = ediver.split(b'\0', 1)[0].decode('utf-8')
+					ediver = (re.sub(r'[\/\\]+', ' ', ediver))
+					ediver = ediver.strip()						
+				try:  
+					int(ediver[0])+1
+				except:
+					ediver="-"
+				if ediver == '-':
+					offset2=offset-0x300
+					f.seek(offset2+0x3060)			
+					ediver = f.read(0x10)
+					ediver = ediver.split(b'\0', 1)[0].decode('utf-8')
+					ediver = (re.sub(r'[\/\\]+', ' ', ediver))
+					ediver = ediver.strip()	
+					try:  
+						int(ediver[0])+1
+						offset=offset2
+					except:
+						ediver="-"			
+				if ediver == '-':
+					try:
+						while (offset2+0x3060)<=0x18600:
+							offset2+=0x100
+							f.seek(offset2+0x3060)	
+							ediver = f.read(0x10)
+							ediver = ediver.split(b'\0', 1)[0].decode('utf-8')
+							ediver = (re.sub(r'[\/\\]+', ' ', ediver))
+							ediver = ediver.strip()	
+							if ediver != '':
+								if str(ediver[0])!='v' and str(ediver[0])!='V':
+									try:  
+										int(ediver[0])+1
+										offset=offset2
+										break
+									except:
+										ediver="-"
+										break		
+					except:
+						ediver="-"		
+			except:
+				pass
+			f.seek(offset)
+			#data=f.read()
+		return offset
+					
+					
+	def get_langueblock(self,title,roman=True):
+		for f in self:
+			self.rewind()					
+			f.rewind()	
+			Langue = list()	
+			Langue = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14]
+			SupLg=list()
+			regionstr=""
+			offset=0x14200
+			for i in Langue:
+				try:
+					f.seek(offset+i*0x300)
+					test=f.read(0x200)
+					test = test.split(b'\0', 1)[0].decode('utf-8')
+					test = (re.sub(r'[\/\\]+', ' ', test))
+					test = test.strip()
+					test2=f.read(0x100)
+					test2 = test2.split(b'\0', 1)[0].decode('utf-8')
+					test2 = (re.sub(r'[\/\\]+', ' ', test2))
+					test2 = test2.strip()					
+					if test == "" or test2 == "":	
+						offset=0x14400
+						f.seek(offset+i*0x300)
+						test=f.read(0x200)
+						test = test.split(b'\0', 1)[0].decode('utf-8')
+						test = (re.sub(r'[\/\\]+', ' ', test))
+						test = test.strip()	
+						test2=f.read(0x100)
+						test2 = test2.split(b'\0', 1)[0].decode('utf-8')
+						test2 = (re.sub(r'[\/\\]+', ' ', test2))
+						test2 = test2.strip()							
+						if test == "" or test2 == "":					
+							offset=0x14000
+							while offset<=(0x14200+i*0x300):
+								offset=offset+0x100
+								f.seek(offset+i*0x300)
+								test=f.read(0x200)
+								test = test.split(b'\0', 1)[0].decode('utf-8')
+								test = (re.sub(r'[\/\\]+', ' ', test))
+								test = test.strip()
+								test2=f.read(0x100)
+								test2 = test2.split(b'\0', 1)[0].decode('utf-8')
+								test2 = (re.sub(r'[\/\\]+', ' ', test2))
+								test2 = test2.strip()										
+								if test != "" and test2 != "" :	
+									offset=offset
+									break
+							if test != "":	
+								offset=offset
+								break			
+						if test != "":	
+							offset=offset
+							break								
+					else:
+						break
+				except:
+					pass
+			try:		
+				f.seek(offset+0x3060)
+				ediver = f.read(0x10)
+				#print('here2')
+				#print(hx(ediver))
+				try:
+					ediver = ediver.split(b'\0', 1)[0].decode('utf-8')
+					ediver = (re.sub(r'[\/\\]+', ' ', ediver))
+					ediver = ediver.strip()	
+				except:
+					offset=0x16900-0x300*14
+					f.seek(offset+0x3060)
+					ediver = f.read(0x10)
+					ediver = ediver.split(b'\0', 1)[0].decode('utf-8')
+					ediver = (re.sub(r'[\/\\]+', ' ', ediver))
+					ediver = ediver.strip()						
 				try:  
 					int(ediver[0])+1
 				except:
@@ -1415,7 +1537,7 @@ class Nca(File):
 							SupLg.append("KOR")	
 							regionstr+='1|'			
 						if i==13:
-							SupLg.append("TAI")		
+							SupLg.append("ZH (ch)")		
 							regionstr+='1|'			
 						if i==14:
 							SupLg.append("CH")	
@@ -1477,6 +1599,40 @@ class Nca(File):
 								isdemo = 0
 						else:
 							isdemo = 0
+						if i == 2:	
+							if roman == True:
+								kakasi = pykakasi.kakasi()
+								kakasi.setMode("H", "a")
+								kakasi.setMode("K", "a")
+								kakasi.setMode("J", "a")
+								kakasi.setMode("s", True)
+								kakasi.setMode("E", "a")
+								kakasi.setMode("a", None)
+								kakasi.setMode("C", False)
+								converter = kakasi.getConverter()
+								title=converter.do(title)	
+								title=title[0].upper()+title[1:]
+								editor=converter.do(editor)		
+								editor=editor[0].upper()+editor[1:]	
+							else:pass		
+						if i == 14 or i == 13 or i==12:	
+							if roman == True:						
+								kakasi = pykakasi.kakasi()
+								kakasi.setMode("H", "a")
+								kakasi.setMode("K", "a")
+								kakasi.setMode("J", "a")
+								kakasi.setMode("s", True)
+								kakasi.setMode("E", "a")
+								kakasi.setMode("a", None)
+								kakasi.setMode("C", False)
+								converter = kakasi.getConverter()
+								title=converter.do(title)	
+								title=title[0].upper()+title[1:]
+								editor=converter.do(editor)		
+								editor=editor[0].upper()+editor[1:]	
+							else:pass									
+						title=re.sub(' +', ' ',title)
+						editor=re.sub(' +', ' ',editor)
 						return(title,editor,ediver,SupLg,regionstr[:-1],isdemo)
 				except:
 					pass
@@ -1488,7 +1644,7 @@ class Nca(File):
 		sdkversion=str(self.header.sdkVersion4)+'.'+str(self.header.sdkVersion3)+'.'+str(self.header.sdkVersion2)+'.'+str(self.header.sdkVersion1)	
 		return sdkversion
 
-	def verify(self,feed):	
+	def verify(self,feed,targetkg=False,endcheck=False,progress=False,bar=False):	
 		if feed == False:
 			feed=''
 		indent='    > '
@@ -1514,23 +1670,24 @@ class Nca(File):
 		rsapss = PKCS1_PSS.new(pubkey)
 		digest = SHA256.new(headdata)
 		verification=rsapss.verify(digest, sign1)
+		crypto1=self.header.getCryptoType()
+		crypto2=self.header.getCryptoType2()	
+		if crypto2>crypto1:
+			masterKeyRev=crypto2
+		if crypto2<=crypto1:	
+			masterKeyRev=crypto1		
+		currkg=masterKeyRev		
 		if verification == True:
 			message=(indent+self._path+arrow+'is PROPER');print(message);feed+=message+'\n'			
 			#print(hx(headdata))		
-			return True,False,self._path,feed
+			return True,False,self._path,feed,currkg
 		else:
-			crypto1=self.header.getCryptoType()
-			crypto2=self.header.getCryptoType2()	
-			if crypto2>crypto1:
-				masterKeyRev=crypto2
-			if crypto2<=crypto1:	
-				masterKeyRev=crypto1		
 			crypto = aes128.AESECB(Keys.keyAreaKey(Keys.getMasterKeyIndex(masterKeyRev), self.header.keyIndex))			
 			KB1L=self.header.getKB1L()
 			KB1L = crypto.decrypt(KB1L)
 			if sum(KB1L) != 0:						
 				#print(hx(headdata))			
-				checkrights,kgchg,titlekey,tr,headdata=self.restorehead_tr()
+				checkrights,kgchg,titlekey,tr,headdata,orkg=self.restorehead_tr()
 				if headdata != False:
 					orig_header=orig_header[0x00:0x200]+headdata+orig_header[0x400:]
 					#print(hx(orig_header))
@@ -1544,16 +1701,20 @@ class Nca(File):
 						message=(tabs+'* '+"Original titlerights id is : "+(str(hx(tr)).upper())[2:-1]);print(message);feed+=message+'\n'						
 						message=(tabs+'* '+"Original titlekey is       : "+(str(hx(titlekey)).upper())[2:-1]);print(message);feed+=message+'\n'						
 					elif kgchg == True:
-						message=(tabs+'* '+"KEYGENERATION WAS CHANGED");print(message);feed+=message+'\n'		
+						message=(tabs+'* '+"KEYGENERATION WAS CHANGED FROM "+str(orkg)+" TO "+str(currkg));print(message);feed+=message+'\n'		
 						message=(tabs+'* '+"Original titlerights id is -> "+(str(hx(tr)).upper())[2:-1]);print(message);feed+=message+'\n'		
 						message=(tabs+'* '+"Original titlekey is -> "+(str(hx(titlekey)).upper())[2:-1]);print(message);feed+=message+'\n'				
-					return True,orig_header,self._path,feed	
+					return True,orig_header,self._path,feed,orkg	
 				else:
 					message=(indent+self._path+arrow+'was MODIFIED');print(message);feed+=message+'\n'		
 					message=(tabs+'* '+"NOT VERIFIABLE COULD'VE BEEN TAMPERED WITH");print(message);feed+=message+'\n'			
-					return False,False,self._path,feed	
+					return False,False,self._path,feed,False	
 			else:
-				ver,kgchg,cardchange,headdata=self.restorehead_ntr()
+				if targetkg != False:
+					if self.header.contentType == Type.Content.META:
+						ver,kgchg,cardchange,headdata,orkg=self.verify_cnmt_withkg(targetkg)					
+				else:
+					ver,kgchg,cardchange,headdata,orkg=self.restorehead_ntr()				
 				if headdata != False:
 					orig_header=orig_header[0x00:0x200]+headdata+orig_header[0x400:]
 					#print(hx(orig_header))
@@ -1561,26 +1722,177 @@ class Nca(File):
 				else:
 					orig_header = False				
 				if ver == True:
-					message=(indent+self._path+arrow+'is PROPER');print(message);feed+=message+'\n'		
+					chkkg=currkg
+					if targetkg == False:
+						message=(indent+self._path+arrow+'is PROPER');print(message);feed+=message+'\n'	
+					else:
+						if progress != False:
+							message=(tabs+'* '+"ORIGIN OF CNMT FILE IS PROPER");bar.write(message);feed+=message+'\n'	
+						else:
+							message=(tabs+'* '+"ORIGIN OF CNMT FILE IS PROPER");print(message);feed+=message+'\n'					
 					if kgchg == True:
-						message=(tabs+'* '+"KEYGENERATION WAS CHANGED");print(message);feed+=message+'\n'	
+						if progress != False:
+							message=(tabs+'* '+"KEYGENERATION WAS CHANGED FROM "+str(orkg)+" TO "+str(currkg));bar.write(message);feed+=message+'\n'	
+						else:
+							message=(tabs+'* '+"KEYGENERATION WAS CHANGED FROM "+str(orkg)+" TO "+str(currkg));print(message);feed+=message+'\n'	
+						chkkg=orkg	
 					if cardchange == True:				
 						if self.header.getgamecard() != 0:
-							message=(tabs+'* '+"ISGAMECARD WAS CHANGED FROM 0 TO 1");print(message);feed+=message+'\n'	
+							if progress != False:
+								message=(tabs+'* '+"ISGAMECARD WAS CHANGED FROM 0 TO 1");bar.write(message);feed+=message+'\n'								
+							else:
+								message=(tabs+'* '+"ISGAMECARD WAS CHANGED FROM 0 TO 1");print(message);feed+=message+'\n'	
 						else:
-							message=(tabs+'* '+"ISGAMECARD WAS CHANGED FROM 1 TO 0");print(message);feed+=message+'\n'									
-					return True,orig_header,self._path,feed		
+							if progress != False:
+								message=(tabs+'* '+"ISGAMECARD WAS CHANGED FROM 1 TO 0");bar.write(message);feed+=message+'\n'								
+							else:						
+								message=(tabs+'* '+"ISGAMECARD WAS CHANGED FROM 1 TO 0");print(message);feed+=message+'\n'									
+					return True,orig_header,self._path,feed,chkkg		
 				else:
-					message=(indent+self._path+arrow+'was MODIFIED');print(message);feed+=message+'\n'		
-					message=(tabs+'* '+"NOT VERIFIABLE!!!");print(message);feed+=message+'\n'	
-					if self.header.contentType == Type.Content.META:
-						message=(tabs+'* '+"IF THE REST IS OK RSV WAS MODIFIED");print(message);feed+=message+'\n'		
-						message=(tabs+'  '+"(NOTHING TO WORRY ABOUT)");print(message);feed+=message+'\n'							
-					return False,False,self._path,feed					
+					if targetkg == False:
+						message=(indent+self._path+arrow+'needs RSV check');print(message);feed+=message+'\n'	
+						message=(tabs+'* '+"CHECKING INTERNAL HASHES");print(message);feed+=message+'\n'						
+						feed,correct=self.check_cnmt_hashes(feed)						
+						if correct == True:
+							message=(tabs+'* '+"INTERNAL HASHES MATCH");print(message);feed+=message+'\n'
+						if correct == False:
+							message=(tabs+'* '+"INTERNAL HASH MISSMATCH");print(message);feed+=message+'\n'	
+							message=(tabs+'* '+"BAD CNMT FILE!!!");print(message);feed+=message+'\n'	
+							return 'BADCNMT',False,self._path,feed,False							
+					else:	
+						if endcheck == False:
+							pass
+						elif endcheck == True:
+							message=(indent+self._path+arrow+'was MODIFIED');print(message);feed+=message+'\n'		
+							message=(tabs+'* '+"NOT VERIFIABLE!!!");print(message);feed+=message+'\n'							
+					return False,False,self._path,feed,False					
 			message=(indent+self._path+arrow+'was MODIFIED');print(message);feed+=message+'\n'			
 			message=(tabs+'* '+"NOT VERIFIABLE!!!");print(message);feed+=message+'\n'				
-			return False,False,self._path,feed	
-
+			return False,False,self._path,feed,False	
+			
+	def verify_cnmt_withkg(self,targetkg):	
+		targetkg=int(targetkg)	
+		sign1 = self.header.signature1		
+		self.header.seek(0x200)	
+		headdata = self.header.read(0x200)
+		card='01';card=bytes.fromhex(card)
+		eshop='00';eshop=bytes.fromhex(eshop)
+		#print(hx(headdata))
+		#Hex.dump(headdata)				
+		pubkey=RSA.RsaKey(n=nca_header_fixed_key_modulus, e=RSA_PUBLIC_EXPONENT)
+		rsapss = PKCS1_PSS.new(pubkey)
+		digest = SHA256.new(headdata)
+		verification=rsapss.verify(digest, sign1)	
+		crypto1=self.header.getCryptoType()
+		crypto2=self.header.getCryptoType2()	
+		if crypto2>crypto1:
+			masterKeyRev=crypto2
+		if crypto2<=crypto1:	
+			masterKeyRev=crypto1	
+		if	self.header.getgamecard() == 0:		
+			headdata2 = b''
+			headdata2=headdata[0x00:0x04]+eshop+headdata[0x05:]		
+			digest2 = SHA256.new(headdata2)	
+			verification2=rsapss.verify(digest2, sign1)
+			if verification2 == True:
+				return True,False,False,headdata2,masterKeyRev	
+			else:	
+				headdata2 = b''
+				headdata2=headdata[0x00:0x04]+card+headdata[0x05:]		
+				digest2 = SHA256.new(headdata2)	
+				verification2=rsapss.verify(digest2, sign1)	
+				if verification2 == True:
+					return True,False,True,headdata2,masterKeyRev					
+		else:
+			headdata2 = b''
+			headdata2=headdata[0x00:0x04]+eshop+headdata[0x05:]	
+			digest2 = SHA256.new(headdata2)
+			verification2=rsapss.verify(digest2, sign1)			
+			if verification2 == True:
+				return True,False,True,headdata2,masterKeyRev	
+			else:	
+				headdata2 = b''
+				headdata2=headdata[0x00:0x04]+card+headdata[0x05:]		
+				digest2 = SHA256.new(headdata2)	
+				verification2=rsapss.verify(digest2, sign1)	
+				if verification2 == True:
+					return True,False,False,headdata2,masterKeyRev					
+				
+		key = Keys.keyAreaKey(Keys.getMasterKeyIndex(masterKeyRev), self.header.keyIndex)				
+		crypto = aes128.AESECB(key)
+		encKeyBlock = self.header.getKeyBlock()
+		decKeyBlock = crypto.decrypt(encKeyBlock)				
+		newMasterKeyRev=targetkg
+		key = Keys.keyAreaKey(Keys.getMasterKeyIndex(newMasterKeyRev), self.header.keyIndex)				
+		crypto = aes128.AESECB(key)
+		reEncKeyBlock = crypto.encrypt(decKeyBlock)		
+		i=targetkg
+		if i<3:
+			crypto1='0'+str(i)
+			crypto2='00'
+		else:
+			crypto1='02'
+			crypto2='0'+str(i)	
+		crypto1=bytes.fromhex(crypto1);crypto2=bytes.fromhex(crypto2)				
+		headdata1 = b''				
+		headdata1=headdata[0x00:0x04]+card+headdata[0x05:0x06]+crypto1+headdata[0x07:0x20]+crypto2+headdata[0x21:0x100]+reEncKeyBlock+headdata[0x140:]
+		#print(hx(headdata1))
+		headdata2 = b''
+		headdata2=headdata[0x00:0x04]+eshop+headdata1[0x05:]	
+		#print(hx(headdata2))
+		digest1 = SHA256.new(headdata1)
+		digest2 = SHA256.new(headdata2)
+		verification1=rsapss.verify(digest1, sign1)		
+		verification2=rsapss.verify(digest2, sign1)	
+		if verification1 == True:
+			if	self.header.getgamecard() == 0:					
+				return True,True,True,headdata1,newMasterKeyRev
+			else:
+				return True,True,False,headdata1,newMasterKeyRev				
+		if verification2 == True:
+			if	self.header.getgamecard() == 0:					
+				return True,True,False,headdata2,newMasterKeyRev	
+			else:				
+				return True,True,True,headdata2,newMasterKeyRev						
+		return False,False,False,False,masterKeyRev	
+			
+	def check_cnmt_hashes(self,feed):		
+		sha=self.calc_pfs0_hash()
+		sha_get=self.calc_pfs0_hash()	
+		correct=True
+		if sha == sha_get:
+			message=(tabs+'  '+"  - PFS0 hash is CORRECT");print(message);feed+=message+'\n'
+			#print(hx(sha))			
+			#print(hx(sha_get))
+		else:
+			message=(tabs+'  '+"  - PFS0 hash is INCORRECT!!!");print(message);feed+=message+'\n'		
+			#print(hx(sha))				
+			#print(hx(sha_get))		
+			correct=False	
+		sha2=self.calc_htable_hash()	
+		sha2_get=self.calc_htable_hash()
+		if sha2 == sha2_get:
+			message=(tabs+'  '+"  - HASH TABLE hash is CORRECT");print(message);feed+=message+'\n'	
+			#print(hx(sha2))				
+			#print(hx(sha2_get))
+		else:
+			message=(tabs+'  '+"  - HASH TABLE hash is INCORRECT!!!");print(message);feed+=message+'\n'	
+			#print(hx(sha2))				
+			#print(hx(sha2_get))
+			correct=False			
+		sha3=self.header.calculate_hblock_hash()	
+		sha3_get=self.header.calculate_hblock_hash()
+		if sha3 == sha3_get:
+			message=(tabs+'  '+"  - HEADER BLOCK hash is CORRECT");print(message);feed+=message+'\n'			
+			#print(hx(sha3))				
+			#print(hx(sha3_get))			
+		else:
+			message=(tabs+'  '+"  - HEADER BLOCK hash is INCORRECT!!!");print(message);feed+=message+'\n'				
+			#print(hx(sha3))				
+			#print(hx(sha3_get))
+			correct=False			
+		return feed,correct			
+			
 	def restorehead_tr(self):	
 		sign1 = self.header.signature1	
 		crypto1=self.header.getCryptoType()
@@ -1615,7 +1927,7 @@ class Nca(File):
 		digest = SHA256.new(headdata)
 		verification=rsapss.verify(digest, sign1)		
 		if verification == True:
-			return True,False,titleKeyEnc,tr,headdata
+			return True,False,titleKeyEnc,tr,headdata,masterKeyRev
 		else:
 			tr2=nca_id[:-3]+'800000000000000000'+str(crypto2)	
 			tr2=bytes.fromhex(tr2)
@@ -1624,16 +1936,19 @@ class Nca(File):
 			digest2 = SHA256.new(headdata2)
 			verification=rsapss.verify(digest2, sign1)	
 			if verification == True:
-				return True,False,titleKeyEnc,tr2,headdata2			
+				return True,False,titleKeyEnc,tr2,headdata2,masterKeyRev			
 			else:
+				nlist=list()
 				for i in range(9):
+					nlist.append(i)
+				sorted(nlist, key=int, reverse=True)		
+				for i in nlist:
 					if i<3:
 						crypto1='0'+str(i)
 						crypto2='00'
 					else:
 						crypto1='02'
 						crypto2='0'+str(i)	
-						
 					masterKeyRev = i	
 					encKeyBlock = self.header.getKeyBlock()
 					key = Keys.keyAreaKey(Keys.getMasterKeyIndex(masterKeyRev), self.header.keyIndex)		
@@ -1654,10 +1969,10 @@ class Nca(File):
 					verification1=rsapss.verify(digest1, sign1)		
 					verification2=rsapss.verify(digest2, sign1)		
 					if verification1 == True:
-						return True,True,titleKeyEnc,tr1,headdata1
+						return True,True,titleKeyEnc,tr1,headdata1,masterKeyRev
 					if verification2 == True:	
-						return True,True,titleKeyEnc,tr2,headdata2					
-				return False,False,False,False,False			
+						return True,True,titleKeyEnc,tr2,headdata2,masterKeyRev					
+				return False,False,False,False,False,masterKeyRev			
 		
 	def restorehead_ntr(self):		
 		sign1 = self.header.signature1		
@@ -1670,33 +1985,54 @@ class Nca(File):
 		pubkey=RSA.RsaKey(n=nca_header_fixed_key_modulus, e=RSA_PUBLIC_EXPONENT)
 		rsapss = PKCS1_PSS.new(pubkey)
 		digest = SHA256.new(headdata)
-		verification=rsapss.verify(digest, sign1)		
+		verification=rsapss.verify(digest, sign1)	
+		crypto1=self.header.getCryptoType()
+		crypto2=self.header.getCryptoType2()	
+		if crypto2>crypto1:
+			masterKeyRev=crypto2
+		if crypto2<=crypto1:	
+			masterKeyRev=crypto1	
 		if	self.header.getgamecard() == 0:		
 			headdata2 = b''
 			headdata2=headdata[0x00:0x04]+eshop+headdata[0x05:]		
 			digest2 = SHA256.new(headdata2)	
 			verification2=rsapss.verify(digest2, sign1)
 			if verification2 == True:
-				return True,False,True,headdata2			
+				return True,False,False,headdata2,masterKeyRev	
+			else:	
+				headdata2 = b''
+				headdata2=headdata[0x00:0x04]+card+headdata[0x05:]		
+				digest2 = SHA256.new(headdata2)	
+				verification2=rsapss.verify(digest2, sign1)	
+				if verification2 == True:
+					return True,False,True,headdata2,masterKeyRev					
 		else:
 			headdata2 = b''
 			headdata2=headdata[0x00:0x04]+eshop+headdata[0x05:]	
 			digest2 = SHA256.new(headdata2)
 			verification2=rsapss.verify(digest2, sign1)			
 			if verification2 == True:
-				return True,False,True,headdata2	
-				
-		crypto1=self.header.getCryptoType()
-		crypto2=self.header.getCryptoType2()	
-		if crypto2>crypto1:
-			masterKeyRev=crypto2
-		if crypto2<=crypto1:	
-			masterKeyRev=crypto1
+				return True,False,True,headdata2,masterKeyRev	
+			else:	
+				headdata2 = b''
+				headdata2=headdata[0x00:0x04]+card+headdata[0x05:]		
+				digest2 = SHA256.new(headdata2)	
+				verification2=rsapss.verify(digest2, sign1)	
+				if verification2 == True:
+					return True,False,False,headdata2,masterKeyRev
+				else:
+					pass
+		if self.header.contentType == Type.Content.META:
+			return False,False,False,False,masterKeyRev
 		key = Keys.keyAreaKey(Keys.getMasterKeyIndex(masterKeyRev), self.header.keyIndex)				
 		crypto = aes128.AESECB(key)
 		encKeyBlock = self.header.getKeyBlock()
-		decKeyBlock = crypto.decrypt(encKeyBlock)			
+		decKeyBlock = crypto.decrypt(encKeyBlock)	
+		nlist=list()
 		for i in range(9):
+			nlist.append(i)
+		sorted(nlist, key=int, reverse=True)		
+		for i in nlist:
 			if i<3:
 				crypto1='0'+str(i)
 				crypto2='00'
@@ -1707,7 +2043,6 @@ class Nca(File):
 			key = Keys.keyAreaKey(Keys.getMasterKeyIndex(newMasterKeyRev), self.header.keyIndex)				
 			crypto = aes128.AESECB(key)
 			reEncKeyBlock = crypto.encrypt(decKeyBlock)				
-
 			crypto1=bytes.fromhex(crypto1);crypto2=bytes.fromhex(crypto2)				
 			headdata1 = b''				
 			headdata1=headdata[0x00:0x04]+card+headdata[0x05:0x06]+crypto1+headdata[0x07:0x20]+crypto2+headdata[0x21:0x100]+reEncKeyBlock+headdata[0x140:]
@@ -1715,15 +2050,174 @@ class Nca(File):
 			headdata2 = b''
 			headdata2=headdata[0x00:0x04]+eshop+headdata1[0x05:]	
 			#print(hx(headdata2))
-			digest1 = SHA256.new(headdata1)
-			digest2 = SHA256.new(headdata2)
-			verification1=rsapss.verify(digest1, sign1)		
-			verification2=rsapss.verify(digest2, sign1)	
-			if verification1 == True:
-				return True,True,False,headdata1
-			if verification2 == True:
-				return True,True,False,headdata2				
-		return False,False,False,False		
+			if self.header.contentType != Type.Content.META: 
+				digest1 = SHA256.new(headdata1)
+				digest2 = SHA256.new(headdata2)
+				verification1=rsapss.verify(digest1, sign1)		
+				verification2=rsapss.verify(digest2, sign1)	
+				if verification1 == True:
+					if	self.header.getgamecard() == 0:					
+						return True,True,True,headdata1,newMasterKeyRev
+					else:
+						return True,True,False,headdata1,newMasterKeyRev				
+				if verification2 == True:
+					if	self.header.getgamecard() == 0:					
+						return True,True,False,headdata2,newMasterKeyRev	
+					else:				
+						return True,True,True,headdata2,newMasterKeyRev	       
+		return False,False,False,False,masterKeyRev	
 
+#READ NACP FILE WITHOUT EXTRACTION	
+	def read_nacp(self,feed=''):
+		if 	str(self.header.contentType) == 'Content.CONTROL':
+			offset=self.get_ncap_offset()
+			for f in self:
+				f.seek(offset)
+				nacp = Nacp()	
+				feed=nacp.par_getNameandPub(f.read(0x300*15),feed)
+				message='...............................';print(message);feed+=message+'\n'	
+				message='NACP FLAGS';print(message);feed+=message+'\n'						
+				message='...............................';print(message);feed+=message+'\n'
+				f.seek(offset+0x3000)							
+				feed=nacp.par_Isbn(f.read(0x24),feed)		
+				f.seek(offset+0x3025)							
+				feed=nacp.par_getStartupUserAccount(f.readInt8('little'),feed)	
+				feed=nacp.par_getUserAccountSwitchLock(f.readInt8('little'),feed)		
+				feed=nacp.par_getAddOnContentRegistrationType(f.readInt8('little'),feed)						
+				feed=nacp.par_getContentType(f.readInt8('little'),feed)	
+				feed=nacp.par_getParentalControl(f.readInt8('little'),feed)
+				feed=nacp.par_getScreenshot(f.readInt8('little'),feed)
+				feed=nacp.par_getVideoCapture(f.readInt8('little'),feed)
+				feed=nacp.par_dataLossConfirmation(f.readInt8('little'),feed)
+				feed=nacp.par_getPlayLogPolicy(f.readInt8('little'),feed)
+				feed=nacp.par_getPresenceGroupId(f.readInt64('little'),feed)
+				f.seek(offset+0x3040)
+				listages=list()
+				message='...............................';print(message);feed+=message+'\n'						
+				message='Age Ratings';print(message);feed+=message+'\n'	
+				message='...............................';print(message);feed+=message+'\n'						
+				for i in range(12):
+					feed=nacp.par_getRatingAge(f.readInt8('little'),i,feed)
+				f.seek(offset+0x3060)		
+				message='...............................';print(message);feed+=message+'\n'						
+				message='NACP ATTRIBUTES';print(message);feed+=message+'\n'	
+				message='...............................';print(message);feed+=message+'\n'							
+				feed=nacp.par_getDisplayVersion(f.read(0xF),feed)		
+				f.seek(offset+0x3070)							
+				feed=nacp.par_getAddOnContentBaseId(f.readInt64('little'),feed)
+				f.seek(offset+0x3078)							
+				feed=nacp.par_getSaveDataOwnerId(f.readInt64('little'),feed)
+				f.seek(offset+0x3080)							
+				feed=nacp.par_getUserAccountSaveDataSize(f.readInt64('little'),feed)	
+				f.seek(offset+0x3088)								
+				feed=nacp.par_getUserAccountSaveDataJournalSize(f.readInt64('little'),feed)	
+				f.seek(offset+0x3090)	
+				feed=nacp.par_getDeviceSaveDataSize(f.readInt64('little'),feed)	
+				f.seek(offset+0x3098)	
+				feed=nacp.par_getDeviceSaveDataJournalSize(f.readInt64('little'),feed)	
+				f.seek(offset+0x30A0)	
+				feed=nacp.par_getBcatDeliveryCacheStorageSize(f.readInt64('little'),feed)		
+				f.seek(offset+0x30A8)	
+				feed=nacp.par_getApplicationErrorCodeCategory(f.read(0x07),feed)	
+				f.seek(offset+0x30B0)
+				feed=nacp.par_getLocalCommunicationId(f.readInt64('little'),feed)	
+				f.seek(offset+0x30F0)
+				feed=nacp.par_getLogoType(f.readInt8('little'),feed)							
+				feed=nacp.par_getLogoHandling(f.readInt8('little'),feed)		
+				feed=nacp.par_getRuntimeAddOnContentInstall(f.readInt8('little'),feed)	
+				feed=nacp.par_getCrashReport(f.readInt8('little'),feed)	
+				feed=nacp.par_getHdcp(f.readInt8('little'),feed)		
+				feed=nacp.par_getSeedForPseudoDeviceId(f.readInt64('little'),feed)	
+				f.seek(offset+0x3100)			
+				feed=nacp.par_getBcatPassphrase(f.read(0x40),feed)	
+				f.seek(offset+0x3148)			
+				feed=nacp.par_UserAccountSaveDataSizeMax(f.readInt64('little'),feed)						
+				f.seek(offset+0x3150)			
+				feed=nacp.par_UserAccountSaveDataJournalSizeMax(f.readInt64('little'),feed)
+				f.seek(offset+0x3158)			
+				feed=nacp.par_getDeviceSaveDataSizeMax(f.readInt64('little'),feed)
+				f.seek(offset+0x3160)			
+				feed=nacp.par_getDeviceSaveDataJournalSizeMax(f.readInt64('little'),feed)							
+				f.seek(offset+0x3168)			
+				feed=nacp.par_getTemporaryStorageSize(f.readInt64('little'),feed)		
+				feed=nacp.par_getCacheStorageSize(f.readInt64('little'),feed)			
+				f.seek(offset+0x3178)		
+				feed=nacp.par_getCacheStorageJournalSize(f.readInt64('little'),feed)							
+				feed=nacp.par_getCacheStorageDataAndJournalSizeMax(f.readInt64('little'),feed)		
+				f.seek(offset+0x3188)	
+				feed=nacp.par_getCacheStorageIndexMax(f.readInt64('little'),feed)		
+				feed=nacp.par_getPlayLogQueryableApplicationId(f.readInt64('little'),feed)		
+				f.seek(offset+0x3210)	
+				feed=nacp.par_getPlayLogQueryCapability(f.readInt8('little'),feed)	
+				feed=nacp.par_getRepair(f.readInt8('little'),feed)	
+				feed=nacp.par_getProgramIndex(f.readInt8('little'),feed)	
+				feed=nacp.par_getRequiredNetworkServiceLicenseOnLaunch(f.readInt8('little'),feed)	
+				#f.seek(offset+0x3000)						
+				#nacp.open(MemoryFile(f.read(),32768*2))	
+				#nacp.printInfo()
+				#Hex.dump(offset)
+		return feed				
 
+	def verify_hash_nca(self,buffer,origheader,didverify,feed):
+		verdict=True; basename=str(os.path.basename(os.path.abspath(self._path)))			
+		if feed == False:
+			feed=''				
+		message='***************';print(message);feed+=message+'\n'
+		message=('HASH TEST');print(message);feed+=message+'\n'
+		message='***************';print(message);feed+=message+'\n'			
 		
+		message=(str(self.header.titleId)+' - '+str(self.header.contentType));print(message);feed+=message+'\n'
+		ncasize=self.header.size						
+		t = tqdm(total=ncasize, unit='B', unit_scale=True, leave=False)	
+		i=0		
+		self.rewind();
+		rawheader=self.read(0xC00)
+		self.rewind()												
+		for data in iter(lambda: self.read(int(buffer)), ""):				
+			if i==0:	
+				sha=sha256()
+				self.seek(0xC00)
+				sha.update(rawheader)
+				if origheader != False:
+					sha0=sha256()
+					sha0.update(origheader)	
+				i+=1
+				t.update(len(data))
+				self.flush()
+			else:		
+				sha.update(data)
+				if origheader != False:
+					sha0.update(data)								
+				t.update(len(data))
+				self.flush()
+				if not data:				
+					break						
+		t.close()	
+		sha=sha.hexdigest()	
+		if origheader != False:
+			sha0=sha0.hexdigest()				
+		message=('  - File name: '+basename);print(message);feed+=message+'\n'
+		message=('  - SHA256: '+sha);print(message);feed+=message+'\n'
+		if origheader != False:
+			message=('  - ORIG_SHA256: '+sha0);print(message);feed+=message+'\n'						
+		if str(basename)[:16] == str(sha)[:16]:
+			message=('   > FILE IS CORRECT');print(message);feed+=message+'\n'
+		elif origheader != False:
+			if str(basename)[:16] == str(sha0)[:16]:		
+				message=('   > FILE IS CORRECT');print(message);feed+=message+'\n'
+			else:
+				message=('   > FILE IS CORRUPT');print(message);feed+=message+'\n'
+				verdict = False	
+		elif  self.header.contentType == Type.Content.META and didverify == True:		
+			message=('   > RSV WAS CHANGED');print(message);feed+=message+'\n'
+			#print('   > CHECKING INTERNAL HASHES')								
+			message=('     * FILE IS CORRECT');print(message);feed+=message+'\n'							
+		else:
+			message=('   > FILE IS CORRUPT');print(message);feed+=message+'\n'
+			verdict = False
+		message=('');print(message);feed+=message+'\n'			
+		if verdict == False:
+			message=("VERDICT: NCA FILE IS CORRUPT");print(message);feed+=message+'\n'
+		if verdict == True:	
+			message=('VERDICT: NCA FILE IS CORRECT');print(message);feed+=message+'\n'
+		return 	verdict,feed					

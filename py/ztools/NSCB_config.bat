@@ -275,6 +275,7 @@ echo Input "8" to set file stream BUFFER
 echo Input "9" to set file FAT32\EXFAT options
 echo Input "10" to how to ORGANIZE output files
 echo Input "11" to set NEW MODE OR LEGACY MODE
+echo Input "12" to ROMANIZE names when using direct-multi
 echo.
 echo Input "c" to read CURRENT GLOBAL SETTINGS
 echo Input "d" to set DEFAULT GLOBAL SETTINGS
@@ -294,6 +295,7 @@ if /i "%bs%"=="8" goto op_buffer
 if /i "%bs%"=="9" goto op_fat
 if /i "%bs%"=="10" goto op_oforg
 if /i "%bs%"=="11" goto op_nscbmode
+if /i "%bs%"=="12" goto op_romanize
 
 if /i "%bs%"=="c" call :curr_set2
 if /i "%bs%"=="c" echo.
@@ -852,6 +854,43 @@ echo.
 pause
 goto sc3
 
+:op_romanize
+cls
+call :logo
+echo ***************************************************************************
+echo ROMANIZE RESULTING NAMES FOR DIRECT MULTI FUNCTION
+echo ***************************************************************************
+echo.
+echo Input "1" to convert japanese\asian names to ROMAJI (default)
+echo Input "2" to keep names as read on PREVALENT BASEFILE
+echo.
+echo Input "b" to return to GLOBAL OPTIONS
+echo Input "0" to return to CONFIG MENU
+echo Input "e" to go back to the MAIN PROGRAM
+echo ...........................................................................
+echo.
+set /p bs="Enter your choice: "
+set "v_roma=none"
+if /i "%bs%"=="1" set "v_roma=TRUE"
+if /i "%bs%"=="2" set "v_roma=FALSE"
+
+if /i "%bs%"=="b" goto sc3
+if /i "%bs%"=="0" goto sc1
+if /i "%bs%"=="e" goto salida
+
+if "%v_roma%"=="none" echo WRONG CHOICE
+if "%v_roma%"=="none" echo.
+if "%v_roma%"=="none" goto op_romanize
+
+set v_roma="romaji=%v_roma%"
+set v_roma="%v_roma%"
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "139" -nl "set %v_roma%" 
+echo.
+%pycommand% "%listmanager%" -rl "%op_file%" -ln "139" -nl "Line in config was changed to: "
+echo.
+pause
+goto sc3
+
 :def_set1
 echo.
 echo **AUTO-MODE OPTIONS**
@@ -982,6 +1021,12 @@ set v_nscbmode="%v_nscbmode%"
 %pycommand% "%listmanager%" -cl "%op_file%" -ln "132" -nl "set %v_nscbmode%" 
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "132" -nl "Line in config was changed to: "
 
+set "v_roma=TRUE"
+set v_roma="romaji=%v_roma%"
+set v_roma="%v_roma%"
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "139" -nl "set %v_roma%" 
+%pycommand% "%listmanager%" -rl "%op_file%" -ln "139" -nl "Line in config was changed to: "
+
 exit /B
 
 :curr_set1
@@ -1041,6 +1086,8 @@ REM OUTPUT ORGANIZING format
 REM NSCB MODE
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "132" -nl "NSCB mode is set to: "
 
+REM ROMANIZE
+%pycommand% "%listmanager%" -rl "%op_file%" -ln "139" -nl "ROMANIZE option is set to: "
 
 exit /B
 
@@ -1085,7 +1132,7 @@ ECHO =============================     BY JULESONTHEROAD     ===================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                                POWERED BY SQUIRREL                                "
 ECHO "                    BASED IN THE WORK OF BLAWAR AND LUCA FRAGA                     "
-ECHO                                     VERSION 0.86
+ECHO                                     VERSION 0.87
 ECHO -------------------------------------------------------------------------------------                   
 ECHO Program's github: https://github.com/julesontheroad/NSC_BUILDER
 ECHO Blawar's github:  https://github.com/blawar
