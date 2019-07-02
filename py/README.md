@@ -165,7 +165,7 @@ b.) Hacbuild: The xci repacking functions are based on hacbuild's code, made by 
 
 - Revised hacbuild by me: https://github.com/julesontheroad/hacbuild
 
-c.) Big thx to 0Liam for his constant 
+c.) Big thx to 0Liam for his constant help.
 
 Also thanks to:
 
