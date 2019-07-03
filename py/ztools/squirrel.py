@@ -1901,6 +1901,8 @@ if __name__ == '__main__':
 						export='xci'						
 					elif input == "nsp" or input == "NSP": 	
 						export='nsp'
+					elif input == "nsx" or input == "NSX": 	
+						export='nsp'						
 					elif input == "both" or input == "BOTH": 
 						export='both'													
 					else:
@@ -1945,11 +1947,11 @@ if __name__ == '__main__':
 				print(len(filelist))
 				counter=len(filelist)
 				for filepath in filelist:
-					if filepath.endswith('.nsp'):
+					if filepath.endswith('.nsp') or filepath.endswith('.nsx'):
 						try:
 							prlist=list()
 							f = Fs.Nsp(filepath)										
-							contentlist=f.get_content_placeholder()
+							contentlist=f.get_content_placeholder(ofolder)
 							#print(contentlist)
 							f.flush()
 							f.close()		
@@ -2016,8 +2018,9 @@ if __name__ == '__main__':
 							if filepath.endswith('.nsp'):
 								try:
 									f = Fs.Nsp(filepath)
-									for file in oflist:									
-										f.append_content(endfile,file,buffer,t)
+									for file in oflist:	
+										if not file.endswith('xml'):									
+											f.append_content(endfile,file,buffer,t)
 									f.flush()
 									f.close()	
 									t.close()			
