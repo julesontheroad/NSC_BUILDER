@@ -2015,7 +2015,7 @@ if __name__ == '__main__':
 							outf.write(nspheader)		
 							t.update(len(nspheader))				
 							outf.close()
-							if filepath.endswith('.nsp'):
+							if filepath.endswith('.nsp') or filepath.endswith('.nsx'):
 								try:
 									f = Fs.Nsp(filepath)
 									for file in oflist:	

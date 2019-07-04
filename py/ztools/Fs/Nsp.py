@@ -5217,7 +5217,7 @@ class Nsp(Pfs0):
 				pass					
 			else:
 				completefilelist.append(str(file._path))
-		#print (completefilelist)			
+		print (completefilelist)			
 		for nca in self:
 			if type(nca) == Nca:
 				if 	str(nca.header.contentType) == 'Content.META':
@@ -6520,7 +6520,11 @@ class Nsp(Pfs0):
 								if correct == False and f.header.getRightsId() == 0:
 									correct = f.pr_noenc_check()		
 								if correct == False and f.header.getRightsId() != 0:
-									correct = self.verify_nca_key(file)									
+									correct = self.verify_nca_key(file)		
+								if correct == True and f.header.getRightsId() == 0:
+									correct = f.pr_noenc_check()				
+									if correct == False:
+										baddec=True									
 				elif file.endswith('.tik'):	
 					tikfile=str(file)				
 					checktik == False
@@ -6545,6 +6549,8 @@ class Nsp(Pfs0):
 					message=(tabs+file+' -> is CORRUPT <<<-');print(message);feed+=message+'\n'					
 				elif file.endswith('nca'):		
 					message=(tabs+file+tabs+'  -> is CORRUPT <<<-');print(message);feed+=message+'\n'					
+					if baddec == True:
+						print(tabs+'  * NOTE: S.C. CONVERSION WAS PERFORMED WITH BAD KEY')					
 				elif file.endswith('tik'):		
 					message=(tabs+file+tabs+'  -> titlekey is INCORRECT <<<-');print(message);feed+=message+'\n'					
 		for nca in self:

@@ -1700,10 +1700,15 @@ class Nca(File):
 					if kgchg == False:
 						message=(tabs+'* '+"Original titlerights id is : "+(str(hx(tr)).upper())[2:-1]);print(message);feed+=message+'\n'						
 						message=(tabs+'* '+"Original titlekey is       : "+(str(hx(titlekey)).upper())[2:-1]);print(message);feed+=message+'\n'						
+						tcheck=(str(hx(titlekey)).upper())[2:-1]		
+						if tcheck == '00000000000000000000000000000000':
+							message=(tabs+'* '+"WARNING: sum(titlekey)=0 -> S.C. conversion may be incorrect and come from nsx file");print(message);feed+=message+'\n'										
 					elif kgchg == True:
 						message=(tabs+'* '+"KEYGENERATION WAS CHANGED FROM "+str(orkg)+" TO "+str(currkg));print(message);feed+=message+'\n'		
 						message=(tabs+'* '+"Original titlerights id is -> "+(str(hx(tr)).upper())[2:-1]);print(message);feed+=message+'\n'		
-						message=(tabs+'* '+"Original titlekey is -> "+(str(hx(titlekey)).upper())[2:-1]);print(message);feed+=message+'\n'				
+						message=(tabs+'* '+"Original titlekey is -> "+(str(hx(titlekey)).upper())[2:-1]);print(message);feed+=message+'\n'	
+						if tcheck == '00000000000000000000000000000000':
+							message=(tabs+'* '+"WARNING: sum(titlekey)=0 -> S.C. conversion may be incorrect and come from nsx file");print(message);feed+=message+'\n'										
 					return True,orig_header,self._path,feed,orkg	
 				else:
 					message=(indent+self._path+arrow+'was MODIFIED');print(message);feed+=message+'\n'		
