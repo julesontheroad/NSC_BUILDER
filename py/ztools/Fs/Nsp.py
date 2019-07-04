@@ -6748,7 +6748,10 @@ class Nsp(Pfs0):
 													cnmtdidverify=True
 													break	
 									break
-						else:break	
+						else:break
+				try:
+					t.close()
+				except:pass
 				if hlisthash == True:
 					sha0=sha0.hexdigest()
 					hlisthash=sha0
@@ -6796,6 +6799,17 @@ class Nsp(Pfs0):
 										size=int.from_bytes(size, byteorder='little')
 										ncatype = cnmt.readInt8()
 										unknown = cnmt.read(0x1)
+		for nca in self:
+			if type(nca) == Nca:
+				if 	str(nca.header.contentType) == 'Content.META':	
+					if nca._path == ncameta:										
+						crypto1=nca.header.getCryptoType()
+						crypto2=nca.header.getCryptoType2()			
+						if crypto2>crypto1:
+							keygeneration=crypto2
+						if crypto2<=crypto1:	
+							keygeneration=crypto1	
+						return keygeneration,min_sversion	
 		return False,False		
 
 

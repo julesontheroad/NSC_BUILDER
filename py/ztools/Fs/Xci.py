@@ -6299,7 +6299,20 @@ class Xci(File):
 												size=int.from_bytes(size, byteorder='little')
 												ncatype = cnmt.readInt8()
 												unknown = cnmt.read(0x1)
-		return False,False		
+		for nspF in self.hfs0:
+			if str(nspF._path)=="secure":
+				for nca in nspF:		
+					if type(nca) == Nca:
+						if 	str(nca.header.contentType) == 'Content.META':	
+							if nca._path == ncameta:										
+								crypto1=nca.header.getCryptoType()
+								crypto2=nca.header.getCryptoType2()			
+								if crypto2>crypto1:
+									keygeneration=crypto2
+								if crypto2<=crypto1:	
+									keygeneration=crypto1	
+								return keygeneration,min_sversion	
+		return False,False			
 
 	def verify_hash_nca(self,buffer,headerlist,didverify,feed):	
 		verdict=True		

@@ -1754,26 +1754,50 @@ class Nca(File):
 								message=(tabs+'* '+"ISGAMECARD WAS CHANGED FROM 1 TO 0");print(message);feed+=message+'\n'									
 					return True,orig_header,self._path,feed,chkkg		
 				else:
-					if targetkg == False:
-						message=(indent+self._path+arrow+'needs RSV check');print(message);feed+=message+'\n'	
-						message=(tabs+'* '+"CHECKING INTERNAL HASHES");print(message);feed+=message+'\n'						
-						feed,correct=self.check_cnmt_hashes(feed)						
-						if correct == True:
-							message=(tabs+'* '+"INTERNAL HASHES MATCH");print(message);feed+=message+'\n'
-						if correct == False:
-							message=(tabs+'* '+"INTERNAL HASH MISSMATCH");print(message);feed+=message+'\n'	
-							message=(tabs+'* '+"BAD CNMT FILE!!!");print(message);feed+=message+'\n'	
-							return 'BADCNMT',False,self._path,feed,False							
-					else:	
-						if endcheck == False:
-							pass
-						elif endcheck == True:
-							message=(indent+self._path+arrow+'was MODIFIED');print(message);feed+=message+'\n'		
-							message=(tabs+'* '+"NOT VERIFIABLE!!!");print(message);feed+=message+'\n'							
-					return False,False,self._path,feed,False					
-			message=(indent+self._path+arrow+'was MODIFIED');print(message);feed+=message+'\n'			
-			message=(tabs+'* '+"NOT VERIFIABLE!!!");print(message);feed+=message+'\n'				
-			return False,False,self._path,feed,False	
+					if self.header.contentType == Type.Content.META:
+						if targetkg == False:
+							if os.path.exists(self._path):
+								printname=str(os.path.basename(os.path.abspath(self._path)))
+							else:
+								printname=str(self._path)											
+							if progress != False:					
+								pass
+							else:	
+								message=(indent+self._path+arrow+'needs RSV check');print(message);feed+=message+'\n'	
+								message=(tabs+'* '+"CHECKING INTERNAL HASHES");print(message);feed+=message+'\n'	
+							if progress == False:							
+								feed,correct=self.check_cnmt_hashes(feed)						
+								if correct == True:
+									if progress != False:						
+										message=(tabs+'* '+"INTERNAL HASHES MATCH");bar.write(message);feed+=message+'\n'
+									else:	
+										message=(tabs+'* '+"INTERNAL HASHES MATCH");print(message);feed+=message+'\n'							
+								if correct == False:
+									if progress != False:							
+										message=(tabs+'* '+"INTERNAL HASH MISSMATCH");bar.write(message);feed+=message+'\n'	
+										message=(tabs+'* '+"BAD CNMT FILE!!!");bar.write(message);feed+=message+'\n'
+									else:									
+										message=(tabs+'* '+"INTERNAL HASH MISSMATCH");print(message);feed+=message+'\n'	
+										message=(tabs+'* '+"BAD CNMT FILE!!!");print(message);feed+=message+'\n'				
+									return 'BADCNMT',False,self._path,feed,False							
+						else:	
+							if endcheck == False:
+								pass
+							elif endcheck == True:
+								message=(indent+self._path+arrow+'was MODIFIED');print(message);feed+=message+'\n'		
+								message=(tabs+'* '+"NOT VERIFIABLE!!!");print(message);feed+=message+'\n'							
+						return False,False,self._path,feed,False				
+					else:
+						message=(indent+self._path+arrow+'was MODIFIED');print(message);feed+=message+'\n'		
+						message=(tabs+'* '+"NOT VERIFIABLE!!!");print(message);feed+=message+'\n'							
+						return False,False,self._path,feed,False						
+			if progress != False:
+				message=(indent+self._path+arrow+'was MODIFIED');bar.write(message);feed+=message+'\n'			
+				message=(tabs+'* '+"NOT VERIFIABLE!!!");bar.write(message);feed+=message+'\n'							
+			else:	
+				message=(indent+self._path+arrow+'was MODIFIED');print(message);feed+=message+'\n'			
+				message=(tabs+'* '+"NOT VERIFIABLE!!!");print(message);feed+=message+'\n'				
+			return False,False,self._path,feed,False		
 			
 	def verify_cnmt_withkg(self,targetkg):	
 		targetkg=int(targetkg)	
