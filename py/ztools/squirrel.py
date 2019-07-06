@@ -3351,7 +3351,9 @@ if __name__ == '__main__':
 				endname = re.sub(' {3,}', ' ',endname);re.sub(' {2,}', ' ',endname);	
 				try:	
 					endname = endname.replace("( ", "(");endname = endname.replace(" )", ")")
-					endname = endname.replace("[ ", "[");endname = endname.replace(" ]", "]")	
+					endname = endname.replace("[ ", "[");endname = endname.replace(" ]", "]")
+					endname = endname.replace(" !", "!");endname = endname.replace(" ?", "?")	
+					endname = endname.replace("  ", " ");endname = endname.replace("  ", " ")					
 				except:pass				
 				if endname[-1]==' ':
 					endname=endname[:-1]
@@ -5575,7 +5577,9 @@ if __name__ == '__main__':
 					endname = re.sub(' {3,}', ' ',endname);re.sub(' {2,}', ' ',endname);	
 					try:	
 						endname = endname.replace("( ", "(");endname = endname.replace(" )", ")")
-						endname = endname.replace("[ ", "[");endname = endname.replace(" ]", "]")	
+						endname = endname.replace("[ ", "[");endname = endname.replace(" ]", "]")
+						endname = endname.replace(" !", "!");endname = endname.replace(" ?", "?")
+						endname = endname.replace("  ", " ");endname = endname.replace("  ", " ")
 					except:pass					
 					if filepath.endswith('.xci'):								
 						endname=endname+'.xci'
@@ -5817,7 +5821,9 @@ if __name__ == '__main__':
 			endname = re.sub(' {3,}', ' ',endname);re.sub(' {2,}', ' ',endname);	
 			try:	
 				endname = endname.replace("( ", "(");endname = endname.replace(" )", ")")
-				endname = endname.replace("[ ", "[");endname = endname.replace(" ]", "]")	
+				endname = endname.replace("[ ", "[");endname = endname.replace(" ]", "]")
+				endname = endname.replace(" !", "!");endname = endname.replace(" ?", "?")				
+				endname = endname.replace("  ", " ");endname = endname.replace("  ", " ")				
 			except:pass			
 			if endname[-1]==' ':
 				endname=endname[:-1]	
@@ -5932,7 +5938,9 @@ if __name__ == '__main__':
 					endname = re.sub(' {3,}', ' ',endname);re.sub(' {2,}', ' ',endname);	
 					try:	
 						endname = endname.replace("( ", "(");endname = endname.replace(" )", ")")
-						endname = endname.replace("[ ", "[");endname = endname.replace(" ]", "]")	
+						endname = endname.replace("[ ", "[");endname = endname.replace(" ]", "]")
+						endname = endname.replace(" !", "!");endname = endname.replace(" ?", "?")
+						endname = endname.replace("  ", " ");endname = endname.replace("  ", " ")					
 					except:pass		
 					newpath=os.path.join(dir,endname)					
 					print('Old Filename: '+basename)
