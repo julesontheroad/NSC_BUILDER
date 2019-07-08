@@ -5969,7 +5969,7 @@ class Xci(File):
 						validfiles.append(str(file._path))						
 				
 		for file in listed_files:	
-			correct=False		
+			correct=False;baddec=False		
 			if file in validfiles:
 				if file.endswith('cnmt.nca'):
 					for nspF in self.hfs0:
@@ -6008,7 +6008,11 @@ class Xci(File):
 										if correct == False and f.header.getRightsId() == 0:
 											correct = f.pr_noenc_check()		
 										if correct == False and f.header.getRightsId() != 0:
-											correct = self.verify_nca_key(file)											
+											correct = self.verify_nca_key(file)	
+										if correct == True and f.header.getRightsId() == 0:
+											correct = f.pr_noenc_check()	
+											if correct == False:
+												baddec=True
 				elif file.endswith('.tik'):
 					tikfile=str(file)
 					checktik == False
@@ -6035,7 +6039,9 @@ class Xci(File):
 				if file.endswith('cnmt.nca'):	
 					message=(tabs+file+' -> is CORRUPT <<<-');print(message);feed+=message+'\n'					
 				elif file.endswith('nca'):		
-					message=(tabs+file+tabs+'  -> is CORRUPT <<<-');print(message);feed+=message+'\n'					
+					message=(tabs+file+tabs+'  -> is CORRUPT <<<-');print(message);feed+=message+'\n'
+					if baddec == True:
+						print(tabs+'* NOTE: S.C. CONVERSION WAS PERFORMED WITH BAD KEY')
 				elif file.endswith('tik'):		
 					message=(tabs+file+tabs+'  -> titlekey is INCORRECT <<<-');print(message);feed+=message+'\n'					
 		for nspF in self.hfs0:
@@ -6293,7 +6299,20 @@ class Xci(File):
 												size=int.from_bytes(size, byteorder='little')
 												ncatype = cnmt.readInt8()
 												unknown = cnmt.read(0x1)
-		return False,False		
+		for nspF in self.hfs0:
+			if str(nspF._path)=="secure":
+				for nca in nspF:		
+					if type(nca) == Nca:
+						if 	str(nca.header.contentType) == 'Content.META':	
+							if nca._path == ncameta:										
+								crypto1=nca.header.getCryptoType()
+								crypto2=nca.header.getCryptoType2()			
+								if crypto2>crypto1:
+									keygeneration=crypto2
+								if crypto2<=crypto1:	
+									keygeneration=crypto1	
+								return keygeneration,min_sversion	
+		return False,False			
 
 	def verify_hash_nca(self,buffer,headerlist,didverify,feed):	
 		verdict=True		

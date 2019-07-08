@@ -5203,7 +5203,7 @@ class Nsp(Pfs0):
 		return contentlist
 		
 		
-	def get_content_placeholder(self):
+	def get_content_placeholder(self,ofolder):
 		contentlist=list()
 		ncalist=list()
 		completefilelist=list()
@@ -5212,10 +5212,12 @@ class Nsp(Pfs0):
 				if 	str(file.header.contentType) != 'Content.META' and str(file.header.contentType) != 'Content.CONTROL':
 					continue
 				else:	
-					completefilelist.append(str(file._path))					
+					completefilelist.append(str(file._path))
+			elif str(file._path).endswith('.xml'):
+				pass					
 			else:
 				completefilelist.append(str(file._path))
-		#print (completefilelist)			
+		print (completefilelist)			
 		for nca in self:
 			if type(nca) == Nca:
 				if 	str(nca.header.contentType) == 'Content.META':
@@ -5287,6 +5289,30 @@ class Nsp(Pfs0):
 							nca_meta=str(nca._path)
 							if nca_meta in completefilelist:	
 								ncalist.append([nca_meta,nca.size])
+								if ofolder != False:
+									target = Fs.Nca(nca, 'r+b')
+									target.rewind()		
+									outf= os.path.join(ofolder, str(nca._path))									
+									fp = open(outf, 'w+b')		
+									for data in iter(lambda: target.read(int(32768)), ""):	
+										fp.write(data)						
+										fp.flush()				
+										if not data:
+											fp.close()									
+											break			
+									target = Fs.Nca(outf, 'r+b')										
+									block = target.read()			
+									nsha=sha256(block).hexdigest()	
+									target.rewind()	
+									xml=target.xml_gen(ofolder,nsha)									
+									xmlname=nca_meta[:-3]+'xml'
+									xmlsize=os.path.getsize(xml)
+									ncalist.append([xmlname,xmlsize])		
+									target.close()
+									try:
+										os.remove(outf) 	
+									except:
+										pass								
 							titlerights=titleid2+str('0'*15)+str(crypto2)
 							contentlist.append([str(self._path),titleid2,titlerights,keygen,ncalist,CTYPE,version])
 							
@@ -5297,15 +5323,6 @@ class Nsp(Pfs0):
 				for i in contentlist:
 					if i[2]==test:
 						i[4].append([file._path,file.size])
-			elif file._path.endswith('.xml'):	
-				test=file._path
-				#print(test)
-				test=test[:-4]+'.nca'
-				#print(test)
-				for i in contentlist:
-					for j in i[4]:
-						if j[0]==test:
-							i[4].append([file._path,file.size])
 		'''
 		for i in contentlist:
 			print('Filename: '+i[0])
@@ -5318,9 +5335,10 @@ class Nsp(Pfs0):
 				print (j)	
 		print("")
 		'''
-		return contentlist	
+
+		return contentlist				
 		
-	def append_content(self,outf,target,buffer,t,fat,fx,c,index):		
+	def append_content(self,outf,target,buffer,t,fat='exfat',fx='files',c=0,index=0):		
 		block=4294934528		
 		indent = 1
 		tabs = '\t' * indent	
@@ -6502,7 +6520,11 @@ class Nsp(Pfs0):
 								if correct == False and f.header.getRightsId() == 0:
 									correct = f.pr_noenc_check()		
 								if correct == False and f.header.getRightsId() != 0:
-									correct = self.verify_nca_key(file)									
+									correct = self.verify_nca_key(file)		
+								if correct == True and f.header.getRightsId() == 0:
+									correct = f.pr_noenc_check()				
+									if correct == False:
+										baddec=True									
 				elif file.endswith('.tik'):	
 					tikfile=str(file)				
 					checktik == False
@@ -6527,6 +6549,8 @@ class Nsp(Pfs0):
 					message=(tabs+file+' -> is CORRUPT <<<-');print(message);feed+=message+'\n'					
 				elif file.endswith('nca'):		
 					message=(tabs+file+tabs+'  -> is CORRUPT <<<-');print(message);feed+=message+'\n'					
+					if baddec == True:
+						print(tabs+'  * NOTE: S.C. CONVERSION WAS PERFORMED WITH BAD KEY')					
 				elif file.endswith('tik'):		
 					message=(tabs+file+tabs+'  -> titlekey is INCORRECT <<<-');print(message);feed+=message+'\n'					
 		for nca in self:
@@ -6724,7 +6748,10 @@ class Nsp(Pfs0):
 													cnmtdidverify=True
 													break	
 									break
-						else:break	
+						else:break
+				try:
+					t.close()
+				except:pass
 				if hlisthash == True:
 					sha0=sha0.hexdigest()
 					hlisthash=sha0
@@ -6772,6 +6799,17 @@ class Nsp(Pfs0):
 										size=int.from_bytes(size, byteorder='little')
 										ncatype = cnmt.readInt8()
 										unknown = cnmt.read(0x1)
+		for nca in self:
+			if type(nca) == Nca:
+				if 	str(nca.header.contentType) == 'Content.META':	
+					if nca._path == ncameta:										
+						crypto1=nca.header.getCryptoType()
+						crypto2=nca.header.getCryptoType2()			
+						if crypto2>crypto1:
+							keygeneration=crypto2
+						if crypto2<=crypto1:	
+							keygeneration=crypto1	
+						return keygeneration,min_sversion	
 		return False,False		
 
 

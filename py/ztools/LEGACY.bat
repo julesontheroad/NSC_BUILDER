@@ -2,7 +2,7 @@
 :TOP_INIT
 CD /d "%prog_dir%"
 set "bat_name=%~n0"
-Title NSC_Builder v0.87 -- Profile: %ofile_name% -- by JulesOnTheRoad
+Title NSC_Builder v0.87.c -- Profile: %ofile_name% -- by JulesOnTheRoad
 
 ::Check if user is dragging a folder or a file
 if "%~1"=="" goto manual

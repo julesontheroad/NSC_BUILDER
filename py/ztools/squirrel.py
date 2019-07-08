@@ -1901,6 +1901,8 @@ if __name__ == '__main__':
 						export='xci'						
 					elif input == "nsp" or input == "NSP": 	
 						export='nsp'
+					elif input == "nsx" or input == "NSX": 	
+						export='nsp'						
 					elif input == "both" or input == "BOTH": 
 						export='both'													
 					else:
@@ -1945,11 +1947,11 @@ if __name__ == '__main__':
 				print(len(filelist))
 				counter=len(filelist)
 				for filepath in filelist:
-					if filepath.endswith('.nsp'):
+					if filepath.endswith('.nsp') or filepath.endswith('.nsx'):
 						try:
 							prlist=list()
 							f = Fs.Nsp(filepath)										
-							contentlist=f.get_content_placeholder()
+							contentlist=f.get_content_placeholder(ofolder)
 							#print(contentlist)
 							f.flush()
 							f.close()		
@@ -2013,11 +2015,12 @@ if __name__ == '__main__':
 							outf.write(nspheader)		
 							t.update(len(nspheader))				
 							outf.close()
-							if filepath.endswith('.nsp'):
+							if filepath.endswith('.nsp') or filepath.endswith('.nsx'):
 								try:
 									f = Fs.Nsp(filepath)
-									for file in oflist:									
-										f.append_content(endfile,file,buffer,t)
+									for file in oflist:	
+										if not file.endswith('xml'):									
+											f.append_content(endfile,file,buffer,t)
 									f.flush()
 									f.close()	
 									t.close()			
@@ -3332,13 +3335,26 @@ if __name__ == '__main__':
 							endname=str(f)
 				endname = (re.sub(r'[\/\\\:\*\?]+', '', endname))
 				endname = re.sub(r'[™©®`~^´ªº¢£€¥$ƒ±¬½¼«»±•²‰œæÆ³]', '', endname)					
-				endname = re.sub(r'[Ⅲ]', 'III', endname)					
+				endname = re.sub(r'[Ⅰ]', 'I', endname);endname = re.sub(r'[Ⅱ]', 'II', endname)
+				endname = re.sub(r'[Ⅲ]', 'III', endname);endname = re.sub(r'[Ⅳ]', 'IV', endname)	
+				endname = re.sub(r'[Ⅴ]', 'V', endname);endname = re.sub(r'[Ⅵ]', 'VI', endname)	
+				endname = re.sub(r'[Ⅶ]', 'VII', endname);endname = re.sub(r'[Ⅷ]', 'VIII', endname)							
+				endname = re.sub(r'[Ⅸ]', 'IX', endname);endname = re.sub(r'[Ⅹ]', 'X', endname)
+				endname = re.sub(r'[Ⅺ]', 'XI', endname);endname = re.sub(r'[Ⅻ]', 'XII', endname)
+				endname = re.sub(r'[Ⅼ]', 'L', endname);endname = re.sub(r'[Ⅽ]', 'C', endname)						
+				endname = re.sub(r'[Ⅾ]', 'D', endname);endname = re.sub(r'[Ⅿ]', 'M', endname)					
 				endname = re.sub(r'[àâá@äå]', 'a', endname);endname = re.sub(r'[ÀÂÁÄÅ]', 'A', endname)
 				endname = re.sub(r'[èêéë]', 'e', endname);endname = re.sub(r'[ÈÊÉË]', 'E', endname)
 				endname = re.sub(r'[ìîíï]', 'i', endname);endname = re.sub(r'[ÌÎÍÏ]', 'I', endname)
 				endname = re.sub(r'[òôóöø]', 'o', endname);endname = re.sub(r'[ÒÔÓÖØ]', 'O', endname)
 				endname = re.sub(r'[ùûúü]', 'u', endname);endname = re.sub(r'[ÙÛÚÜ]', 'U', endname)		
-				endname=re.sub(' +', ' ',endname)					
+				endname = re.sub(' {3,}', ' ',endname);re.sub(' {2,}', ' ',endname);	
+				try:	
+					endname = endname.replace("( ", "(");endname = endname.replace(" )", ")")
+					endname = endname.replace("[ ", "[");endname = endname.replace(" ]", "]")
+					endname = endname.replace(" !", "!");endname = endname.replace(" ?", "?")	
+					endname = endname.replace("  ", " ");endname = endname.replace("  ", " ")					
+				except:pass				
 				if endname[-1]==' ':
 					endname=endname[:-1]
 				if fat=="fat32" and fx=="folder":			
@@ -5545,13 +5561,26 @@ if __name__ == '__main__':
 					#endname = re.sub(r'[\/\\\:\*\?\"\<\>\|\.\s™©®()\~]+', ' ', endname)							
 					endname = (re.sub(r'[\/\\\:\*\?]+', '', endname))					
 					endname = re.sub(r'[™©®`~^´ªº¢£€¥$ƒ±¬½¼«»±•²‰œæÆ³]', '', endname)	
-					endname = re.sub(r'[Ⅲ]', 'III', endname)					
+					endname = re.sub(r'[Ⅰ]', 'I', endname);endname = re.sub(r'[Ⅱ]', 'II', endname)
+					endname = re.sub(r'[Ⅲ]', 'III', endname);endname = re.sub(r'[Ⅳ]', 'IV', endname)	
+					endname = re.sub(r'[Ⅴ]', 'V', endname);endname = re.sub(r'[Ⅵ]', 'VI', endname)	
+					endname = re.sub(r'[Ⅶ]', 'VII', endname);endname = re.sub(r'[Ⅷ]', 'VIII', endname)							
+					endname = re.sub(r'[Ⅸ]', 'IX', endname);endname = re.sub(r'[Ⅹ]', 'X', endname)
+					endname = re.sub(r'[Ⅺ]', 'XI', endname);endname = re.sub(r'[Ⅻ]', 'XII', endname)
+					endname = re.sub(r'[Ⅼ]', 'L', endname);endname = re.sub(r'[Ⅽ]', 'C', endname)						
+					endname = re.sub(r'[Ⅾ]', 'D', endname);endname = re.sub(r'[Ⅿ]', 'M', endname)					
 					endname = re.sub(r'[àâá@äå]', 'a', endname);endname = re.sub(r'[ÀÂÁÄÅ]', 'A', endname)
 					endname = re.sub(r'[èêéë]', 'e', endname);endname = re.sub(r'[ÈÊÉË]', 'E', endname)
 					endname = re.sub(r'[ìîíï]', 'i', endname);endname = re.sub(r'[ÌÎÍÏ]', 'I', endname)
 					endname = re.sub(r'[òôóöø]', 'o', endname);endname = re.sub(r'[ÒÔÓÖØ]', 'O', endname)
 					endname = re.sub(r'[ùûúü]', 'u', endname);endname = re.sub(r'[ÙÛÚÜ]', 'U', endname)		
-					endname=re.sub(' +', ' ',endname)						
+					endname = re.sub(' {3,}', ' ',endname);re.sub(' {2,}', ' ',endname);	
+					try:	
+						endname = endname.replace("( ", "(");endname = endname.replace(" )", ")")
+						endname = endname.replace("[ ", "[");endname = endname.replace(" ]", "]")
+						endname = endname.replace(" !", "!");endname = endname.replace(" ?", "?")
+						endname = endname.replace("  ", " ");endname = endname.replace("  ", " ")
+					except:pass					
 					if filepath.endswith('.xci'):								
 						endname=endname+'.xci'
 					elif filepath.endswith('.nsp'):						
@@ -5776,13 +5805,26 @@ if __name__ == '__main__':
 				endname=endname[0].upper()+endname[1:]						
 			endname = (re.sub(r'[\/\\\:\*\?]+', '', endname))
 			endname = re.sub(r'[™©®`~^´ªº¢£€¥$ƒ±¬½¼«»±•²‰œæÆ³]', '', endname)				
-			endname = re.sub(r'[Ⅲ]', 'III', endname)					
+			endname = re.sub(r'[Ⅰ]', 'I', endname);endname = re.sub(r'[Ⅱ]', 'II', endname)
+			endname = re.sub(r'[Ⅲ]', 'III', endname);endname = re.sub(r'[Ⅳ]', 'IV', endname)	
+			endname = re.sub(r'[Ⅴ]', 'V', endname);endname = re.sub(r'[Ⅵ]', 'VI', endname)	
+			endname = re.sub(r'[Ⅶ]', 'VII', endname);endname = re.sub(r'[Ⅷ]', 'VIII', endname)							
+			endname = re.sub(r'[Ⅸ]', 'IX', endname);endname = re.sub(r'[Ⅹ]', 'X', endname)
+			endname = re.sub(r'[Ⅺ]', 'XI', endname);endname = re.sub(r'[Ⅻ]', 'XII', endname)
+			endname = re.sub(r'[Ⅼ]', 'L', endname);endname = re.sub(r'[Ⅽ]', 'C', endname)						
+			endname = re.sub(r'[Ⅾ]', 'D', endname);endname = re.sub(r'[Ⅿ]', 'M', endname)			
 			endname = re.sub(r'[àâá@äå]', 'a', endname);endname = re.sub(r'[ÀÂÁÄÅ]', 'A', endname)
 			endname = re.sub(r'[èêéë]', 'e', endname);endname = re.sub(r'[ÈÊÉË]', 'E', endname)
 			endname = re.sub(r'[ìîíï]', 'i', endname);endname = re.sub(r'[ÌÎÍÏ]', 'I', endname)
 			endname = re.sub(r'[òôóöø]', 'o', endname);endname = re.sub(r'[ÒÔÓÖØ]', 'O', endname)
 			endname = re.sub(r'[ùûúü]', 'u', endname);endname = re.sub(r'[ÙÛÚÜ]', 'U', endname)		
-			endname=re.sub(' +', ' ',endname)			
+			endname = re.sub(' {3,}', ' ',endname);re.sub(' {2,}', ' ',endname);	
+			try:	
+				endname = endname.replace("( ", "(");endname = endname.replace(" )", ")")
+				endname = endname.replace("[ ", "[");endname = endname.replace(" ]", "]")
+				endname = endname.replace(" !", "!");endname = endname.replace(" ?", "?")				
+				endname = endname.replace("  ", " ");endname = endname.replace("  ", " ")				
+			except:pass			
 			if endname[-1]==' ':
 				endname=endname[:-1]	
 			ext=ruta[-4:]
@@ -5878,16 +5920,29 @@ if __name__ == '__main__':
 						converter = kakasi.getConverter()
 						endname=converter.do(endname)	
 						endname=endname[0].upper()+endname[1:]	
-					elif san == True:
+					if san == True:		
 						endname = (re.sub(r'[\/\\\:\*\?]+', '', endname))					
 						endname = re.sub(r'[™©®`~^´ªº¢£€¥$ƒ±¬½¼«»±•²‰œæÆ³]', '', endname)	
-						endname = re.sub(r'[Ⅲ]', 'III', endname)					
+						endname = re.sub(r'[Ⅰ]', 'I', endname);endname = re.sub(r'[Ⅱ]', 'II', endname)
+						endname = re.sub(r'[Ⅲ]', 'III', endname);endname = re.sub(r'[Ⅳ]', 'IV', endname)	
+						endname = re.sub(r'[Ⅴ]', 'V', endname);endname = re.sub(r'[Ⅵ]', 'VI', endname)	
+						endname = re.sub(r'[Ⅶ]', 'VII', endname);endname = re.sub(r'[Ⅷ]', 'VIII', endname)							
+						endname = re.sub(r'[Ⅸ]', 'IX', endname);endname = re.sub(r'[Ⅹ]', 'X', endname)
+						endname = re.sub(r'[Ⅺ]', 'XI', endname);endname = re.sub(r'[Ⅻ]', 'XII', endname)
+						endname = re.sub(r'[Ⅼ]', 'L', endname);endname = re.sub(r'[Ⅽ]', 'C', endname)						
+						endname = re.sub(r'[Ⅾ]', 'D', endname);endname = re.sub(r'[Ⅿ]', 'M', endname)
 						endname = re.sub(r'[àâá@äå]', 'a', endname);endname = re.sub(r'[ÀÂÁÄÅ]', 'A', endname)
 						endname = re.sub(r'[èêéë]', 'e', endname);endname = re.sub(r'[ÈÊÉË]', 'E', endname)
 						endname = re.sub(r'[ìîíï]', 'i', endname);endname = re.sub(r'[ÌÎÍÏ]', 'I', endname)
 						endname = re.sub(r'[òôóöø]', 'o', endname);endname = re.sub(r'[ÒÔÓÖØ]', 'O', endname)
 						endname = re.sub(r'[ùûúü]', 'u', endname);endname = re.sub(r'[ÙÛÚÜ]', 'U', endname)		
-						endname=re.sub(' +', ' ',endname)		
+						endname = re.sub(' {3,}', ' ',endname);re.sub(' {2,}', ' ',endname);	
+					try:	
+						endname = endname.replace("( ", "(");endname = endname.replace(" )", ")")
+						endname = endname.replace("[ ", "[");endname = endname.replace(" ]", "]")
+						endname = endname.replace(" !", "!");endname = endname.replace(" ?", "?")
+						endname = endname.replace("  ", " ");endname = endname.replace("  ", " ")					
+					except:pass		
 					newpath=os.path.join(dir,endname)					
 					print('Old Filename: '+basename)
 					print('Filename: '+endname)						

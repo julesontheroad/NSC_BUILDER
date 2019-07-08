@@ -52,6 +52,12 @@ def kgstring(kg=list()):
 	kg1=[262144,196608,131072,65536];kg.append(kg1)	
 	kg0=[450,0];kg.append(kg0)
 	return kg
+	
+def kg2masterkey(kg):
+	if kg == 1:
+		return 1
+	else:
+		return kg-1
 
 def getTopRSV(keygeneration, RSV):
 	if keygeneration == 0:
@@ -402,6 +408,10 @@ def verify_nkeys(fileName):
 		print("master_key_07 is Missing")
 	else:
 		counter+=1
+	if 'master_key_08' not in checkkeys:
+		print("master_key_08 is Missing")
+	else:
+		counter+=1		
 		
 	if 'header_key' not in checkkeys:
 		print("header_key is Missing")	
