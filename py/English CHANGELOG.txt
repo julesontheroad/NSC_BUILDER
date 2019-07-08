@@ -21,6 +21,19 @@ Luca Fraga's github: https://github.com/LucaFraga
 ---------------
 0. Changelog
 ---------------
+v0.87c- Bugfixes
+	- Adds check for correct original titlekey for xci conversions from nsx files without
+	  a titlekey. 
+	- Fixes bug when RSV check progress bar multiplies when checking dlc unlockers
+	- Fixes message "needs RSV check" for non meta files in community-made nca files
+          (They still won't verify in level2 since they won't have a proper signature1)
+	- Adds name sanitizing after romaji conversion
+	- Improves blankspace removal after romaji conversion
+	- Adds all roman numbers to the bad character list, they will be replaced by it's 
+	  multicharacter equivalent.
+	  Example: Assasin's Creed 3 uses the Ⅲ character which corresponds to 1 character. 
+	  This is replaced for III which corresponds for 3 characters
+	- Fixes message "master_key_08 is present but program doesn't have the hash to verify the key"
 v0.87- Sanitation of names, romaji convertion and improvements in verification
 	- Automated removal of bad characters on names in direct-multi function
 	- Added option to convert japanese and asian names to romaji in direct-multi name
