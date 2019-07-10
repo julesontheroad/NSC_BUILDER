@@ -29,6 +29,9 @@ import shutil
 if sys.platform == 'win32':
 	import win32con, win32api
 from operator import itemgetter, attrgetter, methodcaller
+from Crypto.Cipher import AES
+from pythac.NCA3 import NCA3
+import io
 #from Cryptodome.Signature import pss
 #from Cryptodome.PublicKey import RSA
 #from Cryptodome import Random
@@ -612,15 +615,100 @@ class Nsp(Pfs0):
 									fp.close()
 									break		
 
-	def copy_ncap(self,ofolder,buffer):
+	def copy_nacp(self,ofolder,buffer):
 		for nca in self:
 			if type(nca) == Nca:
 				if 	str(nca.header.contentType) == 'Content.CONTROL':
+					ncaname =  str(nca._path)[:-4]+'_nca'
+					ncafolder = os.path.join(ofolder,ncaname)
+					filename = 'control.nacp'
+					filepath = os.path.join(ncafolder,filename)
+					if not os.path.exists(ncafolder):
+						os.makedirs(ncafolder)
+					offset=nca.get_nacp_offset()
 					for f in nca:
-						nca.copy(ofolder,buffer)
+						totSize=f.size-offset
+						t = tqdm(total=totSize, unit='B', unit_scale=True, leave=False)
+						t.write('- Writing control.ncap...')					
+						f.seek(offset)
+						fp = open(filepath, 'w+b')		
+						for data in iter(lambda: f.read(int(buffer)), ""):
+							fp.write(data)
+							fp.flush()
+							t.update(len(data))
+							if not data:
+								fp.close()
+								t.close()
+								break	
+						break	
+					print('  DONE')		
 
-						
+	def copy_as_plaintext(self,ofolder,files_list):
+		for nca in self:
+			if type(nca) == Nca:
+				ncaname =  str(nca._path)
+				PN = os.path.join(ofolder,ncaname)
+				if not os.path.exists(ofolder):
+					os.makedirs(ofolder)
+				for i in range(len(files_list)):	
+					if str(nca._path) == files_list[i][0]:
+						offset=files_list[i][1]
+						break
+				#print(nca.size)	
+				#print(str(nca._path)[-9:])
+				lon=0;test=str(nca._path)[-9:]
+				if test=='.cnmt.nca':
+					ext='.plain.cnmt.nca'
+				else:
+					ext='.plain.nca'
+				lon=(-1)*len(ext)	
+				try:
+					fp=open(str(self._path), 'rb')			
+					nca3=NCA3(fp,int(offset),str(nca._path))
+					nca3.decrypt_to_plaintext(PN.replace(str(nca._path)[lon:], ext))
+					fp.close();
+				except:	
+					nca.rewind()
+					inmemoryfile = io.BytesIO(nca.read())
+					nca3=NCA3(inmemoryfile,0,str(nca._path))					
+					nca3.decrypt_to_plaintext(PN.replace(str(nca._path)[lon:], ext))
+					
 
+	def read_npdm(self,ofolder,files_list):
+		for nca in self:
+			if type(nca) == Nca:
+				if 	str(nca.header.contentType) == 'Content.PROGRAM':
+					for i in range(len(files_list)):	
+						if str(nca._path) == files_list[i][0]:
+							offset=files_list[i][1]
+							break
+					fp=open(str(self._path), 'rb')								
+					nca3=NCA3(fp,int(offset),str(nca._path))
+					nca3.print_npdm()					
+			
+	def extract_nca(self,ofolder,files_list):
+		for nca in self:
+			if type(nca) == Nca:
+				ncaname =  str(nca._path)[:-4]+'_nca'
+				ncafolder = os.path.join(ofolder,ncaname)
+				if not os.path.exists(ncafolder):
+					os.makedirs(ncafolder)			
+				for i in range(len(files_list)):	
+					if str(nca._path) == files_list[i][0]:
+						offset=files_list[i][1]
+						break
+				#t = tqdm(total=nca.size, unit='B', unit_scale=True, leave=False)				
+				try:
+					fp=open(str(self._path), 'rb')			
+					nca3=NCA3(fp,int(offset),str(nca._path))
+					nca3.extract_conts(ncafolder, disp=True)
+					fp.close()
+				except:	
+					nca.rewind()
+					inmemoryfile = io.BytesIO(nca.read())
+					nca3=NCA3(inmemoryfile,0,str(nca._path))					
+					nca3.extract_conts(ncafolder, disp=True)	
+			
 	def copy_nca_manual(self,ofolder,buffer):
 		for nca in self:
 			if type(nca) == Nca:
@@ -1566,7 +1654,7 @@ class Nsp(Pfs0):
 		for nca in self:
 			if type(nca) == Nca:
 				if 	str(nca.header.contentType) == 'Content.CONTROL':
-					offset=nca.get_ncap_offset()
+					offset=nca.get_nacp_offset()
 					for f in nca:
 						f.seek(offset)
 						nacp = Nacp()	

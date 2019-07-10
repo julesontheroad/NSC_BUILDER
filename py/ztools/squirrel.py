@@ -28,6 +28,7 @@ import argparse
 import sys
 import os
 import re
+import io
 import pathlib
 import urllib3
 import json
@@ -63,13 +64,14 @@ if __name__ == '__main__':
 		
 		# INFORMATION
 		parser.add_argument('-i', '--info', help='show info about title or file')
-		parser.add_argument('--filelist', nargs='+', help='Prints file list from NSP\XCI secure partition')
-		parser.add_argument('--ADVfilelist', nargs='+', help='Prints ADVANCED file list from NSP\XCI secure partition')		
-		parser.add_argument('--ADVcontentlist', nargs='+', help='Prints ADVANCED content list from NSP\XCI arranged by base titleid')			
-		parser.add_argument('--Read_cnmt', nargs='+', help='Read cnmt file inside NSP\XCI')
-		parser.add_argument('--Read_nacp', nargs='+', help='Read ncap file inside NSP\XCI')				
+		parser.add_argument('--filelist', nargs='+', help='Prints file list from NSP/XCI secure partition')
+		parser.add_argument('--ADVfilelist', nargs='+', help='Prints ADVANCED file list from NSP/XCI secure partition')		
+		parser.add_argument('--ADVcontentlist', nargs='+', help='Prints ADVANCED content list from NSP/XCI arranged by base titleid')			
+		parser.add_argument('--Read_cnmt', nargs='+', help='Read cnmt file inside NSP/XCI')
+		parser.add_argument('--Read_nacp', nargs='+', help='Read nacp file inside NSP/XCI')	
+		parser.add_argument('--Read_npdm', nargs='+', help='Read npdm file inside NSP/XCI')			
 		parser.add_argument('--Read_hfs0', nargs='+', help='Read hfs0')		
-		parser.add_argument('--fw_req', nargs='+', help='Get information about fw requirements for NSP\XCI')		
+		parser.add_argument('--fw_req', nargs='+', help='Get information about fw requirements for NSP/XCI')		
 		parser.add_argument('--Read_xci_head', nargs='+', help='Get information about xci header and cert')				
 		parser.add_argument('-nscdb', '--addtodb', nargs='+', help='Adds content to database')	
 		parser.add_argument('-v', '--verify', nargs='+', help='Verify nsp or xci file')			
@@ -122,6 +124,8 @@ if __name__ == '__main__':
 		# NSP Copy functions
 		parser.add_argument('-x', '--extract', nargs='+', help='Extracts all files from nsp or xci')
 		parser.add_argument('-raw_x', '--raw_extraction', nargs='+', help='Extracts files without checking readability, useful when there is bad files')
+		parser.add_argument('-nfx', '--nca_file_extraction', nargs='+', help='Extracts files files within nca files from nsp/xci\nca file')
+		parser.add_argument('-plx', '--extract_plain_nca', nargs='+', help='Extracts nca files as plaintext or generate a plaintext file from a nca file')
 		parser.add_argument('--NSP_copy_ticket', nargs='+', help='Extracts ticket from target nsp')
 		parser.add_argument('--NSP_copy_nca', nargs='+', help='Extracts all nca files from target nsp')	
 		parser.add_argument('--NSP_copy_other', nargs='+', help='Extracts all kinds of files different from nca or ticket from target nsp')
@@ -130,7 +134,7 @@ if __name__ == '__main__':
 		parser.add_argument('--NSP_copy_jpg', nargs='+', help='Extracts jpg files from target nsp')	
 		parser.add_argument('--NSP_copy_cnmt', nargs='+', help='Extracts cnmt files from target nsp')
 		parser.add_argument('--copy_pfs0_meta', nargs='+', help='Extracts meta pfs0 from target nsp')
-		parser.add_argument('--NSP_copy_ncap', nargs='+', help='Extracts ncap files from target nsp')
+		parser.add_argument('--copy_nacp', nargs='+', help='Extracts nacp files from target nsp')
 		
 		# XCI Copy functions
 		parser.add_argument('--XCI_copy_hfs0', nargs='+', help='Extracts hfs0 partition files from target xci')
@@ -1168,9 +1172,9 @@ if __name__ == '__main__':
 					Print.error('Exception: ' + str(e))											
 					
 		# ...................................................						
-		# Copy control ncap files from NSP file
+		# Copy control nacp files from NSP file
 		# ...................................................	
-		if args.NSP_copy_ncap:
+		if args.copy_nacp:
 			if args.ofolder:		
 				for input in args.ofolder:
 					try:
@@ -1178,7 +1182,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))	
 			else:
-				for filename in args.NSP_copy_ncap:
+				for filename in args.copy_nacp:
 					dir=os.path.dirname(os.path.abspath(filename))
 					ofolder =os.path.join(dir, 'output')
 					
@@ -1190,15 +1194,25 @@ if __name__ == '__main__':
 						Print.error('Exception: ' + str(e))
 			else:
 				buffer = 32768				
-			for filename in args.NSP_copy_ncap:
-				try:
-					f = Fs.Nsp(filename, 'rb')
-					f.copy_ncap(ofolder,buffer)
-					f.flush()
-					f.close()
-				except BaseException as e:
-					Print.error('Exception: ' + str(e))							
-
+			for filename in args.copy_nacp:
+				if filename.endswith(".nsp"):	
+					try:
+						f = Fs.Nsp(filename, 'rb')
+						f.copy_nacp(ofolder,buffer)
+						f.flush()
+						f.close()
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+				'''		
+				if filename.endswith(".nca"):							
+					try:
+						f = Fs.Nca(filename, 'rb')
+						f.extract(ofolder,buffer)
+						f.flush()
+						f.close()
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))							
+				'''
 # DEDICATED COPY FUNCTIONS. NCA TYPES. 
 		# ...................................................						
 		# Copy all META NCA from NSP file
@@ -4409,6 +4423,7 @@ if __name__ == '__main__':
 								#print(size)	
 								files_list.append([name,offset,size])	
 							files_list.reverse()	
+							print(files_list)
 						except IOError as e:
 							print(e, file=sys.stderr)		
 						#print(files_list)	
@@ -4445,8 +4460,268 @@ if __name__ == '__main__':
 										fp.close()
 										break										
 					except BaseException as e:
-						Print.error('Exception: ' + str(e))								
+						Print.error('Exception: ' + str(e))		
+
+		# ..........................................................................						
+		# NCA_FILE_EXTACTION. EXTRACT FILES PACKED IN NCA FROM NSP\XCI\NCA
+		# ..........................................................................						
 						
+		if args.nca_file_extraction:			
+			for filename in args.nca_file_extraction:			
+				if filename.endswith('.nsp'):
+					dir=os.path.dirname(os.path.abspath(filename))
+					ofolder =os.path.join(dir, 'output')	
+					if not os.path.exists(ofolder):
+						os.makedirs(ofolder)						
+					try:
+						with open(filename, 'r+b') as f:			
+							data=f.read(int(8*1024))						
+						try:
+							head=data[0:4]
+							n_files=(data[4:8])
+							n_files=int.from_bytes(n_files, byteorder='little')		
+							st_size=(data[8:12])
+							st_size=int.from_bytes(st_size, byteorder='little')		
+							junk=(data[12:16])
+							offset=(0x10 + n_files * 0x18)
+							stringTable=(data[offset:offset+st_size])
+							stringEndOffset = st_size
+							headerSize = 0x10 + 0x18 * n_files + st_size
+							#print(head)
+							#print(str(n_files))
+							#print(str(st_size))	
+							#print(str((stringTable)))		
+							files_list=list()
+							for i in range(n_files):
+								i = n_files - i - 1
+								pos=0x10 + i * 0x18
+								offset = data[pos:pos+8]
+								offset=int.from_bytes(offset, byteorder='little')			
+								size = data[pos+8:pos+16]
+								size=int.from_bytes(size, byteorder='little')			
+								nameOffset = data[pos+16:pos+20] # just the offset
+								nameOffset=int.from_bytes(nameOffset, byteorder='little')			
+								name = stringTable[nameOffset:stringEndOffset].decode('utf-8').rstrip(' \t\r\n\0')
+								stringEndOffset = nameOffset
+								junk2 = data[pos+20:pos+24] # junk data
+								#print(name)
+								#print(offset)	
+								#print(size)	
+								off1=offset+headerSize
+								files_list.append([name,off1,size])	
+							files_list.reverse()	
+							#print(files_list)
+						except IOError as e:
+							print(e, file=sys.stderr)		
+						#print(files_list)	
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))													
+				if filename.endswith(".nsp"):	
+					try:
+						f = Fs.Nsp(filename, 'rb')
+						f.extract_nca(ofolder,files_list)
+						f.flush()
+						f.close()
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))							
+
+		# ...........................................................................						
+		# NCA_2_PLAINTEXT. EXTRACT OR CONVERT NCA FILES TO PLAINTEXT FROM NSP\XCI\NCA 
+		# ...........................................................................						
+						
+		if args.extract_plain_nca:			
+			for filename in args.extract_plain_nca:			
+				if filename.endswith('.nsp'):
+					dir=os.path.dirname(os.path.abspath(filename))
+					ofolder =os.path.join(dir, 'output')	
+					if not os.path.exists(ofolder):
+						os.makedirs(ofolder)						
+					try:
+						with open(filename, 'r+b') as f:			
+							data=f.read(int(8*1024))						
+						try:
+							head=data[0:4]
+							n_files=(data[4:8])
+							n_files=int.from_bytes(n_files, byteorder='little')		
+							st_size=(data[8:12])
+							st_size=int.from_bytes(st_size, byteorder='little')		
+							junk=(data[12:16])
+							offset=(0x10 + n_files * 0x18)
+							stringTable=(data[offset:offset+st_size])
+							stringEndOffset = st_size
+							headerSize = 0x10 + 0x18 * n_files + st_size
+							#print(head)
+							#print(str(n_files))
+							#print(str(st_size))	
+							#print(str((stringTable)))		
+							files_list=list()
+							for i in range(n_files):
+								i = n_files - i - 1
+								pos=0x10 + i * 0x18
+								offset = data[pos:pos+8]
+								offset=int.from_bytes(offset, byteorder='little')			
+								size = data[pos+8:pos+16]
+								size=int.from_bytes(size, byteorder='little')			
+								nameOffset = data[pos+16:pos+20] # just the offset
+								nameOffset=int.from_bytes(nameOffset, byteorder='little')			
+								name = stringTable[nameOffset:stringEndOffset].decode('utf-8').rstrip(' \t\r\n\0')
+								stringEndOffset = nameOffset
+								junk2 = data[pos+20:pos+24] # junk data
+								#print(name)
+								#print(offset)	
+								#print(size)	
+								off1=offset+headerSize
+								files_list.append([name,off1,size])	
+							files_list.reverse()	
+							#print(files_list)
+						except IOError as e:
+							print(e, file=sys.stderr)		
+						#print(files_list)	
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))													
+				if filename.endswith(".nsp"):	
+					try:
+						f = Fs.Nsp(filename, 'rb')
+						f.copy_as_plaintext(ofolder,files_list)
+						f.flush()
+						f.close()
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+						
+		# ...........................................................................						
+		# Read npdm from inside nsp or xci
+		# ...........................................................................						
+						
+		if args.Read_npdm:			
+			for filename in args.Read_npdm:			
+				if filename.endswith('.nsp'):
+					dir=os.path.dirname(os.path.abspath(filename))
+					ofolder =os.path.join(dir, 'output')	
+					if not os.path.exists(ofolder):
+						os.makedirs(ofolder)						
+					try:
+						with open(filename, 'r+b') as f:			
+							data=f.read(int(8*1024))						
+						try:
+							head=data[0:4]
+							n_files=(data[4:8])
+							n_files=int.from_bytes(n_files, byteorder='little')		
+							st_size=(data[8:12])
+							st_size=int.from_bytes(st_size, byteorder='little')		
+							junk=(data[12:16])
+							offset=(0x10 + n_files * 0x18)
+							stringTable=(data[offset:offset+st_size])
+							stringEndOffset = st_size
+							headerSize = 0x10 + 0x18 * n_files + st_size
+							#print(head)
+							#print(str(n_files))
+							#print(str(st_size))	
+							#print(str((stringTable)))		
+							files_list=list()
+							for i in range(n_files):
+								i = n_files - i - 1
+								pos=0x10 + i * 0x18
+								offset = data[pos:pos+8]
+								offset=int.from_bytes(offset, byteorder='little')			
+								size = data[pos+8:pos+16]
+								size=int.from_bytes(size, byteorder='little')			
+								nameOffset = data[pos+16:pos+20] # just the offset
+								nameOffset=int.from_bytes(nameOffset, byteorder='little')			
+								name = stringTable[nameOffset:stringEndOffset].decode('utf-8').rstrip(' \t\r\n\0')
+								stringEndOffset = nameOffset
+								junk2 = data[pos+20:pos+24] # junk data
+								#print(name)
+								#print(offset)	
+								#print(size)	
+								off1=offset+headerSize
+								files_list.append([name,off1,size])	
+							files_list.reverse()	
+							#print(files_list)
+						except IOError as e:
+							print(e, file=sys.stderr)		
+						#print(files_list)	
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))													
+				if filename.endswith(".nsp"):	
+					try:
+						f = Fs.Nsp(filename, 'rb')
+						f.read_npdm(ofolder,files_list)
+						f.flush()
+						f.close()
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))		
+				if filename.endswith('.xci'):
+					dir=os.path.dirname(os.path.abspath(filename))
+					ofolder =os.path.join(dir, 'output')	
+					if not os.path.exists(ofolder):
+						os.makedirs(ofolder)						
+					try:
+						with open(filename, 'r+b') as f:			
+							rawhead = io.BytesIO(f.read(int(0x200)))							
+						try:			
+							rawhead.seek(0x100)
+							magic=rawhead.read(0x4)
+							if magic==b'HEAD':
+								#print(magic)
+								secureOffset=int.from_bytes(rawhead.read(4), byteorder='little')
+								secureOffset=secureOffset*0x200
+								with open(filename, 'r+b') as f:	
+									f.seek(secureOffset)
+									data=f.read(int(8*1024))
+									rawhead = io.BytesIO(data)
+								rmagic=rawhead.read(0x4)
+								if rmagic==b'HFS0':
+									#print(rmagic)
+									head=data[0:4]
+									n_files=(data[4:8])
+									n_files=int.from_bytes(n_files, byteorder='little')		
+									st_size=(data[8:12])
+									st_size=int.from_bytes(st_size, byteorder='little')		
+									junk=(data[12:16])
+									offset=(0x10 + n_files * 0x40)
+									stringTable=(data[offset:offset+st_size])
+									stringEndOffset = st_size
+									headerSize = 0x10 + 0x40 * n_files + st_size
+									#print(head)
+									#print(str(n_files))
+									#print(str(st_size))	
+									#print(str((stringTable)))
+									files_list=list()
+									for i in range(n_files):
+										i = n_files - i - 1
+										pos=0x10 + i * 0x40
+										offset = data[pos:pos+8]
+										offset=int.from_bytes(offset, byteorder='little')			
+										size = data[pos+8:pos+16]
+										size=int.from_bytes(size, byteorder='little')			
+										nameOffset = data[pos+16:pos+20] # just the offset
+										nameOffset=int.from_bytes(nameOffset, byteorder='little')			
+										name = stringTable[nameOffset:stringEndOffset].decode('utf-8').rstrip(' \t\r\n\0')
+										stringEndOffset = nameOffset
+										junk2 = data[pos+20:pos+24] # junk data
+										#print(name)
+										#print(offset)	
+										#print(size)	
+										off1=offset+headerSize
+										files_list.append([name,off1+secureOffset,size])	
+										# with open(filename, 'r+b') as f:	
+											# f.seek(off1)
+											# print(f.read(0x4))
+											
+									files_list.reverse()	
+									#print(files_list)									
+						except IOError as e:
+							print(e, file=sys.stderr)	
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+				if filename.endswith(".xci"):	
+					try:
+						f = Fs.Xci(filename)					
+						f.read_npdm(files_list)
+						f.flush()
+						f.close()
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))							
 		# ...................................................						
 		# Read cnmt inside nsp or xci
 		# ...................................................					

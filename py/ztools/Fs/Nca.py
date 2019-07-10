@@ -25,6 +25,7 @@ from Fs.Ticket import Ticket
 from Fs.Nacp import Nacp
 import sq_tools
 import pykakasi
+from pythac.NCA3 import NCA3
 
 MEDIA_SIZE = 0x200
 RSA_PUBLIC_EXPONENT = 0x10001
@@ -385,6 +386,14 @@ class Nca(File):
 		self.seek(0xC00+self.header.get_htable_offset())
 		hash_from_pfs0=self.read(0x20*mult)
 		return hash_from_pfs0
+		
+	def extract(self,ofolder,buffer):		
+		ncaname =  str(self._path)[:-4]+'_nca'
+		ncafolder = os.path.join(ofolder,ncaname)
+		if not os.path.exists(ncafolder):
+			os.makedirs(ncafolder)
+		nca3 = NCA3(open(str(self._path), 'rb'))			
+		nca3.extract_conts(ncafolder, disp=True)
 		
 	def calc_htable_hash(self):		
 		indent = 2
@@ -1240,20 +1249,19 @@ class Nca(File):
 		ncalist.append(nca_meta)
 		return ncalist
 
-	def copy(self,ofolder,buffer):
+	def copy_files(self,buffer,ofolder=False,filepath=False,io=0,eo=False):
 		i=0
-		for f in self:
-			self.rewind()			
-			f.rewind()
-			filename =  str(i)
-			i+=1
-			outfolder = str(ofolder)+'/'
-			filepath = os.path.join(outfolder, filename)
+		if ofolder == False:
+			outfolder = 'ofolder'
 			if not os.path.exists(outfolder):
 				os.makedirs(outfolder)
-			fp = open(filepath, 'w+b')
-			self.rewind()
-			f.rewind()	
+		for f in self:
+			if filepath==False:
+				filename =  str(i)
+				i+=1
+				filepath = os.path.join(outfolder, filename)
+				fp = open(filepath, 'w+b')
+			self.rewind();f.seek(io)
 			for data in iter(lambda: f.read(int(buffer)), ""):
 				fp.write(data)
 				fp.flush()
@@ -1261,7 +1269,7 @@ class Nca(File):
 					fp.close()
 					break	
 					
-	def get_ncap_offset(self):
+	def get_nacp_offset(self):
 		for f in self:
 			self.rewind()					
 			f.rewind()	
@@ -1784,12 +1792,28 @@ class Nca(File):
 							if endcheck == False:
 								pass
 							elif endcheck == True:
-								message=(indent+self._path+arrow+'was MODIFIED');print(message);feed+=message+'\n'		
-								message=(tabs+'* '+"NOT VERIFIABLE!!!");print(message);feed+=message+'\n'							
+								if os.path.exists(self._path):
+									printname=str(os.path.basename(os.path.abspath(self._path)))
+								else:
+									printname=str(self._path)									
+								if progress != False:							
+									message=(indent+printname+arrow+'was MODIFIED');bar.write(message);feed+=message+'\n'	
+									message=(tabs+'* '+"NOT VERIFIABLE!!!");bar.write(message);feed+=message+'\n'
+								else:									
+									message=(indent+self._path+arrow+'was MODIFIED');print(message);feed+=message+'\n'		
+									message=(tabs+'* '+"NOT VERIFIABLE!!!");print(message);feed+=message+'\n'							
 						return False,False,self._path,feed,False				
 					else:
-						message=(indent+self._path+arrow+'was MODIFIED');print(message);feed+=message+'\n'		
-						message=(tabs+'* '+"NOT VERIFIABLE!!!");print(message);feed+=message+'\n'							
+						if os.path.exists(self._path):
+							printname=str(os.path.basename(os.path.abspath(self._path)))
+						else:
+							printname=str(self._path)						
+						if progress != False:							
+							message=(indent+printname+arrow+'was MODIFIED');bar.write(message);feed+=message+'\n'	
+							message=(tabs+'* '+"NOT VERIFIABLE!!!");bar.write(message);feed+=message+'\n'
+						else:									
+							message=(indent+self._path+arrow+'was MODIFIED');print(message);feed+=message+'\n'		
+							message=(tabs+'* '+"NOT VERIFIABLE!!!");print(message);feed+=message+'\n'							
 						return False,False,self._path,feed,False						
 			if progress != False:
 				message=(indent+self._path+arrow+'was MODIFIED');bar.write(message);feed+=message+'\n'			
@@ -2099,7 +2123,7 @@ class Nca(File):
 #READ NACP FILE WITHOUT EXTRACTION	
 	def read_nacp(self,feed=''):
 		if 	str(self.header.contentType) == 'Content.CONTROL':
-			offset=self.get_ncap_offset()
+			offset=self.get_nacp_offset()
 			for f in self:
 				f.seek(offset)
 				nacp = Nacp()	
