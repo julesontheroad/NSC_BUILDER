@@ -6204,7 +6204,7 @@ class Xci(File):
 				for f in nspF:					
 					if type(f) == Nca and f.header.contentType != Type.Content.META:
 						message=(str(f.header.titleId)+' - '+str(f.header.contentType));print(message);feed+=message+'\n'											
-						verify,origheader,ncaname,feed,origkg=f.verify(feed)		
+						verify,origheader,ncaname,feed,origkg,tkey,iGC=f.verify(feed)		
 						headerlist.append([ncaname,origheader,hlisthash])		
 						keygenerationlist.append([ncaname,origkg])
 						if verdict == True:
@@ -6218,7 +6218,7 @@ class Xci(File):
 						f.rewind();meta_dat=f.read()
 						message=(str(f.header.titleId)+' - '+str(f.header.contentType));print(message);feed+=message+'\n'	
 						targetkg,minrsv=self.find_addecuatekg(meta_nca,keygenerationlist)
-						verify,origheader,ncaname,feed,origkg=f.verify(feed)
+						verify,origheader,ncaname,feed,origkg,tkey,iGC=f.verify(feed)
 						#print(targetkg)				
 						if verify == False:
 							tempfile=os.path.join(tmpfolder,meta_nca)
@@ -6282,7 +6282,7 @@ class Xci(File):
 										fp.close()	
 										fp = Fs.Nca(tempfile, 'r+b')
 										progress=True
-										verify,origheader,ncapath,feed,origkg=fp.verify(feed,targetkg,rsv_endcheck,progress,t)
+										verify,origheader,ncapath,feed,origkg,tkey,iGC=fp.verify(feed,targetkg,rsv_endcheck,progress,t)
 										fp.close()		
 										t.update(1)	
 										if verify == True:
@@ -6311,7 +6311,7 @@ class Xci(File):
 						if hlisthash == True:
 							sha0=sha0.hexdigest()
 							hlisthash=sha0
-						headerlist.append([ncaname,origheader,hlisthash])	
+						headerlist.append([ncaname,origheader,hlisthash,tr,tkey,iGC])	
 						message='';print(message);feed+=message+'\n'	
 		try:
 			shutil.rmtree(tmpfolder)

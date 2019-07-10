@@ -1672,7 +1672,6 @@ class Nca(File):
 		self.header.seek(0x200)	
 		headdata = self.header.read(0x200)	
 		#print(hx(orig_header))
-		
 		#Hex.dump(headdata)
 		pubkey=RSA.RsaKey(n=nca_header_fixed_key_modulus, e=RSA_PUBLIC_EXPONENT)
 		rsapss = PKCS1_PSS.new(pubkey)
@@ -1682,13 +1681,13 @@ class Nca(File):
 		crypto2=self.header.getCryptoType2()	
 		if crypto2>crypto1:
 			masterKeyRev=crypto2
-		if crypto2<=crypto1:	
+		if crypto2<=crypto1:
 			masterKeyRev=crypto1		
 		currkg=masterKeyRev		
 		if verification == True:
 			message=(indent+self._path+arrow+'is PROPER');print(message);feed+=message+'\n'			
 			#print(hx(headdata))		
-			return True,False,self._path,feed,currkg
+			return True,False,self._path,feed,currkg,False,False,self.header.getgamecard()
 		else:
 			crypto = aes128.AESECB(Keys.keyAreaKey(Keys.getMasterKeyIndex(masterKeyRev), self.header.keyIndex))			
 			KB1L=self.header.getKB1L()
@@ -1717,11 +1716,11 @@ class Nca(File):
 						message=(tabs+'* '+"Original titlekey is -> "+(str(hx(titlekey)).upper())[2:-1]);print(message);feed+=message+'\n'	
 						if tcheck == '00000000000000000000000000000000':
 							message=(tabs+'* '+"WARNING: sum(titlekey)=0 -> S.C. conversion may be incorrect and come from nsx file");print(message);feed+=message+'\n'										
-					return True,orig_header,self._path,feed,orkg	
+					return True,orig_header,self._path,feed,orkg,tr,titlekey,self.header.getgamecard()	
 				else:
 					message=(indent+self._path+arrow+'was MODIFIED');print(message);feed+=message+'\n'		
 					message=(tabs+'* '+"NOT VERIFIABLE COULD'VE BEEN TAMPERED WITH");print(message);feed+=message+'\n'			
-					return False,False,self._path,feed,False	
+					return False,False,self._path,feed,False,False,False,self.header.getgamecard()	
 			else:
 				if targetkg != False:
 					if self.header.contentType == Type.Content.META:
@@ -1760,7 +1759,7 @@ class Nca(File):
 								message=(tabs+'* '+"ISGAMECARD WAS CHANGED FROM 1 TO 0");bar.write(message);feed+=message+'\n'								
 							else:						
 								message=(tabs+'* '+"ISGAMECARD WAS CHANGED FROM 1 TO 0");print(message);feed+=message+'\n'									
-					return True,orig_header,self._path,feed,chkkg		
+					return True,orig_header,self._path,feed,chkkg,False,False,self.header.getgamecard()		
 				else:
 					if self.header.contentType == Type.Content.META:
 						if targetkg == False:
@@ -1787,7 +1786,7 @@ class Nca(File):
 									else:									
 										message=(tabs+'* '+"INTERNAL HASH MISSMATCH");print(message);feed+=message+'\n'	
 										message=(tabs+'* '+"BAD CNMT FILE!!!");print(message);feed+=message+'\n'				
-									return 'BADCNMT',False,self._path,feed,False							
+									return 'BADCNMT',False,self._path,feed,False,False,False,self.header.getgamecard()							
 						else:	
 							if endcheck == False:
 								pass
@@ -1802,7 +1801,7 @@ class Nca(File):
 								else:									
 									message=(indent+self._path+arrow+'was MODIFIED');print(message);feed+=message+'\n'		
 									message=(tabs+'* '+"NOT VERIFIABLE!!!");print(message);feed+=message+'\n'							
-						return False,False,self._path,feed,False				
+						return False,False,self._path,feed,False,False,False,self.header.getgamecard()				
 					else:
 						if os.path.exists(self._path):
 							printname=str(os.path.basename(os.path.abspath(self._path)))
@@ -1814,14 +1813,14 @@ class Nca(File):
 						else:									
 							message=(indent+self._path+arrow+'was MODIFIED');print(message);feed+=message+'\n'		
 							message=(tabs+'* '+"NOT VERIFIABLE!!!");print(message);feed+=message+'\n'							
-						return False,False,self._path,feed,False						
+						return False,False,self._path,feed,False,False,False,self.header.getgamecard()						
 			if progress != False:
 				message=(indent+self._path+arrow+'was MODIFIED');bar.write(message);feed+=message+'\n'			
 				message=(tabs+'* '+"NOT VERIFIABLE!!!");bar.write(message);feed+=message+'\n'							
 			else:	
 				message=(indent+self._path+arrow+'was MODIFIED');print(message);feed+=message+'\n'			
 				message=(tabs+'* '+"NOT VERIFIABLE!!!");print(message);feed+=message+'\n'				
-			return False,False,self._path,feed,False		
+			return False,False,self._path,feed,False,False,False,self.header.getgamecard()		
 			
 	def verify_cnmt_withkg(self,targetkg):	
 		targetkg=int(targetkg)	

@@ -6291,8 +6291,13 @@ if __name__ == '__main__':
 				try:
 					f = Fs.Nsp(filename, 'rb')
 					check,feed=f.verify()
+					f.flush()
+					f.close()					
 					if not args.text_file:
+						f = Fs.Nsp(filename, 'rb')					
 						verdict,headerlist,feed=f.verify_sig(feed,tmpfolder)
+						f.flush()
+						f.close()							
 						i=0
 						print('\n********************************************************')
 						print('Do you want to verify the hash of the nca files?')
@@ -6303,6 +6308,7 @@ if __name__ == '__main__':
 							ck=input('Input your answer: ')
 							if ck ==str(1):
 								print('')
+								f = Fs.Nsp(filename, 'rb')									
 								verdict,feed=f.verify_hash_nca(buffer,headerlist,verdict,feed)
 								f.flush()
 								f.close()
@@ -6331,14 +6337,23 @@ if __name__ == '__main__':
 								print('WRONG CHOICE\n')								
 					elif args.text_file:	
 						if vertype == "lv2":
+							f = Fs.Nsp(filename, 'rb')
 							verdict,headerlist,feed=f.verify_sig(feed,tmpfolder)	
+							f.flush()
+							f.close()								
 							if check == True:
 								check=verdict
 						elif vertype == "lv3":	
+							f = Fs.Nsp(filename, 'rb')						
 							verdict,headerlist,feed=f.verify_sig(feed,tmpfolder)	
+							f.flush()
+							f.close()								
 							if check == True:
-								check=verdict						
+								check=verdict		
+							f = Fs.Nsp(filename, 'rb')								
 							verdict,feed=f.verify_hash_nca(buffer,headerlist,verdict,feed)
+							f.flush()
+							f.close()									
 							if check == True:
 								check=verdict							
 						if check == False:
@@ -6372,8 +6387,14 @@ if __name__ == '__main__':
 					f = Fs.factory(filename)
 					f.open(filename, 'rb')
 					check,feed=f.verify()
+					f.flush()
+					f.close()							
 					if not args.text_file:
+						f = Fs.factory(filename)
+						f.open(filename, 'rb')						
 						verdict,headerlist,feed=f.verify_sig(feed,tmpfolder)
+						f.flush()
+						f.close()								
 						i=0
 						print('\n********************************************************')
 						print('Do you want to verify the hash of the nca files?')
@@ -6384,6 +6405,8 @@ if __name__ == '__main__':
 							check=input('Input your answer: ')	
 							if check ==str(1):
 								print('')
+								f = Fs.factory(filename)
+								f.open(filename, 'rb')						
 								verdict,feed=f.verify_hash_nca(buffer,headerlist,verdict,feed)
 								f.flush()
 								f.close()
@@ -6412,14 +6435,26 @@ if __name__ == '__main__':
 								print('WRONG CHOICE\n')								
 					elif args.text_file:	
 						if vertype == "lv2":
-							verdict,headerlist,feed=f.verify_sig(feed,tmpfolder)	
+							f = Fs.factory(filename)
+							f.open(filename, 'rb')							
+							verdict,headerlist,feed=f.verify_sig(feed,tmpfolder)
+							f.flush()
+							f.close()							
 							if check == True:
 								check=verdict
 						elif vertype == "lv3":	
-							verdict,headerlist,feed=f.verify_sig(feed,tmpfolder)	
+							f = Fs.factory(filename)
+							f.open(filename, 'rb')							
+							verdict,headerlist,feed=f.verify_sig(feed,tmpfolder)
+							f.flush()
+							f.close()							
 							if check == True:
-								check=verdict						
+								check=verdict		
+							f = Fs.factory(filename)
+							f.open(filename, 'rb')									
 							verdict,feed=f.verify_hash_nca(buffer,headerlist,verdict,feed)
+							f.flush()
+							f.close()							
 							if check == True:
 								check=verdict						
 						if check == False:
@@ -6659,7 +6694,43 @@ if __name__ == '__main__':
 								tfile.write(line+"\n")
 							except:
 								continue									
-				
+	
+		# ...................................................						
+		# Restore. File Restoration
+		# ...................................................
+		if args.restore:	
+			feed=''		
+			if args.buffer:		
+				for var in args.buffer:
+					try:
+						buffer = var
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+			else:
+				buffer = 32768	
+			if not os.path.exists(ofolder):
+				os.makedirs(ofolder)	
+			if args.text_file:
+				tfile=args.text_file
+				dir=os.path.dirname(os.path.abspath(tfile))
+				if not os.path.exists(dir):
+					os.makedirs(dir)	
+				err='badfiles.txt'			
+				errfile = os.path.join(dir, err)						
+				with open(tfile,"r+", encoding='utf8') as filelist: 	
+					filename = filelist.readline()
+					filename=os.path.abspath(filename.rstrip('\n'))
+			else:				
+				for filename in args.verify:
+					filename=filename	
+			if filename.endswith('.nsp') or filename.endswith('.nsx'):
+				try:
+					f = Fs.Nsp(filename, 'rb')
+					check,feed=f.verify()
+					verdict,headerlist,feed=f.verify_sig(feed,tmpfolder)
+				except:
+					pass		
+	
 
 		Status.close()		
 	
