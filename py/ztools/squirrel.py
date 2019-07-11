@@ -91,7 +91,8 @@ if __name__ == '__main__':
 		parser.add_argument('-dc', '--direct_creation', nargs='+', help='Create directly a nsp or xci')		
 		parser.add_argument('-dmul', '--direct_multi', nargs='+', help='Create directly a multi nsp or xci')		
 		parser.add_argument('-ed', '--erase_deltas', nargs='+', help='Take of deltas from updates')			
-		parser.add_argument('-rbnsp', '--rebuild_nsp', nargs='+', help='Rebuild nsp by cnmt order')			
+		parser.add_argument('-rbnsp', '--rebuild_nsp', nargs='+', help='Rebuild nsp by cnmt order')		
+		parser.add_argument('-rst', '--restore', nargs='+', help='Rebuild nsp by cnmt order')		
 
 		# nca/nsp identification
 		parser.add_argument('--ncatitleid', nargs='+', help='Returns titleid from a nca input')
@@ -6728,8 +6729,10 @@ if __name__ == '__main__':
 					f = Fs.Nsp(filename, 'rb')
 					check,feed=f.verify()
 					verdict,headerlist,feed=f.verify_sig(feed,tmpfolder)
-				except:
-					pass		
+					if verdict == True:
+						pass
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))
 	
 
 		Status.close()		
