@@ -170,7 +170,8 @@ echo ............
 echo *******************************************************
 echo CHOOSE HOW TO PROCESS THE FILES
 echo *******************************************************
-echo Input "1" to extract nca files
+echo Input "1" to extract all files from nsp\xci
+echo Input "2" to for raw extraction (Use in case a nca gives magic error)
 echo.
 ECHO ******************************************
 echo Or Input "b" to return to the list options
@@ -181,6 +182,7 @@ set bs=%bs:"=%
 set vrepack=none
 if /i "%bs%"=="b" goto checkagain
 if /i "%bs%"=="1" goto extract
+if /i "%bs%"=="2" goto raw_extract
 if %vrepack%=="none" goto s_cl_wrongchoice
 
 
@@ -200,6 +202,24 @@ ECHO ---------------------------------------------------
 ECHO *********** ALL FILES WERE PROCESSED! *************
 ECHO ---------------------------------------------------
 goto s_exit_choice
+
+:raw_extract
+cls
+call :program_logo
+CD /d "%prog_dir%"
+for /f "tokens=*" %%f in (advlist.txt) do (
+
+%pycommand% "%nut%" %buffer% -o "%prog_dir%extract" -tfile "%prog_dir%advlist.txt" -raw_x ""
+
+more +1 "advlist.txt">"advlist.txt.new"
+move /y "advlist.txt.new" "advlist.txt" >nul
+call :contador_NF
+)
+ECHO ---------------------------------------------------
+ECHO *********** ALL FILES WERE PROCESSED! *************
+ECHO ---------------------------------------------------
+goto s_exit_choice
+
 
 
 :s_exit_choice
