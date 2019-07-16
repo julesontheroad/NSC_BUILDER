@@ -31,6 +31,7 @@ if sys.platform == 'win32':
 from operator import itemgetter, attrgetter, methodcaller
 from Crypto.Cipher import AES
 from pythac.NCA3 import NCA3
+from pythac.NPDM import NPDM
 import io
 #from Cryptodome.Signature import pss
 #from Cryptodome.PublicKey import RSA
@@ -674,17 +675,17 @@ class Nsp(Pfs0):
 					nca3.decrypt_to_plaintext(PN.replace(str(nca._path)[lon:], ext))
 					
 
-	def read_npdm(self,ofolder,files_list):
+	def read_npdm(self):
 		for nca in self:
 			if type(nca) == Nca:
 				if 	str(nca.header.contentType) == 'Content.PROGRAM':
-					for i in range(len(files_list)):	
-						if str(nca._path) == files_list[i][0]:
-							offset=files_list[i][1]
-							break
-					fp=open(str(self._path), 'rb')								
-					nca3=NCA3(fp,int(offset),str(nca._path))
-					nca3.print_npdm()					
+					for f in nca:
+						for g in f:
+							if str(g._path)=='main.npdm':
+								inmemoryfile = io.BytesIO(g.read())
+								npdm = NPDM(inmemoryfile)
+								n=npdm.__str__()
+								print(n)			
 			
 	def extract_nca(self,ofolder,files_list):
 		for nca in self:

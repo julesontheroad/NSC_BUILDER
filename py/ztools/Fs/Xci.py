@@ -27,6 +27,7 @@ import math
 from operator import itemgetter, attrgetter, methodcaller
 import shutil
 from pythac.NCA3 import NCA3
+from pythac.NPDM import NPDM
 import io
 
 MEDIA_SIZE = 0x200
@@ -928,27 +929,19 @@ class Xci(File):
 		return feed
 		
 		
-	def read_npdm(self,files_list):
+	def read_npdm(self):
 		for nspF in self.hfs0:
 			if str(nspF._path)=="secure":
 				for nca in nspF:
 					if type(nca) == Nca:
 						if 	str(nca.header.contentType) == 'Content.PROGRAM':
-							for i in range(len(files_list)):	
-								if str(nca._path) == files_list[i][0]:
-									offset=files_list[i][1]
-									break
-							print(str(nca._path))
-							try:										
-								fp=open(str(self._path), 'rb')								
-								nca3=NCA3(fp,int(offset),str(nca._path))
-								nca3.print_npdm()		
-							except BaseException as e:
-								#Print.error('Exception: ' + str(e))		
-								nca.rewind()
-								inmemoryfile = io.BytesIO(nca.read())
-								nca3=NCA3(inmemoryfile,0,str(nca._path))					
-								nca3.print_npdm()	
+							for f in nca:
+								for g in f:
+									if str(g._path)=='main.npdm':
+										inmemoryfile = io.BytesIO(g.read())
+										npdm = NPDM(inmemoryfile)
+										n=npdm.__str__()
+										print(n)									
 
 	def copy_as_plaintext(self,ofolder,files_list):
 		for nspF in self.hfs0:
@@ -972,7 +965,6 @@ class Xci(File):
 							ext='.plain.nca'
 						lon=(-1)*len(ext)	
 						try:
-							print(offset)
 							fp=open(str(self._path), 'rb')			
 							nca3=NCA3(fp,int(offset),str(nca._path))
 							nca3.decrypt_to_plaintext(PN.replace(str(nca._path)[lon:], ext))
