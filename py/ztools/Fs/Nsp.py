@@ -989,7 +989,6 @@ class Nsp(Pfs0):
 					if nca.header.getCryptoType2() == 0:
 						if nca.header.getCryptoType() == 2:
 							masterKeyRev = 2						
-							titleKeyDec = Keys.decryptTitleKey(ticket.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(masterKeyRev))
 							break								
 
 		ticket.setRightsId(0)
@@ -3375,6 +3374,7 @@ class Nsp(Pfs0):
 		for file in self:
 			if type(file) == Ticket:		
 				masterKeyRev = file.getMasterKeyRevision()
+				ticket=file
 				titleKeyDec = Keys.decryptTitleKey(file.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(masterKeyRev))
 				rightsId = file.getRightsId()
 		for nca in self:

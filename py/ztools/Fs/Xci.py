@@ -469,6 +469,7 @@ class Xci(File):
 						Print.info('rightsId =\t' + hex(rightsId))
 						Print.info('titleKeyDec =\t' + str(hx(titleKeyDec)))
 						Print.info('masterKeyRev =\t' + hex(masterKeyRev))
+						tik=ticket
 				for nca in nspF:
 					if type(nca) == Nca:
 						if nca.header.getRightsId() != 0:
@@ -482,7 +483,7 @@ class Xci(File):
 							if nca.header.getCryptoType2() == 0:
 								if nca.header.getCryptoType() == 2:
 									masterKeyRev = 2						
-									titleKeyDec = Keys.decryptTitleKey(ticket.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(masterKeyRev))
+									titleKeyDec = Keys.decryptTitleKey(tik.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(masterKeyRev))
 									break									
 											
 				for nca in nspF:
@@ -582,6 +583,7 @@ class Xci(File):
 						Print.info('rightsId =\t' + hex(rightsId))
 						Print.info('titleKeyDec =\t' + str(hx(titleKeyDec)))
 						Print.info('masterKeyRev =\t' + hex(masterKeyRev))
+						tik=ticket
 				for nca in nspF:
 					if type(nca) == Nca:
 						if nca.header.getRightsId() != 0:
@@ -594,7 +596,7 @@ class Xci(File):
 							if nca.header.getCryptoType2() == 0:
 								if nca.header.getCryptoType() == 2:
 									masterKeyRev = 2						
-									titleKeyDec = Keys.decryptTitleKey(ticket.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(masterKeyRev))
+									titleKeyDec = Keys.decryptTitleKey(tik.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(masterKeyRev))
 									break									
 
 				for nca in nspF:
@@ -1434,6 +1436,7 @@ class Xci(File):
 						masterKeyRev = file.getMasterKeyRevision()
 						titleKeyDec = Keys.decryptTitleKey(file.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(masterKeyRev))
 						rightsId = file.getRightsId()
+						ticket=file
 		for nspF in self.hfs0:
 			if str(nspF._path)=="secure":
 				for file in nspF:			
@@ -2765,6 +2768,7 @@ class Xci(File):
 						masterKeyRev = ticket.getMasterKeyRevision()
 						titleKeyDec = Keys.decryptTitleKey(ticket.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(masterKeyRev))
 						rightsId = ticket.getRightsId()
+						tik=ticket
 				for nca in nspF:
 					if type(nca) == Nca:
 						if nca.header.getRightsId() != 0:
@@ -2778,7 +2782,7 @@ class Xci(File):
 							if nca.header.getCryptoType2() == 0:
 								if nca.header.getCryptoType() == 2:
 									masterKeyRev = 2						
-									titleKeyDec = Keys.decryptTitleKey(ticket.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(masterKeyRev))
+									titleKeyDec = Keys.decryptTitleKey(tik.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(masterKeyRev))
 									break	
 									
 		Print.info('Generating XCI:')	
@@ -3184,7 +3188,8 @@ class Xci(File):
 					if type(file) == Ticket:		
 						masterKeyRev = file.getMasterKeyRevision()
 						titleKeyDec = Keys.decryptTitleKey(file.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(masterKeyRev))
-						rightsId = file.getRightsId()						
+						rightsId = file.getRightsId()
+						ticket=file	
 		for nspF in self.hfs0:
 			if str(nspF._path)=="secure":
 				for nca in nspF:
@@ -3537,6 +3542,7 @@ class Xci(File):
 						masterKeyRev = file.getMasterKeyRevision()
 						titleKeyDec = Keys.decryptTitleKey(file.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(masterKeyRev))
 						rightsId = file.getRightsId()
+						ticket=file
 		for nspF in self.hfs0:
 			if str(nspF._path)=="secure":
 				for file in nspF:			
@@ -4525,6 +4531,7 @@ class Xci(File):
 						masterKeyRev = file.getMasterKeyRevision()
 						titleKeyDec = Keys.decryptTitleKey(file.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(masterKeyRev))
 						rightsId = file.getRightsId()
+						ticket=file
 		for nspF in self.hfs0:
 			if str(nspF._path)=="secure":
 				for file in nspF:				
