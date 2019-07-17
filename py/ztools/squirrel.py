@@ -54,7 +54,7 @@ from tqdm import tqdm
 from datetime import datetime
 import math  
 import pykakasi
-from pythac.NCA3 import NCA3
+from Fs.pyNCA3 import NCA3
 
 if __name__ == '__main__':
 	try:

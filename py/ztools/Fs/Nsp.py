@@ -23,6 +23,8 @@ from Fs.Nca import Nca
 from Fs.Nacp import Nacp
 from Fs.Nca import NcaHeader
 from Fs.File import MemoryFile
+from Fs.pyNCA3 import NCA3
+from Fs.pyNPDM import NPDM
 import math  
 import sys
 import shutil
@@ -30,8 +32,6 @@ if sys.platform == 'win32':
 	import win32con, win32api
 from operator import itemgetter, attrgetter, methodcaller
 from Crypto.Cipher import AES
-from pythac.NCA3 import NCA3
-from pythac.NPDM import NPDM
 import io
 #from Cryptodome.Signature import pss
 #from Cryptodome.PublicKey import RSA
@@ -6594,7 +6594,7 @@ class Nsp(Pfs0):
 						if str(f._path) == file:
 							message=(str(f.header.titleId)+' - '+str(f.header.contentType));print(message);feed+=message+'\n'								
 							if str(f.header.contentType) != 'Content.PROGRAM':	
-								correct = self.verify_enforcer(file)									
+								correct = self.verify_enforcer(file)
 							else:
 								for nf in f:
 									nf.rewind()		
@@ -6608,8 +6608,6 @@ class Nsp(Pfs0):
 									correct = self.verify_enforcer(file)
 								if correct == False and f.header.getRightsId() == 0:
 									correct = f.pr_noenc_check()		
-								if correct == False and f.header.getRightsId() != 0:
-									correct = self.verify_nca_key(file)		
 								if correct == True and f.header.getRightsId() == 0:
 									correct = f.pr_noenc_check()				
 									if correct == False:
@@ -7067,6 +7065,8 @@ class Nsp(Pfs0):
 			if str(f._path) == nca:
 				if type(f) == Fs.Nca and f.header.getRightsId() != 0:
 					for fs in f.sectionFilesystems:
+						#print(fs.fsType)
+						#print(fs.cryptoType)
 						if fs.fsType == Type.Fs.PFS0 and fs.cryptoType == Type.Crypto.CTR:
 							f.seek(0)
 							ncaHeader = NcaHeader()
@@ -7083,8 +7083,8 @@ class Nsp(Pfs0):
 								mem = MemoryFile(pfs0Header, Type.Crypto.CTR, decKey, pfs0.cryptoCounter, offset = pfs0Offset)
 								data = mem.read();
 								#Hex.dump(data)
-								#print('hash = %s' % str(_sha256(data)))
-								if hx(sectionHeaderBlock[0xc8:0xc8+0x20]).decode('utf-8') == str(_sha256(data)):
+								#print('hash = %s' % str(sha256(data).hexdigest()))
+								if hx(sectionHeaderBlock[0xc8:0xc8+0x20]).decode('utf-8') == str(sha256(data).hexdigest()):
 									return True
 								else:
 									return False
@@ -7103,16 +7103,38 @@ class Nsp(Pfs0):
 							f.seek(0)
 							ncaHeader = NcaHeader()
 							ncaHeader.open(MemoryFile(f.read(0x400), Type.Crypto.XTS, uhx(Keys.get('header_key'))))	
-							romfs=fs	
+							ncaHeader = f.read(0x400)
+							pfs0=fs
 							sectionHeaderBlock = fs.buffer
-							f.seek(fs.offset)
-							romfsOffset=fs.offset
-							romfsHeader = f.read(0x10)
-							mem = MemoryFile(romfsHeader, Type.Crypto.CTR, decKey, romfs.cryptoCounter, offset = romfsOffset)
-							magic = mem.read()[0:4]
-							return True
-						else:
-							return False		
+
+							levelOffset = int.from_bytes(sectionHeaderBlock[0x18:0x20], byteorder='little', signed=False)
+							levelSize = int.from_bytes(sectionHeaderBlock[0x20:0x28], byteorder='little', signed=False)
+
+							pfs0Offset = fs.offset + levelOffset
+							f.seek(pfs0Offset)
+							pfs0Header = f.read(levelSize)
+							#print(sectionHeaderBlock[8:12] == b'IVFC')	
+							if sectionHeaderBlock[8:12] == b'IVFC':	
+								#Hex.dump(self.sectionHeaderBlock)
+								#Print.info(hx(self.sectionHeaderBlock[0xc8:0xc8+0x20]).decode('utf-8'))
+								mem = MemoryFile(pfs0Header, Type.Crypto.CTR, decKey, pfs0.cryptoCounter, offset = pfs0Offset)
+								data = mem.read();
+								#Hex.dump(data)
+								#print('hash = %s' % str(sha256(data).hexdigest()))
+								if hx(sectionHeaderBlock[0xc8:0xc8+0x20]).decode('utf-8') == str(sha256(data).hexdigest()):
+									return True
+								else:
+									return False
+							else:
+								mem = MemoryFile(pfs0Header, Type.Crypto.CTR, decKey, pfs0.cryptoCounter, offset = pfs0Offset)
+								data = mem.read();
+								#Hex.dump(data)								
+								magic = mem.read()[0:4]
+								#print(magic)
+								if magic != b'PFS0':
+									return False
+								else:	
+									return True	
 							
 	def cnmt_get_baseids(self):			
 		ctype='addon'

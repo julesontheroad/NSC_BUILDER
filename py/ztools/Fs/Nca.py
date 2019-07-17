@@ -25,7 +25,7 @@ from Fs.Ticket import Ticket
 from Fs.Nacp import Nacp
 import sq_tools
 import pykakasi
-from pythac.NCA3 import NCA3
+from Fs.pyNCA3 import NCA3
 
 MEDIA_SIZE = 0x200
 RSA_PUBLIC_EXPONENT = 0x10001
@@ -1714,6 +1714,7 @@ class Nca(File):
 						message=(tabs+'* '+"KEYGENERATION WAS CHANGED FROM "+str(orkg)+" TO "+str(currkg));print(message);feed+=message+'\n'		
 						message=(tabs+'* '+"Original titlerights id is -> "+(str(hx(tr)).upper())[2:-1]);print(message);feed+=message+'\n'		
 						message=(tabs+'* '+"Original titlekey is -> "+(str(hx(titlekey)).upper())[2:-1]);print(message);feed+=message+'\n'	
+						tcheck=(str(hx(titlekey)).upper())[2:-1]
 						if tcheck == '00000000000000000000000000000000':
 							message=(tabs+'* '+"WARNING: sum(titlekey)=0 -> S.C. conversion may be incorrect and come from nsx file");print(message);feed+=message+'\n'										
 					return True,orig_header,self._path,feed,orkg,tr,titlekey,self.header.getgamecard()	
