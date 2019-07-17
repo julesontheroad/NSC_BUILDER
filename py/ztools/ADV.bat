@@ -171,7 +171,7 @@ echo *******************************************************
 echo CHOOSE HOW TO PROCESS THE FILES
 echo *******************************************************
 echo Input "1" to extract all files from nsp\xci
-echo Input "2" to for raw extraction (Use in case a nca gives magic error)
+echo Input "2" for raw extraction (Use in case a nca gives magic error)
 echo.
 ECHO ******************************************
 echo Or Input "b" to return to the list options

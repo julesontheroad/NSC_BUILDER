@@ -6574,7 +6574,7 @@ class Nsp(Pfs0):
 				validfiles.append(str(file._path))						
 				
 		for file in listed_files:	
-			correct=False		
+			correct=False;baddec=False			
 			if file in validfiles:
 				if file.endswith('cnmt.nca'):
 					for f in self:	
@@ -6608,6 +6608,8 @@ class Nsp(Pfs0):
 									correct = self.verify_enforcer(file)
 								if correct == False and f.header.getRightsId() == 0:
 									correct = f.pr_noenc_check()		
+								if correct == False and f.header.getRightsId() != 0:
+									correct = self.verify_nca_key(file)											
 								if correct == True and f.header.getRightsId() == 0:
 									correct = f.pr_noenc_check()				
 									if correct == False:
