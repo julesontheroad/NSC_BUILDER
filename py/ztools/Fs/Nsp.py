@@ -2777,7 +2777,7 @@ class Nsp(Pfs0):
 								message=('- Patchable to: DLC -> no RSV to patch\n');print(message);feed+=message+'\n'																
 		return feed
 		
-	def inf_get_title(self,target,offset,content_entries,original_ID):
+	def inf_get_title(self,target,offset,content_entries,original_ID,roman=True):
 		content_type=''
 		for nca in self:
 			if type(nca) == Nca:
@@ -2831,7 +2831,7 @@ class Nsp(Pfs0):
 			if type(nca) == Nca:
 				if nca_name == str(nca._path):
 					if 	str(nca.header.contentType) == 'Content.CONTROL':
-						title,editor,ediver,SupLg,regionstr,isdemo=nca.get_langueblock(title)
+						title,editor,ediver,SupLg,regionstr,isdemo=nca.get_langueblock(title,roman)
 						return(title,editor,ediver,SupLg,regionstr,isdemo)
 		regionstr="0|0|0|0|0|0|0|0|0|0|0|0|0|0"								
 		return(title,"","","",regionstr,"")							
@@ -3689,7 +3689,7 @@ class Nsp(Pfs0):
 #///////////////////////////////////////////////////								
 #ADD TO DATABASE
 #///////////////////////////////////////////////////					
-	def addtodb(self,ofile,dbtype):		
+	def addtodb(self,ofile,dbtype,roman=True):		
 		for nca in self:
 			if type(nca) == Nca:	
 				if 	str(nca.header.contentType) == 'Content.META':
@@ -3737,7 +3737,7 @@ class Nsp(Pfs0):
 							if ckey == '0':
 								ckey=self.getdbkey(titlerights)
 							target=str(nca._path)
-							tit_name,editor,ediver,SupLg,regionstr,isdemo = self.inf_get_title(target,offset,content_entries,original_ID)
+							tit_name,editor,ediver,SupLg,regionstr,isdemo = self.inf_get_title(target,offset,content_entries,original_ID,roman)
 							if tit_name=='DLC' and (str(titlerights).endswith('000') or str(titlerights).endswith('800')):
 								tit_name='-'
 								editor='-'

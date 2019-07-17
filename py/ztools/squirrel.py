@@ -4163,6 +4163,15 @@ if __name__ == '__main__':
 		# ADD CONTENT TO DATABASE
 		# ...................................................	
 		if args.addtodb:
+			if args.romanize:
+				for input in args.ofolder:
+					roman=str(input).upper()
+					if roman == "FALSE":
+						roman = False
+					else:
+						roman = True
+			else:
+				roman = True				
 			if args.db_file:	
 				outfile=args.db_file
 				dir=os.path.dirname(os.path.abspath(outfile))
@@ -4206,7 +4215,7 @@ if __name__ == '__main__':
 						infile=r''
 						infile+=filename
 						f = Fs.Nsp(filename, 'rb')
-						f.addtodb(outfile,outdb)
+						f.addtodb(outfile,outdb,roman)
 						f.flush()
 						f.close()
 					except BaseException as e:
@@ -4223,7 +4232,7 @@ if __name__ == '__main__':
 						infile+=filename
 						f = Fs.factory(filename)
 						f.open(filename, 'rb')						
-						f.addtodb(outfile,outdb)
+						f.addtodb(outfile,outdb,roman)
 						f.flush()
 						f.close()
 					except BaseException as e:

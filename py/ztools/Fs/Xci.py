@@ -2332,7 +2332,7 @@ class Xci(File):
 										message=('- Patchable to: DLC -> no RSV to patch\n');print(message);feed+=message+'\n'																					
 		return feed										
 						
-	def inf_get_title(self,target,offset,content_entries,original_ID):
+	def inf_get_title(self,target,offset,content_entries,original_ID,roman=True):
 		content_type=''
 		token='secure'		
 		for nspF in self.hfs0:
@@ -2393,7 +2393,7 @@ class Xci(File):
 					if type(nca) == Nca:
 						if nca_name == str(nca._path):
 							if 	str(nca.header.contentType) == 'Content.CONTROL':
-								title,editor,ediver,SupLg,regionstr,isdemo=nca.get_langueblock(title)
+								title,editor,ediver,SupLg,regionstr,isdemo=nca.get_langueblock(title,roman)
 								return(title,editor,ediver,SupLg,regionstr,isdemo)
 		regionstr="0|0|0|0|0|0|0|0|0|0|0|0|0|0"								
 		return(title,"","","",regionstr,"")	
@@ -5610,7 +5610,7 @@ class Xci(File):
 #///////////////////////////////////////////////////								
 #ADD TO DATABASE
 #///////////////////////////////////////////////////					
-	def addtodb(self,ofile,dbtype):		
+	def addtodb(self,ofile,dbtype,roman=True):		
 		for nspF in self.hfs0:
 			if str(nspF._path)=="secure":			
 				for nca in nspF:				
@@ -5660,7 +5660,7 @@ class Xci(File):
 									if ckey == '0':
 										ckey=self.getdbkey(titlerights)
 									target=str(nca._path)
-									tit_name,editor,ediver,SupLg,regionstr,isdemo = self.inf_get_title(target,offset,content_entries,original_ID)
+									tit_name,editor,ediver,SupLg,regionstr,isdemo = self.inf_get_title(target,offset,content_entries,original_ID,roman)
 									if tit_name=='DLC' and (str(titleid2).endswith('000') or str(titleid2).endswith('800')):
 										tit_name='-'
 										editor='-'											
