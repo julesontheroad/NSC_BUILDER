@@ -1968,7 +1968,7 @@ class Xci(File):
 												nca_name=str(hx(NcaId))
 												nca_name=nca_name[2:-1]+'.nca'
 												s1=0;s1,feed=self.print_nca_by_title(nca_name,ncatype,feed)
-												ncasize=ncasize
+												ncasize=ncasize+s1
 										size2=ncasize
 										size_pr=sq_tools.getSize(ncasize)		
 										bigtab="\t"*7
