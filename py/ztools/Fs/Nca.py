@@ -1588,7 +1588,7 @@ class Nca(File):
 							SupLg.append("KOR")	
 							regionstr+='1|'			
 						if i==13:
-							SupLg.append("ZH (ch)")		
+							SupLg.append("TW (ch)")		
 							regionstr+='1|'			
 						if i==14:
 							SupLg.append("CH")	
