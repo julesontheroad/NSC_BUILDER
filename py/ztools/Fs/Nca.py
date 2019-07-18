@@ -18,6 +18,7 @@ from tqdm import tqdm
 import Fs
 from Fs import Type
 from Fs.File import File
+from Fs.File import MemoryFile
 from Fs.Rom import Rom
 from Fs.Pfs0 import Pfs0
 from Fs.BaseFs import BaseFs
@@ -494,7 +495,49 @@ class Nca(File):
 					if (str(g._path)) == 'main.npdm':
 						check = True
 						break
-		return check					
+		return check	
+		
+	def pr_noenc_check_dlc(self, file = None, mode = 'rb'):	
+		crypto1=self.header.getCryptoType()	
+		crypto2=self.header.getCryptoType2()		
+		if crypto1 == 2:
+			if crypto1 > crypto2:								
+				masterKeyRev=crypto1
+			else:			
+				masterKeyRev=crypto2
+		else:			
+			masterKeyRev=crypto2	
+		decKey = Keys.decryptTitleKey(self.header.titleKeyDec, Keys.getMasterKeyIndex(masterKeyRev))
+		for f in self.sectionFilesystems:
+			#print(f.fsType);print(f.cryptoType)
+			if f.fsType == Type.Fs.ROMFS and f.cryptoType == Type.Crypto.CTR:	
+				ncaHeader = NcaHeader()
+				self.header.rewind()
+				ncaHeader = self.header.read(0x400)
+				#Hex.dump(ncaHeader)
+				pfs0=f
+				#Hex.dump(pfs0.read())
+				sectionHeaderBlock = f.buffer
+
+				levelOffset = int.from_bytes(sectionHeaderBlock[0x18:0x20], byteorder='little', signed=False)
+				levelSize = int.from_bytes(sectionHeaderBlock[0x20:0x28], byteorder='little', signed=False)
+
+				pfs0Header = pfs0.read(levelSize)
+				if sectionHeaderBlock[8:12] == b'IVFC':	
+					data = pfs0Header;
+					#Hex.dump(pfs0Header)
+					if hx(sectionHeaderBlock[0xc8:0xc8+0x20]).decode('utf-8') == str(sha256(data).hexdigest()):
+						return True
+					else:
+						return False
+				else:
+					data = pfs0Header;
+					#Hex.dump(pfs0Header)				
+					magic = pfs0Header[0:4]
+					if magic != b'PFS0':
+						return False
+					else:	
+						return True		
 	
 	def get_req_system(self, file = None, mode = 'rb'):	
 		indent = 1
