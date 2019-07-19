@@ -1064,12 +1064,42 @@ class Xci(File):
 							nca3.decrypt_to_plaintext(PN.replace(str(nca._path)[lon:], ext))
 							fp.close();
 						except:	
-							nca.rewind()
-							inmemoryfile = io.BytesIO(nca.read())
-							nca3=NCA3(inmemoryfile,0,str(nca._path))					
-							nca3.decrypt_to_plaintext(PN.replace(str(nca._path)[lon:], ext))	
+							try:						
+								nca.rewind()
+								inmemoryfile = io.BytesIO(nca.read())
+								nca3=NCA3(inmemoryfile,0,str(nca._path))					
+								nca3.decrypt_to_plaintext(PN.replace(str(nca._path)[lon:], ext))
+							except:	continue							
 	
-		
+	def extract_nca(self,ofolder,files_list):
+		for nspF in self.hfs0:
+			if str(nspF._path)=="secure":
+				for nca in nspF:
+					if type(nca) == Nca:
+						ncaname =  str(nca._path)[:-4]+'_nca'
+						ncafolder = os.path.join(ofolder,ncaname)
+						if not os.path.exists(ncafolder):
+							os.makedirs(ncafolder)			
+						for i in range(len(files_list)):	
+							if str(nca._path) == files_list[i][0]:
+								offset=files_list[i][1]
+								break
+						#t = tqdm(total=nca.size, unit='B', unit_scale=True, leave=False)				
+						try:
+							tk=nca.header.titleKeyDec
+							print(hx(tk))
+							fp=open(str(self._path), 'rb')			
+							nca3=NCA3(fp,int(offset),str(nca._path),tk)
+							nca3.extract_conts(ncafolder, disp=True)
+							fp.close()
+						except:	
+							try:								
+								nca.rewind()
+								inmemoryfile = io.BytesIO(nca.read())
+								nca3=NCA3(inmemoryfile,0,str(nca._path))					
+								nca3.extract_conts(ncafolder, disp=True)
+							except:	continue									
+
 #READ CNMT FILE WITHOUT EXTRACTION	
 	def read_cnmt(self):
 		feed=''	
