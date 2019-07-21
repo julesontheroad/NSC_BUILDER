@@ -297,16 +297,8 @@ class NCA3:
 		if disp:
 			print('Decrypted to %s' % out.name)
 			
-	def ret_npdm(self, titlekey=None,verify=False):
-		if verify:
-			self.is_valid = True	
-		self.sections = []
-		for n, section_header in enumerate(self.header.section_headers):
-			self.sections.append(self.SectionInNCA3(self, section_header, verify=verify,ifo=self.ifo,buffer=self.buffer))
-			if verify and not self.sections[n].fs.is_valid:
-				self.is_valid = False
-
-		for sec in self.sections:
+	def ret_npdm(self):
+		for _, sec in enumerate(self.sections):
 			if sec.is_exefs:
 				npdm = NPDM(sec.fs.open('main.npdm'))
 				n=npdm.ret
@@ -314,11 +306,12 @@ class NCA3:
 
 	def print_npdm(self):
 		for _, sec in enumerate(self.sections):
+			#print(_)
+			#print(sec.fs_type)		
 			if sec.is_exefs:
 				npdm = NPDM(sec.fs.open('main.npdm'))
 				n=npdm.__str__()
 				print(n)				
-				
 
 	def decrypt_raw_sections(self, out_dir, disp=True):
 		os.makedirs(out_dir, exist_ok=True)
@@ -345,13 +338,17 @@ class NCA3:
 			print('Decrypted to %s.' % out_dir)
 
 	def extract_conts(self, out_dir, disp=True):
+
 		for n, sec in enumerate(self.sections):
-			dest = os.path.join(out_dir, '%d [%s]' % (n, sec.fs_type.lower()))
-			if not os.path.exists(dest):
-				os.makedirs(dest)
-			if disp:
-				print('Extracting files of %s partition %d to %s...' % (sec.fs_type.lower(), n, dest))
-			sec.extract_cont(dest)
+			try:
+				dest = os.path.join(out_dir, '%d [%s]' % (n, sec.fs_type.lower()))
+				if not os.path.exists(dest):
+					os.makedirs(dest)
+				if disp:
+					print('Extracting files of %s partition %d to %s...' % (sec.fs_type.lower(), n, dest))
+					
+				sec.extract_cont(dest)
+			except:continue	
 		if disp:
 			print('Extracted to %s.' % out_dir)
 
@@ -392,7 +389,7 @@ class NCA3:
 			self.cipher = AES.new(self.key, AES.MODE_CTR, counter=self.ctr)
 
 		def seek(self, off):
-			if self.crypto == 'None':
+			if self.crypto == 'None' or self.crypto == 'BTKR' or self.crypto == 'XTS':
 				super(NCA3.SectionInNCA3, self).seek(self.ifo+off)
 			elif self.crypto == 'CTR':
 				block_offset = off & ~0xF
@@ -401,7 +398,7 @@ class NCA3:
 				self.update_ctr(block_offset)
 
 		def read(self, length=None):
-			if self.crypto == 'None':
+			if self.crypto == 'None' or self.crypto == 'BTKR' or self.crypto == 'XTS':
 				data = super(NCA3.SectionInNCA3, self).read(length)
 				return data
 			elif self.crypto == 'CTR':

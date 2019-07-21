@@ -860,7 +860,7 @@ class Nsp(Pfs0):
 								f.seek(offset)
 								inmemoryfile = io.BytesIO(f.read(files_list[i][3]))
 								nca3=NCA3(inmemoryfile,int(0),str(nca._path),tk,buffer)
-								nca3.decrypt_to_plaintext(PN.replace(str(nca._path)[lon:], ext))								
+								nca3.extract_conts(PN.replace(str(nca._path)[lon:], ext))								
 						except BaseException as e:
 							Print.error('Exception: ' + str(e))																						
 							continue					
