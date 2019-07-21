@@ -286,7 +286,7 @@ class NCA3:
 			out.seek(self.ifo+0x300)
 			out.write(self.key_area)
 			t.update(len(self.key_area))
-		print('-> Parsing nca this may take some time...')			
+		t.write(' > Parsing nca this may take some time...')			
 		for _, sec in enumerate(self.sections):
 			out.seek(self.ifo+sec.offset_in_cont)
 			for buf in sec.decrypt_raw():
@@ -302,7 +302,7 @@ class NCA3:
 			self.is_valid = True	
 		self.sections = []
 		for n, section_header in enumerate(self.header.section_headers):
-			self.sections.append(self.SectionInNCA3(self, section_header, verify=verify,ifo=self.ifo))
+			self.sections.append(self.SectionInNCA3(self, section_header, verify=verify,ifo=self.ifo,buffer=self.buffer))
 			if verify and not self.sections[n].fs.is_valid:
 				self.is_valid = False
 
@@ -356,7 +356,7 @@ class NCA3:
 			print('Extracted to %s.' % out_dir)
 
 	class SectionInNCA3(FileInContainer):
-		def __init__(self, nca3, section_header, verify=False,ifo=0):
+		def __init__(self, nca3, section_header, verify=False,ifo=0,buffer=65536):
 			self.nca = nca3
 			self.section_header = section_header
 
@@ -368,6 +368,7 @@ class NCA3:
 			self.fs_type		= self.section_header.fs_type
 			self.crypto		 = self.section_header.crypto_type
 			self.ifo=ifo
+			self.buffer=buffer
 			
 			if self.crypto in ('BTKR', 'XTS'):
 				raise NotImplementedError('BTKR/XTS not implemented')
