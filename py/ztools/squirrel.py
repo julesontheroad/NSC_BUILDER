@@ -4597,283 +4597,129 @@ if __name__ == '__main__':
 		# NCA_FILE_EXTACTION. EXTRACT FILES PACKED IN NCA FROM NSP\XCI\NCA
 		# ..........................................................................						
 						
-		if args.nca_file_extraction:			
-			for filename in args.nca_file_extraction:			
-				if filename.endswith('.nsp'):
-					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder =os.path.join(dir, 'output')	
-					if not os.path.exists(ofolder):
-						os.makedirs(ofolder)						
+		if args.nca_file_extraction:	
+			if args.buffer:		
+				for var in args.buffer:
 					try:
-						with open(filename, 'r+b') as f:			
-							data=f.read(int(8*1024))						
-						try:
-							head=data[0:4]
-							n_files=(data[4:8])
-							n_files=int.from_bytes(n_files, byteorder='little')		
-							st_size=(data[8:12])
-							st_size=int.from_bytes(st_size, byteorder='little')		
-							junk=(data[12:16])
-							offset=(0x10 + n_files * 0x18)
-							stringTable=(data[offset:offset+st_size])
-							stringEndOffset = st_size
-							headerSize = 0x10 + 0x18 * n_files + st_size
-							#print(head)
-							#print(str(n_files))
-							#print(str(st_size))	
-							#print(str((stringTable)))		
-							files_list=list()
-							for i in range(n_files):
-								i = n_files - i - 1
-								pos=0x10 + i * 0x18
-								offset = data[pos:pos+8]
-								offset=int.from_bytes(offset, byteorder='little')			
-								size = data[pos+8:pos+16]
-								size=int.from_bytes(size, byteorder='little')			
-								nameOffset = data[pos+16:pos+20] # just the offset
-								nameOffset=int.from_bytes(nameOffset, byteorder='little')			
-								name = stringTable[nameOffset:stringEndOffset].decode('utf-8').rstrip(' \t\r\n\0')
-								stringEndOffset = nameOffset
-								junk2 = data[pos+20:pos+24] # junk data
-								#print(name)
-								#print(offset)	
-								#print(size)	
-								off1=offset+headerSize
-								files_list.append([name,off1,size])	
-							files_list.reverse()	
-							#print(files_list)
-						except IOError as e:
-							print(e, file=sys.stderr)		
-						#print(files_list)	
+						buffer = var
 					except BaseException as e:
-						Print.error('Exception: ' + str(e))													
-				if filename.endswith(".nsp"):	
+						Print.error('Exception: ' + str(e))
+			else:
+				buffer = 32768			
+			ofolder=False
+			if args.ofolder:		
+				for input in args.ofolder:
 					try:
-						f = Fs.Nsp(filename, 'rb')
-						f.extract_nca(ofolder,files_list)
-						f.flush()
-						f.close()
-					except BaseException as e:
-						Print.error('Exception: ' + str(e))			
-				if filename.endswith('.xci'):
-					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder =os.path.join(dir, 'output')	
-					if not os.path.exists(ofolder):
-						os.makedirs(ofolder)						
-
-					with open(filename, 'r+b') as f:			
-						rawhead = io.BytesIO(f.read(int(0x200)))							
-					try:			
-						rawhead.seek(0x100)
-						magic=rawhead.read(0x4)
-						if magic==b'HEAD':
-							#print(magic)
-							secureOffset=int.from_bytes(rawhead.read(4), byteorder='little')
-							secureOffset=secureOffset*0x200
-							with open(filename, 'r+b') as f:	
-								f.seek(secureOffset)
-								data=f.read(int(8*1024))
-								rawhead = io.BytesIO(data)
-							rmagic=rawhead.read(0x4)
-							if rmagic==b'HFS0':
-								#print(rmagic)
-								head=data[0:4]
-								n_files=(data[4:8])
-								n_files=int.from_bytes(n_files, byteorder='little')		
-								st_size=(data[8:12])
-								st_size=int.from_bytes(st_size, byteorder='little')		
-								junk=(data[12:16])
-								offset=(0x10 + n_files * 0x40)
-								stringTable=(data[offset:offset+st_size])
-								stringEndOffset = st_size
-								headerSize = 0x10 + 0x40 * n_files + st_size
-								#print(head)
-								#print(str(n_files))
-								#print(str(st_size))	
-								#print(str((stringTable)))
-								files_list=list()
-								for i in range(n_files):
-									i = n_files - i - 1
-									pos=0x10 + i * 0x40
-									offset = data[pos:pos+8]
-									offset=int.from_bytes(offset, byteorder='little')			
-									size = data[pos+8:pos+16]
-									size=int.from_bytes(size, byteorder='little')			
-									nameOffset = data[pos+16:pos+20] # just the offset
-									nameOffset=int.from_bytes(nameOffset, byteorder='little')			
-									name = stringTable[nameOffset:stringEndOffset].decode('utf-8').rstrip(' \t\r\n\0')
-									stringEndOffset = nameOffset
-									junk2 = data[pos+20:pos+24] # junk data
-									#print(name)
-									#print(offset)	
-									#print(size)	
-									off1=offset+headerSize
-									files_list.append([name,off1+secureOffset,size])	
-									# with open(filename, 'r+b') as f:	
-										# f.seek(off1)
-										# print(f.read(0x4))
-								files_list.reverse()	
-								#print(files_list)	
-								if filename.endswith(".xci"):	
-									try:
-										f = Fs.Xci(filename)
-										f.extract_nca(ofolder,files_list)
-										f.flush()
-										f.close()
-									except BaseException as e:
-										Print.error('Exception: ' + str(e))	
+						ofolder = input
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))	
+			if not os.path.exists(ofolder):
+				os.makedirs(ofolder)							
+			if args.text_file:
+				tfile=args.text_file
+				with open(tfile,"r+", encoding='utf8') as filelist: 	
+					filename = filelist.readline()
+					filename=os.path.abspath(filename.rstrip('\n'))	
+					if ofolder != False:
+						dir=ofolder
+					else:
+						dir=os.path.dirname(os.path.abspath(filename))
+					basename=str(os.path.basename(os.path.abspath(filename)))
+					basename=basename[:-4]
+					ofolder =os.path.join(dir, basename)						
+			else:		
+				for filename in args.extract_plain_nca:
+					if ofolder != False:
+						dir=ofolder
+					else:					
+						dir=os.path.dirname(os.path.abspath(filename))
+					basename=str(os.path.basename(os.path.abspath(filename)))	
+					basename=basename[:-4]					
+					ofolder =os.path.join(dir, basename)	
+			if not os.path.exists(ofolder):
+				os.makedirs(ofolder)	
+			if filename.endswith('.nsp'):		
+				try:	
+					files_list=sq_tools.ret_nsp_offsets(filename)	
+					f = Fs.Nsp(filename, 'rb')
+					f.extract_nca(ofolder,files_list,buffer)
+					f.flush()
+					f.close()
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))			
+			if filename.endswith('.xci'):
+				try:
+					files_list=sq_tools.ret_xci_offsets(filename)	
+					f = Fs.Xci(filename)
+					f.extract_nca(ofolder,files_list,buffer)
+					f.flush()
+					f.close()
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))	
 		# ...........................................................................						
 		# NCA_2_PLAINTEXT. EXTRACT OR CONVERT NCA FILES TO PLAINTEXT FROM NSP\XCI\NCA 
 		# ...........................................................................						
 						
-		if args.extract_plain_nca:			
-			for filename in args.extract_plain_nca:			
-				if filename.endswith('.nsp'):
-					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder =os.path.join(dir, 'output')	
-					if not os.path.exists(ofolder):
-						os.makedirs(ofolder)						
+		if args.extract_plain_nca:
+			if args.buffer:		
+				for var in args.buffer:
 					try:
-						with open(filename, 'r+b') as f:			
-							data=f.read(int(8*1024))						
-						try:
-							head=data[0:4]
-							n_files=(data[4:8])
-							n_files=int.from_bytes(n_files, byteorder='little')		
-							st_size=(data[8:12])
-							st_size=int.from_bytes(st_size, byteorder='little')		
-							junk=(data[12:16])
-							offset=(0x10 + n_files * 0x18)
-							stringTable=(data[offset:offset+st_size])
-							stringEndOffset = st_size
-							headerSize = 0x10 + 0x18 * n_files + st_size
-							#print(head)
-							#print(str(n_files))
-							#print(str(st_size))	
-							#print(str((stringTable)))		
-							files_list=list()
-							for i in range(n_files):
-								i = n_files - i - 1
-								pos=0x10 + i * 0x18
-								offset = data[pos:pos+8]
-								offset=int.from_bytes(offset, byteorder='little')			
-								size = data[pos+8:pos+16]
-								size=int.from_bytes(size, byteorder='little')			
-								nameOffset = data[pos+16:pos+20] # just the offset
-								nameOffset=int.from_bytes(nameOffset, byteorder='little')			
-								name = stringTable[nameOffset:stringEndOffset].decode('utf-8').rstrip(' \t\r\n\0')
-								stringEndOffset = nameOffset
-								junk2 = data[pos+20:pos+24] # junk data
-								#print(name)
-								#print(offset)	
-								#print(size)	
-								off1=offset+headerSize
-								files_list.append([name,off1,size])	
-							files_list.reverse()	
-							#print(files_list)
-						except IOError as e:
-							print(e, file=sys.stderr)		
-						#print(files_list)	
+						buffer = var
 					except BaseException as e:
-						Print.error('Exception: ' + str(e))													
-				if filename.endswith(".nsp"):	
+						Print.error('Exception: ' + str(e))
+			else:
+				buffer = 32768			
+			ofolder=False
+			if args.ofolder:		
+				for input in args.ofolder:
 					try:
-						f = Fs.Nsp(filename, 'rb')
-						f.copy_as_plaintext(ofolder,files_list)
-						f.flush()
-						f.close()
+						ofolder = input
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))	
-				if filename.endswith('.xci'):
-					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder =os.path.join(dir, 'output')	
-					if not os.path.exists(ofolder):
-						os.makedirs(ofolder)						
-
-					with open(filename, 'r+b') as f:			
-						rawhead = io.BytesIO(f.read(int(0x200)))							
-					try:			
-						rawhead.seek(0x100)
-						magic=rawhead.read(0x4)
-						if magic==b'HEAD':
-							#print(magic)
-							secureOffset=int.from_bytes(rawhead.read(4), byteorder='little')
-							secureOffset=secureOffset*0x200
-							with open(filename, 'r+b') as f:	
-								f.seek(secureOffset)
-								data=f.read(int(8*1024))
-								rawhead = io.BytesIO(data)
-							rmagic=rawhead.read(0x4)
-							if rmagic==b'HFS0':
-								#print(rmagic)
-								head=data[0:4]
-								n_files=(data[4:8])
-								n_files=int.from_bytes(n_files, byteorder='little')		
-								st_size=(data[8:12])
-								st_size=int.from_bytes(st_size, byteorder='little')		
-								junk=(data[12:16])
-								offset=(0x10 + n_files * 0x40)
-								stringTable=(data[offset:offset+st_size])
-								stringEndOffset = st_size
-								headerSize = 0x10 + 0x40 * n_files + st_size
-								#print(head)
-								#print(str(n_files))
-								#print(str(st_size))	
-								#print(str((stringTable)))
-								files_list=list()
-								for i in range(n_files):
-									i = n_files - i - 1
-									pos=0x10 + i * 0x40
-									offset = data[pos:pos+8]
-									offset=int.from_bytes(offset, byteorder='little')			
-									size = data[pos+8:pos+16]
-									size=int.from_bytes(size, byteorder='little')			
-									nameOffset = data[pos+16:pos+20] # just the offset
-									nameOffset=int.from_bytes(nameOffset, byteorder='little')			
-									name = stringTable[nameOffset:stringEndOffset].decode('utf-8').rstrip(' \t\r\n\0')
-									stringEndOffset = nameOffset
-									junk2 = data[pos+20:pos+24] # junk data
-									#print(name)
-									#print(offset)	
-									#print(size)	
-									off1=offset+headerSize
-									files_list.append([name,off1+secureOffset,size])	
-									# with open(filename, 'r+b') as f:	
-										# f.seek(off1)
-										# print(f.read(0x4))
-								files_list.reverse()	
-								#print(files_list)	
-								if filename.endswith(".xci"):	
-									try:
-										f = Fs.Xci(filename)
-										f.copy_as_plaintext(ofolder,files_list)
-										f.flush()
-										f.close()
-									except:	
-										try:										
-											for i in range(len(files_list)):
-												#print(files_list[i][0])
-												#print(files_list[i][1])
-												#print(files_list[i][2])	
-												off1=files_list[i][1]
-												off2=off1+files_list[i][2]
-												filepath = os.path.join(ofolder, files_list[i][0])	
-														
-												s=0
-												for j in range(len(files_list)):
-													s=s+files_list[j][2]
-												#print(filepath)
-												with open(filename, 'r+b') as f:
-													f.seek(off1)
-													inmemoryfile = io.BytesIO(f.read(off2-off1))
-													nca3=NCA3(inmemoryfile,int(0),filepath)
-													nca3.decrypt_to_plaintext(filepath)	
-										except BaseException as e:
-											Print.error('Exception: ' + str(e))											
-					except BaseException as e:
-						Print.error('Exception: ' + str(e))				
+			if not os.path.exists(ofolder):
+				os.makedirs(ofolder)							
+			if args.text_file:
+				tfile=args.text_file
+				with open(tfile,"r+", encoding='utf8') as filelist: 	
+					filename = filelist.readline()
+					filename=os.path.abspath(filename.rstrip('\n'))	
+					if ofolder != False:
+						dir=ofolder
+					else:
+						dir=os.path.dirname(os.path.abspath(filename))
+					basename=str(os.path.basename(os.path.abspath(filename)))
+					basename=basename[:-4]
+					ofolder =os.path.join(dir, basename)						
+			else:		
+				for filename in args.extract_plain_nca:
+					if ofolder != False:
+						dir=ofolder
+					else:					
+						dir=os.path.dirname(os.path.abspath(filename))
+					basename=str(os.path.basename(os.path.abspath(filename)))	
+					basename=basename[:-4]					
+					ofolder =os.path.join(dir, basename)	
+			if not os.path.exists(ofolder):
+				os.makedirs(ofolder)					
+			if filename.endswith('.nsp'):		
+				try:	
+					files_list=sq_tools.ret_nsp_offsets(filename)				
+					f = Fs.Nsp(filename, 'rb')
+					f.copy_as_plaintext(ofolder,files_list,buffer)
+					f.flush()
+					f.close()
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))	
+			if filename.endswith('.xci'):
+				try:
+					files_list=sq_tools.ret_xci_offsets(filename)	
+					#print(files_list)
+					f = Fs.Xci(filename)
+					f.copy_as_plaintext(ofolder,files_list,buffer)
+					f.flush()
+					f.close()
+				except:	
+					Print.error('Exception: ' + str(e))			
 						
 		# ...........................................................................						
 		# Read npdm from inside nsp or xci
@@ -4883,16 +4729,18 @@ if __name__ == '__main__':
 			for filename in args.Read_npdm:													
 				if filename.endswith(".nsp"):	
 					try:
+						files_list=sq_tools.ret_nsp_offsets(filename)	
 						f = Fs.Nsp(filename, 'rb')
-						f.read_npdm()
+						f.read_npdm(files_list)
 						f.flush()
 						f.close()
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))		
 				if filename.endswith(".xci"):	
 					try:
+						files_list=sq_tools.ret_xci_offsets(filename)	
 						f = Fs.Xci(filename)					
-						f.read_npdm()
+						f.read_npdm(files_list)
 						f.flush()
 						f.close()
 					except BaseException as e:

@@ -928,120 +928,140 @@ class Xci(File):
 								#Hex.dump(offset)				
 		return feed
 		
-		
-	def read_npdm(self):
-		for nspF in self.hfs0:
-			if str(nspF._path)=="secure":
-				for file in nspF:	
-					if type(file) == Nca:
-						crypto1=file.header.getCryptoType()	
-						crypto2=file.header.getCryptoType2()					
-						if crypto1 == 2:
-							if crypto1 > crypto2:								
-								masterKeyRev=file.header.getCryptoType()
-							else:			
-								masterKeyRev=file.header.getCryptoType2()	
-						else:			
-							masterKeyRev=file.header.getCryptoType2()					
-						break	
-						
-		for nspF in self.hfs0:
-			if str(nspF._path)=="secure":
-				for file in nspF:							
-					if type(file) == Ticket:
-						titleKeyDec = Keys.decryptTitleKey(file.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(masterKeyRev))
-						rightsId = file.getRightsId()
-						break
-					elif type(file) == Nca:
-						titleKeyDec = Keys.decryptTitleKey(file.header.titleKeyDec, Keys.getMasterKeyIndex(masterKeyRev))
-						rightsId = file.header.getRightsId()								
-									
-		decKey = titleKeyDec	
-	
+	def read_npdm(self,files_list):
 		for nspF in self.hfs0:
 			if str(nspF._path)=="secure":
 				for nca in nspF:
 					if type(nca) == Fs.Nca and nca.header.getRightsId() == 0:
 						if 	str(nca.header.contentType) == 'Content.PROGRAM':
-							for f in nca:						
-								for g in f:
-									if str(g._path)=='main.npdm':
-										inmemoryfile = io.BytesIO(g.read())
-										npdm = NPDM(inmemoryfile)
-										n=npdm.__str__()
-										print(n)				
-					if type(nca) == Fs.Nca and nca.header.getRightsId() != 0:
-						if 	str(nca.header.contentType) == 'Content.PROGRAM':	
-							nca.rewind()
-							for fs in nca.sectionFilesystems:
-								#print(fs.fsType)
-								#print(fs.cryptoType)						
-								if fs.fsType == Type.Fs.PFS0 and fs.cryptoType == Type.Crypto.CTR:
-									nca.seek(0)
-									ncaHeader = NcaHeader()
-									ncaHeader.open(MemoryFile(nca.read(0x400), Type.Crypto.XTS, uhx(Keys.get('header_key'))))	
-									ncaHeader.seek(0)
-									fs.rewind()
-									pfs0=fs
-									sectionHeaderBlock = fs.buffer
-									nca.seek(fs.offset)	
-									pfs0Offset=fs.offset
-									pfs0Header = nca.read(0x10*14)
-									mem = MemoryFile(pfs0Header, Type.Crypto.CTR, decKey, pfs0.cryptoCounter, offset = pfs0Offset)
-									data = mem.read();
-									#Hex.dump(data)	
-									head=data[0:4]
-									n_files=(data[4:8])
-									n_files=int.from_bytes(n_files, byteorder='little')		
-									st_size=(data[8:12])
-									st_size=int.from_bytes(st_size, byteorder='little')		
-									junk=(data[12:16])
-									offset=(0x10 + n_files * 0x18)
-									stringTable=(data[offset:offset+st_size])
-									stringEndOffset = st_size
-									headerSize = 0x10 + 0x18 * n_files + st_size
-									#print(head)
-									#print(str(n_files))
-									#print(str(st_size))	
-									#print(str((stringTable)))		
-									files_list=list()
-									for i in range(n_files):
-										i = n_files - i - 1
-										pos=0x10 + i * 0x18
-										offset = data[pos:pos+8]
-										offset=int.from_bytes(offset, byteorder='little')			
-										size = data[pos+8:pos+16]
-										size=int.from_bytes(size, byteorder='little')			
-										nameOffset = data[pos+16:pos+20] # just the offset
-										nameOffset=int.from_bytes(nameOffset, byteorder='little')			
-										name = stringTable[nameOffset:stringEndOffset].decode('utf-8').rstrip(' \t\r\n\0')
-										stringEndOffset = nameOffset
-										junk2 = data[pos+20:pos+24] # junk data
-										#print(name)
-										#print(offset)	
-										#print(size)	
-										files_list.append([name,offset,size])	
-									files_list.reverse()	
-									#print(files_list)								
-									for i in range(len(files_list)):
-										if files_list[i][0] == 'main.npdm':
-											off1=files_list[i][1]+pfs0Offset+headerSize
-											nca.seek(off1)
-											np=nca.read(files_list[i][2])
-											mem = MemoryFile(np, Type.Crypto.CTR, decKey, pfs0.cryptoCounter, offset = off1)
-											data = mem.read();
-											#Hex.dump(data)										
-											inmemoryfile = io.BytesIO(data)
+							for i in range(len(files_list)):	
+								if str(nca._path) == files_list[i][0]:
+									offset=files_list[i][1]
+									#print(offset)
+									break					
+							decKey=nca.header.titleKeyDec
+							try:
+								fp=open(str(self._path), 'rb')			
+								nca3=NCA3(fp,int(offset),str(nca._path),decKey)
+								nca3.print_npdm()
+								fp.close();
+							except BaseException as e:
+								#Print.error('Exception: ' + str(e))
+								nca.rewind()					
+								for f in nca:						
+									for g in f:
+										if str(g._path)=='main.npdm':
+											inmemoryfile = io.BytesIO(g.read())
 											npdm = NPDM(inmemoryfile)
 											n=npdm.__str__()
-											print(n)
-											break										
-
-	def copy_as_plaintext(self,ofolder,files_list):
+											print(n)	
+					if type(nca) == Fs.Nca and nca.header.getRightsId() != 0:
+						if 	str(nca.header.contentType) == 'Content.PROGRAM':	
+							correct, tkey = self.verify_nca_key(str(nca._path))		
+							if correct == True:
+								crypto1=nca.header.getCryptoType()
+								crypto2=nca.header.getCryptoType2()	
+								if crypto2>crypto1:
+									masterKeyRev=crypto2
+								if crypto2<=crypto1:	
+									masterKeyRev=crypto1	
+								decKey = Keys.decryptTitleKey(tkey, Keys.getMasterKeyIndex(int(masterKeyRev)))
+							for i in range(len(files_list)):	
+								if str(nca._path) == files_list[i][0]:
+									offset=files_list[i][1]
+									#print(offset)
+									break						
+							try:
+								fp=open(str(self._path), 'rb')			
+								nca3=NCA3(fp,int(offset),str(nca._path),decKey)
+								nca3.print_npdm()
+								fp.close();
+							except BaseException as e:
+								#Print.error('Exception: ' + str(e))
+								nca.rewind()
+								for fs in nca.sectionFilesystems:
+									#print(fs.fsType)
+									#print(fs.cryptoType)						
+									if fs.fsType == Type.Fs.PFS0 and fs.cryptoType == Type.Crypto.CTR:
+										nca.seek(0)
+										ncaHeader = NcaHeader()
+										ncaHeader.open(MemoryFile(nca.read(0x400), Type.Crypto.XTS, uhx(Keys.get('header_key'))))	
+										ncaHeader.seek(0)
+										fs.rewind()
+										pfs0=fs
+										sectionHeaderBlock = fs.buffer
+										nca.seek(fs.offset)	
+										pfs0Offset=fs.offset
+										pfs0Header = nca.read(0x10*14)
+										mem = MemoryFile(pfs0Header, Type.Crypto.CTR, decKey, pfs0.cryptoCounter, offset = pfs0Offset)
+										data = mem.read();
+										#Hex.dump(data)	
+										head=data[0:4]
+										n_files=(data[4:8])
+										n_files=int.from_bytes(n_files, byteorder='little')		
+										st_size=(data[8:12])
+										st_size=int.from_bytes(st_size, byteorder='little')		
+										junk=(data[12:16])
+										offset=(0x10 + n_files * 0x18)
+										stringTable=(data[offset:offset+st_size])
+										stringEndOffset = st_size
+										headerSize = 0x10 + 0x18 * n_files + st_size
+										#print(head)
+										#print(str(n_files))
+										#print(str(st_size))	
+										#print(str((stringTable)))		
+										files_list=list()
+										for i in range(n_files):
+											i = n_files - i - 1
+											pos=0x10 + i * 0x18
+											offset = data[pos:pos+8]
+											offset=int.from_bytes(offset, byteorder='little')			
+											size = data[pos+8:pos+16]
+											size=int.from_bytes(size, byteorder='little')			
+											nameOffset = data[pos+16:pos+20] # just the offset
+											nameOffset=int.from_bytes(nameOffset, byteorder='little')			
+											name = stringTable[nameOffset:stringEndOffset].decode('utf-8').rstrip(' \t\r\n\0')
+											stringEndOffset = nameOffset
+											junk2 = data[pos+20:pos+24] # junk data
+											#print(name)
+											#print(offset)	
+											#print(size)	
+											files_list.append([name,offset,size])	
+										files_list.reverse()	
+										#print(files_list)								
+										for i in range(len(files_list)):
+											if files_list[i][0] == 'main.npdm':
+												off1=files_list[i][1]+pfs0Offset+headerSize
+												nca.seek(off1)
+												np=nca.read(files_list[i][2])
+												mem = MemoryFile(np, Type.Crypto.CTR, decKey, pfs0.cryptoCounter, offset = off1)
+												data = mem.read();
+												#Hex.dump(data)										
+												inmemoryfile = io.BytesIO(data)
+												npdm = NPDM(inmemoryfile)
+												n=npdm.__str__()
+												print(n)
+												break	
+									break		
+									
+	def copy_as_plaintext(self,ofolder,files_list,buffer=32768):
 		for nspF in self.hfs0:
 			if str(nspF._path)=="secure":
 				for nca in nspF:
+					tk=None
 					if type(nca) == Nca:
+						if nca.header.getRightsId() != 0:
+							correct, tkey = self.verify_nca_key(str(nca._path))		
+							if correct == True:
+								crypto1=nca.header.getCryptoType()
+								crypto2=nca.header.getCryptoType2()	
+								if crypto2>crypto1:
+									masterKeyRev=crypto2
+								if crypto2<=crypto1:	
+									masterKeyRev=crypto1	
+								tk = Keys.decryptTitleKey(tkey, Keys.getMasterKeyIndex(int(masterKeyRev)))
+						else:
+							tk=nca.header.titleKeyDec
 						ncaname =  str(nca._path)
 						PN = os.path.join(ofolder,ncaname)
 						if not os.path.exists(ofolder):
@@ -1049,6 +1069,7 @@ class Xci(File):
 						for i in range(len(files_list)):	
 							if str(nca._path) == files_list[i][0]:
 								offset=files_list[i][1]
+								#print(offset)
 								break
 						#print(nca.size)	
 						#print(str(nca._path)[-9:])
@@ -1060,21 +1081,45 @@ class Xci(File):
 						lon=(-1)*len(ext)	
 						try:
 							fp=open(str(self._path), 'rb')			
-							nca3=NCA3(fp,int(offset),str(nca._path))
+							nca3=NCA3(fp,int(offset),str(nca._path),tk)
 							nca3.decrypt_to_plaintext(PN.replace(str(nca._path)[lon:], ext))
 							fp.close();
-						except:	
-							try:						
+						except BaseException as e:
+							#Print.error('Exception: ' + str(e))
+							try:
 								nca.rewind()
 								inmemoryfile = io.BytesIO(nca.read())
-								nca3=NCA3(inmemoryfile,0,str(nca._path))					
+								nca3=NCA3(inmemoryfile,0,str(nca._path),tk,buffer)					
 								nca3.decrypt_to_plaintext(PN.replace(str(nca._path)[lon:], ext))
-							except:	continue							
+							except BaseException as e:
+								#Print.error('Exception: ' + str(e))
+								try:																				
+									with open(str(self._path), 'rb') as f:
+										f.seek(offset)
+										inmemoryfile = io.BytesIO(f.read(files_list[i][3]))
+										nca3=NCA3(inmemoryfile,int(0),str(nca._path),tk,buffer)
+										nca3.decrypt_to_plaintext(PN.replace(str(nca._path)[lon:], ext))								
+								except BaseException as e:
+									Print.error('Exception: ' + str(e))																						
+									continue						
 	
-	def extract_nca(self,ofolder,files_list):
+	def extract_nca(self,ofolder,files_list,buffer=32768):
 		for nspF in self.hfs0:
 			if str(nspF._path)=="secure":
 				for nca in nspF:
+					if type(nca) == Nca:
+						if nca.header.getRightsId() != 0:
+							correct, tkey = self.verify_nca_key(str(nca._path))		
+							if correct == True:
+								crypto1=nca.header.getCryptoType()
+								crypto2=nca.header.getCryptoType2()	
+								if crypto2>crypto1:
+									masterKeyRev=crypto2
+								if crypto2<=crypto1:	
+									masterKeyRev=crypto1	
+								tk = Keys.decryptTitleKey(tkey, Keys.getMasterKeyIndex(int(masterKeyRev)))
+						else:
+							tk=nca.header.titleKeyDec			
 					if type(nca) == Nca:
 						ncaname =  str(nca._path)[:-4]+'_nca'
 						ncafolder = os.path.join(ofolder,ncaname)
@@ -1086,19 +1131,28 @@ class Xci(File):
 								break
 						#t = tqdm(total=nca.size, unit='B', unit_scale=True, leave=False)				
 						try:
-							tk=nca.header.titleKeyDec
-							print(hx(tk))
 							fp=open(str(self._path), 'rb')			
-							nca3=NCA3(fp,int(offset),str(nca._path),tk)
+							nca3=NCA3(fp,int(offset),str(nca._path),tk,buffer)
 							nca3.extract_conts(ncafolder, disp=True)
 							fp.close()
 						except:	
-							try:								
+							#Print.error('Exception: ' + str(e))		
+							try:					
 								nca.rewind()
 								inmemoryfile = io.BytesIO(nca.read())
-								nca3=NCA3(inmemoryfile,0,str(nca._path))					
-								nca3.extract_conts(ncafolder, disp=True)
-							except:	continue									
+								nca3=NCA3(inmemoryfile,0,str(nca._path),tk,buffer)					
+								nca3.extract_conts(ncafolder, disp=True)	
+							except BaseException as e:
+								#Print.error('Exception: ' + str(e))
+								try:																				
+									with open(str(self._path), 'rb') as f:
+										f.seek(offset)
+										inmemoryfile = io.BytesIO(f.read(files_list[i][3]))
+										nca3=NCA3(inmemoryfile,int(0),str(nca._path),tk,buffer)
+										nca3.decrypt_to_plaintext(PN.replace(str(nca._path)[lon:], ext))								
+								except BaseException as e:
+									Print.error('Exception: ' + str(e))																						
+									continue													
 
 #READ CNMT FILE WITHOUT EXTRACTION	
 	def read_cnmt(self):
@@ -6194,7 +6248,7 @@ class Xci(File):
 										if correct == False and f.header.getRightsId() == 0:
 											correct = f.pr_noenc_check()		
 										if correct == False and f.header.getRightsId() != 0:
-											correct = self.verify_nca_key(file)													
+											correct,tk = self.verify_nca_key(file)													
 										if correct == True and f.header.getRightsId() == 0:
 											correct = f.pr_noenc_check()				
 											if correct == False:
@@ -6626,15 +6680,16 @@ class Xci(File):
 								else:
 									return False	
 	def verify_nca_key(self,nca):
-		check=False
+		check=False;titleKey=0
 		for nspF in self.hfs0:
 			if str(nspF._path)=="secure":
 				for file in nspF:	
 					if (file._path).endswith('.tik'):
+						titleKey = file.getTitleKeyBlock().to_bytes(16, byteorder='big')
 						check=self.verify_key(nca,str(file._path))
 						if check==True:
 							break
-		return check					
+		return check,titleKey		
 					
 	def verify_key(self,nca,ticket):
 		for nspF in self.hfs0:

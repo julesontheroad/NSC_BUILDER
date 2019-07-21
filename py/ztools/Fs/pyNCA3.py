@@ -121,19 +121,20 @@ class NCA3:
 		1: keys['key_area_key_ocean_source'],
 		2: keys['key_area_key_system_source']
 	}
-	def __init__(self, fp,ifo=0,name='nca',titlekey=None, verify=False):
+	def __init__(self, fp,ifo=0,name='nca',titlekey=None,buffer=65536,verify=False):
 		# print(str(fp))
 		# print(str(ifo))
 		# print(str(name))
 		self.f = fp
 		self.ifo=int(ifo)
+		self.buffer=buffer
 		if name=='nca':
 			self.name=self.f.name
 		else:
 			self.name=name
-		if (titlekey is not None) and (not check_tkey(titlekey)):
-			raise ValueError('Invalid titlekey: %s must be a 32-digit hexadecimal number')
+
 		self.is_valid = True
+		
 		self._parse(titlekey=titlekey, verify=verify)
 
 	def __str__(self):
@@ -210,7 +211,7 @@ class NCA3:
 
 		if self.header.magic != b'NCA3':
 			raise ValueError('Invalid NCA3 magic')
-
+		
 		if self.header.crypto_type_2 > self.header.crypto_type:
 			self.crypto_type = self.header.crypto_type_2
 		else:
@@ -219,24 +220,17 @@ class NCA3:
 			self.crypto_type -= 1
 		self.mkey = keys['master_key_%02x' % self.crypto_type]
 		
-		if self.header.rights_id != 0x10 * b'\0':
-			self.has_rights_id = True
-			self.rights_id = int.from_bytes(self.header.rights_id, byteorder='big')
-			self.tkek = keys['titlekek_%02x' % self.crypto_type]
-			if titlekey is not None:
-				self.enc_tkey = uhx(titlekey)
+		if titlekey is not None:
+			#print(hx(titlekey))
+			self.body_key = titlekey
+			if self.header.rights_id != 0x10 * b'\0':
+				self.has_rights_id = True
 			else:
-				try:
-					self.enc_tkey = tkeys['%032x' % self.rights_id]
-				except KeyError:
-					self.has_tkey = False
-					return
-			self.has_tkey = True
-			self.body_key = self._decrypt_tkey(self.enc_tkey)
-		elif titlekey is not None:
-			print(hx(titlekey))
-			self.body_key = titlekey		
-		else:
+				self.has_rights_id = False
+				self.kaek = self.kaeks[self.header.kaek_ind]
+				keyblob = self._decrypt_keyarea(self.header.enc_key_area)
+				self.key_area = b''.join(keyblob[0x10 * n : 0x10 * (n + 1)] for n in range(4))			
+		elif self.header.rights_id == 0x10 * b'\0':
 			self.has_rights_id = False
 			self.kaek = self.kaeks[self.header.kaek_ind]
 			keyblob = self._decrypt_keyarea(self.header.enc_key_area)
@@ -244,8 +238,22 @@ class NCA3:
 			self.body_key = self.key_area[0x20:0x30]
 			#print(hx(keyblob))
 			#print(hx(self.key_area))			
-			#print(hx(self.body_key))			
-		
+			#print(hx(self.body_key))	
+		else:			
+			if self.header.rights_id != 0x10 * b'\0':
+				self.has_rights_id = True
+				self.rights_id = int.from_bytes(self.header.rights_id, byteorder='big')
+				self.tkek = keys['titlekek_%02x' % self.crypto_type]
+				if titlekey is not None:
+					self.enc_tkey = uhx(titlekey)
+				else:
+					try:
+						self.enc_tkey = tkeys['%032x' % self.rights_id]
+					except KeyError:
+						self.has_tkey = False
+						return
+				self.has_tkey = True
+				self.body_key = self._decrypt_tkey(self.enc_tkey)		
 		self.sections = []
 		if verify:
 			self.is_valid = True
@@ -278,6 +286,7 @@ class NCA3:
 			out.seek(self.ifo+0x300)
 			out.write(self.key_area)
 			t.update(len(self.key_area))
+		print('-> Parsing nca this may take some time...')			
 		for _, sec in enumerate(self.sections):
 			out.seek(self.ifo+sec.offset_in_cont)
 			for buf in sec.decrypt_raw():
@@ -303,16 +312,8 @@ class NCA3:
 				n=npdm.ret
 				return n
 
-	def print_npdm(self, titlekey=None,verify=False):
-		if verify:
-			self.is_valid = True	
-		self.sections = []
-		for n, section_header in enumerate(self.header.section_headers):
-			self.sections.append(self.SectionInNCA3(self, section_header, verify=verify,ifo=self.ifo))
-			if verify and not self.sections[n].fs.is_valid:
-				self.is_valid = False
-
-		for sec in self.sections:
+	def print_npdm(self):
+		for _, sec in enumerate(self.sections):
 			if sec.is_exefs:
 				npdm = NPDM(sec.fs.open('main.npdm'))
 				n=npdm.__str__()
@@ -417,7 +418,7 @@ class NCA3:
 			self.seek(off+self.ifo)
 			read = 0
 			while True:
-				buf = self.read(4000000)
+				buf = self.read(self.buffer)
 				if not buf:
 					break
 				if size and (read + len(buf) >= size):

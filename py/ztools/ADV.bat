@@ -172,6 +172,8 @@ echo CHOOSE HOW TO PROCESS THE FILES
 echo *******************************************************
 echo Input "1" to extract all files from nsp\xci
 echo Input "2" for raw extraction (Use in case a nca gives magic error)
+echo Input "3" to extract all nca files as plaintext
+echo Input "4" to extract nca contents from nsp\xci
 echo.
 ECHO ******************************************
 echo Or Input "b" to return to the list options
@@ -183,6 +185,8 @@ set vrepack=none
 if /i "%bs%"=="b" goto checkagain
 if /i "%bs%"=="1" goto extract
 if /i "%bs%"=="2" goto raw_extract
+if /i "%bs%"=="3" goto ext_plaintext
+if /i "%bs%"=="4" goto ext_fromnca
 if %vrepack%=="none" goto s_cl_wrongchoice
 
 
@@ -220,6 +224,39 @@ ECHO *********** ALL FILES WERE PROCESSED! *************
 ECHO ---------------------------------------------------
 goto s_exit_choice
 
+:ext_plaintext
+cls
+call :program_logo
+CD /d "%prog_dir%"
+for /f "tokens=*" %%f in (advlist.txt) do (
+
+%pycommand% "%nut%" %buffer% -o "%prog_dir%extract" -tfile "%prog_dir%advlist.txt" -plx ""
+
+more +1 "advlist.txt">"advlist.txt.new"
+move /y "advlist.txt.new" "advlist.txt" >nul
+call :contador_NF
+)
+ECHO ---------------------------------------------------
+ECHO *********** ALL FILES WERE PROCESSED! *************
+ECHO ---------------------------------------------------
+goto s_exit_choice
+
+:ext_fromnca
+cls
+call :program_logo
+CD /d "%prog_dir%"
+for /f "tokens=*" %%f in (advlist.txt) do (
+
+%pycommand% "%nut%" %buffer% -o "%prog_dir%extract" -tfile "%prog_dir%advlist.txt" -nfx ""
+
+more +1 "advlist.txt">"advlist.txt.new"
+move /y "advlist.txt.new" "advlist.txt" >nul
+call :contador_NF
+)
+ECHO ---------------------------------------------------
+ECHO *********** ALL FILES WERE PROCESSED! *************
+ECHO ---------------------------------------------------
+goto s_exit_choice
 
 
 :s_exit_choice
