@@ -196,7 +196,7 @@ call :program_logo
 CD /d "%prog_dir%"
 for /f "tokens=*" %%f in (advlist.txt) do (
 
-%pycommand% "%nut%" %buffer% -o "%prog_dir%extract" -tfile "%prog_dir%advlist.txt" -x ""
+%pycommand% "%nut%" %buffer% -o "%prog_dir%NSCB_extracted" -tfile "%prog_dir%advlist.txt" -x ""
 
 more +1 "advlist.txt">"advlist.txt.new"
 move /y "advlist.txt.new" "advlist.txt" >nul
@@ -213,7 +213,7 @@ call :program_logo
 CD /d "%prog_dir%"
 for /f "tokens=*" %%f in (advlist.txt) do (
 
-%pycommand% "%nut%" %buffer% -o "%prog_dir%extract" -tfile "%prog_dir%advlist.txt" -raw_x ""
+%pycommand% "%nut%" %buffer% -o "%prog_dir%NSCB_extracted" -tfile "%prog_dir%advlist.txt" -raw_x ""
 
 more +1 "advlist.txt">"advlist.txt.new"
 move /y "advlist.txt.new" "advlist.txt" >nul
@@ -230,7 +230,7 @@ call :program_logo
 CD /d "%prog_dir%"
 for /f "tokens=*" %%f in (advlist.txt) do (
 
-%pycommand% "%nut%" %buffer% -o "%prog_dir%extract" -tfile "%prog_dir%advlist.txt" -plx ""
+%pycommand% "%nut%" %buffer% -o "%prog_dir%NSCB_extracted" -tfile "%prog_dir%advlist.txt" -plx ""
 
 more +1 "advlist.txt">"advlist.txt.new"
 move /y "advlist.txt.new" "advlist.txt" >nul
@@ -247,7 +247,7 @@ call :program_logo
 CD /d "%prog_dir%"
 for /f "tokens=*" %%f in (advlist.txt) do (
 
-%pycommand% "%nut%" %buffer% -o "%prog_dir%extract" -tfile "%prog_dir%advlist.txt" -nfx ""
+%pycommand% "%nut%" %buffer% -o "%prog_dir%NSCB_extracted" -tfile "%prog_dir%advlist.txt" -nfx ""
 
 more +1 "advlist.txt">"advlist.txt.new"
 move /y "advlist.txt.new" "advlist.txt" >nul

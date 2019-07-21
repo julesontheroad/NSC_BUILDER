@@ -4445,21 +4445,27 @@ if __name__ == '__main__':
 						off2=files_list[i][2]						
 						filepath = os.path.join(ofolder, files_list[i][0])	
 						fp = open(filepath, 'w+b')		
-						s=0
-						for j in range(len(files_list)):
-							s=s+files_list[j][3]
+						s=files_list[i][3]
+						if buffer>s:
+							buf=s
+						else:
+							buf=buffer
 						#print(filepath)
 						t = tqdm(total=s, unit='B', unit_scale=True, leave=False)
 						with open(filename, 'r+b') as f:												
 							f.seek(off1)
 							c=0
 							t.write(tabs+'Copying: ' + str(files_list[i][0]))
-							for data in iter(lambda: f.read(int(buffer)), ""):
+							for data in iter(lambda: f.read(int(buf)), ""):
 								fp.write(data)	
 								fp.flush()
 								c=len(data)+c
 								t.update(len(data))
 								if c+len(data)>off2:
+									if (off2-c)<0:
+										t.close()
+										fp.close()									
+										break								
 									data=f.read(off2-c)
 									t.update(len(data))
 									t.close()
@@ -4483,21 +4489,27 @@ if __name__ == '__main__':
 						off2=files_list[i][2]
 						filepath = os.path.join(ofolder, files_list[i][0])	
 						fp = open(filepath, 'w+b')		
-						s=0
-						for j in range(len(files_list)):
-							s=s+files_list[j][2]
+						s=files_list[i][3]
+						if buffer>s:
+							buf=s
+						else:
+							buf=buffer
 						#print(filepath)
 						t = tqdm(total=s, unit='B', unit_scale=True, leave=False)
 						with open(filename, 'r+b') as f:												
 							f.seek(off1)
 							c=0
 							t.write(tabs+'Copying: ' + str(files_list[i][0]))
-							for data in iter(lambda: f.read(int(buffer)), ""):
+							for data in iter(lambda: f.read(int(buf)), ""):
 								fp.write(data)	
 								fp.flush()
 								c=len(data)+c
 								t.update(len(data))
 								if c+len(data)>off2:
+									if (off2-c)<0:
+										t.close()
+										fp.close()									
+										break								
 									data=f.read(off2-c)
 									t.update(len(data))
 									t.close()
