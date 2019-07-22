@@ -1255,8 +1255,7 @@ class Xci(File):
 													os.remove(str(PN)) 	
 												except:
 													pass																	
-												continue												
-												
+												continue														
 								else:
 									t = tqdm(total=nca.size, unit='B', unit_scale=True, leave=False)
 									t.write(str(nca._path)+' needs to be pre-extracted')									

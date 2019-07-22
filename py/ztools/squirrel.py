@@ -4650,7 +4650,7 @@ if __name__ == '__main__':
 					f.copy_as_plaintext(ofolder,files_list,buffer)
 					f.flush()
 					f.close()
-				except:	
+				except BaseException as e:	
 					Print.error('Exception: ' + str(e))			
 						
 		# ...........................................................................						
