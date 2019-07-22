@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 '''
    _____             _                __
   / ___/____ ___  __(_)____________  / /
@@ -23,7 +25,6 @@ Squirrel original's purpose is to support NSC_Builder though it serves as a
 standalone program with many functions, some of them not being used currently in NSC_Builder.						
 '''		
 
-# -*- coding: utf-8 -*-
 import argparse
 import sys
 import os
@@ -4461,12 +4462,13 @@ if __name__ == '__main__':
 								fp.flush()
 								c=len(data)+c
 								t.update(len(data))
-								if c+len(data)>off2:
-									if (off2-c)<0:
+								if c+int(buf)>s:
+									if (s-c)<0:
 										t.close()
 										fp.close()									
 										break								
-									data=f.read(off2-c)
+									data=f.read(s-c)
+									fp.write(data)	
 									t.update(len(data))
 									t.close()
 									fp.close()
@@ -4505,12 +4507,13 @@ if __name__ == '__main__':
 								fp.flush()
 								c=len(data)+c
 								t.update(len(data))
-								if c+len(data)>off2:
-									if (off2-c)<0:
+								if c+int(buf)>s:
+									if (s-c)<0:
 										t.close()
 										fp.close()									
 										break								
-									data=f.read(off2-c)
+									data=f.read(s-c)
+									fp.write(data)	
 									t.update(len(data))
 									t.close()
 									fp.close()
