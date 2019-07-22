@@ -1048,8 +1048,12 @@ class Xci(File):
 		for nspF in self.hfs0:
 			if str(nspF._path)=="secure":
 				for nca in nspF:
-					tk=None
+					tk=None;skip=False
 					if type(nca) == Nca:
+						for fs in nca.sectionFilesystems:
+							if fs.cryptoType == Type.Crypto.BKTR:
+								skip=True
+								break					
 						if nca.header.getRightsId() != 0:
 							correct, tkey = self.verify_nca_key(str(nca._path))		
 							if correct == True:
@@ -1062,52 +1066,119 @@ class Xci(File):
 								tk = Keys.decryptTitleKey(tkey, Keys.getMasterKeyIndex(int(masterKeyRev)))
 						else:
 							tk=nca.header.titleKeyDec
-						ncaname =  str(nca._path)
-						PN = os.path.join(ofolder,ncaname)
-						if not os.path.exists(ofolder):
-							os.makedirs(ofolder)
-						for i in range(len(files_list)):	
-							if str(nca._path) == files_list[i][0]:
-								offset=files_list[i][1]
-								#print(offset)
-								break
-						#print(nca.size)	
-						#print(str(nca._path)[-9:])
-						lon=0;test=str(nca._path)[-9:]
-						if test=='.cnmt.nca':
-							ext='.plain.cnmt.nca'
-						else:
-							ext='.plain.nca'
-						lon=(-1)*len(ext)	
-						try:
-							fp=open(str(self._path), 'rb')			
-							nca3=NCA3(fp,int(offset),str(nca._path),tk)
-							nca3.decrypt_to_plaintext(PN.replace(str(nca._path)[lon:], ext))
-							fp.close();
-						except BaseException as e:
-							#Print.error('Exception: ' + str(e))
+						if skip == False:							
+							ncaname =  str(nca._path)
+							PN = os.path.join(ofolder,ncaname)
+							if not os.path.exists(ofolder):
+								os.makedirs(ofolder)
+							for i in range(len(files_list)):	
+								if str(nca._path) == files_list[i][0]:
+									offset=files_list[i][1]
+									#print(offset)
+									break
+							#print(nca.size)	
+							#print(str(nca._path)[-9:])
+							lon=0;test=str(nca._path)[-9:]
+							if test=='.cnmt.nca':
+								ext='.plain.cnmt.nca'
+							else:
+								ext='.plain.nca'
+							lon=(-1)*len(ext)	
 							try:
-								nca.rewind()
-								inmemoryfile = io.BytesIO(nca.read())
-								nca3=NCA3(inmemoryfile,0,str(nca._path),tk,buffer)					
+								fp=open(str(self._path), 'rb')			
+								nca3=NCA3(fp,int(offset),str(nca._path),tk)
 								nca3.decrypt_to_plaintext(PN.replace(str(nca._path)[lon:], ext))
+								fp.close();
 							except BaseException as e:
 								#Print.error('Exception: ' + str(e))
-								try:																				
-									with open(str(self._path), 'rb') as f:
-										f.seek(offset)
-										inmemoryfile = io.BytesIO(f.read(files_list[i][3]))
-										nca3=NCA3(inmemoryfile,int(0),str(nca._path),tk,buffer)
-										nca3.decrypt_to_plaintext(PN.replace(str(nca._path)[lon:], ext))								
-								except BaseException as e:
-									Print.error('Exception: ' + str(e))																						
-									continue						
-	
+								if nca.size<int(1073725440):							
+									try:
+										nca.rewind()
+										inmemoryfile = io.BytesIO(nca.read())
+										nca3=NCA3(inmemoryfile,0,str(nca._path),tk,buffer)					
+										nca3.decrypt_to_plaintext(PN.replace(str(nca._path)[lon:], ext))
+									except BaseException as e:
+										#Print.error('Exception: ' + str(e))
+										try:																				
+											with open(str(self._path), 'rb') as f:
+												f.seek(offset)
+												inmemoryfile = io.BytesIO(f.read(files_list[i][3]))
+												nca3=NCA3(inmemoryfile,int(0),str(nca._path),tk,buffer)
+												nca3.decrypt_to_plaintext(PN.replace(str(nca._path)[lon:], ext))								
+										except BaseException as e:
+											#Print.error('Exception: ' + str(e))	
+											t = tqdm(total=nca.size, unit='B', unit_scale=True, leave=False)
+											t.write(str(nca._path)+' needs to be pre-extracted')
+											outnca=open(str(PN), 'w+b')	
+											nca.rewind()											
+											try:											
+												for data in iter(lambda: nca.read(int(buffer)), ""):							
+													outnca.write(data)				
+													t.update(len(data))								
+													outnca.flush()						
+													if not data:
+														outnca.close()
+														t.close()
+														break																			
+												with open(str(PN), 'rb') as f:
+													nca3=NCA3(f,int(0),str(nca._path),tk,buffer)
+													nca3.decrypt_to_plaintext(PN.replace(str(nca._path)[lon:], ext))								
+												try:
+													os.remove(str(PN)) 	
+												except:
+													pass									
+											except BaseException as e:
+												Print.error('Exception: ' + str(e))	
+												outnca.close()
+												t.close()												
+												try:
+													os.remove(str(PN)) 	
+												except:
+													pass
+												continue											
+								else:
+									t = tqdm(total=nca.size, unit='B', unit_scale=True, leave=False)	
+									t.write(str(nca._path)+' needs to be pre-extracted')
+									outnca=open(str(PN), 'w+b')	
+									nca.rewind()
+									for data in iter(lambda: nca.read(int(buffer)), ""):	
+										try:									
+											nca.rewind()
+											for data in iter(lambda: nca.read(int(buffer)), ""):							
+												outnca.write(data)				
+												t.update(len(data))							
+												outnca.flush()						
+												if not data:
+													outnca.close()
+													t.close()
+													break											
+											with open(str(PN), 'rb') as f:
+												nca3=NCA3(f,int(0),str(nca._path),tk,buffer)
+												nca3.decrypt_to_plaintext(PN.replace(str(nca._path)[lon:], ext))								
+											try:
+												os.remove(str(PN)) 	
+											except:
+												pass									
+										except BaseException as e:
+											Print.error('Exception: ' + str(e))
+											outnca.close()
+											t.close()
+											try:
+												os.remove(str(PN)) 	
+											except:
+												pass																	
+											continue											
+		
 	def extract_nca(self,ofolder,files_list,buffer=32768):
 		for nspF in self.hfs0:
 			if str(nspF._path)=="secure":
 				for nca in nspF:
+					tk=None;skip=False						
 					if type(nca) == Nca:
+						for fs in nca.sectionFilesystems:
+							if fs.cryptoType == Type.Crypto.BKTR:
+								skip=True
+								break						
 						if nca.header.getRightsId() != 0:
 							correct, tkey = self.verify_nca_key(str(nca._path))		
 							if correct == True:
@@ -1119,40 +1190,103 @@ class Xci(File):
 									masterKeyRev=crypto1	
 								tk = Keys.decryptTitleKey(tkey, Keys.getMasterKeyIndex(int(masterKeyRev)))
 						else:
-							tk=nca.header.titleKeyDec			
-					if type(nca) == Nca:
-						ncaname =  str(nca._path)[:-4]+'_nca'
-						ncafolder = os.path.join(ofolder,ncaname)
-						if not os.path.exists(ncafolder):
-							os.makedirs(ncafolder)			
-						for i in range(len(files_list)):	
-							if str(nca._path) == files_list[i][0]:
-								offset=files_list[i][1]
-								break
-						#t = tqdm(total=nca.size, unit='B', unit_scale=True, leave=False)				
-						try:
-							fp=open(str(self._path), 'rb')			
-							nca3=NCA3(fp,int(offset),str(nca._path),tk,buffer)
-							nca3.extract_conts(ncafolder, disp=True)
-							fp.close()
-						except:	
-							#Print.error('Exception: ' + str(e))		
-							try:					
-								nca.rewind()
-								inmemoryfile = io.BytesIO(nca.read())
-								nca3=NCA3(inmemoryfile,0,str(nca._path),tk,buffer)					
-								nca3.extract_conts(ncafolder, disp=True)	
-							except BaseException as e:
+							tk=nca.header.titleKeyDec	
+					if skip == False:							
+						if type(nca) == Nca:
+							ncaname =  str(nca._path)[:-4]+'_nca'
+							ncafolder = os.path.join(ofolder,ncaname)
+							ncaname2 =  str(nca._path)
+							PN = os.path.join(ofolder,ncaname2)							
+							if not os.path.exists(ncafolder):
+								os.makedirs(ncafolder)			
+							for i in range(len(files_list)):	
+								if str(nca._path) == files_list[i][0]:
+									offset=files_list[i][1]
+									break
+							#t = tqdm(total=nca.size, unit='B', unit_scale=True, leave=False)				
+							try:
+								fp=open(str(self._path), 'rb')			
+								nca3=NCA3(fp,int(offset),str(nca._path),tk,buffer)
+								nca3.extract_conts(ncafolder, disp=True)
+								fp.close()
+							except:	
 								#Print.error('Exception: ' + str(e))
-								try:																				
-									with open(str(self._path), 'rb') as f:
-										f.seek(offset)
-										inmemoryfile = io.BytesIO(f.read(files_list[i][3]))
-										nca3=NCA3(inmemoryfile,int(0),str(nca._path),tk,buffer)
-										nca3.extract_conts(PN.replace(str(nca._path)[lon:], ext))								
-								except BaseException as e:
-									Print.error('Exception: ' + str(e))																						
-									continue													
+								if nca.size<int(1073725440):								
+									try:					
+										nca.rewind()
+										inmemoryfile = io.BytesIO(nca.read())
+										nca3=NCA3(inmemoryfile,0,str(nca._path),tk,buffer)					
+										nca3.extract_conts(ncafolder, disp=True)	
+									except BaseException as e:
+										#Print.error('Exception: ' + str(e))
+										try:																				
+											with open(str(self._path), 'rb') as f:
+												f.seek(offset)
+												inmemoryfile = io.BytesIO(f.read(files_list[i][3]))
+												nca3=NCA3(inmemoryfile,int(0),str(nca._path),tk,buffer)
+												nca3.extract_conts(ncafolder, disp=True)											
+										except BaseException as e:
+											#Print.error('Exception: ' + str(e))	
+											t = tqdm(total=nca.size, unit='B', unit_scale=True, leave=False)	
+											t.write(str(nca._path)+' needs to be pre-extracted')							
+											outnca=open(str(PN), 'w+b')	
+											nca.rewind()
+											try:
+												for data in iter(lambda: nca.read(int(buffer)), ""):							
+													outnca.write(data)				
+													t.update(len(data))							
+													outnca.flush()						
+													if not data:
+														outnca.close()
+														t.close()
+														break																					
+												with open(str(PN), 'rb') as f:
+													nca3=NCA3(f,int(0),str(nca._path),tk,buffer)
+													nca3.extract_conts(ncafolder, disp=True)										
+												try:
+													os.remove(str(PN)) 	
+												except:
+													pass									
+											except BaseException as e:
+												Print.error('Exception: ' + str(e))	
+												outnca.close()
+												t.close()												
+												try:
+													os.remove(str(PN)) 	
+												except:
+													pass																	
+												continue												
+												
+								else:
+									t = tqdm(total=nca.size, unit='B', unit_scale=True, leave=False)
+									t.write(str(nca._path)+' needs to be pre-extracted')									
+									outnca=open(str(PN), 'w+b')	
+									nca.rewind()
+									try:
+										for data in iter(lambda: nca.read(int(buffer)), ""):							
+											outnca.write(data)				
+											t.update(len(data))								
+											outnca.flush()						
+											if not data:
+												outnca.close()
+												t.close()	
+												break																			
+										with open(str(PN), 'rb') as f:
+											nca3=NCA3(f,int(0),str(nca._path),tk,buffer)
+											nca3.extract_conts(ncafolder, disp=True)										
+										try:
+											os.remove(str(PN)) 	
+										except:
+											pass									
+									except BaseException as e:
+										Print.error('Exception: ' + str(e))		
+										outnca.close()
+										t.close()												
+										try:
+											os.remove(str(PN)) 	
+										except:
+											pass																	
+										continue											
 
 #READ CNMT FILE WITHOUT EXTRACTION	
 	def read_cnmt(self):
