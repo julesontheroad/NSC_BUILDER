@@ -114,7 +114,7 @@ set "skipRSVprompt=false"
 :: Choose to pack xci or for exfat cards or fat32 cards
 ::fatype can be fat32 or exfat
 ::fexport pack split nsp as files (sxos rommenu) or as folder (other installers)
-set "fatype=-fat fat32"
+set "fatype=-fat exfat"
 set "fexport=-fx files"
 
 ::--------------------------------------------------------------
