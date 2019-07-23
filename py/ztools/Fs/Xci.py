@@ -3701,7 +3701,9 @@ class Xci(File):
 								if fat=="fat32" and (c+len(newheader))>block:
 									n2=block-c
 									c=0
-									dat2=newheader[0x00:0x00+int(n2)]
+									inmemoryfile = io.BytesIO(newheader)
+									inmemoryfile.seek(0)
+									dat2=inmemoryfile.read(n2)
 									outf.write(dat2)
 									outf.flush()
 									outf.close()	
@@ -3710,7 +3712,9 @@ class Xci(File):
 									outfile=outfile[0:-1]
 									outfile=outfile+str(index)
 									outf = open(outfile, 'wb')	
-									dat2=newheader[0x00+int(n2)+1:]
+									inmemoryfile.seek(n2)
+									dat2=inmemoryfile.read(len(newheader)-n2)
+									inmemoryfile.close()
 									outf.write(dat2)						
 									t.update(len(dat2))									
 									outf.flush()	
@@ -3721,14 +3725,14 @@ class Xci(File):
 								nca.seek(0xC00)									
 								i+=1							
 							else:
-								outf.write(data)				
-								t.update(len(data))
-								c=c+len(data)									
-								outf.flush()
 								if fat=="fat32" and (c+len(data))>block:
 									n2=block-c
 									c=0
-									dat2=nca.read(int(n2))
+									inmemoryfile = io.BytesIO()
+									inmemoryfile.write(data)
+									inmemoryfile.read(n2)
+									inmemoryfile.seek(0)
+									dat2=inmemoryfile.read(n2)
 									outf.write(dat2)
 									outf.flush()
 									outf.close()	
@@ -3736,7 +3740,18 @@ class Xci(File):
 									index=index+1
 									outfile=outfile[0:-1]
 									outfile=outfile+str(index)
-									outf = open(outfile, 'wb')							
+									outf = open(outfile, 'wb')					
+									inmemoryfile.seek(n2)
+									dat2=inmemoryfile.read(len(data)-n2)
+									inmemoryfile.close()
+									outf.write(dat2)						
+									t.update(len(dat2))									
+									outf.flush()	
+								else:
+									outf.write(data)				
+									t.update(len(data))
+									c=c+len(data)									
+									outf.flush()						
 								if not data:
 									nca.close()
 									break
@@ -3749,14 +3764,14 @@ class Xci(File):
 						size=os.path.getsize(filepath)
 						t.write(tabs+'- Appending: ' + str(nca._path))						
 						for data in iter(lambda: target.read(int(size)), ""):				
-							outf.write(data)
-							t.update(len(data))
-							c=c+len(data)
-							outf.flush()
 							if fat=="fat32" and (c+len(data))>block:
 								n2=block-c
 								c=0
-								dat2=nca.read(int(n2))
+								inmemoryfile = io.BytesIO()
+								inmemoryfile.write(data)
+								inmemoryfile.read(n2)
+								inmemoryfile.seek(0)
+								dat2=inmemoryfile.read(n2)
 								outf.write(dat2)
 								outf.flush()
 								outf.close()	
@@ -3764,12 +3779,18 @@ class Xci(File):
 								index=index+1
 								outfile=outfile[0:-1]
 								outfile=outfile+str(index)
-								outf = open(outfile, 'wb')
-								if totSize>(4294934528+int(buffer)):
-									dat2=nca.read(int(buffer))
-									outf.write(dat2)						
-									t.update(len(dat2))									
-									outf.flush()	
+								outf = open(outfile, 'wb')					
+								inmemoryfile.seek(n2)
+								dat2=inmemoryfile.read(len(data)-n2)
+								inmemoryfile.close()
+								outf.write(dat2)						
+								t.update(len(dat2))									
+								outf.flush()	
+							else:
+								outf.write(data)				
+								t.update(len(data))
+								c=c+len(data)									
+								outf.flush()							
 							if not data:
 								target.close()
 								break	
@@ -3784,14 +3805,14 @@ class Xci(File):
 							t.write(tabs+'- Appending: ' + xmlname)
 							xmlf.seek(0x00)
 							for data in iter(lambda: xmlf.read(int(buffer)), ""):				
-								outf.write(data)
-								t.update(len(data))
-								c=c+len(data)
-								outf.flush()
 								if fat=="fat32" and (c+len(data))>block:
 									n2=block-c
 									c=0
-									dat2=nca.read(int(n2))
+									inmemoryfile = io.BytesIO()
+									inmemoryfile.write(data)
+									inmemoryfile.read(n2)
+									inmemoryfile.seek(0)
+									dat2=inmemoryfile.read(n2)
 									outf.write(dat2)
 									outf.flush()
 									outf.close()	
@@ -3799,12 +3820,18 @@ class Xci(File):
 									index=index+1
 									outfile=outfile[0:-1]
 									outfile=outfile+str(index)
-									outf = open(outfile, 'wb')
-									if totSize>(4294934528+int(buffer)):
-										dat2=nca.read(int(buffer))
-										outf.write(dat2)						
-										t.update(len(dat2))									
-										outf.flush()	
+									outf = open(outfile, 'wb')					
+									inmemoryfile.seek(n2)
+									dat2=inmemoryfile.read(len(data)-n2)
+									inmemoryfile.close()
+									outf.write(dat2)						
+									t.update(len(dat2))									
+									outf.flush()	
+								else:
+									outf.write(data)				
+									t.update(len(data))
+									c=c+len(data)									
+									outf.flush()
 								if not data:
 									xmlf.close()
 									break	
@@ -4004,7 +4031,9 @@ class Xci(File):
 								if fat=="fat32" and (c+len(newheader))>block:
 									n2=block-c
 									c=0
-									dat2=newheader[0x00:0x00+int(n2)]
+									inmemoryfile = io.BytesIO(newheader)
+									inmemoryfile.seek(0)
+									dat2=inmemoryfile.read(n2)
 									outf.write(dat2)
 									outf.flush()
 									outf.close()	
@@ -4013,25 +4042,27 @@ class Xci(File):
 									outfile=outfile[0:-1]
 									outfile=outfile+str(index)
 									outf = open(outfile, 'wb')	
-									dat2=newheader[0x00+int(n2)+1:]
+									inmemoryfile.seek(n2)
+									dat2=inmemoryfile.read(len(newheader)-n2)
+									inmemoryfile.close()
 									outf.write(dat2)						
 									t.update(len(dat2))									
 									outf.flush()	
 								else:
 									outf.write(newheader)
 									t.update(len(newheader))	
-									c=c+len(newheader)								
+									c=c+len(newheader)							
 								nca.seek(0xC00)									
 								i+=1		
 							else:			
-								outf.write(data)
-								t.update(len(data))
-								c=c+len(data)
-								outf.flush()
 								if fat=="fat32" and (c+len(data))>block:
 									n2=block-c
 									c=0
-									dat2=nca.read(int(n2))
+									inmemoryfile = io.BytesIO()
+									inmemoryfile.write(data)
+									inmemoryfile.read(n2)
+									inmemoryfile.seek(0)
+									dat2=inmemoryfile.read(n2)
 									outf.write(dat2)
 									outf.flush()
 									outf.close()	
@@ -4039,12 +4070,18 @@ class Xci(File):
 									index=index+1
 									outfile=outfile[0:-1]
 									outfile=outfile+str(index)
-									outf = open(outfile, 'wb')
-									if totSize>(4294934528+int(buffer)):
-										dat2=nca.read(int(buffer))
-										outf.write(dat2)						
-										t.update(len(dat2))									
-										outf.flush()	
+									outf = open(outfile, 'wb')					
+									inmemoryfile.seek(n2)
+									dat2=inmemoryfile.read(len(data)-n2)
+									inmemoryfile.close()
+									outf.write(dat2)						
+									t.update(len(dat2))									
+									outf.flush()	
+								else:
+									outf.write(data)				
+									t.update(len(data))
+									c=c+len(data)									
+									outf.flush()
 								if not data:
 									break
 					if type(nca) == Nca and str(nca.header.contentType) == 'Content.META':	
@@ -4114,14 +4151,14 @@ class Xci(File):
 						size=os.path.getsize(filepath)
 						t.write(tabs+'- Appending: ' + str(nca._path))						
 						for data in iter(lambda: target.read(int(size)), ""):				
-							outf.write(data)
-							t.update(len(data))
-							c=c+len(data)
-							outf.flush()
 							if fat=="fat32" and (c+len(data))>block:
 								n2=block-c
 								c=0
-								dat2=nca.read(int(n2))
+								inmemoryfile = io.BytesIO()
+								inmemoryfile.write(data)
+								inmemoryfile.read(n2)
+								inmemoryfile.seek(0)
+								dat2=inmemoryfile.read(n2)
 								outf.write(dat2)
 								outf.flush()
 								outf.close()	
@@ -4129,12 +4166,18 @@ class Xci(File):
 								index=index+1
 								outfile=outfile[0:-1]
 								outfile=outfile+str(index)
-								outf = open(outfile, 'wb')
-								if totSize>(4294934528+int(buffer)):
-									dat2=nca.read(int(buffer))
-									outf.write(dat2)						
-									t.update(len(dat2))									
-									outf.flush()	
+								outf = open(outfile, 'wb')					
+								inmemoryfile.seek(n2)
+								dat2=inmemoryfile.read(len(data)-n2)
+								inmemoryfile.close()
+								outf.write(dat2)						
+								t.update(len(dat2))									
+								outf.flush()	
+							else:
+								outf.write(data)				
+								t.update(len(data))
+								c=c+len(data)									
+								outf.flush()
 							if not data:
 								break	
 						target.close()		
@@ -4702,7 +4745,11 @@ class Xci(File):
 								if fat=="fat32" and (c+len(newheader))>block:
 									n2=block-c
 									c=0
-									dat2=newheader[0x00:0x00+int(n2)]
+									inmemoryfile = io.BytesIO()
+									inmemoryfile.write(newheader)
+									inmemoryfile.read(n2)
+									inmemoryfile.seek(0)
+									dat2=inmemoryfile.read(n2)	
 									outf.write(dat2)
 									outf.flush()
 									outf.close()	
@@ -4711,7 +4758,9 @@ class Xci(File):
 									outfile=outfile[0:-1]
 									outfile=outfile+str(index)
 									outf = open(outfile, 'wb')	
-									dat2=newheader[0x00+int(n2)+1:]
+									inmemoryfile.seek(n2)
+									dat2=inmemoryfile.read(len(newheader)-n2)
+									inmemoryfile.close()
 									outf.write(dat2)						
 									t.update(len(dat2))									
 									outf.flush()	
@@ -4729,7 +4778,11 @@ class Xci(File):
 								if fat=="fat32" and (c+len(data))>block:
 									n2=block-c
 									c=0
-									dat2=file.read(int(n2))
+									inmemoryfile = io.BytesIO()
+									inmemoryfile.write(data)
+									inmemoryfile.read(n2)
+									inmemoryfile.seek(0)
+									dat2=inmemoryfile.read(n2)	
 									outf.write(dat2)
 									outf.flush()
 									outf.close()	
@@ -4737,7 +4790,13 @@ class Xci(File):
 									index=index+1
 									outfile=outfile[0:-1]
 									outfile=outfile+str(index)
-									outf = open(outfile, 'wb')							
+									outf = open(outfile, 'wb')
+									inmemoryfile.seek(n2)
+									dat2=inmemoryfile.read(len(data)-n2)
+									inmemoryfile.close()
+									outf.write(dat2)						
+									t.update(len(dat2))									
+									outf.flush()										
 								if not data:
 									break					
 					if type(file) != Nca and file._path in contentlist:
@@ -4751,7 +4810,11 @@ class Xci(File):
 							if fat=="fat32" and (c+len(data))>block:
 								n2=block-c
 								c=0
-								dat2=file.read(int(n2))
+								inmemoryfile = io.BytesIO()
+								inmemoryfile.write(data)
+								inmemoryfile.read(n2)
+								inmemoryfile.seek(0)
+								dat2=inmemoryfile.read(n2)	
 								outf.write(dat2)
 								outf.flush()
 								outf.close()	
@@ -4760,11 +4823,12 @@ class Xci(File):
 								outfile=outfile[0:-1]
 								outfile=outfile+str(index)
 								outf = open(outfile, 'wb')
-								if totSize>(4294934528+int(buffer)):
-									dat2=file.read(int(buffer))
-									outf.write(dat2)						
-									t.update(len(dat2))									
-									outf.flush()	
+								inmemoryfile.seek(n2)
+								dat2=inmemoryfile.read(len(data)-n2)
+								inmemoryfile.close()
+								outf.write(dat2)						
+								t.update(len(dat2))									
+								outf.flush()	
 							if not data:
 								break							
 		t.close()		
@@ -4977,7 +5041,11 @@ class Xci(File):
 								if fat=="fat32" and (c+len(newheader))>block:
 									n2=block-c
 									c=0
-									dat2=newheader[0x00:0x00+int(n2)]
+									inmemoryfile = io.BytesIO()
+									inmemoryfile.write(newheader)
+									inmemoryfile.read(n2)
+									inmemoryfile.seek(0)
+									dat2=inmemoryfile.read(n2)			
 									outf.write(dat2)
 									outf.flush()
 									outf.close()	
@@ -4986,7 +5054,9 @@ class Xci(File):
 									outfile=outfile[0:-1]
 									outfile=outfile+str(index)
 									outf = open(outfile, 'wb')	
-									dat2=newheader[0x00+int(n2)+1:]
+									inmemoryfile.seek(n2)
+									dat2=inmemoryfile.read(len(newheader)-n2)
+									inmemoryfile.close()
 									outf.write(dat2)						
 									t.update(len(dat2))									
 									outf.flush()	
@@ -5004,7 +5074,11 @@ class Xci(File):
 								if fat=="fat32" and (c+len(data))>block:
 									n2=block-c
 									c=0
-									dat2=nca.read(int(n2))
+									inmemoryfile = io.BytesIO()
+									inmemoryfile.write(data)
+									inmemoryfile.read(n2)
+									inmemoryfile.seek(0)
+									dat2=inmemoryfile.read(n2)		
 									outf.write(dat2)
 									outf.flush()
 									outf.close()	
@@ -5013,11 +5087,12 @@ class Xci(File):
 									outfile=outfile[0:-1]
 									outfile=outfile+str(index)
 									outf = open(outfile, 'wb')
-									if totSize>(4294934528+int(buffer)):
-										dat2=nca.read(int(buffer))
-										outf.write(dat2)						
-										t.update(len(dat2))									
-										outf.flush()	
+									inmemoryfile.seek(n2)
+									dat2=inmemoryfile.read(len(data)-n2)
+									inmemoryfile.close()
+									outf.write(dat2)						
+									t.update(len(dat2))									
+									outf.flush()
 								if not data:
 									break
 		t.close()
@@ -5615,7 +5690,11 @@ class Xci(File):
 										if fat=="fat32" and (c+len(newheader))>block:									
 											n2=block-c
 											c=0
-											dat2=newheader[0x00:0x00+int(n2)]
+											inmemoryfile = io.BytesIO()
+											inmemoryfile.write(newheader)
+											inmemoryfile.read(n2)
+											inmemoryfile.seek(0)
+											dat2=inmemoryfile.read(n2)	
 											fp.write(dat2)
 											fp.flush()
 											fp.close()	
@@ -5624,7 +5703,9 @@ class Xci(File):
 											outf=outf[0:-1]
 											outf=outf+str(index)
 											fp = open(outf, 'wb')	
-											dat2=newheader[0x00+int(n2)+1:]
+											inmemoryfile.seek(n2)
+											dat2=inmemoryfile.read(len(newheader)-n2)
+											inmemoryfile.close()
 											fp.write(dat2)						
 											t.update(len(dat2))		
 											c=c+len(dat2)													
@@ -5641,7 +5722,11 @@ class Xci(File):
 										if fat=="fat32" and (c+len(data))>block:	
 											n2=block-c
 											c=0										
-											dat2=data[0x00:0x00+int(n2)]										
+											inmemoryfile = io.BytesIO()
+											inmemoryfile.write(data)
+											inmemoryfile.read(n2)
+											inmemoryfile.seek(0)
+											dat2=inmemoryfile.read(n2)										
 											fp.write(dat2)
 											fp.flush()
 											fp.close()	
@@ -5650,7 +5735,9 @@ class Xci(File):
 											outf=outf[0:-1]
 											outf=outf+str(index)
 											fp = open(outf, 'wb')	
-											dat2=data[0x00+int(n2)+1:]
+											inmemoryfile.seek(n2)
+											dat2=inmemoryfile.read(len(data)-n2)
+											inmemoryfile.close()
 											fp.write(dat2)						
 											t.update(len(dat2))		
 											c=c+len(dat2)													
@@ -5687,7 +5774,11 @@ class Xci(File):
 										if fat=="fat32" and (c+len(newheader))>block:									
 											n2=block-c
 											c=0
-											dat2=newheader[0x00:0x00+int(n2)]
+											inmemoryfile = io.BytesIO()
+											inmemoryfile.write(newheader)
+											inmemoryfile.read(n2)
+											inmemoryfile.seek(0)
+											dat2=inmemoryfile.read(n2)
 											fp.write(dat2)
 											fp.flush()
 											fp.close()	
@@ -5696,7 +5787,9 @@ class Xci(File):
 											outf=outf[0:-1]
 											outf=outf+str(index)
 											fp = open(outf, 'wb')	
-											dat2=newheader[0x00+int(n2)+1:]
+											inmemoryfile.seek(n2)
+											dat2=inmemoryfile.read(len(newheader)-n2)
+											inmemoryfile.close()
 											fp.write(dat2)						
 											t.update(len(dat2))												
 											fp.flush()	
@@ -5712,7 +5805,11 @@ class Xci(File):
 										if fat=="fat32" and (c+len(data))>block:	
 											n2=block-c
 											c=0										
-											dat2=data[0x00:0x00+int(n2)]										
+											inmemoryfile = io.BytesIO()
+											inmemoryfile.write(data)
+											inmemoryfile.read(n2)
+											inmemoryfile.seek(0)
+											dat2=inmemoryfile.read(n2)												
 											fp.write(dat2)
 											fp.flush()
 											fp.close()	
@@ -5721,7 +5818,9 @@ class Xci(File):
 											outf=outf[0:-1]
 											outf=outf+str(index)
 											fp = open(outf, 'wb')	
-											dat2=data[0x00+int(n2)+1:]
+											inmemoryfile.seek(n2)
+											dat2=inmemoryfile.read(len(data)-n2)
+											inmemoryfile.close()
 											fp.write(dat2)						
 											t.update(len(dat2))		
 											c=c+len(dat2)													
@@ -5761,7 +5860,11 @@ class Xci(File):
 									if fat=="fat32" and (c+len(data))>block:	
 										n2=block-c
 										c=0										
-										dat2=data[0x00:0x00+int(n2)]										
+										inmemoryfile = io.BytesIO()
+										inmemoryfile.write(data)
+										inmemoryfile.read(n2)
+										inmemoryfile.seek(0)
+										dat2=inmemoryfile.read(n2)											
 										fp.write(dat2)
 										fp.flush()
 										fp.close()	
@@ -5770,7 +5873,9 @@ class Xci(File):
 										outf=outf[0:-1]
 										outf=outf+str(index)
 										fp = open(outf, 'wb')	
-										dat2=data[0x00+int(n2)+1:]
+										inmemoryfile.seek(n2)
+										dat2=inmemoryfile.read(len(data)-n2)
+										inmemoryfile.close()
 										fp.write(dat2)						
 										t.update(len(dat2))		
 										c=c+len(dat2)													
@@ -5803,7 +5908,11 @@ class Xci(File):
 										if fat=="fat32" and (c+len(data))>block:	
 											n2=block-c
 											c=0										
-											dat2=data[0x00:0x00+int(n2)]										
+											inmemoryfile = io.BytesIO()
+											inmemoryfile.write(data)
+											inmemoryfile.read(n2)
+											inmemoryfile.seek(0)
+											dat2=inmemoryfile.read(n2)											
 											fp.write(dat2)
 											fp.flush()
 											fp.close()	
@@ -5812,7 +5921,9 @@ class Xci(File):
 											outf=outf[0:-1]
 											outf=outf+str(index)
 											fp = open(outf, 'wb')	
-											dat2=data[0x00+int(n2)+1:]
+											inmemoryfile.seek(n2)
+											dat2=inmemoryfile.read(len(data)-n2)
+											inmemoryfile.close()
 											fp.write(dat2)						
 											t.update(len(dat2))		
 											c=c+len(dat2)													
@@ -5835,7 +5946,11 @@ class Xci(File):
 								if fat=="fat32" and (c+len(data))>block:	
 									n2=block-c
 									c=0										
-									dat2=data[0x00:0x00+int(n2)]										
+									inmemoryfile = io.BytesIO()
+									inmemoryfile.write(data)
+									inmemoryfile.read(n2)
+									inmemoryfile.seek(0)
+									dat2=inmemoryfile.read(n2)										
 									fp.write(dat2)
 									fp.flush()
 									fp.close()	
@@ -5844,7 +5959,9 @@ class Xci(File):
 									outf=outf[0:-1]
 									outf=outf+str(index)
 									fp = open(outf, 'wb')	
-									dat2=data[0x00+int(n2)+1:]
+									inmemoryfile.seek(n2)
+									dat2=inmemoryfile.read(len(data)-n2)
+									inmemoryfile.close()
 									fp.write(dat2)						
 									t.update(len(dat2))		
 									c=c+len(dat2)													
