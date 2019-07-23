@@ -3,7 +3,7 @@
 set "prog_dir=%~dp0"
 set "bat_name=%~n0"
 set "ofile_name=%bat_name%_options.cmd"
-Title NSC_Builder v0.87.c -- Profile: %ofile_name% -- by JulesOnTheRoad
+Title NSC_Builder v0.88 -- Profile: %ofile_name% -- by JulesOnTheRoad
 set "list_folder=%prog_dir%lists"
 ::-----------------------------------------------------
 ::이 옵션을 다른 옵션 파일과 연결되도록 편집하십시오.
@@ -2693,7 +2693,7 @@ ECHO =============================    JULESONTHEROAD 제작    =================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                             다람쥐의 지원을 받는 NSCB                             "
 ECHO "                      BLAWAR 및 LUCA FRAGA 작업을 기반으로 작업                    "
-ECHO                                   버전 0.86 (신규)
+ECHO                                   버전 0.88 (신규)
 ECHO -------------------------------------------------------------------------------------                   
 ECHO Program의 github: https://github.com/julesontheroad/NSC_BUILDER
 ECHO Blawar의 github:  https://github.com/blawar
