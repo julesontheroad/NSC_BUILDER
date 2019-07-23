@@ -212,7 +212,7 @@ if __name__ == '__main__':
 		if sys.platform == 'win32':
 			parser.add_argument('-archive','--archive', help='Archive to folder')		
 		parser.add_argument('-zippy','--zippy', help='Zip a file')			
-		parser.add_argument('-joinfile','--joinfile', help='Join split file')
+		parser.add_argument('-joinfile','--joinfile', nargs='+', help='Join split file')
 		# OTHER		
 		parser.add_argument('-nint_keys','--nint_keys', help='Verify NS keys')			
 		parser.add_argument('-renf','--renamef', help='Rename file with proper name')	
@@ -3801,15 +3801,26 @@ if __name__ == '__main__':
 						Print.error('Exception: ' + str(e))
 			else:
 				buffer = 32768
-			filepath = args.joinfile
+			if args.text_file:
+				tfile=args.text_file
+				with open(tfile,"r+", encoding='utf8') as filelist: 	
+					filepath = filelist.readline()
+					filepath=os.path.abspath(filepath.rstrip('\n'))						
+			else:
+				for filepath in args.joinfile:
+					filepath=filepath
+			print(filepath)		
 			file_list=list()
-			#print (filepath)
 			try:
+				bname=os.path.basename(os.path.abspath(filepath))	
+				bn=''
+				if bname != '00':
+					bn=bname[:-4]
 				if filepath.endswith(".xc0"):
-					outname = "output.xci"
+					outname = bn+".xci"
 					ender=".xc"
 				elif filepath.endswith(".ns0"):
-					outname = "output.nsp"
+					outname = bn+".nsp"
 					ender=".ns"
 				elif filepath[-2:]=="00":				
 					outname = "output.nsp"
@@ -3818,13 +3829,25 @@ if __name__ == '__main__':
 					print ("Not valid file")
 				outfile = os.path.join(ofolder, outname)
 				#print (outfile)
-				ruta=os.path.dirname(os.path.abspath(args.joinfile))			
+				ruta=os.path.dirname(os.path.abspath(filepath))		
+				#print(ruta)
 				for dirpath, dnames, fnames in os.walk(ruta):
 					for f in fnames:
-						check=f[-3:-1]			
-						if check==ender:
-							fp = os.path.join(ruta, f)
-							file_list.append(fp)
+						check=f[-4:-1]	
+						#print(check)
+						#print(ender)
+						#print(bname[:-1])
+						#print(f[:-1])
+						if check==ender and bname[:-1]==f[:-1]:
+							n=bname[-1];n=int(n)						
+							try:
+								n=f[-1];n=int(n)
+								n+=1
+								fp = os.path.join(ruta, f)
+								file_list.append(fp)
+							except:	continue
+				file_list.sort()	
+				#print(file_list)
 			except BaseException as e:
 				Print.error('Exception: ' + str(e))
 			totSize = sum(os.path.getsize(file) for file in file_list)

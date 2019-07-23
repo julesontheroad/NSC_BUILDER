@@ -184,7 +184,8 @@ call :logo
 echo ********************************************************
 echo VERIFY A NSP\XCI\NCA
 echo ********************************************************
-%pycommand% "%nut%" -b %buffer% -o "%info_dir%" -v "%targt%" 
+%pycommand% "%nut%" %buffer% -o "%info_dir%" -v "%targt%" 
+
 goto sc2
 
 :sc3
@@ -284,7 +285,7 @@ call :logo
 echo ********************************************************
 echo VERIFY A NSP\XCI\NCA
 echo ********************************************************
-%pycommand% "%nut%" -b %buffer% -o "%info_dir%" -v "%targt%" 
+%pycommand% "%nut%" %buffer% -o "%info_dir%" -v "%targt%" 
 goto sc3
 
 

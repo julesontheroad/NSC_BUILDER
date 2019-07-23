@@ -647,6 +647,7 @@ echo Input "3" to enter into MULTI-CONTENT SPLITTER mode
 echo Input "4" to enter into FILE-INFO mode
 echo Input "5" to enter into DATABASE building mode
 echo Input "6" to enter into ADVANCED mode
+echo Input "7" to enter into FILE-JOINER mode
 echo Input "0" to enter into CONFIGURATION mode
 echo.
 echo Input "L" to enter LEGACY MODES
@@ -660,12 +661,16 @@ if /i "%bs%"=="3" goto SPLMODE
 if /i "%bs%"=="4" goto INFMODE
 if /i "%bs%"=="5" goto DBMODE
 if /i "%bs%"=="6" goto ADVmode
+if /i "%bs%"=="7" goto JOINmode
 if /i "%bs%"=="L" goto LegacyMode
 if /i "%bs%"=="0" goto OPT_CONFIG
 goto manual_Reentry
 
 :ADVmode
 call "%prog_dir%ztools\ADV.bat"
+goto manual_Reentry
+:JOINmode
+call "%prog_dir%ztools\JOINER.bat"
 goto manual_Reentry
 :LegacyMode
 call "%prog_dir%ztools\LEGACY.bat"

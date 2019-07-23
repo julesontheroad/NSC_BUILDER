@@ -36,6 +36,7 @@ Current version of the program allows you to:
 16.- Set jobs for later in multi mode
 17.- Separate jobs by based-titleid in multi mode
 18.- Remove bad characters from filenames (sanitize) or convert asian names to romaji
+19.- Extract nca file contents for base games and dlcs or extract ncas as plaintext
 
 ## 4. Batch modes:
 
@@ -68,9 +69,14 @@ The behavior of the auto-mode is configured trough the “Configuration menu in ma
   * 4. Information about firmware requirements and other game data
   * 5. Read cnmt file from meta nca
   * 6. Read nacp file from control nca
-  * 7. Verify files with ability of detecting NSCB changes over them
+  * 7. Read npdm file from program nca 
+  * 8. Verify files with ability of detecting NSCB changes over them
 - MODE 5: Database Mode. Let’s you mass output information
-- MODE 6: Advanced Mode. Currently extracts nca from xci\nsp (more to be added)
+- MODE 6: Advanced Mode.
+  * 1. Extracts all contents from a nsp\xci
+  * 2. Extracts all contents from a nsp\xci in raw mode
+  * 3. Extracts all contents from a nsp\xci in plaintext
+  * 4. Extracts files from nca inside a nsp\xci   
 - L: Legacy Mode. Old functions
 
 ## 6. Configuration mode:
@@ -166,6 +172,8 @@ b.) Hacbuild: The xci repacking functions are based on hacbuild's code, made by 
 - Revised hacbuild by me: https://github.com/julesontheroad/hacbuild
 
 c.) Big thx to 0Liam for his constant help.
+
+d.) pyNCA3,pyNPDM,pyPFS0,pyRomFS libraries adapted from pythac (made by Rikikooo)
 
 Also thanks to:
 

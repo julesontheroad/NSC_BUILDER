@@ -4,29 +4,29 @@ CD /d "%prog_dir%"
 
 REM //////////////////////////////////////////////////
 REM /////////////////////////////////////////////////
-REM ADVANCE MODE
+REM FILE JOINER
 REM /////////////////////////////////////////////////
 REM ////////////////////////////////////////////////
 :normalmode
 cls
 call :program_logo
 echo -------------------------------------------------
-echo ADVANCE MODE ACTIVATED
+echo FILE JOINER ACTIVATED
 echo -------------------------------------------------
-if exist "advlist.txt" goto prevlist
+if exist "joinlist.txt" goto prevlist
 goto manual_INIT
 :prevlist
 set conta=0
-for /f "tokens=*" %%f in (advlist.txt) do (
+for /f "tokens=*" %%f in (joinlist.txt) do (
 echo %%f
 ) >NUL 2>&1
 setlocal enabledelayedexpansion
-for /f "tokens=*" %%f in (advlist.txt) do (
+for /f "tokens=*" %%f in (joinlist.txt) do (
 set /a conta=!conta! + 1
 ) >NUL 2>&1
-if !conta! LEQ 0 ( del advlist.txt )
+if !conta! LEQ 0 ( del joinlist.txt )
 endlocal
-if not exist "advlist.txt" goto manual_INIT
+if not exist "joinlist.txt" goto manual_INIT
 ECHO .......................................................
 ECHO A PREVIOUS LIST WAS FOUND. WHAT DO YOU WANT TO DO?
 :prevlist0
@@ -53,11 +53,11 @@ echo.
 echo BAD CHOICE
 goto prevlist0
 :delist
-del advlist.txt
+del joinlist.txt
 cls
 call :program_logo
 echo -------------------------------------------------
-echo ADVANCE MODE ACTIVATED
+echo FILE JOINER ACTIVATED
 echo -------------------------------------------------
 echo ..................................
 echo YOU'VE DECIDED TO START A NEW LIST
@@ -69,7 +69,7 @@ ECHO ***********************************************
 echo Input "0" to return to the MODE SELECTION MENU
 ECHO ***********************************************
 echo.
-%pycommand% "%nut%" -t nsp xci nsx -tfile "%prog_dir%advlist.txt" -uin "%uinput%" -ff "uinput"
+%pycommand% "%nut%" -t ns0 xc0 00 -tfile "%prog_dir%joinlist.txt" -uin "%uinput%" -ff "uinput"
 set /p eval=<"%uinput%"
 set eval=%eval:"=%
 setlocal enabledelayedexpansion
@@ -93,7 +93,7 @@ ECHO *************************************************
 echo Or Input "0" to return to the MODE SELECTION MENU
 ECHO *************************************************
 echo.
-%pycommand% "%nut%" -t nsp xci -tfile "%prog_dir%advlist.txt" -uin "%uinput%" -ff "uinput"
+%pycommand% "%nut%" -t nsp xci -tfile "%prog_dir%joinlist.txt" -uin "%uinput%" -ff "uinput"
 set /p eval=<"%uinput%"
 set eval=%eval:"=%
 setlocal enabledelayedexpansion
@@ -105,7 +105,7 @@ if /i "%eval%"=="1" goto start_cleaning
 if /i "%eval%"=="e" goto salida
 if /i "%eval%"=="i" goto showlist
 if /i "%eval%"=="r" goto r_files
-if /i "%eval%"=="z" del advlist.txt
+if /i "%eval%"=="z" del joinlist.txt
 
 goto checkagain
 
@@ -115,7 +115,7 @@ set bs=%bs:"=%
 
 setlocal enabledelayedexpansion
 set conta=
-for /f "tokens=*" %%f in (advlist.txt) do (
+for /f "tokens=*" %%f in (joinlist.txt) do (
 set /a conta=!conta! + 1
 )
 
@@ -132,28 +132,28 @@ set string=%string%,
 set skiplist=%string%
 Set "skip=%skiplist%"
 setlocal DisableDelayedExpansion
-(for /f "tokens=1,*delims=:" %%a in (' findstr /n "^" ^<advlist.txt'
+(for /f "tokens=1,*delims=:" %%a in (' findstr /n "^" ^<joinlist.txt'
 ) do Echo=%skip%|findstr ",%%a," 2>&1>NUL ||Echo=%%b
-)>advlist.txt.new
+)>joinlist.txt.new
 endlocal
-move /y "advlist.txt.new" "advlist.txt" >nul
+move /y "joinlist.txt.new" "joinlist.txt" >nul
 endlocal
 
 :showlist
 cls
 call :program_logo
 echo -------------------------------------------------
-echo ADVANCE MODE ACTIVATED
+echo FILE JOINER ACTIVATED
 echo -------------------------------------------------
 ECHO -------------------------------------------------
 ECHO                 FILES TO PROCESS 
 ECHO -------------------------------------------------
-for /f "tokens=*" %%f in (advlist.txt) do (
+for /f "tokens=*" %%f in (joinlist.txt) do (
 echo %%f
 )
 setlocal enabledelayedexpansion
 set conta=
-for /f "tokens=*" %%f in (advlist.txt) do (
+for /f "tokens=*" %%f in (joinlist.txt) do (
 set /a conta=!conta! + 1
 )
 echo .................................................
@@ -170,10 +170,7 @@ echo ............
 echo *******************************************************
 echo CHOOSE HOW TO PROCESS THE FILES
 echo *******************************************************
-echo Input "1" to extract all files from nsp\xci
-echo Input "2" for raw extraction (Use in case a nca gives magic error)
-echo Input "3" to extract all nca files as plaintext
-echo Input "4" to extract nca contents from nsp\xci
+echo Input "1" to join .xc*,.ns*,.0* files
 echo.
 ECHO ******************************************
 echo Or Input "b" to return to the list options
@@ -183,84 +180,30 @@ set /p bs="Enter your choice: "
 set bs=%bs:"=%
 set vrepack=none
 if /i "%bs%"=="b" goto checkagain
-if /i "%bs%"=="1" goto extract
-if /i "%bs%"=="2" goto raw_extract
-if /i "%bs%"=="3" goto ext_plaintext
-if /i "%bs%"=="4" goto ext_fromnca
+if /i "%bs%"=="1" goto joinfiles
 if %vrepack%=="none" goto s_cl_wrongchoice
 
-
-:extract
+:joinfiles
 cls
 call :program_logo
 CD /d "%prog_dir%"
-for /f "tokens=*" %%f in (advlist.txt) do (
+for /f "tokens=*" %%f in (joinlist.txt) do (
 
-%pycommand% "%nut%" %buffer% -o "%prog_dir%NSCB_extracted" -tfile "%prog_dir%advlist.txt" -x ""
-
-more +1 "advlist.txt">"advlist.txt.new"
-move /y "advlist.txt.new" "advlist.txt" >nul
+%pycommand% "%nut%" %buffer% -o "%fold_output%" -tfile "%prog_dir%joinlist.txt" --joinfile ""
+if exist "%fold_output%output.nsp" ( %pycommand% "%nut%" -renf "%fold_output%output.nsp">"%prog_dir%nn")
+if exist "%fold_output%output.xci" ( %pycommand% "%nut%" -renf "%fold_output%output.xci">"%prog_dir%nn")
+if exist "%prog_dir%nn" del "%prog_dir%nn"
+more +1 "joinlist.txt">"joinlist.txt.new"
+move /y "joinlist.txt.new" "joinlist.txt" >nul
 call :contador_NF
 )
 ECHO ---------------------------------------------------
 ECHO *********** ALL FILES WERE PROCESSED! *************
 ECHO ---------------------------------------------------
 goto s_exit_choice
-
-:raw_extract
-cls
-call :program_logo
-CD /d "%prog_dir%"
-for /f "tokens=*" %%f in (advlist.txt) do (
-
-%pycommand% "%nut%" %buffer% -o "%prog_dir%NSCB_extracted" -tfile "%prog_dir%advlist.txt" -raw_x ""
-
-more +1 "advlist.txt">"advlist.txt.new"
-move /y "advlist.txt.new" "advlist.txt" >nul
-call :contador_NF
-)
-ECHO ---------------------------------------------------
-ECHO *********** ALL FILES WERE PROCESSED! *************
-ECHO ---------------------------------------------------
-goto s_exit_choice
-
-:ext_plaintext
-cls
-call :program_logo
-CD /d "%prog_dir%"
-for /f "tokens=*" %%f in (advlist.txt) do (
-
-%pycommand% "%nut%" %buffer% -o "%prog_dir%NSCB_extracted" -tfile "%prog_dir%advlist.txt" -plx ""
-
-more +1 "advlist.txt">"advlist.txt.new"
-move /y "advlist.txt.new" "advlist.txt" >nul
-call :contador_NF
-)
-ECHO ---------------------------------------------------
-ECHO *********** ALL FILES WERE PROCESSED! *************
-ECHO ---------------------------------------------------
-goto s_exit_choice
-
-:ext_fromnca
-cls
-call :program_logo
-CD /d "%prog_dir%"
-for /f "tokens=*" %%f in (advlist.txt) do (
-
-%pycommand% "%nut%" %buffer% -o "%prog_dir%NSCB_extracted" -tfile "%prog_dir%advlist.txt" -nfx ""
-
-more +1 "advlist.txt">"advlist.txt.new"
-move /y "advlist.txt.new" "advlist.txt" >nul
-call :contador_NF
-)
-ECHO ---------------------------------------------------
-ECHO *********** ALL FILES WERE PROCESSED! *************
-ECHO ---------------------------------------------------
-goto s_exit_choice
-
 
 :s_exit_choice
-if exist advlist.txt del advlist.txt
+if exist joinlist.txt del joinlist.txt
 if /i "%va_exit%"=="true" echo PROGRAM WILL CLOSE NOW
 if /i "%va_exit%"=="true" ( PING -n 2 127.0.0.1 >NUL 2>&1 )
 if /i "%va_exit%"=="true" goto salida
@@ -277,7 +220,7 @@ goto s_exit_choice
 :contador_NF
 setlocal enabledelayedexpansion
 set /a conta=0
-for /f "tokens=*" %%f in (advlist.txt) do (
+for /f "tokens=*" %%f in (joinlist.txt) do (
 set /a conta=!conta! + 1
 )
 echo ...................................................
@@ -287,7 +230,6 @@ PING -n 2 127.0.0.1 >NUL 2>&1
 set /a conta=0
 endlocal
 exit /B
-
 
 
 ::///////////////////////////////////////////////////
