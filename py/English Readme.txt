@@ -37,6 +37,7 @@ Current version of the program allows you to:
 17.- Separate jobs by based-titleid in multi mode
 18.- Remove bad characters from filenames (sanitize) or convert asian names to romaji
 19.- Extract nca file contents for base games and dlcs or extract ncas as plaintext
+20.- Joiner for xc*,ns* and *0 fat32 files
 
 ## 4. Batch modes:
 

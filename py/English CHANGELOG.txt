@@ -29,6 +29,9 @@ v0.88- Bugfixes and new stuff
 		  * For now the pack options under "SPECIAL OPTIONS" are not supported
 	   2. MULTI-PACK MODE
 	   3. MULTI-CONTENT-SPLITTER MODE
+	- Added mode 7: FILE-JOINER mode to join fat32 .xc*,.ns* or *0
+	  > For *0 files drop the folder if you have several *0 files to join to not 
+          confuse the batch operations, for .xc* and .ns* files joins are grouped by filename
 	- Fixes bug in verification where RSV check bar stays after finishing RSV check on 
 	  unlockers
 	- Fixes bug in some modes with files that use keygeneration 2  
@@ -39,8 +42,7 @@ v0.88- Bugfixes and new stuff
 	  extracted and verify the nca independently
 	- Added romaji option to db so outputting names in romaji can be turn off
 	- Added extraction of ncas in plaintext to advance mode 
-	- Added extraction of nca contents to advance mode
-	
+	- Added extraction of nca contents to advance mode	
 	NOTE: For now plaintext and extraction of ncas will skip program ncas in updates.
 	Process is done without extraction of ncas from nsp\xci with a fallback that 
 	pre-extracts the nca if the the sections are not correctly detected.
