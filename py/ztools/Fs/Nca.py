@@ -1506,17 +1506,23 @@ class Nca(File):
 				except:
 					ediver="-"
 				if ediver == '-':
-					offset2=offset-0x300
-					f.seek(offset2+0x3060)			
-					ediver = f.read(0x10)
-					ediver = ediver.split(b'\0', 1)[0].decode('utf-8')
-					ediver = (re.sub(r'[\/\\]+', ' ', ediver))
-					ediver = ediver.strip()	
-					try:  
-						int(ediver[0])+1
-						offset=offset2
-					except:
-						ediver="-"			
+					for i in Langue:
+						try:
+							i=i+1
+							offset2=offset-0x300*i
+							f.seek(offset2+0x3060)			
+							ediver = f.read(0x10)
+							ediver = ediver.split(b'\0', 1)[0].decode('utf-8')
+							ediver = (re.sub(r'[\/\\]+', ' ', ediver))
+							ediver = ediver.strip()	
+							try:  
+								int(ediver[0])+1
+								offset=offset2
+								break
+							except:
+								ediver="-"	
+						except:
+							pass								
 				if ediver == '-':
 					try:
 						while (offset2+0x3060)<=0x18600:
@@ -1536,7 +1542,8 @@ class Nca(File):
 										ediver="-"
 										break		
 					except:
-						ediver="-"		
+						ediver="-"
+						
 			except:
 				pass
 			Langue = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14]				
@@ -2197,61 +2204,59 @@ class Nca(File):
 				f.seek(offset+0x3060)		
 				message='...............................';print(message);feed+=message+'\n'						
 				message='NACP ATTRIBUTES';print(message);feed+=message+'\n'	
-				message='...............................';print(message);feed+=message+'\n'							
-				feed=nacp.par_getDisplayVersion(f.read(0xF),feed)		
-				f.seek(offset+0x3070)							
-				feed=nacp.par_getAddOnContentBaseId(f.readInt64('little'),feed)
-				f.seek(offset+0x3078)							
-				feed=nacp.par_getSaveDataOwnerId(f.readInt64('little'),feed)
-				f.seek(offset+0x3080)							
-				feed=nacp.par_getUserAccountSaveDataSize(f.readInt64('little'),feed)	
-				f.seek(offset+0x3088)								
-				feed=nacp.par_getUserAccountSaveDataJournalSize(f.readInt64('little'),feed)	
-				f.seek(offset+0x3090)	
-				feed=nacp.par_getDeviceSaveDataSize(f.readInt64('little'),feed)	
-				f.seek(offset+0x3098)	
-				feed=nacp.par_getDeviceSaveDataJournalSize(f.readInt64('little'),feed)	
-				f.seek(offset+0x30A0)	
-				feed=nacp.par_getBcatDeliveryCacheStorageSize(f.readInt64('little'),feed)		
-				f.seek(offset+0x30A8)	
-				feed=nacp.par_getApplicationErrorCodeCategory(f.read(0x07),feed)	
-				f.seek(offset+0x30B0)
-				feed=nacp.par_getLocalCommunicationId(f.readInt64('little'),feed)	
-				f.seek(offset+0x30F0)
-				feed=nacp.par_getLogoType(f.readInt8('little'),feed)							
-				feed=nacp.par_getLogoHandling(f.readInt8('little'),feed)		
-				feed=nacp.par_getRuntimeAddOnContentInstall(f.readInt8('little'),feed)	
-				feed=nacp.par_getCrashReport(f.readInt8('little'),feed)	
-				feed=nacp.par_getHdcp(f.readInt8('little'),feed)		
-				feed=nacp.par_getSeedForPseudoDeviceId(f.readInt64('little'),feed)	
-				f.seek(offset+0x3100)			
-				feed=nacp.par_getBcatPassphrase(f.read(0x40),feed)	
-				f.seek(offset+0x3148)			
-				feed=nacp.par_UserAccountSaveDataSizeMax(f.readInt64('little'),feed)						
-				f.seek(offset+0x3150)			
-				feed=nacp.par_UserAccountSaveDataJournalSizeMax(f.readInt64('little'),feed)
-				f.seek(offset+0x3158)			
-				feed=nacp.par_getDeviceSaveDataSizeMax(f.readInt64('little'),feed)
-				f.seek(offset+0x3160)			
-				feed=nacp.par_getDeviceSaveDataJournalSizeMax(f.readInt64('little'),feed)							
-				f.seek(offset+0x3168)			
-				feed=nacp.par_getTemporaryStorageSize(f.readInt64('little'),feed)		
-				feed=nacp.par_getCacheStorageSize(f.readInt64('little'),feed)			
-				f.seek(offset+0x3178)		
-				feed=nacp.par_getCacheStorageJournalSize(f.readInt64('little'),feed)							
-				feed=nacp.par_getCacheStorageDataAndJournalSizeMax(f.readInt64('little'),feed)		
-				f.seek(offset+0x3188)	
-				feed=nacp.par_getCacheStorageIndexMax(f.readInt64('little'),feed)		
-				feed=nacp.par_getPlayLogQueryableApplicationId(f.readInt64('little'),feed)		
-				f.seek(offset+0x3210)	
-				feed=nacp.par_getPlayLogQueryCapability(f.readInt8('little'),feed)	
-				feed=nacp.par_getRepair(f.readInt8('little'),feed)	
-				feed=nacp.par_getProgramIndex(f.readInt8('little'),feed)	
-				feed=nacp.par_getRequiredNetworkServiceLicenseOnLaunch(f.readInt8('little'),feed)	
-				#f.seek(offset+0x3000)						
-				#nacp.open(MemoryFile(f.read(),32768*2))	
-				#nacp.printInfo()
-				#Hex.dump(offset)
+				message='...............................';print(message);feed+=message+'\n'
+				try:
+					feed=nacp.par_getDisplayVersion(f.read(0xF),feed)		
+					f.seek(offset+0x3070)							
+					feed=nacp.par_getAddOnContentBaseId(f.readInt64('little'),feed)
+					f.seek(offset+0x3078)							
+					feed=nacp.par_getSaveDataOwnerId(f.readInt64('little'),feed)
+					f.seek(offset+0x3080)							
+					feed=nacp.par_getUserAccountSaveDataSize(f.readInt64('little'),feed)	
+					f.seek(offset+0x3088)								
+					feed=nacp.par_getUserAccountSaveDataJournalSize(f.readInt64('little'),feed)	
+					f.seek(offset+0x3090)	
+					feed=nacp.par_getDeviceSaveDataSize(f.readInt64('little'),feed)	
+					f.seek(offset+0x3098)	
+					feed=nacp.par_getDeviceSaveDataJournalSize(f.readInt64('little'),feed)	
+					f.seek(offset+0x30A0)	
+					feed=nacp.par_getBcatDeliveryCacheStorageSize(f.readInt64('little'),feed)		
+					f.seek(offset+0x30A8)	
+					feed=nacp.par_getApplicationErrorCodeCategory(f.read(0x07),feed)	
+					f.seek(offset+0x30B0)
+					feed=nacp.par_getLocalCommunicationId(f.readInt64('little'),feed)	
+					f.seek(offset+0x30F0)
+					feed=nacp.par_getLogoType(f.readInt8('little'),feed)							
+					feed=nacp.par_getLogoHandling(f.readInt8('little'),feed)		
+					feed=nacp.par_getRuntimeAddOnContentInstall(f.readInt8('little'),feed)	
+					feed=nacp.par_getCrashReport(f.readInt8('little'),feed)	
+					feed=nacp.par_getHdcp(f.readInt8('little'),feed)		
+					feed=nacp.par_getSeedForPseudoDeviceId(f.readInt64('little'),feed)	
+					f.seek(offset+0x3100)			
+					feed=nacp.par_getBcatPassphrase(f.read(0x40),feed)	
+					f.seek(offset+0x3148)			
+					feed=nacp.par_UserAccountSaveDataSizeMax(f.readInt64('little'),feed)						
+					f.seek(offset+0x3150)			
+					feed=nacp.par_UserAccountSaveDataJournalSizeMax(f.readInt64('little'),feed)
+					f.seek(offset+0x3158)			
+					feed=nacp.par_getDeviceSaveDataSizeMax(f.readInt64('little'),feed)
+					f.seek(offset+0x3160)			
+					feed=nacp.par_getDeviceSaveDataJournalSizeMax(f.readInt64('little'),feed)							
+					f.seek(offset+0x3168)			
+					feed=nacp.par_getTemporaryStorageSize(f.readInt64('little'),feed)		
+					feed=nacp.par_getCacheStorageSize(f.readInt64('little'),feed)			
+					f.seek(offset+0x3178)		
+					feed=nacp.par_getCacheStorageJournalSize(f.readInt64('little'),feed)							
+					feed=nacp.par_getCacheStorageDataAndJournalSizeMax(f.readInt64('little'),feed)		
+					f.seek(offset+0x3188)	
+					feed=nacp.par_getCacheStorageIndexMax(f.readInt64('little'),feed)		
+					feed=nacp.par_getPlayLogQueryableApplicationId(f.readInt64('little'),feed)		
+					f.seek(offset+0x3210)	
+					feed=nacp.par_getPlayLogQueryCapability(f.readInt8('little'),feed)	
+					feed=nacp.par_getRepair(f.readInt8('little'),feed)	
+					feed=nacp.par_getProgramIndex(f.readInt8('little'),feed)	
+					feed=nacp.par_getRequiredNetworkServiceLicenseOnLaunch(f.readInt8('little'),feed)	
+				except:continue	
 		return feed				
 
 	def verify_hash_nca(self,buffer,origheader,didverify,feed):
