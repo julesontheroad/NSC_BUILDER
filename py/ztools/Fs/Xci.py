@@ -3728,7 +3728,6 @@ class Xci(File):
 									c=0
 									inmemoryfile = io.BytesIO()
 									inmemoryfile.write(data)
-									inmemoryfile.read(n2)
 									inmemoryfile.seek(0)
 									dat2=inmemoryfile.read(n2)
 									outf.write(dat2)
@@ -3767,7 +3766,6 @@ class Xci(File):
 								c=0
 								inmemoryfile = io.BytesIO()
 								inmemoryfile.write(data)
-								inmemoryfile.read(n2)
 								inmemoryfile.seek(0)
 								dat2=inmemoryfile.read(n2)
 								outf.write(dat2)
@@ -3808,7 +3806,6 @@ class Xci(File):
 									c=0
 									inmemoryfile = io.BytesIO()
 									inmemoryfile.write(data)
-									inmemoryfile.read(n2)
 									inmemoryfile.seek(0)
 									dat2=inmemoryfile.read(n2)
 									outf.write(dat2)
@@ -4058,7 +4055,6 @@ class Xci(File):
 									c=0
 									inmemoryfile = io.BytesIO()
 									inmemoryfile.write(data)
-									inmemoryfile.read(n2)
 									inmemoryfile.seek(0)
 									dat2=inmemoryfile.read(n2)
 									outf.write(dat2)
@@ -4154,7 +4150,6 @@ class Xci(File):
 								c=0
 								inmemoryfile = io.BytesIO()
 								inmemoryfile.write(data)
-								inmemoryfile.read(n2)
 								inmemoryfile.seek(0)
 								dat2=inmemoryfile.read(n2)
 								outf.write(dat2)
@@ -4745,7 +4740,6 @@ class Xci(File):
 									c=0
 									inmemoryfile = io.BytesIO()
 									inmemoryfile.write(newheader)
-									inmemoryfile.read(n2)
 									inmemoryfile.seek(0)
 									dat2=inmemoryfile.read(n2)	
 									outf.write(dat2)
@@ -4778,7 +4772,6 @@ class Xci(File):
 									c=0
 									inmemoryfile = io.BytesIO()
 									inmemoryfile.write(data)
-									inmemoryfile.read(n2)
 									inmemoryfile.seek(0)
 									dat2=inmemoryfile.read(n2)	
 									outf.write(dat2)
@@ -4810,7 +4803,6 @@ class Xci(File):
 								c=0
 								inmemoryfile = io.BytesIO()
 								inmemoryfile.write(data)
-								inmemoryfile.read(n2)
 								inmemoryfile.seek(0)
 								dat2=inmemoryfile.read(n2)	
 								outf.write(dat2)
@@ -5041,7 +5033,6 @@ class Xci(File):
 									c=0
 									inmemoryfile = io.BytesIO()
 									inmemoryfile.write(newheader)
-									inmemoryfile.read(n2)
 									inmemoryfile.seek(0)
 									dat2=inmemoryfile.read(n2)			
 									outf.write(dat2)
@@ -5074,7 +5065,6 @@ class Xci(File):
 									c=0
 									inmemoryfile = io.BytesIO()
 									inmemoryfile.write(data)
-									inmemoryfile.read(n2)
 									inmemoryfile.seek(0)
 									dat2=inmemoryfile.read(n2)		
 									outf.write(dat2)
@@ -5690,7 +5680,6 @@ class Xci(File):
 											c=0
 											inmemoryfile = io.BytesIO()
 											inmemoryfile.write(newheader)
-											inmemoryfile.read(n2)
 											inmemoryfile.seek(0)
 											dat2=inmemoryfile.read(n2)	
 											fp.write(dat2)
@@ -5722,7 +5711,6 @@ class Xci(File):
 											c=0										
 											inmemoryfile = io.BytesIO()
 											inmemoryfile.write(data)
-											inmemoryfile.read(n2)
 											inmemoryfile.seek(0)
 											dat2=inmemoryfile.read(n2)										
 											fp.write(dat2)
@@ -5774,7 +5762,6 @@ class Xci(File):
 											c=0
 											inmemoryfile = io.BytesIO()
 											inmemoryfile.write(newheader)
-											inmemoryfile.read(n2)
 											inmemoryfile.seek(0)
 											dat2=inmemoryfile.read(n2)
 											fp.write(dat2)
@@ -5805,7 +5792,6 @@ class Xci(File):
 											c=0										
 											inmemoryfile = io.BytesIO()
 											inmemoryfile.write(data)
-											inmemoryfile.read(n2)
 											inmemoryfile.seek(0)
 											dat2=inmemoryfile.read(n2)												
 											fp.write(dat2)
@@ -5860,7 +5846,6 @@ class Xci(File):
 										c=0										
 										inmemoryfile = io.BytesIO()
 										inmemoryfile.write(data)
-										inmemoryfile.read(n2)
 										inmemoryfile.seek(0)
 										dat2=inmemoryfile.read(n2)											
 										fp.write(dat2)
@@ -5908,7 +5893,6 @@ class Xci(File):
 											c=0										
 											inmemoryfile = io.BytesIO()
 											inmemoryfile.write(data)
-											inmemoryfile.read(n2)
 											inmemoryfile.seek(0)
 											dat2=inmemoryfile.read(n2)											
 											fp.write(dat2)
@@ -5946,7 +5930,6 @@ class Xci(File):
 									c=0										
 									inmemoryfile = io.BytesIO()
 									inmemoryfile.write(data)
-									inmemoryfile.read(n2)
 									inmemoryfile.seek(0)
 									dat2=inmemoryfile.read(n2)										
 									fp.write(dat2)
