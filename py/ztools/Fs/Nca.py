@@ -1390,17 +1390,23 @@ class Nca(File):
 				except:
 					ediver="-"
 				if ediver == '-':
-					offset2=offset-0x300
-					f.seek(offset2+0x3060)			
-					ediver = f.read(0x10)
-					ediver = ediver.split(b'\0', 1)[0].decode('utf-8')
-					ediver = (re.sub(r'[\/\\]+', ' ', ediver))
-					ediver = ediver.strip()	
-					try:  
-						int(ediver[0])+1
-						offset=offset2
-					except:
-						ediver="-"			
+					for i in Langue:
+						try:
+							i=i+1
+							offset2=offset-0x300*i
+							f.seek(offset2+0x3060)			
+							ediver = f.read(0x10)
+							ediver = ediver.split(b'\0', 1)[0].decode('utf-8')
+							ediver = (re.sub(r'[\/\\]+', ' ', ediver))
+							ediver = ediver.strip()	
+							try:  
+								int(ediver[0])+1
+								offset=offset2
+								break
+							except:
+								ediver="-"	
+						except:
+							pass		
 				if ediver == '-':
 					try:
 						while (offset2+0x3060)<=0x18600:
