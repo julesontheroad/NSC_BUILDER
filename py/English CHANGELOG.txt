@@ -37,7 +37,7 @@ v0.88- Bugfixes and new stuff
 	- Fixes bug in some modes with files that use keygeneration 2  
 	- Fixes bug where info mode1 doesn't show the total size of deltas
 	- Fix nacp reader for xci files
-	- Fix in Language and nacp offset detection in some games	
+	- Fix Language and nacp offset detection in some games	
 	- Fixes titlekey verification on nsp and nsx dlcs
 	- Added main.npdm reader for nsp and xci files
 	- Add raw extraction option to advance mode so files with messed nca headers can be 
