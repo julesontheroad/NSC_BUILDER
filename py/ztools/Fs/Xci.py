@@ -941,7 +941,7 @@ class Xci(File):
 							try:
 								fp=open(str(self._path), 'rb')			
 								nca3=NCA3(fp,int(offset),str(nca._path),decKey)
-								nca3.print_npdm()
+								feed=nca3.print_npdm()
 								fp.close();
 							except BaseException as e:
 								#Print.error('Exception: ' + str(e))
@@ -972,7 +972,7 @@ class Xci(File):
 							try:
 								fp=open(str(self._path), 'rb')			
 								nca3=NCA3(fp,int(offset),str(nca._path),decKey)
-								nca3.print_npdm()
+								feed=nca3.print_npdm()
 								fp.close();
 							except BaseException as e:
 								#Print.error('Exception: ' + str(e))
@@ -1040,7 +1040,8 @@ class Xci(File):
 												n=npdm.__str__()
 												print(n)
 												break	
-									break		
+									break	
+		return feed							
 									
 	def copy_as_plaintext(self,ofolder,files_list,buffer=32768):
 		for nspF in self.hfs0:
@@ -4696,6 +4697,7 @@ class Xci(File):
 			splitnumb=math.ceil(totSize/4294901760)
 			index=0
 			filepath=filepath[:-1]+str(index)
+			
 		if fx=="folder" and fat=="fat32":
 			output_folder ="archfolder" 
 			output_folder = os.path.join(ofolder, output_folder)			
@@ -4710,6 +4712,7 @@ class Xci(File):
 		t = tqdm(total=totSize, unit='B', unit_scale=True, leave=False)		
 		t.write(tabs+'- Writing header...')	
 		outf = open(str(filepath), 'w+b')	
+		outfile=str(filepath)	
 		outf.write(hd)			
 		t.update(len(hd))
 		c=c+len(hd)		
@@ -4763,10 +4766,6 @@ class Xci(File):
 								file.seek(0xC00)									
 								i+=1							
 							else:
-								outf.write(data)				
-								t.update(len(data))
-								c=c+len(data)									
-								outf.flush()
 								if fat=="fat32" and (c+len(data))>block:
 									n2=block-c
 									c=0
@@ -4787,17 +4786,18 @@ class Xci(File):
 									inmemoryfile.close()
 									outf.write(dat2)						
 									t.update(len(dat2))									
-									outf.flush()										
+									outf.flush()		
+								else:
+									outf.write(data)				
+									t.update(len(data))
+									c=c+len(data)									
+									outf.flush()									
 								if not data:
 									break					
 					if type(file) != Nca and file._path in contentlist:
 						file.rewind()			
 						t.write(tabs+'- Appending: ' + str(file._path))					
 						for data in iter(lambda: file.read(int(buffer)), ""):				
-							outf.write(data)
-							t.update(len(data))
-							c=c+len(data)
-							outf.flush()
 							if fat=="fat32" and (c+len(data))>block:
 								n2=block-c
 								c=0
@@ -4819,6 +4819,11 @@ class Xci(File):
 								outf.write(dat2)						
 								t.update(len(dat2))									
 								outf.flush()	
+							else:		
+								outf.write(data)
+								t.update(len(data))
+								c=c+len(data)
+								outf.flush()							
 							if not data:
 								break							
 		t.close()		
@@ -4945,10 +4950,13 @@ class Xci(File):
 			Print.info('masterKeyRev =\t' + hex(masterKeyRev))									
 		print("")		
 		
+		if totSize <= 4294934528:
+			fat="exfat"
 		if fat=="fat32":
 			splitnumb=math.ceil(totSize/4294934528)
 			index=0
 			filepath=filepath[:-1]+str(index)
+			
 		c=0
 		t = tqdm(total=totSize, unit='B', unit_scale=True, leave=False)
 		t.write(tabs+'- Writing XCI header...')
@@ -4987,7 +4995,7 @@ class Xci(File):
 		outf.write(sec_header)
 		t.update(len(sec_header))
 		c=c+len(sec_header)			
-									
+		outfile=str(filepath)										
 		block=4294934528		
 		for nspF in self.hfs0:
 			if str(nspF._path)=="secure":
@@ -5056,10 +5064,6 @@ class Xci(File):
 								nca.seek(0xC00)									
 								i+=1		
 							else:			
-								outf.write(data)
-								t.update(len(data))
-								c=c+len(data)
-								outf.flush()
 								if fat=="fat32" and (c+len(data))>block:
 									n2=block-c
 									c=0
@@ -5081,6 +5085,11 @@ class Xci(File):
 									outf.write(dat2)						
 									t.update(len(dat2))									
 									outf.flush()
+								else:	
+									outf.write(data)
+									t.update(len(data))
+									c=c+len(data)
+									outf.flush()									
 								if not data:
 									break
 		t.close()

@@ -768,6 +768,7 @@ class Nsp(Pfs0):
 									continue											
 							
 	def read_npdm(self,files_list,buffer=32768):
+		feed=''
 		for nca in self:
 			if type(nca) == Fs.Nca and nca.header.getRightsId() == 0:
 				if 	str(nca.header.contentType) == 'Content.PROGRAM':
@@ -780,7 +781,7 @@ class Nsp(Pfs0):
 					try:
 						fp=open(str(self._path), 'rb')			
 						nca3=NCA3(fp,int(offset),str(nca._path),decKey)
-						nca3.print_npdm()
+						feed=nca3.print_npdm()
 						fp.close();
 					except BaseException as e:
 						#Print.error('Exception: ' + str(e))
@@ -811,7 +812,7 @@ class Nsp(Pfs0):
 					try:
 						fp=open(str(self._path), 'rb')			
 						nca3=NCA3(fp,int(offset),str(nca._path),decKey)
-						nca3.print_npdm()
+						feed=nca3.print_npdm()
 						fp.close();
 					except BaseException as e:
 						#Print.error('Exception: ' + str(e))
@@ -879,7 +880,8 @@ class Nsp(Pfs0):
 										n=npdm.__str__()
 										print(n)
 										break	
-							break									
+							break	
+		return feed						
 
 	def extract_nca(self,ofolder,files_list,buffer=32768):
 		for nca in self:
@@ -6387,6 +6389,7 @@ class Nsp(Pfs0):
 			splitnumb=math.ceil(totSize/4294901760)
 			index=0
 			filepath=filepath[:-1]+str(index)
+			
 		if fx=="folder" and fat=="fat32":
 			output_folder ="archfolder" 
 			output_folder = os.path.join(ofolder, output_folder)			
@@ -6401,6 +6404,7 @@ class Nsp(Pfs0):
 		t = tqdm(total=totSize, unit='B', unit_scale=True, leave=False)		
 		t.write(tabs+'- Writing header...')	
 		outf = open(str(filepath), 'w+b')	
+		outfile=str(filepath)
 		outf.write(hd)			
 		t.update(len(hd))
 		c=c+len(hd)		
@@ -6623,10 +6627,14 @@ class Nsp(Pfs0):
 			Print.info('masterKeyRev =\t' + hex(masterKeyRev))									
 		print("")		
 		
+		if totSize <= 4294934528:
+			fat="exfat"
 		if fat=="fat32":
 			splitnumb=math.ceil(totSize/4294934528)
 			index=0
 			filepath=filepath[:-1]+str(index)
+			
+		outfile=str(filepath)	
 		c=0
 		t = tqdm(total=totSize, unit='B', unit_scale=True, leave=False)
 		t.write(tabs+'- Writing XCI header...')

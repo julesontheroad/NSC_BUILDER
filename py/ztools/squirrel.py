@@ -3430,7 +3430,7 @@ if __name__ == '__main__':
 								f = Fs.Nsp(filepath)
 								for file in oflist:		
 									if not file.endswith('xml'):
-										outf,index,c = f.append_content(endfile,file,buffer,t,fat,fx,c,index)
+										endfile,index,c = f.append_content(endfile,file,buffer,t,fat,fx,c,index)
 								f.flush()
 								f.close()		
 							except BaseException as e:
@@ -3546,7 +3546,7 @@ if __name__ == '__main__':
 										for i in range(len(GClist)):
 											if GClist[i][0] == file:
 												GC=GClist[i][1]
-										outf,index,c = f.append_clean_content(endfile,file,buffer,t,GC,vkeypatch,metapatch,RSV_cap,fat,fx,c,index)
+										endfile,index,c = f.append_clean_content(endfile,file,buffer,t,GC,vkeypatch,metapatch,RSV_cap,fat,fx,c,index)
 								f.flush()
 								f.close()		
 							except BaseException as e:
@@ -3560,7 +3560,7 @@ if __name__ == '__main__':
 										for i in range(len(GClist)):
 											if GClist[i][0] == file:
 												GC=GClist[i][1]									
-										outf,index,c = f.append_clean_content(endfile,file,buffer,t,GC,vkeypatch,metapatch,RSV_cap,fat,fx,c,index)
+										endfile,index,c = f.append_clean_content(endfile,file,buffer,t,GC,vkeypatch,metapatch,RSV_cap,fat,fx,c,index)
 								f.flush()
 								f.close()		
 							except BaseException as e:
@@ -3610,7 +3610,7 @@ if __name__ == '__main__':
 						shutil.rmtree(afolder, ignore_errors=True)										
 					#print(str(totSize))
 					t = tqdm(total=totSize, unit='B', unit_scale=True, leave=False)			
-					outf = open(endfile, 'w+b')		
+					endfile = open(endfile, 'w+b')		
 					t.write(tabs+'- Writing NSP header...')							
 					outf.write(nspheader)		
 					t.update(len(nspheader))	
@@ -3622,7 +3622,7 @@ if __name__ == '__main__':
 								f = Fs.Nsp(filepath)
 								for file in oflist:			
 									if not file.endswith('xml'):					
-										outf,index,c = f.append_clean_content(endfile,file,buffer,t,False,vkeypatch,metapatch,RSV_cap,fat,fx,c,index)
+										endfile,index,c = f.append_clean_content(endfile,file,buffer,t,False,vkeypatch,metapatch,RSV_cap,fat,fx,c,index)
 								f.flush()
 								f.close()		
 							except BaseException as e:
@@ -3632,7 +3632,7 @@ if __name__ == '__main__':
 								f = Fs.Xci(filepath)
 								for file in oflist:						
 									if not file.endswith('xml'):									
-										outf,index,c = f.append_clean_content(endfile,file,buffer,t,False,vkeypatch,metapatch,RSV_cap,fat,fx,c,index)
+										endfile,index,c = f.append_clean_content(endfile,file,buffer,t,False,vkeypatch,metapatch,RSV_cap,fat,fx,c,index)
 								f.flush()
 								f.close()		
 							except BaseException as e:
@@ -4680,26 +4680,90 @@ if __name__ == '__main__':
 		# Read npdm from inside nsp or xci
 		# ...........................................................................						
 						
-		if args.Read_npdm:			
-			for filename in args.Read_npdm:													
-				if filename.endswith(".nsp"):	
+		if args.Read_npdm:
+			if args.ofolder:		
+				for var in args.ofolder:
 					try:
-						files_list=sq_tools.ret_nsp_offsets(filename)	
-						f = Fs.Nsp(filename, 'rb')
-						f.read_npdm(files_list)
-						f.flush()
-						f.close()
+						ofolder = var
 					except BaseException as e:
-						Print.error('Exception: ' + str(e))		
-				if filename.endswith(".xci"):	
-					try:
-						files_list=sq_tools.ret_xci_offsets(filename)	
-						f = Fs.Xci(filename)					
-						f.read_npdm(files_list)
-						f.flush()
-						f.close()
-					except BaseException as e:
-						Print.error('Exception: ' + str(e))							
+						Print.error('Exception: ' + str(e))	
+			else:
+				for filename in args.Read_npdm:
+					dir=os.path.dirname(os.path.abspath(filename))	
+					info='INFO'
+					ofolder =os.path.join(dir,info)		
+			if not os.path.exists(ofolder):
+				os.makedirs(ofolder)	
+			if args.text_file:
+				tfile=args.text_file
+				dir=os.path.dirname(os.path.abspath(tfile))
+				if not os.path.exists(dir):
+					os.makedirs(dir)	
+				err='badfiles.txt'			
+				errfile = os.path.join(dir, err)						
+				with open(tfile,"r+", encoding='utf8') as filelist: 	
+					filename = filelist.readline()
+					filename=os.path.abspath(filename.rstrip('\n'))
+			else:									
+				for filename in args.Read_npdm:
+					filename=filename		
+			basename=str(os.path.basename(os.path.abspath(filename)))					
+			ofile=basename[:-4]+'-npdm.txt'
+			infotext=os.path.join(ofolder, ofile)																
+			if filename.endswith(".nsp"):	
+				try:
+					files_list=sq_tools.ret_nsp_offsets(filename)	
+					f = Fs.Nsp(filename, 'rb')
+					feed=f.read_npdm(files_list)
+					f.flush()
+					f.close()
+					if not args.text_file:						
+						print('\n********************************************************')
+						print('Do you want to print the information to a text file')
+						print('********************************************************')
+						i=0
+						while i==0:							
+							print('Input "1" to print to text file')	
+							print('Input "2" to NOT print to text file\n')							
+							ck=input('Input your answer: ')	
+							if ck ==str(1):					
+								with open(infotext, 'w') as info:	
+									info.write(feed)	
+								i=1
+							elif ck ==str(2):					
+								i=1				
+							else:
+								print('WRONG CHOICE\n')		
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))									
+			if filename.endswith(".xci"):	
+				try:
+					files_list=sq_tools.ret_xci_offsets(filename)	
+					f = Fs.Xci(filename)					
+					feed=f.read_npdm(files_list)
+					f.flush()
+					f.close()
+					if not args.text_file:						
+						print('\n********************************************************')
+						print('Do you want to print the information to a text file')
+						print('********************************************************')
+						i=0
+						while i==0:							
+							print('Input "1" to print to text file')	
+							print('Input "2" to NOT print to text file\n')							
+							ck=input('Input your answer: ')	
+							if ck ==str(1):					
+								with open(infotext, 'w') as info:	
+									info.write(feed)	
+								i=1
+							elif ck ==str(2):					
+								i=1				
+							else:
+								print('WRONG CHOICE\n')							
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))	
+					
+					
 		# ...................................................						
 		# Read cnmt inside nsp or xci
 		# ...................................................					

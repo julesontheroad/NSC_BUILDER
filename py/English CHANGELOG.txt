@@ -34,8 +34,9 @@ v0.88- Bugfixes and new stuff
           confuse the batch operations, for .xc* and .ns* files joins are grouped by filename
 	- Fixes bug in verification where RSV check bar stays after finishing RSV check on 
 	  unlockers
+	- Fixes bug in verification where hash verification gives a really slow speed on some files.
 	- Fixes bug in some modes with files that use keygeneration 2  
-	- Fixes bug where info mode1 doesn't show the total size of deltas
+	- Fixes bug where info mode 1 doesn't show the total size of deltas
 	- Fix nacp reader for xci files
 	- Fix Language and nacp offset detection in some games	
 	- Fixes titlekey verification on nsp and nsx dlcs

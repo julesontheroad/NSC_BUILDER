@@ -311,7 +311,8 @@ class NCA3:
 			if sec.is_exefs:
 				npdm = NPDM(sec.fs.open('main.npdm'))
 				n=npdm.__str__()
-				print(n)				
+				print(n)	
+				return n
 
 	def decrypt_raw_sections(self, out_dir, disp=True):
 		os.makedirs(out_dir, exist_ok=True)
