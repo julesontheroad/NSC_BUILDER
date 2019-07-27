@@ -17,6 +17,7 @@ It also helps in the conversion from nsp to xci files allowing to not install ti
 ## 3. What can I do with this program?
 
 Current version of the program allows you to:
+
 1.- Make multi-content xci or nsp files.
 
 2.- Erase titlerights encryption from nsp files.
