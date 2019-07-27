@@ -5,6 +5,8 @@ from Fs.Nca import Nca
 from Fs.File import File
 from Fs.Nca import NcaHeader
 from Fs.File import MemoryFile
+from Fs.pyNCA3 import NCA3
+from Fs.pyNPDM import NPDM
 import Fs.Type
 from Fs import Type
 from Fs.Nacp import Nacp
@@ -26,7 +28,7 @@ from tqdm import tqdm
 import math  
 from operator import itemgetter, attrgetter, methodcaller
 import shutil
-#from Cryptodome.Cipher import PKCS1_v1_5 #Add new dependency Cryptodome
+import io
 
 MEDIA_SIZE = 0x200
 RSA_PUBLIC_EXPONENT = 65537
@@ -468,6 +470,7 @@ class Xci(File):
 						Print.info('rightsId =\t' + hex(rightsId))
 						Print.info('titleKeyDec =\t' + str(hx(titleKeyDec)))
 						Print.info('masterKeyRev =\t' + hex(masterKeyRev))
+						tik=ticket
 				for nca in nspF:
 					if type(nca) == Nca:
 						if nca.header.getRightsId() != 0:
@@ -481,7 +484,7 @@ class Xci(File):
 							if nca.header.getCryptoType2() == 0:
 								if nca.header.getCryptoType() == 2:
 									masterKeyRev = 2						
-									titleKeyDec = Keys.decryptTitleKey(ticket.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(masterKeyRev))
+									titleKeyDec = Keys.decryptTitleKey(tik.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(masterKeyRev))
 									break									
 											
 				for nca in nspF:
@@ -581,6 +584,7 @@ class Xci(File):
 						Print.info('rightsId =\t' + hex(rightsId))
 						Print.info('titleKeyDec =\t' + str(hx(titleKeyDec)))
 						Print.info('masterKeyRev =\t' + hex(masterKeyRev))
+						tik=ticket
 				for nca in nspF:
 					if type(nca) == Nca:
 						if nca.header.getRightsId() != 0:
@@ -593,7 +597,7 @@ class Xci(File):
 							if nca.header.getCryptoType2() == 0:
 								if nca.header.getCryptoType() == 2:
 									masterKeyRev = 2						
-									titleKeyDec = Keys.decryptTitleKey(ticket.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(masterKeyRev))
+									titleKeyDec = Keys.decryptTitleKey(tik.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(masterKeyRev))
 									break									
 
 				for nca in nspF:
@@ -836,7 +840,7 @@ class Xci(File):
 				for nca in nspF:	
 					if type(nca) == Nca:
 						if 	str(nca.header.contentType) == 'Content.CONTROL':
-							offset=nca.get_ncap_offset()
+							offset=nca.get_nacp_offset()
 							for f in nca:
 								f.seek(offset)
 								nacp = Nacp()	
@@ -867,63 +871,421 @@ class Xci(File):
 								f.seek(offset+0x3060)		
 								message='...............................';print(message);feed+=message+'\n'						
 								message='NACP ATTRIBUTES';print(message);feed+=message+'\n'	
-								message='...............................';print(message);feed+=message+'\n'							
-								feed=nacp.par_getDisplayVersion(f.read(0xF),feed)		
-								f.seek(offset+0x3070)							
-								feed=nacp.par_getAddOnContentBaseId(f.readInt64('little'),feed)
-								f.seek(offset+0x3078)							
-								feed=nacp.par_getSaveDataOwnerId(f.readInt64('little'),feed)
-								f.seek(offset+0x3080)							
-								feed=nacp.par_getUserAccountSaveDataSize(f.readInt64('little'),feed)	
-								f.seek(offset+0x3088)								
-								feed=nacp.par_getUserAccountSaveDataJournalSize(f.readInt64('little'),feed)	
-								f.seek(offset+0x3090)	
-								feed=nacp.par_getDeviceSaveDataSize(f.readInt64('little'),feed)	
-								f.seek(offset+0x3098)	
-								feed=nacp.par_getDeviceSaveDataJournalSize(f.readInt64('little'),feed)	
-								f.seek(offset+0x30A0)	
-								feed=nacp.par_getBcatDeliveryCacheStorageSize(f.readInt64('little'),feed)		
-								f.seek(offset+0x30A8)	
-								feed=nacp.par_getApplicationErrorCodeCategory(f.read(0x07),feed)	
-								f.seek(offset+0x30B0)
-								feed=nacp.par_getLocalCommunicationId(f.readInt64('little'),feed)	
-								f.seek(offset+0x30F0)
-								feed=nacp.par_getLogoType(f.readInt8('little'),feed)							
-								feed=nacp.par_getLogoHandling(f.readInt8('little'),feed)		
-								feed=nacp.par_getRuntimeAddOnContentInstall(f.readInt8('little'),feed)	
-								feed=nacp.par_getCrashReport(f.readInt8('little'),feed)	
-								feed=nacp.par_getHdcp(f.readInt8('little'),feed)		
-								feed=nacp.par_getSeedForPseudoDeviceId(f.readInt64('little'),feed)	
-								f.seek(offset+0x3100)			
-								feed=nacp.par_getBcatPassphrase(f.read(0x40),feed)	
-								f.seek(offset+0x3148)			
-								feed=nacp.par_UserAccountSaveDataSizeMax(f.readInt64('little'),feed)						
-								f.seek(offset+0x3150)			
-								feed=nacp.par_UserAccountSaveDataJournalSizeMax(f.readInt64('little'),feed)
-								f.seek(offset+0x3158)			
-								feed=nacp.par_getDeviceSaveDataSizeMax(f.readInt64('little'),feed)
-								f.seek(offset+0x3160)			
-								feed=nacp.par_getDeviceSaveDataJournalSizeMax(f.readInt64('little'),feed)							
-								f.seek(offset+0x3168)			
-								feed=nacp.par_getTemporaryStorageSize(f.readInt64('little'),feed)		
-								feed=nacp.par_getCacheStorageSize(f.readInt64('little'),feed)			
-								f.seek(offset+0x3178)		
-								feed=nacp.par_getCacheStorageJournalSize(f.readInt64('little'),feed)							
-								feed=nacp.par_getCacheStorageDataAndJournalSizeMax(f.readInt64('little'),feed)		
-								f.seek(offset+0x3188)	
-								feed=nacp.par_getCacheStorageIndexMax(f.readInt64('little'),feed)		
-								feed=nacp.par_getPlayLogQueryableApplicationId(f.readInt64('little'),feed)		
-								f.seek(offset+0x3210)	
-								feed=nacp.par_getPlayLogQueryCapability(f.readInt8('little'),feed)	
-								feed=nacp.par_getRepair(f.readInt8('little'),feed)	
-								feed=nacp.par_getProgramIndex(f.readInt8('little'),feed)	
-								feed=nacp.par_getRequiredNetworkServiceLicenseOnLaunch(f.readInt8('little'),feed)	
-								#f.seek(offset+0x3000)						
-								#nacp.open(MemoryFile(f.read(),32768*2))	
-								#nacp.printInfo()
-								#Hex.dump(offset)				
+								message='...............................';print(message);feed+=message+'\n'
+								try:
+									feed=nacp.par_getDisplayVersion(f.read(0xF),feed)		
+									f.seek(offset+0x3070)							
+									feed=nacp.par_getAddOnContentBaseId(f.readInt64('little'),feed)
+									f.seek(offset+0x3078)							
+									feed=nacp.par_getSaveDataOwnerId(f.readInt64('little'),feed)
+									f.seek(offset+0x3080)							
+									feed=nacp.par_getUserAccountSaveDataSize(f.readInt64('little'),feed)	
+									f.seek(offset+0x3088)								
+									feed=nacp.par_getUserAccountSaveDataJournalSize(f.readInt64('little'),feed)	
+									f.seek(offset+0x3090)	
+									feed=nacp.par_getDeviceSaveDataSize(f.readInt64('little'),feed)	
+									f.seek(offset+0x3098)	
+									feed=nacp.par_getDeviceSaveDataJournalSize(f.readInt64('little'),feed)	
+									f.seek(offset+0x30A0)	
+									feed=nacp.par_getBcatDeliveryCacheStorageSize(f.readInt64('little'),feed)		
+									f.seek(offset+0x30A8)	
+									feed=nacp.par_getApplicationErrorCodeCategory(f.read(0x07),feed)	
+									f.seek(offset+0x30B0)
+									feed=nacp.par_getLocalCommunicationId(f.readInt64('little'),feed)	
+									f.seek(offset+0x30F0)
+									feed=nacp.par_getLogoType(f.readInt8('little'),feed)							
+									feed=nacp.par_getLogoHandling(f.readInt8('little'),feed)		
+									feed=nacp.par_getRuntimeAddOnContentInstall(f.readInt8('little'),feed)	
+									feed=nacp.par_getCrashReport(f.readInt8('little'),feed)	
+									feed=nacp.par_getHdcp(f.readInt8('little'),feed)		
+									feed=nacp.par_getSeedForPseudoDeviceId(f.readInt64('little'),feed)	
+									f.seek(offset+0x3100)			
+									feed=nacp.par_getBcatPassphrase(f.read(0x40),feed)	
+									f.seek(offset+0x3148)			
+									feed=nacp.par_UserAccountSaveDataSizeMax(f.readInt64('little'),feed)						
+									f.seek(offset+0x3150)			
+									feed=nacp.par_UserAccountSaveDataJournalSizeMax(f.readInt64('little'),feed)
+									f.seek(offset+0x3158)			
+									feed=nacp.par_getDeviceSaveDataSizeMax(f.readInt64('little'),feed)
+									f.seek(offset+0x3160)			
+									feed=nacp.par_getDeviceSaveDataJournalSizeMax(f.readInt64('little'),feed)							
+									f.seek(offset+0x3168)			
+									feed=nacp.par_getTemporaryStorageSize(f.readInt64('little'),feed)		
+									feed=nacp.par_getCacheStorageSize(f.readInt64('little'),feed)			
+									f.seek(offset+0x3178)		
+									feed=nacp.par_getCacheStorageJournalSize(f.readInt64('little'),feed)							
+									feed=nacp.par_getCacheStorageDataAndJournalSizeMax(f.readInt64('little'),feed)		
+									f.seek(offset+0x3188)	
+									feed=nacp.par_getCacheStorageIndexMax(f.readInt64('little'),feed)		
+									feed=nacp.par_getPlayLogQueryableApplicationId(f.readInt64('little'),feed)		
+									f.seek(offset+0x3210)	
+									feed=nacp.par_getPlayLogQueryCapability(f.readInt8('little'),feed)	
+									feed=nacp.par_getRepair(f.readInt8('little'),feed)	
+									feed=nacp.par_getProgramIndex(f.readInt8('little'),feed)	
+									feed=nacp.par_getRequiredNetworkServiceLicenseOnLaunch(f.readInt8('little'),feed)	
+								except:continue	
 		return feed
 		
+	def read_npdm(self,files_list):
+		for nspF in self.hfs0:
+			if str(nspF._path)=="secure":
+				for nca in nspF:
+					if type(nca) == Fs.Nca and nca.header.getRightsId() == 0:
+						if 	str(nca.header.contentType) == 'Content.PROGRAM':
+							for i in range(len(files_list)):	
+								if str(nca._path) == files_list[i][0]:
+									offset=files_list[i][1]
+									#print(offset)
+									break					
+							decKey=nca.header.titleKeyDec
+							try:
+								fp=open(str(self._path), 'rb')			
+								nca3=NCA3(fp,int(offset),str(nca._path),decKey)
+								feed=nca3.print_npdm()
+								fp.close();
+							except BaseException as e:
+								#Print.error('Exception: ' + str(e))
+								nca.rewind()					
+								for f in nca:						
+									for g in f:
+										if str(g._path)=='main.npdm':
+											inmemoryfile = io.BytesIO(g.read())
+											npdm = NPDM(inmemoryfile)
+											n=npdm.__str__()
+											print(n)	
+					if type(nca) == Fs.Nca and nca.header.getRightsId() != 0:
+						if 	str(nca.header.contentType) == 'Content.PROGRAM':	
+							correct, tkey = self.verify_nca_key(str(nca._path))		
+							if correct == True:
+								crypto1=nca.header.getCryptoType()
+								crypto2=nca.header.getCryptoType2()	
+								if crypto2>crypto1:
+									masterKeyRev=crypto2
+								if crypto2<=crypto1:	
+									masterKeyRev=crypto1	
+								decKey = Keys.decryptTitleKey(tkey, Keys.getMasterKeyIndex(int(masterKeyRev)))
+							for i in range(len(files_list)):	
+								if str(nca._path) == files_list[i][0]:
+									offset=files_list[i][1]
+									#print(offset)
+									break						
+							try:
+								fp=open(str(self._path), 'rb')			
+								nca3=NCA3(fp,int(offset),str(nca._path),decKey)
+								feed=nca3.print_npdm()
+								fp.close();
+							except BaseException as e:
+								#Print.error('Exception: ' + str(e))
+								nca.rewind()
+								for fs in nca.sectionFilesystems:
+									#print(fs.fsType)
+									#print(fs.cryptoType)						
+									if fs.fsType == Type.Fs.PFS0 and fs.cryptoType == Type.Crypto.CTR:
+										nca.seek(0)
+										ncaHeader = NcaHeader()
+										ncaHeader.open(MemoryFile(nca.read(0x400), Type.Crypto.XTS, uhx(Keys.get('header_key'))))	
+										ncaHeader.seek(0)
+										fs.rewind()
+										pfs0=fs
+										sectionHeaderBlock = fs.buffer
+										nca.seek(fs.offset)	
+										pfs0Offset=fs.offset
+										pfs0Header = nca.read(0x10*14)
+										mem = MemoryFile(pfs0Header, Type.Crypto.CTR, decKey, pfs0.cryptoCounter, offset = pfs0Offset)
+										data = mem.read();
+										#Hex.dump(data)	
+										head=data[0:4]
+										n_files=(data[4:8])
+										n_files=int.from_bytes(n_files, byteorder='little')		
+										st_size=(data[8:12])
+										st_size=int.from_bytes(st_size, byteorder='little')		
+										junk=(data[12:16])
+										offset=(0x10 + n_files * 0x18)
+										stringTable=(data[offset:offset+st_size])
+										stringEndOffset = st_size
+										headerSize = 0x10 + 0x18 * n_files + st_size
+										#print(head)
+										#print(str(n_files))
+										#print(str(st_size))	
+										#print(str((stringTable)))		
+										files_list=list()
+										for i in range(n_files):
+											i = n_files - i - 1
+											pos=0x10 + i * 0x18
+											offset = data[pos:pos+8]
+											offset=int.from_bytes(offset, byteorder='little')			
+											size = data[pos+8:pos+16]
+											size=int.from_bytes(size, byteorder='little')			
+											nameOffset = data[pos+16:pos+20] # just the offset
+											nameOffset=int.from_bytes(nameOffset, byteorder='little')			
+											name = stringTable[nameOffset:stringEndOffset].decode('utf-8').rstrip(' \t\r\n\0')
+											stringEndOffset = nameOffset
+											junk2 = data[pos+20:pos+24] # junk data
+											#print(name)
+											#print(offset)	
+											#print(size)	
+											files_list.append([name,offset,size])	
+										files_list.reverse()	
+										#print(files_list)								
+										for i in range(len(files_list)):
+											if files_list[i][0] == 'main.npdm':
+												off1=files_list[i][1]+pfs0Offset+headerSize
+												nca.seek(off1)
+												np=nca.read(files_list[i][2])
+												mem = MemoryFile(np, Type.Crypto.CTR, decKey, pfs0.cryptoCounter, offset = off1)
+												data = mem.read();
+												#Hex.dump(data)										
+												inmemoryfile = io.BytesIO(data)
+												npdm = NPDM(inmemoryfile)
+												n=npdm.__str__()
+												print(n)
+												break	
+									break	
+		return feed							
+									
+	def copy_as_plaintext(self,ofolder,files_list,buffer=32768):
+		for nspF in self.hfs0:
+			if str(nspF._path)=="secure":
+				for nca in nspF:
+					tk=None;skip=False
+					if type(nca) == Nca:
+						for fs in nca.sectionFilesystems:
+							if fs.cryptoType == Type.Crypto.BKTR:
+								skip=True
+								break					
+						if nca.header.getRightsId() != 0:
+							correct, tkey = self.verify_nca_key(str(nca._path))		
+							if correct == True:
+								crypto1=nca.header.getCryptoType()
+								crypto2=nca.header.getCryptoType2()	
+								if crypto2>crypto1:
+									masterKeyRev=crypto2
+								if crypto2<=crypto1:	
+									masterKeyRev=crypto1	
+								tk = Keys.decryptTitleKey(tkey, Keys.getMasterKeyIndex(int(masterKeyRev)))
+						else:
+							tk=nca.header.titleKeyDec
+						if skip == False:							
+							ncaname =  str(nca._path)
+							PN = os.path.join(ofolder,ncaname)
+							if not os.path.exists(ofolder):
+								os.makedirs(ofolder)
+							for i in range(len(files_list)):	
+								if str(nca._path) == files_list[i][0]:
+									offset=files_list[i][1]
+									#print(offset)
+									break
+							#print(nca.size)	
+							#print(str(nca._path)[-9:])
+							lon=0;test=str(nca._path)[-9:]
+							if test=='.cnmt.nca':
+								ext='.plain.cnmt.nca'
+							else:
+								ext='.plain.nca'
+							lon=(-1)*len(ext)	
+							try:
+								fp=open(str(self._path), 'rb')			
+								nca3=NCA3(fp,int(offset),str(nca._path),tk)
+								nca3.decrypt_to_plaintext(PN.replace(str(nca._path)[lon:], ext))
+								fp.close();
+							except BaseException as e:
+								#Print.error('Exception: ' + str(e))
+								if nca.size<int(1073725440):							
+									try:
+										nca.rewind()
+										inmemoryfile = io.BytesIO(nca.read())
+										nca3=NCA3(inmemoryfile,0,str(nca._path),tk,buffer)					
+										nca3.decrypt_to_plaintext(PN.replace(str(nca._path)[lon:], ext))
+									except BaseException as e:
+										#Print.error('Exception: ' + str(e))
+										try:																				
+											with open(str(self._path), 'rb') as f:
+												f.seek(offset)
+												inmemoryfile = io.BytesIO(f.read(files_list[i][3]))
+												nca3=NCA3(inmemoryfile,int(0),str(nca._path),tk,buffer)
+												nca3.decrypt_to_plaintext(PN.replace(str(nca._path)[lon:], ext))								
+										except BaseException as e:
+											#Print.error('Exception: ' + str(e))	
+											t = tqdm(total=nca.size, unit='B', unit_scale=True, leave=False)
+											t.write(str(nca._path)+' needs to be pre-extracted')
+											outnca=open(str(PN), 'w+b')	
+											nca.rewind()											
+											try:											
+												for data in iter(lambda: nca.read(int(buffer)), ""):							
+													outnca.write(data)				
+													t.update(len(data))								
+													outnca.flush()						
+													if not data:
+														outnca.close()
+														t.close()
+														break																			
+												with open(str(PN), 'rb') as f:
+													nca3=NCA3(f,int(0),str(nca._path),tk,buffer)
+													nca3.decrypt_to_plaintext(PN.replace(str(nca._path)[lon:], ext))								
+												try:
+													os.remove(str(PN)) 	
+												except:
+													pass									
+											except BaseException as e:
+												Print.error('Exception: ' + str(e))	
+												outnca.close()
+												t.close()												
+												try:
+													os.remove(str(PN)) 	
+												except:
+													pass
+												continue											
+								else:
+									t = tqdm(total=nca.size, unit='B', unit_scale=True, leave=False)	
+									t.write(str(nca._path)+' needs to be pre-extracted')
+									outnca=open(str(PN), 'w+b')	
+									nca.rewind()
+									for data in iter(lambda: nca.read(int(buffer)), ""):	
+										try:									
+											nca.rewind()
+											for data in iter(lambda: nca.read(int(buffer)), ""):							
+												outnca.write(data)				
+												t.update(len(data))							
+												outnca.flush()						
+												if not data:
+													outnca.close()
+													t.close()
+													break											
+											with open(str(PN), 'rb') as f:
+												nca3=NCA3(f,int(0),str(nca._path),tk,buffer)
+												nca3.decrypt_to_plaintext(PN.replace(str(nca._path)[lon:], ext))								
+											try:
+												os.remove(str(PN)) 	
+											except:
+												pass									
+										except BaseException as e:
+											Print.error('Exception: ' + str(e))
+											outnca.close()
+											t.close()
+											try:
+												os.remove(str(PN)) 	
+											except:
+												pass																	
+											continue											
+		
+	def extract_nca(self,ofolder,files_list,buffer=32768):
+		for nspF in self.hfs0:
+			if str(nspF._path)=="secure":
+				for nca in nspF:
+					tk=None;skip=False						
+					if type(nca) == Nca:
+						for fs in nca.sectionFilesystems:
+							if fs.cryptoType == Type.Crypto.BKTR:
+								skip=True
+								break						
+						if nca.header.getRightsId() != 0:
+							correct, tkey = self.verify_nca_key(str(nca._path))		
+							if correct == True:
+								crypto1=nca.header.getCryptoType()
+								crypto2=nca.header.getCryptoType2()	
+								if crypto2>crypto1:
+									masterKeyRev=crypto2
+								if crypto2<=crypto1:	
+									masterKeyRev=crypto1	
+								tk = Keys.decryptTitleKey(tkey, Keys.getMasterKeyIndex(int(masterKeyRev)))
+						else:
+							tk=nca.header.titleKeyDec	
+					if skip == False:							
+						if type(nca) == Nca:
+							ncaname =  str(nca._path)[:-4]+'_nca'
+							ncafolder = os.path.join(ofolder,ncaname)
+							ncaname2 =  str(nca._path)
+							PN = os.path.join(ofolder,ncaname2)							
+							if not os.path.exists(ncafolder):
+								os.makedirs(ncafolder)			
+							for i in range(len(files_list)):	
+								if str(nca._path) == files_list[i][0]:
+									offset=files_list[i][1]
+									break
+							#t = tqdm(total=nca.size, unit='B', unit_scale=True, leave=False)				
+							try:
+								fp=open(str(self._path), 'rb')			
+								nca3=NCA3(fp,int(offset),str(nca._path),tk,buffer)
+								nca3.extract_conts(ncafolder, disp=True)
+								fp.close()
+							except:	
+								#Print.error('Exception: ' + str(e))
+								if nca.size<int(1073725440):								
+									try:					
+										nca.rewind()
+										inmemoryfile = io.BytesIO(nca.read())
+										nca3=NCA3(inmemoryfile,0,str(nca._path),tk,buffer)					
+										nca3.extract_conts(ncafolder, disp=True)	
+									except BaseException as e:
+										#Print.error('Exception: ' + str(e))
+										try:																				
+											with open(str(self._path), 'rb') as f:
+												f.seek(offset)
+												inmemoryfile = io.BytesIO(f.read(files_list[i][3]))
+												nca3=NCA3(inmemoryfile,int(0),str(nca._path),tk,buffer)
+												nca3.extract_conts(ncafolder, disp=True)											
+										except BaseException as e:
+											#Print.error('Exception: ' + str(e))	
+											t = tqdm(total=nca.size, unit='B', unit_scale=True, leave=False)	
+											t.write(str(nca._path)+' needs to be pre-extracted')							
+											outnca=open(str(PN), 'w+b')	
+											nca.rewind()
+											try:
+												for data in iter(lambda: nca.read(int(buffer)), ""):							
+													outnca.write(data)				
+													t.update(len(data))							
+													outnca.flush()						
+													if not data:
+														outnca.close()
+														t.close()
+														break																					
+												with open(str(PN), 'rb') as f:
+													nca3=NCA3(f,int(0),str(nca._path),tk,buffer)
+													nca3.extract_conts(ncafolder, disp=True)										
+												try:
+													os.remove(str(PN)) 	
+												except:
+													pass									
+											except BaseException as e:
+												Print.error('Exception: ' + str(e))	
+												outnca.close()
+												t.close()												
+												try:
+													os.remove(str(PN)) 	
+												except:
+													pass																	
+												continue														
+								else:
+									t = tqdm(total=nca.size, unit='B', unit_scale=True, leave=False)
+									t.write(str(nca._path)+' needs to be pre-extracted')									
+									outnca=open(str(PN), 'w+b')	
+									nca.rewind()
+									try:
+										for data in iter(lambda: nca.read(int(buffer)), ""):							
+											outnca.write(data)				
+											t.update(len(data))								
+											outnca.flush()						
+											if not data:
+												outnca.close()
+												t.close()	
+												break																			
+										with open(str(PN), 'rb') as f:
+											nca3=NCA3(f,int(0),str(nca._path),tk,buffer)
+											nca3.extract_conts(ncafolder, disp=True)										
+										try:
+											os.remove(str(PN)) 	
+										except:
+											pass									
+									except BaseException as e:
+										Print.error('Exception: ' + str(e))		
+										outnca.close()
+										t.close()												
+										try:
+											os.remove(str(PN)) 	
+										except:
+											pass																	
+										continue											
+
 #READ CNMT FILE WITHOUT EXTRACTION	
 	def read_cnmt(self):
 		feed=''	
@@ -1376,6 +1738,7 @@ class Xci(File):
 						masterKeyRev = file.getMasterKeyRevision()
 						titleKeyDec = Keys.decryptTitleKey(file.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(masterKeyRev))
 						rightsId = file.getRightsId()
+						ticket=file
 		for nspF in self.hfs0:
 			if str(nspF._path)=="secure":
 				for file in nspF:			
@@ -1821,7 +2184,7 @@ class Xci(File):
 												nca_name=str(hx(NcaId))
 												nca_name=nca_name[2:-1]+'.nca'
 												s1=0;s1,feed=self.print_nca_by_title(nca_name,ncatype,feed)
-												ncasize=ncasize
+												ncasize=ncasize+s1
 										size2=ncasize
 										size_pr=sq_tools.getSize(ncasize)		
 										bigtab="\t"*7
@@ -2279,7 +2642,7 @@ class Xci(File):
 										message=('- Patchable to: DLC -> no RSV to patch\n');print(message);feed+=message+'\n'																					
 		return feed										
 						
-	def inf_get_title(self,target,offset,content_entries,original_ID):
+	def inf_get_title(self,target,offset,content_entries,original_ID,roman=True):
 		content_type=''
 		token='secure'		
 		for nspF in self.hfs0:
@@ -2340,7 +2703,7 @@ class Xci(File):
 					if type(nca) == Nca:
 						if nca_name == str(nca._path):
 							if 	str(nca.header.contentType) == 'Content.CONTROL':
-								title,editor,ediver,SupLg,regionstr,isdemo=nca.get_langueblock(title)
+								title,editor,ediver,SupLg,regionstr,isdemo=nca.get_langueblock(title,roman)
 								return(title,editor,ediver,SupLg,regionstr,isdemo)
 		regionstr="0|0|0|0|0|0|0|0|0|0|0|0|0|0"								
 		return(title,"","","",regionstr,"")	
@@ -2707,6 +3070,7 @@ class Xci(File):
 						masterKeyRev = ticket.getMasterKeyRevision()
 						titleKeyDec = Keys.decryptTitleKey(ticket.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(masterKeyRev))
 						rightsId = ticket.getRightsId()
+						tik=ticket
 				for nca in nspF:
 					if type(nca) == Nca:
 						if nca.header.getRightsId() != 0:
@@ -2720,7 +3084,7 @@ class Xci(File):
 							if nca.header.getCryptoType2() == 0:
 								if nca.header.getCryptoType() == 2:
 									masterKeyRev = 2						
-									titleKeyDec = Keys.decryptTitleKey(ticket.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(masterKeyRev))
+									titleKeyDec = Keys.decryptTitleKey(tik.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(masterKeyRev))
 									break	
 									
 		Print.info('Generating XCI:')	
@@ -3126,7 +3490,8 @@ class Xci(File):
 					if type(file) == Ticket:		
 						masterKeyRev = file.getMasterKeyRevision()
 						titleKeyDec = Keys.decryptTitleKey(file.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(masterKeyRev))
-						rightsId = file.getRightsId()						
+						rightsId = file.getRightsId()
+						ticket=file	
 		for nspF in self.hfs0:
 			if str(nspF._path)=="secure":
 				for nca in nspF:
@@ -3335,7 +3700,9 @@ class Xci(File):
 								if fat=="fat32" and (c+len(newheader))>block:
 									n2=block-c
 									c=0
-									dat2=newheader[0x00:0x00+int(n2)]
+									inmemoryfile = io.BytesIO(newheader)
+									inmemoryfile.seek(0)
+									dat2=inmemoryfile.read(n2)
 									outf.write(dat2)
 									outf.flush()
 									outf.close()	
@@ -3344,7 +3711,9 @@ class Xci(File):
 									outfile=outfile[0:-1]
 									outfile=outfile+str(index)
 									outf = open(outfile, 'wb')	
-									dat2=newheader[0x00+int(n2)+1:]
+									inmemoryfile.seek(n2)
+									dat2=inmemoryfile.read(len(newheader)-n2)
+									inmemoryfile.close()
 									outf.write(dat2)						
 									t.update(len(dat2))									
 									outf.flush()	
@@ -3355,14 +3724,13 @@ class Xci(File):
 								nca.seek(0xC00)									
 								i+=1							
 							else:
-								outf.write(data)				
-								t.update(len(data))
-								c=c+len(data)									
-								outf.flush()
 								if fat=="fat32" and (c+len(data))>block:
 									n2=block-c
 									c=0
-									dat2=nca.read(int(n2))
+									inmemoryfile = io.BytesIO()
+									inmemoryfile.write(data)
+									inmemoryfile.seek(0)
+									dat2=inmemoryfile.read(n2)
 									outf.write(dat2)
 									outf.flush()
 									outf.close()	
@@ -3370,7 +3738,18 @@ class Xci(File):
 									index=index+1
 									outfile=outfile[0:-1]
 									outfile=outfile+str(index)
-									outf = open(outfile, 'wb')							
+									outf = open(outfile, 'wb')					
+									inmemoryfile.seek(n2)
+									dat2=inmemoryfile.read(len(data)-n2)
+									inmemoryfile.close()
+									outf.write(dat2)						
+									t.update(len(dat2))									
+									outf.flush()	
+								else:
+									outf.write(data)				
+									t.update(len(data))
+									c=c+len(data)									
+									outf.flush()						
 								if not data:
 									nca.close()
 									break
@@ -3383,14 +3762,13 @@ class Xci(File):
 						size=os.path.getsize(filepath)
 						t.write(tabs+'- Appending: ' + str(nca._path))						
 						for data in iter(lambda: target.read(int(size)), ""):				
-							outf.write(data)
-							t.update(len(data))
-							c=c+len(data)
-							outf.flush()
 							if fat=="fat32" and (c+len(data))>block:
 								n2=block-c
 								c=0
-								dat2=nca.read(int(n2))
+								inmemoryfile = io.BytesIO()
+								inmemoryfile.write(data)
+								inmemoryfile.seek(0)
+								dat2=inmemoryfile.read(n2)
 								outf.write(dat2)
 								outf.flush()
 								outf.close()	
@@ -3398,12 +3776,18 @@ class Xci(File):
 								index=index+1
 								outfile=outfile[0:-1]
 								outfile=outfile+str(index)
-								outf = open(outfile, 'wb')
-								if totSize>(4294934528+int(buffer)):
-									dat2=nca.read(int(buffer))
-									outf.write(dat2)						
-									t.update(len(dat2))									
-									outf.flush()	
+								outf = open(outfile, 'wb')					
+								inmemoryfile.seek(n2)
+								dat2=inmemoryfile.read(len(data)-n2)
+								inmemoryfile.close()
+								outf.write(dat2)						
+								t.update(len(dat2))									
+								outf.flush()	
+							else:
+								outf.write(data)				
+								t.update(len(data))
+								c=c+len(data)									
+								outf.flush()							
 							if not data:
 								target.close()
 								break	
@@ -3418,14 +3802,13 @@ class Xci(File):
 							t.write(tabs+'- Appending: ' + xmlname)
 							xmlf.seek(0x00)
 							for data in iter(lambda: xmlf.read(int(buffer)), ""):				
-								outf.write(data)
-								t.update(len(data))
-								c=c+len(data)
-								outf.flush()
 								if fat=="fat32" and (c+len(data))>block:
 									n2=block-c
 									c=0
-									dat2=nca.read(int(n2))
+									inmemoryfile = io.BytesIO()
+									inmemoryfile.write(data)
+									inmemoryfile.seek(0)
+									dat2=inmemoryfile.read(n2)
 									outf.write(dat2)
 									outf.flush()
 									outf.close()	
@@ -3433,12 +3816,18 @@ class Xci(File):
 									index=index+1
 									outfile=outfile[0:-1]
 									outfile=outfile+str(index)
-									outf = open(outfile, 'wb')
-									if totSize>(4294934528+int(buffer)):
-										dat2=nca.read(int(buffer))
-										outf.write(dat2)						
-										t.update(len(dat2))									
-										outf.flush()	
+									outf = open(outfile, 'wb')					
+									inmemoryfile.seek(n2)
+									dat2=inmemoryfile.read(len(data)-n2)
+									inmemoryfile.close()
+									outf.write(dat2)						
+									t.update(len(dat2))									
+									outf.flush()	
+								else:
+									outf.write(data)				
+									t.update(len(data))
+									c=c+len(data)									
+									outf.flush()
 								if not data:
 									xmlf.close()
 									break	
@@ -3479,6 +3868,7 @@ class Xci(File):
 						masterKeyRev = file.getMasterKeyRevision()
 						titleKeyDec = Keys.decryptTitleKey(file.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(masterKeyRev))
 						rightsId = file.getRightsId()
+						ticket=file
 		for nspF in self.hfs0:
 			if str(nspF._path)=="secure":
 				for file in nspF:			
@@ -3637,7 +4027,9 @@ class Xci(File):
 								if fat=="fat32" and (c+len(newheader))>block:
 									n2=block-c
 									c=0
-									dat2=newheader[0x00:0x00+int(n2)]
+									inmemoryfile = io.BytesIO(newheader)
+									inmemoryfile.seek(0)
+									dat2=inmemoryfile.read(n2)
 									outf.write(dat2)
 									outf.flush()
 									outf.close()	
@@ -3646,25 +4038,26 @@ class Xci(File):
 									outfile=outfile[0:-1]
 									outfile=outfile+str(index)
 									outf = open(outfile, 'wb')	
-									dat2=newheader[0x00+int(n2)+1:]
+									inmemoryfile.seek(n2)
+									dat2=inmemoryfile.read(len(newheader)-n2)
+									inmemoryfile.close()
 									outf.write(dat2)						
 									t.update(len(dat2))									
 									outf.flush()	
 								else:
 									outf.write(newheader)
 									t.update(len(newheader))	
-									c=c+len(newheader)								
+									c=c+len(newheader)							
 								nca.seek(0xC00)									
 								i+=1		
 							else:			
-								outf.write(data)
-								t.update(len(data))
-								c=c+len(data)
-								outf.flush()
 								if fat=="fat32" and (c+len(data))>block:
 									n2=block-c
 									c=0
-									dat2=nca.read(int(n2))
+									inmemoryfile = io.BytesIO()
+									inmemoryfile.write(data)
+									inmemoryfile.seek(0)
+									dat2=inmemoryfile.read(n2)
 									outf.write(dat2)
 									outf.flush()
 									outf.close()	
@@ -3672,12 +4065,18 @@ class Xci(File):
 									index=index+1
 									outfile=outfile[0:-1]
 									outfile=outfile+str(index)
-									outf = open(outfile, 'wb')
-									if totSize>(4294934528+int(buffer)):
-										dat2=nca.read(int(buffer))
-										outf.write(dat2)						
-										t.update(len(dat2))									
-										outf.flush()	
+									outf = open(outfile, 'wb')					
+									inmemoryfile.seek(n2)
+									dat2=inmemoryfile.read(len(data)-n2)
+									inmemoryfile.close()
+									outf.write(dat2)						
+									t.update(len(dat2))									
+									outf.flush()	
+								else:
+									outf.write(data)				
+									t.update(len(data))
+									c=c+len(data)									
+									outf.flush()
 								if not data:
 									break
 					if type(nca) == Nca and str(nca.header.contentType) == 'Content.META':	
@@ -3747,14 +4146,13 @@ class Xci(File):
 						size=os.path.getsize(filepath)
 						t.write(tabs+'- Appending: ' + str(nca._path))						
 						for data in iter(lambda: target.read(int(size)), ""):				
-							outf.write(data)
-							t.update(len(data))
-							c=c+len(data)
-							outf.flush()
 							if fat=="fat32" and (c+len(data))>block:
 								n2=block-c
 								c=0
-								dat2=nca.read(int(n2))
+								inmemoryfile = io.BytesIO()
+								inmemoryfile.write(data)
+								inmemoryfile.seek(0)
+								dat2=inmemoryfile.read(n2)
 								outf.write(dat2)
 								outf.flush()
 								outf.close()	
@@ -3762,12 +4160,18 @@ class Xci(File):
 								index=index+1
 								outfile=outfile[0:-1]
 								outfile=outfile+str(index)
-								outf = open(outfile, 'wb')
-								if totSize>(4294934528+int(buffer)):
-									dat2=nca.read(int(buffer))
-									outf.write(dat2)						
-									t.update(len(dat2))									
-									outf.flush()	
+								outf = open(outfile, 'wb')					
+								inmemoryfile.seek(n2)
+								dat2=inmemoryfile.read(len(data)-n2)
+								inmemoryfile.close()
+								outf.write(dat2)						
+								t.update(len(dat2))									
+								outf.flush()	
+							else:
+								outf.write(data)				
+								t.update(len(data))
+								c=c+len(data)									
+								outf.flush()
 							if not data:
 								break	
 						target.close()		
@@ -4293,6 +4697,7 @@ class Xci(File):
 			splitnumb=math.ceil(totSize/4294901760)
 			index=0
 			filepath=filepath[:-1]+str(index)
+			
 		if fx=="folder" and fat=="fat32":
 			output_folder ="archfolder" 
 			output_folder = os.path.join(ofolder, output_folder)			
@@ -4307,6 +4712,7 @@ class Xci(File):
 		t = tqdm(total=totSize, unit='B', unit_scale=True, leave=False)		
 		t.write(tabs+'- Writing header...')	
 		outf = open(str(filepath), 'w+b')	
+		outfile=str(filepath)	
 		outf.write(hd)			
 		t.update(len(hd))
 		c=c+len(hd)		
@@ -4335,7 +4741,10 @@ class Xci(File):
 								if fat=="fat32" and (c+len(newheader))>block:
 									n2=block-c
 									c=0
-									dat2=newheader[0x00:0x00+int(n2)]
+									inmemoryfile = io.BytesIO()
+									inmemoryfile.write(newheader)
+									inmemoryfile.seek(0)
+									dat2=inmemoryfile.read(n2)	
 									outf.write(dat2)
 									outf.flush()
 									outf.close()	
@@ -4344,7 +4753,9 @@ class Xci(File):
 									outfile=outfile[0:-1]
 									outfile=outfile+str(index)
 									outf = open(outfile, 'wb')	
-									dat2=newheader[0x00+int(n2)+1:]
+									inmemoryfile.seek(n2)
+									dat2=inmemoryfile.read(len(newheader)-n2)
+									inmemoryfile.close()
 									outf.write(dat2)						
 									t.update(len(dat2))									
 									outf.flush()	
@@ -4355,14 +4766,13 @@ class Xci(File):
 								file.seek(0xC00)									
 								i+=1							
 							else:
-								outf.write(data)				
-								t.update(len(data))
-								c=c+len(data)									
-								outf.flush()
 								if fat=="fat32" and (c+len(data))>block:
 									n2=block-c
 									c=0
-									dat2=file.read(int(n2))
+									inmemoryfile = io.BytesIO()
+									inmemoryfile.write(data)
+									inmemoryfile.seek(0)
+									dat2=inmemoryfile.read(n2)	
 									outf.write(dat2)
 									outf.flush()
 									outf.close()	
@@ -4370,21 +4780,31 @@ class Xci(File):
 									index=index+1
 									outfile=outfile[0:-1]
 									outfile=outfile+str(index)
-									outf = open(outfile, 'wb')							
+									outf = open(outfile, 'wb')
+									inmemoryfile.seek(n2)
+									dat2=inmemoryfile.read(len(data)-n2)
+									inmemoryfile.close()
+									outf.write(dat2)						
+									t.update(len(dat2))									
+									outf.flush()		
+								else:
+									outf.write(data)				
+									t.update(len(data))
+									c=c+len(data)									
+									outf.flush()									
 								if not data:
 									break					
 					if type(file) != Nca and file._path in contentlist:
 						file.rewind()			
 						t.write(tabs+'- Appending: ' + str(file._path))					
 						for data in iter(lambda: file.read(int(buffer)), ""):				
-							outf.write(data)
-							t.update(len(data))
-							c=c+len(data)
-							outf.flush()
 							if fat=="fat32" and (c+len(data))>block:
 								n2=block-c
 								c=0
-								dat2=file.read(int(n2))
+								inmemoryfile = io.BytesIO()
+								inmemoryfile.write(data)
+								inmemoryfile.seek(0)
+								dat2=inmemoryfile.read(n2)	
 								outf.write(dat2)
 								outf.flush()
 								outf.close()	
@@ -4393,11 +4813,17 @@ class Xci(File):
 								outfile=outfile[0:-1]
 								outfile=outfile+str(index)
 								outf = open(outfile, 'wb')
-								if totSize>(4294934528+int(buffer)):
-									dat2=file.read(int(buffer))
-									outf.write(dat2)						
-									t.update(len(dat2))									
-									outf.flush()	
+								inmemoryfile.seek(n2)
+								dat2=inmemoryfile.read(len(data)-n2)
+								inmemoryfile.close()
+								outf.write(dat2)						
+								t.update(len(dat2))									
+								outf.flush()	
+							else:		
+								outf.write(data)
+								t.update(len(data))
+								c=c+len(data)
+								outf.flush()							
 							if not data:
 								break							
 		t.close()		
@@ -4467,6 +4893,7 @@ class Xci(File):
 						masterKeyRev = file.getMasterKeyRevision()
 						titleKeyDec = Keys.decryptTitleKey(file.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(masterKeyRev))
 						rightsId = file.getRightsId()
+						ticket=file
 		for nspF in self.hfs0:
 			if str(nspF._path)=="secure":
 				for file in nspF:				
@@ -4523,10 +4950,13 @@ class Xci(File):
 			Print.info('masterKeyRev =\t' + hex(masterKeyRev))									
 		print("")		
 		
+		if totSize <= 4294934528:
+			fat="exfat"
 		if fat=="fat32":
 			splitnumb=math.ceil(totSize/4294934528)
 			index=0
 			filepath=filepath[:-1]+str(index)
+			
 		c=0
 		t = tqdm(total=totSize, unit='B', unit_scale=True, leave=False)
 		t.write(tabs+'- Writing XCI header...')
@@ -4565,7 +4995,7 @@ class Xci(File):
 		outf.write(sec_header)
 		t.update(len(sec_header))
 		c=c+len(sec_header)			
-									
+		outfile=str(filepath)										
 		block=4294934528		
 		for nspF in self.hfs0:
 			if str(nspF._path)=="secure":
@@ -4609,7 +5039,10 @@ class Xci(File):
 								if fat=="fat32" and (c+len(newheader))>block:
 									n2=block-c
 									c=0
-									dat2=newheader[0x00:0x00+int(n2)]
+									inmemoryfile = io.BytesIO()
+									inmemoryfile.write(newheader)
+									inmemoryfile.seek(0)
+									dat2=inmemoryfile.read(n2)			
 									outf.write(dat2)
 									outf.flush()
 									outf.close()	
@@ -4618,7 +5051,9 @@ class Xci(File):
 									outfile=outfile[0:-1]
 									outfile=outfile+str(index)
 									outf = open(outfile, 'wb')	
-									dat2=newheader[0x00+int(n2)+1:]
+									inmemoryfile.seek(n2)
+									dat2=inmemoryfile.read(len(newheader)-n2)
+									inmemoryfile.close()
 									outf.write(dat2)						
 									t.update(len(dat2))									
 									outf.flush()	
@@ -4629,14 +5064,13 @@ class Xci(File):
 								nca.seek(0xC00)									
 								i+=1		
 							else:			
-								outf.write(data)
-								t.update(len(data))
-								c=c+len(data)
-								outf.flush()
 								if fat=="fat32" and (c+len(data))>block:
 									n2=block-c
 									c=0
-									dat2=nca.read(int(n2))
+									inmemoryfile = io.BytesIO()
+									inmemoryfile.write(data)
+									inmemoryfile.seek(0)
+									dat2=inmemoryfile.read(n2)		
 									outf.write(dat2)
 									outf.flush()
 									outf.close()	
@@ -4645,11 +5079,17 @@ class Xci(File):
 									outfile=outfile[0:-1]
 									outfile=outfile+str(index)
 									outf = open(outfile, 'wb')
-									if totSize>(4294934528+int(buffer)):
-										dat2=nca.read(int(buffer))
-										outf.write(dat2)						
-										t.update(len(dat2))									
-										outf.flush()	
+									inmemoryfile.seek(n2)
+									dat2=inmemoryfile.read(len(data)-n2)
+									inmemoryfile.close()
+									outf.write(dat2)						
+									t.update(len(dat2))									
+									outf.flush()
+								else:	
+									outf.write(data)
+									t.update(len(data))
+									c=c+len(data)
+									outf.flush()									
 								if not data:
 									break
 		t.close()
@@ -5247,7 +5687,10 @@ class Xci(File):
 										if fat=="fat32" and (c+len(newheader))>block:									
 											n2=block-c
 											c=0
-											dat2=newheader[0x00:0x00+int(n2)]
+											inmemoryfile = io.BytesIO()
+											inmemoryfile.write(newheader)
+											inmemoryfile.seek(0)
+											dat2=inmemoryfile.read(n2)	
 											fp.write(dat2)
 											fp.flush()
 											fp.close()	
@@ -5256,7 +5699,9 @@ class Xci(File):
 											outf=outf[0:-1]
 											outf=outf+str(index)
 											fp = open(outf, 'wb')	
-											dat2=newheader[0x00+int(n2)+1:]
+											inmemoryfile.seek(n2)
+											dat2=inmemoryfile.read(len(newheader)-n2)
+											inmemoryfile.close()
 											fp.write(dat2)						
 											t.update(len(dat2))		
 											c=c+len(dat2)													
@@ -5273,7 +5718,10 @@ class Xci(File):
 										if fat=="fat32" and (c+len(data))>block:	
 											n2=block-c
 											c=0										
-											dat2=data[0x00:0x00+int(n2)]										
+											inmemoryfile = io.BytesIO()
+											inmemoryfile.write(data)
+											inmemoryfile.seek(0)
+											dat2=inmemoryfile.read(n2)										
 											fp.write(dat2)
 											fp.flush()
 											fp.close()	
@@ -5282,7 +5730,9 @@ class Xci(File):
 											outf=outf[0:-1]
 											outf=outf+str(index)
 											fp = open(outf, 'wb')	
-											dat2=data[0x00+int(n2)+1:]
+											inmemoryfile.seek(n2)
+											dat2=inmemoryfile.read(len(data)-n2)
+											inmemoryfile.close()
 											fp.write(dat2)						
 											t.update(len(dat2))		
 											c=c+len(dat2)													
@@ -5319,7 +5769,10 @@ class Xci(File):
 										if fat=="fat32" and (c+len(newheader))>block:									
 											n2=block-c
 											c=0
-											dat2=newheader[0x00:0x00+int(n2)]
+											inmemoryfile = io.BytesIO()
+											inmemoryfile.write(newheader)
+											inmemoryfile.seek(0)
+											dat2=inmemoryfile.read(n2)
 											fp.write(dat2)
 											fp.flush()
 											fp.close()	
@@ -5328,7 +5781,9 @@ class Xci(File):
 											outf=outf[0:-1]
 											outf=outf+str(index)
 											fp = open(outf, 'wb')	
-											dat2=newheader[0x00+int(n2)+1:]
+											inmemoryfile.seek(n2)
+											dat2=inmemoryfile.read(len(newheader)-n2)
+											inmemoryfile.close()
 											fp.write(dat2)						
 											t.update(len(dat2))												
 											fp.flush()	
@@ -5344,7 +5799,10 @@ class Xci(File):
 										if fat=="fat32" and (c+len(data))>block:	
 											n2=block-c
 											c=0										
-											dat2=data[0x00:0x00+int(n2)]										
+											inmemoryfile = io.BytesIO()
+											inmemoryfile.write(data)
+											inmemoryfile.seek(0)
+											dat2=inmemoryfile.read(n2)												
 											fp.write(dat2)
 											fp.flush()
 											fp.close()	
@@ -5353,7 +5811,9 @@ class Xci(File):
 											outf=outf[0:-1]
 											outf=outf+str(index)
 											fp = open(outf, 'wb')	
-											dat2=data[0x00+int(n2)+1:]
+											inmemoryfile.seek(n2)
+											dat2=inmemoryfile.read(len(data)-n2)
+											inmemoryfile.close()
 											fp.write(dat2)						
 											t.update(len(dat2))		
 											c=c+len(dat2)													
@@ -5393,7 +5853,10 @@ class Xci(File):
 									if fat=="fat32" and (c+len(data))>block:	
 										n2=block-c
 										c=0										
-										dat2=data[0x00:0x00+int(n2)]										
+										inmemoryfile = io.BytesIO()
+										inmemoryfile.write(data)
+										inmemoryfile.seek(0)
+										dat2=inmemoryfile.read(n2)											
 										fp.write(dat2)
 										fp.flush()
 										fp.close()	
@@ -5402,7 +5865,9 @@ class Xci(File):
 										outf=outf[0:-1]
 										outf=outf+str(index)
 										fp = open(outf, 'wb')	
-										dat2=data[0x00+int(n2)+1:]
+										inmemoryfile.seek(n2)
+										dat2=inmemoryfile.read(len(data)-n2)
+										inmemoryfile.close()
 										fp.write(dat2)						
 										t.update(len(dat2))		
 										c=c+len(dat2)													
@@ -5435,7 +5900,10 @@ class Xci(File):
 										if fat=="fat32" and (c+len(data))>block:	
 											n2=block-c
 											c=0										
-											dat2=data[0x00:0x00+int(n2)]										
+											inmemoryfile = io.BytesIO()
+											inmemoryfile.write(data)
+											inmemoryfile.seek(0)
+											dat2=inmemoryfile.read(n2)											
 											fp.write(dat2)
 											fp.flush()
 											fp.close()	
@@ -5444,7 +5912,9 @@ class Xci(File):
 											outf=outf[0:-1]
 											outf=outf+str(index)
 											fp = open(outf, 'wb')	
-											dat2=data[0x00+int(n2)+1:]
+											inmemoryfile.seek(n2)
+											dat2=inmemoryfile.read(len(data)-n2)
+											inmemoryfile.close()
 											fp.write(dat2)						
 											t.update(len(dat2))		
 											c=c+len(dat2)													
@@ -5467,7 +5937,10 @@ class Xci(File):
 								if fat=="fat32" and (c+len(data))>block:	
 									n2=block-c
 									c=0										
-									dat2=data[0x00:0x00+int(n2)]										
+									inmemoryfile = io.BytesIO()
+									inmemoryfile.write(data)
+									inmemoryfile.seek(0)
+									dat2=inmemoryfile.read(n2)										
 									fp.write(dat2)
 									fp.flush()
 									fp.close()	
@@ -5476,7 +5949,9 @@ class Xci(File):
 									outf=outf[0:-1]
 									outf=outf+str(index)
 									fp = open(outf, 'wb')	
-									dat2=data[0x00+int(n2)+1:]
+									inmemoryfile.seek(n2)
+									dat2=inmemoryfile.read(len(data)-n2)
+									inmemoryfile.close()
 									fp.write(dat2)						
 									t.update(len(dat2))		
 									c=c+len(dat2)													
@@ -5553,7 +6028,7 @@ class Xci(File):
 #///////////////////////////////////////////////////								
 #ADD TO DATABASE
 #///////////////////////////////////////////////////					
-	def addtodb(self,ofile,dbtype):		
+	def addtodb(self,ofile,dbtype,roman=True):		
 		for nspF in self.hfs0:
 			if str(nspF._path)=="secure":			
 				for nca in nspF:				
@@ -5603,7 +6078,7 @@ class Xci(File):
 									if ckey == '0':
 										ckey=self.getdbkey(titlerights)
 									target=str(nca._path)
-									tit_name,editor,ediver,SupLg,regionstr,isdemo = self.inf_get_title(target,offset,content_entries,original_ID)
+									tit_name,editor,ediver,SupLg,regionstr,isdemo = self.inf_get_title(target,offset,content_entries,original_ID,roman)
 									if tit_name=='DLC' and (str(titleid2).endswith('000') or str(titleid2).endswith('800')):
 										tit_name='-'
 										editor='-'											
@@ -5994,6 +6469,11 @@ class Xci(File):
 									message=(str(f.header.titleId)+' - '+str(f.header.contentType));print(message);feed+=message+'\n'								
 									if str(f.header.contentType) != 'Content.PROGRAM':
 										correct = self.verify_enforcer(file)
+										if correct == True:
+											if str(f.header.contentType) == 'Content.PUBLIC_DATA' and f.header.getRightsId() == 0:
+												correct = f.pr_noenc_check_dlc()				
+												if correct == False:
+													baddec=True												
 									else:
 										for nf in f:
 											nf.rewind()	
@@ -6008,11 +6488,11 @@ class Xci(File):
 										if correct == False and f.header.getRightsId() == 0:
 											correct = f.pr_noenc_check()		
 										if correct == False and f.header.getRightsId() != 0:
-											correct = self.verify_nca_key(file)	
+											correct,tk = self.verify_nca_key(file)													
 										if correct == True and f.header.getRightsId() == 0:
-											correct = f.pr_noenc_check()	
+											correct = f.pr_noenc_check()				
 											if correct == False:
-												baddec=True
+												baddec=True	
 				elif file.endswith('.tik'):
 					tikfile=str(file)
 					checktik == False
@@ -6146,7 +6626,7 @@ class Xci(File):
 				for f in nspF:					
 					if type(f) == Nca and f.header.contentType != Type.Content.META:
 						message=(str(f.header.titleId)+' - '+str(f.header.contentType));print(message);feed+=message+'\n'											
-						verify,origheader,ncaname,feed,origkg=f.verify(feed)		
+						verify,origheader,ncaname,feed,origkg,tr,tkey,iGC=f.verify(feed)				
 						headerlist.append([ncaname,origheader,hlisthash])		
 						keygenerationlist.append([ncaname,origkg])
 						if verdict == True:
@@ -6160,7 +6640,7 @@ class Xci(File):
 						f.rewind();meta_dat=f.read()
 						message=(str(f.header.titleId)+' - '+str(f.header.contentType));print(message);feed+=message+'\n'	
 						targetkg,minrsv=self.find_addecuatekg(meta_nca,keygenerationlist)
-						verify,origheader,ncaname,feed,origkg=f.verify(feed)
+						verify,origheader,ncaname,feed,origkg,tr,tkey,iGC=f.verify(feed)
 						#print(targetkg)				
 						if verify == False:
 							tempfile=os.path.join(tmpfolder,meta_nca)
@@ -6224,7 +6704,7 @@ class Xci(File):
 										fp.close()	
 										fp = Fs.Nca(tempfile, 'r+b')
 										progress=True
-										verify,origheader,ncapath,feed,origkg=fp.verify(feed,targetkg,rsv_endcheck,progress,t)
+										verify,origheader,ncapath,feed,origkg,tr,tkey,iGC=fp.verify(feed,targetkg,rsv_endcheck,progress,t)	
 										fp.close()		
 										t.update(1)	
 										if verify == True:
@@ -6253,7 +6733,7 @@ class Xci(File):
 						if hlisthash == True:
 							sha0=sha0.hexdigest()
 							hlisthash=sha0
-						headerlist.append([ncaname,origheader,hlisthash])	
+						headerlist.append([ncaname,origheader,hlisthash,tr,tkey,iGC])	
 						message='';print(message);feed+=message+'\n'	
 		try:
 			shutil.rmtree(tmpfolder)
@@ -6440,15 +6920,16 @@ class Xci(File):
 								else:
 									return False	
 	def verify_nca_key(self,nca):
-		check=False
+		check=False;titleKey=0
 		for nspF in self.hfs0:
 			if str(nspF._path)=="secure":
 				for file in nspF:	
 					if (file._path).endswith('.tik'):
+						titleKey = file.getTitleKeyBlock().to_bytes(16, byteorder='big')
 						check=self.verify_key(nca,str(file._path))
 						if check==True:
 							break
-		return check					
+		return check,titleKey		
 					
 	def verify_key(self,nca,ticket):
 		for nspF in self.hfs0:
@@ -6463,9 +6944,9 @@ class Xci(File):
 							else:			
 								masterKeyRev=file.header.getCryptoType2()	
 						else:			
-							masterKeyRev=file.header.getCryptoType2()	
-						if str(file._path) == nca:						
-							break
+							masterKeyRev=file.header.getCryptoType2()					
+						break
+							
 										
 		for nspF in self.hfs0:
 			if str(nspF._path)=="secure":
@@ -6488,6 +6969,8 @@ class Xci(File):
 					if str(f._path) == nca:
 						if type(f) == Fs.Nca and f.header.getRightsId() != 0:
 							for fs in f.sectionFilesystems:
+								#print(fs.fsType)
+								#print(fs.cryptoType)							
 								if fs.fsType == Type.Fs.PFS0 and fs.cryptoType == Type.Crypto.CTR:
 									f.seek(0)
 									ncaHeader = NcaHeader()
@@ -6504,8 +6987,8 @@ class Xci(File):
 										mem = MemoryFile(pfs0Header, Type.Crypto.CTR, decKey, pfs0.cryptoCounter, offset = pfs0Offset)
 										data = mem.read();
 										#Hex.dump(data)
-										#print('hash = %s' % str(_sha256(data)))
-										if hx(sectionHeaderBlock[0xc8:0xc8+0x20]).decode('utf-8') == str(_sha256(data)):
+										#print('hash = %s' % str(sha256(data).hexdigest()))
+										if hx(sectionHeaderBlock[0xc8:0xc8+0x20]).decode('utf-8') == str(sha256(data).hexdigest()):
 											return True
 										else:
 											return False
@@ -6518,21 +7001,43 @@ class Xci(File):
 										if magic != b'PFS0':
 											return False
 										else:	
-											return True			
+											return True				
 								
 								if fs.fsType == Type.Fs.ROMFS and fs.cryptoType == Type.Crypto.CTR:	
 									f.seek(0)
 									ncaHeader = NcaHeader()
 									ncaHeader.open(MemoryFile(f.read(0x400), Type.Crypto.XTS, uhx(Keys.get('header_key'))))	
-									romfs=fs	
+									ncaHeader = f.read(0x400)
+									pfs0=fs
 									sectionHeaderBlock = fs.buffer
-									f.seek(fs.offset)
-									romfsOffset=fs.offset
-									romfsHeader = f.read(0x10)
-									mem = MemoryFile(romfsHeader, Type.Crypto.CTR, decKey, romfs.cryptoCounter, offset = romfsOffset)
-									magic = mem.read()[0:4]
-									return True
-								else:
-									return False									
+
+									levelOffset = int.from_bytes(sectionHeaderBlock[0x18:0x20], byteorder='little', signed=False)
+									levelSize = int.from_bytes(sectionHeaderBlock[0x20:0x28], byteorder='little', signed=False)
+
+									pfs0Offset = fs.offset + levelOffset
+									f.seek(pfs0Offset)
+									pfs0Header = f.read(levelSize)
+									#print(sectionHeaderBlock[8:12] == b'IVFC')	
+									if sectionHeaderBlock[8:12] == b'IVFC':	
+										#Hex.dump(self.sectionHeaderBlock)
+										#Print.info(hx(self.sectionHeaderBlock[0xc8:0xc8+0x20]).decode('utf-8'))
+										mem = MemoryFile(pfs0Header, Type.Crypto.CTR, decKey, pfs0.cryptoCounter, offset = pfs0Offset)
+										data = mem.read();
+										#Hex.dump(data)
+										#print('hash = %s' % str(sha256(data).hexdigest()))
+										if hx(sectionHeaderBlock[0xc8:0xc8+0x20]).decode('utf-8') == str(sha256(data).hexdigest()):
+											return True
+										else:
+											return False
+									else:
+										mem = MemoryFile(pfs0Header, Type.Crypto.CTR, decKey, pfs0.cryptoCounter, offset = pfs0Offset)
+										data = mem.read();
+										#Hex.dump(data)								
+										magic = mem.read()[0:4]
+										#print(magic)
+										if magic != b'PFS0':
+											return False
+										else:	
+											return True									
 
 	

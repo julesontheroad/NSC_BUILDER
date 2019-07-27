@@ -30,7 +30,7 @@ set "pycommand=py -3"
 ::Buffer for the copy functions. 
 ::Change the number for the number of bytes that works best for you
 ::32768=32kB ; 65536=64kB
-set "buffer=buffer=-b 65536"
+set "buffer=-b 65536"
 ::Copy function with or without deltas
 ::--C_clean -> Copy and remove titlerights. Don't skips deltas
 ::--C_clean_ND-> Copy and remove titlerights skipping deltas

@@ -21,6 +21,36 @@ Luca Fraga's github: https://github.com/LucaFraga
 ---------------
 0. Changelog
 ---------------
+v0.88- Bugfixes and new stuff
+	- Fixes direct creation of fat32 files, to reflect that the new modes create
+	  split nsp or xci files for fat32 sd cards directly if set in the config.
+	  Current implemented modes:
+	   1. INDIVIDUAL MODE
+		  * For now the pack options under "SPECIAL OPTIONS" are not supported
+	   2. MULTI-PACK MODE
+	   3. MULTI-CONTENT-SPLITTER MODE
+	- Added mode 7: FILE-JOINER mode to join fat32 .xc*,.ns* or *0
+	  > For *0 files drop the folder if you have several *0 files to join to not 
+          confuse the batch operations, for .xc* and .ns* files joins are grouped by filename
+	- Fixes bug in verification where RSV check bar stays after finishing RSV check on 
+	  unlockers
+	- Fixes bug in verification where hash verification gives a really slow speed on some files.
+	- Fixes bug in some modes with files that use keygeneration 2  
+	- Fixes bug where info mode 1 doesn't show the total size of deltas
+	- Fix nacp reader for xci files
+	- Fix Language and nacp offset detection in some games	
+	- Fixes titlekey verification on nsp and nsx dlcs
+	- Added main.npdm reader for nsp and xci files
+	- Add raw extraction option to advance mode so files with messed nca headers can be 
+	  extracted and verify the nca independently
+	- Added romaji option to db so outputting names in romaji can be turn off
+	- Added extraction of ncas in plaintext to advance mode 
+	- Added extraction of nca contents to advance mode	
+	NOTE: For now plaintext and extraction of ncas will skip program ncas in updates.
+	Process is done without extraction of ncas from nsp\xci with a fallback that 
+	pre-extracts the nca if the the sections are not correctly detected.
+	NOTE2: Consider extraction and plaintext options on early stages.
+
 v0.87c- Bugfixes
 	- Adds check for correct original titlekey for xci conversions from nsx files without
 	  a titlekey. 

@@ -9,6 +9,7 @@ from struct import pack as pk, unpack as upk
 import Fs
 import aes128
 import sq_tools
+import io
 indent = 1
 tabs = '\t' * indent	
 '''	
@@ -1089,4 +1090,113 @@ def get_xciheader(oflist,osizelist,sec_hashlist):
 
 	return header,enc_info,sig_padding,fake_CERT,root_header,upd_header,norm_header,sec_header,rootSize,upd_multiplier,norm_multiplier,sec_multiplier
 
+def ret_nsp_offsets(filepath):
+	files_list=list()
+	try:
+		with open(filepath, 'r+b') as f:			
+			data=f.read(int(8*1024))						
+		try:
+			head=data[0:4]
+			n_files=(data[4:8])
+			n_files=int.from_bytes(n_files, byteorder='little')		
+			st_size=(data[8:12])
+			st_size=int.from_bytes(st_size, byteorder='little')		
+			junk=(data[12:16])
+			offset=(0x10 + n_files * 0x18)
+			stringTable=(data[offset:offset+st_size])
+			stringEndOffset = st_size
+			headerSize = 0x10 + 0x18 * n_files + st_size
+			#print(head)
+			#print(str(n_files))
+			#print(str(st_size))	
+			#print(str((stringTable)))		
+			for i in range(n_files):
+				i = n_files - i - 1
+				pos=0x10 + i * 0x18
+				offset = data[pos:pos+8]
+				offset=int.from_bytes(offset, byteorder='little')			
+				size = data[pos+8:pos+16]
+				size=int.from_bytes(size, byteorder='little')			
+				nameOffset = data[pos+16:pos+20] # just the offset
+				nameOffset=int.from_bytes(nameOffset, byteorder='little')			
+				name = stringTable[nameOffset:stringEndOffset].decode('utf-8').rstrip(' \t\r\n\0')
+				stringEndOffset = nameOffset
+				junk2 = data[pos+20:pos+24] # junk data
+				#print(name)
+				#print(offset)	
+				#print(size)	
+				off1=offset+headerSize
+				off2=off1+size
+				files_list.append([name,off1,off2,size])	
+			files_list.reverse()	
+			#print(files_list)
+		except BaseException as e:
+			Print.error('Exception: ' + str(e))
+		#print(files_list)	
+	except BaseException as e:
+		Print.error('Exception: ' + str(e))
+	return	files_list
 
+def ret_xci_offsets(filepath):
+	files_list=list()
+	try:		
+		with open(filepath, 'r+b') as f:
+			rawhead = io.BytesIO(f.read(int(0x200)))
+			data=rawhead.read()
+			#print(hx(data))
+		try:			
+			rawhead.seek(0x100)
+			magic=rawhead.read(0x4)
+			if magic==b'HEAD':
+				#print(magic)
+				secureOffset=int.from_bytes(rawhead.read(4), byteorder='little')
+				secureOffset=secureOffset*0x200
+				with open(filepath, 'r+b') as f:	
+					f.seek(secureOffset)
+					data=f.read(int(8*1024))
+					rawhead = io.BytesIO(data)
+				rmagic=rawhead.read(0x4)
+				if rmagic==b'HFS0':
+					#print(rmagic)
+					head=data[0:4]
+					n_files=(data[4:8])
+					n_files=int.from_bytes(n_files, byteorder='little')		
+					st_size=(data[8:12])
+					st_size=int.from_bytes(st_size, byteorder='little')		
+					junk=(data[12:16])
+					offset=(0x10 + n_files * 0x40)
+					stringTable=(data[offset:offset+st_size])
+					stringEndOffset = st_size
+					headerSize = 0x10 + 0x40 * n_files + st_size
+					#print(head)
+					#print(str(n_files))
+					#print(str(st_size))	
+					#print(str((stringTable)))
+					for i in range(n_files):
+						i = n_files - i - 1
+						pos=0x10 + i * 0x40
+						offset = data[pos:pos+8]
+						offset=int.from_bytes(offset, byteorder='little')			
+						size = data[pos+8:pos+16]
+						size=int.from_bytes(size, byteorder='little')			
+						nameOffset = data[pos+16:pos+20] # just the offset
+						nameOffset=int.from_bytes(nameOffset, byteorder='little')			
+						name = stringTable[nameOffset:stringEndOffset].decode('utf-8').rstrip(' \t\r\n\0')
+						stringEndOffset = nameOffset
+						junk2 = data[pos+20:pos+24] # junk data
+						#print(name)
+						#print(offset)	
+						#print(size)	
+						off1=offset+headerSize+secureOffset
+						off2=off1+size
+						files_list.append([name,off1,off2,size])	
+						# with open(filename, 'r+b') as f:	
+							# f.seek(off1)
+							# print(f.read(0x4))
+					files_list.reverse()	
+					#print(files_list)	
+		except BaseException as e:
+			Print.error('Exception: ' + str(e))					
+	except BaseException as e:
+		Print.error('Exception: ' + str(e))
+	return files_list

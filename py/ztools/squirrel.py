@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 '''
    _____             _                __
   / ___/____ ___  __(_)____________  / /
@@ -23,11 +25,11 @@ Squirrel original's purpose is to support NSC_Builder though it serves as a
 standalone program with many functions, some of them not being used currently in NSC_Builder.						
 '''		
 
-# -*- coding: utf-8 -*-
 import argparse
 import sys
 import os
 import re
+import io
 import pathlib
 import urllib3
 import json
@@ -53,7 +55,7 @@ from tqdm import tqdm
 from datetime import datetime
 import math  
 import pykakasi
-
+from Fs.pyNCA3 import NCA3
 
 if __name__ == '__main__':
 	try:
@@ -63,13 +65,14 @@ if __name__ == '__main__':
 		
 		# INFORMATION
 		parser.add_argument('-i', '--info', help='show info about title or file')
-		parser.add_argument('--filelist', nargs='+', help='Prints file list from NSP\XCI secure partition')
-		parser.add_argument('--ADVfilelist', nargs='+', help='Prints ADVANCED file list from NSP\XCI secure partition')		
-		parser.add_argument('--ADVcontentlist', nargs='+', help='Prints ADVANCED content list from NSP\XCI arranged by base titleid')			
-		parser.add_argument('--Read_cnmt', nargs='+', help='Read cnmt file inside NSP\XCI')
-		parser.add_argument('--Read_nacp', nargs='+', help='Read ncap file inside NSP\XCI')				
+		parser.add_argument('--filelist', nargs='+', help='Prints file list from NSP/XCI secure partition')
+		parser.add_argument('--ADVfilelist', nargs='+', help='Prints ADVANCED file list from NSP/XCI secure partition')		
+		parser.add_argument('--ADVcontentlist', nargs='+', help='Prints ADVANCED content list from NSP/XCI arranged by base titleid')			
+		parser.add_argument('--Read_cnmt', nargs='+', help='Read cnmt file inside NSP/XCI')
+		parser.add_argument('--Read_nacp', nargs='+', help='Read nacp file inside NSP/XCI')	
+		parser.add_argument('--Read_npdm', nargs='+', help='Read npdm file inside NSP/XCI')			
 		parser.add_argument('--Read_hfs0', nargs='+', help='Read hfs0')		
-		parser.add_argument('--fw_req', nargs='+', help='Get information about fw requirements for NSP\XCI')		
+		parser.add_argument('--fw_req', nargs='+', help='Get information about fw requirements for NSP/XCI')		
 		parser.add_argument('--Read_xci_head', nargs='+', help='Get information about xci header and cert')				
 		parser.add_argument('-nscdb', '--addtodb', nargs='+', help='Adds content to database')	
 		parser.add_argument('-v', '--verify', nargs='+', help='Verify nsp or xci file')			
@@ -89,7 +92,8 @@ if __name__ == '__main__':
 		parser.add_argument('-dc', '--direct_creation', nargs='+', help='Create directly a nsp or xci')		
 		parser.add_argument('-dmul', '--direct_multi', nargs='+', help='Create directly a multi nsp or xci')		
 		parser.add_argument('-ed', '--erase_deltas', nargs='+', help='Take of deltas from updates')			
-		parser.add_argument('-rbnsp', '--rebuild_nsp', nargs='+', help='Rebuild nsp by cnmt order')			
+		parser.add_argument('-rbnsp', '--rebuild_nsp', nargs='+', help='Rebuild nsp by cnmt order')		
+		parser.add_argument('-rst', '--restore', nargs='+', help='Rebuild nsp by cnmt order')		
 
 		# nca/nsp identification
 		parser.add_argument('--ncatitleid', nargs='+', help='Returns titleid from a nca input')
@@ -122,6 +126,8 @@ if __name__ == '__main__':
 		# NSP Copy functions
 		parser.add_argument('-x', '--extract', nargs='+', help='Extracts all files from nsp or xci')
 		parser.add_argument('-raw_x', '--raw_extraction', nargs='+', help='Extracts files without checking readability, useful when there is bad files')
+		parser.add_argument('-nfx', '--nca_file_extraction', nargs='+', help='Extracts files files within nca files from nsp/xci\nca file')
+		parser.add_argument('-plx', '--extract_plain_nca', nargs='+', help='Extracts nca files as plaintext or generate a plaintext file from a nca file')
 		parser.add_argument('--NSP_copy_ticket', nargs='+', help='Extracts ticket from target nsp')
 		parser.add_argument('--NSP_copy_nca', nargs='+', help='Extracts all nca files from target nsp')	
 		parser.add_argument('--NSP_copy_other', nargs='+', help='Extracts all kinds of files different from nca or ticket from target nsp')
@@ -130,7 +136,7 @@ if __name__ == '__main__':
 		parser.add_argument('--NSP_copy_jpg', nargs='+', help='Extracts jpg files from target nsp')	
 		parser.add_argument('--NSP_copy_cnmt', nargs='+', help='Extracts cnmt files from target nsp')
 		parser.add_argument('--copy_pfs0_meta', nargs='+', help='Extracts meta pfs0 from target nsp')
-		parser.add_argument('--NSP_copy_ncap', nargs='+', help='Extracts ncap files from target nsp')
+		parser.add_argument('--copy_nacp', nargs='+', help='Extracts nacp files from target nsp')
 		
 		# XCI Copy functions
 		parser.add_argument('--XCI_copy_hfs0', nargs='+', help='Extracts hfs0 partition files from target xci')
@@ -206,7 +212,7 @@ if __name__ == '__main__':
 		if sys.platform == 'win32':
 			parser.add_argument('-archive','--archive', help='Archive to folder')		
 		parser.add_argument('-zippy','--zippy', help='Zip a file')			
-		parser.add_argument('-joinfile','--joinfile', help='Join split file')
+		parser.add_argument('-joinfile','--joinfile', nargs='+', help='Join split file')
 		# OTHER		
 		parser.add_argument('-nint_keys','--nint_keys', help='Verify NS keys')			
 		parser.add_argument('-renf','--renamef', help='Rename file with proper name')	
@@ -544,69 +550,71 @@ if __name__ == '__main__':
 				except BaseException as e:
 					Print.error('Exception: ' + str(e))
 		# ...................................................						
-		# Copy all NCA from NSP file
+		# Copy all FILES from NSP\XCI file
 		# ...................................................		
 		if args.extract:
+			if args.buffer:		
+				for var in args.buffer:
+					try:
+						buffer = var
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+			else:
+				buffer = 32768			
+			ofolder=False
 			if args.ofolder:		
 				for input in args.ofolder:
 					try:
 						ofolder = input
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))	
-			else:
-				if args.text_file:
-					tfile=args.text_file
-					with open(tfile,"r+", encoding='utf8') as filelist: 	
-						filename = filelist.readline()
-						filename=os.path.abspath(filename.rstrip('\n'))		
-						dir=os.path.dirname(os.path.abspath(filename))
-						basename=str(os.path.basename(os.path.abspath(filepath)))							
-						ofolder =os.path.join(dir, 'output')
-						ofolder =os.path.join(dir, 'basename')						
-				else:		
-					for filename in args.extract:
-						dir=os.path.dirname(os.path.abspath(filename))
-						ofolder =os.path.join(dir, 'output')
 			if not os.path.exists(ofolder):
-				os.makedirs(ofolder)						
-			if args.buffer:		
-				for input in args.buffer:
-					try:
-						buffer = input
-					except BaseException as e:
-						Print.error('Exception: ' + str(e))
-			else:
-				buffer = 32768			
-				
-			if args.extract:					
-				if args.text_file:
-					tfile=args.text_file
-					with open(tfile,"r+", encoding='utf8') as filelist: 	
-						filename = filelist.readline()
-						filename=os.path.abspath(filename.rstrip('\n'))				
-				else:
-					for filename in args.extract:
-						filename=filename			
-				test=filename.lower()
-				if test.endswith('.nsp') or test.endswith('.nsx'):
-					try:
-						f = Fs.Nsp(filename, 'rb')
-						f.open(filename, 'rb')						
-						f.extract_all(ofolder,buffer)
-						f.flush()
-						f.close()
-					except BaseException as e:
-						Print.error('Exception: ' + str(e))	
-				elif test.endswith('.xci'):
-					try:
-						f = Fs.factory(filename)
-						f.open(filename, 'rb')
-						f.extract_all(ofolder,buffer)
-						f.flush()
-						f.close()
-					except BaseException as e:
-						Print.error('Exception: ' + str(e))						
-
+				os.makedirs(ofolder)							
+			if args.text_file:
+				tfile=args.text_file
+				with open(tfile,"r+", encoding='utf8') as filelist: 	
+					filename = filelist.readline()
+					filename=os.path.abspath(filename.rstrip('\n'))	
+					if ofolder != False:
+						dir=ofolder
+					else:
+						dir=os.path.dirname(os.path.abspath(filename))
+					basename=str(os.path.basename(os.path.abspath(filename)))
+					basename=basename[:-4]
+					ofolder =os.path.join(dir, basename)						
+			else:		
+				for filename in args.extract:
+					if ofolder != False:
+						dir=ofolder
+					else:					
+						dir=os.path.dirname(os.path.abspath(filename))
+					basename=str(os.path.basename(os.path.abspath(filename)))	
+					basename=basename[:-4]					
+					ofolder =os.path.join(dir, basename)	
+			if not os.path.exists(ofolder):
+				os.makedirs(ofolder)		
+			test=filename.lower()
+			if test.endswith('.nsp') or test.endswith('.nsx'):
+				try:
+					f = Fs.Nsp(filename, 'rb')
+					f.open(filename, 'rb')						
+					f.extract_all(ofolder,buffer)
+					f.flush()
+					f.close()
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))	
+			elif test.endswith('.xci'):
+				try:
+					f = Fs.factory(filename)
+					f.open(filename, 'rb')
+					f.extract_all(ofolder,buffer)
+					f.flush()
+					f.close()
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))						
+		# ...................................................						
+		# Copy all NCA from NSP file
+		# ...................................................
 		if args.NSP_copy_nca:
 			if args.ofolder:		
 				for input in args.ofolder:
@@ -1168,9 +1176,9 @@ if __name__ == '__main__':
 					Print.error('Exception: ' + str(e))											
 					
 		# ...................................................						
-		# Copy control ncap files from NSP file
+		# Copy control nacp files from NSP file
 		# ...................................................	
-		if args.NSP_copy_ncap:
+		if args.copy_nacp:
 			if args.ofolder:		
 				for input in args.ofolder:
 					try:
@@ -1178,7 +1186,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))	
 			else:
-				for filename in args.NSP_copy_ncap:
+				for filename in args.copy_nacp:
 					dir=os.path.dirname(os.path.abspath(filename))
 					ofolder =os.path.join(dir, 'output')
 					
@@ -1190,15 +1198,25 @@ if __name__ == '__main__':
 						Print.error('Exception: ' + str(e))
 			else:
 				buffer = 32768				
-			for filename in args.NSP_copy_ncap:
-				try:
-					f = Fs.Nsp(filename, 'rb')
-					f.copy_ncap(ofolder,buffer)
-					f.flush()
-					f.close()
-				except BaseException as e:
-					Print.error('Exception: ' + str(e))							
-
+			for filename in args.copy_nacp:
+				if filename.endswith(".nsp"):	
+					try:
+						f = Fs.Nsp(filename, 'rb')
+						f.copy_nacp(ofolder,buffer)
+						f.flush()
+						f.close()
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+				'''		
+				if filename.endswith(".nca"):							
+					try:
+						f = Fs.Nca(filename, 'rb')
+						f.extract(ofolder,buffer)
+						f.flush()
+						f.close()
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))							
+				'''
 # DEDICATED COPY FUNCTIONS. NCA TYPES. 
 		# ...................................................						
 		# Copy all META NCA from NSP file
@@ -3412,7 +3430,7 @@ if __name__ == '__main__':
 								f = Fs.Nsp(filepath)
 								for file in oflist:		
 									if not file.endswith('xml'):
-										outf,index,c = f.append_content(endfile,file,buffer,t,fat,fx,c,index)
+										endfile,index,c = f.append_content(endfile,file,buffer,t,fat,fx,c,index)
 								f.flush()
 								f.close()		
 							except BaseException as e:
@@ -3528,7 +3546,7 @@ if __name__ == '__main__':
 										for i in range(len(GClist)):
 											if GClist[i][0] == file:
 												GC=GClist[i][1]
-										outf,index,c = f.append_clean_content(endfile,file,buffer,t,GC,vkeypatch,metapatch,RSV_cap,fat,fx,c,index)
+										endfile,index,c = f.append_clean_content(endfile,file,buffer,t,GC,vkeypatch,metapatch,RSV_cap,fat,fx,c,index)
 								f.flush()
 								f.close()		
 							except BaseException as e:
@@ -3542,7 +3560,7 @@ if __name__ == '__main__':
 										for i in range(len(GClist)):
 											if GClist[i][0] == file:
 												GC=GClist[i][1]									
-										outf,index,c = f.append_clean_content(endfile,file,buffer,t,GC,vkeypatch,metapatch,RSV_cap,fat,fx,c,index)
+										endfile,index,c = f.append_clean_content(endfile,file,buffer,t,GC,vkeypatch,metapatch,RSV_cap,fat,fx,c,index)
 								f.flush()
 								f.close()		
 							except BaseException as e:
@@ -3592,7 +3610,7 @@ if __name__ == '__main__':
 						shutil.rmtree(afolder, ignore_errors=True)										
 					#print(str(totSize))
 					t = tqdm(total=totSize, unit='B', unit_scale=True, leave=False)			
-					outf = open(endfile, 'w+b')		
+					endfile = open(endfile, 'w+b')		
 					t.write(tabs+'- Writing NSP header...')							
 					outf.write(nspheader)		
 					t.update(len(nspheader))	
@@ -3604,7 +3622,7 @@ if __name__ == '__main__':
 								f = Fs.Nsp(filepath)
 								for file in oflist:			
 									if not file.endswith('xml'):					
-										outf,index,c = f.append_clean_content(endfile,file,buffer,t,False,vkeypatch,metapatch,RSV_cap,fat,fx,c,index)
+										endfile,index,c = f.append_clean_content(endfile,file,buffer,t,False,vkeypatch,metapatch,RSV_cap,fat,fx,c,index)
 								f.flush()
 								f.close()		
 							except BaseException as e:
@@ -3614,7 +3632,7 @@ if __name__ == '__main__':
 								f = Fs.Xci(filepath)
 								for file in oflist:						
 									if not file.endswith('xml'):									
-										outf,index,c = f.append_clean_content(endfile,file,buffer,t,False,vkeypatch,metapatch,RSV_cap,fat,fx,c,index)
+										endfile,index,c = f.append_clean_content(endfile,file,buffer,t,False,vkeypatch,metapatch,RSV_cap,fat,fx,c,index)
 								f.flush()
 								f.close()		
 							except BaseException as e:
@@ -3783,15 +3801,26 @@ if __name__ == '__main__':
 						Print.error('Exception: ' + str(e))
 			else:
 				buffer = 32768
-			filepath = args.joinfile
+			if args.text_file:
+				tfile=args.text_file
+				with open(tfile,"r+", encoding='utf8') as filelist: 	
+					filepath = filelist.readline()
+					filepath=os.path.abspath(filepath.rstrip('\n'))						
+			else:
+				for filepath in args.joinfile:
+					filepath=filepath
+			print(filepath)		
 			file_list=list()
-			#print (filepath)
 			try:
+				bname=os.path.basename(os.path.abspath(filepath))	
+				bn=''
+				if bname != '00':
+					bn=bname[:-4]
 				if filepath.endswith(".xc0"):
-					outname = "output.xci"
+					outname = bn+".xci"
 					ender=".xc"
 				elif filepath.endswith(".ns0"):
-					outname = "output.nsp"
+					outname = bn+".nsp"
 					ender=".ns"
 				elif filepath[-2:]=="00":				
 					outname = "output.nsp"
@@ -3800,13 +3829,25 @@ if __name__ == '__main__':
 					print ("Not valid file")
 				outfile = os.path.join(ofolder, outname)
 				#print (outfile)
-				ruta=os.path.dirname(os.path.abspath(args.joinfile))			
+				ruta=os.path.dirname(os.path.abspath(filepath))		
+				#print(ruta)
 				for dirpath, dnames, fnames in os.walk(ruta):
 					for f in fnames:
-						check=f[-3:-1]			
-						if check==ender:
-							fp = os.path.join(ruta, f)
-							file_list.append(fp)
+						check=f[-4:-1]	
+						#print(check)
+						#print(ender)
+						#print(bname[:-1])
+						#print(f[:-1])
+						if check==ender and bname[:-1]==f[:-1]:
+							n=bname[-1];n=int(n)						
+							try:
+								n=f[-1];n=int(n)
+								n+=1
+								fp = os.path.join(ruta, f)
+								file_list.append(fp)
+							except:	continue
+				file_list.sort()	
+				#print(file_list)
 			except BaseException as e:
 				Print.error('Exception: ' + str(e))
 			totSize = sum(os.path.getsize(file) for file in file_list)
@@ -4148,6 +4189,15 @@ if __name__ == '__main__':
 		# ADD CONTENT TO DATABASE
 		# ...................................................	
 		if args.addtodb:
+			if args.romanize:
+				for input in args.ofolder:
+					roman=str(input).upper()
+					if roman == "FALSE":
+						roman = False
+					else:
+						roman = True
+			else:
+				roman = True				
 			if args.db_file:	
 				outfile=args.db_file
 				dir=os.path.dirname(os.path.abspath(outfile))
@@ -4191,7 +4241,7 @@ if __name__ == '__main__':
 						infile=r''
 						infile+=filename
 						f = Fs.Nsp(filename, 'rb')
-						f.addtodb(outfile,outdb)
+						f.addtodb(outfile,outdb,roman)
 						f.flush()
 						f.close()
 					except BaseException as e:
@@ -4208,7 +4258,7 @@ if __name__ == '__main__':
 						infile+=filename
 						f = Fs.factory(filename)
 						f.open(filename, 'rb')						
-						f.addtodb(outfile,outdb)
+						f.addtodb(outfile,outdb,roman)
 						f.flush()
 						f.close()
 					except BaseException as e:
@@ -4367,86 +4417,353 @@ if __name__ == '__main__':
 		# ......................................................................						
 						
 		if args.raw_extraction:			
-			for filename in args.raw_extraction:			
-				if filename.endswith('.nsp'):
-					dir=os.path.dirname(os.path.abspath(filename))
-					ofolder =os.path.join(dir, 'output')	
-					if not os.path.exists(ofolder):
-						os.makedirs(ofolder)						
+			if args.buffer:		
+				for var in args.buffer:
 					try:
-						with open(filename, 'r+b') as f:			
-							data=f.read(int(8*1024))						
-						try:
-							head=data[0:4]
-							n_files=(data[4:8])
-							n_files=int.from_bytes(n_files, byteorder='little')		
-							st_size=(data[8:12])
-							st_size=int.from_bytes(st_size, byteorder='little')		
-							junk=(data[12:16])
-							offset=(0x10 + n_files * 0x18)
-							stringTable=(data[offset:offset+st_size])
-							stringEndOffset = st_size
-							headerSize = 0x10 + 0x18 * n_files + st_size
-							#print(head)
-							#print(str(n_files))
-							#print(str(st_size))	
-							#print(str((stringTable)))		
-							files_list=list()
-							for i in range(n_files):
-								i = n_files - i - 1
-								pos=0x10 + i * 0x18
-								offset = data[pos:pos+8]
-								offset=int.from_bytes(offset, byteorder='little')			
-								size = data[pos+8:pos+16]
-								size=int.from_bytes(size, byteorder='little')			
-								nameOffset = data[pos+16:pos+20] # just the offset
-								nameOffset=int.from_bytes(nameOffset, byteorder='little')			
-								name = stringTable[nameOffset:stringEndOffset].decode('utf-8').rstrip(' \t\r\n\0')
-								stringEndOffset = nameOffset
-								junk2 = data[pos+20:pos+24] # junk data
-								#print(name)
-								#print(offset)	
-								#print(size)	
-								files_list.append([name,offset,size])	
-							files_list.reverse()	
-						except IOError as e:
-							print(e, file=sys.stderr)		
-						#print(files_list)	
-						for i in range(len(files_list)):
-							#print(files_list[i][0])
-							#print(files_list[i][1])
-							#print(files_list[i][2])	
-							off1=headerSize+files_list[i][1]
-							off2=off1+files_list[i][2]
-							filepath = os.path.join(ofolder, files_list[i][0])	
-							fp = open(filepath, 'w+b')		
-							s=0
-							for j in range(len(files_list)):
-								s=s+files_list[j][2]
-							#print(filepath)
-							t = tqdm(total=s, unit='B', unit_scale=True, leave=False)
-							with open(filename, 'r+b') as f:												
-								f.seek(off1)
-								c=0;buffer=32768
-								t.write(tabs+'Copying: ' + str(files_list[i][0]))
-								for data in iter(lambda: f.read(int(buffer)), ""):
-									fp.write(data)	
-									fp.flush()
-									c=len(data)+c
-									t.update(len(data))
-									if c+len(data)>off2:
-										data=f.read(off2-c)
-										t.update(len(data))
-										t.close()
-										fp.close()
-										break
-									if not data:
-										t.close()
-										fp.close()
-										break										
+						buffer = var
 					except BaseException as e:
-						Print.error('Exception: ' + str(e))								
+						Print.error('Exception: ' + str(e))
+			else:
+				buffer = 32768			
+			ofolder=False
+			if args.ofolder:		
+				for input in args.ofolder:
+					try:
+						ofolder = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+			if not os.path.exists(ofolder):
+				os.makedirs(ofolder)			
+			if args.text_file:
+				tfile=args.text_file
+				with open(tfile,"r+", encoding='utf8') as filelist: 	
+					filename = filelist.readline()
+					filename=os.path.abspath(filename.rstrip('\n'))	
+					if ofolder != False:
+						dir=ofolder
+					else:
+						dir=os.path.dirname(os.path.abspath(filename))
+					basename=str(os.path.basename(os.path.abspath(filename)))
+					basename=basename[:-4]
+					ofolder =os.path.join(dir, basename)						
+			else:		
+				for filename in args.raw_extraction:
+					if ofolder != False:
+						dir=ofolder
+					else:					
+						dir=os.path.dirname(os.path.abspath(filename))
+					basename=str(os.path.basename(os.path.abspath(filename)))	
+					basename=basename[:-4]					
+					ofolder =os.path.join(dir, basename)	
+			if not os.path.exists(ofolder):
+				os.makedirs(ofolder)			
+			test=filename.lower()
+			if test.endswith('.nsp') or test.endswith('.nsx'):
+				try:	
+					files_list=sq_tools.ret_nsp_offsets(filename)			
+					for i in range(len(files_list)):
+						#print(files_list[i][0])
+						#print(files_list[i][1])
+						#print(files_list[i][2])	
+						off1=files_list[i][1]
+						off2=files_list[i][2]						
+						filepath = os.path.join(ofolder, files_list[i][0])	
+						fp = open(filepath, 'w+b')		
+						s=files_list[i][3]
+						if buffer>s:
+							buf=s
+						else:
+							buf=buffer
+						#print(filepath)
+						t = tqdm(total=s, unit='B', unit_scale=True, leave=False)
+						with open(filename, 'r+b') as f:												
+							f.seek(off1)
+							c=0
+							t.write(tabs+'Copying: ' + str(files_list[i][0]))
+							for data in iter(lambda: f.read(int(buf)), ""):
+								fp.write(data)	
+								fp.flush()
+								c=len(data)+c
+								t.update(len(data))
+								if c+int(buf)>s:
+									if (s-c)<0:
+										t.close()
+										fp.close()									
+										break								
+									data=f.read(s-c)
+									fp.write(data)	
+									t.update(len(data))
+									t.close()
+									fp.close()
+									break
+								if not data:
+									t.close()
+									fp.close()
+									break		
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))	
+			elif test.endswith('.xci'):
+				try:	
+					files_list=sq_tools.ret_xci_offsets(filename)	
+					#print(files_list)					
+					for i in range(len(files_list)):
+						#print(files_list[i][0])
+						#print(files_list[i][1])
+						#print(files_list[i][2])	
+						off1=files_list[i][1]
+						off2=files_list[i][2]
+						filepath = os.path.join(ofolder, files_list[i][0])	
+						fp = open(filepath, 'w+b')		
+						s=files_list[i][3]
+						if buffer>s:
+							buf=s
+						else:
+							buf=buffer
+						#print(filepath)
+						t = tqdm(total=s, unit='B', unit_scale=True, leave=False)
+						with open(filename, 'r+b') as f:												
+							f.seek(off1)
+							c=0
+							t.write(tabs+'Copying: ' + str(files_list[i][0]))
+							for data in iter(lambda: f.read(int(buf)), ""):
+								fp.write(data)	
+								fp.flush()
+								c=len(data)+c
+								t.update(len(data))
+								if c+int(buf)>s:
+									if (s-c)<0:
+										t.close()
+										fp.close()									
+										break								
+									data=f.read(s-c)
+									fp.write(data)	
+									t.update(len(data))
+									t.close()
+									fp.close()
+									break
+								if not data:
+									t.close()
+									fp.close()
+									break										
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))		
+					
+		# ..........................................................................						
+		# NCA_FILE_EXTACTION. EXTRACT FILES PACKED IN NCA FROM NSP\XCI\NCA
+		# ..........................................................................						
 						
+		if args.nca_file_extraction:	
+			if args.buffer:		
+				for var in args.buffer:
+					try:
+						buffer = var
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+			else:
+				buffer = 32768			
+			ofolder=False
+			if args.ofolder:		
+				for input in args.ofolder:
+					try:
+						ofolder = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+			if not os.path.exists(ofolder):
+				os.makedirs(ofolder)							
+			if args.text_file:
+				tfile=args.text_file
+				with open(tfile,"r+", encoding='utf8') as filelist: 	
+					filename = filelist.readline()
+					filename=os.path.abspath(filename.rstrip('\n'))	
+					if ofolder != False:
+						dir=ofolder
+					else:
+						dir=os.path.dirname(os.path.abspath(filename))
+					basename=str(os.path.basename(os.path.abspath(filename)))
+					basename=basename[:-4]
+					ofolder =os.path.join(dir, basename)						
+			else:		
+				for filename in args.nca_file_extraction:
+					if ofolder != False:
+						dir=ofolder
+					else:					
+						dir=os.path.dirname(os.path.abspath(filename))
+					basename=str(os.path.basename(os.path.abspath(filename)))	
+					basename=basename[:-4]					
+					ofolder =os.path.join(dir, basename)	
+			if not os.path.exists(ofolder):
+				os.makedirs(ofolder)	
+			if filename.endswith('.nsp'):		
+				try:	
+					files_list=sq_tools.ret_nsp_offsets(filename)	
+					f = Fs.Nsp(filename, 'rb')
+					f.extract_nca(ofolder,files_list,buffer)
+					f.flush()
+					f.close()
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))			
+			if filename.endswith('.xci'):
+				try:
+					files_list=sq_tools.ret_xci_offsets(filename)	
+					f = Fs.Xci(filename)
+					f.extract_nca(ofolder,files_list,buffer)
+					f.flush()
+					f.close()
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))	
+		# ...........................................................................						
+		# NCA_2_PLAINTEXT. EXTRACT OR CONVERT NCA FILES TO PLAINTEXT FROM NSP\XCI\NCA 
+		# ...........................................................................						
+						
+		if args.extract_plain_nca:
+			if args.buffer:		
+				for var in args.buffer:
+					try:
+						buffer = var
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+			else:
+				buffer = 32768			
+			ofolder=False
+			if args.ofolder:		
+				for input in args.ofolder:
+					try:
+						ofolder = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+			if not os.path.exists(ofolder):
+				os.makedirs(ofolder)							
+			if args.text_file:
+				tfile=args.text_file
+				with open(tfile,"r+", encoding='utf8') as filelist: 	
+					filename = filelist.readline()
+					filename=os.path.abspath(filename.rstrip('\n'))	
+					if ofolder != False:
+						dir=ofolder
+					else:
+						dir=os.path.dirname(os.path.abspath(filename))
+					basename=str(os.path.basename(os.path.abspath(filename)))
+					basename=basename[:-4]
+					ofolder =os.path.join(dir, basename)						
+			else:		
+				for filename in args.extract_plain_nca:
+					if ofolder != False:
+						dir=ofolder
+					else:					
+						dir=os.path.dirname(os.path.abspath(filename))
+					basename=str(os.path.basename(os.path.abspath(filename)))	
+					basename=basename[:-4]					
+					ofolder =os.path.join(dir, basename)	
+			if not os.path.exists(ofolder):
+				os.makedirs(ofolder)					
+			if filename.endswith('.nsp'):		
+				try:	
+					files_list=sq_tools.ret_nsp_offsets(filename)				
+					f = Fs.Nsp(filename, 'rb')
+					f.copy_as_plaintext(ofolder,files_list,buffer)
+					f.flush()
+					f.close()
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))	
+			if filename.endswith('.xci'):
+				try:
+					files_list=sq_tools.ret_xci_offsets(filename)	
+					#print(files_list)
+					f = Fs.Xci(filename)
+					f.copy_as_plaintext(ofolder,files_list,buffer)
+					f.flush()
+					f.close()
+				except BaseException as e:	
+					Print.error('Exception: ' + str(e))			
+						
+		# ...........................................................................						
+		# Read npdm from inside nsp or xci
+		# ...........................................................................						
+						
+		if args.Read_npdm:
+			if args.ofolder:		
+				for var in args.ofolder:
+					try:
+						ofolder = var
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+			else:
+				for filename in args.Read_npdm:
+					dir=os.path.dirname(os.path.abspath(filename))	
+					info='INFO'
+					ofolder =os.path.join(dir,info)		
+			if not os.path.exists(ofolder):
+				os.makedirs(ofolder)	
+			if args.text_file:
+				tfile=args.text_file
+				dir=os.path.dirname(os.path.abspath(tfile))
+				if not os.path.exists(dir):
+					os.makedirs(dir)	
+				err='badfiles.txt'			
+				errfile = os.path.join(dir, err)						
+				with open(tfile,"r+", encoding='utf8') as filelist: 	
+					filename = filelist.readline()
+					filename=os.path.abspath(filename.rstrip('\n'))
+			else:									
+				for filename in args.Read_npdm:
+					filename=filename		
+			basename=str(os.path.basename(os.path.abspath(filename)))					
+			ofile=basename[:-4]+'-npdm.txt'
+			infotext=os.path.join(ofolder, ofile)																
+			if filename.endswith(".nsp"):	
+				try:
+					files_list=sq_tools.ret_nsp_offsets(filename)	
+					f = Fs.Nsp(filename, 'rb')
+					feed=f.read_npdm(files_list)
+					f.flush()
+					f.close()
+					if not args.text_file:						
+						print('\n********************************************************')
+						print('Do you want to print the information to a text file')
+						print('********************************************************')
+						i=0
+						while i==0:							
+							print('Input "1" to print to text file')	
+							print('Input "2" to NOT print to text file\n')							
+							ck=input('Input your answer: ')	
+							if ck ==str(1):					
+								with open(infotext, 'w') as info:	
+									info.write(feed)	
+								i=1
+							elif ck ==str(2):					
+								i=1				
+							else:
+								print('WRONG CHOICE\n')		
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))									
+			if filename.endswith(".xci"):	
+				try:
+					files_list=sq_tools.ret_xci_offsets(filename)	
+					f = Fs.Xci(filename)					
+					feed=f.read_npdm(files_list)
+					f.flush()
+					f.close()
+					if not args.text_file:						
+						print('\n********************************************************')
+						print('Do you want to print the information to a text file')
+						print('********************************************************')
+						i=0
+						while i==0:							
+							print('Input "1" to print to text file')	
+							print('Input "2" to NOT print to text file\n')							
+							ck=input('Input your answer: ')	
+							if ck ==str(1):					
+								with open(infotext, 'w') as info:	
+									info.write(feed)	
+								i=1
+							elif ck ==str(2):					
+								i=1				
+							else:
+								print('WRONG CHOICE\n')							
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))	
+					
+					
 		# ...................................................						
 		# Read cnmt inside nsp or xci
 		# ...................................................					
@@ -6016,8 +6333,13 @@ if __name__ == '__main__':
 				try:
 					f = Fs.Nsp(filename, 'rb')
 					check,feed=f.verify()
+					f.flush()
+					f.close()					
 					if not args.text_file:
+						f = Fs.Nsp(filename, 'rb')					
 						verdict,headerlist,feed=f.verify_sig(feed,tmpfolder)
+						f.flush()
+						f.close()							
 						i=0
 						print('\n********************************************************')
 						print('Do you want to verify the hash of the nca files?')
@@ -6028,6 +6350,7 @@ if __name__ == '__main__':
 							ck=input('Input your answer: ')
 							if ck ==str(1):
 								print('')
+								f = Fs.Nsp(filename, 'rb')									
 								verdict,feed=f.verify_hash_nca(buffer,headerlist,verdict,feed)
 								f.flush()
 								f.close()
@@ -6056,14 +6379,23 @@ if __name__ == '__main__':
 								print('WRONG CHOICE\n')								
 					elif args.text_file:	
 						if vertype == "lv2":
+							f = Fs.Nsp(filename, 'rb')
 							verdict,headerlist,feed=f.verify_sig(feed,tmpfolder)	
+							f.flush()
+							f.close()								
 							if check == True:
 								check=verdict
 						elif vertype == "lv3":	
+							f = Fs.Nsp(filename, 'rb')						
 							verdict,headerlist,feed=f.verify_sig(feed,tmpfolder)	
+							f.flush()
+							f.close()								
 							if check == True:
-								check=verdict						
+								check=verdict		
+							f = Fs.Nsp(filename, 'rb')								
 							verdict,feed=f.verify_hash_nca(buffer,headerlist,verdict,feed)
+							f.flush()
+							f.close()									
 							if check == True:
 								check=verdict							
 						if check == False:
@@ -6097,8 +6429,14 @@ if __name__ == '__main__':
 					f = Fs.factory(filename)
 					f.open(filename, 'rb')
 					check,feed=f.verify()
+					f.flush()
+					f.close()							
 					if not args.text_file:
+						f = Fs.factory(filename)
+						f.open(filename, 'rb')						
 						verdict,headerlist,feed=f.verify_sig(feed,tmpfolder)
+						f.flush()
+						f.close()								
 						i=0
 						print('\n********************************************************')
 						print('Do you want to verify the hash of the nca files?')
@@ -6109,6 +6447,8 @@ if __name__ == '__main__':
 							check=input('Input your answer: ')	
 							if check ==str(1):
 								print('')
+								f = Fs.factory(filename)
+								f.open(filename, 'rb')						
 								verdict,feed=f.verify_hash_nca(buffer,headerlist,verdict,feed)
 								f.flush()
 								f.close()
@@ -6137,14 +6477,26 @@ if __name__ == '__main__':
 								print('WRONG CHOICE\n')								
 					elif args.text_file:	
 						if vertype == "lv2":
-							verdict,headerlist,feed=f.verify_sig(feed,tmpfolder)	
+							f = Fs.factory(filename)
+							f.open(filename, 'rb')							
+							verdict,headerlist,feed=f.verify_sig(feed,tmpfolder)
+							f.flush()
+							f.close()							
 							if check == True:
 								check=verdict
 						elif vertype == "lv3":	
-							verdict,headerlist,feed=f.verify_sig(feed,tmpfolder)	
+							f = Fs.factory(filename)
+							f.open(filename, 'rb')							
+							verdict,headerlist,feed=f.verify_sig(feed,tmpfolder)
+							f.flush()
+							f.close()							
 							if check == True:
-								check=verdict						
+								check=verdict		
+							f = Fs.factory(filename)
+							f.open(filename, 'rb')									
 							verdict,feed=f.verify_hash_nca(buffer,headerlist,verdict,feed)
+							f.flush()
+							f.close()							
 							if check == True:
 								check=verdict						
 						if check == False:
@@ -6384,7 +6736,45 @@ if __name__ == '__main__':
 								tfile.write(line+"\n")
 							except:
 								continue									
-				
+	
+		# ...................................................						
+		# Restore. File Restoration
+		# ...................................................
+		if args.restore:	
+			feed=''		
+			if args.buffer:		
+				for var in args.buffer:
+					try:
+						buffer = var
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+			else:
+				buffer = 32768	
+			if not os.path.exists(ofolder):
+				os.makedirs(ofolder)	
+			if args.text_file:
+				tfile=args.text_file
+				dir=os.path.dirname(os.path.abspath(tfile))
+				if not os.path.exists(dir):
+					os.makedirs(dir)	
+				err='badfiles.txt'			
+				errfile = os.path.join(dir, err)						
+				with open(tfile,"r+", encoding='utf8') as filelist: 	
+					filename = filelist.readline()
+					filename=os.path.abspath(filename.rstrip('\n'))
+			else:				
+				for filename in args.verify:
+					filename=filename	
+			if filename.endswith('.nsp') or filename.endswith('.nsx'):
+				try:
+					f = Fs.Nsp(filename, 'rb')
+					check,feed=f.verify()
+					verdict,headerlist,feed=f.verify_sig(feed,tmpfolder)
+					if verdict == True:
+						pass
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))
+	
 
 		Status.close()		
 	

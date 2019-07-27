@@ -3,7 +3,7 @@
 set "prog_dir=%~dp0"
 set "bat_name=%~n0"
 set "ofile_name=%bat_name%_options.cmd"
-Title NSC_Builder v0.87c -- Profile: %ofile_name% -- by JulesOnTheRoad
+Title NSC_Builder v0.88 -- Profile: %ofile_name% -- by JulesOnTheRoad
 set "list_folder=%prog_dir%lists"
 ::-----------------------------------------------------
 ::EDIT THIS VARIABLE TO LINK OTHER OPTION FILE
@@ -118,7 +118,7 @@ goto folder_ind_mode
 
 ::AUTO MODE. INDIVIDUAL REPACK PROCESSING OPTION.
 :folder_ind_mode
-if "%fatype%" EQU "-fat fat32" goto folder_ind_mode_fat32
+rem if "%fatype%" EQU "-fat fat32" goto folder_ind_mode_fat32
 call :program_logo
 echo --------------------------------------
 echo Auto-Mode. Individual repacking is set
@@ -149,9 +149,9 @@ REM endlocal & ( set "vpack=!vrepack!" )
 REM if "%trn_skip%" EQU "true" ( call :check_titlerights )
 if "%vrename%" EQU "true" ( call :addtags_from_nsp )
 
-if "%vrepack%" EQU "nsp" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -fat exfat -fx files %skdelta% -o "%w_folder%" -t "nsp" -dc "%%f" )
-if "%vrepack%" EQU "xci" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -fat exfat -fx files %skdelta% -o "%w_folder%" -t "xci" -dc "%%f" )
-if "%vrepack%" EQU "both" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -fat exfat -fx files %skdelta% -o "%w_folder%" -t "both" -dc "%%f" )
+if "%vrepack%" EQU "nsp" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "nsp" -dc "%%f" )
+if "%vrepack%" EQU "xci" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "xci" -dc "%%f" )
+if "%vrepack%" EQU "both" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "both" -dc "%%f" )
 
 if not exist "%fold_output%" MD "%fold_output%" >NUL 2>&1
 
@@ -179,9 +179,9 @@ MD "%w_folder%"
 call :getname
 if "%vrename%" EQU "true" ( call :addtags_from_xci )
 
-if "%vrepack%" EQU "nsp" (  %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -fat exfat -fx files %skdelta% -o "%w_folder%" -t "nsp" -dc "%%f" )
-if "%vrepack%" EQU "xci" (  %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -fat exfat -fx files %skdelta% -o "%w_folder%" -t "xci" -dc "%%f" )
-if "%vrepack%" EQU "both" (  %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -fat exfat -fx files %skdelta% -o "%w_folder%" -t "both" -dc "%%f" )
+if "%vrepack%" EQU "nsp" (  %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "nsp" -dc "%%f" )
+if "%vrepack%" EQU "xci" (  %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "xci" -dc "%%f" )
+if "%vrepack%" EQU "both" (  %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "both" -dc "%%f" )
 
 if not exist "%fold_output%" MD "%fold_output%" >NUL 2>&1
 
@@ -297,7 +297,7 @@ goto aut_exit_choice
 
 ::AUTO MODE. MULTIREPACK PROCESSING OPTION.
 :folder_mult_mode
-if "%fatype%" EQU "-fat fat32" goto folder_mult_mode_fat32
+rem if "%fatype%" EQU "-fat fat32" goto folder_mult_mode_fat32
 call :program_logo
 echo --------------------------------------
 echo Auto-Mode. Multi-repacking is set
@@ -313,25 +313,25 @@ echo   DONE
 if "%vrepack%" EQU "nsp" echo ......................................
 if "%vrepack%" EQU "nsp" echo REPACKING FOLDER CONTENT TO NSP
 if "%vrepack%" EQU "nsp" echo ......................................
-if "%vrepack%" EQU "nsp" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -fat exfat -fx files %skdelta% -t cnsp -o "%w_folder%" -tfile "%prog_dir%mlist.txt" -roma %romaji% -dmul "calculate" )
+if "%vrepack%" EQU "nsp" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t cnsp -o "%w_folder%" -tfile "%prog_dir%mlist.txt" -roma %romaji% -dmul "calculate" )
 if "%vrepack%" EQU "nsp" echo.
 
 if "%vrepack%" EQU "xci" echo ......................................
 if "%vrepack%" EQU "xci" echo REPACKING FOLDER CONTENT TO XCI
 if "%vrepack%" EQU "xci" echo ......................................
-if "%vrepack%" EQU "xci" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -fat exfat -fx files %skdelta% -t xci -o "%w_folder%" -tfile "%prog_dir%mlist.txt" -roma %romaji% -dmul "calculate" )
+if "%vrepack%" EQU "xci" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t xci -o "%w_folder%" -tfile "%prog_dir%mlist.txt" -roma %romaji% -dmul "calculate" )
 if "%vrepack%" EQU "xci" echo.
 
 if "%vrepack%" EQU "both" echo ......................................
 if "%vrepack%" EQU "both" echo REPACKING FOLDER CONTENT TO NSP
 if "%vrepack%" EQU "both" echo ......................................
-if "%vrepack%" EQU "both" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -fat exfat -fx files %skdelta% -t cnsp -o "%w_folder%" -tfile "%prog_dir%mlist.txt" -roma %romaji% -dmul "calculate" )
+if "%vrepack%" EQU "both" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t cnsp -o "%w_folder%" -tfile "%prog_dir%mlist.txt" -roma %romaji% -dmul "calculate" )
 if "%vrepack%" EQU "both" echo.
 
 if "%vrepack%" EQU "both" echo ......................................
 if "%vrepack%" EQU "both" echo REPACKING FOLDER CONTENT TO XCI
 if "%vrepack%" EQU "both" echo ......................................
-if "%vrepack%" EQU "both" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -fat exfat -fx files %skdelta% -t xci -o "%w_folder%" -tfile "%prog_dir%mlist.txt" -roma %romaji% -dmul "calculate" )
+if "%vrepack%" EQU "both" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t xci -o "%w_folder%" -tfile "%prog_dir%mlist.txt" -roma %romaji% -dmul "calculate" )
 if "%vrepack%" EQU "both" echo.
 
 setlocal enabledelayedexpansion
@@ -414,7 +414,7 @@ ECHO ---------------------------------------------------
 goto aut_exit_choice
 
 :folder_packbyid
-::if "%fatype%" EQU "-fat fat32" goto folder_mult_mode_fat32
+rem if "%fatype%" EQU "-fat fat32" goto folder_mult_mode_fat32
 call :program_logo
 echo --------------------------------------
 echo Auto-Mode. packing-by-id is set
@@ -471,7 +471,7 @@ pause
 goto manual
 
 :nsp
-if "%fatype%" EQU "-fat fat32" goto file_nsp_fat32
+rem if "%fatype%" EQU "-fat fat32" goto file_nsp_fat32
 set "orinput=%~f1"
 set "filename=%~n1"
 set "target=%~1"
@@ -486,9 +486,9 @@ MD "%w_folder%"
 call :getname
 if "%vrename%" EQU "true" call :addtags_from_nsp
 
-if "%vrepack%" EQU "nsp" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -fat exfat -fx files %skdelta% -o "%w_folder%" -t "nsp" -dc "%~1" )
-if "%vrepack%" EQU "xci" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -fat exfat -fx files %skdelta% -o "%w_folder%" -t "xci" -dc "%~1" )
-if "%vrepack%" EQU "both" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -fat exfat -fx files %skdelta% -o "%w_folder%" -t "both" -dc "%~1"  )
+if "%vrepack%" EQU "nsp" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "nsp" -dc "%~1" )
+if "%vrepack%" EQU "xci" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "xci" -dc "%~1" )
+if "%vrepack%" EQU "both" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "both" -dc "%~1"  )
 
 if not exist "%fold_output%" MD "%fold_output%" >NUL 2>&1
 
@@ -544,7 +544,7 @@ call :thumbup
 goto aut_exit_choice
 
 :xci
-if "%fatype%" EQU "-fat fat32" goto file_xci_fat32
+rem if "%fatype%" EQU "-fat fat32" goto file_xci_fat32
 set "filename=%~n1"
 set "orinput=%~f1"
 set "showname=%orinput%"
@@ -556,9 +556,9 @@ call :getname
 
 if "%vrename%" EQU "true" call :addtags_from_xci
 
-if "%vrepack%" EQU "nsp" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -fat exfat -fx files %skdelta% -o "%w_folder%" -t "nsp" -dc "%~1" )
-if "%vrepack%" EQU "xci" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -fat exfat -fx files %skdelta% -o "%w_folder%" -t "xci" -dc "%~1" )
-if "%vrepack%" EQU "both" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -fat exfat -fx files %skdelta% -o "%w_folder%" -t "both" -dc "%~1"  )
+if "%vrepack%" EQU "nsp" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "nsp" -dc "%~1" )
+if "%vrepack%" EQU "xci" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "xci" -dc "%~1" )
+if "%vrepack%" EQU "both" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "both" -dc "%~1"  )
 
 MD "%fold_output%\" >NUL 2>&1
 
@@ -647,6 +647,7 @@ echo Input "3" to enter into MULTI-CONTENT SPLITTER mode
 echo Input "4" to enter into FILE-INFO mode
 echo Input "5" to enter into DATABASE building mode
 echo Input "6" to enter into ADVANCED mode
+echo Input "7" to enter into FILE-JOINER mode
 echo Input "0" to enter into CONFIGURATION mode
 echo.
 echo Input "L" to enter LEGACY MODES
@@ -660,12 +661,16 @@ if /i "%bs%"=="3" goto SPLMODE
 if /i "%bs%"=="4" goto INFMODE
 if /i "%bs%"=="5" goto DBMODE
 if /i "%bs%"=="6" goto ADVmode
+if /i "%bs%"=="7" goto JOINmode
 if /i "%bs%"=="L" goto LegacyMode
 if /i "%bs%"=="0" goto OPT_CONFIG
 goto manual_Reentry
 
 :ADVmode
 call "%prog_dir%ztools\ADV.bat"
+goto manual_Reentry
+:JOINmode
+call "%prog_dir%ztools\JOINER.bat"
 goto manual_Reentry
 :LegacyMode
 call "%prog_dir%ztools\LEGACY.bat"
@@ -1218,7 +1223,7 @@ if /i "%bs%"=="1" goto salida
 goto s_exit_choice
 
 :nsp_manual
-if "%fatype%" EQU "-fat fat32" goto nsp_manual_fat32
+rem if "%fatype%" EQU "-fat fat32" goto nsp_manual_fat32
 rem set "filename=%name%"
 rem set "showname=%orinput%"
 if "%zip_restore%" EQU "true" ( call :makezip )
@@ -1228,9 +1233,9 @@ call :squirrell
 
 if "%vrename%" EQU "true" call :addtags_from_nsp
 
-if "%vrepack%" EQU "nsp" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -fat exfat -fx files %skdelta% -o "%w_folder%" -t "nsp" -dc "%orinput%" -tfile "%prog_dir%list.txt")
-if "%vrepack%" EQU "xci" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -fat exfat -fx files %skdelta% -o "%w_folder%" -t "xci" -dc "%orinput%" -tfile "%prog_dir%list.txt")
-if "%vrepack%" EQU "both" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -fat exfat -fx files %skdelta% -o "%w_folder%" -t "both" -dc "%orinput%" -tfile "%prog_dir%list.txt")
+if "%vrepack%" EQU "nsp" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "nsp" -dc "%orinput%" -tfile "%prog_dir%list.txt")
+if "%vrepack%" EQU "xci" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "xci" -dc "%orinput%" -tfile "%prog_dir%list.txt")
+if "%vrepack%" EQU "both" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "both" -dc "%orinput%" -tfile "%prog_dir%list.txt")
 if "%vrepack%" EQU "nodelta" ( %pycommand% "%nut%" %buffer% --xml_gen "true" -o "%w_folder%" -tfile "%prog_dir%list.txt" --erase_deltas "")
 if "%vrepack%" EQU "rebuild" ( %pycommand% "%nut%" %buffer% %skdelta% --xml_gen "true" -o "%w_folder%" -tfile "%prog_dir%list.txt" --rebuild_nsp "")
 if "%vrepack%" EQU "verify" ( %pycommand% "%nut%" %buffer% -vt "%verif%" -tfile "%prog_dir%list.txt" -v "")
@@ -1297,7 +1302,7 @@ goto end_nsp_manual
 exit /B
 
 :xci_manual
-if "%fatype%" EQU "-fat fat32" goto xci_manual_fat32
+rem if "%fatype%" EQU "-fat fat32" goto xci_manual_fat32
 ::FOR XCI FILES
 if exist "%w_folder%" rmdir /s /q "%w_folder%" >NUL 2>&1
 MD "%w_folder%"
@@ -1305,9 +1310,9 @@ MD "%w_folder%"
 set "filename=%name%"
 set "showname=%orinput%"
 
-if "%vrepack%" EQU "nsp" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -fat exfat -fx files %skdelta% -o "%w_folder%" -t "nsp" -dc "%orinput%" -tfile "%prog_dir%list.txt")
-if "%vrepack%" EQU "xci" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -fat exfat -fx files %skdelta% -o "%w_folder%" -t "xci" -dc "%orinput%" -tfile "%prog_dir%list.txt")
-if "%vrepack%" EQU "both" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -fat exfat -fx files %skdelta% -o "%w_folder%" -t "both" -dc "%orinput%" -tfile "%prog_dir%list.txt")
+if "%vrepack%" EQU "nsp" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "nsp" -dc "%orinput%" -tfile "%prog_dir%list.txt")
+if "%vrepack%" EQU "xci" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "xci" -dc "%orinput%" -tfile "%prog_dir%list.txt")
+if "%vrepack%" EQU "both" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "both" -dc "%orinput%" -tfile "%prog_dir%list.txt")
 if "%vrepack%" EQU "xci_supertrimmer" ( %pycommand% "%nut%" %buffer% -o "%w_folder%" -xci_st "%orinput%" -tfile "%prog_dir%list.txt")
 if "%vrepack%" EQU "verify" ( %pycommand% "%nut%" %buffer% -vt "%verif%" -tfile "%prog_dir%list.txt" -v "")
 if "%vrepack%" EQU "verify" ( goto end_xci_manual )
@@ -1719,35 +1724,35 @@ goto m_process_jobs2
 cls
 :m_process_jobs2
 dir "%mlistfol%\*.txt" /b  > "%prog_dir%mlist.txt"
-if "%fatype%" EQU "-fat fat32" goto m_process_jobs_fat32
+rem if "%fatype%" EQU "-fat fat32" goto m_process_jobs_fat32
 
 for /f "tokens=*" %%f in (mlist.txt) do (
 set "listname=%%f"
 if "%vrepack%" EQU "cnsp" call :program_logo
 if "%vrepack%" EQU "cnsp" call :m_split_merge_list_name 
-if "%vrepack%" EQU "cnsp" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -fat exfat -fx files %skdelta% -t cnsp -o "%w_folder%" -tfile "%mlistfol%\%%f" -roma %romaji% -dmul "calculate" )
+if "%vrepack%" EQU "cnsp" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t cnsp -o "%w_folder%" -tfile "%mlistfol%\%%f" -roma %romaji% -dmul "calculate" )
 
 if "%vrepack%" EQU "xci" call :program_logo
 if "%vrepack%" EQU "xci" call :m_split_merge_list_name
-if "%vrepack%" EQU "xci" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -fat exfat -fx files %skdelta% -t xci -o "%w_folder%" -tfile "%mlistfol%\%%f" -roma %romaji% -dmul "calculate" )
+if "%vrepack%" EQU "xci" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t xci -o "%w_folder%" -tfile "%mlistfol%\%%f" -roma %romaji% -dmul "calculate" )
 
 if "%vrepack%" EQU "nsp" call :program_logo
 if "%vrepack%" EQU "nsp" call :m_split_merge_list_name
-if "%vrepack%" EQU "nsp" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -fat exfat -fx files %skdelta% -t nsp -o "%w_folder%" -tfile "%mlistfol%\%%f" -roma %romaji% -dmul "calculate" )
+if "%vrepack%" EQU "nsp" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t nsp -o "%w_folder%" -tfile "%mlistfol%\%%f" -roma %romaji% -dmul "calculate" )
 
 if "%vrepack%" EQU "cboth" call :program_logo
 if "%vrepack%" EQU "cboth" call :m_split_merge_list_name
-if "%vrepack%" EQU "cboth" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -fat exfat -fx files %skdelta% -t xci -o "%w_folder%" -tfile "%mlistfol%\%%f" -roma %romaji% -dmul "calculate" )
+if "%vrepack%" EQU "cboth" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t xci -o "%w_folder%" -tfile "%mlistfol%\%%f" -roma %romaji% -dmul "calculate" )
 if "%vrepack%" EQU "cboth" call :program_logo
 if "%vrepack%" EQU "cboth" call :m_split_merge_list_name
-if "%vrepack%" EQU "cboth" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -fat exfat -fx files %skdelta% -t cnsp -o "%w_folder%" -tfile "%mlistfol%\%%f" -roma %romaji% -dmul "calculate" )
+if "%vrepack%" EQU "cboth" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t cnsp -o "%w_folder%" -tfile "%mlistfol%\%%f" -roma %romaji% -dmul "calculate" )
 
 if "%vrepack%" EQU "both" call :program_logo
 if "%vrepack%" EQU "both" call :m_split_merge_list_name
-if "%vrepack%" EQU "both" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -fat exfat -fx files %skdelta% -t nsp -o "%w_folder%" -tfile "%mlistfol%\%%f" -roma %romaji% -dmul "calculate" )
+if "%vrepack%" EQU "both" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t nsp -o "%w_folder%" -tfile "%mlistfol%\%%f" -roma %romaji% -dmul "calculate" )
 if "%vrepack%" EQU "both" call :program_logo
 if "%vrepack%" EQU "both" call :m_split_merge_list_name
-if "%vrepack%" EQU "both" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -fat exfat -fx files %skdelta% -t xci -o "%w_folder%" -tfile "%mlistfol%\%%f" -roma %romaji% -dmul "calculate" )
+if "%vrepack%" EQU "both" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t xci -o "%w_folder%" -tfile "%mlistfol%\%%f" -roma %romaji% -dmul "calculate" )
 more +1 "mlist.txt">"mlist.txt.new"
 move /y "mlist.txt.new" "mlist.txt" >nul
 if exist "%mlistfol%\%%f" del "%mlistfol%\%%f"
@@ -1847,7 +1852,7 @@ echo *******************************************************
 exit /B
 
 :m_normal_merge
-if "%fatype%" EQU "-fat fat32" goto m_KeyChange_skip_fat32
+rem if "%fatype%" EQU "-fat fat32" goto m_KeyChange_skip_fat32
 REM For the current beta the filenames are calculted. This code remains commented for future reintegration
 rem echo *******************************************************
 rem echo ENTER FINAL FILENAME FOR THE OUTPUT FILE
@@ -1861,23 +1866,23 @@ rem if /i "%finalname%"=="b" goto multi_checkagain
 
 cls
 if "%vrepack%" EQU "cnsp" call :program_logo
-if "%vrepack%" EQU "cnsp" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -fat exfat -fx files %skdelta% -t cnsp -o "%w_folder%" -tfile "%prog_dir%mlist.txt" -roma %romaji% -dmul "calculate" )
+if "%vrepack%" EQU "cnsp" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t cnsp -o "%w_folder%" -tfile "%prog_dir%mlist.txt" -roma %romaji% -dmul "calculate" )
 
 if "%vrepack%" EQU "xci" call :program_logo
-if "%vrepack%" EQU "xci" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -fat exfat -fx files %skdelta% -t xci -o "%w_folder%" -tfile "%prog_dir%mlist.txt" -roma %romaji% -dmul "calculate" )
+if "%vrepack%" EQU "xci" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t xci -o "%w_folder%" -tfile "%prog_dir%mlist.txt" -roma %romaji% -dmul "calculate" )
 
 if "%vrepack%" EQU "nsp" call :program_logo
-if "%vrepack%" EQU "nsp" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -fat exfat -fx files %skdelta% -t nsp -o "%w_folder%" -tfile "%prog_dir%mlist.txt" -roma %romaji% -dmul "calculate" )
+if "%vrepack%" EQU "nsp" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t nsp -o "%w_folder%" -tfile "%prog_dir%mlist.txt" -roma %romaji% -dmul "calculate" )
 
 if "%vrepack%" EQU "cboth" call :program_logo
-if "%vrepack%" EQU "cboth" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -fat exfat -fx files %skdelta% -t xci -o "%w_folder%" -tfile "%prog_dir%mlist.txt" -roma %romaji% -dmul "calculate" )
+if "%vrepack%" EQU "cboth" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t xci -o "%w_folder%" -tfile "%prog_dir%mlist.txt" -roma %romaji% -dmul "calculate" )
 if "%vrepack%" EQU "cboth" call :program_logo
-if "%vrepack%" EQU "cboth" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -fat exfat -fx files %skdelta% -t cnsp -o "%w_folder%" -tfile "%prog_dir%mlist.txt" -roma %romaji% -dmul "calculate" )
+if "%vrepack%" EQU "cboth" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t cnsp -o "%w_folder%" -tfile "%prog_dir%mlist.txt" -roma %romaji% -dmul "calculate" )
 
 if "%vrepack%" EQU "both" call :program_logo
-if "%vrepack%" EQU "both" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -fat exfat -fx files %skdelta% -t nsp -o "%w_folder%" -tfile "%prog_dir%mlist.txt" -roma %romaji% -dmul "calculate" )
+if "%vrepack%" EQU "both" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t nsp -o "%w_folder%" -tfile "%prog_dir%mlist.txt" -roma %romaji% -dmul "calculate" )
 if "%vrepack%" EQU "both" call :program_logo
-if "%vrepack%" EQU "both" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -fat exfat -fx files %skdelta% -t xci -o "%w_folder%" -tfile "%prog_dir%mlist.txt" -roma %romaji% -dmul "calculate" )
+if "%vrepack%" EQU "both" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t xci -o "%w_folder%" -tfile "%prog_dir%mlist.txt" -roma %romaji% -dmul "calculate" )
 
 setlocal enabledelayedexpansion
 if not exist "%fold_output%" MD "%fold_output%" >NUL 2>&1
@@ -2308,16 +2313,16 @@ if /i "%bs%"=="1" goto salida
 goto SPLIT_exit_choice
 
 :split_content
-if "%fatype%" EQU "-fat fat32" goto split_content_fat32
+rem if "%fatype%" EQU "-fat fat32" goto split_content_fat32
 set "showname=%orinput%"
 set "sp_repack=%vrepack%"
 if exist "%w_folder%" RD /S /Q  "%w_folder%" >NUL 2>&1
 MD "%w_folder%" >NUL 2>&1
 call :processing_message
 call :squirrell
-if "%vrepack%" EQU "nsp" ( %pycommand% "%nut%" %buffer% -o "%w_folder%" -fat exfat -fx files -t "nsp" -dspl "%orinput%" -tfile "%prog_dir%splist.txt")
-if "%vrepack%" EQU "xci" ( %pycommand% "%nut%" %buffer% -o "%w_folder%" -fat exfat -fx files -t "xci" -dspl "%orinput%" -tfile "%prog_dir%splist.txt")
-if "%vrepack%" EQU "both" ( %pycommand% "%nut%" %buffer% -o "%w_folder%" -fat exfat -fx files -t "both" -dspl "%orinput%" -tfile "%prog_dir%splist.txt")
+if "%vrepack%" EQU "nsp" ( %pycommand% "%nut%" %buffer% -o "%w_folder%" %fatype% %fexport% -t "nsp" -dspl "%orinput%" -tfile "%prog_dir%splist.txt")
+if "%vrepack%" EQU "xci" ( %pycommand% "%nut%" %buffer% -o "%w_folder%" %fatype% %fexport% -t "xci" -dspl "%orinput%" -tfile "%prog_dir%splist.txt")
+if "%vrepack%" EQU "both" ( %pycommand% "%nut%" %buffer% -o "%w_folder%" %fatype% %fexport% -t "both" -dspl "%orinput%" -tfile "%prog_dir%splist.txt")
 
 call :thumbup
 call :delay
@@ -2728,7 +2733,7 @@ ECHO =============================     BY JULESONTHEROAD     ===================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                                POWERED BY SQUIRREL                                "
 ECHO "                    BASED IN THE WORK OF BLAWAR AND LUCA FRAGA                     "
-ECHO                                   VERSION 0.87 (NEW)
+ECHO                                   VERSION 0.88 (NEW)
 ECHO -------------------------------------------------------------------------------------                   
 ECHO Program's github: https://github.com/julesontheroad/NSC_BUILDER
 ECHO Blawar's github:  https://github.com/blawar

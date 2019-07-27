@@ -18,6 +18,7 @@ from tqdm import tqdm
 import Fs
 from Fs import Type
 from Fs.File import File
+from Fs.File import MemoryFile
 from Fs.Rom import Rom
 from Fs.Pfs0 import Pfs0
 from Fs.BaseFs import BaseFs
@@ -25,6 +26,7 @@ from Fs.Ticket import Ticket
 from Fs.Nacp import Nacp
 import sq_tools
 import pykakasi
+from Fs.pyNCA3 import NCA3
 
 MEDIA_SIZE = 0x200
 RSA_PUBLIC_EXPONENT = 0x10001
@@ -386,6 +388,14 @@ class Nca(File):
 		hash_from_pfs0=self.read(0x20*mult)
 		return hash_from_pfs0
 		
+	def extract(self,ofolder,buffer):		
+		ncaname =  str(self._path)[:-4]+'_nca'
+		ncafolder = os.path.join(ofolder,ncaname)
+		if not os.path.exists(ncafolder):
+			os.makedirs(ncafolder)
+		nca3 = NCA3(open(str(self._path), 'rb'))			
+		nca3.extract_conts(ncafolder, disp=True)
+		
 	def calc_htable_hash(self):		
 		indent = 2
 		tabs = '\t' * indent
@@ -485,7 +495,49 @@ class Nca(File):
 					if (str(g._path)) == 'main.npdm':
 						check = True
 						break
-		return check					
+		return check	
+		
+	def pr_noenc_check_dlc(self, file = None, mode = 'rb'):	
+		crypto1=self.header.getCryptoType()	
+		crypto2=self.header.getCryptoType2()		
+		if crypto1 == 2:
+			if crypto1 > crypto2:								
+				masterKeyRev=crypto1
+			else:			
+				masterKeyRev=crypto2
+		else:			
+			masterKeyRev=crypto2	
+		decKey = Keys.decryptTitleKey(self.header.titleKeyDec, Keys.getMasterKeyIndex(masterKeyRev))
+		for f in self.sectionFilesystems:
+			#print(f.fsType);print(f.cryptoType)
+			if f.fsType == Type.Fs.ROMFS and f.cryptoType == Type.Crypto.CTR:	
+				ncaHeader = NcaHeader()
+				self.header.rewind()
+				ncaHeader = self.header.read(0x400)
+				#Hex.dump(ncaHeader)
+				pfs0=f
+				#Hex.dump(pfs0.read())
+				sectionHeaderBlock = f.buffer
+
+				levelOffset = int.from_bytes(sectionHeaderBlock[0x18:0x20], byteorder='little', signed=False)
+				levelSize = int.from_bytes(sectionHeaderBlock[0x20:0x28], byteorder='little', signed=False)
+
+				pfs0Header = pfs0.read(levelSize)
+				if sectionHeaderBlock[8:12] == b'IVFC':	
+					data = pfs0Header;
+					#Hex.dump(pfs0Header)
+					if hx(sectionHeaderBlock[0xc8:0xc8+0x20]).decode('utf-8') == str(sha256(data).hexdigest()):
+						return True
+					else:
+						return False
+				else:
+					data = pfs0Header;
+					#Hex.dump(pfs0Header)				
+					magic = pfs0Header[0:4]
+					if magic != b'PFS0':
+						return False
+					else:	
+						return True		
 	
 	def get_req_system(self, file = None, mode = 'rb'):	
 		indent = 1
@@ -1240,20 +1292,19 @@ class Nca(File):
 		ncalist.append(nca_meta)
 		return ncalist
 
-	def copy(self,ofolder,buffer):
+	def copy_files(self,buffer,ofolder=False,filepath=False,io=0,eo=False):
 		i=0
-		for f in self:
-			self.rewind()			
-			f.rewind()
-			filename =  str(i)
-			i+=1
-			outfolder = str(ofolder)+'/'
-			filepath = os.path.join(outfolder, filename)
+		if ofolder == False:
+			outfolder = 'ofolder'
 			if not os.path.exists(outfolder):
 				os.makedirs(outfolder)
-			fp = open(filepath, 'w+b')
-			self.rewind()
-			f.rewind()	
+		for f in self:
+			if filepath==False:
+				filename =  str(i)
+				i+=1
+				filepath = os.path.join(outfolder, filename)
+				fp = open(filepath, 'w+b')
+			self.rewind();f.seek(io)
 			for data in iter(lambda: f.read(int(buffer)), ""):
 				fp.write(data)
 				fp.flush()
@@ -1261,7 +1312,7 @@ class Nca(File):
 					fp.close()
 					break	
 					
-	def get_ncap_offset(self):
+	def get_nacp_offset(self):
 		for f in self:
 			self.rewind()					
 			f.rewind()	
@@ -1339,17 +1390,23 @@ class Nca(File):
 				except:
 					ediver="-"
 				if ediver == '-':
-					offset2=offset-0x300
-					f.seek(offset2+0x3060)			
-					ediver = f.read(0x10)
-					ediver = ediver.split(b'\0', 1)[0].decode('utf-8')
-					ediver = (re.sub(r'[\/\\]+', ' ', ediver))
-					ediver = ediver.strip()	
-					try:  
-						int(ediver[0])+1
-						offset=offset2
-					except:
-						ediver="-"			
+					for i in Langue:
+						try:
+							i=i+1
+							offset2=offset-0x300*i
+							f.seek(offset2+0x3060)			
+							ediver = f.read(0x10)
+							ediver = ediver.split(b'\0', 1)[0].decode('utf-8')
+							ediver = (re.sub(r'[\/\\]+', ' ', ediver))
+							ediver = ediver.strip()	
+							try:  
+								int(ediver[0])+1
+								offset=offset2
+								break
+							except:
+								ediver="-"	
+						except:
+							pass		
 				if ediver == '-':
 					try:
 						while (offset2+0x3060)<=0x18600:
@@ -1455,17 +1512,23 @@ class Nca(File):
 				except:
 					ediver="-"
 				if ediver == '-':
-					offset2=offset-0x300
-					f.seek(offset2+0x3060)			
-					ediver = f.read(0x10)
-					ediver = ediver.split(b'\0', 1)[0].decode('utf-8')
-					ediver = (re.sub(r'[\/\\]+', ' ', ediver))
-					ediver = ediver.strip()	
-					try:  
-						int(ediver[0])+1
-						offset=offset2
-					except:
-						ediver="-"			
+					for i in Langue:
+						try:
+							i=i+1
+							offset2=offset-0x300*i
+							f.seek(offset2+0x3060)			
+							ediver = f.read(0x10)
+							ediver = ediver.split(b'\0', 1)[0].decode('utf-8')
+							ediver = (re.sub(r'[\/\\]+', ' ', ediver))
+							ediver = ediver.strip()	
+							try:  
+								int(ediver[0])+1
+								offset=offset2
+								break
+							except:
+								ediver="-"	
+						except:
+							pass								
 				if ediver == '-':
 					try:
 						while (offset2+0x3060)<=0x18600:
@@ -1485,7 +1548,8 @@ class Nca(File):
 										ediver="-"
 										break		
 					except:
-						ediver="-"		
+						ediver="-"
+						
 			except:
 				pass
 			Langue = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14]				
@@ -1537,7 +1601,7 @@ class Nca(File):
 							SupLg.append("KOR")	
 							regionstr+='1|'			
 						if i==13:
-							SupLg.append("ZH (ch)")		
+							SupLg.append("TW (ch)")		
 							regionstr+='1|'			
 						if i==14:
 							SupLg.append("CH")	
@@ -1664,7 +1728,6 @@ class Nca(File):
 		self.header.seek(0x200)	
 		headdata = self.header.read(0x200)	
 		#print(hx(orig_header))
-		
 		#Hex.dump(headdata)
 		pubkey=RSA.RsaKey(n=nca_header_fixed_key_modulus, e=RSA_PUBLIC_EXPONENT)
 		rsapss = PKCS1_PSS.new(pubkey)
@@ -1674,13 +1737,13 @@ class Nca(File):
 		crypto2=self.header.getCryptoType2()	
 		if crypto2>crypto1:
 			masterKeyRev=crypto2
-		if crypto2<=crypto1:	
+		if crypto2<=crypto1:
 			masterKeyRev=crypto1		
 		currkg=masterKeyRev		
 		if verification == True:
 			message=(indent+self._path+arrow+'is PROPER');print(message);feed+=message+'\n'			
 			#print(hx(headdata))		
-			return True,False,self._path,feed,currkg
+			return True,False,self._path,feed,currkg,False,False,self.header.getgamecard()
 		else:
 			crypto = aes128.AESECB(Keys.keyAreaKey(Keys.getMasterKeyIndex(masterKeyRev), self.header.keyIndex))			
 			KB1L=self.header.getKB1L()
@@ -1707,13 +1770,14 @@ class Nca(File):
 						message=(tabs+'* '+"KEYGENERATION WAS CHANGED FROM "+str(orkg)+" TO "+str(currkg));print(message);feed+=message+'\n'		
 						message=(tabs+'* '+"Original titlerights id is -> "+(str(hx(tr)).upper())[2:-1]);print(message);feed+=message+'\n'		
 						message=(tabs+'* '+"Original titlekey is -> "+(str(hx(titlekey)).upper())[2:-1]);print(message);feed+=message+'\n'	
+						tcheck=(str(hx(titlekey)).upper())[2:-1]
 						if tcheck == '00000000000000000000000000000000':
 							message=(tabs+'* '+"WARNING: sum(titlekey)=0 -> S.C. conversion may be incorrect and come from nsx file");print(message);feed+=message+'\n'										
-					return True,orig_header,self._path,feed,orkg	
+					return True,orig_header,self._path,feed,orkg,tr,titlekey,self.header.getgamecard()	
 				else:
 					message=(indent+self._path+arrow+'was MODIFIED');print(message);feed+=message+'\n'		
 					message=(tabs+'* '+"NOT VERIFIABLE COULD'VE BEEN TAMPERED WITH");print(message);feed+=message+'\n'			
-					return False,False,self._path,feed,False	
+					return False,False,self._path,feed,False,False,False,self.header.getgamecard()	
 			else:
 				if targetkg != False:
 					if self.header.contentType == Type.Content.META:
@@ -1752,7 +1816,7 @@ class Nca(File):
 								message=(tabs+'* '+"ISGAMECARD WAS CHANGED FROM 1 TO 0");bar.write(message);feed+=message+'\n'								
 							else:						
 								message=(tabs+'* '+"ISGAMECARD WAS CHANGED FROM 1 TO 0");print(message);feed+=message+'\n'									
-					return True,orig_header,self._path,feed,chkkg		
+					return True,orig_header,self._path,feed,chkkg,False,False,self.header.getgamecard()		
 				else:
 					if self.header.contentType == Type.Content.META:
 						if targetkg == False:
@@ -1779,25 +1843,41 @@ class Nca(File):
 									else:									
 										message=(tabs+'* '+"INTERNAL HASH MISSMATCH");print(message);feed+=message+'\n'	
 										message=(tabs+'* '+"BAD CNMT FILE!!!");print(message);feed+=message+'\n'				
-									return 'BADCNMT',False,self._path,feed,False							
+									return 'BADCNMT',False,self._path,feed,False,False,False,self.header.getgamecard()							
 						else:	
 							if endcheck == False:
 								pass
 							elif endcheck == True:
-								message=(indent+self._path+arrow+'was MODIFIED');print(message);feed+=message+'\n'		
-								message=(tabs+'* '+"NOT VERIFIABLE!!!");print(message);feed+=message+'\n'							
-						return False,False,self._path,feed,False				
+								if os.path.exists(self._path):
+									printname=str(os.path.basename(os.path.abspath(self._path)))
+								else:
+									printname=str(self._path)									
+								if progress != False:							
+									message=(indent+printname+arrow+'was MODIFIED');bar.write(message);feed+=message+'\n'	
+									message=(tabs+'* '+"NOT VERIFIABLE!!!");bar.write(message);feed+=message+'\n'
+								else:									
+									message=(indent+self._path+arrow+'was MODIFIED');print(message);feed+=message+'\n'		
+									message=(tabs+'* '+"NOT VERIFIABLE!!!");print(message);feed+=message+'\n'							
+						return False,False,self._path,feed,False,False,False,self.header.getgamecard()				
 					else:
-						message=(indent+self._path+arrow+'was MODIFIED');print(message);feed+=message+'\n'		
-						message=(tabs+'* '+"NOT VERIFIABLE!!!");print(message);feed+=message+'\n'							
-						return False,False,self._path,feed,False						
+						if os.path.exists(self._path):
+							printname=str(os.path.basename(os.path.abspath(self._path)))
+						else:
+							printname=str(self._path)						
+						if progress != False:							
+							message=(indent+printname+arrow+'was MODIFIED');bar.write(message);feed+=message+'\n'	
+							message=(tabs+'* '+"NOT VERIFIABLE!!!");bar.write(message);feed+=message+'\n'
+						else:									
+							message=(indent+self._path+arrow+'was MODIFIED');print(message);feed+=message+'\n'		
+							message=(tabs+'* '+"NOT VERIFIABLE!!!");print(message);feed+=message+'\n'							
+						return False,False,self._path,feed,False,False,False,self.header.getgamecard()						
 			if progress != False:
 				message=(indent+self._path+arrow+'was MODIFIED');bar.write(message);feed+=message+'\n'			
 				message=(tabs+'* '+"NOT VERIFIABLE!!!");bar.write(message);feed+=message+'\n'							
 			else:	
 				message=(indent+self._path+arrow+'was MODIFIED');print(message);feed+=message+'\n'			
 				message=(tabs+'* '+"NOT VERIFIABLE!!!");print(message);feed+=message+'\n'				
-			return False,False,self._path,feed,False		
+			return False,False,self._path,feed,False,False,False,self.header.getgamecard()		
 			
 	def verify_cnmt_withkg(self,targetkg):	
 		targetkg=int(targetkg)	
@@ -2099,7 +2179,7 @@ class Nca(File):
 #READ NACP FILE WITHOUT EXTRACTION	
 	def read_nacp(self,feed=''):
 		if 	str(self.header.contentType) == 'Content.CONTROL':
-			offset=self.get_ncap_offset()
+			offset=self.get_nacp_offset()
 			for f in self:
 				f.seek(offset)
 				nacp = Nacp()	
@@ -2130,61 +2210,59 @@ class Nca(File):
 				f.seek(offset+0x3060)		
 				message='...............................';print(message);feed+=message+'\n'						
 				message='NACP ATTRIBUTES';print(message);feed+=message+'\n'	
-				message='...............................';print(message);feed+=message+'\n'							
-				feed=nacp.par_getDisplayVersion(f.read(0xF),feed)		
-				f.seek(offset+0x3070)							
-				feed=nacp.par_getAddOnContentBaseId(f.readInt64('little'),feed)
-				f.seek(offset+0x3078)							
-				feed=nacp.par_getSaveDataOwnerId(f.readInt64('little'),feed)
-				f.seek(offset+0x3080)							
-				feed=nacp.par_getUserAccountSaveDataSize(f.readInt64('little'),feed)	
-				f.seek(offset+0x3088)								
-				feed=nacp.par_getUserAccountSaveDataJournalSize(f.readInt64('little'),feed)	
-				f.seek(offset+0x3090)	
-				feed=nacp.par_getDeviceSaveDataSize(f.readInt64('little'),feed)	
-				f.seek(offset+0x3098)	
-				feed=nacp.par_getDeviceSaveDataJournalSize(f.readInt64('little'),feed)	
-				f.seek(offset+0x30A0)	
-				feed=nacp.par_getBcatDeliveryCacheStorageSize(f.readInt64('little'),feed)		
-				f.seek(offset+0x30A8)	
-				feed=nacp.par_getApplicationErrorCodeCategory(f.read(0x07),feed)	
-				f.seek(offset+0x30B0)
-				feed=nacp.par_getLocalCommunicationId(f.readInt64('little'),feed)	
-				f.seek(offset+0x30F0)
-				feed=nacp.par_getLogoType(f.readInt8('little'),feed)							
-				feed=nacp.par_getLogoHandling(f.readInt8('little'),feed)		
-				feed=nacp.par_getRuntimeAddOnContentInstall(f.readInt8('little'),feed)	
-				feed=nacp.par_getCrashReport(f.readInt8('little'),feed)	
-				feed=nacp.par_getHdcp(f.readInt8('little'),feed)		
-				feed=nacp.par_getSeedForPseudoDeviceId(f.readInt64('little'),feed)	
-				f.seek(offset+0x3100)			
-				feed=nacp.par_getBcatPassphrase(f.read(0x40),feed)	
-				f.seek(offset+0x3148)			
-				feed=nacp.par_UserAccountSaveDataSizeMax(f.readInt64('little'),feed)						
-				f.seek(offset+0x3150)			
-				feed=nacp.par_UserAccountSaveDataJournalSizeMax(f.readInt64('little'),feed)
-				f.seek(offset+0x3158)			
-				feed=nacp.par_getDeviceSaveDataSizeMax(f.readInt64('little'),feed)
-				f.seek(offset+0x3160)			
-				feed=nacp.par_getDeviceSaveDataJournalSizeMax(f.readInt64('little'),feed)							
-				f.seek(offset+0x3168)			
-				feed=nacp.par_getTemporaryStorageSize(f.readInt64('little'),feed)		
-				feed=nacp.par_getCacheStorageSize(f.readInt64('little'),feed)			
-				f.seek(offset+0x3178)		
-				feed=nacp.par_getCacheStorageJournalSize(f.readInt64('little'),feed)							
-				feed=nacp.par_getCacheStorageDataAndJournalSizeMax(f.readInt64('little'),feed)		
-				f.seek(offset+0x3188)	
-				feed=nacp.par_getCacheStorageIndexMax(f.readInt64('little'),feed)		
-				feed=nacp.par_getPlayLogQueryableApplicationId(f.readInt64('little'),feed)		
-				f.seek(offset+0x3210)	
-				feed=nacp.par_getPlayLogQueryCapability(f.readInt8('little'),feed)	
-				feed=nacp.par_getRepair(f.readInt8('little'),feed)	
-				feed=nacp.par_getProgramIndex(f.readInt8('little'),feed)	
-				feed=nacp.par_getRequiredNetworkServiceLicenseOnLaunch(f.readInt8('little'),feed)	
-				#f.seek(offset+0x3000)						
-				#nacp.open(MemoryFile(f.read(),32768*2))	
-				#nacp.printInfo()
-				#Hex.dump(offset)
+				message='...............................';print(message);feed+=message+'\n'
+				try:
+					feed=nacp.par_getDisplayVersion(f.read(0xF),feed)		
+					f.seek(offset+0x3070)							
+					feed=nacp.par_getAddOnContentBaseId(f.readInt64('little'),feed)
+					f.seek(offset+0x3078)							
+					feed=nacp.par_getSaveDataOwnerId(f.readInt64('little'),feed)
+					f.seek(offset+0x3080)							
+					feed=nacp.par_getUserAccountSaveDataSize(f.readInt64('little'),feed)	
+					f.seek(offset+0x3088)								
+					feed=nacp.par_getUserAccountSaveDataJournalSize(f.readInt64('little'),feed)	
+					f.seek(offset+0x3090)	
+					feed=nacp.par_getDeviceSaveDataSize(f.readInt64('little'),feed)	
+					f.seek(offset+0x3098)	
+					feed=nacp.par_getDeviceSaveDataJournalSize(f.readInt64('little'),feed)	
+					f.seek(offset+0x30A0)	
+					feed=nacp.par_getBcatDeliveryCacheStorageSize(f.readInt64('little'),feed)		
+					f.seek(offset+0x30A8)	
+					feed=nacp.par_getApplicationErrorCodeCategory(f.read(0x07),feed)	
+					f.seek(offset+0x30B0)
+					feed=nacp.par_getLocalCommunicationId(f.readInt64('little'),feed)	
+					f.seek(offset+0x30F0)
+					feed=nacp.par_getLogoType(f.readInt8('little'),feed)							
+					feed=nacp.par_getLogoHandling(f.readInt8('little'),feed)		
+					feed=nacp.par_getRuntimeAddOnContentInstall(f.readInt8('little'),feed)	
+					feed=nacp.par_getCrashReport(f.readInt8('little'),feed)	
+					feed=nacp.par_getHdcp(f.readInt8('little'),feed)		
+					feed=nacp.par_getSeedForPseudoDeviceId(f.readInt64('little'),feed)	
+					f.seek(offset+0x3100)			
+					feed=nacp.par_getBcatPassphrase(f.read(0x40),feed)	
+					f.seek(offset+0x3148)			
+					feed=nacp.par_UserAccountSaveDataSizeMax(f.readInt64('little'),feed)						
+					f.seek(offset+0x3150)			
+					feed=nacp.par_UserAccountSaveDataJournalSizeMax(f.readInt64('little'),feed)
+					f.seek(offset+0x3158)			
+					feed=nacp.par_getDeviceSaveDataSizeMax(f.readInt64('little'),feed)
+					f.seek(offset+0x3160)			
+					feed=nacp.par_getDeviceSaveDataJournalSizeMax(f.readInt64('little'),feed)							
+					f.seek(offset+0x3168)			
+					feed=nacp.par_getTemporaryStorageSize(f.readInt64('little'),feed)		
+					feed=nacp.par_getCacheStorageSize(f.readInt64('little'),feed)			
+					f.seek(offset+0x3178)		
+					feed=nacp.par_getCacheStorageJournalSize(f.readInt64('little'),feed)							
+					feed=nacp.par_getCacheStorageDataAndJournalSizeMax(f.readInt64('little'),feed)		
+					f.seek(offset+0x3188)	
+					feed=nacp.par_getCacheStorageIndexMax(f.readInt64('little'),feed)		
+					feed=nacp.par_getPlayLogQueryableApplicationId(f.readInt64('little'),feed)		
+					f.seek(offset+0x3210)	
+					feed=nacp.par_getPlayLogQueryCapability(f.readInt8('little'),feed)	
+					feed=nacp.par_getRepair(f.readInt8('little'),feed)	
+					feed=nacp.par_getProgramIndex(f.readInt8('little'),feed)	
+					feed=nacp.par_getRequiredNetworkServiceLicenseOnLaunch(f.readInt8('little'),feed)	
+				except:continue	
 		return feed				
 
 	def verify_hash_nca(self,buffer,origheader,didverify,feed):

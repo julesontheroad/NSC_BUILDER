@@ -29,9 +29,10 @@ echo Input "1" to get FILE LIST of the xci\nsp
 echo Input "2" to get CONTENT LIST of the xci\nsp
 echo Input "3" to get NUT-INFO of the xci\nsp
 echo Input "4" to get GAME-INFO and FW requirements
-echo Input "5" to READ the CNMT of the xci\nsp
-echo Input "6" to READ the NACP of the xci\nsp
-echo Input "7" to VERIFY file (xci\nsp\nsx\nca)
+echo Input "5" to READ the CNMT from the xci\nsp
+echo Input "6" to READ the NACP from the xci\nsp
+echo Input "7" to READ the main.NPDM from the xci\nsp
+echo Input "8" to VERIFY file (xci\nsp\nsx\nca)
 echo.
 echo Input "b" to go back to FILE LOADING
 echo Input "0" to go back to the MAIN PROGRAM
@@ -54,7 +55,8 @@ if /i "%bs%"=="3" goto n_info
 if /i "%bs%"=="4" goto f_info
 if /i "%bs%"=="5" goto r_cnmt
 if /i "%bs%"=="6" goto r_nacp
-if /i "%bs%"=="7" goto verify
+if /i "%bs%"=="7" goto r_npdm
+if /i "%bs%"=="8" goto verify
 
 if /i "%bs%"=="b" goto sc1
 if /i "%bs%"=="0" goto salida
@@ -145,23 +147,35 @@ echo IMPLEMENTATION OF 0LIAM'S NACP LIBRARY
 %pycommand% "%nut%" -o "%info_dir%" --Read_nacp "%targt%"
 goto sc2
 
+:r_npdm
+cls
+call :logo
+echo ********************************************************
+echo SHOW MAIN.NPDM DATA FROM PROGRAM NCA IN NSP\XCI
+echo ********************************************************
+%pycommand% "%nut%" -o "%info_dir%" --Read_npdm "%targt%"
+goto sc2
+
+
 :verify
 cls
 call :logo
 echo ********************************************************
 echo VERIFY A NSP\XCI\NCA
 echo ********************************************************
-%pycommand% "%nut%" -b %buffer% -o "%info_dir%" -v "%targt%" 
+%pycommand% "%nut%" %buffer% -o "%info_dir%" -v "%targt%" 
+
 goto sc2
 
 :sc3
 cls
 call :logo
 echo .......................................................
-echo Input "1" to get NUT-INFO of the xci\nsp
-echo Input "2" to READ the CNMT of the xci\nsp
-echo Input "3" to READ the NACP of the xci\nsp
-echo Input "4" to VERIFY file (xci\nsp\nsx\nca)
+echo Input "1" to get NUT-INFO of the NCA
+echo Input "2" to READ the CNMT of a meta NCA
+echo Input "3" to READ the NACP of a control NCA
+echo Input "4" to READ the NPDM of a program NCA
+echo Input "5" to VERIFY the NCA
 echo.
 echo Input "b" to go back to FILE LOADING
 echo Input "0" to go back to the MAIN PROGRAM
@@ -181,7 +195,8 @@ if "%Extension%" EQU ".xci" ( goto snfi )
 if /i "%bs%"=="1" goto n_info_nca
 if /i "%bs%"=="2" goto r_cnmt_nca
 if /i "%bs%"=="3" goto r_nacp_nca
-if /i "%bs%"=="4" goto verify_nca
+if /i "%bs%"=="4" goto r_npdm_nca
+if /i "%bs%"=="5" goto verify_nca
 
 if /i "%bs%"=="b" goto sc1
 if /i "%bs%"=="0" goto salida
@@ -245,13 +260,22 @@ echo IMPLEMENTATION OF 0LIAM'S NACP LIBRARY
 %pycommand% "%nut%" -o "%info_dir%" --Read_nacp "%targt%"
 goto sc3
 
+:r_npdm_nca
+cls
+call :logo
+echo ********************************************************
+echo SHOW MAIN.NPDM DATA FROM PROGRAM NCA IN NSP\XCI
+echo ********************************************************
+%pycommand% "%nut%" -o "%info_dir%" --Read_npdm "%targt%"
+goto sc3
+
 :verify_nca
 cls
 call :logo
 echo ********************************************************
 echo VERIFY A NSP\XCI\NCA
 echo ********************************************************
-%pycommand% "%nut%" -b %buffer% -o "%info_dir%" -v "%targt%" 
+%pycommand% "%nut%" %buffer% -o "%info_dir%" -v "%targt%" 
 goto sc3
 
 
@@ -273,7 +297,7 @@ ECHO =============================     BY JULESONTHEROAD     ===================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                                POWERED BY SQUIRREL                                "
 ECHO "                    BASED IN THE WORK OF BLAWAR AND LUCA FRAGA                     "
-ECHO                                     VERSION 0.87
+ECHO                                     VERSION 0.88
 ECHO -------------------------------------------------------------------------------------                   
 ECHO Program's github: https://github.com/julesontheroad/NSC_BUILDER
 ECHO Blawar's github:  https://github.com/blawar

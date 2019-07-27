@@ -987,7 +987,7 @@ set skipRSVprompt="%skipRSVprompt%"
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "108" -nl "Line in config was changed to: "
 
 REM buffer
-set "v_buffer=buffer=-b 65536"
+set "v_buffer=-b 65536"
 set v_buffer="buffer=%v_buffer%"
 set v_buffer="%v_buffer%"
 %pycommand% "%listmanager%" -cl "%op_file%" -ln "32" -nl "set %v_buffer%" 
@@ -1132,7 +1132,7 @@ ECHO =============================     BY JULESONTHEROAD     ===================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                                POWERED BY SQUIRREL                                "
 ECHO "                    BASED IN THE WORK OF BLAWAR AND LUCA FRAGA                     "
-ECHO                                     VERSION 0.87
+ECHO                                     VERSION 0.88
 ECHO -------------------------------------------------------------------------------------                   
 ECHO Program's github: https://github.com/julesontheroad/NSC_BUILDER
 ECHO Blawar's github:  https://github.com/blawar
