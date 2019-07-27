@@ -5,38 +5,58 @@ https://github.com/julesontheroad/NSC_BUILDER
 
 NSC_Builder is the merged Project that continues xci_builder and Nut_Batch_Cleaner.
 
-NSC_Builder is based both in the works of Blawarís nut.py and Luca Fragaís hacbuild and powered by ìsquirrelî a nutís fork with added functions that removes the CDN based functions from nut while tweaks the title-rights modification functions and adds some useful ones for file management.
-From version v0.8 the program doesnít rely on hacbuild for xci generation and new code was made for a better integration on squirrel.
+NSC_Builder is based both in the works of Blawar‚Äôs nut.py and Luca Fraga‚Äôs hacbuild and powered by ‚Äúsquirrel‚Äù a nut‚Äôs fork with added functions that removes the CDN based functions from nut while tweaks the title-rights modification functions and adds some useful ones for file management.
+From version v0.8 the program doesn‚Äôt rely on hacbuild for xci generation and new code was made for a better integration on squirrel.
 
-Squirrel will get a new github repository soon and be packed as exe for NSCB from beta v0.8. Old squirrel code can be seen in the NSCB main repository, new code will be published in itís own repository at the end of NSCB beta phase after some cleanup itís done on itís code.
+Squirrel will get a new github repository soon and be packed as exe for NSCB from beta v0.8. Old squirrel code can be seen in the NSCB main repository, new code will be published in it‚Äôs own repository at the end of NSCB beta phase after some cleanup it‚Äôs done on it‚Äôs code.
 
-## 2. Whatís the meaning of ìREMOVING TITLE RIGHTSî.
-When you remove the titlerights encryption from nsp files you can install the games without any need of tickets, which leaves a smaller trackable footprint on your console, providing you arenít sending telemetry data to Nintendo.
+## 2. What‚Äôs the meaning of ‚ÄúREMOVING TITLE RIGHTS‚Äù.
+When you remove the titlerights encryption from nsp files you can install the games without any need of tickets, which leaves a smaller trackable footprint on your console, providing you aren‚Äôt sending telemetry data to Nintendo.
 It also helps in the conversion from nsp to xci files allowing to not install tickets externally.
 
 ## 3. What can I do with this program?
 
 Current version of the program allows you to:
 1.- Make multi-content xci or nsp files.
+
 2.- Erase titlerights encryption from nsp files.
-3.- Build xci files without the ìupdate partitionî which means they take less space on your storage.
+
+3.- Build xci files without the ‚Äúupdate partition‚Äù which means they take less space on your storage.
+
 4.- Take off deltas from updates
+
 5.- Split multi content back into xci or nsp files
+
 6.- Change the packing of the content between xci and nsp 
+
 7.- Lower the Required System Version to the actual encryption of the game.
+
 8.- Lower the masterkey needed to decrypt a game.
-9.- Check out information from a xci and nsp, including the Firmware needed to be able to execute it, the game info, the size of the nca contentÖ
+
+9.- Check out information from a xci and nsp, including the Firmware needed to be able to execute it, the game info, the size of the nca content‚Ä¶
+
 10.- Check data from nacp and cnmt files without extracting them from nsp\xci
+
 10.- Repack xci and nsp content in formats compatible with fat32
+
 11.- Mass build xci files and nsp files in single and multi content format
+
 12.- Rename nsp,xci files to match it's content
+
 13.- Verify nsp, nsx, xci y nca files
+
 14.- Output information in text format
+
 15.- Extract content of nsp files and secure partition of xci files
+
 16.- Set jobs for later in multi mode
+
 17.- Separate jobs by based-titleid in multi mode
+
 18.- Remove bad characters from filenames (sanitize) or convert asian names to romaji
+
 19.- Extract nca file contents for base games and dlcs or extract ncas as plaintext
+
 20.- Joiner for xc*,ns* and *0 fat32 files
 
 ## 4. Batch modes:
@@ -47,23 +67,23 @@ The batch has 2 modes:
 
 - manual mode: you double click the batch and you can build a list of files to process.
 
-The behavior of the auto-mode is configured trough the ìConfiguration menu in manual modeî.
+The behavior of the auto-mode is configured trough the ‚ÄúConfiguration menu in manual mode‚Äù.
 
 ## 5. Manual mode options:
 
-- MODE 0: Configuration mode. Letís you configure the way the program works in both auto and manual mode.
-- MODE 1: Indidual packing. Letís you process a list of files and pack them individually
+- MODE 0: Configuration mode. Let‚Äôs you configure the way the program works in both auto and manual mode.
+- MODE 1: Indidual packing. Let‚Äôs you process a list of files and pack them individually
   * Pack as nsp\xci
   * Supertrimm xci files
   * Rename xci or nsp files
   * Rebuild nsp files in cnmt order and add cnmt.xml
   * Verify nsp,xci files
-- MODE 2: Multi packing. Letís you pack a list of files in a single xci or nsp file.
+- MODE 2: Multi packing. Let‚Äôs you pack a list of files in a single xci or nsp file.
   * Separate files by basedid
   * Set up jobs for later
   * Process previous jobs
-- MODE 3: Multi-Content-Splitter. Letís you separate content to nsp and xci files.
-- MODE 4: File-Info. Letís you see and export several info about nsp and xci files
+- MODE 3: Multi-Content-Splitter. Let‚Äôs you separate content to nsp and xci files.
+- MODE 4: File-Info. Let‚Äôs you see and export several info about nsp and xci files
   * 1. Data about included files in nsp\xci
   * 2. Data about content ids in file
   * 3. Nut info as implemented by nut by blawar
@@ -72,7 +92,7 @@ The behavior of the auto-mode is configured trough the ìConfiguration menu in ma
   * 6. Read nacp file from control nca
   * 7. Read npdm file from program nca 
   * 8. Verify files with ability of detecting NSCB changes over them
-- MODE 5: Database Mode. Letís you mass output information
+- MODE 5: Database Mode. Let‚Äôs you mass output information
 - MODE 6: Advanced Mode.
   * 1. Extracts all contents from a nsp\xci
   * 2. Extracts all contents from a nsp\xci in raw mode
@@ -90,25 +110,25 @@ The behavior of the auto-mode is configured trough the ìConfiguration menu in ma
 - Repack folder's files individually (single-content file)
 - Repack folder's files together (multi-content file)
 #### RSV patching configuration
-- Patch Required System Version if itís bigger than encryption
-- Donít patch Required System Version if itís bigger than encryption
+- Patch Required System Version if it‚Äôs bigger than encryption
+- Don‚Äôt patch Required System Version if it‚Äôs bigger than encryption
 #### KEYGENERATION configuration
 - Set the maximum keygeneration (encryption) the files are allowed to have.
 ### Global options. (Affects how the program works globally)
 #### Text and background COLOR
-- Letís you choose the colours of the cmd window
+- Let‚Äôs you choose the colours of the cmd window
 #### WORK FOLDER's name
-- Letís you choose the name of the work folder
+- Let‚Äôs you choose the name of the work folder
 #### OUTPUT FOLDER's name
-- Letís you choose the name and location of the output folder
+- Let‚Äôs you choose the name and location of the output folder
 #### DELTA files treatment
-- Letís you choose if youíre going to pack delta NCA files or not. Set to false by default.
+- Let‚Äôs you choose if you‚Äôre going to pack delta NCA files or not. Set to false by default.
 #### ZIP configuration (currently unused)
-- Letís you choose if you want to create a zip storing some file information. Set to false by default.
+- Let‚Äôs you choose if you want to create a zip storing some file information. Set to false by default.
 #### AUTO-EXIT configuration
-- Letís you choose if the cmd window closes after completing the job.
+- Let‚Äôs you choose if the cmd window closes after completing the job.
 #### KEY-GENERATION PROMPT
-- Letís you choose if you want to see a prompt asking you to patch RSV and keygeneration in manual mode.
+- Let‚Äôs you choose if you want to see a prompt asking you to patch RSV and keygeneration in manual mode.
 #### File stream BUFFER
 - Buffer for file-stream operations
 #### file FAT32\EXFAT options
@@ -140,9 +160,9 @@ https://gbatemp.net/attachments/2-0-0-8-1-0-zip.170607/
 To install multi-nsp you need a installer compatible with them. Reported compatible installers are:
 - SX OS rom-menu
 - SX OS installer
-- Blawarís tinfoil:
+- Blawar‚Äôs tinfoil:
 https://github.com/digableinc/tinfoil
-- Blawarís lithium:
+- Blawar‚Äôs lithium:
 https://github.com/blawar/lithium
 
 ## 8. Requirements 
@@ -156,7 +176,7 @@ https://github.com/blawar/lithium
 
 ## 9. Limitations 
 - You can't make multi-content xci files with more than 8 games. It'll give error when loading in horizon. I suspect it may be a qlauncher limitation so it could work with theme mods but INTRO didn't test it.
-Note: This means ìgamesî, updates and dl car not hold by that limitation.
+Note: This means ‚Äúgames‚Äù, updates and dl car not hold by that limitation.
 - Title-rights remove dlcs give a message prompt of incomplete content for some games from 6.0 onwards, that message can be skipped and the dlcs will work fine despite the prompt.
 
 ## 7. Thanks and credits to 
