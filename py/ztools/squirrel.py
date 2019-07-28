@@ -539,7 +539,7 @@ if __name__ == '__main__':
 			else:		
 				for inpt in args.text_file:
 					filename=inpt	
-			for filename in args.remlinkacc:	
+			try:
 				if filename.endswith('.nsp') or filename.endswith('.nsx'):
 					f = Fs.Nsp(filename,'r+b')
 					check=f.patch_netlicense()
@@ -599,8 +599,8 @@ if __name__ == '__main__':
 						f.ctrl_upd_hblock_hash()
 						f.flush()
 						f.close()						
-				except BaseException as e:
-					Print.error('Exception: ' + str(e))		
+			except BaseException as e:
+				Print.error('Exception: ' + str(e))		
 
 # COPY FUNCTIONS
 		# ...................................................						
