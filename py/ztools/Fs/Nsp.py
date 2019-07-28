@@ -361,6 +361,46 @@ class Nsp(Pfs0):
 		self.hasValidTicket = True
 		self.move()
 
+
+	# ...................................................						
+	# Patch requrements for network account
+	# ...................................................		
+	def patch_netlicense(self):
+		for nca in self:
+			if type(nca) == Nca:
+				if 	str(nca.header.contentType) == 'Content.CONTROL':
+					check=nca.patch_netlicense()
+					return check
+
+	def reb_lv_hashes(self):					
+		for nca in self:
+			if type(nca) == Nca:
+				if 	str(nca.header.contentType) == 'Content.CONTROL':
+					leveldata,superhashoffset=nca.redo_lvhashes()					
+					return leveldata,superhashoffset
+
+	def set_lv_hash(self,j,leveldata):					
+		for nca in self:
+			if type(nca) == Nca:
+				if 	str(nca.header.contentType) == 'Content.CONTROL':
+					nca.set_lv_hash(j,leveldata)
+					
+	def set_lvsuperhash(self,leveldata,superhashoffset):					
+		for nca in self:
+			if type(nca) == Nca:
+				if 	str(nca.header.contentType) == 'Content.CONTROL':
+					nca.set_lvsuperhash(leveldata,superhashoffset)						
+
+	def ctrl_upd_hblock_hash(self):					
+		for nca in self:
+			if type(nca) == Nca:
+				if 	str(nca.header.contentType) == 'Content.CONTROL':
+					oldhash=nca.header.get_hblock_hash();print('- Old nca hblock hash: '+str(hx(oldhash)))	
+					newhash=nca.header.calculate_hblock_hash();print('- New nca hblock hash: '+str(hx(newhash)))
+					nca.header.set_hblock_hash(newhash)
+										
+	# ...................................................											
+										
 	def setMasterKeyRev(self, newMasterKeyRev):
 		if not Titles.contains(self.titleId):
 			raise IOError('No title key found in database! ' + self.titleId)
