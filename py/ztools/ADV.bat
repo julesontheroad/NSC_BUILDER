@@ -195,6 +195,9 @@ if %vrepack%=="none" goto s_cl_wrongchoice
 :extract
 cls
 call :program_logo
+echo ********************************************************
+echo EXTRACT ALL FILES FROM A NSP\XCI
+echo ********************************************************
 CD /d "%prog_dir%"
 for /f "tokens=*" %%f in (advlist.txt) do (
 
@@ -212,6 +215,9 @@ goto s_exit_choice
 :raw_extract
 cls
 call :program_logo
+echo ********************************************************
+echo EXTRACT ALL FILES FROM A NSP\XCI IN RAW MODE
+echo ********************************************************
 CD /d "%prog_dir%"
 for /f "tokens=*" %%f in (advlist.txt) do (
 
@@ -229,6 +235,9 @@ goto s_exit_choice
 :ext_plaintext
 cls
 call :program_logo
+echo ********************************************************
+echo EXTRACT ALL FILES FROM A NSP\XCI AS PLAINTEXT
+echo ********************************************************
 CD /d "%prog_dir%"
 for /f "tokens=*" %%f in (advlist.txt) do (
 
@@ -246,6 +255,9 @@ goto s_exit_choice
 :ext_fromnca
 cls
 call :program_logo
+echo ********************************************************
+echo EXTRACT INTERNAL NCA FILES FROM A NSP\XCI
+echo ********************************************************
 CD /d "%prog_dir%"
 for /f "tokens=*" %%f in (advlist.txt) do (
 
@@ -263,6 +275,9 @@ goto s_exit_choice
 :patch_lnkacc
 cls
 call :program_logo
+echo ********************************************************
+echo PATCH A LINKED ACCOUNT REQUIREMENT
+echo ********************************************************
 CD /d "%prog_dir%"
 for /f "tokens=*" %%f in (advlist.txt) do (
 

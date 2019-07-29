@@ -2272,6 +2272,7 @@ class Nca(File):
 			offset=self.get_nacp_offset()
 			for f in self:
 				nacp = Nacp()
+				print('CURRENT VALUES:')
 				f.seek(offset+0x3025)				
 				startup_acc=f.readInt8('little')
 				netlicense=f.readInt8('little')				
@@ -2283,7 +2284,8 @@ class Nca(File):
 					print(str(self._path)+" doesn't need a linked account")
 					return False
 				else:
-					print(str(self._path)+" needs a linked account. Patching...")
+					print('  -> '+str(self._path)+" needs a linked account. Patching...")
+					print('NEW VALUES:')
 					if startup_acc==2:
 						f.seek(offset+0x3025)	
 						f.writeInt8(1)

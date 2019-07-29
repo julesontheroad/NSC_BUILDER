@@ -387,32 +387,44 @@ class Nsp(Pfs0):
 	def reb_lv_hashes(self,item=False):					
 		for nca in self:
 			if type(nca) == Nca:
-				if 	str(nca.header.contentType) == 'Content.CONTROL':
+				if 	str(nca.header.contentType) == 'Content.CONTROL':					
 					if item == False or nca._path == item:	
+						print('-------------------------------------------------')							
+						print('Get Current IVFC level data:')		
+						print('-------------------------------------------------')						
 						leveldata,superhashoffset=nca.redo_lvhashes()					
 						return leveldata,superhashoffset
 
 	def set_lv_hash(self,j,leveldata,item=False):					
 		for nca in self:
 			if type(nca) == Nca:
-				if 	str(nca.header.contentType) == 'Content.CONTROL':
-					if item == False or nca._path == item:				
+				if 	str(nca.header.contentType) == 'Content.CONTROL':				
+					if item == False or nca._path == item:	
+						print('-------------------------------------------------')							
+						print('Rebuild hashes for IVFC level '+str(j)+':')		
+						print('-------------------------------------------------')							
 						nca.set_lv_hash(j,leveldata)
 					
 	def set_lvsuperhash(self,leveldata,superhashoffset,item=False):					
 		for nca in self:
 			if type(nca) == Nca:
 				if 	str(nca.header.contentType) == 'Content.CONTROL':
-					if item == False or nca._path == item:					
+					if item == False or nca._path == item:				
+						print('-------------------------------------------------')							
+						print('Rebuild IVFC superhash:')		
+						print('-------------------------------------------------')						
 						nca.set_lvsuperhash(leveldata,superhashoffset)						
 
 	def ctrl_upd_hblock_hash(self,item=False):					
 		for nca in self:
 			if type(nca) == Nca:
 				if 	str(nca.header.contentType) == 'Content.CONTROL':
-					if item == False or nca._path == item:					
-						oldhash=nca.header.get_hblock_hash();print('- Old nca hblock hash: '+str(hx(oldhash)))	
-						newhash=nca.header.calculate_hblock_hash();print('- New nca hblock hash: '+str(hx(newhash)))
+					if item == False or nca._path == item:	
+						print('-------------------------------------------------')							
+						print('Rebuild nca hash-table:')		
+						print('-------------------------------------------------')							
+						oldhash=nca.header.get_hblock_hash();print('- Old nca sblock hash: '+str(hx(oldhash)))	
+						newhash=nca.header.calculate_hblock_hash();print('- New nca sblock hash: '+str(hx(newhash)))
 						nca.header.set_hblock_hash(newhash)
 										
 	# ...................................................											

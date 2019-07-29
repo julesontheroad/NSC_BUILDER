@@ -546,7 +546,9 @@ if __name__ == '__main__':
 					f.flush()
 					f.close()					
 					for item in ctrl_list:
-						print('Processing: '+str(item))						
+						print('-------------------------------------------------')							
+						print('Processing: '+str(item))			
+						print('-------------------------------------------------')								
 						f = Fs.Nsp(filename,'r+b')
 						check=f.patch_netlicense()
 						f.flush()
@@ -579,8 +581,10 @@ if __name__ == '__main__':
 					ctrl_list=f.gen_ctrl_list()
 					f.flush()
 					f.close()	
-					for item in ctrl_list:	
-						print('- Processing: '+str(item))					
+					for item in ctrl_list:
+						print('-------------------------------')							
+						print('Processing: '+str(item))		
+						print('-------------------------------')							
 						f = Fs.factory(filename)
 						f.open(filename, 'r+b')		
 						check=f.patch_netlicense(item)
