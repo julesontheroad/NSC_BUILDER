@@ -60,8 +60,6 @@ Current version of the program allows you to:
 
 21.- Joiner for xc*,ns* and *0 fat32 files
 
-22.- Patcher for linked accounts requirements
-
 ## 4. Batch modes:
 
 The batch has 2 modes:
@@ -100,8 +98,7 @@ The behavior of the auto-mode is configured trough the “Configuration menu in 
   * 1. Extracts all contents from a nsp\xci
   * 2. Extracts all contents from a nsp\xci in raw mode
   * 3. Extracts all contents from a nsp\xci in plaintext
-  * 4. Extracts files from nca inside a nsp\xci 
-  * 5. Patch linked accounts requirements in nsp\xci   
+  * 4. Extracts files from nca inside a nsp\xci   
 - L: Legacy Mode. Old functions
 
 ## 6. Configuration mode:
