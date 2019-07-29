@@ -7042,49 +7042,67 @@ class Xci(File):
 
 	# ...................................................						
 	# Patch requrements for network account
-	# ...................................................		
-	def patch_netlicense(self):
+	# ...................................................	
+	def gen_ctrl_list(self):
+		print('- Seeking control nca files... ')	
+		ctrl_list=list()
+		for nspF in self.hfs0:
+			if str(nspF._path)=="secure":
+				for nca in nspF:			
+					if type(nca) == Nca:
+						if 	str(nca.header.contentType) == 'Content.CONTROL':
+							ctrl_list.append(nca._path)
+						else:
+							pass							
+		return ctrl_list
+	
+	def patch_netlicense(self,item=False):
 		for nspF in self.hfs0:
 			if str(nspF._path)=="secure":
 				for nca in nspF:				
 					if type(nca) == Nca:
 						if 	str(nca.header.contentType) == 'Content.CONTROL':
-							check=nca.patch_netlicense()
-							return check
+							if item == False or nca._path == item:									
+								check=nca.patch_netlicense()
+								return check
 
-	def reb_lv_hashes(self):					
+	def reb_lv_hashes(self,item=False):					
 		for nspF in self.hfs0:
 			if str(nspF._path)=="secure":
 				for nca in nspF:
 					if type(nca) == Nca:
 						if 	str(nca.header.contentType) == 'Content.CONTROL':
-							leveldata,superhashoffset=nca.redo_lvhashes()					
-							return leveldata,superhashoffset
+							if item == False or nca._path == item:							
+								leveldata,superhashoffset=nca.redo_lvhashes()					
+								return leveldata,superhashoffset
 
-	def set_lv_hash(self,j,leveldata):					
+	def set_lv_hash(self,j,leveldata,item=False):					
 		for nspF in self.hfs0:
 			if str(nspF._path)=="secure":
 				for nca in nspF:
 					if type(nca) == Nca:
 						if 	str(nca.header.contentType) == 'Content.CONTROL':
-							nca.set_lv_hash(j,leveldata)
+							if item == False or nca._path == item:							
+								nca.set_lv_hash(j,leveldata)
 					
-	def set_lvsuperhash(self,leveldata,superhashoffset):					
+	def set_lvsuperhash(self,leveldata,superhashoffset,item=False):					
 		for nspF in self.hfs0:
 			if str(nspF._path)=="secure":
 				for nca in nspF:
 					if type(nca) == Nca:
 						if 	str(nca.header.contentType) == 'Content.CONTROL':
-							nca.set_lvsuperhash(leveldata,superhashoffset)						
+							if item == False or nca._path == item:							
+								nca.set_lvsuperhash(leveldata,superhashoffset)						
 
-	def ctrl_upd_hblock_hash(self):					
+	def ctrl_upd_hblock_hash(self,item=False):					
 		for nspF in self.hfs0:
 			if str(nspF._path)=="secure":
 				for nca in nspF:
 					if type(nca) == Nca:
 						if 	str(nca.header.contentType) == 'Content.CONTROL':
-							oldhash=nca.header.get_hblock_hash();print('- Old nca hblock hash: '+str(hx(oldhash)))	
-							newhash=nca.header.calculate_hblock_hash();print('- New nca hblock hash: '+str(hx(newhash)))
-							nca.header.set_hblock_hash(newhash)
+							if item == False or nca._path == item:							
+								oldhash=nca.header.get_hblock_hash();print('- Old nca hblock hash: '+str(hx(oldhash)))	
+								newhash=nca.header.calculate_hblock_hash();print('- New nca hblock hash: '+str(hx(newhash)))
+								nca.header.set_hblock_hash(newhash)
 										
 	# ...................................................			

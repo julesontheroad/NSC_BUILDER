@@ -542,63 +542,76 @@ if __name__ == '__main__':
 			try:
 				if filename.endswith('.nsp') or filename.endswith('.nsx'):
 					f = Fs.Nsp(filename,'r+b')
-					check=f.patch_netlicense()
+					ctrl_list=f.gen_ctrl_list()
 					f.flush()
-					f.close()
-					if check == True:
-						f = Fs.Nsp(filename, 'r+b')
-						leveldata,superhashoffset=f.reb_lv_hashes()
-						f.flush()
-						f.close()	
-						n=len(leveldata)-1
-						for i in range(len(leveldata)):
-							j=n-i
-							if j==0:
-								break
-							f = Fs.Nsp(filename, 'r+b')
-							superhash=f.set_lv_hash(j,leveldata)
-							f.flush()
-							f.close()
-						f = Fs.Nsp(filename, 'r+b')
-						f.set_lvsuperhash(leveldata,superhashoffset)
-						f.flush()
-						f.close()	
-						f = Fs.Nsp(filename, 'r+b')
-						f.ctrl_upd_hblock_hash()
+					f.close()					
+					for item in ctrl_list:
+						print('Processing: '+str(item))						
+						f = Fs.Nsp(filename,'r+b')
+						check=f.patch_netlicense()
 						f.flush()
 						f.close()
-				elif filename.endswith('.xci'):	
-					f = Fs.factory(filename)
-					f.open(filename, 'r+b')		
-					check=f.patch_netlicense()
-					f.flush()
-					f.close()
-					if check == True:
-						f = Fs.factory(filename)
-						f.open(filename, 'r+b')	
-						leveldata,superhashoffset=f.reb_lv_hashes()
-						f.flush()
-						f.close()	
-						n=len(leveldata)-1
-						for i in range(len(leveldata)):
-							j=n-i
-							if j==0:
-								break
-							f = Fs.factory(filename)
-							f.open(filename, 'r+b')	
-							superhash=f.set_lv_hash(j,leveldata)
+						if check == True:
+							f = Fs.Nsp(filename, 'r+b')
+							leveldata,superhashoffset=f.reb_lv_hashes(item)
+							f.flush()
+							f.close()	
+							n=len(leveldata)-1
+							for i in range(len(leveldata)):
+								j=n-i
+								if j==0:
+									break
+								f = Fs.Nsp(filename, 'r+b')
+								superhash=f.set_lv_hash(j,leveldata,item)
+								f.flush()
+								f.close()
+							f = Fs.Nsp(filename, 'r+b')
+							f.set_lvsuperhash(leveldata,superhashoffset,item)
+							f.flush()
+							f.close()	
+							f = Fs.Nsp(filename, 'r+b')
+							f.ctrl_upd_hblock_hash(item)
 							f.flush()
 							f.close()
+				elif filename.endswith('.xci'):	
+					f = Fs.factory(filename)
+					f.open(filename, 'r+b')
+					ctrl_list=f.gen_ctrl_list()
+					f.flush()
+					f.close()	
+					for item in ctrl_list:	
+						print('- Processing: '+str(item))					
 						f = Fs.factory(filename)
-						f.open(filename, 'r+b')	
-						f.set_lvsuperhash(leveldata,superhashoffset)
+						f.open(filename, 'r+b')		
+						check=f.patch_netlicense(item)
 						f.flush()
-						f.close()	
-						f = Fs.factory(filename)
-						f.open(filename, 'r+b')	
-						f.ctrl_upd_hblock_hash()
-						f.flush()
-						f.close()						
+						f.close()
+						if check == True:
+							f = Fs.factory(filename)
+							f.open(filename, 'r+b')	
+							leveldata,superhashoffset=f.reb_lv_hashes(item)
+							f.flush()
+							f.close()	
+							n=len(leveldata)-1
+							for i in range(len(leveldata)):
+								j=n-i
+								if j==0:
+									break
+								f = Fs.factory(filename)
+								f.open(filename, 'r+b')	
+								superhash=f.set_lv_hash(j,leveldata,item)
+								f.flush()
+								f.close()
+							f = Fs.factory(filename)
+							f.open(filename, 'r+b')	
+							f.set_lvsuperhash(leveldata,superhashoffset,item)
+							f.flush()
+							f.close()	
+							f = Fs.factory(filename)
+							f.open(filename, 'r+b')	
+							f.ctrl_upd_hblock_hash(item)
+							f.flush()
+							f.close()						
 			except BaseException as e:
 				Print.error('Exception: ' + str(e))		
 
