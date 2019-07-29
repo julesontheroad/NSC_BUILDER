@@ -21,6 +21,22 @@ Luca Fraga's github: https://github.com/LucaFraga
 ---------------
 0. Changelog
 ---------------
+v0.89- Adds patcher for linked account requirement:
+	- Added patcher for linked-account flag in control nacp
+	  * Patcher was added to Advanced mode, option 5 "patch a linked account requirement"
+	  * The file is patched directly without generating a copy or any extraction
+	  * The patcher can patched several files in batch
+	  * The patcher will skip files that don't need a linked account
+          * You can see if a file needs a linked account in the nacp reader:
+ 	    If "StartupUserAccount==RequiredWithNetworkServiceAccountAvailable"
+	  * Patcher patches this value to take an unlinked account:
+	    (StartupUserAccount==Required)
+          * If "RequiredNetworkServiceLicenseOnLaunch" is enabled it will also patched
+	- Take into account that current verification will ping the control nca as modified
+        - For now files with this patch won't be included in the verification and upcoming 
+	  restore mode due to the small number of games with this patching requirement
+	- Fixed issue that impeded raw-extaction from working properly
+	- Added <,<>,> to the list of banned characters for filenames
 v0.88- Bugfixes and new stuff
 	- Fixes direct creation of fat32 files, to reflect that the new modes create
 	  split nsp or xci files for fat32 sd cards directly if set in the config.

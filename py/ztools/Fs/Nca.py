@@ -27,6 +27,7 @@ from Fs.Nacp import Nacp
 import sq_tools
 import pykakasi
 from Fs.pyNCA3 import NCA3
+import io
 
 MEDIA_SIZE = 0x200
 RSA_PUBLIC_EXPONENT = 0x10001
@@ -2264,6 +2265,144 @@ class Nca(File):
 					feed=nacp.par_getRequiredNetworkServiceLicenseOnLaunch(f.readInt8('little'),feed)	
 				except:continue	
 		return feed				
+
+#PATCH NETWORK LICENSE
+	def patch_netlicense(self):
+		if 	str(self.header.contentType) == 'Content.CONTROL':
+			offset=self.get_nacp_offset()
+			for f in self:
+				nacp = Nacp()
+				print('CURRENT VALUES:')
+				f.seek(offset+0x3025)				
+				startup_acc=f.readInt8('little')
+				netlicense=f.readInt8('little')				
+				f.seek(offset+0x3213)
+				netlicense=f.readInt8('little')	
+				nacp.par_getStartupUserAccount(startup_acc)					
+				nacp.par_getRequiredNetworkServiceLicenseOnLaunch(netlicense)	
+				if netlicense==0 and startup_acc<2:
+					print(str(self._path)+" doesn't need a linked account")
+					return False
+				else:
+					print('  -> '+str(self._path)+" needs a linked account. Patching...")
+					print('NEW VALUES:')
+					if startup_acc==2:
+						f.seek(offset+0x3025)	
+						f.writeInt8(1)
+					if netlicense==1:						
+						f.seek(offset+0x3213)
+						f.writeInt8(0)
+					f.seek(offset+0x3025)	
+					nacp.par_getStartupUserAccount(f.readInt8('little'))
+					f.seek(offset+0x3213)
+					netlicense=f.readInt8('little')
+					nacp.par_getRequiredNetworkServiceLicenseOnLaunch(f.readInt8('little'))		
+					return True
+	def redo_lvhashes(self):
+		if 	str(self.header.contentType) == 'Content.CONTROL':
+			#offset=self.get_nacp_offset()
+			for fs in self.sectionFilesystems:
+				pfs0=fs
+				sectionHeaderBlock = fs.buffer
+				inmemoryfile = io.BytesIO(sectionHeaderBlock)
+				self.seek(fs.offset)
+				pfs0Offset=fs.offset
+				leveldata,hash,masterhashsize,superhashoffset=self.prIVFCData(inmemoryfile)
+				return leveldata,superhashoffset
+				
+	def set_lv_hash(self,j,leveldata):
+		if 	str(self.header.contentType) == 'Content.CONTROL':
+			for fs in self.sectionFilesystems:
+				levelnumb=leveldata[j][0]
+				lvoffs=leveldata[j][1]
+				levelsize=leveldata[j][2]
+				lvbsize=leveldata[j][3]
+				fs.seek(lvoffs)
+				data = fs.read(lvbsize)
+				newhash=(str(sha256(data).hexdigest()))
+				fs.seek((j-1)*0x4000)
+				hashlv=(hx(fs.read(32))).decode('utf-8')
+				if str(hashlv) != str(newhash):
+					fs.seek((j-1)*0x4000)
+					sha=bytes.fromhex(newhash)
+					fs.write(sha)	
+					print('Old lv'+str(j)+' hash: '+str(hashlv))
+					print('New lv'+str(j)+' hash: '+str(newhash))
+
+	def set_lvsuperhash(self,leveldata,superhashoffset):
+		if 	str(self.header.contentType) == 'Content.CONTROL':
+			for fs in self.sectionFilesystems:
+				memlv0 = io.BytesIO(fs.read((leveldata[0][2])*(len(leveldata)-1)))
+				memlv0.seek(0);newlvdata=memlv0.read()				
+				memlv0.seek(0);ndat=memlv0.read(0x4000)
+				superhash=(str(sha256(ndat).hexdigest()))
+				self.header.seek(0x400+superhashoffset)
+				test = hx((self.header.read(32))).decode('utf-8');print('-OLD IVFC_Hash: '+str(test))
+				self.header.seek(0x400+superhashoffset)
+				self.header.write(bytes.fromhex(superhash))
+				self.header.seek(0x400+superhashoffset)
+				newivfchash = hx((self.header.read(32))).decode('utf-8');print('-NEW IVFC_Hash: '+str(newivfchash))
+				fs.seek(0)
+				fs.write(newlvdata)						
+				
+	def prIVFCData(self,inmemoryfile):
+		#Hex.dump(inmemoryfile.read())
+		inmemoryfile.seek(0)
+		version=int.from_bytes(inmemoryfile.read(0x2), byteorder='little', signed=True);print('-Version: '+str(version))
+		fstype=int.from_bytes(inmemoryfile.read(0x1), byteorder='little', signed=True);print('-FileSystemtype: '+str(fstype))		
+		hashtype=int.from_bytes(inmemoryfile.read(0x1), byteorder='little', signed=True);print('-HashType: '+str(hashtype))
+		enctype=int.from_bytes(inmemoryfile.read(0x1), byteorder='little', signed=True);print('-EncType: '+str(enctype))	
+		nulldata=inmemoryfile.read(0x3)
+		magic=inmemoryfile.read(0x4);print('-Magic: '+str(magic))
+		magicnumber=int.from_bytes(inmemoryfile.read(0x4), byteorder='little', signed=True);print('-MagicNumber: '+str(magicnumber))			
+		masterhashsize=int.from_bytes(inmemoryfile.read(0x4), byteorder='little', signed=True)*0x200;print('-MasterHashSize: '+str(masterhashsize))			
+		numberLevels=int.from_bytes(inmemoryfile.read(0x4), byteorder='little', signed=True);print('-Number: '+str(numberLevels))			
+		leveldata=list();c=24
+		for i in range(numberLevels-1):
+			lvoffs=int.from_bytes(inmemoryfile.read(0x8), byteorder='little', signed=True);print('-level'+str(i)+' offs: '+str(lvoffs))			
+			lvsize=int.from_bytes(inmemoryfile.read(0x8), byteorder='little', signed=True);print('-level'+str(i)+' size: '+str(lvsize))			
+			lvbsize=2**int.from_bytes(inmemoryfile.read(0x4), byteorder='little', signed=True);print('-level'+str(i)+' block size: '+str(lvbsize))			
+			treserved=int.from_bytes(inmemoryfile.read(0x4), byteorder='little', signed=True);print('-level'+str(i)+' Reserved: '+str(treserved))			
+			leveldata.append([i,lvoffs,lvsize,lvbsize])
+			c=c+24	
+		inmemoryfile.read(32);c=c+32
+		hash = hx((inmemoryfile.read(32))).decode('utf-8');print('-IVFC_Hash: '+str(hash))
+		return leveldata,hash,masterhashsize,c
+
+	def pr_ivfcsuperhash(self, file = None, mode = 'rb'):					
+		crypto1=self.header.getCryptoType()	
+		crypto2=self.header.getCryptoType2()		
+		if crypto1 == 2:
+			if crypto1 > crypto2:								
+				masterKeyRev=crypto1
+			else:			
+				masterKeyRev=crypto2
+		else:			
+			masterKeyRev=crypto2	
+		decKey = Keys.decryptTitleKey(self.header.titleKeyDec, Keys.getMasterKeyIndex(masterKeyRev))
+		for f in self.sectionFilesystems:
+			#print(f.fsType);print(f.cryptoType)
+			if f.fsType == Type.Fs.ROMFS and f.cryptoType == Type.Crypto.CTR:	
+				ncaHeader = NcaHeader()
+				self.header.rewind()
+				ncaHeader = self.header.read(0x400)
+				#Hex.dump(ncaHeader)
+				pfs0=f
+				#Hex.dump(pfs0.read())
+				sectionHeaderBlock = f.buffer
+
+				levelOffset = int.from_bytes(sectionHeaderBlock[0x18:0x20], byteorder='little', signed=False)
+				levelSize = int.from_bytes(sectionHeaderBlock[0x20:0x28], byteorder='little', signed=False)
+
+				pfs0Header = pfs0.read(levelSize)
+				if sectionHeaderBlock[8:12] == b'IVFC':	
+					data = pfs0Header;
+					Hex.dump(pfs0Header)
+					print(str('1: ')+hx(sectionHeaderBlock[0xc8:0xc8+0x20]).decode('utf-8'))
+					print(str('2: ')+str(sha256(data).hexdigest()))
+					superhash=str(sha256(data).hexdigest())
+					return superhash
+						
 
 	def verify_hash_nca(self,buffer,origheader,didverify,feed):
 		verdict=True; basename=str(os.path.basename(os.path.abspath(self._path)))			

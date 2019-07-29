@@ -174,6 +174,7 @@ echo Input "1" to extract all files from nsp\xci
 echo Input "2" for raw extraction (Use in case a nca gives magic error)
 echo Input "3" to extract all nca files as plaintext
 echo Input "4" to extract nca contents from nsp\xci
+echo Input "5" to patch a linked account requirement
 echo.
 ECHO ******************************************
 echo Or Input "b" to return to the list options
@@ -187,12 +188,16 @@ if /i "%bs%"=="1" goto extract
 if /i "%bs%"=="2" goto raw_extract
 if /i "%bs%"=="3" goto ext_plaintext
 if /i "%bs%"=="4" goto ext_fromnca
+if /i "%bs%"=="5" goto patch_lnkacc
 if %vrepack%=="none" goto s_cl_wrongchoice
 
 
 :extract
 cls
 call :program_logo
+echo ********************************************************
+echo EXTRACT ALL FILES FROM A NSP\XCI
+echo ********************************************************
 CD /d "%prog_dir%"
 for /f "tokens=*" %%f in (advlist.txt) do (
 
@@ -210,6 +215,9 @@ goto s_exit_choice
 :raw_extract
 cls
 call :program_logo
+echo ********************************************************
+echo EXTRACT ALL FILES FROM A NSP\XCI IN RAW MODE
+echo ********************************************************
 CD /d "%prog_dir%"
 for /f "tokens=*" %%f in (advlist.txt) do (
 
@@ -227,6 +235,9 @@ goto s_exit_choice
 :ext_plaintext
 cls
 call :program_logo
+echo ********************************************************
+echo EXTRACT ALL FILES FROM A NSP\XCI AS PLAINTEXT
+echo ********************************************************
 CD /d "%prog_dir%"
 for /f "tokens=*" %%f in (advlist.txt) do (
 
@@ -244,10 +255,33 @@ goto s_exit_choice
 :ext_fromnca
 cls
 call :program_logo
+echo ********************************************************
+echo EXTRACT INTERNAL NCA FILES FROM A NSP\XCI
+echo ********************************************************
 CD /d "%prog_dir%"
 for /f "tokens=*" %%f in (advlist.txt) do (
 
 %pycommand% "%nut%" %buffer% -o "%prog_dir%NSCB_extracted" -tfile "%prog_dir%advlist.txt" -nfx ""
+
+more +1 "advlist.txt">"advlist.txt.new"
+move /y "advlist.txt.new" "advlist.txt" >nul
+call :contador_NF
+)
+ECHO ---------------------------------------------------
+ECHO *********** ALL FILES WERE PROCESSED! *************
+ECHO ---------------------------------------------------
+goto s_exit_choice
+
+:patch_lnkacc
+cls
+call :program_logo
+echo ********************************************************
+echo PATCH A LINKED ACCOUNT REQUIREMENT
+echo ********************************************************
+CD /d "%prog_dir%"
+for /f "tokens=*" %%f in (advlist.txt) do (
+
+%pycommand% "%nut%" %buffer% -tfile "%prog_dir%advlist.txt" --remlinkacc ""
 
 more +1 "advlist.txt">"advlist.txt.new"
 move /y "advlist.txt.new" "advlist.txt" >nul
@@ -320,8 +354,8 @@ ECHO ---------------------------------------------------------------------------
 ECHO =============================     BY JULESONTHEROAD     =============================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                                POWERED BY SQUIRREL                                "
-ECHO "                    BASED IN THE WORK OF BLAWAR AND LUCA FRAGA                     "
-ECHO                                     VERSION 0.88
+ECHO "                    BASED ON THE WORK OF BLAWAR AND LUCA FRAGA                     "
+ECHO                                     VERSION 0.89
 ECHO -------------------------------------------------------------------------------------                   
 ECHO Program's github: https://github.com/julesontheroad/NSC_BUILDER
 ECHO Blawar's github:  https://github.com/blawar

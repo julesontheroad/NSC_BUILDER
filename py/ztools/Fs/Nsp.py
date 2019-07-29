@@ -361,6 +361,74 @@ class Nsp(Pfs0):
 		self.hasValidTicket = True
 		self.move()
 
+
+	# ...................................................						
+	# Patch requrements for network account
+	# ...................................................
+	def gen_ctrl_list(self):
+		print('- Seeking control nca files...')
+		ctrl_list=list()
+		for nca in self:
+			if type(nca) == Nca:
+				if 	str(nca.header.contentType) == 'Content.CONTROL':
+					ctrl_list.append(nca._path)
+				else:
+					pass
+		return ctrl_list
+	
+	def patch_netlicense(self,item=False):
+		for nca in self:
+			if type(nca) == Nca:
+				if 	str(nca.header.contentType) == 'Content.CONTROL':
+					if item == False or nca._path == item:				
+						check=nca.patch_netlicense()
+						return check
+
+	def reb_lv_hashes(self,item=False):					
+		for nca in self:
+			if type(nca) == Nca:
+				if 	str(nca.header.contentType) == 'Content.CONTROL':					
+					if item == False or nca._path == item:	
+						print('-------------------------------------------------')							
+						print('Get Current IVFC level data:')		
+						print('-------------------------------------------------')						
+						leveldata,superhashoffset=nca.redo_lvhashes()					
+						return leveldata,superhashoffset
+
+	def set_lv_hash(self,j,leveldata,item=False):					
+		for nca in self:
+			if type(nca) == Nca:
+				if 	str(nca.header.contentType) == 'Content.CONTROL':				
+					if item == False or nca._path == item:	
+						print('-------------------------------------------------')							
+						print('Rebuild hashes for IVFC level '+str(j)+':')		
+						print('-------------------------------------------------')							
+						nca.set_lv_hash(j,leveldata)
+					
+	def set_lvsuperhash(self,leveldata,superhashoffset,item=False):					
+		for nca in self:
+			if type(nca) == Nca:
+				if 	str(nca.header.contentType) == 'Content.CONTROL':
+					if item == False or nca._path == item:				
+						print('-------------------------------------------------')							
+						print('Rebuild IVFC superhash:')		
+						print('-------------------------------------------------')						
+						nca.set_lvsuperhash(leveldata,superhashoffset)						
+
+	def ctrl_upd_hblock_hash(self,item=False):					
+		for nca in self:
+			if type(nca) == Nca:
+				if 	str(nca.header.contentType) == 'Content.CONTROL':
+					if item == False or nca._path == item:	
+						print('-------------------------------------------------')							
+						print('Rebuild nca hash-table:')		
+						print('-------------------------------------------------')							
+						oldhash=nca.header.get_hblock_hash();print('- Old nca sblock hash: '+str(hx(oldhash)))	
+						newhash=nca.header.calculate_hblock_hash();print('- New nca sblock hash: '+str(hx(newhash)))
+						nca.header.set_hblock_hash(newhash)
+										
+	# ...................................................											
+										
 	def setMasterKeyRev(self, newMasterKeyRev):
 		if not Titles.contains(self.titleId):
 			raise IOError('No title key found in database! ' + self.titleId)

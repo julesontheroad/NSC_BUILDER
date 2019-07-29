@@ -122,6 +122,7 @@ if __name__ == '__main__':
 		parser.add_argument('--seteshop_nca', nargs='+', help='Set a single nca as eshop')
 		parser.add_argument('--setcgame_nca', nargs='+', help='Set a single nca as card')	
 		parser.add_argument('--cardstate', nargs='+', help='Returns value for isgamecard flag from an nca')	
+		parser.add_argument('--remlinkacc', nargs='+', help='Removelinkedaccount')		
 		
 		# NSP Copy functions
 		parser.add_argument('-x', '--extract', nargs='+', help='Extracts all files from nsp or xci')
@@ -525,6 +526,98 @@ if __name__ == '__main__':
 					f.close()
 				except BaseException as e:
 					Print.error('Exception: ' + str(e))		
+					
+		# ...................................................						
+		# Set value for network account
+		# ...................................................		
+		if args.remlinkacc:
+			if args.text_file:
+				tfile=args.text_file
+				with open(tfile,"r+", encoding='utf8') as filelist: 	
+					filename = filelist.readline()
+					filename=os.path.abspath(filename.rstrip('\n'))		
+			else:		
+				for inpt in args.text_file:
+					filename=inpt	
+			try:
+				if filename.endswith('.nsp') or filename.endswith('.nsx'):
+					f = Fs.Nsp(filename,'r+b')
+					ctrl_list=f.gen_ctrl_list()
+					f.flush()
+					f.close()					
+					for item in ctrl_list:
+						print('-------------------------------------------------')							
+						print('Processing: '+str(item))			
+						print('-------------------------------------------------')								
+						f = Fs.Nsp(filename,'r+b')
+						check=f.patch_netlicense()
+						f.flush()
+						f.close()
+						if check == True:
+							f = Fs.Nsp(filename, 'r+b')
+							leveldata,superhashoffset=f.reb_lv_hashes(item)
+							f.flush()
+							f.close()	
+							n=len(leveldata)-1
+							for i in range(len(leveldata)):
+								j=n-i
+								if j==0:
+									break
+								f = Fs.Nsp(filename, 'r+b')
+								superhash=f.set_lv_hash(j,leveldata,item)
+								f.flush()
+								f.close()
+							f = Fs.Nsp(filename, 'r+b')
+							f.set_lvsuperhash(leveldata,superhashoffset,item)
+							f.flush()
+							f.close()	
+							f = Fs.Nsp(filename, 'r+b')
+							f.ctrl_upd_hblock_hash(item)
+							f.flush()
+							f.close()
+				elif filename.endswith('.xci'):	
+					f = Fs.factory(filename)
+					f.open(filename, 'r+b')
+					ctrl_list=f.gen_ctrl_list()
+					f.flush()
+					f.close()	
+					for item in ctrl_list:
+						print('-------------------------------')							
+						print('Processing: '+str(item))		
+						print('-------------------------------')							
+						f = Fs.factory(filename)
+						f.open(filename, 'r+b')		
+						check=f.patch_netlicense(item)
+						f.flush()
+						f.close()
+						if check == True:
+							f = Fs.factory(filename)
+							f.open(filename, 'r+b')	
+							leveldata,superhashoffset=f.reb_lv_hashes(item)
+							f.flush()
+							f.close()	
+							n=len(leveldata)-1
+							for i in range(len(leveldata)):
+								j=n-i
+								if j==0:
+									break
+								f = Fs.factory(filename)
+								f.open(filename, 'r+b')	
+								superhash=f.set_lv_hash(j,leveldata,item)
+								f.flush()
+								f.close()
+							f = Fs.factory(filename)
+							f.open(filename, 'r+b')	
+							f.set_lvsuperhash(leveldata,superhashoffset,item)
+							f.flush()
+							f.close()	
+							f = Fs.factory(filename)
+							f.open(filename, 'r+b')	
+							f.ctrl_upd_hblock_hash(item)
+							f.flush()
+							f.close()						
+			except BaseException as e:
+				Print.error('Exception: ' + str(e))		
 
 # COPY FUNCTIONS
 		# ...................................................						
@@ -4470,7 +4563,7 @@ if __name__ == '__main__':
 						filepath = os.path.join(ofolder, files_list[i][0])	
 						fp = open(filepath, 'w+b')		
 						s=files_list[i][3]
-						if buffer>s:
+						if int(buffer)>s:
 							buf=s
 						else:
 							buf=buffer
@@ -4515,7 +4608,7 @@ if __name__ == '__main__':
 						filepath = os.path.join(ofolder, files_list[i][0])	
 						fp = open(filepath, 'w+b')		
 						s=files_list[i][3]
-						if buffer>s:
+						if int(buffer)>s:
 							buf=s
 						else:
 							buf=buffer
@@ -6121,7 +6214,7 @@ if __name__ == '__main__':
 				endname=converter.do(endname)	
 				endname=endname[0].upper()+endname[1:]						
 			endname = (re.sub(r'[\/\\\:\*\?]+', '', endname))
-			endname = re.sub(r'[™©®`~^´ªº¢£€¥$ƒ±¬½¼«»±•²‰œæÆ³]', '', endname)				
+			endname = re.sub(r'[™©®`~^´ªº¢£€¥$ƒ±¬½¼«»±•²‰œæÆ³<<>>]', '', endname)				
 			endname = re.sub(r'[Ⅰ]', 'I', endname);endname = re.sub(r'[Ⅱ]', 'II', endname)
 			endname = re.sub(r'[Ⅲ]', 'III', endname);endname = re.sub(r'[Ⅳ]', 'IV', endname)	
 			endname = re.sub(r'[Ⅴ]', 'V', endname);endname = re.sub(r'[Ⅵ]', 'VI', endname)	

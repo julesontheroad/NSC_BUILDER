@@ -193,8 +193,7 @@ class Nacp(File):
 			StartupUserAccount = 'Unknown'
 		message=('- StartupUserAccount: ' + str(StartupUserAccount));print(message);feed+=message+'\n'				
 		return feed			
-		
-		
+
 	def getStartupUserAccount(self):
 		self.seek(0x3025)
 		b = self.readInt8('little')

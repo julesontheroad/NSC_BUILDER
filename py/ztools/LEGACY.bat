@@ -2,7 +2,7 @@
 :TOP_INIT
 CD /d "%prog_dir%"
 set "bat_name=%~n0"
-Title NSC_Builder v0.88 -- Profile: %ofile_name% -- by JulesOnTheRoad
+Title NSC_Builder v0.89 -- Profile: %ofile_name% -- by JulesOnTheRoad
 
 ::Check if user is dragging a folder or a file
 if "%~1"=="" goto manual
@@ -2246,8 +2246,8 @@ ECHO ---------------------------------------------------------------------------
 ECHO =============================     BY JULESONTHEROAD     =============================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                                POWERED BY SQUIRREL                                "
-ECHO "                    BASED IN THE WORK OF BLAWAR AND LUCA FRAGA                     "
-ECHO                                  VERSION 0.88 (LEGACY)
+ECHO "                    BASED ON THE WORK OF BLAWAR AND LUCA FRAGA                     "
+ECHO                                  VERSION 0.89 (LEGACY)
 ECHO -------------------------------------------------------------------------------------                   
 ECHO Program's github: https://github.com/julesontheroad/NSC_BUILDER
 ECHO Blawar's github:  https://github.com/blawar

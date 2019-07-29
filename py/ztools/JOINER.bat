@@ -262,8 +262,8 @@ ECHO ---------------------------------------------------------------------------
 ECHO =============================     BY JULESONTHEROAD     =============================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                                POWERED BY SQUIRREL                                "
-ECHO "                    BASED IN THE WORK OF BLAWAR AND LUCA FRAGA                     "
-ECHO                                     VERSION 0.88
+ECHO "                    BASED ON THE WORK OF BLAWAR AND LUCA FRAGA                     "
+ECHO                                     VERSION 0.89
 ECHO -------------------------------------------------------------------------------------                   
 ECHO Program's github: https://github.com/julesontheroad/NSC_BUILDER
 ECHO Blawar's github:  https://github.com/blawar
