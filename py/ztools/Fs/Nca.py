@@ -2295,7 +2295,6 @@ class Nca(File):
 					f.seek(offset+0x3025)	
 					nacp.par_getStartupUserAccount(f.readInt8('little'))
 					f.seek(offset+0x3213)
-					netlicense=f.readInt8('little')
 					nacp.par_getRequiredNetworkServiceLicenseOnLaunch(f.readInt8('little'))		
 					return True
 	def redo_lvhashes(self):
