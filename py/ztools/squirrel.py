@@ -34,6 +34,7 @@ import pathlib
 import urllib3
 import json
 from zipfile import ZipFile
+import shelve
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, 'lib')
@@ -93,7 +94,7 @@ if __name__ == '__main__':
 		parser.add_argument('-dmul', '--direct_multi', nargs='+', help='Create directly a multi nsp or xci')		
 		parser.add_argument('-ed', '--erase_deltas', nargs='+', help='Take of deltas from updates')			
 		parser.add_argument('-rbnsp', '--rebuild_nsp', nargs='+', help='Rebuild nsp by cnmt order')		
-		parser.add_argument('-rst', '--restore', nargs='+', help='Rebuild nsp by cnmt order')		
+		#parser.add_argument('-rst', '--restore', nargs='+', help='Restore a xci or nsp file')		
 
 		# nca/nsp identification
 		parser.add_argument('--ncatitleid', nargs='+', help='Returns titleid from a nca input')
@@ -209,7 +210,7 @@ if __name__ == '__main__':
 		parser.add_argument('-ff', '--findfile', help='find different types of files')	
 		parser.add_argument('-fil', '--filter', nargs='+', help='filter using strings')			
 		parser.add_argument('-splid', '--split_list_by_id', nargs='+', help='split a list by file id')	
-		parser.add_argument('-loldupd', '--list_old_updates', nargs='+', help='Prints list of old updates')	
+		parser.add_argument('-mv_oupd', '--mv_old_updates', nargs='+', help='Moves old updates to another folder')	
 		
 		# Archive		
 		if sys.platform == 'win32':
@@ -6835,15 +6836,26 @@ if __name__ == '__main__':
 		#Print list of old updates
 		#--------------------------
 		
-		#parser.add_argument('-loldupd', '--list_old_updates', nargs='+', help='Prints list of old updates')									
-		if args.list_old_updates:						
-			for filepath in args.list_old_updates:
-				ofolder=os.path.abspath(filepath)
-				if not os.path.exists(ofolder):
-					os.makedirs(ofolder)
+		#parser.add_argument('-mv_oupd', '--mv_old_updates', nargs='+', help='Moves old updates to another folder')									
+		if args.mv_old_updates:
+			if args.ofolder:		
+				for input in args.ofolder:
+					try:
+						ofolder = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+			else:
+				for filepath in args.mv_old_updates:
+					ofolder=os.path.abspath(filepath)
+					ofolder=os.path.join(ofolder, 'old')
+			if not os.path.exists(ofolder):
+				os.makedirs(ofolder) 
+			duplicates_f=os.path.join(ofolder, 'duplicates')
+			if not os.path.exists(duplicates_f):
+				os.makedirs(duplicates_f) 			
 			baselist=list()		
 			addonlist=list()		
-			updlist=list()
+			updlist=list();updtomove=list()
 			filelist=list()
 			if args.text_file:
 				tfile=args.text_file
@@ -6853,7 +6865,7 @@ if __name__ == '__main__':
 						fp=line.strip()
 						filelist.append(fp)	
 			else:
-				ruta=args.list_old_updates[0]			
+				ruta=args.mv_old_updates[0]			
 				if ruta[-1]=='"':
 					ruta=ruta[:-1]
 				if ruta[0]=='"':
@@ -6896,16 +6908,16 @@ if __name__ == '__main__':
 									if binbin.lower() not in filename.lower():					
 										filelist.append(filename)	
 				except BaseException as e:
-					#Print.error('Exception: ' + str(e))
+					Print.error('Exception: ' + str(e))
 					pass
 				'''
 				for file in filelist:		
 					print(file)
 					pass
 				'''
+				Datashelve = shelve.open('File01');c=0
 				for filepath in filelist:
-					fileid='unknown'
-					fileversion='unknown'
+					fileid='unknown';fileversion='unknown';cctag='unknown'
 					tid1=list()
 					tid2=list()
 					tid1=[pos for pos, char in enumerate(filepath) if char == '[']
@@ -6917,18 +6929,28 @@ if __name__ == '__main__':
 					for i in range(lentlist):	
 						try:
 							i1=tid1[i]+1
-							i2=tid2[i]
+							i2=tid2[i]					
+							t=filepath[i1:i2]
+							#print(t)
+							if len(t)==16: 
+								try:
+									test1=filepath[i1:i2]
+									int(filepath[i1:i2], 16)
+									fileid=str(filepath[i1:i2]).upper()
+									if fileid !='unknown':
+										if int(fileid[-3:])==800:
+											cctag='UPD'
+										elif int(fileid[-3:])==000:
+											cctag='BASE'
+										else:
+											try:
+												int(fileid[-3:])
+												cctag='DLC'											
+											except:pass
+										break
+								except:
+									continue
 						except:pass	
-						t=filepath[i1:i2]
-						if len(t)==16: 
-							try:
-								int(filepath[i1:i2], 16)
-								fileid=str(filepath[i1:i2]).upper()
-								basename=str(os.path.basename(os.path.abspath(filepath)))
-								if fileid !='unknown':
-									break
-							except:
-								continue
 					for i in range(lentlist):	
 						try:
 							i1=tid1[i]+1
@@ -6936,143 +6958,61 @@ if __name__ == '__main__':
 						except:pass									
 						if (str(filepath[(i1)]).upper())=='V':
 							try:
+								test2=filepath[(i1+1):i2]
 								fileversion=int(filepath[(i1+1):i2])
 								if fileversion !='unknown':
 									break
 							except:
 								continue
 						
-					print(fileid+' '+str(fileversion))
+					#print(fileid+' '+str(fileversion)+' '+cctag)
 					if fileid == 'unknown' or fileversion == 'unknown':
-						print(basename)
-								
+						print(fileid+' '+str(fileversion))					
+						print(str(os.path.basename(os.path.abspath(filepath))))
+						print(test1)
+						print(test2)
 					
+					if cctag!="UPD":
+						print(str(os.path.basename(os.path.abspath(filepath))))
+						
+					if c==0:
+						c+=1
+						try:
+							Datashelve[str(fileid)]=[filepath,fileid,fileversion,cctag]				
+						except BaseException as e:
+							Print.error('Exception: ' + str(e))							
+					else:
+						try:
+							if str(fileid) in Datashelve:
+								shelvedfile=Datashelve[str(fileid)]
+								#print(shelvedfile[2])
+								if shelvedfile[1]==fileid:
+									if int(shelvedfile[2])>int(fileversion):
+										Datashelve[str(fileid)]=shelvedfile
+										shutil.move(filepath,ofolder)
+									elif int(shelvedfile[2])== int(fileversion):
+										print(str(os.path.basename(os.path.abspath(filepath))))
+										Datashelve[str(fileid)]=shelvedfile
+										shutil.move(filepath,duplicates_f)		
+									else:		
+										print(str(os.path.basename(os.path.abspath(filepath))))									
+										Datashelve[str(fileid)]=[filepath,fileid,fileversion,cctag]
+										shutil.move(shelvedfile[0],ofolder)										
+								else:		
+									pass	
+							else:
+								Datashelve[str(fileid)]=[filepath,fileid,fileversion,cctag]							
+						except BaseException as e:
+							Print.error('Exception: ' + str(e))		
+
+							
 					
-					
-					
-				#print('Items to process: '+str(len(filelist)))
-				#counter=len(filelist)
 				
-
-
-	
-
-			# print('- Calculating base-ids for:')			
-			# for filepath in filelist:								
-				# try:
-					# if filepath.endswith('.nsp'):
-						# f = Fs.Nsp(filepath)	
-					# elif filepath.endswith('.xci'):
-						# f = Fs.factory(filepath)
-						# f.open(filepath, 'rb')				
-					# print(tabs+filepath)
-					# validator,contentlist=f.cnmt_get_baseids()	
-					# f.flush()
-					# f.close()						
-					# if validator=='base':
-						# baselist.append([filepath,contentlist])
-					# elif validator=='update':
-						# updlist.append([filepath,contentlist])					
-					# else:
-						# addonlist.append([filepath,contentlist])								
-				# except BaseException as e:
-					# Print.error('Exception: ' + str(e))	
-			# '''		
-			# print('Baselist')
-			# for i in baselist:
-				# print(i)
-			# print(str(len(baselist)))	
-			# print('Updlist')
-			# for i in updlist:
-				# print(i)
-			# print(str(len(updlist)))			
-			# print('Addonlist')				
-			# for i in addonlist:
-				# print(i)				
-			# print(str(len(addonlist)))	
-			# '''
-
-			# print('')		
-			# print('- Generating lists:')
-			# if len(baselist)>0:
-				# for i in range(len(baselist)):	
-					# lname=''
-					# fileslist=list()
-					# idlist=baselist[i][1]
-					# for k in idlist:
-						# lname+='['+k+']'
-					# lname=lname.upper()
-					# lname+='.txt'
-					# fileslist.append(baselist[i][0])
-					# for j in range(len(updlist)):		
-						# addid=updlist[j][1]
-						# addid=addid[0]
-						# if addid in idlist:
-							# if updlist[j][0] not in fileslist:
-								# fileslist.append(updlist[j][0])					
-					# for j in range(len(addonlist)):		
-						# addid=addonlist[j][1]
-						# addid=addid[0]
-						# if addid in idlist:
-							# if addonlist[j][0] not in fileslist:
-								# fileslist.append(addonlist[j][0])
-					# endfile=os.path.join(ofolder, lname)
-					# print('  > '+endfile)		
-					# with open(endfile,"w", encoding='utf8') as tfile: 	
-						# for line in fileslist:				
-							# try:
-								# print(tabs+line)						
-								# tfile.write(line+"\n")
-							# except:
-								# continue
-			# elif len(updlist)>0:
-				# for i in range(len(updlist)):	
-					# lname=''
-					# fileslist=list()
-					# idlist=updlist[i][1]
-					# for k in idlist:
-						# k=k[:-3]+'800'
-						# lname+='['+k+']'
-					# lname=lname.upper()	
-					# lname+='.txt'
-					# fileslist.append(updlist[i][0])
-					# for j in range(len(addonlist)):		
-						# addid=addonlist[j][1]
-						# addid=addid[0]
-						# if addid in idlist:
-							# if addonlist[j][0] not in fileslist:
-								# fileslist.append(addonlist[j][0])
-					# endfile=os.path.join(ofolder, lname)
-					# print('  > '+endfile)		
-					# with open(endfile,"w", encoding='utf8') as tfile: 	
-						# for line in fileslist:				
-							# try:
-								# print(tabs+line)						
-								# tfile.write(line+"\n")
-							# except:
-								# continue	
-			# elif len(addonlist)>0:
-				# for i in range(len(addonlist)):	
-					# lname=''
-					# fileslist=list()
-					# idlist=addonlist[i][1]
-					# for k in idlist:
-						# lname+='['+k+']'
-					# lname=lname.upper()	
-					# lname+='.txt'
-					# fileslist.append(addonlist[i][0])
-					# endfile=os.path.join(ofolder, lname)
-					# print('  > '+endfile)		
-					# with open(endfile,"w", encoding='utf8') as tfile: 	
-						# for line in fileslist:				
-							# try:
-								# print(tabs+line)						
-								# tfile.write(line+"\n")
-							# except:
-								# continue		
+		
 		# ...................................................						
 		# Restore. File Restoration
 		# ...................................................
+		'''
 		if args.restore:	
 			feed=''		
 			if args.buffer:		
@@ -7107,7 +7047,7 @@ if __name__ == '__main__':
 						pass
 				except BaseException as e:
 					Print.error('Exception: ' + str(e))
-	
+		'''
 
 		Status.close()		
 	
