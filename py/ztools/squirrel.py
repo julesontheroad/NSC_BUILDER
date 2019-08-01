@@ -7005,7 +7005,7 @@ if __name__ == '__main__':
 								Datashelve[str(fileid)]=[filepath,fileid,fileversion,cctag]							
 						except BaseException as e:
 							Print.error('Exception: ' + str(e))		
-
+				Datashelve.close()		
 							
 					
 		#parser.add_argument('-mv_odlc', '--mv_old_dlcs', nargs='+', help='Moves old dlcs to another folder')					
