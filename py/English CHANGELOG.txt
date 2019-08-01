@@ -23,6 +23,10 @@ Luca Fraga's github: https://github.com/LucaFraga
 ---------------
 v0.89b- Bugfix:
 	- Fixed error that prevented generation of titlerights removed multinsps
+	- If NSCB prompts the error "Too many arguments in command line" may be
+	  that the "more" function isn't working in your windows. Download the "more.com"
+	  binary attached to this release and copy it next to NSCB.bat to fix it.
+	  Solution thanks to RiggZh
 v0.89- Adds patcher for linked account requirement:
 	- Added patcher for linked-account flag in control nacp
 	  * Patcher was added to Advanced mode, option 5 "patch a linked account requirement"
