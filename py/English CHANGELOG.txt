@@ -21,6 +21,8 @@ Luca Fraga's github: https://github.com/LucaFraga
 ---------------
 0. Changelog
 ---------------
+v0.89b- Bugfix:
+	- Fixed error that prevented generation of titlerights removed multinsps
 v0.89- Adds patcher for linked account requirement:
 	- Added patcher for linked-account flag in control nacp
 	  * Patcher was added to Advanced mode, option 5 "patch a linked account requirement"
