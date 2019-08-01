@@ -7186,7 +7186,7 @@ if __name__ == '__main__':
 								Datashelve[str(fileid)]=[filepath,fileid,fileversion,cctag]							
 						except BaseException as e:
 							Print.error('Exception: ' + str(e))	
-		Datashelve.close()					
+				Datashelve.close()					
 		# ...................................................						
 		# Restore. File Restoration
 		# ...................................................
