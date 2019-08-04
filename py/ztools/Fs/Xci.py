@@ -3200,14 +3200,13 @@ class Xci(File):
 									nca.seek(0xC00)									
 									i+=1		
 								else:			
-									outf.write(data)
-									t.update(len(data))
-									c=c+len(data)
-									outf.flush()
 									if fat=="fat32" and (c+len(data))>block:
 										n2=block-c
 										c=0
-										dat2=nca.read(int(n2))
+										inmemoryfile = io.BytesIO()
+										inmemoryfile.write(data)
+										inmemoryfile.seek(0)	
+										dat2=inmemoryfile.read(n2)	
 										outf.write(dat2)
 										outf.flush()
 										outf.close()	
@@ -3216,11 +3215,18 @@ class Xci(File):
 										outfile=outfile[0:-1]
 										outfile=outfile+str(index)
 										outf = open(outfile, 'wb')
-										if totSize>(4294934528+int(buffer)):
-											dat2=nca.read(int(buffer))
-											outf.write(dat2)						
-											t.update(len(dat2))									
-											outf.flush()	
+										inmemoryfile.seek(n2)
+										dat2=inmemoryfile.read(len(data)-n2)
+										inmemoryfile.close()
+										outf.write(dat2)						
+										t.update(len(dat2))		
+										c=c+len(dat2)													
+										outf.flush()
+									else:			
+										outf.write(data)
+										t.update(len(data))
+										c=c+len(data)
+										outf.flush()											
 									if not data:
 										break
 						if nca.header.getRightsId() == 0:						
@@ -3228,14 +3234,13 @@ class Xci(File):
 							#fp.seek(pos)
 							t.write(tabs+'- Appending: ' + str(nca._path))
 							for data in iter(lambda: nca.read(int(buffer)), ""):
-								outf.write(data)
-								t.update(len(data))
-								c=c+len(data)
-								outf.flush()
 								if fat=="fat32" and (c+len(data))>block:
 									n2=block-c
 									c=0
-									dat2=nca.read(int(n2))
+									inmemoryfile = io.BytesIO()
+									inmemoryfile.write(data)
+									inmemoryfile.seek(0)	
+									dat2=inmemoryfile.read(n2)	
 									outf.write(dat2)
 									outf.flush()
 									outf.close()	
@@ -3244,18 +3249,185 @@ class Xci(File):
 									outfile=outfile[0:-1]
 									outfile=outfile+str(index)
 									outf = open(outfile, 'wb')
-									if totSize>(4294934528+int(buffer)):
-										dat2=nca.read(int(buffer))
-										outf.write(dat2)						
-										t.update(len(dat2))									
-										outf.flush()	
+									inmemoryfile.seek(n2)
+									dat2=inmemoryfile.read(len(data)-n2)
+									inmemoryfile.close()
+									outf.write(dat2)						
+									t.update(len(dat2))		
+									c=c+len(dat2)													
+									outf.flush()											
+								else:		
+									outf.write(data)
+									t.update(len(data))
+									c=c+len(data)
+									outf.flush()										
 								if not data:
 									break									
 		t.close()
 		print("")
 		print("Closing file. Please wait")
 		outf.close()	
-				
+		
+
+	def trim(self,buffer,outfile,ofolder,fat):
+		block=4294934528	
+		#print(str(self.gamecardSize))
+		#print(str(self.validDataEndOffset))		
+		valid_data=int(((self.validDataEndOffset+0x1)*0x200))
+		totSize=valid_data
+		#print(str(valid_data))		
+		t = tqdm(total=valid_data, unit='B', unit_scale=True, leave=False)
+		self.rewind()
+		wrdata=0;c=0
+		if fat=="fat32":
+			splitnumb=math.ceil(totSize/4294934528)
+			index=0
+			outfile=outfile[:-1]+str(index)		
+		outfile=outfile.replace(' [Trimmed]','');outfile=outfile.replace(' (Trimmed)','')			
+		outfile=outfile.replace(' [TM]','');outfile=outfile.replace(' (TM)','')				
+		outfile=outfile.replace('[Trimmed]','');outfile=outfile.replace('(Trimmed)','')			
+		outfile=outfile.replace('[TM]','');outfile=outfile.replace('(TM)','')
+		outfile=outfile.replace(' [STR].xci','.xci');outfile=outfile.replace('[STR].xci','.xci')			
+		outfile=outfile.replace('.xci',' [TR].xci')		
+		outf = open(outfile, 'wb')		
+		for data in iter(lambda: self.read(int(buffer)), ""):
+			if fat=="fat32" and (c+len(data))>block:
+				n2=block-c
+				c=0
+				inmemoryfile = io.BytesIO()
+				inmemoryfile.write(data)
+				inmemoryfile.seek(0)	
+				dat2=inmemoryfile.read(n2)	
+				outf.write(dat2)
+				outf.flush()
+				outf.close()	
+				t.update(len(dat2))
+				index=index+1
+				outfile=outfile[0:-1]
+				outfile=outfile+str(index)
+				outf = open(outfile, 'wb')
+				inmemoryfile.seek(n2)
+				dat2=inmemoryfile.read(len(data)-n2)
+				inmemoryfile.close()
+				outf.write(dat2)						
+				t.update(len(dat2))		
+				c=c+len(dat2)													
+				outf.flush()	
+				wrdata=wrdata+len(data)				
+			else:
+				if (wrdata+len(data))>totSize:		
+					n2=totSize-wrdata														
+					inmemoryfile = io.BytesIO()
+					inmemoryfile.write(data)
+					inmemoryfile.seek(0)
+					dat2=inmemoryfile.read(n2)									
+					outf.write(dat2)
+					outf.flush()
+					outf.close()						
+					c=c+len(dat2)
+					wrdata=wrdata+len(dat2)						
+					break	
+				else:	
+					outf.write(data)
+					t.update(len(data))
+					c=c+len(data)
+					wrdata=wrdata+len(data)
+					outf.flush()					
+			if not data:
+				break									
+		t.close()
+		print("")
+		print("Closing file. Please wait")
+		outf.close()	
+		
+	def untrim(self,buffer,outfile,ofolder,fat):
+		block=4294934528	
+		#print(str(self.gamecardSize))
+		#print(str(self.validDataEndOffset))		
+		valid_data=int(((self.validDataEndOffset+0x1)*0x200))
+		GCSize=self.gamecardSize
+		totSize=GCSize
+		#print(str(valid_data))		
+		t = tqdm(total=totSize, unit='B', unit_scale=True, leave=False)
+		self.rewind()
+		wrdata=0;c=0
+		if fat=="fat32":
+			splitnumb=math.ceil(totSize/4294934528)
+			index=0
+			outfile=outfile[:-1]+str(index)		
+		outfile=outfile.replace(' [Trimmed]','');outfile=outfile.replace(' (Trimmed)','')			
+		outfile=outfile.replace(' [TM]','');outfile=outfile.replace(' (TM)','')				
+		outfile=outfile.replace('[Trimmed]','');outfile=outfile.replace('(Trimmed)','')			
+		outfile=outfile.replace('[TM]','');outfile=outfile.replace('(TM)','')
+		outfile=outfile.replace(' [STR].xci','.xci');outfile=outfile.replace('[STR].xci','.xci')			
+		outfile=outfile.replace('.xci',' [TR].xci')		
+		outf = open(outfile, 'wb')		
+		for data in iter(lambda: self.read(int(buffer)), ""):
+			if fat=="fat32" and (c+len(data))>block:
+				n2=block-c
+				c=0
+				inmemoryfile = io.BytesIO()
+				inmemoryfile.write(data)
+				inmemoryfile.seek(0)	
+				dat2=inmemoryfile.read(n2)	
+				outf.write(dat2)
+				outf.flush()
+				outf.close()	
+				t.update(len(dat2))
+				index=index+1
+				outfile=outfile[0:-1]
+				outfile=outfile+str(index)
+				outf = open(outfile, 'wb')
+				inmemoryfile.seek(n2)
+				dat2=inmemoryfile.read(len(data)-n2)
+				inmemoryfile.close()
+				outf.write(dat2)						
+				t.update(len(dat2))		
+				c=c+len(dat2)													
+				outf.flush()	
+				wrdata=wrdata+len(data)				
+			else:
+				if (wrdata+len(data))>valid_data:		
+					n2=valid_data-wrdata														
+					inmemoryfile = io.BytesIO()
+					inmemoryfile.write(data)
+					inmemoryfile.seek(0)
+					dat2=inmemoryfile.read(n2)									
+					outf.write(dat2)
+					outf.flush()
+					outf.close()						
+					c=c+len(dat2)
+					wrdata=wrdata+len(dat2)				
+					if fat=="fat32" and (GCSize-valid_data)>block:					
+						n2=block-c
+						outf.write('00'*n2)
+						outf.flush()
+						outf.close()	
+						t.update(n2)
+						index=index+1
+						outfile=outfile[0:-1]
+						outfile=outfile+str(index)
+						outf = open(outfile, 'wb')
+						n3=GCSize-valid_data-n2
+						outf.write('00'*n3)						
+						t.update(n3)													
+						outf.flush()												
+					else:
+						padding='00'*(GCSize-valid_data)					
+						outf.write(padding)					
+						break	
+				else:	
+					outf.write(data)
+					t.update(len(data))
+					c=c+len(data)
+					wrdata=wrdata+len(data)
+					outf.flush()					
+			if not data:
+				break									
+		t.close()
+		print("")
+		print("Closing file. Please wait")
+		outf.close()		
 		
 	def get_header(self):
 		upd_list=list()
@@ -5576,8 +5748,8 @@ class Xci(File):
 								xmlname=target[:-3]+'xml'	
 								t.write(tabs+'- Appending: ' + xmlname)								
 								dir=os.path.dirname(os.path.abspath(outf))						
-								outf= os.path.join(dir, xmlname)		
-								xml = open(outf, 'rb')		
+								xmlfile= os.path.join(dir, xmlname)		
+								xml = open(xmlfile, 'rb')		
 								data=xml.read()
 								xml.close()
 								fp.write(data)
@@ -5893,8 +6065,8 @@ class Xci(File):
 										xmlname=target[:-3]+'xml'	
 										t.write(tabs+'* Appending: ' + xmlname)								
 										dir=os.path.dirname(os.path.abspath(outf))						
-										outf= os.path.join(dir, xmlname)		
-										xml = open(outf, 'rb')		
+										xmlfile= os.path.join(dir, xmlname)		
+										xml = open(xmlfile, 'rb')		
 										data=xml.read()
 										xml.close()
 										if fat=="fat32" and (c+len(data))>block:	

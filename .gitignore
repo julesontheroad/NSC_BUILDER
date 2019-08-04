@@ -12,3 +12,12 @@ py/ztools/hactool.exe
 py/ztools/nstool.exe
 py/badfiles.txt
 py/mlist.txt
+py/ztools/missupd.txt
+py/ztools/missdlc.txt
+py/ztools/missbaase.txt
+py/quarkdlc.txt
+py/quarkupd.txt
+py/test.txt
+py/ztools/File01.dat
+py/ztools/File01.bak
+py/ztools/File01.dir

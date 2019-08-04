@@ -5865,8 +5865,8 @@ class Nsp(Pfs0):
 						xmlname=target[:-3]+'xml'	
 						t.write(tabs+'- Appending: ' + xmlname)								
 						dir=os.path.dirname(os.path.abspath(outf))						
-						outf= os.path.join(dir, xmlname)		
-						xml = open(outf, 'rb')		
+						xmlfile= os.path.join(dir, xmlname)		
+						xml = open(xmlfile, 'rb')		
 						data=xml.read()
 						xml.close()
 						if fat=="fat32" and (c+len(data))>block:	
@@ -6049,6 +6049,7 @@ class Nsp(Pfs0):
 									sha.update(newheader)						
 									file.seek(0xC00)									
 									i+=1	
+									fp.flush()
 							else:	
 								if fat=="fat32" and (c+len(data))>block:	
 									n2=block-c
@@ -6129,7 +6130,8 @@ class Nsp(Pfs0):
 									c=c+len(newheader)	
 									sha.update(newheader)						
 									file.seek(0xC00)									
-									i+=1	
+									i+=1
+									fp.flush()	
 							else:	
 								if fat=="fat32" and (c+len(data))>block:	
 									n2=block-c
@@ -6228,8 +6230,8 @@ class Nsp(Pfs0):
 								xmlname=target[:-3]+'xml'	
 								t.write(tabs+'* Appending: ' + xmlname)								
 								dir=os.path.dirname(os.path.abspath(outf))						
-								outf= os.path.join(dir, xmlname)		
-								xml = open(outf, 'rb')		
+								xmlfile= os.path.join(dir, xmlname)		
+								xml = open(xmlfile, 'rb')		
 								data=xml.read()
 								xml.close()
 								if fat=="fat32" and (c+len(data))>block:	
@@ -6298,7 +6300,10 @@ class Nsp(Pfs0):
 							fp.flush()			
 						if not data:				
 							break	
-						fp.close()			
+					fp.close()
+		try:			
+			fp.close()
+		except:pass	
 		return outf,index,c									
 	
 	def sp_groupncabyid(self,buffer,ofolder,fat,fx,export):
