@@ -91,7 +91,7 @@ if __name__ == '__main__':
 		parser.add_argument('--create_xci', help='create / pack a xci')		
 		parser.add_argument('-xci_st', '--xci_super_trim', nargs='+', help='Supertrim xci')	
 		parser.add_argument('-xci_tr', '--xci_trim', nargs='+', help='Trims xci')		
-		parser.add_argument('-xci_untr', '--xci_untrim', nargs='+', help='Unrims xci')			
+		parser.add_argument('-xci_untr', '--xci_untrim', nargs='+', help='Untrims xci')			
 		parser.add_argument('-dc', '--direct_creation', nargs='+', help='Create directly a nsp or xci')		
 		parser.add_argument('-dmul', '--direct_multi', nargs='+', help='Create directly a multi nsp or xci')		
 		parser.add_argument('-ed', '--erase_deltas', nargs='+', help='Take of deltas from updates')			
@@ -235,7 +235,7 @@ if __name__ == '__main__':
 		parser.add_argument('-cltg','--cleantags', help="Clean tags in filenames")	
 		parser.add_argument('-tgtype','--tagtype', help="Type of tag to remove")
 		parser.add_argument('-vorg','--v_organize', help="Aux variable to organize files")		
-		parser.add_argument('-vt','--vertype', help="Veryfication type for auto, needs --text_file. Opt: dec,sig,full [DECryption, decryption and SIGnature, previous and hash check]")			
+		parser.add_argument('-vt','--vertype', help="Verification type for auto, needs --text_file. Opt: dec,sig,full [DECryption, decryption and SIGnature, previous and hash check]")			
 		args = parser.parse_args()
 
 		Status.start()
@@ -2629,7 +2629,7 @@ if __name__ == '__main__':
 						outfile = os.path.join(ofolder, filename)
 						#print(f.path)
 						f.open(filepath, 'rb')
-						f.trim(buffer,outfile,ofolder,fat)
+						f.untrim(buffer,outfile,ofolder,fat)
 						f.flush()
 						f.close()
 					except BaseException as e:

@@ -3346,7 +3346,7 @@ class Xci(File):
 		#print(str(self.validDataEndOffset))		
 		valid_data=int(((self.validDataEndOffset+0x1)*0x200))
 		GCSize=self.gamecardSize
-		totSize=GCSize
+		totSize=int(GCSize)
 		#print(str(valid_data))		
 		t = tqdm(total=totSize, unit='B', unit_scale=True, leave=False)
 		self.rewind()
@@ -3398,9 +3398,9 @@ class Xci(File):
 					outf.close()						
 					c=c+len(dat2)
 					wrdata=wrdata+len(dat2)				
-					if fat=="fat32" and (GCSize-valid_data)>block:					
+					if fat=="fat32" and (totSize-valid_data)>block:					
 						n2=block-c
-						outf.write('00'*n2)
+						outf.write(bytes.fromhex('FF'*n2))
 						outf.flush()
 						outf.close()	
 						t.update(n2)
@@ -3408,22 +3408,47 @@ class Xci(File):
 						outfile=outfile[0:-1]
 						outfile=outfile+str(index)
 						outf = open(outfile, 'wb')
-						n3=GCSize-valid_data-n2
-						outf.write('00'*n3)						
+						n3=totSize-valid_data-n2
+						outf.write(bytes.fromhex('FF'*n3))						
 						t.update(n3)													
-						outf.flush()												
+						outf.flush()													
 					else:
-						padding='00'*(GCSize-valid_data)					
-						outf.write(padding)					
+						padding='FF'*(int(totSize-valid_data))		
+						padding=bytes.fromhex(padding)				
+						outf.write(padding)								
+						outf.flush()	
+						t.update(len(padding))						
 						break	
 				else:	
 					outf.write(data)
 					t.update(len(data))
 					c=c+len(data)
+					t.update(len(data))
 					wrdata=wrdata+len(data)
 					outf.flush()					
 			if not data:
-				break									
+				if fat=="fat32" and (totSize-valid_data)>block:					
+					n2=block-c
+					outf.write(bytes.fromhex('FF'*n2))
+					outf.flush()
+					outf.close()	
+					t.update(n2)
+					index=index+1
+					outfile=outfile[0:-1]
+					outfile=outfile+str(index)
+					outf = open(outfile, 'wb')
+					n3=totSize-valid_data-n2
+					outf.write(bytes.fromhex('FF'*n3))						
+					t.update(n3)													
+					outf.flush()	
+					break
+				else:
+					padding='FF'*(int(totSize-valid_data))		
+					padding=bytes.fromhex(padding)				
+					outf.write(padding)								
+					outf.flush()	
+					t.update(len(padding))						
+					break													
 		t.close()
 		print("")
 		print("Closing file. Please wait")
