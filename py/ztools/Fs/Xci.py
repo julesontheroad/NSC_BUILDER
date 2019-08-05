@@ -125,7 +125,7 @@ class Xci(File):
 		self.secureOffset = self.readInt32()
 		self.backupOffset = self.readInt32()
 		self.titleKekIndex = self.readInt8()
-		self.gamecardSize = self.readInt8()
+		self.gamecardSize = self.read(0x1)
 		self.gamecardHeaderVersion = self.readInt8()
 		self.gamecardFlags = self.readInt8()
 		self.packageId = self.readInt64()
@@ -3276,9 +3276,12 @@ class Xci(File):
 		valid_data=int(((self.validDataEndOffset+0x1)*0x200))
 		totSize=valid_data
 		#print(str(valid_data))		
-		t = tqdm(total=valid_data, unit='B', unit_scale=True, leave=False)
+		if int(self.size) == totSize:
+			print("File is already trimmed!!!")
+			return			
+		t = tqdm(total=totSize, unit='B', unit_scale=True, leave=False)
 		self.rewind()
-		wrdata=0;c=0
+		wrdata=0;c=0	
 		if fat=="fat32":
 			splitnumb=math.ceil(totSize/4294934528)
 			index=0
@@ -3342,12 +3345,17 @@ class Xci(File):
 		
 	def untrim(self,buffer,outfile,ofolder,fat):
 		block=4294934528	
-		#print(str(self.gamecardSize))
+		GCFlag=(str(hx(self.gamecardSize))[2:-1]).upper()
+		#print(GCFlag)		
 		#print(str(self.validDataEndOffset))		
 		valid_data=int(((self.validDataEndOffset+0x1)*0x200))
-		GCSize=self.gamecardSize
+		GCSize=sq_tools.getGCsizeinbytes(GCFlag)
+		#print(str(GCSize))
 		totSize=int(GCSize)
-		#print(str(valid_data))		
+		#print(str(valid_data))
+		if int(self.size) == totSize:
+			print("File is already untrimmed!!!")
+			return
 		t = tqdm(total=totSize, unit='B', unit_scale=True, leave=False)
 		self.rewind()
 		wrdata=0;c=0
@@ -3359,8 +3367,8 @@ class Xci(File):
 		outfile=outfile.replace(' [TM]','');outfile=outfile.replace(' (TM)','')				
 		outfile=outfile.replace('[Trimmed]','');outfile=outfile.replace('(Trimmed)','')			
 		outfile=outfile.replace('[TM]','');outfile=outfile.replace('(TM)','')
-		outfile=outfile.replace(' [STR].xci','.xci');outfile=outfile.replace('[STR].xci','.xci')			
-		outfile=outfile.replace('.xci',' [TR].xci')		
+		outfile=outfile.replace(' [STR].xci','.xci');outfile=outfile.replace('[STR].xci','.xci')		
+		outfile=outfile.replace(' [TR].xci','.xci');outfile=outfile.replace('[TR].xci','.xci')			
 		outf = open(outfile, 'wb')		
 		for data in iter(lambda: self.read(int(buffer)), ""):
 			if fat=="fat32" and (c+len(data))>block:
@@ -3397,60 +3405,52 @@ class Xci(File):
 					outf.flush()
 					outf.close()						
 					c=c+len(dat2)
-					wrdata=wrdata+len(dat2)				
-					if fat=="fat32" and (totSize-valid_data)>block:					
-						n2=block-c
-						outf.write(bytes.fromhex('FF'*n2))
-						outf.flush()
-						outf.close()	
-						t.update(n2)
-						index=index+1
-						outfile=outfile[0:-1]
-						outfile=outfile+str(index)
-						outf = open(outfile, 'wb')
-						n3=totSize-valid_data-n2
-						outf.write(bytes.fromhex('FF'*n3))						
-						t.update(n3)													
-						outf.flush()													
-					else:
-						padding='FF'*(int(totSize-valid_data))		
-						padding=bytes.fromhex(padding)				
-						outf.write(padding)								
-						outf.flush()	
-						t.update(len(padding))						
-						break	
+					wrdata=wrdata+len(dat2)
 				else:	
 					outf.write(data)
 					t.update(len(data))
 					c=c+len(data)
-					t.update(len(data))
 					wrdata=wrdata+len(data)
 					outf.flush()					
-			if not data:
-				if fat=="fat32" and (totSize-valid_data)>block:					
-					n2=block-c
-					outf.write(bytes.fromhex('FF'*n2))
+			if not data or wrdata==valid_data or wrdata>valid_data:
+				break			
+		if wrdata<totSize:				
+			if fat=="fat32" and (totSize-(valid_data*(index+1)))>block:					
+				n2=block-c
+				outf.write(bytes.fromhex('FF'*n2))
+				outf.flush()
+				outf.close()	
+				t.update(n2)
+				index=index+1
+				outfile=outfile[0:-1]
+				outfile=outfile+str(index)
+				outf = open(outfile, 'wb')
+				n3=totSize-valid_data-n2
+				outf.write(bytes.fromhex('FF'*n3))						
+				t.update(n3)													
+				outf.flush()	
+			else:
+				bytes_tofill=int(round((int(totSize-valid_data)/buffer),0))
+				#print(str(bytes_tofill))
+				count=0
+				while count<bytes_tofill:
+					padding='FF'*(int(buffer))	
+					count+=1
+					data=bytes.fromhex(padding)	
+					outf.write(data)
 					outf.flush()
-					outf.close()	
-					t.update(n2)
-					index=index+1
-					outfile=outfile[0:-1]
-					outfile=outfile+str(index)
-					outf = open(outfile, 'wb')
-					n3=totSize-valid_data-n2
-					outf.write(bytes.fromhex('FF'*n3))						
-					t.update(n3)													
-					outf.flush()	
-					break
-				else:
-					padding='FF'*(int(totSize-valid_data))		
-					padding=bytes.fromhex(padding)				
-					outf.write(padding)								
-					outf.flush()	
-					t.update(len(padding))						
-					break													
-		t.close()
-		print("")
+					wrdata=wrdata+len(data)
+					t.update(len(data))			
+				if wrdata<totSize:
+					bytes_tofill=int(totSize-wrdata)
+					padding='FF'*bytes_tofill				
+					data=bytes.fromhex(padding)	
+					outf.write(data)
+					outf.flush()
+					wrdata=wrdata+len(data)
+					t.update(len(data))						
+		t.close()				
+		print("")				
 		print("Closing file. Please wait")
 		outf.close()		
 		

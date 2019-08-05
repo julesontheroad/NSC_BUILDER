@@ -2629,11 +2629,70 @@ if __name__ == '__main__':
 						outfile = os.path.join(ofolder, filename)
 						#print(f.path)
 						f.open(filepath, 'rb')
+						f.trim(buffer,outfile,ofolder,fat)
+						f.flush()
+						f.close()
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+						
+		# ...................................................						
+		# Untrimming for xci files
+		# ...................................................		
+		#parser.add_argument('-xci_untr', '--xci_untrim', nargs='+', help='Untrims xci')	
+		if args.xci_untrim:			
+			if args.buffer:		
+				for input in args.buffer:
+					try:
+						buffer = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+			else:
+				buffer = 32768		
+			if args.ofolder:		
+				for input in args.ofolder:
+					try:
+						ofolder = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+			else:
+				if args.text_file:
+					tfile=args.text_file
+					with open(tfile,"r+", encoding='utf8') as filelist: 	
+						filename = filelist.readline()
+						filename=os.path.abspath(filename.rstrip('\n'))		
+						dir=os.path.dirname(os.path.abspath(filename))
+						ofolder =os.path.join(dir, 'output')
+				else:			
+					for filename in args.xci_untrim:
+						dir=os.path.dirname(os.path.abspath(filename))
+						ofolder =os.path.join(dir, 'output')	
+			if not os.path.exists(ofolder):
+				os.makedirs(ofolder)						
+			if args.fat:		
+				for input in args.fat:
+					try:
+						if input == "fat32":
+							fat="fat32"
+						else:
+							fat="exfat"
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+			else:
+				fat="exfat"								
+			for filepath in args.xci_untrim:
+				if filepath.endswith('.xci'):
+					try:
+						f = Fs.factory(filepath)
+						filename=os.path.basename(os.path.abspath(filepath))
+						#print(filename)
+						outfile = os.path.join(ofolder, filename)
+						#print(f.path)
+						f.open(filepath, 'rb')
 						f.untrim(buffer,outfile,ofolder,fat)
 						f.flush()
 						f.close()
 					except BaseException as e:
-						Print.error('Exception: ' + str(e))							
+						Print.error('Exception: ' + str(e))	
 
 		# ...................................................						
 		# Take off deltas

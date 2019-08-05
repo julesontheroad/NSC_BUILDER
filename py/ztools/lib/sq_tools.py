@@ -251,6 +251,26 @@ def getGCsize(bytes):
 		firm_ver='1100a100'		
 		return card,firm_ver		
 		
+
+def getGCsizeinbytes(GCflag):
+	bytes=''
+	if GCflag=='E3':
+		size=64
+	if GCflag=='E2':
+		size=32		
+	if GCflag=='E1':
+		size=16
+	if GCflag=='E0':
+		size=8	
+	if GCflag=='F0':
+		size=4		
+	if GCflag=='F8':
+		size=2	
+	if GCflag=='FA':
+		size=1
+	bytes=size*998244352
+	return bytes
+		
 def getTypeFromCNMT(number):	
 	if number == 0:
 		return "Meta: "
