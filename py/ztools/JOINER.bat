@@ -193,8 +193,7 @@ for /f "tokens=*" %%f in (joinlist.txt) do (
 if exist "%fold_output%output.nsp" ( %pycommand% "%nut%" -renf "%fold_output%output.nsp">"%prog_dir%nn")
 if exist "%fold_output%output.xci" ( %pycommand% "%nut%" -renf "%fold_output%output.xci">"%prog_dir%nn")
 if exist "%prog_dir%nn" del "%prog_dir%nn"
-more +1 "joinlist.txt">"joinlist.txt.new"
-move /y "joinlist.txt.new" "joinlist.txt" >nul
+%pycommand% "%nut%" --strip_lines "%prog_dir%joinlist.txt"
 call :contador_NF
 )
 ECHO ---------------------------------------------------

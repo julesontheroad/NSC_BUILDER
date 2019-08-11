@@ -1,0 +1,3 @@
+nsp|-basename-(-languages-)(-simplang-)[-titleid-][-version-][-ctag-]
+dlc|-basename-[-dlcname-][-titleid-][-version-][-ctag-]
+xci|-basename-(-languages-)(-simplang-)[-titleid-][-version-](-contentnumber-)(-Trimmed-)

@@ -203,8 +203,7 @@ for /f "tokens=*" %%f in (advlist.txt) do (
 
 %pycommand% "%nut%" %buffer% -o "%prog_dir%NSCB_extracted" -tfile "%prog_dir%advlist.txt" -x ""
 
-more +1 "advlist.txt">"advlist.txt.new"
-move /y "advlist.txt.new" "advlist.txt" >nul
+%pycommand% "%nut%" --strip_lines "%prog_dir%advlist.txt"
 call :contador_NF
 )
 ECHO ---------------------------------------------------
@@ -223,8 +222,7 @@ for /f "tokens=*" %%f in (advlist.txt) do (
 
 %pycommand% "%nut%" %buffer% -o "%prog_dir%NSCB_extracted" -tfile "%prog_dir%advlist.txt" -raw_x ""
 
-more +1 "advlist.txt">"advlist.txt.new"
-move /y "advlist.txt.new" "advlist.txt" >nul
+%pycommand% "%nut%" --strip_lines "%prog_dir%advlist.txt"
 call :contador_NF
 )
 ECHO ---------------------------------------------------
@@ -243,8 +241,7 @@ for /f "tokens=*" %%f in (advlist.txt) do (
 
 %pycommand% "%nut%" %buffer% -o "%prog_dir%NSCB_extracted" -tfile "%prog_dir%advlist.txt" -plx ""
 
-more +1 "advlist.txt">"advlist.txt.new"
-move /y "advlist.txt.new" "advlist.txt" >nul
+%pycommand% "%nut%" --strip_lines "%prog_dir%advlist.txt"
 call :contador_NF
 )
 ECHO ---------------------------------------------------
@@ -263,8 +260,7 @@ for /f "tokens=*" %%f in (advlist.txt) do (
 
 %pycommand% "%nut%" %buffer% -o "%prog_dir%NSCB_extracted" -tfile "%prog_dir%advlist.txt" -nfx ""
 
-more +1 "advlist.txt">"advlist.txt.new"
-move /y "advlist.txt.new" "advlist.txt" >nul
+%pycommand% "%nut%" --strip_lines "%prog_dir%advlist.txt"
 call :contador_NF
 )
 ECHO ---------------------------------------------------
@@ -272,7 +268,29 @@ ECHO *********** ALL FILES WERE PROCESSED! *************
 ECHO ---------------------------------------------------
 goto s_exit_choice
 
+:patch_lnkacc_wrongchoice
+echo wrong choice
+echo ............
 :patch_lnkacc
+echo *******************************************************
+echo CHOOSE HOW TO PROCESS THE FILES
+echo *******************************************************
+echo Input "1" to patch directly the original file
+echo Input "2" to generate a new file
+echo.
+ECHO ***********************************************
+echo Or Input "b" to return to the previous options
+ECHO ***********************************************
+echo.
+set /p bs="Enter your choice: "
+set bs=%bs:"=%
+set vrepack=none
+if /i "%bs%"=="b" goto start_cleaning
+if /i "%bs%"=="1" goto patch_lnkacc_mode1
+if /i "%bs%"=="2" goto patch_lnkacc_mode2
+if %vrepack%=="none" goto patch_lnkacc_wrongchoice
+
+:patch_lnkacc_mode1
 cls
 call :program_logo
 echo ********************************************************
@@ -283,8 +301,7 @@ for /f "tokens=*" %%f in (advlist.txt) do (
 
 %pycommand% "%nut%" %buffer% -tfile "%prog_dir%advlist.txt" --remlinkacc ""
 
-more +1 "advlist.txt">"advlist.txt.new"
-move /y "advlist.txt.new" "advlist.txt" >nul
+%pycommand% "%nut%" --strip_lines "%prog_dir%advlist.txt"
 call :contador_NF
 )
 ECHO ---------------------------------------------------
@@ -292,6 +309,40 @@ ECHO *********** ALL FILES WERE PROCESSED! *************
 ECHO ---------------------------------------------------
 goto s_exit_choice
 
+:patch_lnkacc_mode2
+cls
+call :program_logo
+echo ********************************************************
+echo PATCH A LINKED ACCOUNT REQUIREMENT
+echo ********************************************************
+CD /d "%prog_dir%"
+for /f "tokens=*" %%f in (advlist.txt) do (
+%pycommand% "%nut%" %buffer% %skdelta% --xml_gen "true" -o "%w_folder%" -tfile "%prog_dir%advlist.txt" --rebuild_nsp ""
+%pycommand% "%nut%" %buffer% -o "%w_folder%" -tfile "%prog_dir%advlist.txt" --xci_trim ""
+%pycommand% "%nut%" -t nsp xci -tfile "%prog_dir%templist.txt" -ff "%w_folder%"
+%pycommand% "%nut%" %buffer% -tfile "%prog_dir%templist.txt" --remlinkacc ""
+
+move "%w_folder%\*.xci" "%fold_output%" >NUL 2>&1
+move  "%w_folder%\*.xc*" "%fold_output%" >NUL 2>&1
+move "%w_folder%\*.nsp" "%fold_output%" >NUL 2>&1
+move "%w_folder%\*.ns*" "%fold_output%" >NUL 2>&1
+if exist "%w_folder%\*.zip" ( MD "%zip_fold%" ) >NUL 2>&1
+move "%w_folder%\*.zip" "%zip_fold%" >NUL 2>&1
+if exist "%w_folder%\archfolder" ( %pycommand% "%nut%" -ifo "%w_folder%\archfolder" -archive "%fold_output%\%filename%.nsp" )
+
+RD /S /Q "%w_folder%" >NUL 2>&1
+echo DONE
+call :thumbup
+call :delay
+if exist templist.txt del templist.txt
+
+%pycommand% "%nut%" --strip_lines "%prog_dir%advlist.txt"
+call :contador_NF
+)
+ECHO ---------------------------------------------------
+ECHO *********** ALL FILES WERE PROCESSED! *************
+ECHO ---------------------------------------------------
+goto s_exit_choice
 
 :s_exit_choice
 if exist advlist.txt del advlist.txt

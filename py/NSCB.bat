@@ -1002,9 +1002,8 @@ set "ziptarget=%%f"
 
 if "%%~nxf"=="%%~nf.nsp" call :nsp_manual
 if "%%~nxf"=="%%~nf.xci" call :xci_manual
-more +1 "list.txt">"list.txt.new"
-move /y "list.txt.new" "list.txt" >nul
-call :contador_NF
+%pycommand% "%nut%" --strip_lines "%prog_dir%list.txt" "1" "true"
+rem call :contador_NF
 )
 ECHO ---------------------------------------------------
 ECHO *********** ALL FILES WERE PROCESSED! *************
@@ -1155,9 +1154,8 @@ cls
 call :program_logo
 for /f "tokens=*" %%f in (list.txt) do (
 %pycommand% "%nut%" -renf "single" -tfile "%prog_dir%list.txt" -t xci nsp -renm %renmode% -nover %nover% -oaid %oaid% -addl %addlangue% -dlcrn %dlcrname%
-more +1 "list.txt">"list.txt.new"
-move /y "list.txt.new" "list.txt" >nul
-call :contador_NF
+%pycommand% "%nut%" --strip_lines "%prog_dir%list.txt" "1" "true"
+rem call :contador_NF
 )
 ECHO ---------------------------------------------------
 ECHO *********** ALL FILES WERE PROCESSED! *************
@@ -1169,9 +1167,8 @@ cls
 call :program_logo
 for /f "tokens=*" %%f in (list.txt) do (
 %pycommand% "%nut%" -snz "single" -tfile "%prog_dir%list.txt" -t xci nsp
-more +1 "list.txt">"list.txt.new"
-move /y "list.txt.new" "list.txt" >nul
-call :contador_NF
+%pycommand% "%nut%" --strip_lines "%prog_dir%list.txt" "1" "true"
+rem call :contador_NF
 )
 ECHO ---------------------------------------------------
 ECHO *********** ALL FILES WERE PROCESSED! *************
@@ -1183,9 +1180,8 @@ cls
 call :program_logo
 for /f "tokens=*" %%f in (list.txt) do (
 %pycommand% "%nut%" -roma "single" -tfile "%prog_dir%list.txt" -t xci nsp
-more +1 "list.txt">"list.txt.new"
-move /y "list.txt.new" "list.txt" >nul
-call :contador_NF
+%pycommand% "%nut%" --strip_lines "%prog_dir%list.txt" "1" "true"
+rem call :contador_NF
 )
 ECHO ---------------------------------------------------
 ECHO *********** ALL FILES WERE PROCESSED! *************
@@ -1198,9 +1194,8 @@ cls
 call :program_logo
 for /f "tokens=*" %%f in (list.txt) do (
 %pycommand% "%nut%" -cltg "single" -tfile "%prog_dir%list.txt" -t xci nsp -tgtype "%tagtype%"
-more +1 "list.txt">"list.txt.new"
-move /y "list.txt.new" "list.txt" >nul
-call :contador_NF
+%pycommand% "%nut%" --strip_lines "%prog_dir%list.txt" "1" "true"
+rem call :contador_NF
 )
 ECHO ---------------------------------------------------
 ECHO *********** ALL FILES WERE PROCESSED! *************
@@ -1753,10 +1748,9 @@ if "%vrepack%" EQU "both" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capR
 if "%vrepack%" EQU "both" call :program_logo
 if "%vrepack%" EQU "both" call :m_split_merge_list_name
 if "%vrepack%" EQU "both" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t xci -o "%w_folder%" -tfile "%mlistfol%\%%f" -roma %romaji% -dmul "calculate" )
-more +1 "mlist.txt">"mlist.txt.new"
-move /y "mlist.txt.new" "mlist.txt" >nul
+%pycommand% "%nut%" --strip_lines "%prog_dir%mlist.txt" "1" "true"
 if exist "%mlistfol%\%%f" del "%mlistfol%\%%f"
-call :multi_contador_NF
+rem call :multi_contador_NF
 )
 
 setlocal enabledelayedexpansion
@@ -1783,10 +1777,9 @@ set "listname=%%f"
 set "list=%mlistfol%\%%f"
 call :m_split_merge_list_name
 call :m_process_jobs_fat32_2
-more +1 "mlist.txt">"mlist.txt.new"
-move /y "mlist.txt.new" "mlist.txt" >nul
+%pycommand% "%nut%" --strip_lines "%prog_dir%mlist.txt" "1" "true"
 if exist "%mlistfol%\%%f" del "%mlistfol%\%%f"
-call :multi_contador_NF
+rem call :multi_contador_NF
 )
 goto m_exit_choice
 :m_process_jobs_fat32_2
@@ -1920,9 +1913,8 @@ set "filename=%%~nxf"
 set "orinput=%%f"
 if "%%~nxf"=="%%~nf.nsp" call :multi_nsp_manual
 if "%%~nxf"=="%%~nf.xci" call :multi_xci_manual
-more +1 "mlist.txt">"mlist.txt.new"
-move /y "mlist.txt.new" "mlist.txt" >nul
-call :multi_contador_NF
+%pycommand% "%nut%" --strip_lines "%prog_dir%mlist.txt" "1" "true"
+rem call :multi_contador_NF
 )
 set "filename=%finalname%"
 set "end_folder=%finalname%"
@@ -2280,8 +2272,7 @@ if "%%~nxf"=="%%~nf.nsp" call :split_content
 if "%%~nxf"=="%%~nf.NSP" call :split_content
 if "%%~nxf"=="%%~nf.xci" call :split_content
 if "%%~nxf"=="%%~nf.XCI" call :split_content
-more +1 "splist.txt">"splist.txt.new"
-move /y "splist.txt.new" "splist.txt" >NUL 2>&1
+%pycommand% "%nut%" --strip_lines "%prog_dir%splist.txt" "1" "true"
 setlocal enabledelayedexpansion
 if exist "%fold_output%\!end_folder!" RD /S /Q "%fold_output%\!end_folder!" >NUL 2>&1
 MD "%fold_output%\!end_folder!" >NUL 2>&1
@@ -2292,7 +2283,7 @@ move "%w_folder%\*.ns*" "%fold_output%\!end_folder!\" >NUL 2>&1
 if exist "%w_folder%\archfolder" ( %pycommand% "%nut%" -ifo "%w_folder%\archfolder" -archive "%fold_output%\!end_folder!\%filename%.nsp" )
 if exist "%w_folder%" RD /S /Q  "%w_folder%" >NUL 2>&1
 endlocal
-call :sp_contador_NF
+rem call :sp_contador_NF
 )
 ECHO ---------------------------------------------------
 ECHO *********** ALL FILES WERE PROCESSED! *************
@@ -2361,8 +2352,7 @@ if "!sp_repack!" EQU "xci" ( call "%xci_lib%" "sp_repack" "%w_folder%" "!tfolder
 if "!sp_repack!" EQU "both" ( call "%nsp_lib%" "sp_convert" "%w_folder%" "!tfolder!" "!fname!" )
 if "!sp_repack!" EQU "both" ( call "%xci_lib%" "sp_repack" "%w_folder%" "!tfolder!" "!fname!" )
 endlocal
-more +1 "%w_folder%\dirlist.txt">"%w_folder%\dirlist.txt.new"
-move /y "%w_folder%\dirlist.txt.new" "%w_folder%\dirlist.txt" >nul
+%pycommand% "%nut%" --strip_lines "%prog_dir%dirlist.txt" "1" "true"
 )
 del "%w_folder%\dirlist.txt" >NUL 2>&1
 
@@ -2600,9 +2590,8 @@ if "%%~nxf"=="%%~nf.NSP" call :DBnsp_manual
 if "%%~nxf"=="%%~nf.NSX" call :DBnsp_manual
 if "%%~nxf"=="%%~nf.xci" call :DBnsp_manual
 if "%%~nxf"=="%%~nf.XCI" call :DBnsp_manual
-more +1 "DBL.txt">"DBL.txt.new"
-move /y "DBL.txt.new" "DBL.txt" >nul
-call :DBcontador_NF
+%pycommand% "%nut%" --strip_lines "%prog_dir%DBL.txt" "1" "true"
+rem call :DBcontador_NF
 )
 ECHO ---------------------------------------------------
 ECHO *********** ALL FILES WERE PROCESSED! *************
@@ -2656,9 +2645,8 @@ set "orinput=%%f"
 set "db_file=%prog_dir%INFO\%dbformat%_DB.txt"
 set "dbdir=%prog_dir%INFO\"
 call :DBGeneration
-more +1 "DBL.txt">"DBL.txt.new"
-move /y "DBL.txt.new" "DBL.txt" >nul
-call :DBcontador_NF
+%pycommand% "%nut%" --strip_lines "%prog_dir%DBL.txt" "1" "true"
+rem call :DBcontador_NF
 )
 ECHO ---------------------------------------------------
 ECHO *********** ALL FILES WERE PROCESSED! *************
@@ -2758,7 +2746,6 @@ echo (__o)_    \
 echo       \    \
 echo.
 echo HOPE YOU HAVE A FUN TIME
-echo.
 exit /B
 
 :getname

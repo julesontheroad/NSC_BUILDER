@@ -36,9 +36,11 @@ import json
 from zipfile import ZipFile
 import shelve
 
+
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, 'lib')
 import sq_tools
+import listmanager
 import Keys
 import Titles
 import Fs
@@ -46,6 +48,7 @@ import Config
 import Print
 import Status
 import Nsps
+import DBmodule as dbmodule
 from hashlib import sha256
 from pathlib import Path
 from binascii import hexlify as hx, unhexlify as uhx
@@ -57,6 +60,23 @@ from datetime import datetime
 import math  
 import pykakasi
 from Fs.pyNCA3 import NCA3
+
+# SET ENVIRONMENT
+squirrel_dir=os.path.abspath(os.curdir)
+NSCB_dir=os.path.abspath('../'+(os.curdir))
+ztools_dir=os.path.join(NSCB_dir, 'ztools')
+zconfig_dir=os.path.join(NSCB_dir, 'zconfig')
+if os.path.exists(zconfig_dir):
+	DATABASE_folder=os.path.join(zconfig_dir, 'DB')
+else:
+	DATABASE_folder=os.path.join(squirrel_dir, 'DB')
+	
+if not os.path.exists(DATABASE_folder):
+	os.makedirs(DATABASE_folder)	
+
+#print (ztools_dir)
+#print (NSCB_dir)
+
 
 if __name__ == '__main__':
 	try:
@@ -186,6 +206,7 @@ if __name__ == '__main__':
 		parser.add_argument('-ifo_n', '--ifolder_normal', help='Input normal folder')		
 		parser.add_argument('-ifo_u', '--ifolder_update', help='Input update folder')		
 		parser.add_argument('-tfile', '--text_file', help='Output text file')
+		parser.add_argument('-tfile_aux', '--text_file_aux', help='Auxiliary text file')	
 		parser.add_argument('-dbfile', '--db_file', help='Output text file for database')			
 		parser.add_argument('-b', '--buffer', nargs='+', help='Set buffer for copy instructions')
 		parser.add_argument('-ext', '--external', nargs='+', help='Set original nsp or ticket for remove nca titlerights functions')
@@ -207,6 +228,10 @@ if __name__ == '__main__':
 		# LISTMANAGER
 		parser.add_argument('-cl', '--change_line', help='Change line in text file')
 		parser.add_argument('-rl', '--read_line', help='Read line in text file')		
+		parser.add_argument('-stripl', '--strip_lines', nargs='+', help='Strips lines from a text file')		
+		parser.add_argument('-showcline', '--show_current_line', nargs='+', help='Shows current line')	
+		parser.add_argument('-countlines', '--count_n_lines', nargs='+', help='Count the number of lines')		
+		parser.add_argument('-dff', '--delete_item', nargs='+', help='Deletes a os item listed in text file, a file or a folder')				
 		parser.add_argument('-ln', '--line_number', help='line number')
 		parser.add_argument('-nl', '--new_line', help='new line')
 		parser.add_argument('-ff', '--findfile', help='find different types of files')	
@@ -3568,7 +3593,7 @@ if __name__ == '__main__':
 						else:
 							endname=str(f)
 				endname = (re.sub(r'[\/\\\:\*\?]+', '', endname))
-				endname = re.sub(r'[™©®`~^´ªº¢£€¥$ƒ±¬½¼«»±•²‰œæÆ³]', '', endname)					
+				endname = re.sub(r'[™©®`~^´ªº¢£€¥$ƒ±¬½¼«»±•²‰œæÆ³☆<<>>]', '', endname)					
 				endname = re.sub(r'[Ⅰ]', 'I', endname);endname = re.sub(r'[Ⅱ]', 'II', endname)
 				endname = re.sub(r'[Ⅲ]', 'III', endname);endname = re.sub(r'[Ⅳ]', 'IV', endname)	
 				endname = re.sub(r'[Ⅴ]', 'V', endname);endname = re.sub(r'[Ⅵ]', 'VI', endname)	
@@ -3585,9 +3610,13 @@ if __name__ == '__main__':
 				endname = re.sub(' {3,}', ' ',endname);re.sub(' {2,}', ' ',endname);	
 				try:	
 					endname = endname.replace("( ", "(");endname = endname.replace(" )", ")")
-					endname = endname.replace("[ ", "[");endname = endname.replace(" ]", "]")
-					endname = endname.replace(" !", "!");endname = endname.replace(" ?", "?")	
-					endname = endname.replace("  ", " ");endname = endname.replace("  ", " ")					
+					endname = endname.replace("[ ", "[");endname = endname.replace(" ]", "]")						
+					endname = endname.replace("[[", "[");endname = endname.replace("]]", "]")	
+					endname = endname.replace("((", "(");endname = endname.replace("))", ")")
+					endname = endname.replace("[]", "");endname = endname.replace("()", "")						
+					endname = endname.replace(" !", "!");endname = endname.replace(" ?", "?")
+					endname = endname.replace("  ", " ");endname = endname.replace("  ", " ")
+					endname = endname.replace('"', '')		
 				except:pass				
 				if endname[-1]==' ':
 					endname=endname[:-1]
@@ -5367,7 +5396,84 @@ if __name__ == '__main__':
 					line2read= str(lines[line_number])
 					Print.info(write_line + line2read)	
 				except BaseException as e:
-					Print.error('Exception: ' + str(e))					
+					Print.error('Exception: ' + str(e))	
+					
+		# ...................................................						
+		# Strip line in text file
+		# ...................................................							
+		#parser.add_argument('-stripl', '--strip_lines', nargs='+', help='Strips lines from a text file')								
+		if args.strip_lines:	
+			if args.strip_lines[0]:
+				textfile=args.strip_lines[0]
+			try:	
+				if args.strip_lines[1]:			
+					number=args.strip_lines[1]
+				else:
+					number=1
+			except:
+				number=1
+			try:	
+				if args.strip_lines[2]:			
+					uinput=args.strip_lines[2]
+					if str(uinput).upper() == 'TRUE':
+						counter=True
+				else:
+					counter=False
+			except:
+				counter=False				
+			try:
+				listmanager.striplines(textfile,number,counter)
+			except BaseException as e:
+				Print.error('Exception: ' + str(e))	
+
+		#parser.add_argument('-showcline', '--show_current_line', nargs='+', help='Shows current line')								
+		if args.show_current_line:	
+			if args.show_current_line[0]:
+				textfile=args.show_current_line[0]
+			try:
+				listmanager.printcurrent(textfile)
+			except BaseException as e:
+				Print.error('Exception: ' + str(e))	
+		
+		#parser.add_argument('-countlines', '--count_n_lines', nargs='+', help='Count the number of lines')			
+		if args.count_n_lines:	
+			if args.count_n_lines[0]:
+				textfile=args.count_n_lines[0]
+			try:
+				c=listmanager.counter(textfile)
+				print('STILL '+str(c)+' FILES TO PROCESS')
+			except BaseException as e:
+				Print.error('Exception: ' + str(e))	
+				
+		#parser.add_argument('-dff', '--delete_item', nargs='+', help='Deletes a os item listed in text file, a file or a folder')				
+		if args.delete_item:	
+			if args.text_file:
+				tfile=args.text_file
+				with open(tfile,"r+", encoding='utf8') as filelist: 	
+					ruta = filelist.readline()
+					ruta=os.path.abspath(ruta.rstrip('\n'))											
+					ruta = os.path.abspath(ruta)
+				try:
+					os.remove(ruta) 	
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))	
+					pass	
+			else:
+				ruta = os.path.abspath(args.delete_item[0])
+				if os.path.isdir(ruta):  
+					try:
+						shutil.rmtree(ruta, ignore_errors=True)					
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+						pass						
+				elif os.path.isfile(ruta): 
+					try:
+						os.remove(ruta) 	
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+						pass						
+				else:
+					print('Input is not a system file or folder')		
 
 		# ...................................................						
 		# Generate list of files
@@ -6093,7 +6199,7 @@ if __name__ == '__main__':
 						endname=endname[:-1]					
 					#endname = re.sub(r'[\/\\\:\*\?\"\<\>\|\.\s™©®()\~]+', ' ', endname)							
 					endname = (re.sub(r'[\/\\\:\*\?]+', '', endname))					
-					endname = re.sub(r'[™©®`~^´ªº¢£€¥$ƒ±¬½¼«»±•²‰œæÆ³]', '', endname)	
+					endname = re.sub(r'[™©®`~^´ªº¢£€¥$ƒ±¬½¼«»±•²‰œæÆ³☆<<>>]', '', endname)	
 					endname = re.sub(r'[Ⅰ]', 'I', endname);endname = re.sub(r'[Ⅱ]', 'II', endname)
 					endname = re.sub(r'[Ⅲ]', 'III', endname);endname = re.sub(r'[Ⅳ]', 'IV', endname)	
 					endname = re.sub(r'[Ⅴ]', 'V', endname);endname = re.sub(r'[Ⅵ]', 'VI', endname)	
@@ -6110,9 +6216,13 @@ if __name__ == '__main__':
 					endname = re.sub(' {3,}', ' ',endname);re.sub(' {2,}', ' ',endname);	
 					try:	
 						endname = endname.replace("( ", "(");endname = endname.replace(" )", ")")
-						endname = endname.replace("[ ", "[");endname = endname.replace(" ]", "]")
+						endname = endname.replace("[ ", "[");endname = endname.replace(" ]", "]")						
+						endname = endname.replace("[[", "[");endname = endname.replace("]]", "]")	
+						endname = endname.replace("((", "(");endname = endname.replace("))", ")")
+						endname = endname.replace("[]", "");endname = endname.replace("()", "")						
 						endname = endname.replace(" !", "!");endname = endname.replace(" ?", "?")
 						endname = endname.replace("  ", " ");endname = endname.replace("  ", " ")
+						endname = endname.replace('"', '')		
 					except:pass					
 					if filepath.endswith('.xci'):								
 						endname=endname+'.xci'
@@ -6337,7 +6447,7 @@ if __name__ == '__main__':
 				endname=converter.do(endname)	
 				endname=endname[0].upper()+endname[1:]						
 			endname = (re.sub(r'[\/\\\:\*\?]+', '', endname))
-			endname = re.sub(r'[™©®`~^´ªº¢£€¥$ƒ±¬½¼«»±•²‰œæÆ³<<>>]', '', endname)				
+			endname = re.sub(r'[™©®`~^´ªº¢£€¥$ƒ±¬½¼«»±•²‰œæÆ³☆<<>>]', '', endname)				
 			endname = re.sub(r'[Ⅰ]', 'I', endname);endname = re.sub(r'[Ⅱ]', 'II', endname)
 			endname = re.sub(r'[Ⅲ]', 'III', endname);endname = re.sub(r'[Ⅳ]', 'IV', endname)	
 			endname = re.sub(r'[Ⅴ]', 'V', endname);endname = re.sub(r'[Ⅵ]', 'VI', endname)	
@@ -6354,9 +6464,13 @@ if __name__ == '__main__':
 			endname = re.sub(' {3,}', ' ',endname);re.sub(' {2,}', ' ',endname);	
 			try:	
 				endname = endname.replace("( ", "(");endname = endname.replace(" )", ")")
-				endname = endname.replace("[ ", "[");endname = endname.replace(" ]", "]")
-				endname = endname.replace(" !", "!");endname = endname.replace(" ?", "?")				
-				endname = endname.replace("  ", " ");endname = endname.replace("  ", " ")				
+				endname = endname.replace("[ ", "[");endname = endname.replace(" ]", "]")						
+				endname = endname.replace("[[", "[");endname = endname.replace("]]", "]")	
+				endname = endname.replace("((", "(");endname = endname.replace("))", ")")
+				endname = endname.replace("[]", "");endname = endname.replace("()", "")						
+				endname = endname.replace(" !", "!");endname = endname.replace(" ?", "?")
+				endname = endname.replace("  ", " ");endname = endname.replace("  ", " ")
+				endname = endname.replace('"', '')			
 			except:pass			
 			if endname[-1]==' ':
 				endname=endname[:-1]	
@@ -6455,7 +6569,7 @@ if __name__ == '__main__':
 						endname=endname[0].upper()+endname[1:]	
 					if san == True:		
 						endname = (re.sub(r'[\/\\\:\*\?]+', '', endname))					
-						endname = re.sub(r'[™©®`~^´ªº¢£€¥$ƒ±¬½¼«»±•²‰œæÆ³]', '', endname)	
+						endname = re.sub(r'[™©®`~^´ªº¢£€¥$ƒ±¬½¼«»±•²‰œæÆ³☆<<>>]', '', endname)	
 						endname = re.sub(r'[Ⅰ]', 'I', endname);endname = re.sub(r'[Ⅱ]', 'II', endname)
 						endname = re.sub(r'[Ⅲ]', 'III', endname);endname = re.sub(r'[Ⅳ]', 'IV', endname)	
 						endname = re.sub(r'[Ⅴ]', 'V', endname);endname = re.sub(r'[Ⅵ]', 'VI', endname)	
@@ -6472,9 +6586,13 @@ if __name__ == '__main__':
 						endname = re.sub(' {3,}', ' ',endname);re.sub(' {2,}', ' ',endname);	
 					try:	
 						endname = endname.replace("( ", "(");endname = endname.replace(" )", ")")
-						endname = endname.replace("[ ", "[");endname = endname.replace(" ]", "]")
+						endname = endname.replace("[ ", "[");endname = endname.replace(" ]", "]")						
+						endname = endname.replace("[[", "[");endname = endname.replace("]]", "]")	
+						endname = endname.replace("((", "(");endname = endname.replace("))", ")")
+						endname = endname.replace("[]", "");endname = endname.replace("()", "")						
 						endname = endname.replace(" !", "!");endname = endname.replace(" ?", "?")
-						endname = endname.replace("  ", " ");endname = endname.replace("  ", " ")					
+						endname = endname.replace("  ", " ");endname = endname.replace("  ", " ")
+						endname = endname.replace('"', '')							
 					except:pass		
 					newpath=os.path.join(dir,endname)					
 					print('Old Filename: '+basename)
@@ -7035,7 +7153,7 @@ if __name__ == '__main__':
 					print(file)
 					pass
 				'''
-				Datashelve = shelve.open('File01');c=0
+				Datashelve = dbmodule.Dict('File01.dshlv');c=0
 				for filepath in filelist:
 					fileid='unknown';fileversion='unknown';cctag='unknown'
 					tid1=list()
@@ -7126,6 +7244,8 @@ if __name__ == '__main__':
 						except BaseException as e:
 							Print.error('Exception: ' + str(e))		
 				Datashelve.close()		
+				try:os.remove('File01.dshlv')
+				except:pass
 							
 					
 		#parser.add_argument('-mv_odlc', '--mv_old_dlcs', nargs='+', help='Moves old dlcs to another folder')					
@@ -7150,7 +7270,6 @@ if __name__ == '__main__':
 			updlist=list();updtomove=list()
 			filelist=list()
 			if args.text_file:
-				tfile=args.text_file
 				tfile=args.text_file
 				with open(tfile,"r+", encoding='utf8') as f: 	
 					for line in f:
@@ -7207,7 +7326,7 @@ if __name__ == '__main__':
 					print(file)
 					pass
 				'''
-				Datashelve = shelve.open('File01');c=0
+				Datashelve = dbmodule.Dict('File01.dshlv');c=0
 				for filepath in filelist:
 					fileid='unknown';fileversion='unknown';cctag='unknown'
 					tid1=list()
@@ -7307,89 +7426,106 @@ if __name__ == '__main__':
 						except BaseException as e:
 							Print.error('Exception: ' + str(e))	
 				Datashelve.close()				
-
+				try:os.remove('File01.dshlv')
+				except:pass
+				
 		#parser.add_argument('-cr_ilist', '--cr_incl_list', nargs='+', help='Creates a include list from a textfile and a folder')	
+		#parser.add_argument('-tfile_aux', '--text_file_aux', help='Auxiliary text file')			
 		if args.cr_incl_list:
-			if args.ofolder:		
-				for input in args.ofolder:
+			# if args.ofolder:		
+				# for input in args.ofolder:
+					# try:
+						# ofolder = input
+					# except BaseException as e:
+						# Print.error('Exception: ' + str(e))	
+			# else:
+				# for filepath in args.cr_incl_list:
+					# ofolder=os.path.abspath(filepath)
+					# ofolder=os.path.join(ofolder, 'old')
+			# if not os.path.exists(ofolder):
+				# os.makedirs(ofolder) 
+			# duplicates_f=os.path.join(ofolder, 'duplicates')
+			# if not os.path.exists(duplicates_f):
+				# os.makedirs(duplicates_f) 	
+			if args.fexport:		
+				for input in args.fexport:
 					try:
-						ofolder = input
+						exportlist = input
 					except BaseException as e:
-						Print.error('Exception: ' + str(e))	
-			else:
-				for filepath in args.cr_incl_list:
-					ofolder=os.path.abspath(filepath)
-					ofolder=os.path.join(ofolder, 'old')
-			if not os.path.exists(ofolder):
-				os.makedirs(ofolder) 
-			duplicates_f=os.path.join(ofolder, 'duplicates')
-			if not os.path.exists(duplicates_f):
-				os.makedirs(duplicates_f) 			
+						Print.error('Exception: ' + str(e))					
 			baselist=list()		
 			addonlist=list()		
 			updlist=list();updtomove=list()
 			filelist=list()
 			if args.text_file:
 				tfile=args.text_file
-				tfile=args.text_file
 				with open(tfile,"r+", encoding='utf8') as f: 	
 					for line in f:
 						fp=line.strip()
 						filelist.append(fp)	
-			filelist2=list()			
-			ruta=args.cr_incl_list[0]			
-			if ruta[-1]=='"':
-				ruta=ruta[:-1]
-			if ruta[0]=='"':
-				ruta=ruta[1:]	
-			extlist=list()
-			extlist.append('.nsp')
-			if args.filter:
-				for f in args.filter:
-					filter=f	
-			#print(ruta)		
-			try:
-				fname=""
-				binbin='RECYCLE.BIN'
-				for ext in extlist:
-					#print (ext)
-					#print (ruta)
-					if os.path.isdir(ruta):
-						for dirpath, dirnames, filenames in os.walk(ruta):
-							for filename in [f for f in filenames if f.endswith(ext.lower()) or f.endswith(ext.upper()) or f[:-1].endswith(ext.lower()) or f[:-1].endswith(ext.lower())]:
+			if args.text_file_aux:	
+				filelist2=list()				
+				tfile2=args.text_file_aux
+				with open(tfile2,"r+", encoding='utf8') as f: 	
+					for line in f:
+						fp=line.strip()
+						filelist2.append(fp)	
+			else:						
+				filelist2=list()			
+				ruta=args.cr_incl_list[0]			
+				if ruta[-1]=='"':
+					ruta=ruta[:-1]
+				if ruta[0]=='"':
+					ruta=ruta[1:]	
+				extlist=list()
+				extlist.append('.nsp')
+				extlist.append('.xci')
+				if args.filter:
+					for f in args.filter:
+						filter=f	
+				#print(ruta)		
+				try:
+					fname=""
+					binbin='RECYCLE.BIN'
+					for ext in extlist:
+						#print (ext)
+						#print (ruta)
+						if os.path.isdir(ruta):
+							for dirpath, dirnames, filenames in os.walk(ruta):
+								for filename in [f for f in filenames if f.endswith(ext.lower()) or f.endswith(ext.upper()) or f[:-1].endswith(ext.lower()) or f[:-1].endswith(ext.lower())]:
+									fname=""
+									if args.filter:
+										if filter.lower() in filename.lower():
+											fname=filename
+									else:
+										fname=filename
+										#print(fname)
+									if fname != "":
+										if binbin.lower() not in filename.lower():
+											filelist2.append(os.path.join(dirpath, filename))
+						else:		
+							if ruta.endswith(ext.lower()) or ruta.endswith(ext.upper()) or ruta[:-1].endswith(ext.lower()) or ruta[:-1].endswith(ext.upper()):
+								filename = ruta
+								#print(ruta)
 								fname=""
 								if args.filter:
 									if filter.lower() in filename.lower():
 										fname=filename
 								else:
-									fname=filename
-									#print(fname)
+									fname=filename		
 								if fname != "":
-									if binbin.lower() not in filename.lower():
-										filelist2.append(os.path.join(dirpath, filename))
-					else:		
-						if ruta.endswith(ext.lower()) or ruta.endswith(ext.upper()) or ruta[:-1].endswith(ext.lower()) or ruta[:-1].endswith(ext.upper()):
-							filename = ruta
-							#print(ruta)
-							fname=""
-							if args.filter:
-								if filter.lower() in filename.lower():
-									fname=filename
-							else:
-								fname=filename		
-							if fname != "":
-								if binbin.lower() not in filename.lower():					
-									filelist2.append(filename)	
-			except BaseException as e:
-				Print.error('Exception: ' + str(e))
-				pass
+									if binbin.lower() not in filename.lower():					
+										filelist2.append(filename)	
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))
+					pass
 			'''	
 			for file in filelist2:		
 				print(file)
 				pass
 			'''	
 			test2="";test=""
-			Datashelve = shelve.open('File01');c=0
+			Datashelve = dbmodule.Dict('File01.dshlv');c=0
 			for filepath in filelist2:
 				fileid='unknown';fileversion='unknown';cctag='unknown'
 				tid1=list()
@@ -7554,17 +7690,23 @@ if __name__ == '__main__':
 					print(str(os.path.basename(os.path.abspath(filepath))))
 					
 				try:
-					print(fileid)
 					if str(fileid) in Datashelve:
-						pass
+						shelvedfile=Datashelve[str(fileid)]					
+						if int(shelvedfile[2])<int(fileversion):
+							print(fileid +' v'+str(fileversion))
+							with open(exportlist,"a", encoding='utf8') as tfile: 	
+								tfile.write(filepath+'\n')							
 					else:
-						print(filepath)	
-						tfname='missupd.txt'			
-						with open(tfname,"a", encoding='utf8') as tfile: 	
+						print(fileid +' v'+str(fileversion))					
+						#print(filepath)	
+						#tfname='testmissdlc.txt'			
+						with open(exportlist,"a", encoding='utf8') as tfile: 	
 							tfile.write(filepath+'\n')					
 				except BaseException as e:
 					Print.error('Exception: ' + str(e))	
-
+			Datashelve.close()		
+			try:os.remove('File01.dshlv')
+			except:pass
 		
 		# ...................................................						
 		# Restore. File Restoration
