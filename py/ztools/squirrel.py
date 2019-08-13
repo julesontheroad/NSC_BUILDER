@@ -239,7 +239,10 @@ if __name__ == '__main__':
 		parser.add_argument('-splid', '--split_list_by_id', nargs='+', help='split a list by file id')	
 		parser.add_argument('-mv_oupd', '--mv_old_updates', nargs='+', help='Moves old updates to another folder')	
 		parser.add_argument('-mv_odlc', '--mv_old_dlcs', nargs='+', help='Moves old dlcs to another folder')	
-		parser.add_argument('-cr_ilist', '--cr_incl_list', nargs='+', help='Creates a include list from a textfile and a folder')	
+		parser.add_argument('-cr_ilist', '--cr_incl_list', nargs='+', help='Creates a include list from a textfile and a folder or 2 textfiles')	
+		parser.add_argument('-cr_elist', '--cr_excl_list', nargs='+', help='Creates a exclude list from a textfile and a folder or 2 textfiles')	
+		parser.add_argument('-cr_xcioutlist', '--cr_outdated_xci_list', nargs='+', help='Creates a outdated xci list from a textfile and a folder')			
+		parser.add_argument('-cr_xexplist', '--cr_expand_list', nargs='+', help='Expands the list with games by baseid')	
 		
 		# Archive		
 		if sys.platform == 'win32':
@@ -7743,6 +7746,877 @@ if __name__ == '__main__':
 			Datashelve.close()		
 			try:os.remove('File01.dshlv')
 			except:pass
+			
+			
+		# ...................................................						
+		# Create exclude list
+		# ...................................................			
+		#parser.add_argument('-cr_elist', '--cr_excl_list', nargs='+', help='Creates a exclude list from a textfile and a folder or 2 textfiles')	
+		#parser.add_argument('-tfile_aux', '--text_file_aux', help='Auxiliary text file')			
+		if args.cr_excl_list:
+			# if args.ofolder:		
+				# for input in args.ofolder:
+					# try:
+						# ofolder = input
+					# except BaseException as e:
+						# Print.error('Exception: ' + str(e))	
+			# else:
+				# for filepath in args.cr_excl_list:
+					# ofolder=os.path.abspath(filepath)
+					# ofolder=os.path.join(ofolder, 'old')
+			# if not os.path.exists(ofolder):
+				# os.makedirs(ofolder) 
+			# duplicates_f=os.path.join(ofolder, 'duplicates')
+			# if not os.path.exists(duplicates_f):
+				# os.makedirs(duplicates_f) 	
+			if args.fexport:		
+				for input in args.fexport:
+					try:
+						exportlist = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))					
+			baselist=list()		
+			addonlist=list()		
+			updlist=list();updtomove=list()
+			filelist=list()
+			if args.text_file:
+				tfile=args.text_file
+				with open(tfile,"r+", encoding='utf8') as f: 	
+					for line in f:
+						fp=line.strip()
+						filelist.append(fp)	
+			if args.text_file_aux:	
+				filelist2=list()				
+				tfile2=args.text_file_aux
+				with open(tfile2,"r+", encoding='utf8') as f: 	
+					for line in f:
+						fp=line.strip()
+						filelist2.append(fp)	
+			else:						
+				filelist2=list()			
+				ruta=args.cr_excl_list[0]			
+				if ruta[-1]=='"':
+					ruta=ruta[:-1]
+				if ruta[0]=='"':
+					ruta=ruta[1:]	
+				extlist=list()
+				extlist.append('.nsp')
+				extlist.append('.xci')
+				if args.filter:
+					for f in args.filter:
+						filter=f	
+				#print(ruta)		
+				try:
+					fname=""
+					binbin='RECYCLE.BIN'
+					for ext in extlist:
+						#print (ext)
+						#print (ruta)
+						if os.path.isdir(ruta):
+							for dirpath, dirnames, filenames in os.walk(ruta):
+								for filename in [f for f in filenames if f.endswith(ext.lower()) or f.endswith(ext.upper()) or f[:-1].endswith(ext.lower()) or f[:-1].endswith(ext.lower())]:
+									fname=""
+									if args.filter:
+										if filter.lower() in filename.lower():
+											fname=filename
+									else:
+										fname=filename
+										#print(fname)
+									if fname != "":
+										if binbin.lower() not in filename.lower():
+											filelist2.append(os.path.join(dirpath, filename))
+						else:		
+							if ruta.endswith(ext.lower()) or ruta.endswith(ext.upper()) or ruta[:-1].endswith(ext.lower()) or ruta[:-1].endswith(ext.upper()):
+								filename = ruta
+								#print(ruta)
+								fname=""
+								if args.filter:
+									if filter.lower() in filename.lower():
+										fname=filename
+								else:
+									fname=filename		
+								if fname != "":
+									if binbin.lower() not in filename.lower():					
+										filelist2.append(filename)	
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))
+					pass
+			'''	
+			for file in filelist2:		
+				print(file)
+				pass
+			'''	
+			test2="";test=""
+			Datashelve = dbmodule.Dict('File01.dshlv');c=0
+			for filepath in filelist2:
+				fileid='unknown';fileversion='unknown';cctag='unknown'
+				tid1=list()
+				tid2=list()
+				tid1=[pos for pos, char in enumerate(filepath) if char == '[']
+				tid2=[pos for pos, char in enumerate(filepath) if char == ']']
+				if len(tid1)>=len(tid2):
+					lentlist=len(tid1)					
+				elif len(tid1)<len(tid2):
+					lentlist=len(tid2)						
+				for i in range(lentlist):	
+					try:
+						i1=tid1[i]+1
+						i2=tid2[i]					
+						t=filepath[i1:i2]
+						#print(t)
+						if len(t)==16: 
+							try:
+								test1=filepath[i1:i2]
+								int(filepath[i1:i2], 16)
+								fileid=str(filepath[i1:i2]).upper()
+								if fileid !='unknown':
+									if int(fileid[-3:])==800:
+										cctag='UPD'
+									elif int(fileid[-3:])==000:
+										cctag='BASE'
+									else:
+										try:
+											int(fileid[-3:])
+											cctag='DLC'											
+										except:pass
+									break
+							except:
+								try:
+									fileid=str(filepath[i1:i2]).upper()
+									if str(fileid[-3:])!='800' or str(fileid[-3:])!='000':
+										DLCnumb=str(fileid)
+										DLCnumb="0000000000000"+DLCnumb[-3:]									
+										DLCnumb=bytes.fromhex(DLCnumb)
+										DLCnumb=str(int.from_bytes(DLCnumb, byteorder='big'))									
+										DLCnumb=int(DLCnumb)
+										cctag='DLC'
+								except:continue
+					except:pass	
+				for i in range(lentlist):	
+					try:
+						i1=tid1[i]+1
+						i2=tid2[i]
+					except:pass									
+					if (str(filepath[(i1)]).upper())=='V':
+						try:
+							test2=filepath[(i1+1):i2]
+							fileversion=int(filepath[(i1+1):i2])
+							#print(fileversion)
+							if fileversion !='unknown':
+								break
+						except:
+							continue
+						
+				#print(fileid+' '+str(fileversion)+' '+cctag)
+				if fileid == 'unknown' or fileversion == 'unknown':
+					print(fileid+' '+str(fileversion))					
+					print(str(os.path.basename(os.path.abspath(filepath))))
+					print(test1)
+					print(test2)
+				
+				if cctag!="DLC" and cctag!="BASE" and cctag!="UPD":
+					print(str(os.path.basename(os.path.abspath(filepath))))				
+				if c==0:
+					c+=1
+					try:
+						Datashelve[str(fileid)]=[filepath,fileid,fileversion,cctag]				
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))							
+				else:
+					try:
+						if str(fileid) in Datashelve:
+							shelvedfile=Datashelve[str(fileid)]
+							#print(shelvedfile[2])
+							if shelvedfile[1]==fileid:
+								if int(shelvedfile[2])>int(fileversion):							
+									Datashelve[str(fileid)]=shelvedfile								
+								elif int(shelvedfile[2])== int(fileversion):								
+									Datashelve[str(fileid)]=shelvedfile	
+								else:										
+									Datashelve[str(fileid)]=[filepath,fileid,fileversion,cctag]									
+							else:		
+								pass	
+						else:
+							Datashelve[str(fileid)]=[filepath,str(fileid),fileversion,cctag]							
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))		
+			del filelist2			
+				
+			for filepath in filelist:
+				fileid='unknown';fileversion='unknown';cctag='unknown'
+				tid1=list()
+				tid2=list()
+				tid1=[pos for pos, char in enumerate(filepath) if char == '[']
+				tid2=[pos for pos, char in enumerate(filepath) if char == ']']
+				if len(tid1)>=len(tid2):
+					lentlist=len(tid1)					
+				elif len(tid1)<len(tid2):
+					lentlist=len(tid2)						
+				for i in range(lentlist):	
+					try:
+						i1=tid1[i]+1
+						i2=tid2[i]					
+						t=filepath[i1:i2]
+						#print(t)
+						if len(t)==16: 
+							try:
+								test1=filepath[i1:i2]
+								int(filepath[i1:i2], 16)
+								fileid=str(filepath[i1:i2]).upper()
+								if fileid !='unknown':
+									if int(fileid[-3:])==800:
+										cctag='UPD'
+									elif int(fileid[-3:])==000:
+										cctag='BASE'
+									else:
+										try:
+											int(fileid[-3:])
+											cctag='DLC'											
+										except:pass
+									break
+							except:
+								try:
+									fileid=str(filepath[i1:i2]).upper()
+									if str(fileid[-3:])!='800' or str(fileid[-3:])!='000':
+										DLCnumb=str(fileid)
+										DLCnumb="0000000000000"+DLCnumb[-3:]									
+										DLCnumb=bytes.fromhex(DLCnumb)
+										DLCnumb=str(int.from_bytes(DLCnumb, byteorder='big'))									
+										DLCnumb=int(DLCnumb)
+										cctag='DLC'
+								except:continue
+					except:pass	
+				for i in range(lentlist):	
+					try:
+						i1=tid1[i]+1
+						i2=tid2[i]
+					except:pass									
+					if (str(filepath[(i1)]).upper())=='V':
+						try:
+							test2=filepath[(i1+1):i2]
+							fileversion=int(filepath[(i1+1):i2])
+							if fileversion !='unknown':
+								break
+						except:
+							continue
+					
+				#print(fileid+' '+str(fileversion)+' '+cctag)
+				#print(filepath)	
+				if fileid == 'unknown' or fileversion == 'unknown':
+					print(fileid+' '+str(fileversion))					
+					print(str(os.path.basename(os.path.abspath(filepath))))
+					print(test1)
+					print(test2)
+				
+				if cctag!="DLC" and cctag!="BASE" and cctag!="UPD":
+					print(str(os.path.basename(os.path.abspath(filepath))))
+					
+				try:
+					if str(fileid) in Datashelve:
+						shelvedfile=Datashelve[str(fileid)]	
+						if str(filepath) != str(shelvedfile[0]):
+							if int(shelvedfile[2])>=int(fileversion):
+								print(fileid +' v'+str(fileversion))
+								with open(exportlist,"a", encoding='utf8') as tfile: 	
+									tfile.write(filepath+'\n')							
+					else:
+						pass
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))	
+			Datashelve.close()		
+			try:os.remove('File01.dshlv')
+			except:pass			
+			
+
+		# ...................................................						
+		# OUTDATED XCI LIST
+		# ...................................................	
+		#parser.add_argument('-cr_xcioutlist', '--cr_outdated_xci_list', nargs='+', help='Creates a include list from a textfile and a folder')	
+		#parser.add_argument('-tfile_aux', '--text_file_aux', help='Auxiliary text file')			
+		if args.cr_outdated_xci_list:
+			# if args.ofolder:		
+				# for input in args.ofolder:
+					# try:
+						# ofolder = input
+					# except BaseException as e:
+						# Print.error('Exception: ' + str(e))	
+			# else:
+				# for filepath in args.cr_outdated_xci_list:
+					# ofolder=os.path.abspath(filepath)
+					# ofolder=os.path.join(ofolder, 'old')
+			# if not os.path.exists(ofolder):
+				# os.makedirs(ofolder) 
+			# duplicates_f=os.path.join(ofolder, 'duplicates')
+			# if not os.path.exists(duplicates_f):
+				# os.makedirs(duplicates_f) 	
+			if args.fexport:		
+				for input in args.fexport:
+					try:
+						exportlist = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))					
+			baselist=list()		
+			addonlist=list()		
+			updlist=list();updtomove=list()
+			filelist=list()
+			if args.text_file:
+				tfile=args.text_file
+				with open(tfile,"r+", encoding='utf8') as f: 	
+					for line in f:
+						fp=line.strip()
+						filelist.append(fp)	
+			if args.text_file_aux:	
+				filelist2=list()				
+				tfile2=args.text_file_aux
+				with open(tfile2,"r+", encoding='utf8') as f: 	
+					for line in f:
+						fp=line.strip()
+						filelist2.append(fp)	
+			else:						
+				filelist2=list()			
+				ruta=args.cr_outdated_xci_list[0]			
+				if ruta[-1]=='"':
+					ruta=ruta[:-1]
+				if ruta[0]=='"':
+					ruta=ruta[1:]	
+				extlist=list()
+				extlist.append('.nsp')
+				extlist.append('.xci')
+				if args.filter:
+					for f in args.filter:
+						filter=f	
+				#print(ruta)		
+				try:
+					fname=""
+					binbin='RECYCLE.BIN'
+					for ext in extlist:
+						#print (ext)
+						#print (ruta)
+						if os.path.isdir(ruta):
+							for dirpath, dirnames, filenames in os.walk(ruta):
+								for filename in [f for f in filenames if f.endswith(ext.lower()) or f.endswith(ext.upper()) or f[:-1].endswith(ext.lower()) or f[:-1].endswith(ext.lower())]:
+									fname=""
+									if args.filter:
+										if filter.lower() in filename.lower():
+											fname=filename
+									else:
+										fname=filename
+										#print(fname)
+									if fname != "":
+										if binbin.lower() not in filename.lower():
+											filelist2.append(os.path.join(dirpath, filename))
+						else:		
+							if ruta.endswith(ext.lower()) or ruta.endswith(ext.upper()) or ruta[:-1].endswith(ext.lower()) or ruta[:-1].endswith(ext.upper()):
+								filename = ruta
+								#print(ruta)
+								fname=""
+								if args.filter:
+									if filter.lower() in filename.lower():
+										fname=filename
+								else:
+									fname=filename		
+								if fname != "":
+									if binbin.lower() not in filename.lower():					
+										filelist2.append(filename)	
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))
+					pass
+			'''	
+			for file in filelist2:		
+				print(file)
+				pass
+			'''	
+			test2="";test=""
+			Datashelve = dbmodule.Dict('File01.dshlv');c=0
+			for filepath in filelist2:
+				fileid='unknown';fileversion='unknown';cctag='unknown'
+				tid1=list()
+				tid2=list()
+				tid1=[pos for pos, char in enumerate(filepath) if char == '[']
+				tid2=[pos for pos, char in enumerate(filepath) if char == ']']
+				if len(tid1)>=len(tid2):
+					lentlist=len(tid1)					
+				elif len(tid1)<len(tid2):
+					lentlist=len(tid2)						
+				for i in range(lentlist):	
+					try:
+						i1=tid1[i]+1
+						i2=tid2[i]					
+						t=filepath[i1:i2]
+						#print(t)
+						if len(t)==16: 
+							try:
+								test1=filepath[i1:i2]
+								int(filepath[i1:i2], 16)
+								fileid=str(filepath[i1:i2]).upper()
+								if fileid !='unknown':
+									if int(fileid[-3:])==800:
+										cctag='UPD'
+									elif int(fileid[-3:])==000:
+										cctag='BASE'
+									else:
+										try:
+											int(fileid[-3:])
+											cctag='DLC'											
+										except:pass
+									break
+							except:
+								try:
+									fileid=str(filepath[i1:i2]).upper()
+									if str(fileid[-3:])!='800' or str(fileid[-3:])!='000':
+										DLCnumb=str(fileid)
+										DLCnumb="0000000000000"+DLCnumb[-3:]									
+										DLCnumb=bytes.fromhex(DLCnumb)
+										DLCnumb=str(int.from_bytes(DLCnumb, byteorder='big'))									
+										DLCnumb=int(DLCnumb)
+										cctag='DLC'
+								except:continue
+					except:pass	
+				for i in range(lentlist):	
+					try:
+						i1=tid1[i]+1
+						i2=tid2[i]
+					except:pass									
+					if (str(filepath[(i1)]).upper())=='V':
+						try:
+							test2=filepath[(i1+1):i2]
+							fileversion=int(filepath[(i1+1):i2])
+							#print(fileversion)
+							if fileversion !='unknown':
+								break
+						except:
+							continue
+						
+				#print(fileid+' '+str(fileversion)+' '+cctag)
+				if fileid == 'unknown' or fileversion == 'unknown':
+					print(fileid+' '+str(fileversion))					
+					print(str(os.path.basename(os.path.abspath(filepath))))
+					print(test1)
+					print(test2)
+								
+				if cctag!="DLC" and cctag!="BASE" and cctag!="UPD":
+					print(str(os.path.basename(os.path.abspath(filepath))))				
+				if c==0:
+					c+=1
+					try:
+						Datashelve[str(fileid)]=[filepath,fileid,fileversion,cctag]				
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))							
+				else:
+					try:
+						if str(fileid) in Datashelve:
+							shelvedfile=Datashelve[str(fileid)]
+							#print(shelvedfile[2])
+							if shelvedfile[1]==fileid:
+								if int(shelvedfile[2])>int(fileversion):							
+									Datashelve[str(fileid)]=shelvedfile								
+								elif int(shelvedfile[2])== int(fileversion):								
+									Datashelve[str(fileid)]=shelvedfile	
+								else:										
+									Datashelve[str(fileid)]=[filepath,fileid,fileversion,cctag]									
+							else:		
+								pass	
+						else:
+							Datashelve[str(fileid)]=[filepath,str(fileid),fileversion,cctag]							
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))		
+			del filelist2			
+				
+			for filepath in filelist:
+				fileid='unknown';fileversion='unknown';cctag='unknown'
+				tid1=list()
+				tid2=list()
+				tid1=[pos for pos, char in enumerate(filepath) if char == '[']
+				tid2=[pos for pos, char in enumerate(filepath) if char == ']']
+				if len(tid1)>=len(tid2):
+					lentlist=len(tid1)					
+				elif len(tid1)<len(tid2):
+					lentlist=len(tid2)						
+				for i in range(lentlist):	
+					try:
+						i1=tid1[i]+1
+						i2=tid2[i]					
+						t=filepath[i1:i2]
+						#print(t)
+						if len(t)==16: 
+							try:
+								test1=filepath[i1:i2]
+								int(filepath[i1:i2], 16)
+								fileid=str(filepath[i1:i2]).upper()
+								if fileid !='unknown':
+									if int(fileid[-3:])==800:
+										cctag='UPD'
+									elif int(fileid[-3:])==000:
+										cctag='BASE'
+									else:
+										try:
+											int(fileid[-3:])
+											cctag='DLC'											
+										except:pass
+									break
+							except:
+								try:
+									fileid=str(filepath[i1:i2]).upper()
+									if str(fileid[-3:])!='800' or str(fileid[-3:])!='000':
+										DLCnumb=str(fileid)
+										DLCnumb="0000000000000"+DLCnumb[-3:]									
+										DLCnumb=bytes.fromhex(DLCnumb)
+										DLCnumb=str(int.from_bytes(DLCnumb, byteorder='big'))									
+										DLCnumb=int(DLCnumb)
+										cctag='DLC'
+								except:continue
+					except:pass	
+				for i in range(lentlist):	
+					try:
+						i1=tid1[i]+1
+						i2=tid2[i]
+					except:pass									
+					if (str(filepath[(i1)]).upper())=='V':
+						try:
+							test2=filepath[(i1+1):i2]
+							fileversion=int(filepath[(i1+1):i2])
+							if fileversion !='unknown':
+								break
+						except:
+							continue
+					
+				#print(fileid+' '+str(fileversion)+' '+cctag)
+				#print(filepath)	
+				if fileid == 'unknown' or fileversion == 'unknown':
+					print(fileid+' '+str(fileversion))					
+					print(str(os.path.basename(os.path.abspath(filepath))))
+					print(test1)
+					print(test2)
+				
+				if cctag!="DLC" and cctag!="BASE" and cctag!="UPD":
+					print(str(os.path.basename(os.path.abspath(filepath))))
+
+				isbase=False	
+				if str(fileid[-3:])=='000':
+					isbase=True
+				elif str(fileid[-3:])=='800':
+					fileid=str(fileid[:-3])+'000'
+				else:
+					pass
+
+				try:
+					if str(fileid) in Datashelve:
+						shelvedfile=Datashelve[str(fileid)]					
+						if int(shelvedfile[2])<int(fileversion):
+							print(fileid +' v'+str(fileversion))
+							with open(exportlist,"a", encoding='utf8') as tfile: 	
+								tfile.write(filepath+'\n')							
+					elif isbase==True:
+						print(fileid +' v'+str(fileversion))					
+						#print(filepath)	
+						#tfname='testmissdlc.txt'			
+						with open(exportlist,"a", encoding='utf8') as tfile: 	
+							tfile.write(filepath+'\n')		
+					else:
+						pass
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))	
+			Datashelve.close()		
+			try:os.remove('File01.dshlv')
+			except:pass			
+			
+		# ...................................................						
+		# EXPAND LIST
+		# ...................................................	
+		#parser.add_argument('-cr_xexplist', '--cr_expand_list', nargs='+', help='Expands the list with games by baseid')	
+		#parser.add_argument('-tfile_aux', '--text_file_aux', help='Auxiliary text file')			
+		if args.cr_expand_list:
+			# if args.ofolder:		
+				# for input in args.ofolder:
+					# try:
+						# ofolder = input
+					# except BaseException as e:
+						# Print.error('Exception: ' + str(e))	
+			# else:
+				# for filepath in args.cr_expand_list:
+					# ofolder=os.path.abspath(filepath)
+					# ofolder=os.path.join(ofolder, 'old')
+			# if not os.path.exists(ofolder):
+				# os.makedirs(ofolder) 
+			# duplicates_f=os.path.join(ofolder, 'duplicates')
+			# if not os.path.exists(duplicates_f):
+				# os.makedirs(duplicates_f) 	
+			if args.fexport:		
+				for input in args.fexport:
+					try:
+						exportlist = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))					
+			baselist=list()		
+			addonlist=list()		
+			updlist=list();updtomove=list()
+			filelist=list()
+			if args.text_file:
+				tfile=args.text_file
+				with open(tfile,"r+", encoding='utf8') as f: 	
+					for line in f:
+						fp=line.strip()
+						filelist.append(fp)	
+			if args.text_file_aux:	
+				filelist2=list()				
+				tfile2=args.text_file_aux
+				with open(tfile2,"r+", encoding='utf8') as f: 	
+					for line in f:
+						fp=line.strip()
+						filelist2.append(fp)	
+			else:						
+				filelist2=list()			
+				ruta=args.cr_expand_list[0]			
+				if ruta[-1]=='"':
+					ruta=ruta[:-1]
+				if ruta[0]=='"':
+					ruta=ruta[1:]	
+				extlist=list()
+				extlist.append('.nsp')
+				extlist.append('.xci')
+				if args.filter:
+					for f in args.filter:
+						filter=f	
+				#print(ruta)		
+				try:
+					fname=""
+					binbin='RECYCLE.BIN'
+					for ext in extlist:
+						#print (ext)
+						#print (ruta)
+						if os.path.isdir(ruta):
+							for dirpath, dirnames, filenames in os.walk(ruta):
+								for filename in [f for f in filenames if f.endswith(ext.lower()) or f.endswith(ext.upper()) or f[:-1].endswith(ext.lower()) or f[:-1].endswith(ext.lower())]:
+									fname=""
+									if args.filter:
+										if filter.lower() in filename.lower():
+											fname=filename
+									else:
+										fname=filename
+										#print(fname)
+									if fname != "":
+										if binbin.lower() not in filename.lower():
+											filelist2.append(os.path.join(dirpath, filename))
+						else:		
+							if ruta.endswith(ext.lower()) or ruta.endswith(ext.upper()) or ruta[:-1].endswith(ext.lower()) or ruta[:-1].endswith(ext.upper()):
+								filename = ruta
+								#print(ruta)
+								fname=""
+								if args.filter:
+									if filter.lower() in filename.lower():
+										fname=filename
+								else:
+									fname=filename		
+								if fname != "":
+									if binbin.lower() not in filename.lower():					
+										filelist2.append(filename)	
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))
+					pass
+			'''	
+			for file in filelist2:		
+				print(file)
+				pass
+			'''	
+			test2="";test=""
+			Datashelve = dbmodule.Dict('File01.dshlv');c=0
+			for filepath in filelist2:
+				fileid='unknown';fileversion='unknown';cctag='unknown'
+				tid1=list()
+				tid2=list()
+				tid1=[pos for pos, char in enumerate(filepath) if char == '[']
+				tid2=[pos for pos, char in enumerate(filepath) if char == ']']
+				if len(tid1)>=len(tid2):
+					lentlist=len(tid1)					
+				elif len(tid1)<len(tid2):
+					lentlist=len(tid2)						
+				for i in range(lentlist):	
+					try:
+						i1=tid1[i]+1
+						i2=tid2[i]					
+						t=filepath[i1:i2]
+						#print(t)
+						if len(t)==16: 
+							try:
+								test1=filepath[i1:i2]
+								int(filepath[i1:i2], 16)
+								fileid=str(filepath[i1:i2]).upper()
+								if fileid !='unknown':
+									if int(fileid[-3:])==800:
+										cctag='UPD'
+									elif int(fileid[-3:])==000:
+										cctag='BASE'
+									else:
+										try:
+											int(fileid[-3:])
+											cctag='DLC'											
+										except:pass
+									break
+							except:
+								try:
+									fileid=str(filepath[i1:i2]).upper()
+									if str(fileid[-3:])!='800' or str(fileid[-3:])!='000':
+										DLCnumb=str(fileid)
+										DLCnumb="0000000000000"+DLCnumb[-3:]									
+										DLCnumb=bytes.fromhex(DLCnumb)
+										DLCnumb=str(int.from_bytes(DLCnumb, byteorder='big'))									
+										DLCnumb=int(DLCnumb)
+										cctag='DLC'
+								except:continue
+					except:pass	
+				for i in range(lentlist):	
+					try:
+						i1=tid1[i]+1
+						i2=tid2[i]
+					except:pass									
+					if (str(filepath[(i1)]).upper())=='V':
+						try:
+							test2=filepath[(i1+1):i2]
+							fileversion=int(filepath[(i1+1):i2])
+							#print(fileversion)
+							if fileversion !='unknown':
+								break
+						except:
+							continue
+						
+				#print(fileid+' '+str(fileversion)+' '+cctag)
+				if fileid == 'unknown' or fileversion == 'unknown':
+					print(fileid+' '+str(fileversion))					
+					print(str(os.path.basename(os.path.abspath(filepath))))
+					print(test1)
+					print(test2)
+								
+				if cctag!="DLC" and cctag!="BASE" and cctag!="UPD":
+					print(str(os.path.basename(os.path.abspath(filepath))))				
+				if c==0:
+					c+=1
+					try:
+						Datashelve[str(fileid)]=[filepath,fileid,fileversion,cctag]				
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))							
+				else:
+					try:
+						if str(fileid) in Datashelve:
+							shelvedfile=Datashelve[str(fileid)]
+							#print(shelvedfile[2])
+							if shelvedfile[1]==fileid:
+								if int(shelvedfile[2])>int(fileversion):							
+									Datashelve[str(fileid)]=shelvedfile								
+								elif int(shelvedfile[2])== int(fileversion):								
+									Datashelve[str(fileid)]=shelvedfile	
+								else:										
+									Datashelve[str(fileid)]=[filepath,fileid,fileversion,cctag]									
+							else:		
+								pass	
+						else:
+							Datashelve[str(fileid)]=[filepath,str(fileid),fileversion,cctag]							
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))		
+			del filelist2			
+				
+			for filepath in filelist:
+				fileid='unknown';fileversion='unknown';cctag='unknown'
+				tid1=list()
+				tid2=list()
+				tid1=[pos for pos, char in enumerate(filepath) if char == '[']
+				tid2=[pos for pos, char in enumerate(filepath) if char == ']']
+				if len(tid1)>=len(tid2):
+					lentlist=len(tid1)					
+				elif len(tid1)<len(tid2):
+					lentlist=len(tid2)						
+				for i in range(lentlist):	
+					try:
+						i1=tid1[i]+1
+						i2=tid2[i]					
+						t=filepath[i1:i2]
+						#print(t)
+						if len(t)==16: 
+							try:
+								test1=filepath[i1:i2]
+								int(filepath[i1:i2], 16)
+								fileid=str(filepath[i1:i2]).upper()
+								if fileid !='unknown':
+									if int(fileid[-3:])==800:
+										cctag='UPD'
+									elif int(fileid[-3:])==000:
+										cctag='BASE'
+									else:
+										try:
+											int(fileid[-3:])
+											cctag='DLC'											
+										except:pass
+									break
+							except:
+								try:
+									fileid=str(filepath[i1:i2]).upper()
+									if str(fileid[-3:])!='800' or str(fileid[-3:])!='000':
+										DLCnumb=str(fileid)
+										DLCnumb="0000000000000"+DLCnumb[-3:]									
+										DLCnumb=bytes.fromhex(DLCnumb)
+										DLCnumb=str(int.from_bytes(DLCnumb, byteorder='big'))									
+										DLCnumb=int(DLCnumb)
+										cctag='DLC'
+								except:continue
+					except:pass	
+				for i in range(lentlist):	
+					try:
+						i1=tid1[i]+1
+						i2=tid2[i]
+					except:pass									
+					if (str(filepath[(i1)]).upper())=='V':
+						try:
+							test2=filepath[(i1+1):i2]
+							fileversion=int(filepath[(i1+1):i2])
+							if fileversion !='unknown':
+								break
+						except:
+							continue
+					
+				#print(fileid+' '+str(fileversion)+' '+cctag)
+				#print(filepath)	
+				if fileid == 'unknown' or fileversion == 'unknown':
+					print(fileid+' '+str(fileversion))					
+					print(str(os.path.basename(os.path.abspath(filepath))))
+					print(test1)
+					print(test2)
+				
+				if cctag!="DLC" and cctag!="BASE" and cctag!="UPD":
+					print(str(os.path.basename(os.path.abspath(filepath))))
+				if str(fileid[-3:])=='800':
+					fileid=str(fileid[:-3])+'000'
+				elif str(fileid[-3:])=='000':
+					fileid=str(fileid)
+				else:
+					#print(str(fileid))
+					DLCnumb=str(fileid)
+					#print(hx(b''+bytes.fromhex('0'+DLCnumb[-4:-3])))
+					token=int(hx(bytes.fromhex('0'+DLCnumb[-4:-3])),16)-int('1',16)
+					token=str(hex(token))[-1]
+					token=token.upper()
+					#print(token)
+					fileid=fileid[:-4]+token+'000'
+					#print(fileid)
+				try:
+					if str(fileid) in Datashelve:
+						shelvedfile=Datashelve[str(fileid)]	
+						if str(shelvedfile[0])!=str(filepath):
+							print(str(fileid) +' v'+str(fileversion))
+							with open(exportlist,"a", encoding='utf8') as tfile: 	
+								tfile.write(str(filepath)+'\n')								
+					elif  str(fileid[:-3]+'800') in Datashelve:
+						fileid=str(fileid[:-3]+'800')
+						shelvedfile=Datashelve[str(fileid)]	
+						if str(shelvedfile[0])!=str(filepath):
+							print(str(fileid) +' v'+str(fileversion))
+							with open(exportlist,"a", encoding='utf8') as tfile: 	
+								tfile.write(str(filepath)+'\n')							
+					else:
+						pass			
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))	
+			Datashelve.close()		
+			try:os.remove('File01.dshlv')
+			except:pass						
 		
 		# ...................................................						
 		# Restore. File Restoration
