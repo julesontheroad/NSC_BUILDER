@@ -7226,16 +7226,34 @@ if __name__ == '__main__':
 								#print(shelvedfile[2])
 								if shelvedfile[1]==fileid:
 									if int(shelvedfile[2])>int(fileversion):
-										print(str(os.path.basename(os.path.abspath(filepath))))									
-										shutil.move(filepath,ofolder)
+										print(str(os.path.basename(os.path.abspath(filepath))))
+										checker=os.path.join(ofolder, str(os.path.basename(os.path.abspath(filepath))))
+										if not os.path.isfile(checker):
+											shutil.move(filepath,ofolder)
+										else:
+											try:
+												os.remove(filepath) 	
+											except:pass																
 										Datashelve[str(fileid)]=shelvedfile
 									elif int(shelvedfile[2])== int(fileversion):
 										print(str(os.path.basename(os.path.abspath(filepath))))
-										shutil.move(filepath,duplicates_f)												
+										checker=os.path.join(ofolder, str(os.path.basename(os.path.abspath(filepath))))
+										if not os.path.isfile(checker):								
+											shutil.move(filepath,duplicates_f)	
+										else:	
+											try:
+												os.remove(filepath) 	
+											except:pass													
 										Datashelve[str(fileid)]=shelvedfile
 									else:		
 										print(str(os.path.basename(os.path.abspath(shelvedfile[0]))))	
-										shutil.move(shelvedfile[0],ofolder)											
+										checker=os.path.join(ofolder, str(os.path.basename(os.path.abspath(shelvedfile[0]))))
+										if not os.path.isfile(checker):				
+											shutil.move(shelvedfile[0],ofolder)		
+										else:	
+											try:
+												os.remove(filepath) 	
+											except:pass											
 										Datashelve[str(fileid)]=[filepath,fileid,fileversion,cctag]									
 								else:		
 									pass	
@@ -7408,16 +7426,34 @@ if __name__ == '__main__':
 								#print(shelvedfile[2])
 								if shelvedfile[1]==fileid:
 									if int(shelvedfile[2])>int(fileversion):
-										print(str(os.path.basename(os.path.abspath(filepath))))									
+										print(str(os.path.basename(os.path.abspath(filepath))))
+										checker=os.path.join(ofolder, str(os.path.basename(os.path.abspath(filepath))))
+										if not os.path.isfile(checker):
+											shutil.move(filepath,ofolder)
+										else:
+											try:
+												os.remove(filepath) 	
+											except:pass																
 										Datashelve[str(fileid)]=shelvedfile
-										shutil.move(filepath,ofolder)										
 									elif int(shelvedfile[2])== int(fileversion):
 										print(str(os.path.basename(os.path.abspath(filepath))))
-										shutil.move(filepath,duplicates_f)											
-										Datashelve[str(fileid)]=shelvedfile	
+										checker=os.path.join(ofolder, str(os.path.basename(os.path.abspath(filepath))))
+										if not os.path.isfile(checker):								
+											shutil.move(filepath,duplicates_f)	
+										else:	
+											try:
+												os.remove(filepath) 	
+											except:pass													
+										Datashelve[str(fileid)]=shelvedfile
 									else:		
-										print(str(os.path.basename(os.path.abspath(shelvedfile[0]))))		
-										shutil.move(shelvedfile[0],ofolder)											
+										print(str(os.path.basename(os.path.abspath(shelvedfile[0]))))	
+										checker=os.path.join(ofolder, str(os.path.basename(os.path.abspath(shelvedfile[0]))))
+										if not os.path.isfile(checker):				
+											shutil.move(shelvedfile[0],ofolder)		
+										else:	
+											try:
+												os.remove(filepath) 	
+											except:pass										
 										Datashelve[str(fileid)]=[filepath,fileid,fileversion,cctag]									
 								else:		
 									pass	
