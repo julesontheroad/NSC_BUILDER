@@ -11,7 +11,7 @@ set "pycommand=%pycommand%"
 ECHO.
 ECHO 종속성 설치
 ECHO.
-%pycommand% -m pip install urllib3 unidecode tqdm bs4 tqdm requests image pywin32 pycryptodome
+%pycommand% -m pip install urllib3 unidecode tqdm bs4 tqdm requests image pywin32 pycryptodome pykakasi googletrans chardet textwrap
 ECHO.
 ECHO **********************************************************************************
 ECHO ---중요 : 계속하기 전에 종속성이 올바르게 설치되었는지 확인하십시오.---
