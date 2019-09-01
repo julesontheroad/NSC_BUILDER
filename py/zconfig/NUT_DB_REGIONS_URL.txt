@@ -41,7 +41,3 @@ SE_EN|https://raw.githubusercontent.com/blawar/nut/master/titledb/SE.en.json
 US_EN|https://raw.githubusercontent.com/blawar/nut/master/titledb/US.en.json
 US_ES|https://raw.githubusercontent.com/blawar/nut/master/titledb/US.es.json
 ZA_EN|https://raw.githubusercontent.com/blawar/nut/master/titledb/ZA.en.json
-
-
-	versions.json 	'' 	2 days ago
-	versions.txt 	'' 	2 days ago
