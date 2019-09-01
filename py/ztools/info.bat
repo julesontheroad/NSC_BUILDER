@@ -124,7 +124,7 @@ call :logo
 echo ********************************************************
 echo SHOW INFORMATION AND DATA ABOUT THE REQUIRED FIRMWARE
 echo ********************************************************
-%pycommand% "%nut%" -o "%info_dir%" --fw_req "%targt%"
+%pycommand% "%nut%" -o "%info_dir%" --translate %transnutdb% --fw_req "%targt%"
 goto sc2
 
 :r_cnmt
@@ -296,7 +296,7 @@ ECHO =============================     BY JULESONTHEROAD     ===================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                                POWERED BY SQUIRREL                                "
 ECHO "                    BASED ON THE WORK OF BLAWAR AND LUCA FRAGA                     "
-ECHO                                     VERSION 0.89
+ECHO                                     VERSION 0.90
 ECHO -------------------------------------------------------------------------------------                   
 ECHO Program's github: https://github.com/julesontheroad/NSC_BUILDER
 ECHO Blawar's github:  https://github.com/blawar

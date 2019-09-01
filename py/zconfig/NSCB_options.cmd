@@ -138,3 +138,11 @@ set "NSBMODE=new"
 ::romanice ->TRUE
 ::don't romanize -> FALSE
 set "romaji=TRUE"
+
+::--------------------------------------------------------------
+::OPTION 16: TRANSLATE NUTDB DESCRIPTIONS FROM ASIAN REGIONS
+::--------------------------------------------------------------
+::Makes calls to google API
+::translate ->TRUE
+::don't transnutdb ->FALSE
+set "transnutdb=TRUE"

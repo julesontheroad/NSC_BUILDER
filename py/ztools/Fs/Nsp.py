@@ -3002,7 +3002,7 @@ class Nsp(Pfs0):
 							break		
 		return 	programSDKversion,dataSDKversion	
 		
-	def print_fw_req(self):
+	def print_fw_req(self,trans=True):
 		feed=''
 		for nca in self:
 			if type(nca) == Nca:
@@ -3102,7 +3102,7 @@ class Nsp(Pfs0):
 								if isdemo == 2:
 									content_type='RetailInteractiveDisplay'	
 							programSDKversion,dataSDKversion=self.getsdkvertit(titleid2)
-							nsuId,releaseDate,category,ratingContent,numberOfPlayers,intro,description,iconUrl,screenshots,bannerUrl,region,rating=nutdb.get_content_data(titleid2)
+							nsuId,releaseDate,category,ratingContent,numberOfPlayers,intro,description,iconUrl,screenshots,bannerUrl,region,rating=nutdb.get_content_data(titleid2,trans)
 							sdkversion=nca.get_sdkversion()						
 							message=('-----------------------------');print(message);feed+=message+'\n'								
 							message=('CONTENT ID: ' + str(titleid2));print(message);feed+=message+'\n'	
@@ -7833,7 +7833,7 @@ class Nsp(Pfs0):
 ##################		
 #DB DATA
 ##################
-	def Incorporate_to_permaDB(self,dbfile):
+	def Incorporate_to_permaDB(self,dbfile,trans=True):
 		Datashelve = DBmodule.Dict(dbfile)	
 		cnmtnames=list()
 		for nca in self:
@@ -7841,7 +7841,7 @@ class Nsp(Pfs0):
 				if 	str(nca.header.contentType) == 'Content.META':	
 					cnmtnames.append(str(nca._path))
 		for file in cnmtnames:
-			DBdict=self.getDBdict(file)
+			DBdict=self.getDBdict(file,trans)
 			dbkey=(str(DBdict['id'])+'_v'+str(DBdict['version'])).lower()
 			if not 'fields' in Datashelve:
 				DBmodule.MainDB.initializeDB(dbfile)		
@@ -7850,7 +7850,7 @@ class Nsp(Pfs0):
 		Datashelve.close()		
 			
 
-	def getDBdict(self,cnmtname,json=False):
+	def getDBdict(self,cnmtname,json=False,trans=True):
 		DBdict={}
 		titleid,titleversion,base_ID,keygeneration,rightsId,RSV,RGV,ctype,metasdkversion,exesdkversion,hasHtmlManual,Installedsize,DeltaSize,ncadata=self.get_data_from_cnmt(cnmtname)
 		sqname,sqeditor,SupLg,ctype=self.DB_get_names(ctype,ncadata)
@@ -7970,7 +7970,7 @@ class Nsp(Pfs0):
 			DBdict['bannerUrl']='-'			
 			DBdict['intro']='-'			
 			DBdict['description']='-'	
-			nsuId,worldreleasedate,genretags,ratingtags,numberOfPlayers,intro,description,iconUrl,screenshots,bannerUrl,region,rating=nutdb.get_content_data(titleid)
+			nsuId,worldreleasedate,genretags,ratingtags,numberOfPlayers,intro,description,iconUrl,screenshots,bannerUrl,region,rating=nutdb.get_content_data(titleid,trans)
 			if 	nsuId!=False:
 				DBdict['nsuId']=nsuId
 			if 	genretags!=False:

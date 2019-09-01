@@ -276,6 +276,7 @@ echo Input "9" to set file FAT32\EXFAT options
 echo Input "10" to how to ORGANIZE output files
 echo Input "11" to set NEW MODE OR LEGACY MODE
 echo Input "12" to ROMANIZE names when using direct-multi
+echo Input "13" to TRANSLATE game description lines
 echo.
 echo Input "c" to read CURRENT GLOBAL SETTINGS
 echo Input "d" to set DEFAULT GLOBAL SETTINGS
@@ -296,6 +297,7 @@ if /i "%bs%"=="9" goto op_fat
 if /i "%bs%"=="10" goto op_oforg
 if /i "%bs%"=="11" goto op_nscbmode
 if /i "%bs%"=="12" goto op_romanize
+if /i "%bs%"=="13" goto op_translate
 
 if /i "%bs%"=="c" call :curr_set2
 if /i "%bs%"=="c" echo.
@@ -891,6 +893,45 @@ echo.
 pause
 goto sc3
 
+:op_translate
+cls
+call :logo
+echo *****************************************************************************
+echo TRANSLATE GAME DESCRIPTION LINES TO ENGLISH FROM JAPANESE, CHINES, KOREAN
+echo *****************************************************************************
+echo.
+echo NOTE: Unlike romaji for translations NSCB makes API calls to GOOGLE TRANSLATE
+echo.
+echo Input "1" to translate descriptions (default)
+echo Input "2" to keep descriptions as read on nutdb files
+echo.
+echo Input "b" to return to GLOBAL OPTIONS
+echo Input "0" to return to CONFIG MENU
+echo Input "e" to go back to the MAIN PROGRAM
+echo ...........................................................................
+echo.
+set /p bs="Enter your choice: "
+set "v_trans=none"
+if /i "%bs%"=="1" set "v_trans=TRUE"
+if /i "%bs%"=="2" set "v_trans=FALSE"
+
+if /i "%bs%"=="b" goto sc3
+if /i "%bs%"=="0" goto sc1
+if /i "%bs%"=="e" goto salida
+
+if "%v_trans%"=="none" echo WRONG CHOICE
+if "%v_trans%"=="none" echo.
+if "%v_trans%"=="none" goto op_translate
+
+set v_trans="transnutdb=%v_trans%"
+set v_trans="%v_trans%"
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "147" -nl "set %v_trans%" 
+echo.
+%pycommand% "%listmanager%" -rl "%op_file%" -ln "147" -nl "Line in config was changed to: "
+echo.
+pause
+goto sc3
+
 :def_set1
 echo.
 echo **AUTO-MODE OPTIONS**
@@ -1021,11 +1062,19 @@ set v_nscbmode="%v_nscbmode%"
 %pycommand% "%listmanager%" -cl "%op_file%" -ln "132" -nl "set %v_nscbmode%" 
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "132" -nl "Line in config was changed to: "
 
+REM ROMAJI
 set "v_roma=TRUE"
 set v_roma="romaji=%v_roma%"
 set v_roma="%v_roma%"
 %pycommand% "%listmanager%" -cl "%op_file%" -ln "139" -nl "set %v_roma%" 
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "139" -nl "Line in config was changed to: "
+
+REM TRANSLATE
+set "v_trans=TRUE"
+set v_trans="transnutdb=%v_trans%"
+set v_trans="%v_trans%"
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "147" -nl "set %v_trans%" 
+%pycommand% "%listmanager%" -rl "%op_file%" -ln "147" -nl "Line in config was changed to: "
 
 exit /B
 
@@ -1089,8 +1138,10 @@ REM NSCB MODE
 REM ROMANIZE
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "139" -nl "ROMANIZE option is set to: "
 
-exit /B
+REM TRANSLATE
+%pycommand% "%listmanager%" -rl "%op_file%" -ln "147" -nl "TRANSLATE option is set to: "
 
+exit /B
 
 :verify_keys
 cls
@@ -1112,8 +1163,6 @@ set bs=%bs:"=%
 if /i "%bs%"=="0" goto sc1
 if /i "%bs%"=="e" goto salida
 
-
-
 :salida
 exit /B
 
@@ -1132,7 +1181,7 @@ ECHO =============================     BY JULESONTHEROAD     ===================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                                POWERED BY SQUIRREL                                "
 ECHO "                    BASED IN THE WORK OF BLAWAR AND LUCA FRAGA                     "
-ECHO                                     VERSION 0.89
+ECHO                                     VERSION 0.90
 ECHO -------------------------------------------------------------------------------------                   
 ECHO Program's github: https://github.com/julesontheroad/NSC_BUILDER
 ECHO Blawar's github:  https://github.com/blawar

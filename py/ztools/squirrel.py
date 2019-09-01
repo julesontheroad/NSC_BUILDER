@@ -225,7 +225,8 @@ if __name__ == '__main__':
 		parser.add_argument('-dbformat', '--dbformat', nargs='+', help='Database format extended, nutdb or keyless-extended')		
 		parser.add_argument('-rn', '--rename', nargs='+', help='Filter with base titleid')		
 		parser.add_argument('-uin', '--userinput', help='Reads a user input')		
-		parser.add_argument('-incxml', '--includexml', nargs='+', help='Include xml by default true')			
+		parser.add_argument('-incxml', '--includexml', nargs='+', help='Include xml by default true')		
+		parser.add_argument('-trans', '--translate', nargs='+', help='Google translation support for nutdb descriptions')		
 		# LISTMANAGER
 		parser.add_argument('-cl', '--change_line', help='Change line in text file')
 		parser.add_argument('-rl', '--read_line', help='Read line in text file')		
@@ -4488,6 +4489,11 @@ if __name__ == '__main__':
 		# FW REQ INFO
 		# ...................................................	
 		if args.fw_req:
+			if args.translate:
+				if str(args.translate).lower()=="true":
+					trans=True
+			else:
+				trans=False			
 			if args.ofolder:		
 				for var in args.ofolder:
 					try:
@@ -4520,7 +4526,7 @@ if __name__ == '__main__':
 			if filename.endswith('.nsp'):
 				try:
 					f = Fs.Nsp(filename, 'rb')
-					feed=f.print_fw_req()
+					feed=f.print_fw_req(trans)
 					f.flush()
 					f.close()
 					if not args.text_file:						
@@ -4546,7 +4552,7 @@ if __name__ == '__main__':
 				try:
 					f = Fs.factory(filename)
 					f.open(filename, 'rb')
-					feed=f.print_fw_req()
+					feed=f.print_fw_req(trans)
 					f.flush()
 					f.close()
 					if not args.text_file:						
@@ -4668,7 +4674,12 @@ if __name__ == '__main__':
 							errfile.write('- Exception: ' + str(e)+ '\n')		
 
 		#parser.add_argument('-nscdb_new', '--addtodb_new', nargs='+', help='Adds content to database')										
-		if args.addtodb_new:			
+		if args.addtodb_new:
+			if args.translate:
+				if str(args.translate).lower()=="true":
+					trans=True
+			else:
+				trans=False		
 			if args.db_file:	
 				DBfile=args.db_file						
 				if args.text_file:
@@ -4682,13 +4693,13 @@ if __name__ == '__main__':
 				if (filename.lower()).endswith('.nsp') or (filename.lower()).endswith('.nsx'):
 					try:
 						f = Fs.Nsp(filename, 'rb')
-						f.Incorporate_to_permaDB(DBfile)					
+						f.Incorporate_to_permaDB(DBfile,trans)					
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 				if (filename.lower()).endswith('.xci'):						
 					try:
 						f = Fs.Xci(filename)
-						f.Incorporate_to_permaDB(DBfile)					
+						f.Incorporate_to_permaDB(DBfile,trans)					
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))		
 		# ...................................................						

@@ -2511,7 +2511,7 @@ class Xci(File):
 									break		
 		return 	programSDKversion,dataSDKversion					
 
-	def print_fw_req(self):	
+	def print_fw_req(self,trans=True):	
 		feed=''	
 		for nspF in self.hfs0:
 			if str(nspF._path)=="secure":
@@ -2613,7 +2613,7 @@ class Xci(File):
 										if isdemo == 2:
 											content_type='RetailInteractiveDisplay'	
 									programSDKversion,dataSDKversion=self.getsdkvertit(titleid2)
-									nsuId,releaseDate,category,ratingContent,numberOfPlayers,intro,description,iconUrl,screenshots,bannerUrl,region,rating=nutdb.get_content_data(titleid2)
+									nsuId,releaseDate,category,ratingContent,numberOfPlayers,intro,description,iconUrl,screenshots,bannerUrl,region,rating=nutdb.get_content_data(titleid2,trans)
 									sdkversion=nca.get_sdkversion()						
 									message=('-----------------------------');print(message);feed+=message+'\n'								
 									message=('CONTENT ID: ' + str(titleid2));print(message);feed+=message+'\n'	
@@ -7558,7 +7558,7 @@ class Xci(File):
 ##################		
 #DB DATA
 ##################
-	def Incorporate_to_permaDB(self,dbfile):
+	def Incorporate_to_permaDB(self,dbfile,trans=True):
 		Datashelve = DBmodule.Dict(dbfile)	
 		cnmtnames=list()
 		for nspF in self.hfs0:
@@ -7568,7 +7568,7 @@ class Xci(File):
 						if 	str(nca.header.contentType) == 'Content.META':	
 							cnmtnames.append(str(nca._path))
 		for file in cnmtnames:
-			DBdict=self.getDBdict(file)		
+			DBdict=self.getDBdict(file,trans)		
 			dbkey=(str(DBdict['id'])+'_v'+str(DBdict['version'])+'_xci').lower()
 			if not 'fields' in Datashelve:
 				DBmodule.MainDB.initializeDB(dbfile)		
@@ -7576,7 +7576,7 @@ class Xci(File):
 				Datashelve[dbkey]=DBdict
 		Datashelve.close()		
 		
-	def getDBdict(self,cnmtname,json=False):
+	def getDBdict(self,cnmtname,json=False,trans=True):
 		DBdict={}
 		titleid,titleversion,base_ID,keygeneration,rightsId,RSV,RGV,ctype,metasdkversion,exesdkversion,hasHtmlManual,Installedsize,DeltaSize,ncadata=self.get_data_from_cnmt(cnmtname)
 		#print(ncadata)
@@ -7698,7 +7698,7 @@ class Xci(File):
 			DBdict['bannerUrl']='-'			
 			DBdict['intro']='-'			
 			DBdict['description']='-'	
-			nsuId,worldreleasedate,genretags,ratingtags,numberOfPlayers,intro,description,iconUrl,screenshots,bannerUrl,region,rating=nutdb.get_content_data(titleid)
+			nsuId,worldreleasedate,genretags,ratingtags,numberOfPlayers,intro,description,iconUrl,screenshots,bannerUrl,region,rating=nutdb.get_content_data(titleid,trans)
 			if 	nsuId!=False:
 				DBdict['nsuId']=nsuId
 			if 	genretags!=False:
