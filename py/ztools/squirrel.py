@@ -60,6 +60,7 @@ from datetime import datetime
 import math  
 import pykakasi
 from Fs.pyNCA3 import NCA3
+import nutdb
 
 # SET ENVIRONMENT
 squirrel_dir=os.path.abspath(os.curdir)
@@ -96,9 +97,11 @@ if __name__ == '__main__':
 		parser.add_argument('--fw_req', nargs='+', help='Get information about fw requirements for NSP/XCI')		
 		parser.add_argument('--Read_xci_head', nargs='+', help='Get information about xci header and cert')				
 		parser.add_argument('-nscdb', '--addtodb', nargs='+', help='Adds content to database')	
+		parser.add_argument('-nscdb_new', '--addtodb_new', nargs='+', help='Adds content to database')			
 		parser.add_argument('-v', '--verify', nargs='+', help='Verify nsp or xci file')			
 
-		# CNMT Flag funtions		
+		# CNMT Flag funtions	
+		parser.add_argument('--set_cnmt_titleid', nargs='+', help='Changes cnmt.nca titleid')			
 		parser.add_argument('--set_cnmt_version', nargs='+', help='Changes cnmt.nca version number')	
 		parser.add_argument('--set_cnmt_RSV', nargs='+', help='Changes cnmt.nca RSV')	
 		parser.add_argument('--update_hash', nargs='+', help='Updates cnmt.nca hashes')	
@@ -243,6 +246,8 @@ if __name__ == '__main__':
 		parser.add_argument('-cr_elist', '--cr_excl_list', nargs='+', help='Creates a exclude list from a textfile and a folder or 2 textfiles')	
 		parser.add_argument('-cr_xcioutlist', '--cr_outdated_xci_list', nargs='+', help='Creates a outdated xci list from a textfile and a folder')			
 		parser.add_argument('-cr_xexplist', '--cr_expand_list', nargs='+', help='Expands the list with games by baseid')	
+		parser.add_argument('-chdlcn', '--chck_dlc_numb', nargs='+', help='Checks if xci has corrent number of dlcs')			
+		parser.add_argument('-blckl', '--black_list', nargs='+', help='Deletes blacklisted files from a list')			
 		
 		# Archive		
 		if sys.platform == 'win32':
@@ -572,7 +577,7 @@ if __name__ == '__main__':
 					filename = filelist.readline()
 					filename=os.path.abspath(filename.rstrip('\n'))		
 			else:		
-				for inpt in args.text_file:
+				for inpt in args.remlinkacc:
 					filename=inpt	
 			try:
 				if filename.endswith('.nsp') or filename.endswith('.nsx'):
@@ -688,7 +693,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768			
+				buffer = 65536			
 			ofolder=False
 			if args.ofolder:		
 				for input in args.ofolder:
@@ -762,7 +767,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768
+				buffer = 65536
 			if args.patchversion:
 				for input in args.patchversion:
 					try:
@@ -818,7 +823,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768				
+				buffer = 65536				
 			for filePath in args.XCI_copy_hfs0:
 				f = Fs.factory(filePath)
 				f.open(filePath, 'rb')
@@ -847,7 +852,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768			
+				buffer = 65536			
 			for filePath in args.XCI_c_hfs0_update:
 				f = Fs.factory(filePath)
 				f.open(filePath, 'rb')
@@ -876,7 +881,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768			
+				buffer = 65536			
 			for filePath in args.XCI_c_hfs0_normal:
 				f = Fs.factory(filePath)
 				f.open(filePath, 'rb')
@@ -905,7 +910,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768		
+				buffer = 65536		
 			for filePath in args.XCI_c_hfs0_secure:
 				f = Fs.factory(filePath)
 				f.open(filePath, 'rb')
@@ -934,7 +939,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768
+				buffer = 65536
 			if args.patchversion:
 				for input in args.patchversion:
 					try:
@@ -987,7 +992,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768
+				buffer = 65536
 			if args.patchversion:
 				for input in args.patchversion:
 					try:
@@ -1040,7 +1045,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768
+				buffer = 65536
 			if args.patchversion:
 				for input in args.patchversion:
 					try:
@@ -1094,7 +1099,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768		
+				buffer = 65536		
 			for filePath in args.XCI_copy_rhfs0:
 				f = Fs.factory(filePath)
 				f.open(filePath, 'rb')
@@ -1125,7 +1130,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768						
+				buffer = 65536						
 			for filename in args.NSP_copy_other:
 				try:
 					f = Fs.Nsp(filename, 'rb')
@@ -1157,7 +1162,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768				
+				buffer = 65536				
 			for filename in args.NSP_copy_xml:
 				try:
 					f = Fs.Nsp(filename, 'rb')
@@ -1188,7 +1193,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768					
+				buffer = 65536					
 			for filename in args.NSP_copy_cert:
 				try:
 					f = Fs.Nsp(filename, 'rb')
@@ -1219,7 +1224,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768			
+				buffer = 65536			
 			for filename in args.NSP_copy_jpg:
 				try:
 					f = Fs.Nsp(filename, 'rb')
@@ -1251,7 +1256,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768			
+				buffer = 65536			
 			for filename in args.NSP_copy_cnmt:
 				if filename.endswith('.nsp'):
 					try:
@@ -1293,7 +1298,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768				
+				buffer = 65536				
 			for filename in args.copy_pfs0_meta:
 				try:
 					f = Fs.Nsp(filename, 'rb')
@@ -1325,7 +1330,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768				
+				buffer = 65536				
 			for filename in args.copy_nacp:
 				if filename.endswith(".nsp"):	
 					try:
@@ -1368,7 +1373,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768				
+				buffer = 65536				
 			for filename in args.NSP_copy_nca_meta:
 				try:
 					f = Fs.Nsp(filename, 'rb')
@@ -1399,7 +1404,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768				
+				buffer = 65536				
 			for filename in args.NSP_copy_nca_control:
 				try:
 					f = Fs.Nsp(filename, 'rb')
@@ -1430,7 +1435,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768						
+				buffer = 65536						
 			for filename in args.NSP_copy_nca_manual:
 				try:
 					f = Fs.Nsp(filename, 'rb')
@@ -1461,7 +1466,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768											
+				buffer = 65536											
 			for filename in args.NSP_copy_nca_program:
 				try:
 					f = Fs.Nsp(filename, 'rb')
@@ -1492,7 +1497,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768
+				buffer = 65536
 											
 			for filename in args.NSP_copy_nca_data:
 				try:
@@ -1524,7 +1529,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768
+				buffer = 65536
 								
 			for filename in args.NSP_copy_nca_pdata:
 				try:
@@ -1558,7 +1563,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768
+				buffer = 65536
 					
 			for filename in args.NSP_copy_tr_nca:
 				try:
@@ -1590,7 +1595,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768
+				buffer = 65536
 				
 			for filename in args.NSP_copy_ntr_nca:
 				try:
@@ -1631,7 +1636,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768
+				buffer = 65536
 			if args.patchversion:
 				for input in args.patchversion:
 					try:
@@ -1728,7 +1733,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768				
+				buffer = 65536				
 			if args.patchversion:
 				for input in args.patchversion:
 					try:
@@ -1881,7 +1886,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768				
+				buffer = 65536				
 			if args.pathend:
 				for input in args.pathend:
 					try:
@@ -1938,7 +1943,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768				
+				buffer = 65536				
 			if args.cskip:
 				for input in args.cskip:
 					try:
@@ -1998,9 +2003,7 @@ if __name__ == '__main__':
 		'''
 		parser.add_argument('--gen_placeholder', nargs='+', help='Creates nsp or xci placeholder')	
 		'''
-		if args.gen_placeholder:	
-			indent = 1
-			tabs = '\t' * indent							
+		if args.gen_placeholder:		
 			if args.buffer:		
 				for input in args.buffer:
 					try:
@@ -2008,7 +2011,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768
+				buffer = 65536
 	
 			if args.ofolder:		
 				for input in args.ofolder:
@@ -2021,14 +2024,20 @@ if __name__ == '__main__':
 				dir=os.path.abspath(folder)
 				ofolder = os.path.join(dir, 'output')
 			if not os.path.exists(ofolder):
-				os.makedirs(ofolder)		
-			ruta=args.gen_placeholder
-			indent = 1
-			tabs = '\t' * indent	
-			if ruta[-1]=='"':
-				ruta=ruta[:-1]
-			if ruta[0]=='"':
-				ruta=ruta[1:]		
+				os.makedirs(ofolder)	
+			if args.text_file:
+				tfile=args.text_file
+				with open(tfile,"r+", encoding='utf8') as filelist: 	
+					filename = filelist.readline()
+					ruta=os.path.abspath(filename.rstrip('\n'))
+			else:
+				ruta=args.gen_placeholder
+				indent = 1
+				tabs = '\t' * indent	
+				if ruta[-1]=='"':
+					ruta=ruta[:-1]
+				if ruta[0]=='"':
+					ruta=ruta[1:]		
 			extlist=list()
 			if args.type:
 				for t in args.type:
@@ -2041,18 +2050,6 @@ if __name__ == '__main__':
 			if args.filter:
 				for f in args.filter:
 					filter=f	
-			if args.type:
-				for input in args.type:		
-					if input == "xci" or input == "XCI": 
-						export='xci'						
-					elif input == "nsp" or input == "NSP": 	
-						export='nsp'
-					elif input == "nsx" or input == "NSX": 	
-						export='nsp'						
-					elif input == "both" or input == "BOTH": 
-						export='both'													
-					else:
-						print ("Wrong Type!!!")							
 			
 			filelist=list()				
 			ruta=str(ruta)
@@ -2077,6 +2074,7 @@ if __name__ == '__main__':
 					else:		
 						if ruta.endswith(ext.lower()) or ruta.endswith(ext.upper()) or ruta[:-1].endswith(ext.lower()) or ruta[:-1].endswith(ext.upper()):
 							filename = ruta
+							#print(filename)
 							fname=""
 							if args.filter:
 								if filter.lower() in filename.lower():
@@ -2090,10 +2088,11 @@ if __name__ == '__main__':
 				for f in filelist:
 					print(f)
 				'''
-				print(len(filelist))
+				print('Files to process: '+str(len(filelist)))
 				counter=len(filelist)
 				for filepath in filelist:
 					if filepath.endswith('.nsp') or filepath.endswith('.nsx'):
+						export='nsp'
 						try:
 							prlist=list()
 							f = Fs.Nsp(filepath)										
@@ -2127,8 +2126,44 @@ if __name__ == '__main__':
 							counter=int(counter)
 							counter-=1						
 							Print.error('Exception: ' + str(e))		
-							continue					
-					if export=='nsp' or export=='both':
+							continue		
+					if filepath.endswith('.xci'):
+						export='xci'
+						try:
+							prlist=list()
+							f = Fs.Xci(filepath)										
+							contentlist=f.get_content_placeholder(ofolder)
+							#print(contentlist)
+							f.flush()
+							f.close()		
+							if len(prlist)==0:
+								for i in contentlist:
+									prlist.append(i)
+								#print (prlist)
+							else:
+								for j in range(len(contentlist)):
+									notinlist=False
+									for i in range(len(prlist)):
+										#print (contentlist[j][1])
+										#print (contentlist[j][6])
+										#pass
+										if contentlist[j][1] == prlist[i][1]:
+											if contentlist[j][6] > prlist[i][6]:
+												del prlist[i]
+												prlist.append(contentlist[j])
+												notinlist=False
+											elif contentlist[j][6] == prlist[i][6]:				
+												notinlist=False															
+										else:
+											notinlist=True
+									if notinlist == True:
+										prlist.append(contentlist[j])		
+						except BaseException as e:
+							counter=int(counter)
+							counter-=1						
+							Print.error('Exception: ' + str(e))		
+							continue									
+					if export=='nsp':
 						oflist=list()
 						osizelist=list()
 						totSize=0
@@ -2178,7 +2213,111 @@ if __name__ == '__main__':
 								except BaseException as e:
 									counter=int(counter)
 									counter-=1								
-									Print.error('Exception: ' + str(e))			
+									Print.error('Exception: ' + str(e))		
+					if export=='xci':
+						oflist=list()
+						osizelist=list()
+						ototlist=list()
+						totSize=0
+						for i in range(len(prlist)):
+							for j in prlist[i][4]:
+								el=j[0]
+								if el.endswith('.nca'):
+									oflist.append(j[0])
+									#print(j[0])
+									totSize = totSize+j[1]	
+									#print(j[1])
+								ototlist.append(j[0])		
+						sec_hashlist=list()
+						GClist=list()					
+						if filepath.endswith('.xci'):
+							try:
+								f = Fs.Xci(filepath)
+								for file in oflist:
+									sha,size,gamecard=f.file_hash(file)
+									if sha != False:
+										sec_hashlist.append(sha)	
+										osizelist.append(size)	
+										GClist.append([file,gamecard])											
+								f.flush()
+								f.close()	
+							except BaseException as e:
+								Print.error('Exception: ' + str(e))																	
+						basename=str(os.path.basename(os.path.abspath(filepath)))		
+						endname=basename[:-4]+'[PLH].xci'							
+						endfile = os.path.join(ofolder, endname)
+						#print(str(filepath))	
+						#print(str(endfile))	
+						xci_header,game_info,sig_padding,xci_certificate,root_header,upd_header,norm_header,sec_header,rootSize,upd_multiplier,norm_multiplier,sec_multiplier=sq_tools.get_xciheader(oflist,osizelist,sec_hashlist)	 						
+						totSize=len(xci_header)+len(game_info)+len(sig_padding)+len(xci_certificate)+rootSize
+						#print(str(totSize))
+						vskip=False	
+						print('Processing: '+str(filepath))						
+						if os.path.exists(endfile) and os.path.getsize(endfile) == totSize:
+							print('- Placeholder file already exists, skipping...')
+							vskip=True			
+						if vskip==False:																
+							c=0
+							t = tqdm(total=totSize, unit='B', unit_scale=True, leave=False)
+							t.write(tabs+'- Writing XCI header...')
+							outf = open(endfile, 'w+b')
+							outf.write(xci_header)
+							t.update(len(xci_header))		
+							c=c+len(xci_header)
+							t.write(tabs+'- Writing XCI game info...')		
+							outf.write(game_info)	
+							t.update(len(game_info))	
+							c=c+len(game_info)
+							t.write(tabs+'- Generating padding...')
+							outf.write(sig_padding)	
+							t.update(len(sig_padding))		
+							c=c+len(sig_padding)		
+							t.write(tabs+'- Writing XCI certificate...')
+							outf.write(xci_certificate)	
+							t.update(len(xci_certificate))	
+							c=c+len(xci_certificate)		
+							t.write(tabs+'- Writing ROOT HFS0 header...')		
+							outf.write(root_header)
+							t.update(len(root_header))
+							c=c+len(root_header)
+							t.write(tabs+'- Writing UPDATE partition header...')
+							t.write(tabs+'  Calculated multiplier: '+str(upd_multiplier))	
+							outf.write(upd_header)
+							t.update(len(upd_header))
+							c=c+len(upd_header)
+							t.write(tabs+'- Writing NORMAL partition header...')
+							t.write(tabs+'  Calculated multiplier: '+str(norm_multiplier))			
+							outf.write(norm_header)
+							t.update(len(norm_header))
+							c=c+len(norm_header)
+							t.write(tabs+'- Writing SECURE partition header...')
+							t.write(tabs+'  Calculated multiplier: '+str(sec_multiplier))		
+							outf.write(sec_header)
+							t.update(len(sec_header))
+							c=c+len(sec_header)	
+							outf.close()									
+							if filepath.endswith('.xci'):
+								try:
+									GC=False							
+									f = Fs.Xci(filepath)
+									for file in oflist:	
+										if not file.endswith('xml'):
+											for i in range(len(GClist)):
+												if GClist[i][0] == file:
+													GC=GClist[i][1]									
+											f.append_content(endfile,file,buffer,t,includexml=False)
+									f.flush()
+									f.close()	
+									t.close()		
+									counter=int(counter)
+									counter-=1									
+									print(tabs+'> Placeholder was created')		
+									if not args.text_file:	
+										print(tabs+'> Still '+str(counter)+' to go')										
+								except BaseException as e:
+									counter=int(counter)
+									counter-=1								
+									Print.error('Exception: ' + str(e))											
 			except BaseException as e:
 				Print.error('Exception: ' + str(e))		
 								
@@ -2203,7 +2342,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768
+				buffer = 65536
 			for filename in args.license_combo:
 				try:
 					f = Fs.Nsp(filename, 'rb')
@@ -2235,7 +2374,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768
+				buffer = 65536
 			for filename in args.mlicense_combo:
 				try:
 					f = Fs.Nsp(filename, 'rb')
@@ -2268,7 +2407,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768
+				buffer = 65536
 				
 			for filename in args.zip_combo:
 				try:
@@ -2293,7 +2432,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768
+				buffer = 65536
 			if args.fat:		
 				for input in args.fat:
 					try:
@@ -2373,7 +2512,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768
+				buffer = 65536
 			hfs0 = Fs.Hfs0(None, None)
 			hfs0.path = args.create_hfs0
 			if args.ifolder:
@@ -2397,7 +2536,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768
+				buffer = 65536
 			if args.ifolder:
 				ruta = args.ifolder
 				ruta_update=os.path.join(ruta, "update")
@@ -2473,7 +2612,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768
+				buffer = 65536
 			if args.fat:		
 				for input in args.fat:
 					try:
@@ -2552,7 +2691,14 @@ if __name__ == '__main__':
 		# ...................................................						
 		# Supertrimm a xci
 		# ...................................................				
-		if args.xci_super_trim:			
+		if args.xci_super_trim:		
+			try:
+				if str(args.xci_super_trim[1]).lower() == "keepupd":
+					keepupd=True
+				else:
+					keepupd=False
+			except:
+				keepupd=False
 			if args.buffer:		
 				for input in args.buffer:
 					try:
@@ -2560,7 +2706,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768		
+				buffer = 65536		
 			if args.ofolder:		
 				for input in args.ofolder:
 					try:
@@ -2575,8 +2721,9 @@ if __name__ == '__main__':
 						filename=os.path.abspath(filename.rstrip('\n'))		
 						dir=os.path.dirname(os.path.abspath(filename))
 						ofolder =os.path.join(dir, 'output')
-				else:			
-					for filename in args.xci_super_trim:
+				else:
+					if args.xci_super_trim[0] !="":
+						filename=args.xci_super_trim[0]
 						dir=os.path.dirname(os.path.abspath(filename))
 						ofolder =os.path.join(dir, 'output')	
 			if args.fat:		
@@ -2599,7 +2746,7 @@ if __name__ == '__main__':
 						outfile = os.path.join(ofolder, filename)
 						#print(f.path)
 						f.open(filepath, 'rb')
-						f.supertrim(buffer,outfile,ofolder,fat)
+						f.supertrim(buffer,outfile,ofolder,fat,keepupd)
 						f.flush()
 						f.close()
 					except BaseException as e:
@@ -2616,7 +2763,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768		
+				buffer = 65536		
 			if args.ofolder:		
 				for input in args.ofolder:
 					try:
@@ -2675,7 +2822,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768		
+				buffer = 65536		
 			if args.ofolder:		
 				for input in args.ofolder:
 					try:
@@ -2733,7 +2880,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768
+				buffer = 65536
 			if args.ofolder:		
 				for input in args.ofolder:
 					try:
@@ -2791,7 +2938,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768
+				buffer = 65536
 			if args.text_file:
 				tfile=args.text_file
 				with open(tfile,"r+", encoding='utf8') as filelist: 	
@@ -2903,7 +3050,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768
+				buffer = 65536
 			if args.nodelta:		
 				for input in args.nodelta:
 					try:
@@ -3147,7 +3294,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768
+				buffer = 65536
 			if args.romanize:
 				for input in args.ofolder:
 					roman=str(input).upper()
@@ -3596,7 +3743,7 @@ if __name__ == '__main__':
 						else:
 							endname=str(f)
 				endname = (re.sub(r'[\/\\\:\*\?]+', '', endname))
-				endname = re.sub(r'[™©®`~^´ªº¢£€¥$ƒ±¬½¼«»±•²‰œæÆ³☆<<>>]', '', endname)					
+				endname = re.sub(r'[™©®`~^´ªº¢£€¥$ƒ±¬½¼«»±•²‰œæÆ³☆<<>>|]', '', endname)					
 				endname = re.sub(r'[Ⅰ]', 'I', endname);endname = re.sub(r'[Ⅱ]', 'II', endname)
 				endname = re.sub(r'[Ⅲ]', 'III', endname);endname = re.sub(r'[Ⅳ]', 'IV', endname)	
 				endname = re.sub(r'[Ⅴ]', 'V', endname);endname = re.sub(r'[Ⅵ]', 'VI', endname)	
@@ -3609,18 +3756,22 @@ if __name__ == '__main__':
 				endname = re.sub(r'[èêéë]', 'e', endname);endname = re.sub(r'[ÈÊÉË]', 'E', endname)
 				endname = re.sub(r'[ìîíï]', 'i', endname);endname = re.sub(r'[ÌÎÍÏ]', 'I', endname)
 				endname = re.sub(r'[òôóöø]', 'o', endname);endname = re.sub(r'[ÒÔÓÖØ]', 'O', endname)
-				endname = re.sub(r'[ùûúü]', 'u', endname);endname = re.sub(r'[ÙÛÚÜ]', 'U', endname)		
+				endname = re.sub(r'[ùûúü]', 'u', endname);endname = re.sub(r'[ÙÛÚÜ]', 'U', endname)	
+				endname = re.sub(r'[’]', "'", endname);endname = re.sub(r'[“”]', '"', endname)		
 				endname = re.sub(' {3,}', ' ',endname);re.sub(' {2,}', ' ',endname);	
 				try:	
 					endname = endname.replace("( ", "(");endname = endname.replace(" )", ")")
-					endname = endname.replace("[ ", "[");endname = endname.replace(" ]", "]")						
-					endname = endname.replace("[[", "[");endname = endname.replace("]]", "]")	
-					endname = endname.replace("((", "(");endname = endname.replace("))", ")")
-					endname = endname.replace("[]", "");endname = endname.replace("()", "")						
-					endname = endname.replace(" !", "!");endname = endname.replace(" ?", "?")
+					endname = endname.replace("[ ", "[");endname = endname.replace(" ]", "]")
+					endname = endname.replace("[ (", "[(");endname = endname.replace(") ]", ")]")					
+					endname = endname.replace("[]", "");endname = endname.replace("()", "")		
+					endname = endname.replace('" ','"');endname = endname.replace(' "','"')						
+					endname = endname.replace(" !", "!");endname = endname.replace(" ?", "?")					
 					endname = endname.replace("  ", " ");endname = endname.replace("  ", " ")
-					endname = endname.replace('"', '')		
-				except:pass				
+					endname = endname.replace('"', '');	
+					endname = endname.replace(')', ') ');endname = endname.replace(']', '] ')
+					endname = endname.replace("[ (", "[(");endname = endname.replace(") ]", ")]")					
+					endname = endname.replace("  ", " ")					
+				except:pass					
 				if endname[-1]==' ':
 					endname=endname[:-1]
 				if fat=="fat32" and fx=="folder":			
@@ -3900,7 +4051,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768
+				buffer = 65536
 	
 			if args.ofolder:		
 				for input in args.ofolder:
@@ -4048,7 +4199,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768
+				buffer = 65536
 			if args.text_file:
 				tfile=args.text_file
 				with open(tfile,"r+", encoding='utf8') as filelist: 	
@@ -4516,8 +4667,32 @@ if __name__ == '__main__':
 							date=now.strftime("%x")+". "+now.strftime("%X")								
 							errfile.write(date+' Error in "ADD TO DATABASE" function:'+'\n')	
 							errfile.write("Route "+str(filename)+'\n')							
-							errfile.write('- Exception: ' + str(e)+ '\n')							
-							
+							errfile.write('- Exception: ' + str(e)+ '\n')		
+
+		#parser.add_argument('-nscdb_new', '--addtodb_new', nargs='+', help='Adds content to database')										
+		if args.addtodb_new:			
+			if args.db_file:	
+				DBfile=args.db_file						
+				if args.text_file:
+					tfile=args.text_file
+					with open(tfile,"r+", encoding='utf8') as filelist: 	
+						filename = filelist.readline()
+						filename=os.path.abspath(filename.rstrip('\n'))
+				else:				
+					for filename in args.addtodb_new:
+						filename=filename
+				if (filename.lower()).endswith('.nsp') or (filename.lower()).endswith('.nsx'):
+					try:
+						f = Fs.Nsp(filename, 'rb')
+						f.Incorporate_to_permaDB(DBfile)					
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+				if (filename.lower()).endswith('.xci'):						
+					try:
+						f = Fs.Xci(filename)
+						f.Incorporate_to_permaDB(DBfile)					
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))		
 		# ...................................................						
 		# Show info
 		# ...................................................					
@@ -4672,7 +4847,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768			
+				buffer = 65536			
 			ofolder=False
 			if args.ofolder:		
 				for input in args.ofolder:
@@ -4808,7 +4983,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768			
+				buffer = 65536			
 			ofolder=False
 			if args.ofolder:		
 				for input in args.ofolder:
@@ -4840,9 +5015,9 @@ if __name__ == '__main__':
 					basename=basename[:-4]					
 					ofolder =os.path.join(dir, basename)	
 			if not os.path.exists(ofolder):
-				os.makedirs(ofolder)	
+				os.makedirs(ofolder)		
 			if filename.endswith('.nsp'):		
-				try:	
+				try:
 					files_list=sq_tools.ret_nsp_offsets(filename)	
 					f = Fs.Nsp(filename, 'rb')
 					f.extract_nca(ofolder,files_list,buffer)
@@ -4871,7 +5046,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768			
+				buffer = 65536			
 			ofolder=False
 			if args.ofolder:		
 				for input in args.ofolder:
@@ -5195,19 +5370,85 @@ if __name__ == '__main__':
 						Print.error('Exception: ' + str(e))				
 		Status.close()
 	
+		#parser.add_argument('--set_cnmt_titleid', nargs='+', help='Changes cnmt.nca titleid')			
+		if args.set_cnmt_titleid:	
+			filename=args.set_cnmt_titleid[0]
+			value=args.set_cnmt_titleid[1]
+			if filename.endswith('.nca'):
+				try:
+					f = Fs.Nca(filename, 'r+b')
+					f.header.setTitleID(value)
+					print(hx(f.header.getTitleID()))
+					f.flush()
+					f.close()	
+					############################					
+					f = Fs.Nca(filename, 'r+b')
+					f.write_cnmt_titleid(value)
+					#print(hx(f.get_cnmt_titleid()))
+					f.flush()
+					f.close()	
+					############################					
+					f = Fs.Nca(filename, 'r+b')
+					#f.write_cnmt_titleid(value)
+					print(hx(f.get_cnmt_titleid()))
+					f.flush()
+					f.close()	
+					############################
+					f = Fs.Nca(filename, 'r+b')
+					sha=f.calc_pfs0_hash()
+					Print.info(tabs + '- Calculated hash from pfs0: ')
+					Print.info(tabs +'  + '+ str(hx(sha)))									
+					f.flush()
+					f.close()
+					f = Fs.Nca(filename, 'r+b')
+					f.set_pfs0_hash(sha)
+					f.flush()
+					f.close()
+					############################
+					f = Fs.Nca(filename, 'r+b')
+					sha2=f.calc_htable_hash()
+					Print.info(tabs + '- Calculated hash from pfs0: ')
+					Print.info(tabs +'  + '+ str(hx(sha2)))									
+					f.flush()
+					f.close()						
+					f = Fs.Nca(filename, 'r+b')
+					f.header.set_htable_hash(sha2)
+					f.flush()
+					f.close()
+					########################
+					f = Fs.Nca(filename, 'r+b')
+					sha3=f.header.calculate_hblock_hash()
+					Print.info(tabs + '- Calculated hash from pfs0: ')
+					Print.info(tabs +'  + '+ str(hx(sha3)))									
+					f.flush()
+					f.close()						
+					f = Fs.Nca(filename, 'r+b')
+					f.header.set_hblock_hash(sha3)
+					f.flush()
+					f.close()
+					########################
+					with open(filename, 'r+b') as file:			
+						nsha=sha256(file.read()).hexdigest()
+					newname=nsha[:32] + '.cnmt.nca'				
+					Print.info('New name: ' + newname )
+					dir=os.path.dirname(os.path.abspath(filename))
+					newpath=dir+ '\\' + newname
+					os.rename(filename, newpath)					
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))					
 		# ...................................................						
 		# Change version number from nca
 		# ...................................................									
 
-		if args.patchversion:		
-			for input in args.patchversion:
-				try:
-					number = input
-				except BaseException as e:
-					Print.error('Exception: ' + str(e))
-		else:
-			number = 65536
 		if args.set_cnmt_version:
+			if args.patchversion:		
+				for input in args.patchversion:
+					try:
+						number = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+			else:
+				number = 65536		
 			for filename in args.set_cnmt_version:
 				if filename.endswith('.nca'):
 					try:
@@ -5516,6 +5757,8 @@ if __name__ == '__main__':
 					if x[-1]=='*':
 						x=x[:-1]
 						extlist.append(x)
+					elif x==".00":
+						extlist.append('00')
 			#print(extlist)			
 			if args.filter:
 				for f in args.filter:
@@ -6091,45 +6334,49 @@ if __name__ == '__main__':
 									ctitl=f.get_title(dlcid)
 									f.flush()
 									f.close()										
-							elif dlcrname == False or dlcrname == 'tag':						
-								dlcname=str(os.path.basename(os.path.abspath(filepath)))					
-								tid1=list()
-								tid2=list()
-								tid1=[pos for pos, char in enumerate(filepath) if char == '[']
-								tid2=[pos for pos, char in enumerate(filepath) if char == ']']		
-								if len(tid1)>=len(tid2):
-									lentlist=len(tid1)					
-								elif len(tid1)<len(tid2):
-									lentlist=len(tid2)						
-								for i in range(lentlist):	
-									i1=tid1[i]
-									i2=tid2[i]+1
-									t=filepath[i1:i2]
-									dlcname=dlcname.replace(t,'')
-									dlcname=dlcname.replace('  ',' ')																		
-								tid3=[pos for pos, char in enumerate(dlcname) if char == '(']
-								tid4=[pos for pos, char in enumerate(dlcname) if char == ')']									
-								if len(tid3)>=len(tid4):
-									lentlist=len(tid3)					
-								elif len(tid3)<len(tid4):
-									lentlist=len(tid4)								
-								for i in range(lentlist):	
-									i3=tid3[i]
-									i4=tid4[i]+1
-									t=dlcname[i3:i4]		
-									dlcname=dlcname.replace(t,'')
-									dlcname=dlcname.replace('  ',' ')
-								if dlcname.endswith('.xci') or dlcname.endswith('.nsp'):
-									dlcname=dlcname[:-4]
-								if dlcname.endswith(' '):
-									dlcname=dlcname[:-1]
+							elif dlcrname == False or dlcrname == 'tag':					
+								nutdbname=nutdb.get_dlcname(dlcid)
+								if nutdbname!=False:
+									dlcname=nutdbname	
+								else:	
+									dlcname=str(os.path.basename(os.path.abspath(filepath)))					
+									tid1=list()
+									tid2=list()
+									tid1=[pos for pos, char in enumerate(filepath) if char == '[']
+									tid2=[pos for pos, char in enumerate(filepath) if char == ']']		
+									if len(tid1)>=len(tid2):
+										lentlist=len(tid1)					
+									elif len(tid1)<len(tid2):
+										lentlist=len(tid2)						
+									for i in range(lentlist):	
+										i1=tid1[i]
+										i2=tid2[i]+1
+										t=filepath[i1:i2]
+										dlcname=dlcname.replace(t,'')
+										dlcname=dlcname.replace('  ',' ')																		
+									tid3=[pos for pos, char in enumerate(dlcname) if char == '(']
+									tid4=[pos for pos, char in enumerate(dlcname) if char == ')']									
+									if len(tid3)>=len(tid4):
+										lentlist=len(tid3)					
+									elif len(tid3)<len(tid4):
+										lentlist=len(tid4)								
+									for i in range(lentlist):	
+										i3=tid3[i]
+										i4=tid4[i]+1
+										t=dlcname[i3:i4]		
+										dlcname=dlcname.replace(t,'')
+										dlcname=dlcname.replace('  ',' ')
+									if dlcname.endswith('.xci') or dlcname.endswith('.nsp'):
+										dlcname=dlcname[:-4]
+									if dlcname.endswith(' '):
+										dlcname=dlcname[:-1]
 								ctitl=dlcname	
 								if dlcrname == 'tag':
 									if filepath.endswith('.xci'):								
 										f = Fs.Xci(dlcfile)	
 									elif filepath.endswith('.nsp'):	
 										f = Fs.Nsp(dlcfile)						
-									dlctag=f.get_title(dlcid)	
+									dlctag=f.get_title(dlcid,tag=True)	
 									dlctag='['+dlctag+']'
 									ctitl=ctitl+' '+dlctag
 									f.flush()
@@ -6202,7 +6449,7 @@ if __name__ == '__main__':
 						endname=endname[:-1]					
 					#endname = re.sub(r'[\/\\\:\*\?\"\<\>\|\.\s™©®()\~]+', ' ', endname)							
 					endname = (re.sub(r'[\/\\\:\*\?]+', '', endname))					
-					endname = re.sub(r'[™©®`~^´ªº¢£€¥$ƒ±¬½¼«»±•²‰œæÆ³☆<<>>]', '', endname)	
+					endname = re.sub(r'[™©®`~^´ªº¢£€¥$ƒ±¬½¼«»±•²‰œæÆ³☆<<>>|]', '', endname)	
 					endname = re.sub(r'[Ⅰ]', 'I', endname);endname = re.sub(r'[Ⅱ]', 'II', endname)
 					endname = re.sub(r'[Ⅲ]', 'III', endname);endname = re.sub(r'[Ⅳ]', 'IV', endname)	
 					endname = re.sub(r'[Ⅴ]', 'V', endname);endname = re.sub(r'[Ⅵ]', 'VI', endname)	
@@ -6215,17 +6462,23 @@ if __name__ == '__main__':
 					endname = re.sub(r'[èêéë]', 'e', endname);endname = re.sub(r'[ÈÊÉË]', 'E', endname)
 					endname = re.sub(r'[ìîíï]', 'i', endname);endname = re.sub(r'[ÌÎÍÏ]', 'I', endname)
 					endname = re.sub(r'[òôóöø]', 'o', endname);endname = re.sub(r'[ÒÔÓÖØ]', 'O', endname)
-					endname = re.sub(r'[ùûúü]', 'u', endname);endname = re.sub(r'[ÙÛÚÜ]', 'U', endname)		
+					endname = re.sub(r'[ùûúü]', 'u', endname);endname = re.sub(r'[ÙÛÚÜ]', 'U', endname)
+					endname = re.sub(r'[’]', "'", endname);endname = re.sub(r'[“”]', '"', endname)		
 					endname = re.sub(' {3,}', ' ',endname);re.sub(' {2,}', ' ',endname);	
 					try:	
 						endname = endname.replace("( ", "(");endname = endname.replace(" )", ")")
-						endname = endname.replace("[ ", "[");endname = endname.replace(" ]", "]")						
-						endname = endname.replace("[[", "[");endname = endname.replace("]]", "]")	
-						endname = endname.replace("((", "(");endname = endname.replace("))", ")")
-						endname = endname.replace("[]", "");endname = endname.replace("()", "")						
-						endname = endname.replace(" !", "!");endname = endname.replace(" ?", "?")
+						endname = endname.replace("[ ", "[");endname = endname.replace(" ]", "]")	
+						endname = endname.replace("[ (", "[(");endname = endname.replace(") ]", ")]")						
+						endname = endname.replace("[]", "");endname = endname.replace("()", "")		
+						endname = endname.replace('" ','"');endname = endname.replace(' "','"')						
+						endname = endname.replace(" !", "!");endname = endname.replace(" ?", "?")					
 						endname = endname.replace("  ", " ");endname = endname.replace("  ", " ")
-						endname = endname.replace('"', '')		
+						endname = endname.replace('"', '');	
+						endname = endname.replace(')', ') ');endname = endname.replace(']', '] ')
+						endname = endname.replace("[ (", "[(");endname = endname.replace(") ]", ")]")						
+						endname = endname.replace("  ", " ")						
+						if dlcrname == 'tag':
+							endname = endname.replace('DLC number', 'DLC')							
 					except:pass					
 					if filepath.endswith('.xci'):								
 						endname=endname+'.xci'
@@ -6450,7 +6703,7 @@ if __name__ == '__main__':
 				endname=converter.do(endname)	
 				endname=endname[0].upper()+endname[1:]						
 			endname = (re.sub(r'[\/\\\:\*\?]+', '', endname))
-			endname = re.sub(r'[™©®`~^´ªº¢£€¥$ƒ±¬½¼«»±•²‰œæÆ³☆<<>>]', '', endname)				
+			endname = re.sub(r'[™©®`~^´ªº¢£€¥$ƒ±¬½¼«»±•²‰œæÆ³☆<<>>|]', '', endname)				
 			endname = re.sub(r'[Ⅰ]', 'I', endname);endname = re.sub(r'[Ⅱ]', 'II', endname)
 			endname = re.sub(r'[Ⅲ]', 'III', endname);endname = re.sub(r'[Ⅳ]', 'IV', endname)	
 			endname = re.sub(r'[Ⅴ]', 'V', endname);endname = re.sub(r'[Ⅵ]', 'VI', endname)	
@@ -6463,18 +6716,22 @@ if __name__ == '__main__':
 			endname = re.sub(r'[èêéë]', 'e', endname);endname = re.sub(r'[ÈÊÉË]', 'E', endname)
 			endname = re.sub(r'[ìîíï]', 'i', endname);endname = re.sub(r'[ÌÎÍÏ]', 'I', endname)
 			endname = re.sub(r'[òôóöø]', 'o', endname);endname = re.sub(r'[ÒÔÓÖØ]', 'O', endname)
-			endname = re.sub(r'[ùûúü]', 'u', endname);endname = re.sub(r'[ÙÛÚÜ]', 'U', endname)		
+			endname = re.sub(r'[ùûúü]', 'u', endname);endname = re.sub(r'[ÙÛÚÜ]', 'U', endname)
+			endname = re.sub(r'[’]', "'", endname);endname = re.sub(r'[“”]', '"', endname)		
 			endname = re.sub(' {3,}', ' ',endname);re.sub(' {2,}', ' ',endname);	
 			try:	
 				endname = endname.replace("( ", "(");endname = endname.replace(" )", ")")
-				endname = endname.replace("[ ", "[");endname = endname.replace(" ]", "]")						
-				endname = endname.replace("[[", "[");endname = endname.replace("]]", "]")	
-				endname = endname.replace("((", "(");endname = endname.replace("))", ")")
-				endname = endname.replace("[]", "");endname = endname.replace("()", "")						
-				endname = endname.replace(" !", "!");endname = endname.replace(" ?", "?")
+				endname = endname.replace("[ ", "[");endname = endname.replace(" ]", "]")
+				endname = endname.replace("[ (", "[(");endname = endname.replace(") ]", ")]")					
+				endname = endname.replace("[]", "");endname = endname.replace("()", "")		
+				endname = endname.replace('" ','"');endname = endname.replace(' "','"')						
+				endname = endname.replace(" !", "!");endname = endname.replace(" ?", "?")					
 				endname = endname.replace("  ", " ");endname = endname.replace("  ", " ")
-				endname = endname.replace('"', '')			
-			except:pass			
+				endname = endname.replace('"', '');	
+				endname = endname.replace(')', ') ');endname = endname.replace(']', '] ')
+				endname = endname.replace("[ (", "[(");endname = endname.replace(") ]", ")]")				
+				endname = endname.replace("  ", " ")							
+			except:pass		
 			if endname[-1]==' ':
 				endname=endname[:-1]	
 			ext=ruta[-4:]
@@ -6572,7 +6829,7 @@ if __name__ == '__main__':
 						endname=endname[0].upper()+endname[1:]	
 					if san == True:		
 						endname = (re.sub(r'[\/\\\:\*\?]+', '', endname))					
-						endname = re.sub(r'[™©®`~^´ªº¢£€¥$ƒ±¬½¼«»±•²‰œæÆ³☆<<>>]', '', endname)	
+						endname = re.sub(r'[™©®`~^´ªº¢£€¥$ƒ±¬½¼«»±•²‰œæÆ³☆<<>>|]', '', endname)	
 						endname = re.sub(r'[Ⅰ]', 'I', endname);endname = re.sub(r'[Ⅱ]', 'II', endname)
 						endname = re.sub(r'[Ⅲ]', 'III', endname);endname = re.sub(r'[Ⅳ]', 'IV', endname)	
 						endname = re.sub(r'[Ⅴ]', 'V', endname);endname = re.sub(r'[Ⅵ]', 'VI', endname)	
@@ -6586,16 +6843,20 @@ if __name__ == '__main__':
 						endname = re.sub(r'[ìîíï]', 'i', endname);endname = re.sub(r'[ÌÎÍÏ]', 'I', endname)
 						endname = re.sub(r'[òôóöø]', 'o', endname);endname = re.sub(r'[ÒÔÓÖØ]', 'O', endname)
 						endname = re.sub(r'[ùûúü]', 'u', endname);endname = re.sub(r'[ÙÛÚÜ]', 'U', endname)		
+						endname = re.sub(r'[’]', "'", endname);endname = re.sub(r'[“”]', '"', endname)		
 						endname = re.sub(' {3,}', ' ',endname);re.sub(' {2,}', ' ',endname);	
 					try:	
 						endname = endname.replace("( ", "(");endname = endname.replace(" )", ")")
-						endname = endname.replace("[ ", "[");endname = endname.replace(" ]", "]")						
-						endname = endname.replace("[[", "[");endname = endname.replace("]]", "]")	
-						endname = endname.replace("((", "(");endname = endname.replace("))", ")")
-						endname = endname.replace("[]", "");endname = endname.replace("()", "")						
-						endname = endname.replace(" !", "!");endname = endname.replace(" ?", "?")
+						endname = endname.replace("[ ", "[");endname = endname.replace(" ]", "]")
+						endname = endname.replace("[ (", "[(");endname = endname.replace(") ]", ")]")						
+						endname = endname.replace("[]", "");endname = endname.replace("()", "")		
+						endname = endname.replace('" ','"');endname = endname.replace(' "','"')						
+						endname = endname.replace(" !", "!");endname = endname.replace(" ?", "?")					
 						endname = endname.replace("  ", " ");endname = endname.replace("  ", " ")
-						endname = endname.replace('"', '')							
+						endname = endname.replace('"', '');	
+						endname = endname.replace(')', ') ');endname = endname.replace(']', '] ')
+						endname = endname.replace("[ (", "[(");endname = endname.replace(") ]", ")]")						
+						endname = endname.replace("  ", " ")							
 					except:pass		
 					newpath=os.path.join(dir,endname)					
 					print('Old Filename: '+basename)
@@ -6634,7 +6895,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768	
+				buffer = 65536	
 			if args.ofolder:		
 				for var in args.ofolder:
 					try:
@@ -8186,7 +8447,8 @@ if __name__ == '__main__':
 								break
 						except:
 							continue
-						
+				if cctag=="BASE" and fileversion == 'unknown':
+					fileversion=0
 				#print(fileid+' '+str(fileversion)+' '+cctag)
 				if fileid == 'unknown' or fileversion == 'unknown':
 					print(fileid+' '+str(fileversion))					
@@ -8282,6 +8544,10 @@ if __name__ == '__main__':
 					
 				#print(fileid+' '+str(fileversion)+' '+cctag)
 				#print(filepath)	
+
+				if cctag=="BASE" and fileversion == 'unknown':
+					fileversion=0				
+				
 				if fileid == 'unknown' or fileversion == 'unknown':
 					print(fileid+' '+str(fileversion))					
 					print(str(os.path.basename(os.path.abspath(filepath))))
@@ -8478,7 +8744,9 @@ if __name__ == '__main__':
 								break
 						except:
 							continue
-						
+
+				if cctag=="BASE" and fileversion == 'unknown':
+					fileversion=0						
 				#print(fileid+' '+str(fileversion)+' '+cctag)
 				if fileid == 'unknown' or fileversion == 'unknown':
 					print(fileid+' '+str(fileversion))					
@@ -8571,7 +8839,8 @@ if __name__ == '__main__':
 								break
 						except:
 							continue
-					
+				if cctag=="BASE" and fileversion == 'unknown':
+					fileversion=0					
 				#print(fileid+' '+str(fileversion)+' '+cctag)
 				#print(filepath)	
 				if fileid == 'unknown' or fileversion == 'unknown':
@@ -8618,6 +8887,277 @@ if __name__ == '__main__':
 			try:os.remove('File01.dshlv')
 			except:pass						
 		
+		#parser.add_argument('-blckl', '--black_list', nargs='+', help='Deletes blacklisted files from a list')			
+		if args.black_list:
+			try:
+				if args.fexport:		
+					for input in args.fexport:
+						try:
+							exportlist = input
+						except BaseException as e:
+							Print.error('Exception: ' + str(e))					
+				baselist=list()		
+				addonlist=list()		
+				updlist=list();updtomove=list()
+				blacklist=list()
+				if args.black_list:
+					t_blacklist=args.black_list[0]
+					if args.black_list[1]:
+						if str(args.black_list[1]).lower()=='true':
+							blacklistbaseid=True
+						else:
+							blacklistbaseid=False
+					else:	
+						blacklistbaseid=False
+					with open(t_blacklist,"r+", encoding='utf8') as f: 	
+						for line in f:
+							fp=line.strip()
+							blacklist.append(fp)	
+				if args.text_file:	
+					filelist2=list()				
+					tfile2=args.text_file
+					with open(tfile2,"r+", encoding='utf8') as f: 	
+						for line in f:
+							fp=line.strip()
+							filelist2.append(fp)	
+				else:						
+					filelist2=list()			
+					ruta=args.cr_incl_list[0]			
+					if ruta[-1]=='"':
+						ruta=ruta[:-1]
+					if ruta[0]=='"':
+						ruta=ruta[1:]	
+					extlist=list()
+					extlist.append('.nsp')
+					extlist.append('.xci')
+					if args.filter:
+						for f in args.filter:
+							filter=f	
+					#print(ruta)		
+					try:
+						fname=""
+						binbin='RECYCLE.BIN'
+						for ext in extlist:
+							#print (ext)
+							#print (ruta)
+							if os.path.isdir(ruta):
+								for dirpath, dirnames, filenames in os.walk(ruta):
+									for filename in [f for f in filenames if f.endswith(ext.lower()) or f.endswith(ext.upper()) or f[:-1].endswith(ext.lower()) or f[:-1].endswith(ext.lower())]:
+										fname=""
+										if args.filter:
+											if filter.lower() in filename.lower():
+												fname=filename
+										else:
+											fname=filename
+											#print(fname)
+										if fname != "":
+											if binbin.lower() not in filename.lower():
+												filelist2.append(os.path.join(dirpath, filename))
+							else:		
+								if ruta.endswith(ext.lower()) or ruta.endswith(ext.upper()) or ruta[:-1].endswith(ext.lower()) or ruta[:-1].endswith(ext.upper()):
+									filename = ruta
+									#print(ruta)
+									fname=""
+									if args.filter:
+										if filter.lower() in filename.lower():
+											fname=filename
+									else:
+										fname=filename		
+									if fname != "":
+										if binbin.lower() not in filename.lower():					
+											filelist2.append(filename)	
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+						pass
+				test2="";test=""
+				Datashelve = dbmodule.Dict('File01.dshlv');c=0
+				for filepath in filelist2:
+					fileid='unknown';fileversion='unknown';cctag='unknown'	
+					try:
+						fileid,fileversion,cctag,nG,nU,nD,baseid=listmanager.parsetags(filepath)
+					except:pass	
+					if 	cctag !='unknown':
+						try:
+							Datashelve[str(fileid)]=[filepath,str(fileid),fileversion,cctag,nG,nU,nD,baseid]					
+						except: pass	
+				del filelist2	
+				tfile=open(exportlist,"w", encoding='utf8')	
+				tfile.close()					
+				for filepath in blacklist:
+					fileid='unknown';fileversion='unknown';cctag='unknown'	
+					try:
+						fileid,fileversion,cctag,nG,nU,nD,baseid=listmanager.parsetags(filepath)
+						#print(baseid)
+					except:pass	
+					if 	cctag !='unknown':		
+						try:
+							if str(fileid) in Datashelve:
+								del Datashelve[str(fileid)]
+							else:
+								keylist=list()
+								for k in Datashelve.keys():
+									keylist.append(k)
+								for k in keylist:								
+									if k in Datashelve:
+										entry=Datashelve[k]
+										test=str(entry[0]).lower()
+										fp=str(filepath).lower()
+										if test==fp:
+											del Datashelve[k]										
+							if blacklistbaseid==False:
+								pass
+							else:
+								keylist=list()
+								for k in Datashelve.keys():
+									keylist.append(k)
+								for k in keylist:								
+									if k in Datashelve:
+										entry=Datashelve[k]
+										test=str(entry[-1]).lower()
+										baseid=str(baseid).lower()
+										if test==baseid:
+											del Datashelve[k]												
+						except BaseException as e:
+							Print.error('Exception: ' + str(e))	
+							continue
+				del blacklist		
+				for k in Datashelve.keys():						
+					with open(exportlist,"a", encoding='utf8') as tfile: 
+						entry=Datashelve[k]
+						fp=str(entry[0])
+						tfile.write(fp+'\n')										
+				Datashelve.close()		
+				try:os.remove('File01.dshlv')
+				except:pass		
+			except:pass
+			
+		#parser.add_argument('-chdlcn', '--chck_dlc_numb', nargs='+', help='Checks if xci has corrent number of dlcs')				
+		if args.chck_dlc_numb:
+			try:
+				if args.fexport:		
+					for input in args.fexport:
+						try:
+							exportlist = input
+						except BaseException as e:
+							Print.error('Exception: ' + str(e))					
+				baselist=list()		
+				addonlist=list()		
+				updlist=list();updtomove=list()
+				dlclist=list()
+				if args.chck_dlc_numb:
+					t_dlc_list=args.chck_dlc_numb[0]
+					with open(t_dlc_list,"r+", encoding='utf8') as f: 	
+						for line in f:
+							fp=line.strip()
+							dlclist.append(fp)	
+				if args.text_file:	
+					filelist2=list()				
+					tfile2=args.text_file
+					with open(tfile2,"r+", encoding='utf8') as f: 	
+						for line in f:
+							fp=line.strip()
+							filelist2.append(fp)	
+				else:						
+					filelist2=list()			
+					ruta=args.cr_incl_list[0]			
+					if ruta[-1]=='"':
+						ruta=ruta[:-1]
+					if ruta[0]=='"':
+						ruta=ruta[1:]	
+					extlist=list()
+					extlist.append('.nsp')
+					extlist.append('.xci')
+					if args.filter:
+						for f in args.filter:
+							filter=f	
+					#print(ruta)		
+					try:
+						fname=""
+						binbin='RECYCLE.BIN'
+						for ext in extlist:
+							#print (ext)
+							#print (ruta)
+							if os.path.isdir(ruta):
+								for dirpath, dirnames, filenames in os.walk(ruta):
+									for filename in [f for f in filenames if f.endswith(ext.lower()) or f.endswith(ext.upper()) or f[:-1].endswith(ext.lower()) or f[:-1].endswith(ext.lower())]:
+										fname=""
+										if args.filter:
+											if filter.lower() in filename.lower():
+												fname=filename
+										else:
+											fname=filename
+											#print(fname)
+										if fname != "":
+											if binbin.lower() not in filename.lower():
+												filelist2.append(os.path.join(dirpath, filename))
+							else:		
+								if ruta.endswith(ext.lower()) or ruta.endswith(ext.upper()) or ruta[:-1].endswith(ext.lower()) or ruta[:-1].endswith(ext.upper()):
+									filename = ruta
+									#print(ruta)
+									fname=""
+									if args.filter:
+										if filter.lower() in filename.lower():
+											fname=filename
+									else:
+										fname=filename		
+									if fname != "":
+										if binbin.lower() not in filename.lower():					
+											filelist2.append(filename)	
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+						pass
+				test2="";test=""
+				Datashelve = dbmodule.Dict('File01.dshlv');c=0
+				for filepath in filelist2:
+					fileid='unknown';fileversion='unknown';cctag='unknown'	
+					try:
+						fileid,fileversion,cctag,nG,nU,nD,baseid=listmanager.parsetags(filepath)
+					except:pass	
+					if 	cctag !='unknown':
+						try:
+							Datashelve[str(fileid)]=[filepath,str(fileid),fileversion,cctag,nG,nU,nD,baseid]					
+						except: pass	
+				del filelist2	
+				tfile=open(exportlist,"w", encoding='utf8')	
+				tfile.close()					
+				keylist=list()
+				for k in Datashelve.keys():
+					keylist.append(k)				
+				for k in keylist:								
+					if k in Datashelve:
+						entry=Datashelve[k]
+						numbDLC=entry[6]
+						test=str(entry[1]).lower()
+						count=0
+						dlcpaths=list()
+						# test2='['+test[:-4]
+						for filepath in dlclist:
+							fileid='unknown';fileversion='unknown';cctag='unknown'	
+							# print(test2)
+							# if test2 in str(filepath).lower():
+							try:
+								# print(filepath)
+								fileid,fileversion,cctag,nG,nU,nD,baseid=listmanager.parsetags(filepath)
+								# print(baseid)
+								# print(test)
+								baseid=baseid.lower()
+								if (str(baseid).lower())==test:
+									if not filepath in dlcpaths:
+										count+=1
+										dlcpaths.append(filepath)
+									dlclist.remove(filepath)
+							except BaseException as e:
+								Print.error('Exception: ' + str(e))
+								pass
+							# print(str(count))
+							# print(str(numbDLC))							
+						if count>int(numbDLC):
+							with open(exportlist,"a", encoding='utf8') as tfile: 
+								tfile.write(str(entry[0])+'\n')									
+				Datashelve.close()		
+				try:os.remove('File01.dshlv')
+				except:pass		
+			except:pass		
 		# ...................................................						
 		# Restore. File Restoration
 		# ...................................................
@@ -8631,7 +9171,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768	
+				buffer = 65536	
 			if not os.path.exists(ofolder):
 				os.makedirs(ofolder)	
 			if args.text_file:

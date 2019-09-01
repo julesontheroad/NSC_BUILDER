@@ -7,10 +7,10 @@ py/ztools/Fs/__pycache__
 py/ztools/lib/__pycache__
 py/list.txt
 py/advlist.txt
-py/ztools/pythac
 py/ztools/hactool.exe
 py/ztools/nstool.exe
-py/ztools/File01.dat
-py/ztools/File01.bak
-py/ztools/File01.dir
+py/ztools/dbwork
 py/badfiles.txt
+py/mlist.txt
+py/splist.txt
+py/zconfig/DB/

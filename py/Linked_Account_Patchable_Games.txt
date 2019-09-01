@@ -85,6 +85,7 @@ NOT PATCHABLE IN NSCB_V0.89
 -------------------------------------------------------------------------------------
 BIOHAZARD 7 resident evil cloud version [BASE][01006EA00A294000][v0][JP].nsp - NO
 Danger Mouse The Danger Games [BASE][01003ED0099B0000][v0][US].nsp - NO
+Eiyudensetu AkatukinoKiseki Mobile [0100D4900DEF4000][v0].nsp - NO
 GALAK-Z Variant S [BASE][0100C9800A454000][v0][US].nsp - NO
 GALAK-Z Variant S [UPD][0100C9800A454800][v131072][US].nsp - NO
 Gems of War [BASE][0100BD800986E000][v0][US].nsp - NO

@@ -849,7 +849,7 @@ echo.
 echo SPECIAL OPTIONS:
 echo Input "4" to erase deltas from nsp files
 echo Input "5" to rename xci or nsp files
-echo Input "6" to xci supertrimmer
+echo Input "6" to xci supertrimmer\trimmer\untrimmer
 echo Input "7" to rebuild nsp by cnmt order
 echo Input "8" to verify files
 echo.
@@ -868,8 +868,7 @@ if /i "%bs%"=="4" set "vrepack=nodelta"
 if /i "%bs%"=="4" goto s_KeyChange_skip
 if /i "%bs%"=="5" set "vrepack=renamef"
 if /i "%bs%"=="5" goto rename
-if /i "%bs%"=="6" set "vrepack=xci_supertrimmer"
-if /i "%bs%"=="6" goto s_KeyChange_skip
+if /i "%bs%"=="6" goto s_trimmer_selection
 if /i "%bs%"=="7" set "vrepack=rebuild"
 if /i "%bs%"=="7" goto s_KeyChange_skip
 if /i "%bs%"=="8" set "vrepack=verify"
@@ -955,6 +954,46 @@ if /i "%bs%"=="9" set "vkey=-kp 9"
 if /i "%bs%"=="9" set "capRSV=--RSVcap 537919488"
 if /i "%vkey%"=="none" echo WRONG CHOICE
 if /i "%vkey%"=="none" goto s_KeyChange_wrongchoice
+goto s_KeyChange_skip
+
+:s_trimmer_selection
+echo *******************************************************
+echo SUPERTRIMMING\TRIMMING\UNTRIMMING
+echo *******************************************************
+echo DESCRYPTION:
+echo - Supetrimming
+echo   Removes System Firmware update, empties update partition, 
+echo   removes final and middle padding, removes logo partition
+echo   removes game update, keeps game certificate if exists
+echo   (Perfect for tinfoil installation)
+echo - Supetrimming  keeping game updates
+echo   Same as before but keeps game updates
+echo - Trimming
+echo   Removes final padding (empty data)
+echo - UnTrimming
+echo   Undoes the trimming of a normal trimming operation
+echo.
+echo Input "1" Supertrimm
+echo Input "2" Supertrimm keeping game updates
+echo Input "3" Trimm
+echo Input "4" UnTrimm
+echo.
+ECHO ******************************************
+echo Or Input "b" to return to the list options
+ECHO ******************************************
+echo.
+set /p bs="Enter your choice: "
+set bs=%bs:"=%
+set "vrepack=none"
+if /i "%bs%"=="1" set "vrepack=xci_supertrimmer"
+if /i "%bs%"=="2" set "vrepack=xci_supertrimmer_keep_upd"
+if /i "%bs%"=="3" set "vrepack=xci_trimmer"
+if /i "%bs%"=="4" set "vrepack=xci_untrimmer"
+if /i "%vrepack%"=="none" echo WRONG CHOICE
+if /i "%vrepack%"=="none" goto s_trimmer_selection
+ECHO ******************************************
+echo Or Input "b" to return to the list options
+ECHO ******************************************
 goto s_KeyChange_skip
 
 :s_vertype
@@ -1124,11 +1163,14 @@ if /i "%addlangue%"=="none" goto s_rename_wrongchoice3
 echo.
 :s_rename_wrongchoice4
 echo *******************************************************
-echo KEEP DLC NAMES
+echo DLC NAMES FALLBACK
 echo *******************************************************
-echo Either keep name without tags or use DLC NUMBER X as name
-echo NOTE: This is done this way since dlc names can't be read
-echo from file, only dlc numbers
+echo Current version request dlc names to nutdb, this option
+echo states the fallback system to employ in case the name
+echo can't be retrieved.
+echo.
+echo Normal format basename [contentname]
+echo Option 3 format basename [contentname] [DLC Number]
 echo.
 echo Input "1" to KEEP basename
 echo Input "2" to RENAME as DLC Number
@@ -1308,7 +1350,10 @@ set "showname=%orinput%"
 if "%vrepack%" EQU "nsp" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "nsp" -dc "%orinput%" -tfile "%prog_dir%list.txt")
 if "%vrepack%" EQU "xci" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "xci" -dc "%orinput%" -tfile "%prog_dir%list.txt")
 if "%vrepack%" EQU "both" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "both" -dc "%orinput%" -tfile "%prog_dir%list.txt")
-if "%vrepack%" EQU "xci_supertrimmer" ( %pycommand% "%nut%" %buffer% -o "%w_folder%" -xci_st "%orinput%" -tfile "%prog_dir%list.txt")
+if "%vrepack%" EQU "xci_supertrimmer" ( %pycommand% "%nut%" %buffer% -o "%w_folder%" -tfile "%prog_dir%list.txt" -xci_st "%orinput%")
+if "%vrepack%" EQU "xci_supertrimmer_keep_upd" ( %pycommand% "%nut%" %buffer% -o "%w_folder%" -tfile "%prog_dir%list.txt" -xci_st "%orinput%" "keepupd")
+if "%vrepack%" EQU "xci_trimmer" ( %pycommand% "%nut%" %buffer% -o "%w_folder%" -tfile "%prog_dir%list.txt" -xci_tr "%orinput%")
+if "%vrepack%" EQU "xci_untrimmer" ( %pycommand% "%nut%" %buffer% -o "%w_folder%" -tfile "%prog_dir%list.txt" -xci_untr "%orinput%" )
 if "%vrepack%" EQU "verify" ( %pycommand% "%nut%" %buffer% -vt "%verif%" -tfile "%prog_dir%list.txt" -v "")
 if "%vrepack%" EQU "verify" ( goto end_xci_manual )
 

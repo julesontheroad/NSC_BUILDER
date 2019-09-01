@@ -161,7 +161,7 @@ echo YOU'VE ADDED !conta! FILES TO PROCESS
 echo .................................................
 endlocal
 
-goto exit /B
+goto checkagain
 
 :s_cl_wrongchoice
 echo wrong choice

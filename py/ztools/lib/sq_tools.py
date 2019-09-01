@@ -10,6 +10,7 @@ import Fs
 import aes128
 import sq_tools
 import io
+import Print
 indent = 1
 tabs = '\t' * indent	
 '''	
@@ -138,7 +139,24 @@ def getFWRangeKG(keygeneration):
 	if keygeneration == 9:
 		return "(8.1.0 - >8.1.0)"			
 	else:
-		return "UNKNOWN"			
+		return "UNKNOWN"		
+
+def getmetacontenttype(ncatypenumber):	
+	ncatypenumber=int(ncatypenumber)
+	if ncatypenumber==0:
+		return "Meta"
+	elif ncatypenumber==1:
+		return "Program"	
+	elif ncatypenumber==2:
+		return "Data"
+	elif ncatypenumber==3:
+		return "Control"
+	elif ncatypenumber==4:
+		return "HtmlDocument"
+	elif ncatypenumber==5:
+		return "LegalInformation"
+	elif ncatypenumber==6:	
+		return "DeltaFragment"		
 	
 def getFWRangeRSV(RSV):
 	if RSV >= (3*67108864):
