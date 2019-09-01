@@ -34,8 +34,6 @@ import pathlib
 import urllib3
 import json
 from zipfile import ZipFile
-import shelve
-
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, 'lib')
