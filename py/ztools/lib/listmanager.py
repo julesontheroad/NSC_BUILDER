@@ -38,6 +38,25 @@ def printcurrent(textfile,number=1,counter=False):
 		for line in f:
 			print(line)
 			break
+			
+def read_lines_to_list(textfile,number=1,all=False):
+	#print(textfile)
+	number=int(number)
+	filelist=list()
+	i=0
+	if all==False:
+		with open(textfile,'r', encoding='utf8') as f:
+			for line in f:		
+				if i>(number-1):
+					fp=line.strip()
+					filelist.append(fp)	
+				else:
+					i+=1
+	else:
+			for line in f:			
+				fp=line.strip()	
+				filelist.append(fp)		
+	return 	filelist		
 
 def parsetags(filepath):	
 	fileid='unknown';fileversion='unknown';cctag='unknown';nG=0;nU=0;nD=0;
