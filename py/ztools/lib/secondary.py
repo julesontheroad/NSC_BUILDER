@@ -2,7 +2,7 @@ import subprocess
 import os
 import argparse
 import listmanager
-import _thread as thread
+#import _thread as thread
 
 sqdir=os.path.abspath(os.curdir)
 squirrel=os.path.join(sqdir, "squirrel.py")
