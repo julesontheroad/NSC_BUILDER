@@ -2,6 +2,7 @@ import subprocess
 import os
 import argparse
 import listmanager
+import _thread as thread
 
 sqdir=os.path.abspath(os.curdir)
 squirrel=os.path.join(sqdir, "squirrel.py")
@@ -22,7 +23,7 @@ def route(args,workers):
 	else:
 		filelist=listmanager.read_lines_to_list(tfile,number=workers)
 		listmanager.striplines(tfile,number=workers)		
-		processlist=list();i=0
+		commands=list();i=0
 		for allw in allowedlist:
 			if allw in arguments:
 				ind=arguments.index(allw)
@@ -38,14 +39,10 @@ def route(args,workers):
 			arguments[ind]=f
 			if ind2 !=False:
 				arguments[ind2]=outf+'_'+str(c)
-				processlist.append(subprocess.Popen(arguments))
-		while len(processlist)>0:
-			auxlist=list()
-			for f in processlist:		
-				if f.poll()!=None:
-					f.terminate();
-				else:auxlist.append(f)	
-			processlist=auxlist	
+				commands.append(arguments)
+		processlist = [Popen(process, shell=True) for process in commands]				
+		for p in processlist: 
+			p.communicate()
 	
 def getargs(args):
 	tfile=False
