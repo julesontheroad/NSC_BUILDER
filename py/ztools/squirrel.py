@@ -268,13 +268,24 @@ if __name__ == '__main__':
 		parser.add_argument('-tgtype','--tagtype', help="Type of tag to remove")
 		parser.add_argument('-vorg','--v_organize', help="Aux variable to organize files")		
 		parser.add_argument('-vt','--vertype', help="Verification type for auto, needs --text_file. Opt: dec,sig,full [DECryption, decryption and SIGnature, previous and hash check]")			
+		parser.add_argument('-threads','--threads', help="Number threads to use for certain functions")			
 		args = parser.parse_args()
 
 		Status.start()
 
 		indent = 1
-		tabs = '\t' * indent			
-		
+		tabs = '\t' * indent	
+		trans=False
+
+		if args.threads:
+			import secondary
+			workers=1
+			try:
+				workers=int(workers)
+			except:pass			
+			secondary.route(args,workers)
+			#secondary.printargs(args)
+			Status.close()
 # NCA/NSP IDENTIFICATION
 		# ..................................................
 		# Get titleid from nca file
@@ -6109,7 +6120,8 @@ if __name__ == '__main__':
 				for f in filelist:
 					print(f)
 				'''
-				print('Items to process: '+str(len(filelist)))
+				if args.text_file:
+					print('Items to process: '+str(len(filelist)))
 				counter=len(filelist)
 				for filepath in filelist:
 					setskip=False
@@ -6485,7 +6497,9 @@ if __name__ == '__main__':
 						endname = endname.replace('"', '');	
 						endname = endname.replace(')', ') ');endname = endname.replace(']', '] ')
 						endname = endname.replace("[ (", "[(");endname = endname.replace(") ]", ")]")						
-						endname = endname.replace("  ", " ")						
+						endname = endname.replace("  ", " ")
+						if endname.endswith(' '):
+							endname=endname[:-1]
 						if dlcrname == 'tag':
 							endname = endname.replace('DLC number', 'DLC')							
 					except:pass					
