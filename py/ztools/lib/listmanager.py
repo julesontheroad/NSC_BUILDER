@@ -48,9 +48,10 @@ def read_lines_to_list(textfile,number=1,all=False):
 		with open(textfile,'r', encoding='utf8') as f:
 			for line in f:		
 				if i>(number-1):
-					fp=line.strip()
-					filelist.append(fp)	
+					break
 				else:
+					fp=line.strip()
+					filelist.append(fp)					
 					i+=1
 	else:
 			for line in f:			

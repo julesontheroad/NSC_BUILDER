@@ -2,11 +2,10 @@ import subprocess
 import os
 import argparse
 import listmanager
-#import _thread as thread
 
 sqdir=os.path.abspath(os.curdir)
 squirrel=os.path.join(sqdir, "squirrel.py")
-allowedlist=['--renamef','--rebuild_nsp']
+allowedlist=['--renamef','--addtodb','--addtodb_new']
 	
 def route(args,workers):
 	arguments,tfile=getargs(args)
@@ -21,28 +20,28 @@ def route(args,workers):
 		#op,oe=process.communicate();#print (op);print (oe)
 		#process.terminate();process2.terminate()
 	else:
-		filelist=listmanager.read_lines_to_list(tfile,number=workers)
-		listmanager.striplines(tfile,number=workers)		
+		filelist=listmanager.read_lines_to_list(tfile,number=workers)		
 		commands=list();i=0
+		#print(filelist)
 		for allw in allowedlist:
 			if allw in arguments:
 				ind=arguments.index(allw)
 				ind+=1	
 				break
-		ind2=False		
-		try:
-			ind2=arguments.index('--ofolder')
-			ind2+=1	
-		except:pass	
-		c=0;outf=arguments[ind2]
+		process=list()		
 		for f in filelist:				
-			arguments[ind]=f
-			if ind2 !=False:
-				arguments[ind2]=outf+'_'+str(c)
-				commands.append(arguments)
-		processlist = [Popen(process, shell=True) for process in commands]				
-		for p in processlist: 
-			p.communicate()
+			arguments[ind]=f			
+			process.append(subprocess.Popen(arguments))		
+			#print(f)		
+		#print(len(process))	
+		for p in process: 	
+			p.wait()
+			while p.poll()==None:
+				if p.poll()!=None:
+					p.terminate();	
+		listmanager.striplines(tfile,number=workers,counter=True)							
+
+	
 	
 def getargs(args):
 	tfile=False

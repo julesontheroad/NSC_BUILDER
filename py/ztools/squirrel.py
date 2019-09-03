@@ -281,7 +281,7 @@ if __name__ == '__main__':
 			import secondary
 			workers=1
 			try:
-				workers=int(workers)
+				workers=int(args.threads)
 			except:pass			
 			secondary.route(args,workers)
 			#secondary.printargs(args)
