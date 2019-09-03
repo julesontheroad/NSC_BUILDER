@@ -28,9 +28,17 @@ def route(args,workers):
 				ind=arguments.index(allw)
 				ind+=1	
 				break
-		process=list()		
-		for f in filelist:				
-			arguments[ind]=f			
+		ind2=False		
+		try:
+			ind2=arguments.index('--db_file')
+			ind2+=1	
+		except:pass					
+		process=list();sub_r=arguments[ind2];c=0		
+		for f in filelist:	
+			arguments[ind]=f
+			if ind2 !=False:
+				arguments[ind2]=sub_r+'_'+str(c)
+				c+=1	
 			process.append(subprocess.Popen(arguments))		
 			#print(f)		
 		#print(len(process))	

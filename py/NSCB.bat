@@ -2701,7 +2701,7 @@ goto DBs_exit_choice
 
 :DBGeneration
 if not exist "%dbdir%" MD "%dbdir%">NUL 2>&1
-%pycommand% "%nut%" --dbformat "%dbformat%" -dbfile "%db_file%" -tfile "%prog_dir%DBL.txt" -nscdb "%orinput%" --threads 20 
+%pycommand% "%nut%" --dbformat "%dbformat%" -dbfile "%db_file%" -tfile "%prog_dir%DBL.txt" -nscdb "%orinput%" --threads 100 
 exit /B
 
 :DBcontador_NF
