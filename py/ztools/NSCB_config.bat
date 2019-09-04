@@ -299,6 +299,7 @@ if /i "%bs%"=="10" goto op_oforg
 if /i "%bs%"=="11" goto op_nscbmode
 if /i "%bs%"=="12" goto op_romanize
 if /i "%bs%"=="13" goto op_translate
+if /i "%bs%"=="14" goto op_threads
 
 if /i "%bs%"=="c" call :curr_set2
 if /i "%bs%"=="c" echo.
