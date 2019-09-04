@@ -930,6 +930,7 @@ class Xci(File):
 		return feed
 		
 	def read_npdm(self,files_list):
+		feed=''
 		for nspF in self.hfs0:
 			if str(nspF._path)=="secure":
 				for nca in nspF:
