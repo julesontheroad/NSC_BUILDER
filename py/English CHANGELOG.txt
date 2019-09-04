@@ -64,9 +64,12 @@ v0.90- Several Bugfixes and aditions:
 	  for polished prints. 
 	  The writes to text files for the database operations are done on different files and
 	  joined after each cycle so they aren't affected.
-	- UPCOMING: Next release will take some time, features i'm working on are:
+	  NOTE: Exe versions while they worked fine don't seem to have the advantage on speed 
+	  the python versions get it will be analized if it's due to the pyinstaller options
+	  used.
+    - UPCOMING: Next release will take some time, features i'm working on are:
       Included permanent database for nsp and xci with search functions,library management 
-	  functions, autoupdates,... and restore mode.
+      functions, autoupdates,... and restore mode.
 	  
 v0.89b- Bugfix:
 	- Fixed error that prevented generation of titlerights removed multinsps
