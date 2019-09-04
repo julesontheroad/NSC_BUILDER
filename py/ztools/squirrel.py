@@ -4629,16 +4629,17 @@ if __name__ == '__main__':
 						os.makedirs(ofolder)	
 			if args.dbformat:	
 				for input in args.dbformat:
+					input=str(input).lower()
 					if input == "nutdb":
 						outdb = "nutdb"
 					elif input == "keyless":
 						outdb = "keyless"	
 					elif input == "simple":
-						outdb = "simple"							
-					elif input == "all":
-						outdb = "all"								
-					else:
+						outdb = "simple"												
+					elif input == "extended":
 						outdb = "extended"	
+					else:
+						outdb = "all"							
 			else:
 				outdb = "extended"	
 			if args.addtodb:

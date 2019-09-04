@@ -29,6 +29,7 @@ set "oforg=%oforg%"
 set "NSBMODE=%NSBMODE%"
 set "romaji=%romaji%"
 set "transnutdb=%transnutdb%"
+set "workers=%workers%"
 REM set "trn_skip=%trn_skip%"
 REM set "updx_skip=%updx_skip%"
 REM set "ngx_skip=%ngx_skip%"
@@ -1196,7 +1197,7 @@ echo.
 cls
 call :program_logo
 for /f "tokens=*" %%f in (list.txt) do (
-%pycommand% "%nut%" -renf "single" -tfile "%prog_dir%list.txt" -t xci nsp -renm %renmode% -nover %nover% -oaid %oaid% -addl %addlangue% -dlcrn %dlcrname% -threads 5
+%pycommand% "%nut%" -renf "single" -tfile "%prog_dir%list.txt" -t xci nsp -renm %renmode% -nover %nover% -oaid %oaid% -addl %addlangue% -dlcrn %dlcrname% %workers%
 rem %pycommand% "%nut%" --strip_lines "%prog_dir%list.txt" "1" "true"
 rem call :contador_NF
 )
@@ -2691,17 +2692,32 @@ set "orinput=%%f"
 set "db_file=%prog_dir%INFO\%dbformat%_DB.txt"
 set "dbdir=%prog_dir%INFO\"
 call :DBGeneration
-%pycommand% "%nut%" --strip_lines "%prog_dir%DBL.txt" "1" "true"
+if "%workers%" EQU "-threads 1" ( %pycommand% "%nut%" --strip_lines "%prog_dir%DBL.txt" "1" "true")
+RD /S /Q "%dbdir%temp">NUL 2>&1
+if "%workers%" NEQ "-threads 1" ( call :DBcheck )
 rem call :DBcontador_NF
 )
+:DBs_fin
 ECHO ---------------------------------------------------
 ECHO *********** ALL FILES WERE PROCESSED! *************
 ECHO ---------------------------------------------------
+RD /S /Q "%dbdir%temp">NUL 2>&1
 goto DBs_exit_choice
 
 :DBGeneration
 if not exist "%dbdir%" MD "%dbdir%">NUL 2>&1
-%pycommand% "%nut%" --dbformat "%dbformat%" -dbfile "%db_file%" -tfile "%prog_dir%DBL.txt" -nscdb "%orinput%" --threads 100 
+%pycommand% "%nut%" --dbformat "%dbformat%" -dbfile "%db_file%" -tfile "%prog_dir%DBL.txt" -nscdb "%orinput%" %workers%
+exit /B
+
+:DBcheck
+setlocal enabledelayedexpansion
+set /a conta=0
+for /f "tokens=*" %%f in (DBL.txt) do (
+set /a conta=!conta! + 1
+)
+if !conta! LEQ 0 ( del DBL.txt )
+endlocal
+if not exist "DBL.txt" goto DBs_fin
 exit /B
 
 :DBcontador_NF

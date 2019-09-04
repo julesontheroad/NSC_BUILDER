@@ -146,3 +146,9 @@ set "romaji=TRUE"
 ::translate ->TRUE
 ::don't transnutdb ->FALSE
 set "transnutdb=TRUE"
+
+::--------------------------------------------------------------
+::OPTION 17: WORKERS FOR MULTI-THREADING
+::--------------------------------------------------------------
+::Currently applies to renames
+set "workers=-threads 1"
