@@ -1353,7 +1353,7 @@ if "%vrepack%" EQU "nsp" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRS
 if "%vrepack%" EQU "xci" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "xci" -dc "%orinput%" -tfile "%prog_dir%list.txt")
 if "%vrepack%" EQU "both" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "both" -dc "%orinput%" -tfile "%prog_dir%list.txt")
 if "%vrepack%" EQU "xci_supertrimmer" ( %pycommand% "%nut%" %buffer% -o "%w_folder%" -tfile "%prog_dir%list.txt" -xci_st "%orinput%")
-if "%vrepack%" EQU "xci_supertrimmer_keep_upd" ( %pycommand% "%nut%" %buffer% -o "%w_folder%" -tfile "%prog_dir%list.txt" -xci_st "%orinput%" "keepupd")
+if "%vrepack%" EQU "xci_supertrimmer_keep_upd" ( %pycommand% "%nut%" %buffer% -o "%w_folder%" -t "xci" -dc "%orinput%" -tfile "%prog_dir%list.txt" )
 if "%vrepack%" EQU "xci_trimmer" ( %pycommand% "%nut%" %buffer% -o "%w_folder%" -tfile "%prog_dir%list.txt" -xci_tr "%orinput%")
 if "%vrepack%" EQU "xci_untrimmer" ( %pycommand% "%nut%" %buffer% -o "%w_folder%" -tfile "%prog_dir%list.txt" -xci_untr "%orinput%" )
 if "%vrepack%" EQU "verify" ( %pycommand% "%nut%" %buffer% -vt "%verif%" -tfile "%prog_dir%list.txt" -v "")

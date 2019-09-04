@@ -29,8 +29,11 @@ v0.90- Several Bugfixes and aditions:
 	  * Fixed another error that prevented the creation of titlerights removed multi-nsps
 	  * Expanded xci trimming functions in indidual mode, after selecting trimming now
 	    there is these options:
-		- Supertrimmer
-		- Supertrimmer respecting updates
+		- Supertrimmer. Removes ending padding, padding between partitions, logo partition,
+		  firmware from update partition and content from normal partition. Also removes 
+		  game updates from the xci but keeps dlc. Respects certificates.
+		  Meant for xci installation on tinfoil while keeping file verification
+		- Supertrimmer respecting updates. Supertrimm that keeps game updates.
 		- Normal trimming: Removes "FFFF" end padding
 		- Untrimmer: Adds back "FFFF" end padding
 	  * Fixed dlc naming. Current approach will use the nut json files. The json files are
@@ -42,8 +45,10 @@ v0.90- Several Bugfixes and aditions:
 		dlc renames and US region for descriptions, genres, etc... The json will only refresh themselves
 		when the refresh period is reached and the json is needed.
 	  * Fixed error in joiner mode
-	  * Fixed false positive in decription verification for the updates included in 5 xci
-        which exefs doesn't include a main.npdm
+	  * Fixed false positive in decription verification for the updates included in 5 recent xci
+        which exefs doesn't include a main.npdm.
+    - Moved korean translation to zconfig\Regional. Paste those files to the main folder if you need that
+	  New NSCB functions aren't added yet but fixes made to squirrel will apply to those files.
     - Added more information to game-info using information from the nut json files
     - Added optional google translation for game descriptions. You can activate\deactivate this
 	  option on the program's configuration.
@@ -54,12 +59,14 @@ v0.90- Several Bugfixes and aditions:
 	  It increases significantly the speed of the renaming and database operations, 
 	  specially for vitual disks mounted from google drive (tested till 100 workers 
 	  using raidrive). 
+	  This option can be activated on the configuration.
 	  Note: Too many workers can mess a little the console prints and need a little work 
 	  for polished prints. 
 	  The writes to text files for the database operations are done on different files and
 	  joined after each cycle so they aren't affected.
-	- UPCOMING: Included permanent database with search functions,library management functions
-	  , restore mode.
+	- UPCOMING: Next release will take some time, features i'm working on are:
+      Included permanent database for nsp and xci with search functions,library management 
+	  functions, autoupdates,... and restore mode.
 	  
 v0.89b- Bugfix:
 	- Fixed error that prevented generation of titlerights removed multinsps
