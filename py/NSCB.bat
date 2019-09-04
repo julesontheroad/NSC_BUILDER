@@ -2695,7 +2695,7 @@ call :DBGeneration
 if "%workers%" EQU "-threads 1" ( %pycommand% "%nut%" --strip_lines "%prog_dir%DBL.txt" "1" "true")
 if exist "%dbdir%temp" RD /S /Q "%dbdir%temp" >NUL 2>&1
 if "%workers%" NEQ "-threads 1" ( call :DBcheck )
-rem call :DBcontador_NF
+rem if "%workers%" NEQ "-threads 1" ( call :DBcontador_NF )
 )
 :DBs_fin
 ECHO ---------------------------------------------------
