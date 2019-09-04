@@ -2693,7 +2693,7 @@ set "db_file=%prog_dir%INFO\%dbformat%_DB.txt"
 set "dbdir=%prog_dir%INFO\"
 call :DBGeneration
 if "%workers%" EQU "-threads 1" ( %pycommand% "%nut%" --strip_lines "%prog_dir%DBL.txt" "1" "true")
-RD /S /Q "%dbdir%temp">NUL 2>&1
+if exist "%dbdir%temp" RD /S /Q "%dbdir%temp" >NUL 2>&1
 if "%workers%" NEQ "-threads 1" ( call :DBcheck )
 rem call :DBcontador_NF
 )
@@ -2701,7 +2701,7 @@ rem call :DBcontador_NF
 ECHO ---------------------------------------------------
 ECHO *********** ALL FILES WERE PROCESSED! *************
 ECHO ---------------------------------------------------
-RD /S /Q "%dbdir%temp">NUL 2>&1
+if exist "%dbdir%temp" RD /S /Q "%dbdir%temp" >NUL 2>&1
 goto DBs_exit_choice
 
 :DBGeneration
