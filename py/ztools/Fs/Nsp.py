@@ -7504,7 +7504,7 @@ class Nsp(Pfs0):
 		return False,False		
 
 
-	def verify_hash_nca(self,buffer,headerlist,didverify):	
+	def verify_hash_nca(self,buffer,headerlist,didverify,feed):	
 		verdict=True		
 		if feed == False:
 			feed=''				
