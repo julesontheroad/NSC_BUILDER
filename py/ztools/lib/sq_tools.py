@@ -10,6 +10,7 @@ import Fs
 import aes128
 import sq_tools
 import io
+import Print
 indent = 1
 tabs = '\t' * indent	
 '''	
@@ -138,7 +139,24 @@ def getFWRangeKG(keygeneration):
 	if keygeneration == 9:
 		return "(8.1.0 - >8.1.0)"			
 	else:
-		return "UNKNOWN"			
+		return "UNKNOWN"		
+
+def getmetacontenttype(ncatypenumber):	
+	ncatypenumber=int(ncatypenumber)
+	if ncatypenumber==0:
+		return "Meta"
+	elif ncatypenumber==1:
+		return "Program"	
+	elif ncatypenumber==2:
+		return "Data"
+	elif ncatypenumber==3:
+		return "Control"
+	elif ncatypenumber==4:
+		return "HtmlDocument"
+	elif ncatypenumber==5:
+		return "LegalInformation"
+	elif ncatypenumber==6:	
+		return "DeltaFragment"		
 	
 def getFWRangeRSV(RSV):
 	if RSV >= (3*67108864):
@@ -250,6 +268,26 @@ def getGCsize(bytes):
 		card=0xFA	
 		firm_ver='1100a100'		
 		return card,firm_ver		
+		
+
+def getGCsizeinbytes(GCflag):
+	bytes=''
+	if GCflag=='E3':
+		size=64
+	if GCflag=='E2':
+		size=32		
+	if GCflag=='E1':
+		size=16
+	if GCflag=='E0':
+		size=8	
+	if GCflag=='F0':
+		size=4		
+	if GCflag=='F8':
+		size=2	
+	if GCflag=='FA':
+		size=1
+	bytes=size*998244352
+	return bytes
 		
 def getTypeFromCNMT(number):	
 	if number == 0:

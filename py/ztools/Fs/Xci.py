@@ -28,7 +28,10 @@ from tqdm import tqdm
 import math  
 from operator import itemgetter, attrgetter, methodcaller
 import shutil
+import DBmodule
 import io
+import nutdb
+import textwrap
 
 MEDIA_SIZE = 0x200
 RSA_PUBLIC_EXPONENT = 65537
@@ -125,7 +128,7 @@ class Xci(File):
 		self.secureOffset = self.readInt32()
 		self.backupOffset = self.readInt32()
 		self.titleKekIndex = self.readInt8()
-		self.gamecardSize = self.readInt8()
+		self.gamecardSize = self.read(0x1)
 		self.gamecardHeaderVersion = self.readInt8()
 		self.gamecardFlags = self.readInt8()
 		self.packageId = self.readInt64()
@@ -927,6 +930,7 @@ class Xci(File):
 		return feed
 		
 	def read_npdm(self,files_list):
+		feed=''
 		for nspF in self.hfs0:
 			if str(nspF._path)=="secure":
 				for nca in nspF:
@@ -2107,6 +2111,9 @@ class Xci(File):
 										message=("- DLC version Number: " + version+' -> '+"Version"+' ('+str(v_number)+')');print(message);feed+=message+'\n'
 										message=("- Meta SDK version: " + sdkversion);print(message);feed+=message+'\n'
 										message=("- Data SDK version: " + dataSDKversion);print(message);feed+=message+'\n'								
+										if SupLg !='':
+											suplangue=str((', '.join(SupLg)))
+											message=("- Supported Languages: "+suplangue);print(message);feed+=message+'\n'															
 									message=("\nRequired Firmware:");print(message);feed+=message+'\n'									
 									if content_type_cnmt == 'AddOnContent':
 										if v_number == 0:
@@ -2483,6 +2490,16 @@ class Xci(File):
 							if 	str(nca.header.contentType) == 'Content.PROGRAM':
 								programSDKversion=nca.get_sdkversion()
 								break
+		if 	programSDKversion=='':	
+			for nspF in self.hfs0:
+				if str(nspF._path)=="secure":
+					for nca in nspF:
+						if type(nca) == Nca:
+							nca_id=nca.header.titleId
+							if str(titid[:-3]).upper() == str(nca_id[:-3]).upper():
+								if 	str(nca.header.contentType) == 'Content.CONTROL':
+									programSDKversion=nca.get_sdkversion()
+									break									
 		if 	programSDKversion=='':				
 			for nspF in self.hfs0:
 				if str(nspF._path)=="secure":
@@ -2495,7 +2512,7 @@ class Xci(File):
 									break		
 		return 	programSDKversion,dataSDKversion					
 
-	def print_fw_req(self):	
+	def print_fw_req(self,trans=True):	
 		feed=''	
 		for nspF in self.hfs0:
 			if str(nspF._path)=="secure":
@@ -2596,7 +2613,8 @@ class Xci(File):
 											content_type='Demo'
 										if isdemo == 2:
 											content_type='RetailInteractiveDisplay'	
-									programSDKversion,dataSDKversion=self.getsdkvertit(titleid2)										
+									programSDKversion,dataSDKversion=self.getsdkvertit(titleid2)
+									nsuId,releaseDate,category,ratingContent,numberOfPlayers,intro,description,iconUrl,screenshots,bannerUrl,region,rating=nutdb.get_content_data(titleid2,trans)
 									sdkversion=nca.get_sdkversion()						
 									message=('-----------------------------');print(message);feed+=message+'\n'								
 									message=('CONTENT ID: ' + str(titleid2));print(message);feed+=message+'\n'	
@@ -2604,29 +2622,37 @@ class Xci(File):
 									if content_type_cnmt != 'AddOnContent':	
 										message=("Titleinfo:");print(message);feed+=message+'\n'								
 										message=("- Name: " + tit_name);print(message);feed+=message+'\n'								
-										message=("- Editor: " + editor);print(message);feed+=message+'\n'	
+										message=("- Editor: " + editor);print(message);feed+=message+'\n'						
 										message=("- Build number: " + str(ediver));print(message);feed+=message+'\n'
 										message=("- Meta SDK version: " + sdkversion);print(message);feed+=message+'\n'
 										message=("- Program SDK version: " + programSDKversion);print(message);feed+=message+'\n'									
-										suplangue=str((', '.join(SupLg)))
-										message=("- Supported Languages: "+suplangue);print(message);feed+=message+'\n'									
+										suplangue=str((', '.join(SupLg)))								
+										message=("- Supported Languages: "+suplangue);
+										par = textwrap.dedent(message).strip()	
+										message=(textwrap.fill(par,width=80,initial_indent='', subsequent_indent='  ',replace_whitespace=True,fix_sentence_endings=True));print(message);feed+=message+'\n'								
 										message=("- Content type: "+content_type);print(message);feed+=message+'\n'									
-										message=("- Version: " + version+' -> '+content_type_cnmt+' ('+str(v_number)+')');print(message);feed+=message+'\n'																
+										message=("- Version: " + version+' -> '+content_type_cnmt+' ('+str(v_number)+')');print(message);feed+=message+'\n'																									
 									if content_type_cnmt == 'AddOnContent':
+										nsuId=nutdb.get_dlcnsuId(titleid2)
 										message=("Titleinfo:");print(message);feed+=message+'\n'								
 										if tit_name != "DLC":
 											message=("- Name: " + tit_name);print(message);feed+=message+'\n'								
-											message=("- Editor: " + editor);print(message);feed+=message+'\n'
+											message=("- Editor: " + editor);print(message);feed+=message+'\n'									
 										message=("- Content type: "+"DLC");print(message);feed+=message+'\n'							
 										DLCnumb=str(titleid2)
 										DLCnumb="0000000000000"+DLCnumb[-3:]									
 										DLCnumb=bytes.fromhex(DLCnumb)
 										DLCnumb=str(int.from_bytes(DLCnumb, byteorder='big'))									
 										DLCnumb=int(DLCnumb)
-										message=("- DLC number: "+str(DLCnumb)+' -> '+"AddOnContent"+' ('+str(DLCnumb)+')');print(message);feed+=message+'\n'								
+										message=("- DLC number: "+str(DLCnumb)+' -> '+"AddOnContent"+' ('+str(DLCnumb)+')');print(message);feed+=message+'\n'																
 										message=("- DLC version Number: " + version+' -> '+"Version"+' ('+str(v_number)+')');print(message);feed+=message+'\n'								
 										message=("- Meta SDK version: " + sdkversion);print(message);feed+=message+'\n'								
 										message=("- Data SDK version: " + dataSDKversion);print(message);feed+=message+'\n'															
+										if SupLg !='':
+											suplangue=str((', '.join(SupLg)))
+											message=("- Supported Languages: "+suplangue);
+											par = textwrap.dedent(message).strip()	
+											message=(textwrap.fill(par,width=80,initial_indent='', subsequent_indent='  ',replace_whitespace=True,fix_sentence_endings=True));print(message);feed+=message+'\n'										
 									message=("\nRequired Firmware:");print(message);feed+=message+'\n'								
 									if content_type_cnmt == 'AddOnContent':
 										if v_number == 0:
@@ -2637,10 +2663,68 @@ class Xci(File):
 										message=(reqtag + str(RSversion)+" -> " +RSV_rq);print(message);feed+=message+'\n'	
 									message=('- Encryption (keygeneration): ' + str(keygen)+" -> " +FW_rq);print(message);feed+=message+'\n'								
 									if content_type_cnmt != 'AddOnContent':	
-										message=('- Patchable to: ' + str(MinRSV)+" -> " + RSV_rq_min);print(message);feed+=message+'\n'							
+										message=('- Patchable to: ' + str(MinRSV)+" -> " + RSV_rq_min+'\n');print(message);feed+=message+'\n'							
 									else:
-										message=('- Patchable to: DLC -> no RSV to patch\n');print(message);feed+=message+'\n'																					
-		return feed										
+										message=('- Patchable to: DLC -> no RSV to patch\n');print(message);feed+=message+'\n'
+									if nsuId!=False or numberOfPlayers!=False or releaseDate!=False or category!=False or ratingContent!=False:
+										message=('Eshop Data:');print(message);feed+=message+'\n'								
+									if nsuId!=False:
+										message=("- nsuId: " + nsuId);print(message);feed+=message+'\n'
+									if region!=False:								
+										message=('- Data from Region: ' + region);print(message);feed+=message+'\n'									
+									if numberOfPlayers!=False:
+										message=("- Number of Players: " + numberOfPlayers);print(message);feed+=message+'\n'								
+									if releaseDate!=False:
+										message=("- Release Date: " + releaseDate);print(message);feed+=message+'\n'		
+									if category!=False:
+										category=str((', '.join(category)))	
+										message=("- Genres: " + category);
+										par = textwrap.dedent(message).strip()	
+										message=(textwrap.fill(par,width=80,initial_indent='', subsequent_indent='  ',replace_whitespace=True,fix_sentence_endings=True));print(message);feed+=message+'\n'	
+									if rating!=False:								
+										message=("- AgeRating: " + rating);print(message);feed+=message+'\n'										
+									if ratingContent!=False:
+										ratingContent=str((', '.join(ratingContent)))	
+										message=("- Rating tags: " + ratingContent);
+										par = textwrap.dedent(message).strip()	
+										message=(textwrap.fill(par,width=80,initial_indent='', subsequent_indent='  ',replace_whitespace=True,fix_sentence_endings=True));print(message);feed+=message+'\n'							
+									if intro!=False or description!=False:
+										message=('\nDescription:');print(message);feed+=message+'\n'								
+									if intro!=False:							
+										par = textwrap.dedent(intro).strip().upper()	
+										message=('-----------------------------------------------------------------------------');print(message);feed+=message+'\n'																								
+										message=(textwrap.fill(par,width=80,initial_indent=' ', subsequent_indent=' ',replace_whitespace=True,fix_sentence_endings=True));print(message);feed+=message+'\n'								
+										message=('-----------------------------------------------------------------------------');print(message);feed+=message+'\n'																
+									if description!=False:
+										if "•" in description:
+											data=description.split("• ")
+											token='• '
+										elif "★" in description:
+											data=description.split("★ ")
+											token='* '
+										elif "*" in description:
+											data=description.split("* ")
+											token='* '
+										elif "■" in description:
+											data=description.split("* ")
+											token='• '
+										elif "●" in description:
+											data=description.split("● ")
+											token='• '											
+										elif "-" in description:
+											data=description.split("- ")
+											token='- '										
+										else:
+											data=description.split("  ")	
+											token=''									
+										i=0
+										for d in data:
+											if i>0:
+												d=token+d
+											i+=1	
+											par = textwrap.dedent(d).strip()	
+											message=(textwrap.fill(par,width=80,initial_indent=' ', subsequent_indent=' ',replace_whitespace=True,fix_sentence_endings=True));print(message);feed+=message+'\n'								
+		return feed									
 						
 	def inf_get_title(self,target,offset,content_entries,original_ID,roman=True):
 		content_type=''
@@ -3003,7 +3087,7 @@ class Xci(File):
 		#print (hx(encrypted_info))	
 		#print (hx(dec_info))
 	
-	def supertrim(self,buffer,outfile,ofolder,fat):
+	def supertrim(self,buffer,outfile,ofolder,fat,keepupd=False):
 		indent = 1
 		rightsId = 0
 		tabs = '\t' * indent	
@@ -3035,7 +3119,7 @@ class Xci(File):
 									titleid2 = str(hx(titleid.to_bytes(8, byteorder='big'))) 	
 									titleid2 = titleid2[2:-1]	
 									cnmt.seek(0x20)
-									if content_type=='Patch':
+									if content_type=='Patch' and keepupd==False:
 										pass
 									else: 
 										break					
@@ -3200,14 +3284,13 @@ class Xci(File):
 									nca.seek(0xC00)									
 									i+=1		
 								else:			
-									outf.write(data)
-									t.update(len(data))
-									c=c+len(data)
-									outf.flush()
 									if fat=="fat32" and (c+len(data))>block:
 										n2=block-c
 										c=0
-										dat2=nca.read(int(n2))
+										inmemoryfile = io.BytesIO()
+										inmemoryfile.write(data)
+										inmemoryfile.seek(0)	
+										dat2=inmemoryfile.read(n2)	
 										outf.write(dat2)
 										outf.flush()
 										outf.close()	
@@ -3216,11 +3299,18 @@ class Xci(File):
 										outfile=outfile[0:-1]
 										outfile=outfile+str(index)
 										outf = open(outfile, 'wb')
-										if totSize>(4294934528+int(buffer)):
-											dat2=nca.read(int(buffer))
-											outf.write(dat2)						
-											t.update(len(dat2))									
-											outf.flush()	
+										inmemoryfile.seek(n2)
+										dat2=inmemoryfile.read(len(data)-n2)
+										inmemoryfile.close()
+										outf.write(dat2)						
+										t.update(len(dat2))		
+										c=c+len(dat2)													
+										outf.flush()
+									else:			
+										outf.write(data)
+										t.update(len(data))
+										c=c+len(data)
+										outf.flush()											
 									if not data:
 										break
 						if nca.header.getRightsId() == 0:						
@@ -3228,14 +3318,13 @@ class Xci(File):
 							#fp.seek(pos)
 							t.write(tabs+'- Appending: ' + str(nca._path))
 							for data in iter(lambda: nca.read(int(buffer)), ""):
-								outf.write(data)
-								t.update(len(data))
-								c=c+len(data)
-								outf.flush()
 								if fat=="fat32" and (c+len(data))>block:
 									n2=block-c
 									c=0
-									dat2=nca.read(int(n2))
+									inmemoryfile = io.BytesIO()
+									inmemoryfile.write(data)
+									inmemoryfile.seek(0)	
+									dat2=inmemoryfile.read(n2)	
 									outf.write(dat2)
 									outf.flush()
 									outf.close()	
@@ -3244,18 +3333,210 @@ class Xci(File):
 									outfile=outfile[0:-1]
 									outfile=outfile+str(index)
 									outf = open(outfile, 'wb')
-									if totSize>(4294934528+int(buffer)):
-										dat2=nca.read(int(buffer))
-										outf.write(dat2)						
-										t.update(len(dat2))									
-										outf.flush()	
+									inmemoryfile.seek(n2)
+									dat2=inmemoryfile.read(len(data)-n2)
+									inmemoryfile.close()
+									outf.write(dat2)						
+									t.update(len(dat2))		
+									c=c+len(dat2)													
+									outf.flush()											
+								else:		
+									outf.write(data)
+									t.update(len(data))
+									c=c+len(data)
+									outf.flush()										
 								if not data:
 									break									
 		t.close()
 		print("")
 		print("Closing file. Please wait")
 		outf.close()	
-				
+		
+
+	def trim(self,buffer,outfile,ofolder,fat):
+		block=4294934528	
+		#print(str(self.gamecardSize))
+		#print(str(self.validDataEndOffset))		
+		valid_data=int(((self.validDataEndOffset+0x1)*0x200))
+		totSize=valid_data
+		#print(str(valid_data))		
+		if int(self.size) == totSize:
+			print("File is already trimmed!!!")
+			return			
+		t = tqdm(total=totSize, unit='B', unit_scale=True, leave=False)
+		self.rewind()
+		wrdata=0;c=0	
+		if fat=="fat32":
+			splitnumb=math.ceil(totSize/4294934528)
+			index=0
+			outfile=outfile[:-1]+str(index)		
+		outfile=outfile.replace(' [Trimmed]','');outfile=outfile.replace(' (Trimmed)','')			
+		outfile=outfile.replace(' [TM]','');outfile=outfile.replace(' (TM)','')				
+		outfile=outfile.replace('[Trimmed]','');outfile=outfile.replace('(Trimmed)','')			
+		outfile=outfile.replace('[TM]','');outfile=outfile.replace('(TM)','')
+		outfile=outfile.replace(' [STR].xci','.xci');outfile=outfile.replace('[STR].xci','.xci')			
+		outfile=outfile.replace('.xci',' [TR].xci')		
+		outf = open(outfile, 'wb')		
+		for data in iter(lambda: self.read(int(buffer)), ""):
+			if fat=="fat32" and (c+len(data))>block:
+				n2=block-c
+				c=0
+				inmemoryfile = io.BytesIO()
+				inmemoryfile.write(data)
+				inmemoryfile.seek(0)	
+				dat2=inmemoryfile.read(n2)	
+				outf.write(dat2)
+				outf.flush()
+				outf.close()	
+				t.update(len(dat2))
+				index=index+1
+				outfile=outfile[0:-1]
+				outfile=outfile+str(index)
+				outf = open(outfile, 'wb')
+				inmemoryfile.seek(n2)
+				dat2=inmemoryfile.read(len(data)-n2)
+				inmemoryfile.close()
+				outf.write(dat2)						
+				t.update(len(dat2))		
+				c=c+len(dat2)													
+				outf.flush()	
+				wrdata=wrdata+len(data)				
+			else:
+				if (wrdata+len(data))>totSize:		
+					n2=totSize-wrdata														
+					inmemoryfile = io.BytesIO()
+					inmemoryfile.write(data)
+					inmemoryfile.seek(0)
+					dat2=inmemoryfile.read(n2)									
+					outf.write(dat2)
+					outf.flush()
+					outf.close()						
+					c=c+len(dat2)
+					wrdata=wrdata+len(dat2)						
+					break	
+				else:	
+					outf.write(data)
+					t.update(len(data))
+					c=c+len(data)
+					wrdata=wrdata+len(data)
+					outf.flush()					
+			if not data:
+				break									
+		t.close()
+		print("")
+		print("Closing file. Please wait")
+		outf.close()	
+		
+	def untrim(self,buffer,outfile,ofolder,fat):
+		block=4294934528	
+		GCFlag=(str(hx(self.gamecardSize))[2:-1]).upper()
+		#print(GCFlag)		
+		#print(str(self.validDataEndOffset))		
+		valid_data=int(((self.validDataEndOffset+0x1)*0x200))
+		GCSize=sq_tools.getGCsizeinbytes(GCFlag)
+		#print(str(GCSize))
+		totSize=int(GCSize)
+		#print(str(valid_data))
+		if int(self.size) == totSize:
+			print("File is already untrimmed!!!")
+			return
+		t = tqdm(total=totSize, unit='B', unit_scale=True, leave=False)
+		self.rewind()
+		wrdata=0;c=0
+		if fat=="fat32":
+			splitnumb=math.ceil(totSize/4294934528)
+			index=0
+			outfile=outfile[:-1]+str(index)		
+		outfile=outfile.replace(' [Trimmed]','');outfile=outfile.replace(' (Trimmed)','')			
+		outfile=outfile.replace(' [TM]','');outfile=outfile.replace(' (TM)','')				
+		outfile=outfile.replace('[Trimmed]','');outfile=outfile.replace('(Trimmed)','')			
+		outfile=outfile.replace('[TM]','');outfile=outfile.replace('(TM)','')
+		outfile=outfile.replace(' [STR].xci','.xci');outfile=outfile.replace('[STR].xci','.xci')		
+		outfile=outfile.replace(' [TR].xci','.xci');outfile=outfile.replace('[TR].xci','.xci')			
+		outf = open(outfile, 'wb')		
+		for data in iter(lambda: self.read(int(buffer)), ""):
+			if fat=="fat32" and (c+len(data))>block:
+				n2=block-c
+				c=0
+				inmemoryfile = io.BytesIO()
+				inmemoryfile.write(data)
+				inmemoryfile.seek(0)	
+				dat2=inmemoryfile.read(n2)	
+				outf.write(dat2)
+				outf.flush()
+				outf.close()	
+				t.update(len(dat2))
+				index=index+1
+				outfile=outfile[0:-1]
+				outfile=outfile+str(index)
+				outf = open(outfile, 'wb')
+				inmemoryfile.seek(n2)
+				dat2=inmemoryfile.read(len(data)-n2)
+				inmemoryfile.close()
+				outf.write(dat2)						
+				t.update(len(dat2))		
+				c=c+len(dat2)													
+				outf.flush()	
+				wrdata=wrdata+len(data)				
+			else:
+				if (wrdata+len(data))>valid_data:		
+					n2=valid_data-wrdata														
+					inmemoryfile = io.BytesIO()
+					inmemoryfile.write(data)
+					inmemoryfile.seek(0)
+					dat2=inmemoryfile.read(n2)									
+					outf.write(dat2)
+					outf.flush()
+					outf.close()						
+					c=c+len(dat2)
+					wrdata=wrdata+len(dat2)
+				else:	
+					outf.write(data)
+					t.update(len(data))
+					c=c+len(data)
+					wrdata=wrdata+len(data)
+					outf.flush()					
+			if not data or wrdata==valid_data or wrdata>valid_data:
+				break			
+		if wrdata<totSize:				
+			if fat=="fat32" and (totSize-(valid_data*(index+1)))>block:					
+				n2=block-c
+				outf.write(bytes.fromhex('FF'*n2))
+				outf.flush()
+				outf.close()	
+				t.update(n2)
+				index=index+1
+				outfile=outfile[0:-1]
+				outfile=outfile+str(index)
+				outf = open(outfile, 'wb')
+				n3=totSize-valid_data-n2
+				outf.write(bytes.fromhex('FF'*n3))						
+				t.update(n3)													
+				outf.flush()	
+			else:
+				bytes_tofill=int(round((int(totSize-valid_data)/buffer),0))
+				#print(str(bytes_tofill))
+				count=0
+				while count<bytes_tofill:
+					padding='FF'*(int(buffer))	
+					count+=1
+					data=bytes.fromhex(padding)	
+					outf.write(data)
+					outf.flush()
+					wrdata=wrdata+len(data)
+					t.update(len(data))			
+				if wrdata<totSize:
+					bytes_tofill=int(totSize-wrdata)
+					padding='FF'*bytes_tofill				
+					data=bytes.fromhex(padding)	
+					outf.write(data)
+					outf.flush()
+					wrdata=wrdata+len(data)
+					t.update(len(data))						
+		t.close()				
+		print("")				
+		print("Closing file. Please wait")
+		outf.close()		
 		
 	def get_header(self):
 		upd_list=list()
@@ -5386,10 +5667,127 @@ class Xci(File):
 				print (j)	
 		print("")
 		'''
-		return contentlist										
+		return contentlist			
+
+	def get_content_placeholder(self,ofolder):
+		contentlist=list()
+		ncalist=list()
+		completefilelist=list()
+		for nspF in self.hfs0:
+			if str(nspF._path)=="secure":											
+				for file in nspF:
+					if type(file) == Nca:
+						if 	str(file.header.contentType) != 'Content.META' and str(file.header.contentType) != 'Content.CONTROL':
+							continue
+						else:	
+							completefilelist.append(str(file._path))
+					elif str(file._path).endswith('.xml'):
+						pass					
+					else:
+						completefilelist.append(str(file._path))
+		print (completefilelist)			
+		for nspF in self.hfs0:
+			if str(nspF._path)=="secure":											
+				for nca in nspF:		
+					if type(nca) == Nca:
+						if 	str(nca.header.contentType) == 'Content.META':
+							crypto1=nca.header.getCryptoType()
+							crypto2=nca.header.getCryptoType2()	
+							if crypto1 == 2:
+								if crypto1 > crypto2:								
+									keygen=nca.header.getCryptoType()
+								else:			
+									keygen=nca.header.getCryptoType2()	
+							else:			
+								keygen=nca.header.getCryptoType2()				
+							ncalist=list()
+							for f in nca:
+								for cnmt in f:
+									nca.rewind()
+									f.rewind()
+									cnmt.rewind()						
+									titleid=cnmt.readInt64()
+									titleversion = cnmt.read(0x4)
+									cnmt.rewind()
+									cnmt.seek(0xE)
+									offset=cnmt.readInt16()
+									content_entries=cnmt.readInt16()
+									meta_entries=cnmt.readInt16()
+									content_type=str(cnmt._path)
+									content_type=content_type[:-22]	
+									titleid2 = str(hx(titleid.to_bytes(8, byteorder='big'))) 	
+									titleid2 = titleid2[2:-1]	
+									cnmt.seek(0x20)
+									if content_type=='Application':
+										original_ID=titleid2
+										cnmt.readInt64()
+										ttag=''
+										CTYPE='BASE'
+									elif content_type=='Patch':
+										original_ID=cnmt.readInt64()	
+										original_ID=str(hx(original_ID.to_bytes(8, byteorder='big')))
+										original_ID = original_ID[2:-1]	
+										ttag=' [UPD]'
+										CTYPE='UPDATE'
+									elif content_type=='AddOnContent':
+										original_ID=cnmt.readInt64()	
+										original_ID=str(hx(original_ID.to_bytes(8, byteorder='big')))
+										original_ID = original_ID[2:-1]	
+										ttag=' [DLC]'
+										CTYPE='DLC'								
+									else: 
+										original_ID=cnmt.readInt64()	
+										original_ID=str(hx(original_ID.to_bytes(8, byteorder='big')))
+										original_ID = original_ID[2:-1]							
+									cnmt.seek(0x20+offset)			
+									for i in range(content_entries):
+										vhash = cnmt.read(0x20)
+										NcaId = cnmt.read(0x10)
+										size = cnmt.read(0x6)
+										size=int.from_bytes(size, byteorder='little')
+										ncatype = cnmt.read(0x1)
+										unknown = cnmt.read(0x1)		
+									#**************************************************************	
+										version=str(int.from_bytes(titleversion, byteorder='little'))
+										ver=version
+										ver='[v'+ver+']'
+										titleid3 ='['+ titleid2+']'
+										nca_name=str(hx(NcaId))
+										nca_name=nca_name[2:-1]+'.nca'
+										if nca_name in completefilelist:
+											ncalist.append([nca_name,size])			
+									nca_meta=str(nca._path)
+									if nca_meta in completefilelist:	
+										ncalist.append([nca_meta,nca.size])						
+									titlerights=titleid2+str('0'*15)+str(crypto2)
+									contentlist.append([str(self._path),titleid2,titlerights,keygen,ncalist,CTYPE,version])
+									
+		for nspF in self.hfs0:
+			if str(nspF._path)=="secure":											
+				for file in nspF:
+					if type(file) == Ticket or file._path.endswith('.cert'):	
+						test=file._path
+						test=test[0:32]
+						for i in contentlist:
+							if i[2]==test:
+								i[4].append([file._path,file.size])
+		'''
+		for i in contentlist:
+			print('Filename: '+i[0])
+			print('TitleID: '+i[1])
+			print('TitleRights: '+i[2])
+			print('Version: '+str(i[6]))				
+			print('Keygen: '+str(i[3]))		
+			print('Content type: '+str(i[5]))			
+			for j in i[4]:
+				print (j)	
+		print("")
+		'''
+
+		return contentlist						
 						
 						
-	def get_title(self,baseid,roman=True):
+	def get_title(self,baseid,roman=True,tag=False):
 		for nspF in self.hfs0:
 			if str(nspF._path)=="secure":
 				for nca in nspF:
@@ -5419,13 +5817,20 @@ class Xci(File):
 									target=str(nca._path)
 									content_type_cnmt=str(cnmt._path)
 									content_type_cnmt=content_type_cnmt[:-22]									
-									if content_type_cnmt == 'AddOnContent':						
-										DLCnumb=str(titleid2)
-										DLCnumb="0000000000000"+DLCnumb[-3:]									
-										DLCnumb=bytes.fromhex(DLCnumb)
-										DLCnumb=str(int.from_bytes(DLCnumb, byteorder='big'))									
-										DLCnumb=int(DLCnumb)	
-										title = 'DLC number '+str(DLCnumb)		
+									if content_type_cnmt == 'AddOnContent':
+										if tag==False:
+											nutdbname=nutdb.get_dlcname(titleid2)
+										else:	
+											nutdbname=False
+										if nutdbname!=False:
+											title=nutdbname
+										else:
+											DLCnumb=str(titleid2)
+											DLCnumb="0000000000000"+DLCnumb[-3:]									
+											DLCnumb=bytes.fromhex(DLCnumb)
+											DLCnumb=str(int.from_bytes(DLCnumb, byteorder='big'))									
+											DLCnumb=int(DLCnumb)	
+											title = 'DLC number '+str(DLCnumb)		
 										return(title)	
 		title='DLC'							
 		for nspF in self.hfs0:
@@ -5554,7 +5959,7 @@ class Xci(File):
 									gamecard=True								
 		return sha,sizef,gamecard						
 						
-	def append_content(self,outf,target,buffer,t):			
+	def append_content(self,outf,target,buffer,t,includexml=True):			
 		indent = 1
 		tabs = '\t' * indent	
 		for nspF in self.hfs0:
@@ -5571,13 +5976,13 @@ class Xci(File):
 								fp.flush()				
 								if not data:				
 									break					
-							if str(file.header.contentType) == 'Content.META':
+							if str(file.header.contentType) == 'Content.META' and includexml==True:
 								target=str(file._path)
 								xmlname=target[:-3]+'xml'	
 								t.write(tabs+'- Appending: ' + xmlname)								
 								dir=os.path.dirname(os.path.abspath(outf))						
-								outf= os.path.join(dir, xmlname)		
-								xml = open(outf, 'rb')		
+								xmlfile= os.path.join(dir, xmlname)		
+								xml = open(xmlfile, 'rb')		
 								data=xml.read()
 								xml.close()
 								fp.write(data)
@@ -5893,8 +6298,8 @@ class Xci(File):
 										xmlname=target[:-3]+'xml'	
 										t.write(tabs+'* Appending: ' + xmlname)								
 										dir=os.path.dirname(os.path.abspath(outf))						
-										outf= os.path.join(dir, xmlname)		
-										xml = open(outf, 'rb')		
+										xmlfile= os.path.join(dir, xmlname)		
+										xml = open(xmlfile, 'rb')		
 										data=xml.read()
 										xml.close()
 										if fat=="fat32" and (c+len(data))>block:	
@@ -6980,9 +7385,10 @@ class Xci(File):
 									f.seek(fs.offset)
 									pfs0Offset=fs.offset
 									pfs0Header = f.read(0x10)	
-									#print(sectionHeaderBlock[8:12] == b'IVFC')	
+									#print(hx(sectionHeaderBlock[8:12]))
+									#Hex.dump(sectionHeaderBlock)
 									if sectionHeaderBlock[8:12] == b'IVFC':	
-										#Hex.dump(self.sectionHeaderBlock)
+										#Hex.dump(sectionHeaderBlock)
 										#Print.info(hx(self.sectionHeaderBlock[0xc8:0xc8+0x20]).decode('utf-8'))
 										mem = MemoryFile(pfs0Header, Type.Crypto.CTR, decKey, pfs0.cryptoCounter, offset = pfs0Offset)
 										data = mem.read();
@@ -6999,10 +7405,10 @@ class Xci(File):
 										magic = mem.read()[0:4]
 										#print(magic)
 										if magic != b'PFS0':
-											return False
+											pass
 										else:	
 											return True				
-								
+											
 								if fs.fsType == Type.Fs.ROMFS and fs.cryptoType == Type.Crypto.CTR:	
 									f.seek(0)
 									ncaHeader = NcaHeader()
@@ -7020,7 +7426,7 @@ class Xci(File):
 									#print(sectionHeaderBlock[8:12] == b'IVFC')	
 									if sectionHeaderBlock[8:12] == b'IVFC':	
 										#Hex.dump(self.sectionHeaderBlock)
-										#Print.info(hx(self.sectionHeaderBlock[0xc8:0xc8+0x20]).decode('utf-8'))
+										#Print.info(hx(sectionHeaderBlock[0xc8:0xc8+0x20]).decode('utf-8'))
 										mem = MemoryFile(pfs0Header, Type.Crypto.CTR, decKey, pfs0.cryptoCounter, offset = pfs0Offset)
 										data = mem.read();
 										#Hex.dump(data)
@@ -7038,7 +7444,30 @@ class Xci(File):
 										if magic != b'PFS0':
 											return False
 										else:	
-											return True									
+											return True			
+
+								if fs.fsType == Type.Fs.ROMFS and fs.cryptoType == Type.Crypto.BKTR and str(f.header.contentType) == 'Content.PROGRAM':
+									f.seek(0)
+									ncaHeader = NcaHeader()
+									ncaHeader.open(MemoryFile(f.read(0x400), Type.Crypto.XTS, uhx(Keys.get('header_key'))))	
+									ncaHeader = f.read(0x400)
+									pfs0=fs
+									sectionHeaderBlock = fs.buffer
+
+									levelOffset = int.from_bytes(sectionHeaderBlock[0x18:0x20], byteorder='little', signed=False)
+									levelSize = int.from_bytes(sectionHeaderBlock[0x20:0x28], byteorder='little', signed=False)
+
+									pfs0Offset = fs.offset + levelOffset
+									f.seek(pfs0Offset)
+									pfs0Header = f.read(levelSize)
+									if sectionHeaderBlock[8:12] == b'IVFC':
+										for i in range(10):
+											ini=0x100+(i*0x10)
+											fin=0x110+(i*4)
+											test=sectionHeaderBlock[ini:fin]
+											if test==b'BKTR':											
+												return True							
+		return False										
 
 	# ...................................................						
 	# Patch requrements for network account
@@ -7117,4 +7546,423 @@ class Xci(File):
 								newhash=nca.header.calculate_hblock_hash();print('- New nca sblock hash: '+str(hx(newhash)))
 								nca.header.set_hblock_hash(newhash)
 										
-	# ...................................................			
+	# ...................................................
+
+		
+##################		
+#FILE RESTORATION
+##################
+
+
+
+
+##################		
+#DB DATA
+##################
+	def Incorporate_to_permaDB(self,dbfile,trans=True):
+		Datashelve = DBmodule.Dict(dbfile)	
+		cnmtnames=list()
+		for nspF in self.hfs0:
+			if str(nspF._path)=="secure":
+				for nca in nspF:		
+					if type(nca) == Nca:
+						if 	str(nca.header.contentType) == 'Content.META':	
+							cnmtnames.append(str(nca._path))
+		for file in cnmtnames:
+			DBdict=self.getDBdict(file,trans)		
+			dbkey=(str(DBdict['id'])+'_v'+str(DBdict['version'])+'_xci').lower()
+			if not 'fields' in Datashelve:
+				DBmodule.MainDB.initializeDB(dbfile)		
+			if not dbkey in Datashelve:
+				Datashelve[dbkey]=DBdict
+		Datashelve.close()		
+		
+	def getDBdict(self,cnmtname,json=False,trans=True):
+		DBdict={}
+		titleid,titleversion,base_ID,keygeneration,rightsId,RSV,RGV,ctype,metasdkversion,exesdkversion,hasHtmlManual,Installedsize,DeltaSize,ncadata=self.get_data_from_cnmt(cnmtname)
+		#print(ncadata)
+		sqname,sqeditor,SupLg,ctype=self.DB_get_names(ctype,ncadata)
+		#print(sqname)
+		if ctype != 'DLC':
+			nacpdict=self.get_data_from_nacp(ncadata)			
+		titlekey,dectkey=self.db_get_titlekey(rightsId,keygeneration)
+		#cnmt flags
+		DBdict['id']=titleid
+		DBdict['baseid']=base_ID
+		DBdict['rightsId']=rightsId	
+		DBdict['Type']=ctype				
+		DBdict['version']=titleversion		
+		DBdict['keygeneration']=keygeneration		
+		DBdict['RSV']=RSV[1:-1]		
+		DBdict['RGV']=RGV		
+		DBdict['metasdkversion']=metasdkversion	
+		DBdict['exesdkversion']=exesdkversion
+		DBdict['InstalledSize']=Installedsize		
+		DBdict['deltasize']=DeltaSize
+		DBdict['HtmlManual']=hasHtmlManual	
+		DBdict['ncasizes']=ncadata	
+		
+		#nacpt flags
+		if ctype != 'DLC':
+			DBdict['baseName']=sqname	
+			DBdict['contentname']='-'
+		else:
+			DBdict['baseName']='-'
+			DBdict['contentname']=sqname		
+		DBdict['editor']=sqeditor	
+		DBdict['languages']=SupLg	
+		if ctype != 'DLC':
+			try:
+				if nacpdict['StartupUserAccount']=='RequiredWithNetworkServiceAccountAvailable' or nacpdict['RequiredNetworkServiceLicenseOnLaunch']!='None':
+					DBdict['linkedAccRequired']='True'		
+				else:
+					DBdict['linkedAccRequired']='False'			
+				DBdict['buildnumber']=nacpdict['BuildNumber']		
+				DBdict['RegionalBaseNames']=nacpdict['RegionalNames']
+				DBdict['RegionalContentNames']='-'		
+				DBdict['RegionalEditors']=nacpdict['RegionalEditors']
+				DBdict['AgeRatings']=nacpdict['AgeRatings']			
+				DBdict['isbn']=nacpdict['ISBN']	
+				DBdict['StartupUserAccount']=nacpdict['StartupUserAccount']	
+				DBdict['UserAccountSwitchLock']=nacpdict['UserAccountSwitchLock']	
+				DBdict['AddOnContentRegistrationType']=nacpdict['AddOnContentRegistrationType']		
+				DBdict['ctype']=nacpdict['ctype']				
+				DBdict['ParentalControl']=nacpdict['ParentalControl']		
+				DBdict['ScreenshotsEnabled']=nacpdict['ScreenshotsEnabled']
+				DBdict['VideocaptureEnabled']=nacpdict['VideocaptureEnabled']
+				DBdict['DataLossConfirmation']=nacpdict['dataLossConfirmation']
+				DBdict['PlayLogPolicy']=nacpdict['PlayLogPolicy']
+				DBdict['PresenceGroupId']=nacpdict['PresenceGroupId']	
+				DBdict['AddOnContentBaseId']=nacpdict['AddOnContentBaseId']	
+				DBdict['SaveDataOwnerId']=nacpdict['SaveDataOwnerId']	
+				DBdict['UserAccountSaveDataSize']=nacpdict['UserAccountSaveDataSize']
+				DBdict['UserAccountSaveDataJournalSize']=nacpdict['UserAccountSaveDataJournalSize']
+				DBdict['DeviceSaveDataSize']=nacpdict['DeviceSaveDataSize']
+				DBdict['DeviceSaveDataJournalSize']=nacpdict['DeviceSaveDataJournalSize']	
+				DBdict['BcatDeliveryCacheStorageSize']=nacpdict['BcatDeliveryCacheStorageSize']			
+				DBdict['ApplicationErrorCodeCategory']=nacpdict['ApplicationErrorCodeCategory']					
+				DBdict['LocalCommunicationId']=nacpdict['LocalCommunicationId']				
+				DBdict['LogoType']=nacpdict['LogoType']					
+				DBdict['LogoHandling']=nacpdict['LogoHandling']			
+				DBdict['RuntimeAddOnContentInstall']=nacpdict['RuntimeAddOnContentInstall']					
+				DBdict['CrashReport']=nacpdict['CrashReport']			
+				DBdict['Hdcp']=nacpdict['Hdcp']			
+				DBdict['SeedForPseudoDeviceId']=nacpdict['SeedForPseudoDeviceId']			
+				DBdict['BcatPassphrase']=nacpdict['BcatPassphrase']			
+				DBdict['UserAccountSaveDataSizeMax']=nacpdict['UserAccountSaveDataSizeMax']			
+				DBdict['UserAccountSaveDataJournalSizeMax']=nacpdict['UserAccountSaveDataJournalSizeMax']			
+				DBdict['DeviceSaveDataSizeMax']=nacpdict['DeviceSaveDataSizeMax']					
+				DBdict['DeviceSaveDataJournalSizeMax']=nacpdict['DeviceSaveDataJournalSizeMax']	
+				DBdict['TemporaryStorageSize']=nacpdict['TemporaryStorageSize']	
+				DBdict['CacheStorageSize']=nacpdict['CacheStorageSize']			
+				DBdict['CacheStorageJournalSize']=nacpdict['CacheStorageJournalSize']	
+				DBdict['CacheStorageDataAndJournalSizeMax']=nacpdict['CacheStorageDataAndJournalSizeMax']	
+				DBdict['CacheStorageIndexMax']=nacpdict['CacheStorageIndexMax']			
+				DBdict['PlayLogQueryableApplicationId']=nacpdict['PlayLogQueryableApplicationId']		
+				DBdict['PlayLogQueryCapability']=nacpdict['PlayLogQueryCapability']				
+				DBdict['Repair']=nacpdict['Repair']	
+				DBdict['ProgramIndex']=nacpdict['ProgramIndex']	
+				DBdict['RequiredNetworkServiceLicenseOnLaunch']=nacpdict['RequiredNetworkServiceLicenseOnLaunch']		
+			except:pass		
+	
+		#ticket flags	
+		if titlekey==False:
+			titlekey='-'
+			dectkey='-'		
+		DBdict['key']=titlekey		
+		DBdict['deckey']=dectkey	
+		
+		#Distribution type flags
+		if ctype=='GAME':
+			DBdict['DistEshop']='-'
+			DBdict['DistCard']='True'
+		else:	
+			DBdict['DistEshop']='-'
+			DBdict['DistCard']='True'
+			
+		# #xci flags		
+		# DBdict['FWoncard']='-'		
+		# DBdict['multicontentCard']='-'		
+		# DBdict['multicontentCardname']='-'		
+		# DBdict['multicontentIDsoncard']='-'		
+		# DBdict['GCSize']='-'
+		# DBdict['TrimmedSize']='-'	
+
+		if ctype=='GAME' or ctype=='DLC' or ctype=='DEMO':	
+			DBdict['nsuId']='-'	
+			DBdict['genretags']='-'	
+			DBdict['ratingtags']='-'
+			DBdict['worldreleasedate']='-'			
+			DBdict['numberOfPlayers']='-'
+			DBdict['iconUrl']='-'					
+			DBdict['screenshots']='-'			
+			DBdict['bannerUrl']='-'			
+			DBdict['intro']='-'			
+			DBdict['description']='-'	
+			nsuId,worldreleasedate,genretags,ratingtags,numberOfPlayers,intro,description,iconUrl,screenshots,bannerUrl,region,rating=nutdb.get_content_data(titleid,trans)
+			if 	nsuId!=False:
+				DBdict['nsuId']=nsuId
+			if 	genretags!=False:
+				DBdict['genretags']=genretags
+			if 	ratingtags!=False:
+				DBdict['ratingtags']=ratingtags
+			if 	worldreleasedate!=False:
+				DBdict['worldreleasedate']=worldreleasedate
+			if 	numberOfPlayers!=False:
+				DBdict['numberOfPlayers']=numberOfPlayers
+			if 	iconUrl!=False:
+				DBdict['iconUrl']=iconUrl
+			if 	screenshots!=False:				
+				DBdict['screenshots']=screenshots
+			if 	bannerUrl!=False:				
+				DBdict['bannerUrl']=bannerUrl			
+			if 	intro!=False:	
+				DBdict['intro']=intro			
+			if 	description!=False:	
+				DBdict['description']=description														
+		return DBdict
+	
+	def get_data_from_cnmt(self,cnmtname):	
+		for nspF in self.hfs0:
+			if str(nspF._path)=="secure":
+				for nca in nspF:			
+					if type(nca) == Nca:
+						if 	str(nca.header.contentType) == 'Content.META':
+							if str(nca._path)==cnmtname:
+								crypto1=nca.header.getCryptoType()
+								crypto2=nca.header.getCryptoType2()			
+								if crypto2>crypto1:
+									keygeneration=crypto2
+								if crypto2<=crypto1:	
+									keygeneration=crypto1					
+								for f in nca:
+									for cnmt in f:	
+										nca.rewind()
+										f.rewind()
+										cnmt.rewind()
+										titleid=cnmt.readInt64()
+										titleid2 = str(hx(titleid.to_bytes(8, byteorder='big'))) 	
+										titleid2 = titleid2[2:-1]							
+										titleid=(str(hx(titleid.to_bytes(8, byteorder='big')))[2:-1]).upper()
+										titleversion = cnmt.read(0x4)
+										titleversion=str(int.from_bytes(titleversion, byteorder='little'))
+										type_n = cnmt.read(0x1)								
+										cnmt.rewind()
+										cnmt.seek(0xE)
+										offset=cnmt.readInt16()
+										content_entries=cnmt.readInt16()
+										meta_entries=cnmt.readInt16()
+										cnmt.rewind()
+										cnmt.seek(0x20)
+										base_ID=cnmt.readInt64()
+										base_ID=(str(hx(base_ID.to_bytes(8, byteorder='big')))[2:-1]).upper()
+										#cnmt.rewind()
+										#cnmt.seek(0x28)		
+										#cnmt.writeInt64(336592896)
+										cnmt.rewind()
+										cnmt.seek(0x28)					
+										min_sversion=cnmt.readInt32()
+										length_of_emeta=cnmt.readInt32()	
+										content_type_cnmt=str(cnmt._path)
+										content_type_cnmt=content_type_cnmt[:-22]				
+										if content_type_cnmt != 'AddOnContent':
+											RSV=str(min_sversion)
+											RSV=sq_tools.getFWRangeRSV(int(RSV))
+											RGV=0
+										if content_type_cnmt == 'AddOnContent':
+											RSV_rq_min=sq_tools.getMinRSV(keygeneration, 0)
+											RSV=sq_tools.getFWRangeRSV(int(RSV_rq_min))							
+											RGV=str(min_sversion)
+										if str(hx(type_n)) == "b'1'":
+											ctype='SystemProgram'		
+										if str(hx(type_n)) == "b'2'":
+											ctype='SystemData'
+										if str(hx(type_n)) == "b'3'":
+											ctype='SystemUpdate'
+										if str(hx(type_n)) == "b'4'":
+											ctype='BootImagePackage'		
+										if str(hx(type_n)) == "b'5'":
+											ctype='BootImagePackageSafe'		
+										if str(hx(type_n)) == "b'80'":
+											ctype='GAME'			
+										if str(hx(type_n)) == "b'81'":
+											ctype='UPDATE'
+										if str(hx(type_n)) == "b'82'":
+											ctype='DLC'
+										if str(hx(type_n)) == "b'83'":
+											ctype='Delta'									
+										metasdkversion=nca.get_sdkversion()
+										programSDKversion,dataSDKversion=self.getsdkvertit(titleid2)	
+										if content_type_cnmt == 'AddOnContent':
+											exesdkversion=dataSDKversion
+										if content_type_cnmt != 'AddOnContent':	
+											exesdkversion=programSDKversion	
+										ncadata=list()	
+										hasHtmlManual=False	
+										Installedsize=int(nca.header.size);DeltaSize=0
+										for i in range(content_entries):	
+											data={}
+											vhash = cnmt.read(0x20)
+											vhash=str(hx(vhash))					
+											NcaId = cnmt.read(0x10)
+											NcaId=str(hx(NcaId))									
+											size = cnmt.read(0x6)
+											size=str(int.from_bytes(size, byteorder='little', signed=True))						
+											ncatype = cnmt.read(0x1)
+											ncatype=str(int.from_bytes(ncatype, byteorder='little', signed=True))								
+											ncatype=sq_tools.getmetacontenttype(ncatype)
+											unknown = cnmt.read(0x1)										
+											data['NcaId']=NcaId[2:-1]
+											data['NCAtype']=ncatype
+											data['Size']=size
+											data['Hash']=vhash[2:-1]
+											if ncatype != "DeltaFragment":
+												Installedsize=Installedsize+int(size)
+											else:
+												DeltaSize=DeltaSize+int(size)
+											if ncatype == "HtmlDocument":
+												hasHtmlManual=True
+											ncadata.append(data)	
+										cnmtdata={}
+										metaname=str(nca._path);metaname =  metaname[:-9]
+										nca.rewind();block = nca.read();nsha=sha256(block).hexdigest()								
+										cnmtdata['NcaId']=metaname
+										cnmtdata['NCAtype']='Meta'
+										cnmtdata['Size']=str(nca.header.size)	
+										cnmtdata['Hash']=str(nsha)
+										ncadata.append(cnmtdata)
+								rightsId=titleid+'000000000000000'+str(crypto2)	
+								return 	titleid,titleversion,base_ID,keygeneration,rightsId,RSV,RGV,ctype,metasdkversion,exesdkversion,hasHtmlManual,Installedsize,DeltaSize,ncadata						
+			
+	def get_data_from_nacp(self,ncadata):
+		for entry in ncadata:
+			if entry['NCAtype'].lower()=='control':
+				target=entry['NcaId']+'.nca'
+		dict={}
+		for nspF in self.hfs0:
+			if str(nspF._path)=="secure":
+				for nca in nspF:		
+					if type(nca) == Nca:
+						if 	str(nca.header.contentType) == 'Content.CONTROL':
+							if target==str(nca._path):
+								offset=nca.get_nacp_offset()
+								for f in nca:
+									f.seek(offset)
+									nacp = Nacp()			
+									dict['RegionalNames'],dict['RegionalEditors']=nacp.get_NameandPub(f.read(0x300*15))							
+									f.seek(offset+0x3000)	
+									dict['ISBN']=nacp.get_Isbn(f.read(0x24))		
+									dict['StartupUserAccount']=nacp.get_StartupUserAccount(f.readInt8('little'))	
+									dict['UserAccountSwitchLock']=nacp.get_UserAccountSwitchLock(f.readInt8('little'))		
+									dict['AddOnContentRegistrationType']=nacp.get_AddOnContentRegistrationType(f.readInt8('little'))						
+									dict['ctype']=nacp.get_ContentType(f.readInt8('little'))	
+									dict['ParentalControl']=nacp.get_ParentalControl(f.readInt8('little'))
+									dict['ScreenshotsEnabled']=nacp.get_Screenshot(f.readInt8('little'))
+									dict['VideocaptureEnabled']=nacp.get_VideoCapture(f.readInt8('little'))
+									dict['dataLossConfirmation']=nacp.get_dataLossConfirmation(f.readInt8('little'))
+									dict['PlayLogPolicy']=nacp.get_PlayLogPolicy(f.readInt8('little'))
+									dict['PresenceGroupId']=nacp.get_PresenceGroupId(f.readInt64('little'))		
+									f.seek(offset+0x3040)							
+									dict['AgeRatings']=nacp.get_RatingAge(f.read(0x20))			
+									f.seek(offset+0x3060)	
+									try:
+										dict['BuildNumber']=nacp.get_DisplayVersion(f.read(0xF))		
+										f.seek(offset+0x3070)							
+										dict['AddOnContentBaseId']=nacp.get_AddOnContentBaseId(f.readInt64('little'))
+										f.seek(offset+0x3078)							
+										dict['SaveDataOwnerId']=nacp.get_SaveDataOwnerId(f.readInt64('little'))
+										f.seek(offset+0x3080)							
+										dict['UserAccountSaveDataSize']=nacp.get_UserAccountSaveDataSize(f.readInt64('little'))	
+										f.seek(offset+0x3088)								
+										dict['UserAccountSaveDataJournalSize']=nacp.get_UserAccountSaveDataJournalSize(f.readInt64('little'))
+										f.seek(offset+0x3090)	
+										dict['DeviceSaveDataSize']=nacp.get_DeviceSaveDataSize(f.readInt64('little'))	
+										f.seek(offset+0x3098)	
+										dict['DeviceSaveDataJournalSize']=nacp.get_DeviceSaveDataJournalSize(f.readInt64('little'))	
+										f.seek(offset+0x30A0)	
+										dict['BcatDeliveryCacheStorageSize']=nacp.get_BcatDeliveryCacheStorageSize(f.readInt64('little'))		
+										f.seek(offset+0x30A8)	
+										dict['ApplicationErrorCodeCategory']=nacp.get_ApplicationErrorCodeCategory(f.read(0x07))	
+										f.seek(offset+0x30B0)
+										dict['LocalCommunicationId']=nacp.get_LocalCommunicationId(f.readInt64('little'))	
+										f.seek(offset+0x30F0)
+										dict['LogoType']=nacp.get_LogoType(f.readInt8('little'))							
+										dict['LogoHandling']=nacp.get_LogoHandling(f.readInt8('little'))		
+										dict['RuntimeAddOnContentInstall']=nacp.get_RuntimeAddOnContentInstall(f.readInt8('little'))	
+										dict['CrashReport']=nacp.get_CrashReport(f.readInt8('little'))	
+										dict['Hdcp']=nacp.get_Hdcp(f.readInt8('little'))		
+										dict['SeedForPseudoDeviceId']=nacp.get_SeedForPseudoDeviceId(f.readInt64('little'))	
+										f.seek(offset+0x3100)			
+										dict['BcatPassphrase']=nacp.get_BcatPassphrase(f.read(0x40))	
+										f.seek(offset+0x3148)			
+										dict['UserAccountSaveDataSizeMax']=nacp.par_UserAccountSaveDataSizeMax(f.readInt64('little'))						
+										f.seek(offset+0x3150)			
+										dict['UserAccountSaveDataJournalSizeMax']=nacp.par_UserAccountSaveDataJournalSizeMax(f.readInt64('little'))
+										f.seek(offset+0x3158)			
+										dict['DeviceSaveDataSizeMax']=nacp.get_DeviceSaveDataSizeMax(f.readInt64('little'))
+										f.seek(offset+0x3160)			
+										dict['DeviceSaveDataJournalSizeMax']=nacp.get_DeviceSaveDataJournalSizeMax(f.readInt64('little'))							
+										f.seek(offset+0x3168)			
+										dict['TemporaryStorageSize']=nacp.get_TemporaryStorageSize(f.readInt64('little'))		
+										dict['CacheStorageSize']=nacp.get_CacheStorageSize(f.readInt64('little'))			
+										f.seek(offset+0x3178)		
+										dict['CacheStorageJournalSize']=nacp.get_CacheStorageJournalSize(f.readInt64('little'))							
+										dict['CacheStorageDataAndJournalSizeMax']=nacp.get_CacheStorageDataAndJournalSizeMax(f.readInt64('little'))		
+										f.seek(offset+0x3188)	
+										dict['CacheStorageIndexMax']=nacp.get_CacheStorageIndexMax(f.readInt64('little'))		
+										dict['PlayLogQueryableApplicationId']=nacp.get_PlayLogQueryableApplicationId(f.readInt64('little'))		
+										f.seek(offset+0x3210)	
+										dict['PlayLogQueryCapability']=nacp.get_PlayLogQueryCapability(f.readInt8('little'))	
+										dict['Repair']=nacp.get_Repair(f.readInt8('little'))	
+										dict['ProgramIndex']=nacp.get_ProgramIndex(f.readInt8('little'))	
+										dict['RequiredNetworkServiceLicenseOnLaunch']=nacp.get_RequiredNetworkServiceLicenseOnLaunch(f.readInt8('little'))	
+									except:continue	
+								return dict	
+		
+	def DB_get_names(self,ctype,ncadata):	
+		#print(ncadata)
+		for entry in ncadata:
+			if str(entry['NCAtype']).lower()=='control':
+				target=str(entry['NcaId'])+'.nca'	
+				
+		for nspF in self.hfs0:
+			if str(nspF._path)=="secure":
+				for nca in nspF:		
+					if type(nca) == Nca:
+						if 	str(nca.header.contentType) == 'Content.CONTROL':	
+							if target==str(nca._path):				
+								title,editor,ediver,SupLg,regionstr,isdemo=nca.get_langueblock('DLC',roman=True)
+								if ctype=='GAME':
+									if isdemo==1:
+										ctype='UPDATE'
+									if isdemo==2:
+										ctype='RETAILINTERACTIVEDISPLAY'
+								elif ctype=='UPDATE':		
+									if isdemo==1:
+										ctype='DEMO UPDATE'
+									if isdemo==2:
+										ctype='RETAILINTERACTIVEDISPLAY UPDATE'					
+								else:
+									ctype=ctype
+								return 	title,editor,SupLg,ctype			
+	
+	def db_get_titlekey(self,rightsId,keygeneration):	
+		#print(rightsId)
+		#print(keygeneration)
+		for nspF in self.hfs0:
+			if str(nspF._path)=="secure":
+				for ticket in nspF:				
+					if type(ticket) == Ticket:	
+						tikrights = hex(ticket.getRightsId())
+						tikrights = '0'+tikrights[2:]				
+						if str(rightsId).lower() == str(tikrights).lower():
+							titleKey = ticket.getTitleKeyBlock()	
+							titleKey=str(hx(titleKey.to_bytes(16, byteorder='big')))
+							titleKey=titleKey[2:-1].upper()
+							deckey = Keys.decryptTitleKey(ticket.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(int(keygeneration)))						
+							deckey=(str(hx(deckey))[2:-1]).upper()	
+							#print(titleKey)	
+							#print(deckey)	
+							return str(titleKey),str(deckey)
+		return False,False		
+				

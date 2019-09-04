@@ -34,11 +34,11 @@ import pathlib
 import urllib3
 import json
 from zipfile import ZipFile
-import shelve
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, 'lib')
 import sq_tools
+import listmanager
 import Keys
 import Titles
 import Fs
@@ -46,6 +46,7 @@ import Config
 import Print
 import Status
 import Nsps
+import DBmodule as dbmodule
 from hashlib import sha256
 from pathlib import Path
 from binascii import hexlify as hx, unhexlify as uhx
@@ -57,6 +58,24 @@ from datetime import datetime
 import math  
 import pykakasi
 from Fs.pyNCA3 import NCA3
+import nutdb
+
+# SET ENVIRONMENT
+squirrel_dir=os.path.abspath(os.curdir)
+NSCB_dir=os.path.abspath('../'+(os.curdir))
+ztools_dir=os.path.join(NSCB_dir, 'ztools')
+zconfig_dir=os.path.join(NSCB_dir, 'zconfig')
+if os.path.exists(zconfig_dir):
+	DATABASE_folder=os.path.join(zconfig_dir, 'DB')
+else:
+	DATABASE_folder=os.path.join(squirrel_dir, 'DB')
+	
+if not os.path.exists(DATABASE_folder):
+	os.makedirs(DATABASE_folder)	
+
+#print (ztools_dir)
+#print (NSCB_dir)
+
 
 if __name__ == '__main__':
 	try:
@@ -76,9 +95,11 @@ if __name__ == '__main__':
 		parser.add_argument('--fw_req', nargs='+', help='Get information about fw requirements for NSP/XCI')		
 		parser.add_argument('--Read_xci_head', nargs='+', help='Get information about xci header and cert')				
 		parser.add_argument('-nscdb', '--addtodb', nargs='+', help='Adds content to database')	
+		parser.add_argument('-nscdb_new', '--addtodb_new', nargs='+', help='Adds content to database')			
 		parser.add_argument('-v', '--verify', nargs='+', help='Verify nsp or xci file')			
 
-		# CNMT Flag funtions		
+		# CNMT Flag funtions	
+		parser.add_argument('--set_cnmt_titleid', nargs='+', help='Changes cnmt.nca titleid')			
 		parser.add_argument('--set_cnmt_version', nargs='+', help='Changes cnmt.nca version number')	
 		parser.add_argument('--set_cnmt_RSV', nargs='+', help='Changes cnmt.nca RSV')	
 		parser.add_argument('--update_hash', nargs='+', help='Updates cnmt.nca hashes')	
@@ -90,6 +111,8 @@ if __name__ == '__main__':
 		parser.add_argument('--create_rhfs0', help='create / pack a root hfs0')		
 		parser.add_argument('--create_xci', help='create / pack a xci')		
 		parser.add_argument('-xci_st', '--xci_super_trim', nargs='+', help='Supertrim xci')	
+		parser.add_argument('-xci_tr', '--xci_trim', nargs='+', help='Trims xci')		
+		parser.add_argument('-xci_untr', '--xci_untrim', nargs='+', help='Untrims xci')			
 		parser.add_argument('-dc', '--direct_creation', nargs='+', help='Create directly a nsp or xci')		
 		parser.add_argument('-dmul', '--direct_multi', nargs='+', help='Create directly a multi nsp or xci')		
 		parser.add_argument('-ed', '--erase_deltas', nargs='+', help='Take of deltas from updates')			
@@ -184,6 +207,7 @@ if __name__ == '__main__':
 		parser.add_argument('-ifo_n', '--ifolder_normal', help='Input normal folder')		
 		parser.add_argument('-ifo_u', '--ifolder_update', help='Input update folder')		
 		parser.add_argument('-tfile', '--text_file', help='Output text file')
+		parser.add_argument('-tfile_aux', '--text_file_aux', help='Auxiliary text file')	
 		parser.add_argument('-dbfile', '--db_file', help='Output text file for database')			
 		parser.add_argument('-b', '--buffer', nargs='+', help='Set buffer for copy instructions')
 		parser.add_argument('-ext', '--external', nargs='+', help='Set original nsp or ticket for remove nca titlerights functions')
@@ -201,10 +225,15 @@ if __name__ == '__main__':
 		parser.add_argument('-dbformat', '--dbformat', nargs='+', help='Database format extended, nutdb or keyless-extended')		
 		parser.add_argument('-rn', '--rename', nargs='+', help='Filter with base titleid')		
 		parser.add_argument('-uin', '--userinput', help='Reads a user input')		
-		parser.add_argument('-incxml', '--includexml', nargs='+', help='Include xml by default true')			
+		parser.add_argument('-incxml', '--includexml', nargs='+', help='Include xml by default true')		
+		parser.add_argument('-trans', '--translate', nargs='+', help='Google translation support for nutdb descriptions')		
 		# LISTMANAGER
 		parser.add_argument('-cl', '--change_line', help='Change line in text file')
 		parser.add_argument('-rl', '--read_line', help='Read line in text file')		
+		parser.add_argument('-stripl', '--strip_lines', nargs='+', help='Strips lines from a text file')		
+		parser.add_argument('-showcline', '--show_current_line', nargs='+', help='Shows current line')	
+		parser.add_argument('-countlines', '--count_n_lines', nargs='+', help='Count the number of lines')		
+		parser.add_argument('-dff', '--delete_item', nargs='+', help='Deletes a os item listed in text file, a file or a folder')				
 		parser.add_argument('-ln', '--line_number', help='line number')
 		parser.add_argument('-nl', '--new_line', help='new line')
 		parser.add_argument('-ff', '--findfile', help='find different types of files')	
@@ -212,6 +241,12 @@ if __name__ == '__main__':
 		parser.add_argument('-splid', '--split_list_by_id', nargs='+', help='split a list by file id')	
 		parser.add_argument('-mv_oupd', '--mv_old_updates', nargs='+', help='Moves old updates to another folder')	
 		parser.add_argument('-mv_odlc', '--mv_old_dlcs', nargs='+', help='Moves old dlcs to another folder')	
+		parser.add_argument('-cr_ilist', '--cr_incl_list', nargs='+', help='Creates a include list from a textfile and a folder or 2 textfiles')	
+		parser.add_argument('-cr_elist', '--cr_excl_list', nargs='+', help='Creates a exclude list from a textfile and a folder or 2 textfiles')	
+		parser.add_argument('-cr_xcioutlist', '--cr_outdated_xci_list', nargs='+', help='Creates a outdated xci list from a textfile and a folder')			
+		parser.add_argument('-cr_xexplist', '--cr_expand_list', nargs='+', help='Expands the list with games by baseid')	
+		parser.add_argument('-chdlcn', '--chck_dlc_numb', nargs='+', help='Checks if xci has corrent number of dlcs')			
+		parser.add_argument('-blckl', '--black_list', nargs='+', help='Deletes blacklisted files from a list')			
 		
 		# Archive		
 		if sys.platform == 'win32':
@@ -232,14 +267,29 @@ if __name__ == '__main__':
 		parser.add_argument('-cltg','--cleantags', help="Clean tags in filenames")	
 		parser.add_argument('-tgtype','--tagtype', help="Type of tag to remove")
 		parser.add_argument('-vorg','--v_organize', help="Aux variable to organize files")		
-		parser.add_argument('-vt','--vertype', help="Veryfication type for auto, needs --text_file. Opt: dec,sig,full [DECryption, decryption and SIGnature, previous and hash check]")			
+		parser.add_argument('-vt','--vertype', help="Verification type for auto, needs --text_file. Opt: dec,sig,full [DECryption, decryption and SIGnature, previous and hash check]")			
+		parser.add_argument('-threads','--threads', help="Number threads to use for certain functions")			
 		args = parser.parse_args()
 
 		Status.start()
 
 		indent = 1
-		tabs = '\t' * indent			
-		
+		tabs = '\t' * indent	
+		trans=False
+
+		if args.threads:
+			import secondary
+			workers=1
+			try:
+				workers=int(args.threads)
+			except:pass			
+			try:
+				if workers>1:
+					secondary.route(args,workers)
+					#secondary.printargs(args)
+					Status.close()
+				else:pass		
+			except:pass										
 # NCA/NSP IDENTIFICATION
 		# ..................................................
 		# Get titleid from nca file
@@ -541,7 +591,7 @@ if __name__ == '__main__':
 					filename = filelist.readline()
 					filename=os.path.abspath(filename.rstrip('\n'))		
 			else:		
-				for inpt in args.text_file:
+				for inpt in args.remlinkacc:
 					filename=inpt	
 			try:
 				if filename.endswith('.nsp') or filename.endswith('.nsx'):
@@ -657,7 +707,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768			
+				buffer = 65536			
 			ofolder=False
 			if args.ofolder:		
 				for input in args.ofolder:
@@ -731,7 +781,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768
+				buffer = 65536
 			if args.patchversion:
 				for input in args.patchversion:
 					try:
@@ -787,7 +837,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768				
+				buffer = 65536				
 			for filePath in args.XCI_copy_hfs0:
 				f = Fs.factory(filePath)
 				f.open(filePath, 'rb')
@@ -816,7 +866,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768			
+				buffer = 65536			
 			for filePath in args.XCI_c_hfs0_update:
 				f = Fs.factory(filePath)
 				f.open(filePath, 'rb')
@@ -845,7 +895,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768			
+				buffer = 65536			
 			for filePath in args.XCI_c_hfs0_normal:
 				f = Fs.factory(filePath)
 				f.open(filePath, 'rb')
@@ -874,7 +924,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768		
+				buffer = 65536		
 			for filePath in args.XCI_c_hfs0_secure:
 				f = Fs.factory(filePath)
 				f.open(filePath, 'rb')
@@ -903,7 +953,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768
+				buffer = 65536
 			if args.patchversion:
 				for input in args.patchversion:
 					try:
@@ -956,7 +1006,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768
+				buffer = 65536
 			if args.patchversion:
 				for input in args.patchversion:
 					try:
@@ -1009,7 +1059,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768
+				buffer = 65536
 			if args.patchversion:
 				for input in args.patchversion:
 					try:
@@ -1063,7 +1113,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768		
+				buffer = 65536		
 			for filePath in args.XCI_copy_rhfs0:
 				f = Fs.factory(filePath)
 				f.open(filePath, 'rb')
@@ -1094,7 +1144,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768						
+				buffer = 65536						
 			for filename in args.NSP_copy_other:
 				try:
 					f = Fs.Nsp(filename, 'rb')
@@ -1126,7 +1176,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768				
+				buffer = 65536				
 			for filename in args.NSP_copy_xml:
 				try:
 					f = Fs.Nsp(filename, 'rb')
@@ -1157,7 +1207,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768					
+				buffer = 65536					
 			for filename in args.NSP_copy_cert:
 				try:
 					f = Fs.Nsp(filename, 'rb')
@@ -1188,7 +1238,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768			
+				buffer = 65536			
 			for filename in args.NSP_copy_jpg:
 				try:
 					f = Fs.Nsp(filename, 'rb')
@@ -1220,7 +1270,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768			
+				buffer = 65536			
 			for filename in args.NSP_copy_cnmt:
 				if filename.endswith('.nsp'):
 					try:
@@ -1262,7 +1312,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768				
+				buffer = 65536				
 			for filename in args.copy_pfs0_meta:
 				try:
 					f = Fs.Nsp(filename, 'rb')
@@ -1294,7 +1344,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768				
+				buffer = 65536				
 			for filename in args.copy_nacp:
 				if filename.endswith(".nsp"):	
 					try:
@@ -1337,7 +1387,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768				
+				buffer = 65536				
 			for filename in args.NSP_copy_nca_meta:
 				try:
 					f = Fs.Nsp(filename, 'rb')
@@ -1368,7 +1418,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768				
+				buffer = 65536				
 			for filename in args.NSP_copy_nca_control:
 				try:
 					f = Fs.Nsp(filename, 'rb')
@@ -1399,7 +1449,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768						
+				buffer = 65536						
 			for filename in args.NSP_copy_nca_manual:
 				try:
 					f = Fs.Nsp(filename, 'rb')
@@ -1430,7 +1480,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768											
+				buffer = 65536											
 			for filename in args.NSP_copy_nca_program:
 				try:
 					f = Fs.Nsp(filename, 'rb')
@@ -1461,7 +1511,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768
+				buffer = 65536
 											
 			for filename in args.NSP_copy_nca_data:
 				try:
@@ -1493,7 +1543,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768
+				buffer = 65536
 								
 			for filename in args.NSP_copy_nca_pdata:
 				try:
@@ -1527,7 +1577,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768
+				buffer = 65536
 					
 			for filename in args.NSP_copy_tr_nca:
 				try:
@@ -1559,7 +1609,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768
+				buffer = 65536
 				
 			for filename in args.NSP_copy_ntr_nca:
 				try:
@@ -1600,7 +1650,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768
+				buffer = 65536
 			if args.patchversion:
 				for input in args.patchversion:
 					try:
@@ -1697,7 +1747,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768				
+				buffer = 65536				
 			if args.patchversion:
 				for input in args.patchversion:
 					try:
@@ -1850,7 +1900,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768				
+				buffer = 65536				
 			if args.pathend:
 				for input in args.pathend:
 					try:
@@ -1907,7 +1957,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768				
+				buffer = 65536				
 			if args.cskip:
 				for input in args.cskip:
 					try:
@@ -1967,9 +2017,7 @@ if __name__ == '__main__':
 		'''
 		parser.add_argument('--gen_placeholder', nargs='+', help='Creates nsp or xci placeholder')	
 		'''
-		if args.gen_placeholder:	
-			indent = 1
-			tabs = '\t' * indent							
+		if args.gen_placeholder:		
 			if args.buffer:		
 				for input in args.buffer:
 					try:
@@ -1977,7 +2025,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768
+				buffer = 65536
 	
 			if args.ofolder:		
 				for input in args.ofolder:
@@ -1990,14 +2038,20 @@ if __name__ == '__main__':
 				dir=os.path.abspath(folder)
 				ofolder = os.path.join(dir, 'output')
 			if not os.path.exists(ofolder):
-				os.makedirs(ofolder)		
-			ruta=args.gen_placeholder
-			indent = 1
-			tabs = '\t' * indent	
-			if ruta[-1]=='"':
-				ruta=ruta[:-1]
-			if ruta[0]=='"':
-				ruta=ruta[1:]		
+				os.makedirs(ofolder)	
+			if args.text_file:
+				tfile=args.text_file
+				with open(tfile,"r+", encoding='utf8') as filelist: 	
+					filename = filelist.readline()
+					ruta=os.path.abspath(filename.rstrip('\n'))
+			else:
+				ruta=args.gen_placeholder
+				indent = 1
+				tabs = '\t' * indent	
+				if ruta[-1]=='"':
+					ruta=ruta[:-1]
+				if ruta[0]=='"':
+					ruta=ruta[1:]		
 			extlist=list()
 			if args.type:
 				for t in args.type:
@@ -2010,18 +2064,6 @@ if __name__ == '__main__':
 			if args.filter:
 				for f in args.filter:
 					filter=f	
-			if args.type:
-				for input in args.type:		
-					if input == "xci" or input == "XCI": 
-						export='xci'						
-					elif input == "nsp" or input == "NSP": 	
-						export='nsp'
-					elif input == "nsx" or input == "NSX": 	
-						export='nsp'						
-					elif input == "both" or input == "BOTH": 
-						export='both'													
-					else:
-						print ("Wrong Type!!!")							
 			
 			filelist=list()				
 			ruta=str(ruta)
@@ -2046,6 +2088,7 @@ if __name__ == '__main__':
 					else:		
 						if ruta.endswith(ext.lower()) or ruta.endswith(ext.upper()) or ruta[:-1].endswith(ext.lower()) or ruta[:-1].endswith(ext.upper()):
 							filename = ruta
+							#print(filename)
 							fname=""
 							if args.filter:
 								if filter.lower() in filename.lower():
@@ -2059,10 +2102,11 @@ if __name__ == '__main__':
 				for f in filelist:
 					print(f)
 				'''
-				print(len(filelist))
+				print('Files to process: '+str(len(filelist)))
 				counter=len(filelist)
 				for filepath in filelist:
 					if filepath.endswith('.nsp') or filepath.endswith('.nsx'):
+						export='nsp'
 						try:
 							prlist=list()
 							f = Fs.Nsp(filepath)										
@@ -2096,8 +2140,44 @@ if __name__ == '__main__':
 							counter=int(counter)
 							counter-=1						
 							Print.error('Exception: ' + str(e))		
-							continue					
-					if export=='nsp' or export=='both':
+							continue		
+					if filepath.endswith('.xci'):
+						export='xci'
+						try:
+							prlist=list()
+							f = Fs.Xci(filepath)										
+							contentlist=f.get_content_placeholder(ofolder)
+							#print(contentlist)
+							f.flush()
+							f.close()		
+							if len(prlist)==0:
+								for i in contentlist:
+									prlist.append(i)
+								#print (prlist)
+							else:
+								for j in range(len(contentlist)):
+									notinlist=False
+									for i in range(len(prlist)):
+										#print (contentlist[j][1])
+										#print (contentlist[j][6])
+										#pass
+										if contentlist[j][1] == prlist[i][1]:
+											if contentlist[j][6] > prlist[i][6]:
+												del prlist[i]
+												prlist.append(contentlist[j])
+												notinlist=False
+											elif contentlist[j][6] == prlist[i][6]:				
+												notinlist=False															
+										else:
+											notinlist=True
+									if notinlist == True:
+										prlist.append(contentlist[j])		
+						except BaseException as e:
+							counter=int(counter)
+							counter-=1						
+							Print.error('Exception: ' + str(e))		
+							continue									
+					if export=='nsp':
 						oflist=list()
 						osizelist=list()
 						totSize=0
@@ -2147,7 +2227,111 @@ if __name__ == '__main__':
 								except BaseException as e:
 									counter=int(counter)
 									counter-=1								
-									Print.error('Exception: ' + str(e))			
+									Print.error('Exception: ' + str(e))		
+					if export=='xci':
+						oflist=list()
+						osizelist=list()
+						ototlist=list()
+						totSize=0
+						for i in range(len(prlist)):
+							for j in prlist[i][4]:
+								el=j[0]
+								if el.endswith('.nca'):
+									oflist.append(j[0])
+									#print(j[0])
+									totSize = totSize+j[1]	
+									#print(j[1])
+								ototlist.append(j[0])		
+						sec_hashlist=list()
+						GClist=list()					
+						if filepath.endswith('.xci'):
+							try:
+								f = Fs.Xci(filepath)
+								for file in oflist:
+									sha,size,gamecard=f.file_hash(file)
+									if sha != False:
+										sec_hashlist.append(sha)	
+										osizelist.append(size)	
+										GClist.append([file,gamecard])											
+								f.flush()
+								f.close()	
+							except BaseException as e:
+								Print.error('Exception: ' + str(e))																	
+						basename=str(os.path.basename(os.path.abspath(filepath)))		
+						endname=basename[:-4]+'[PLH].xci'							
+						endfile = os.path.join(ofolder, endname)
+						#print(str(filepath))	
+						#print(str(endfile))	
+						xci_header,game_info,sig_padding,xci_certificate,root_header,upd_header,norm_header,sec_header,rootSize,upd_multiplier,norm_multiplier,sec_multiplier=sq_tools.get_xciheader(oflist,osizelist,sec_hashlist)	 						
+						totSize=len(xci_header)+len(game_info)+len(sig_padding)+len(xci_certificate)+rootSize
+						#print(str(totSize))
+						vskip=False	
+						print('Processing: '+str(filepath))						
+						if os.path.exists(endfile) and os.path.getsize(endfile) == totSize:
+							print('- Placeholder file already exists, skipping...')
+							vskip=True			
+						if vskip==False:																
+							c=0
+							t = tqdm(total=totSize, unit='B', unit_scale=True, leave=False)
+							t.write(tabs+'- Writing XCI header...')
+							outf = open(endfile, 'w+b')
+							outf.write(xci_header)
+							t.update(len(xci_header))		
+							c=c+len(xci_header)
+							t.write(tabs+'- Writing XCI game info...')		
+							outf.write(game_info)	
+							t.update(len(game_info))	
+							c=c+len(game_info)
+							t.write(tabs+'- Generating padding...')
+							outf.write(sig_padding)	
+							t.update(len(sig_padding))		
+							c=c+len(sig_padding)		
+							t.write(tabs+'- Writing XCI certificate...')
+							outf.write(xci_certificate)	
+							t.update(len(xci_certificate))	
+							c=c+len(xci_certificate)		
+							t.write(tabs+'- Writing ROOT HFS0 header...')		
+							outf.write(root_header)
+							t.update(len(root_header))
+							c=c+len(root_header)
+							t.write(tabs+'- Writing UPDATE partition header...')
+							t.write(tabs+'  Calculated multiplier: '+str(upd_multiplier))	
+							outf.write(upd_header)
+							t.update(len(upd_header))
+							c=c+len(upd_header)
+							t.write(tabs+'- Writing NORMAL partition header...')
+							t.write(tabs+'  Calculated multiplier: '+str(norm_multiplier))			
+							outf.write(norm_header)
+							t.update(len(norm_header))
+							c=c+len(norm_header)
+							t.write(tabs+'- Writing SECURE partition header...')
+							t.write(tabs+'  Calculated multiplier: '+str(sec_multiplier))		
+							outf.write(sec_header)
+							t.update(len(sec_header))
+							c=c+len(sec_header)	
+							outf.close()									
+							if filepath.endswith('.xci'):
+								try:
+									GC=False							
+									f = Fs.Xci(filepath)
+									for file in oflist:	
+										if not file.endswith('xml'):
+											for i in range(len(GClist)):
+												if GClist[i][0] == file:
+													GC=GClist[i][1]									
+											f.append_content(endfile,file,buffer,t,includexml=False)
+									f.flush()
+									f.close()	
+									t.close()		
+									counter=int(counter)
+									counter-=1									
+									print(tabs+'> Placeholder was created')		
+									if not args.text_file:	
+										print(tabs+'> Still '+str(counter)+' to go')										
+								except BaseException as e:
+									counter=int(counter)
+									counter-=1								
+									Print.error('Exception: ' + str(e))											
 			except BaseException as e:
 				Print.error('Exception: ' + str(e))		
 								
@@ -2172,7 +2356,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768
+				buffer = 65536
 			for filename in args.license_combo:
 				try:
 					f = Fs.Nsp(filename, 'rb')
@@ -2204,7 +2388,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768
+				buffer = 65536
 			for filename in args.mlicense_combo:
 				try:
 					f = Fs.Nsp(filename, 'rb')
@@ -2237,7 +2421,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768
+				buffer = 65536
 				
 			for filename in args.zip_combo:
 				try:
@@ -2262,7 +2446,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768
+				buffer = 65536
 			if args.fat:		
 				for input in args.fat:
 					try:
@@ -2342,7 +2526,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768
+				buffer = 65536
 			hfs0 = Fs.Hfs0(None, None)
 			hfs0.path = args.create_hfs0
 			if args.ifolder:
@@ -2366,7 +2550,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768
+				buffer = 65536
 			if args.ifolder:
 				ruta = args.ifolder
 				ruta_update=os.path.join(ruta, "update")
@@ -2442,7 +2626,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768
+				buffer = 65536
 			if args.fat:		
 				for input in args.fat:
 					try:
@@ -2521,7 +2705,14 @@ if __name__ == '__main__':
 		# ...................................................						
 		# Supertrimm a xci
 		# ...................................................				
-		if args.xci_super_trim:			
+		if args.xci_super_trim:		
+			try:
+				if str(args.xci_super_trim[1]).lower() == "keepupd":
+					keepupd=True
+				else:
+					keepupd=False
+			except:
+				keepupd=False
 			if args.buffer:		
 				for input in args.buffer:
 					try:
@@ -2529,7 +2720,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768		
+				buffer = 65536		
 			if args.ofolder:		
 				for input in args.ofolder:
 					try:
@@ -2544,8 +2735,9 @@ if __name__ == '__main__':
 						filename=os.path.abspath(filename.rstrip('\n'))		
 						dir=os.path.dirname(os.path.abspath(filename))
 						ofolder =os.path.join(dir, 'output')
-				else:			
-					for filename in args.xci_super_trim:
+				else:
+					if args.xci_super_trim[0] !="":
+						filename=args.xci_super_trim[0]
 						dir=os.path.dirname(os.path.abspath(filename))
 						ofolder =os.path.join(dir, 'output')	
 			if args.fat:		
@@ -2568,13 +2760,129 @@ if __name__ == '__main__':
 						outfile = os.path.join(ofolder, filename)
 						#print(f.path)
 						f.open(filepath, 'rb')
-						f.supertrim(buffer,outfile,ofolder,fat)
+						f.supertrim(buffer,outfile,ofolder,fat,keepupd)
 						f.flush()
 						f.close()
 					except BaseException as e:
-						Print.error('Exception: ' + str(e))				
+						Print.error('Exception: ' + str(e))			
 
-				
+		# ...................................................						
+		# Normal trimming for xci files
+		# ...................................................				
+		if args.xci_trim:			
+			if args.buffer:		
+				for input in args.buffer:
+					try:
+						buffer = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+			else:
+				buffer = 65536		
+			if args.ofolder:		
+				for input in args.ofolder:
+					try:
+						ofolder = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+			else:
+				if args.text_file:
+					tfile=args.text_file
+					with open(tfile,"r+", encoding='utf8') as filelist: 	
+						filename = filelist.readline()
+						filename=os.path.abspath(filename.rstrip('\n'))		
+						dir=os.path.dirname(os.path.abspath(filename))
+						ofolder =os.path.join(dir, 'output')
+				else:			
+					for filename in args.xci_trim:
+						dir=os.path.dirname(os.path.abspath(filename))
+						ofolder =os.path.join(dir, 'output')	
+			if not os.path.exists(ofolder):
+				os.makedirs(ofolder)						
+			if args.fat:		
+				for input in args.fat:
+					try:
+						if input == "fat32":
+							fat="fat32"
+						else:
+							fat="exfat"
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+			else:
+				fat="exfat"								
+			for filepath in args.xci_trim:
+				if filepath.endswith('.xci'):
+					try:
+						f = Fs.factory(filepath)
+						filename=os.path.basename(os.path.abspath(filepath))
+						#print(filename)
+						outfile = os.path.join(ofolder, filename)
+						#print(f.path)
+						f.open(filepath, 'rb')
+						f.trim(buffer,outfile,ofolder,fat)
+						f.flush()
+						f.close()
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+						
+		# ...................................................						
+		# Untrimming for xci files
+		# ...................................................		
+		#parser.add_argument('-xci_untr', '--xci_untrim', nargs='+', help='Untrims xci')	
+		if args.xci_untrim:			
+			if args.buffer:		
+				for input in args.buffer:
+					try:
+						buffer = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+			else:
+				buffer = 65536		
+			if args.ofolder:		
+				for input in args.ofolder:
+					try:
+						ofolder = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+			else:
+				if args.text_file:
+					tfile=args.text_file
+					with open(tfile,"r+", encoding='utf8') as filelist: 	
+						filename = filelist.readline()
+						filename=os.path.abspath(filename.rstrip('\n'))		
+						dir=os.path.dirname(os.path.abspath(filename))
+						ofolder =os.path.join(dir, 'output')
+				else:			
+					for filename in args.xci_untrim:
+						dir=os.path.dirname(os.path.abspath(filename))
+						ofolder =os.path.join(dir, 'output')	
+			if not os.path.exists(ofolder):
+				os.makedirs(ofolder)						
+			if args.fat:		
+				for input in args.fat:
+					try:
+						if input == "fat32":
+							fat="fat32"
+						else:
+							fat="exfat"
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+			else:
+				fat="exfat"								
+			for filepath in args.xci_untrim:
+				if filepath.endswith('.xci'):
+					try:
+						f = Fs.factory(filepath)
+						filename=os.path.basename(os.path.abspath(filepath))
+						#print(filename)
+						outfile = os.path.join(ofolder, filename)
+						#print(f.path)
+						f.open(filepath, 'rb')
+						f.untrim(buffer,outfile,ofolder,fat)
+						f.flush()
+						f.close()
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+
 		# ...................................................						
 		# Take off deltas
 		# ...................................................						
@@ -2586,7 +2894,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768
+				buffer = 65536
 			if args.ofolder:		
 				for input in args.ofolder:
 					try:
@@ -2644,7 +2952,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768
+				buffer = 65536
 			if args.text_file:
 				tfile=args.text_file
 				with open(tfile,"r+", encoding='utf8') as filelist: 	
@@ -2756,7 +3064,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768
+				buffer = 65536
 			if args.nodelta:		
 				for input in args.nodelta:
 					try:
@@ -3000,7 +3308,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768
+				buffer = 65536
 			if args.romanize:
 				for input in args.ofolder:
 					roman=str(input).upper()
@@ -3449,7 +3757,7 @@ if __name__ == '__main__':
 						else:
 							endname=str(f)
 				endname = (re.sub(r'[\/\\\:\*\?]+', '', endname))
-				endname = re.sub(r'[™©®`~^´ªº¢£€¥$ƒ±¬½¼«»±•²‰œæÆ³]', '', endname)					
+				endname = re.sub(r'[™©®`~^´ªº¢£€¥$ƒ±¬½¼«»±•²‰œæÆ³☆<<>>|]', '', endname)					
 				endname = re.sub(r'[Ⅰ]', 'I', endname);endname = re.sub(r'[Ⅱ]', 'II', endname)
 				endname = re.sub(r'[Ⅲ]', 'III', endname);endname = re.sub(r'[Ⅳ]', 'IV', endname)	
 				endname = re.sub(r'[Ⅴ]', 'V', endname);endname = re.sub(r'[Ⅵ]', 'VI', endname)	
@@ -3462,14 +3770,22 @@ if __name__ == '__main__':
 				endname = re.sub(r'[èêéë]', 'e', endname);endname = re.sub(r'[ÈÊÉË]', 'E', endname)
 				endname = re.sub(r'[ìîíï]', 'i', endname);endname = re.sub(r'[ÌÎÍÏ]', 'I', endname)
 				endname = re.sub(r'[òôóöø]', 'o', endname);endname = re.sub(r'[ÒÔÓÖØ]', 'O', endname)
-				endname = re.sub(r'[ùûúü]', 'u', endname);endname = re.sub(r'[ÙÛÚÜ]', 'U', endname)		
+				endname = re.sub(r'[ùûúü]', 'u', endname);endname = re.sub(r'[ÙÛÚÜ]', 'U', endname)	
+				endname = re.sub(r'[’]', "'", endname);endname = re.sub(r'[“”]', '"', endname)		
 				endname = re.sub(' {3,}', ' ',endname);re.sub(' {2,}', ' ',endname);	
 				try:	
 					endname = endname.replace("( ", "(");endname = endname.replace(" )", ")")
 					endname = endname.replace("[ ", "[");endname = endname.replace(" ]", "]")
-					endname = endname.replace(" !", "!");endname = endname.replace(" ?", "?")	
-					endname = endname.replace("  ", " ");endname = endname.replace("  ", " ")					
-				except:pass				
+					endname = endname.replace("[ (", "[(");endname = endname.replace(") ]", ")]")					
+					endname = endname.replace("[]", "");endname = endname.replace("()", "")		
+					endname = endname.replace('" ','"');endname = endname.replace(' "','"')						
+					endname = endname.replace(" !", "!");endname = endname.replace(" ?", "?")					
+					endname = endname.replace("  ", " ");endname = endname.replace("  ", " ")
+					endname = endname.replace('"', '');	
+					endname = endname.replace(')', ') ');endname = endname.replace(']', '] ')
+					endname = endname.replace("[ (", "[(");endname = endname.replace(") ]", ")]")					
+					endname = endname.replace("  ", " ")					
+				except:pass					
 				if endname[-1]==' ':
 					endname=endname[:-1]
 				if fat=="fat32" and fx=="folder":			
@@ -3707,7 +4023,8 @@ if __name__ == '__main__':
 						shutil.rmtree(afolder, ignore_errors=True)										
 					#print(str(totSize))
 					t = tqdm(total=totSize, unit='B', unit_scale=True, leave=False)			
-					outf = open(endfile, 'w+b')					
+					outf = open(endfile, 'w+b')		
+					t.write(tabs+'- Writing NSP header...')								
 					outf.write(nspheader)		
 					t.update(len(nspheader))	
 					c=c+len(nspheader)						
@@ -3748,7 +4065,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768
+				buffer = 65536
 	
 			if args.ofolder:		
 				for input in args.ofolder:
@@ -3896,7 +4213,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768
+				buffer = 65536
 			if args.text_file:
 				tfile=args.text_file
 				with open(tfile,"r+", encoding='utf8') as filelist: 	
@@ -4187,6 +4504,11 @@ if __name__ == '__main__':
 		# FW REQ INFO
 		# ...................................................	
 		if args.fw_req:
+			if args.translate:
+				if str(args.translate).lower()=="true":
+					trans=True
+			else:
+				trans=False			
 			if args.ofolder:		
 				for var in args.ofolder:
 					try:
@@ -4219,7 +4541,7 @@ if __name__ == '__main__':
 			if filename.endswith('.nsp'):
 				try:
 					f = Fs.Nsp(filename, 'rb')
-					feed=f.print_fw_req()
+					feed=f.print_fw_req(trans)
 					f.flush()
 					f.close()
 					if not args.text_file:						
@@ -4245,7 +4567,7 @@ if __name__ == '__main__':
 				try:
 					f = Fs.factory(filename)
 					f.open(filename, 'rb')
-					feed=f.print_fw_req()
+					feed=f.print_fw_req(trans)
 					f.flush()
 					f.close()
 					if not args.text_file:						
@@ -4311,16 +4633,17 @@ if __name__ == '__main__':
 						os.makedirs(ofolder)	
 			if args.dbformat:	
 				for input in args.dbformat:
+					input=str(input).lower()
 					if input == "nutdb":
 						outdb = "nutdb"
 					elif input == "keyless":
 						outdb = "keyless"	
 					elif input == "simple":
-						outdb = "simple"							
-					elif input == "all":
-						outdb = "all"								
-					else:
+						outdb = "simple"												
+					elif input == "extended":
 						outdb = "extended"	
+					else:
+						outdb = "all"							
 			else:
 				outdb = "extended"	
 			if args.addtodb:
@@ -4364,8 +4687,37 @@ if __name__ == '__main__':
 							date=now.strftime("%x")+". "+now.strftime("%X")								
 							errfile.write(date+' Error in "ADD TO DATABASE" function:'+'\n')	
 							errfile.write("Route "+str(filename)+'\n')							
-							errfile.write('- Exception: ' + str(e)+ '\n')							
-							
+							errfile.write('- Exception: ' + str(e)+ '\n')		
+
+		#parser.add_argument('-nscdb_new', '--addtodb_new', nargs='+', help='Adds content to database')										
+		if args.addtodb_new:
+			if args.translate:
+				if str(args.translate).lower()=="true":
+					trans=True
+			else:
+				trans=False		
+			if args.db_file:	
+				DBfile=args.db_file						
+				if args.text_file:
+					tfile=args.text_file
+					with open(tfile,"r+", encoding='utf8') as filelist: 	
+						filename = filelist.readline()
+						filename=os.path.abspath(filename.rstrip('\n'))
+				else:				
+					for filename in args.addtodb_new:
+						filename=filename
+				if (filename.lower()).endswith('.nsp') or (filename.lower()).endswith('.nsx'):
+					try:
+						f = Fs.Nsp(filename, 'rb')
+						f.Incorporate_to_permaDB(DBfile,trans)					
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+				if (filename.lower()).endswith('.xci'):						
+					try:
+						f = Fs.Xci(filename)
+						f.Incorporate_to_permaDB(DBfile,trans)					
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))		
 		# ...................................................						
 		# Show info
 		# ...................................................					
@@ -4520,7 +4872,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768			
+				buffer = 65536			
 			ofolder=False
 			if args.ofolder:		
 				for input in args.ofolder:
@@ -4656,7 +5008,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768			
+				buffer = 65536			
 			ofolder=False
 			if args.ofolder:		
 				for input in args.ofolder:
@@ -4688,9 +5040,9 @@ if __name__ == '__main__':
 					basename=basename[:-4]					
 					ofolder =os.path.join(dir, basename)	
 			if not os.path.exists(ofolder):
-				os.makedirs(ofolder)	
+				os.makedirs(ofolder)		
 			if filename.endswith('.nsp'):		
-				try:	
+				try:
 					files_list=sq_tools.ret_nsp_offsets(filename)	
 					f = Fs.Nsp(filename, 'rb')
 					f.extract_nca(ofolder,files_list,buffer)
@@ -4719,7 +5071,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768			
+				buffer = 65536			
 			ofolder=False
 			if args.ofolder:		
 				for input in args.ofolder:
@@ -5043,19 +5395,85 @@ if __name__ == '__main__':
 						Print.error('Exception: ' + str(e))				
 		Status.close()
 	
+		#parser.add_argument('--set_cnmt_titleid', nargs='+', help='Changes cnmt.nca titleid')			
+		if args.set_cnmt_titleid:	
+			filename=args.set_cnmt_titleid[0]
+			value=args.set_cnmt_titleid[1]
+			if filename.endswith('.nca'):
+				try:
+					f = Fs.Nca(filename, 'r+b')
+					f.header.setTitleID(value)
+					print(hx(f.header.getTitleID()))
+					f.flush()
+					f.close()	
+					############################					
+					f = Fs.Nca(filename, 'r+b')
+					f.write_cnmt_titleid(value)
+					#print(hx(f.get_cnmt_titleid()))
+					f.flush()
+					f.close()	
+					############################					
+					f = Fs.Nca(filename, 'r+b')
+					#f.write_cnmt_titleid(value)
+					print(hx(f.get_cnmt_titleid()))
+					f.flush()
+					f.close()	
+					############################
+					f = Fs.Nca(filename, 'r+b')
+					sha=f.calc_pfs0_hash()
+					Print.info(tabs + '- Calculated hash from pfs0: ')
+					Print.info(tabs +'  + '+ str(hx(sha)))									
+					f.flush()
+					f.close()
+					f = Fs.Nca(filename, 'r+b')
+					f.set_pfs0_hash(sha)
+					f.flush()
+					f.close()
+					############################
+					f = Fs.Nca(filename, 'r+b')
+					sha2=f.calc_htable_hash()
+					Print.info(tabs + '- Calculated hash from pfs0: ')
+					Print.info(tabs +'  + '+ str(hx(sha2)))									
+					f.flush()
+					f.close()						
+					f = Fs.Nca(filename, 'r+b')
+					f.header.set_htable_hash(sha2)
+					f.flush()
+					f.close()
+					########################
+					f = Fs.Nca(filename, 'r+b')
+					sha3=f.header.calculate_hblock_hash()
+					Print.info(tabs + '- Calculated hash from pfs0: ')
+					Print.info(tabs +'  + '+ str(hx(sha3)))									
+					f.flush()
+					f.close()						
+					f = Fs.Nca(filename, 'r+b')
+					f.header.set_hblock_hash(sha3)
+					f.flush()
+					f.close()
+					########################
+					with open(filename, 'r+b') as file:			
+						nsha=sha256(file.read()).hexdigest()
+					newname=nsha[:32] + '.cnmt.nca'				
+					Print.info('New name: ' + newname )
+					dir=os.path.dirname(os.path.abspath(filename))
+					newpath=dir+ '\\' + newname
+					os.rename(filename, newpath)					
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))					
 		# ...................................................						
 		# Change version number from nca
 		# ...................................................									
 
-		if args.patchversion:		
-			for input in args.patchversion:
-				try:
-					number = input
-				except BaseException as e:
-					Print.error('Exception: ' + str(e))
-		else:
-			number = 65536
 		if args.set_cnmt_version:
+			if args.patchversion:		
+				for input in args.patchversion:
+					try:
+						number = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+			else:
+				number = 65536		
 			for filename in args.set_cnmt_version:
 				if filename.endswith('.nca'):
 					try:
@@ -5247,7 +5665,84 @@ if __name__ == '__main__':
 					line2read= str(lines[line_number])
 					Print.info(write_line + line2read)	
 				except BaseException as e:
-					Print.error('Exception: ' + str(e))					
+					Print.error('Exception: ' + str(e))	
+					
+		# ...................................................						
+		# Strip line in text file
+		# ...................................................							
+		#parser.add_argument('-stripl', '--strip_lines', nargs='+', help='Strips lines from a text file')								
+		if args.strip_lines:	
+			if args.strip_lines[0]:
+				textfile=args.strip_lines[0]
+			try:	
+				if args.strip_lines[1]:			
+					number=args.strip_lines[1]
+				else:
+					number=1
+			except:
+				number=1
+			try:	
+				if args.strip_lines[2]:			
+					uinput=args.strip_lines[2]
+					if str(uinput).upper() == 'TRUE':
+						counter=True
+				else:
+					counter=False
+			except:
+				counter=False				
+			try:
+				listmanager.striplines(textfile,number,counter)
+			except BaseException as e:
+				Print.error('Exception: ' + str(e))	
+
+		#parser.add_argument('-showcline', '--show_current_line', nargs='+', help='Shows current line')								
+		if args.show_current_line:	
+			if args.show_current_line[0]:
+				textfile=args.show_current_line[0]
+			try:
+				listmanager.printcurrent(textfile)
+			except BaseException as e:
+				Print.error('Exception: ' + str(e))	
+		
+		#parser.add_argument('-countlines', '--count_n_lines', nargs='+', help='Count the number of lines')			
+		if args.count_n_lines:	
+			if args.count_n_lines[0]:
+				textfile=args.count_n_lines[0]
+			try:
+				c=listmanager.counter(textfile)
+				print('STILL '+str(c)+' FILES TO PROCESS')
+			except BaseException as e:
+				Print.error('Exception: ' + str(e))	
+				
+		#parser.add_argument('-dff', '--delete_item', nargs='+', help='Deletes a os item listed in text file, a file or a folder')				
+		if args.delete_item:	
+			if args.text_file:
+				tfile=args.text_file
+				with open(tfile,"r+", encoding='utf8') as filelist: 	
+					ruta = filelist.readline()
+					ruta=os.path.abspath(ruta.rstrip('\n'))											
+					ruta = os.path.abspath(ruta)
+				try:
+					os.remove(ruta) 	
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))	
+					pass	
+			else:
+				ruta = os.path.abspath(args.delete_item[0])
+				if os.path.isdir(ruta):  
+					try:
+						shutil.rmtree(ruta, ignore_errors=True)					
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+						pass						
+				elif os.path.isfile(ruta): 
+					try:
+						os.remove(ruta) 	
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+						pass						
+				else:
+					print('Input is not a system file or folder')		
 
 		# ...................................................						
 		# Generate list of files
@@ -5287,6 +5782,8 @@ if __name__ == '__main__':
 					if x[-1]=='*':
 						x=x[:-1]
 						extlist.append(x)
+					elif x==".00":
+						extlist.append('00')
 			#print(extlist)			
 			if args.filter:
 				for f in args.filter:
@@ -5628,7 +6125,8 @@ if __name__ == '__main__':
 				for f in filelist:
 					print(f)
 				'''
-				print('Items to process: '+str(len(filelist)))
+				if args.text_file:
+					print('Items to process: '+str(len(filelist)))
 				counter=len(filelist)
 				for filepath in filelist:
 					setskip=False
@@ -5862,45 +6360,49 @@ if __name__ == '__main__':
 									ctitl=f.get_title(dlcid)
 									f.flush()
 									f.close()										
-							elif dlcrname == False or dlcrname == 'tag':						
-								dlcname=str(os.path.basename(os.path.abspath(filepath)))					
-								tid1=list()
-								tid2=list()
-								tid1=[pos for pos, char in enumerate(filepath) if char == '[']
-								tid2=[pos for pos, char in enumerate(filepath) if char == ']']		
-								if len(tid1)>=len(tid2):
-									lentlist=len(tid1)					
-								elif len(tid1)<len(tid2):
-									lentlist=len(tid2)						
-								for i in range(lentlist):	
-									i1=tid1[i]
-									i2=tid2[i]+1
-									t=filepath[i1:i2]
-									dlcname=dlcname.replace(t,'')
-									dlcname=dlcname.replace('  ',' ')																		
-								tid3=[pos for pos, char in enumerate(dlcname) if char == '(']
-								tid4=[pos for pos, char in enumerate(dlcname) if char == ')']									
-								if len(tid3)>=len(tid4):
-									lentlist=len(tid3)					
-								elif len(tid3)<len(tid4):
-									lentlist=len(tid4)								
-								for i in range(lentlist):	
-									i3=tid3[i]
-									i4=tid4[i]+1
-									t=dlcname[i3:i4]		
-									dlcname=dlcname.replace(t,'')
-									dlcname=dlcname.replace('  ',' ')
-								if dlcname.endswith('.xci') or dlcname.endswith('.nsp'):
-									dlcname=dlcname[:-4]
-								if dlcname.endswith(' '):
-									dlcname=dlcname[:-1]
+							elif dlcrname == False or dlcrname == 'tag':					
+								nutdbname=nutdb.get_dlcname(dlcid)
+								if nutdbname!=False:
+									dlcname=nutdbname	
+								else:	
+									dlcname=str(os.path.basename(os.path.abspath(filepath)))					
+									tid1=list()
+									tid2=list()
+									tid1=[pos for pos, char in enumerate(filepath) if char == '[']
+									tid2=[pos for pos, char in enumerate(filepath) if char == ']']		
+									if len(tid1)>=len(tid2):
+										lentlist=len(tid1)					
+									elif len(tid1)<len(tid2):
+										lentlist=len(tid2)						
+									for i in range(lentlist):	
+										i1=tid1[i]
+										i2=tid2[i]+1
+										t=filepath[i1:i2]
+										dlcname=dlcname.replace(t,'')
+										dlcname=dlcname.replace('  ',' ')																		
+									tid3=[pos for pos, char in enumerate(dlcname) if char == '(']
+									tid4=[pos for pos, char in enumerate(dlcname) if char == ')']									
+									if len(tid3)>=len(tid4):
+										lentlist=len(tid3)					
+									elif len(tid3)<len(tid4):
+										lentlist=len(tid4)								
+									for i in range(lentlist):	
+										i3=tid3[i]
+										i4=tid4[i]+1
+										t=dlcname[i3:i4]		
+										dlcname=dlcname.replace(t,'')
+										dlcname=dlcname.replace('  ',' ')
+									if dlcname.endswith('.xci') or dlcname.endswith('.nsp'):
+										dlcname=dlcname[:-4]
+									if dlcname.endswith(' '):
+										dlcname=dlcname[:-1]
 								ctitl=dlcname	
 								if dlcrname == 'tag':
 									if filepath.endswith('.xci'):								
 										f = Fs.Xci(dlcfile)	
 									elif filepath.endswith('.nsp'):	
 										f = Fs.Nsp(dlcfile)						
-									dlctag=f.get_title(dlcid)	
+									dlctag=f.get_title(dlcid,tag=True)	
 									dlctag='['+dlctag+']'
 									ctitl=ctitl+' '+dlctag
 									f.flush()
@@ -5973,7 +6475,7 @@ if __name__ == '__main__':
 						endname=endname[:-1]					
 					#endname = re.sub(r'[\/\\\:\*\?\"\<\>\|\.\s™©®()\~]+', ' ', endname)							
 					endname = (re.sub(r'[\/\\\:\*\?]+', '', endname))					
-					endname = re.sub(r'[™©®`~^´ªº¢£€¥$ƒ±¬½¼«»±•²‰œæÆ³]', '', endname)	
+					endname = re.sub(r'[™©®`~^´ªº¢£€¥$ƒ±¬½¼«»±•²‰œæÆ³☆<<>>|]', '', endname)	
 					endname = re.sub(r'[Ⅰ]', 'I', endname);endname = re.sub(r'[Ⅱ]', 'II', endname)
 					endname = re.sub(r'[Ⅲ]', 'III', endname);endname = re.sub(r'[Ⅳ]', 'IV', endname)	
 					endname = re.sub(r'[Ⅴ]', 'V', endname);endname = re.sub(r'[Ⅵ]', 'VI', endname)	
@@ -5986,13 +6488,25 @@ if __name__ == '__main__':
 					endname = re.sub(r'[èêéë]', 'e', endname);endname = re.sub(r'[ÈÊÉË]', 'E', endname)
 					endname = re.sub(r'[ìîíï]', 'i', endname);endname = re.sub(r'[ÌÎÍÏ]', 'I', endname)
 					endname = re.sub(r'[òôóöø]', 'o', endname);endname = re.sub(r'[ÒÔÓÖØ]', 'O', endname)
-					endname = re.sub(r'[ùûúü]', 'u', endname);endname = re.sub(r'[ÙÛÚÜ]', 'U', endname)		
+					endname = re.sub(r'[ùûúü]', 'u', endname);endname = re.sub(r'[ÙÛÚÜ]', 'U', endname)
+					endname = re.sub(r'[’]', "'", endname);endname = re.sub(r'[“”]', '"', endname)		
 					endname = re.sub(' {3,}', ' ',endname);re.sub(' {2,}', ' ',endname);	
 					try:	
 						endname = endname.replace("( ", "(");endname = endname.replace(" )", ")")
-						endname = endname.replace("[ ", "[");endname = endname.replace(" ]", "]")
-						endname = endname.replace(" !", "!");endname = endname.replace(" ?", "?")
+						endname = endname.replace("[ ", "[");endname = endname.replace(" ]", "]")	
+						endname = endname.replace("[ (", "[(");endname = endname.replace(") ]", ")]")						
+						endname = endname.replace("[]", "");endname = endname.replace("()", "")		
+						endname = endname.replace('" ','"');endname = endname.replace(' "','"')						
+						endname = endname.replace(" !", "!");endname = endname.replace(" ?", "?")					
 						endname = endname.replace("  ", " ");endname = endname.replace("  ", " ")
+						endname = endname.replace('"', '');	
+						endname = endname.replace(')', ') ');endname = endname.replace(']', '] ')
+						endname = endname.replace("[ (", "[(");endname = endname.replace(") ]", ")]")						
+						endname = endname.replace("  ", " ")
+						if endname.endswith(' '):
+							endname=endname[:-1]
+						if dlcrname == 'tag':
+							endname = endname.replace('DLC number', 'DLC')							
 					except:pass					
 					if filepath.endswith('.xci'):								
 						endname=endname+'.xci'
@@ -6217,7 +6731,7 @@ if __name__ == '__main__':
 				endname=converter.do(endname)	
 				endname=endname[0].upper()+endname[1:]						
 			endname = (re.sub(r'[\/\\\:\*\?]+', '', endname))
-			endname = re.sub(r'[™©®`~^´ªº¢£€¥$ƒ±¬½¼«»±•²‰œæÆ³<<>>]', '', endname)				
+			endname = re.sub(r'[™©®`~^´ªº¢£€¥$ƒ±¬½¼«»±•²‰œæÆ³☆<<>>|]', '', endname)				
 			endname = re.sub(r'[Ⅰ]', 'I', endname);endname = re.sub(r'[Ⅱ]', 'II', endname)
 			endname = re.sub(r'[Ⅲ]', 'III', endname);endname = re.sub(r'[Ⅳ]', 'IV', endname)	
 			endname = re.sub(r'[Ⅴ]', 'V', endname);endname = re.sub(r'[Ⅵ]', 'VI', endname)	
@@ -6230,14 +6744,22 @@ if __name__ == '__main__':
 			endname = re.sub(r'[èêéë]', 'e', endname);endname = re.sub(r'[ÈÊÉË]', 'E', endname)
 			endname = re.sub(r'[ìîíï]', 'i', endname);endname = re.sub(r'[ÌÎÍÏ]', 'I', endname)
 			endname = re.sub(r'[òôóöø]', 'o', endname);endname = re.sub(r'[ÒÔÓÖØ]', 'O', endname)
-			endname = re.sub(r'[ùûúü]', 'u', endname);endname = re.sub(r'[ÙÛÚÜ]', 'U', endname)		
+			endname = re.sub(r'[ùûúü]', 'u', endname);endname = re.sub(r'[ÙÛÚÜ]', 'U', endname)
+			endname = re.sub(r'[’]', "'", endname);endname = re.sub(r'[“”]', '"', endname)		
 			endname = re.sub(' {3,}', ' ',endname);re.sub(' {2,}', ' ',endname);	
 			try:	
 				endname = endname.replace("( ", "(");endname = endname.replace(" )", ")")
 				endname = endname.replace("[ ", "[");endname = endname.replace(" ]", "]")
-				endname = endname.replace(" !", "!");endname = endname.replace(" ?", "?")				
-				endname = endname.replace("  ", " ");endname = endname.replace("  ", " ")				
-			except:pass			
+				endname = endname.replace("[ (", "[(");endname = endname.replace(") ]", ")]")					
+				endname = endname.replace("[]", "");endname = endname.replace("()", "")		
+				endname = endname.replace('" ','"');endname = endname.replace(' "','"')						
+				endname = endname.replace(" !", "!");endname = endname.replace(" ?", "?")					
+				endname = endname.replace("  ", " ");endname = endname.replace("  ", " ")
+				endname = endname.replace('"', '');	
+				endname = endname.replace(')', ') ');endname = endname.replace(']', '] ')
+				endname = endname.replace("[ (", "[(");endname = endname.replace(") ]", ")]")				
+				endname = endname.replace("  ", " ")							
+			except:pass		
 			if endname[-1]==' ':
 				endname=endname[:-1]	
 			ext=ruta[-4:]
@@ -6335,7 +6857,7 @@ if __name__ == '__main__':
 						endname=endname[0].upper()+endname[1:]	
 					if san == True:		
 						endname = (re.sub(r'[\/\\\:\*\?]+', '', endname))					
-						endname = re.sub(r'[™©®`~^´ªº¢£€¥$ƒ±¬½¼«»±•²‰œæÆ³]', '', endname)	
+						endname = re.sub(r'[™©®`~^´ªº¢£€¥$ƒ±¬½¼«»±•²‰œæÆ³☆<<>>|]', '', endname)	
 						endname = re.sub(r'[Ⅰ]', 'I', endname);endname = re.sub(r'[Ⅱ]', 'II', endname)
 						endname = re.sub(r'[Ⅲ]', 'III', endname);endname = re.sub(r'[Ⅳ]', 'IV', endname)	
 						endname = re.sub(r'[Ⅴ]', 'V', endname);endname = re.sub(r'[Ⅵ]', 'VI', endname)	
@@ -6349,12 +6871,20 @@ if __name__ == '__main__':
 						endname = re.sub(r'[ìîíï]', 'i', endname);endname = re.sub(r'[ÌÎÍÏ]', 'I', endname)
 						endname = re.sub(r'[òôóöø]', 'o', endname);endname = re.sub(r'[ÒÔÓÖØ]', 'O', endname)
 						endname = re.sub(r'[ùûúü]', 'u', endname);endname = re.sub(r'[ÙÛÚÜ]', 'U', endname)		
+						endname = re.sub(r'[’]', "'", endname);endname = re.sub(r'[“”]', '"', endname)		
 						endname = re.sub(' {3,}', ' ',endname);re.sub(' {2,}', ' ',endname);	
 					try:	
 						endname = endname.replace("( ", "(");endname = endname.replace(" )", ")")
 						endname = endname.replace("[ ", "[");endname = endname.replace(" ]", "]")
-						endname = endname.replace(" !", "!");endname = endname.replace(" ?", "?")
-						endname = endname.replace("  ", " ");endname = endname.replace("  ", " ")					
+						endname = endname.replace("[ (", "[(");endname = endname.replace(") ]", ")]")						
+						endname = endname.replace("[]", "");endname = endname.replace("()", "")		
+						endname = endname.replace('" ','"');endname = endname.replace(' "','"')						
+						endname = endname.replace(" !", "!");endname = endname.replace(" ?", "?")					
+						endname = endname.replace("  ", " ");endname = endname.replace("  ", " ")
+						endname = endname.replace('"', '');	
+						endname = endname.replace(')', ') ');endname = endname.replace(']', '] ')
+						endname = endname.replace("[ (", "[(");endname = endname.replace(") ]", ")]")						
+						endname = endname.replace("  ", " ")							
 					except:pass		
 					newpath=os.path.join(dir,endname)					
 					print('Old Filename: '+basename)
@@ -6393,7 +6923,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768	
+				buffer = 65536	
 			if args.ofolder:		
 				for var in args.ofolder:
 					try:
@@ -6915,7 +7445,7 @@ if __name__ == '__main__':
 					print(file)
 					pass
 				'''
-				Datashelve = shelve.open('File01');c=0
+				Datashelve = dbmodule.Dict('File01.dshlv');c=0
 				for filepath in filelist:
 					fileid='unknown';fileversion='unknown';cctag='unknown'
 					tid1=list()
@@ -6988,16 +7518,34 @@ if __name__ == '__main__':
 								#print(shelvedfile[2])
 								if shelvedfile[1]==fileid:
 									if int(shelvedfile[2])>int(fileversion):
-										print(str(os.path.basename(os.path.abspath(filepath))))									
-										shutil.move(filepath,ofolder)
+										print(str(os.path.basename(os.path.abspath(filepath))))
+										checker=os.path.join(ofolder, str(os.path.basename(os.path.abspath(filepath))))
+										if not os.path.isfile(checker):
+											shutil.move(filepath,ofolder)
+										else:
+											try:
+												os.remove(filepath) 	
+											except:pass																
 										Datashelve[str(fileid)]=shelvedfile
 									elif int(shelvedfile[2])== int(fileversion):
 										print(str(os.path.basename(os.path.abspath(filepath))))
-										shutil.move(filepath,duplicates_f)												
+										checker=os.path.join(ofolder, str(os.path.basename(os.path.abspath(filepath))))
+										if not os.path.isfile(checker):								
+											shutil.move(filepath,duplicates_f)	
+										else:	
+											try:
+												os.remove(filepath) 	
+											except:pass													
 										Datashelve[str(fileid)]=shelvedfile
 									else:		
 										print(str(os.path.basename(os.path.abspath(shelvedfile[0]))))	
-										shutil.move(shelvedfile[0],ofolder)											
+										checker=os.path.join(ofolder, str(os.path.basename(os.path.abspath(shelvedfile[0]))))
+										if not os.path.isfile(checker):				
+											shutil.move(shelvedfile[0],ofolder)		
+										else:	
+											try:
+												os.remove(filepath) 	
+											except:pass											
 										Datashelve[str(fileid)]=[filepath,fileid,fileversion,cctag]									
 								else:		
 									pass	
@@ -7006,6 +7554,8 @@ if __name__ == '__main__':
 						except BaseException as e:
 							Print.error('Exception: ' + str(e))		
 				Datashelve.close()		
+				try:os.remove('File01.dshlv')
+				except:pass
 							
 					
 		#parser.add_argument('-mv_odlc', '--mv_old_dlcs', nargs='+', help='Moves old dlcs to another folder')					
@@ -7030,7 +7580,6 @@ if __name__ == '__main__':
 			updlist=list();updtomove=list()
 			filelist=list()
 			if args.text_file:
-				tfile=args.text_file
 				tfile=args.text_file
 				with open(tfile,"r+", encoding='utf8') as f: 	
 					for line in f:
@@ -7087,7 +7636,7 @@ if __name__ == '__main__':
 					print(file)
 					pass
 				'''
-				Datashelve = shelve.open('File01');c=0
+				Datashelve = dbmodule.Dict('File01.dshlv');c=0
 				for filepath in filelist:
 					fileid='unknown';fileversion='unknown';cctag='unknown'
 					tid1=list()
@@ -7169,16 +7718,34 @@ if __name__ == '__main__':
 								#print(shelvedfile[2])
 								if shelvedfile[1]==fileid:
 									if int(shelvedfile[2])>int(fileversion):
-										print(str(os.path.basename(os.path.abspath(filepath))))									
+										print(str(os.path.basename(os.path.abspath(filepath))))
+										checker=os.path.join(ofolder, str(os.path.basename(os.path.abspath(filepath))))
+										if not os.path.isfile(checker):
+											shutil.move(filepath,ofolder)
+										else:
+											try:
+												os.remove(filepath) 	
+											except:pass																
 										Datashelve[str(fileid)]=shelvedfile
-										shutil.move(filepath,ofolder)										
 									elif int(shelvedfile[2])== int(fileversion):
 										print(str(os.path.basename(os.path.abspath(filepath))))
-										shutil.move(filepath,duplicates_f)											
-										Datashelve[str(fileid)]=shelvedfile	
+										checker=os.path.join(ofolder, str(os.path.basename(os.path.abspath(filepath))))
+										if not os.path.isfile(checker):								
+											shutil.move(filepath,duplicates_f)	
+										else:	
+											try:
+												os.remove(filepath) 	
+											except:pass													
+										Datashelve[str(fileid)]=shelvedfile
 									else:		
-										print(str(os.path.basename(os.path.abspath(shelvedfile[0]))))		
-										shutil.move(shelvedfile[0],ofolder)											
+										print(str(os.path.basename(os.path.abspath(shelvedfile[0]))))	
+										checker=os.path.join(ofolder, str(os.path.basename(os.path.abspath(shelvedfile[0]))))
+										if not os.path.isfile(checker):				
+											shutil.move(shelvedfile[0],ofolder)		
+										else:	
+											try:
+												os.remove(filepath) 	
+											except:pass										
 										Datashelve[str(fileid)]=[filepath,fileid,fileversion,cctag]									
 								else:		
 									pass	
@@ -7186,7 +7753,1439 @@ if __name__ == '__main__':
 								Datashelve[str(fileid)]=[filepath,fileid,fileversion,cctag]							
 						except BaseException as e:
 							Print.error('Exception: ' + str(e))	
-				Datashelve.close()					
+				Datashelve.close()				
+				try:os.remove('File01.dshlv')
+				except:pass
+				
+		#parser.add_argument('-cr_ilist', '--cr_incl_list', nargs='+', help='Creates a include list from a textfile and a folder')	
+		#parser.add_argument('-tfile_aux', '--text_file_aux', help='Auxiliary text file')			
+		if args.cr_incl_list:
+			# if args.ofolder:		
+				# for input in args.ofolder:
+					# try:
+						# ofolder = input
+					# except BaseException as e:
+						# Print.error('Exception: ' + str(e))	
+			# else:
+				# for filepath in args.cr_incl_list:
+					# ofolder=os.path.abspath(filepath)
+					# ofolder=os.path.join(ofolder, 'old')
+			# if not os.path.exists(ofolder):
+				# os.makedirs(ofolder) 
+			# duplicates_f=os.path.join(ofolder, 'duplicates')
+			# if not os.path.exists(duplicates_f):
+				# os.makedirs(duplicates_f) 	
+			if args.fexport:		
+				for input in args.fexport:
+					try:
+						exportlist = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))					
+			baselist=list()		
+			addonlist=list()		
+			updlist=list();updtomove=list()
+			filelist=list()
+			if args.text_file:
+				tfile=args.text_file
+				with open(tfile,"r+", encoding='utf8') as f: 	
+					for line in f:
+						fp=line.strip()
+						filelist.append(fp)	
+			if args.text_file_aux:	
+				filelist2=list()				
+				tfile2=args.text_file_aux
+				with open(tfile2,"r+", encoding='utf8') as f: 	
+					for line in f:
+						fp=line.strip()
+						filelist2.append(fp)	
+			else:						
+				filelist2=list()			
+				ruta=args.cr_incl_list[0]			
+				if ruta[-1]=='"':
+					ruta=ruta[:-1]
+				if ruta[0]=='"':
+					ruta=ruta[1:]	
+				extlist=list()
+				extlist.append('.nsp')
+				extlist.append('.xci')
+				if args.filter:
+					for f in args.filter:
+						filter=f	
+				#print(ruta)		
+				try:
+					fname=""
+					binbin='RECYCLE.BIN'
+					for ext in extlist:
+						#print (ext)
+						#print (ruta)
+						if os.path.isdir(ruta):
+							for dirpath, dirnames, filenames in os.walk(ruta):
+								for filename in [f for f in filenames if f.endswith(ext.lower()) or f.endswith(ext.upper()) or f[:-1].endswith(ext.lower()) or f[:-1].endswith(ext.lower())]:
+									fname=""
+									if args.filter:
+										if filter.lower() in filename.lower():
+											fname=filename
+									else:
+										fname=filename
+										#print(fname)
+									if fname != "":
+										if binbin.lower() not in filename.lower():
+											filelist2.append(os.path.join(dirpath, filename))
+						else:		
+							if ruta.endswith(ext.lower()) or ruta.endswith(ext.upper()) or ruta[:-1].endswith(ext.lower()) or ruta[:-1].endswith(ext.upper()):
+								filename = ruta
+								#print(ruta)
+								fname=""
+								if args.filter:
+									if filter.lower() in filename.lower():
+										fname=filename
+								else:
+									fname=filename		
+								if fname != "":
+									if binbin.lower() not in filename.lower():					
+										filelist2.append(filename)	
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))
+					pass
+			'''	
+			for file in filelist2:		
+				print(file)
+				pass
+			'''	
+			test2="";test=""
+			Datashelve = dbmodule.Dict('File01.dshlv');c=0
+			for filepath in filelist2:
+				fileid='unknown';fileversion='unknown';cctag='unknown'
+				tid1=list()
+				tid2=list()
+				tid1=[pos for pos, char in enumerate(filepath) if char == '[']
+				tid2=[pos for pos, char in enumerate(filepath) if char == ']']
+				if len(tid1)>=len(tid2):
+					lentlist=len(tid1)					
+				elif len(tid1)<len(tid2):
+					lentlist=len(tid2)						
+				for i in range(lentlist):	
+					try:
+						i1=tid1[i]+1
+						i2=tid2[i]					
+						t=filepath[i1:i2]
+						#print(t)
+						if len(t)==16: 
+							try:
+								test1=filepath[i1:i2]
+								int(filepath[i1:i2], 16)
+								fileid=str(filepath[i1:i2]).upper()
+								if fileid !='unknown':
+									if int(fileid[-3:])==800:
+										cctag='UPD'
+									elif int(fileid[-3:])==000:
+										cctag='BASE'
+									else:
+										try:
+											int(fileid[-3:])
+											cctag='DLC'											
+										except:pass
+									break
+							except:
+								try:
+									fileid=str(filepath[i1:i2]).upper()
+									if str(fileid[-3:])!='800' or str(fileid[-3:])!='000':
+										DLCnumb=str(fileid)
+										DLCnumb="0000000000000"+DLCnumb[-3:]									
+										DLCnumb=bytes.fromhex(DLCnumb)
+										DLCnumb=str(int.from_bytes(DLCnumb, byteorder='big'))									
+										DLCnumb=int(DLCnumb)
+										cctag='DLC'
+								except:continue
+					except:pass	
+				for i in range(lentlist):	
+					try:
+						i1=tid1[i]+1
+						i2=tid2[i]
+					except:pass									
+					if (str(filepath[(i1)]).upper())=='V':
+						try:
+							test2=filepath[(i1+1):i2]
+							fileversion=int(filepath[(i1+1):i2])
+							#print(fileversion)
+							if fileversion !='unknown':
+								break
+						except:
+							continue
+						
+				#print(fileid+' '+str(fileversion)+' '+cctag)
+				if fileid == 'unknown' or fileversion == 'unknown':
+					print(fileid+' '+str(fileversion))					
+					print(str(os.path.basename(os.path.abspath(filepath))))
+					print(test1)
+					print(test2)
+				
+				if cctag!="DLC" and cctag!="BASE" and cctag!="UPD":
+					print(str(os.path.basename(os.path.abspath(filepath))))				
+				if c==0:
+					c+=1
+					try:
+						Datashelve[str(fileid)]=[filepath,fileid,fileversion,cctag]				
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))							
+				else:
+					try:
+						if str(fileid) in Datashelve:
+							shelvedfile=Datashelve[str(fileid)]
+							#print(shelvedfile[2])
+							if shelvedfile[1]==fileid:
+								if int(shelvedfile[2])>int(fileversion):							
+									Datashelve[str(fileid)]=shelvedfile								
+								elif int(shelvedfile[2])== int(fileversion):								
+									Datashelve[str(fileid)]=shelvedfile	
+								else:										
+									Datashelve[str(fileid)]=[filepath,fileid,fileversion,cctag]									
+							else:		
+								pass	
+						else:
+							Datashelve[str(fileid)]=[filepath,str(fileid),fileversion,cctag]							
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))		
+			del filelist2			
+				
+			for filepath in filelist:
+				fileid='unknown';fileversion='unknown';cctag='unknown'
+				tid1=list()
+				tid2=list()
+				tid1=[pos for pos, char in enumerate(filepath) if char == '[']
+				tid2=[pos for pos, char in enumerate(filepath) if char == ']']
+				if len(tid1)>=len(tid2):
+					lentlist=len(tid1)					
+				elif len(tid1)<len(tid2):
+					lentlist=len(tid2)						
+				for i in range(lentlist):	
+					try:
+						i1=tid1[i]+1
+						i2=tid2[i]					
+						t=filepath[i1:i2]
+						#print(t)
+						if len(t)==16: 
+							try:
+								test1=filepath[i1:i2]
+								int(filepath[i1:i2], 16)
+								fileid=str(filepath[i1:i2]).upper()
+								if fileid !='unknown':
+									if int(fileid[-3:])==800:
+										cctag='UPD'
+									elif int(fileid[-3:])==000:
+										cctag='BASE'
+									else:
+										try:
+											int(fileid[-3:])
+											cctag='DLC'											
+										except:pass
+									break
+							except:
+								try:
+									fileid=str(filepath[i1:i2]).upper()
+									if str(fileid[-3:])!='800' or str(fileid[-3:])!='000':
+										DLCnumb=str(fileid)
+										DLCnumb="0000000000000"+DLCnumb[-3:]									
+										DLCnumb=bytes.fromhex(DLCnumb)
+										DLCnumb=str(int.from_bytes(DLCnumb, byteorder='big'))									
+										DLCnumb=int(DLCnumb)
+										cctag='DLC'
+								except:continue
+					except:pass	
+				for i in range(lentlist):	
+					try:
+						i1=tid1[i]+1
+						i2=tid2[i]
+					except:pass									
+					if (str(filepath[(i1)]).upper())=='V':
+						try:
+							test2=filepath[(i1+1):i2]
+							fileversion=int(filepath[(i1+1):i2])
+							if fileversion !='unknown':
+								break
+						except:
+							continue
+					
+				#print(fileid+' '+str(fileversion)+' '+cctag)
+				#print(filepath)	
+				if fileid == 'unknown' or fileversion == 'unknown':
+					print(fileid+' '+str(fileversion))					
+					print(str(os.path.basename(os.path.abspath(filepath))))
+					print(test1)
+					print(test2)
+				
+				if cctag!="DLC" and cctag!="BASE" and cctag!="UPD":
+					print(str(os.path.basename(os.path.abspath(filepath))))
+					
+				try:
+					if str(fileid) in Datashelve:
+						shelvedfile=Datashelve[str(fileid)]					
+						if int(shelvedfile[2])<int(fileversion):
+							print(fileid +' v'+str(fileversion))
+							with open(exportlist,"a", encoding='utf8') as tfile: 	
+								tfile.write(filepath+'\n')							
+					else:
+						print(fileid +' v'+str(fileversion))					
+						#print(filepath)	
+						#tfname='testmissdlc.txt'			
+						with open(exportlist,"a", encoding='utf8') as tfile: 	
+							tfile.write(filepath+'\n')					
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))	
+			Datashelve.close()		
+			try:os.remove('File01.dshlv')
+			except:pass
+			
+			
+		# ...................................................						
+		# Create exclude list
+		# ...................................................			
+		#parser.add_argument('-cr_elist', '--cr_excl_list', nargs='+', help='Creates a exclude list from a textfile and a folder or 2 textfiles')	
+		#parser.add_argument('-tfile_aux', '--text_file_aux', help='Auxiliary text file')			
+		if args.cr_excl_list:
+			# if args.ofolder:		
+				# for input in args.ofolder:
+					# try:
+						# ofolder = input
+					# except BaseException as e:
+						# Print.error('Exception: ' + str(e))	
+			# else:
+				# for filepath in args.cr_excl_list:
+					# ofolder=os.path.abspath(filepath)
+					# ofolder=os.path.join(ofolder, 'old')
+			# if not os.path.exists(ofolder):
+				# os.makedirs(ofolder) 
+			# duplicates_f=os.path.join(ofolder, 'duplicates')
+			# if not os.path.exists(duplicates_f):
+				# os.makedirs(duplicates_f) 	
+			if args.fexport:		
+				for input in args.fexport:
+					try:
+						exportlist = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))					
+			baselist=list()		
+			addonlist=list()		
+			updlist=list();updtomove=list()
+			filelist=list()
+			if args.text_file:
+				tfile=args.text_file
+				with open(tfile,"r+", encoding='utf8') as f: 	
+					for line in f:
+						fp=line.strip()
+						filelist.append(fp)	
+			if args.text_file_aux:	
+				filelist2=list()				
+				tfile2=args.text_file_aux
+				with open(tfile2,"r+", encoding='utf8') as f: 	
+					for line in f:
+						fp=line.strip()
+						filelist2.append(fp)	
+			else:						
+				filelist2=list()			
+				ruta=args.cr_excl_list[0]			
+				if ruta[-1]=='"':
+					ruta=ruta[:-1]
+				if ruta[0]=='"':
+					ruta=ruta[1:]	
+				extlist=list()
+				extlist.append('.nsp')
+				extlist.append('.xci')
+				if args.filter:
+					for f in args.filter:
+						filter=f	
+				#print(ruta)		
+				try:
+					fname=""
+					binbin='RECYCLE.BIN'
+					for ext in extlist:
+						#print (ext)
+						#print (ruta)
+						if os.path.isdir(ruta):
+							for dirpath, dirnames, filenames in os.walk(ruta):
+								for filename in [f for f in filenames if f.endswith(ext.lower()) or f.endswith(ext.upper()) or f[:-1].endswith(ext.lower()) or f[:-1].endswith(ext.lower())]:
+									fname=""
+									if args.filter:
+										if filter.lower() in filename.lower():
+											fname=filename
+									else:
+										fname=filename
+										#print(fname)
+									if fname != "":
+										if binbin.lower() not in filename.lower():
+											filelist2.append(os.path.join(dirpath, filename))
+						else:		
+							if ruta.endswith(ext.lower()) or ruta.endswith(ext.upper()) or ruta[:-1].endswith(ext.lower()) or ruta[:-1].endswith(ext.upper()):
+								filename = ruta
+								#print(ruta)
+								fname=""
+								if args.filter:
+									if filter.lower() in filename.lower():
+										fname=filename
+								else:
+									fname=filename		
+								if fname != "":
+									if binbin.lower() not in filename.lower():					
+										filelist2.append(filename)	
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))
+					pass
+			'''	
+			for file in filelist2:		
+				print(file)
+				pass
+			'''	
+			test2="";test=""
+			Datashelve = dbmodule.Dict('File01.dshlv');c=0
+			for filepath in filelist2:
+				fileid='unknown';fileversion='unknown';cctag='unknown'
+				tid1=list()
+				tid2=list()
+				tid1=[pos for pos, char in enumerate(filepath) if char == '[']
+				tid2=[pos for pos, char in enumerate(filepath) if char == ']']
+				if len(tid1)>=len(tid2):
+					lentlist=len(tid1)					
+				elif len(tid1)<len(tid2):
+					lentlist=len(tid2)						
+				for i in range(lentlist):	
+					try:
+						i1=tid1[i]+1
+						i2=tid2[i]					
+						t=filepath[i1:i2]
+						#print(t)
+						if len(t)==16: 
+							try:
+								test1=filepath[i1:i2]
+								int(filepath[i1:i2], 16)
+								fileid=str(filepath[i1:i2]).upper()
+								if fileid !='unknown':
+									if int(fileid[-3:])==800:
+										cctag='UPD'
+									elif int(fileid[-3:])==000:
+										cctag='BASE'
+									else:
+										try:
+											int(fileid[-3:])
+											cctag='DLC'											
+										except:pass
+									break
+							except:
+								try:
+									fileid=str(filepath[i1:i2]).upper()
+									if str(fileid[-3:])!='800' or str(fileid[-3:])!='000':
+										DLCnumb=str(fileid)
+										DLCnumb="0000000000000"+DLCnumb[-3:]									
+										DLCnumb=bytes.fromhex(DLCnumb)
+										DLCnumb=str(int.from_bytes(DLCnumb, byteorder='big'))									
+										DLCnumb=int(DLCnumb)
+										cctag='DLC'
+								except:continue
+					except:pass	
+				for i in range(lentlist):	
+					try:
+						i1=tid1[i]+1
+						i2=tid2[i]
+					except:pass									
+					if (str(filepath[(i1)]).upper())=='V':
+						try:
+							test2=filepath[(i1+1):i2]
+							fileversion=int(filepath[(i1+1):i2])
+							#print(fileversion)
+							if fileversion !='unknown':
+								break
+						except:
+							continue
+						
+				#print(fileid+' '+str(fileversion)+' '+cctag)
+				if fileid == 'unknown' or fileversion == 'unknown':
+					print(fileid+' '+str(fileversion))					
+					print(str(os.path.basename(os.path.abspath(filepath))))
+					print(test1)
+					print(test2)
+				
+				if cctag!="DLC" and cctag!="BASE" and cctag!="UPD":
+					print(str(os.path.basename(os.path.abspath(filepath))))				
+				if c==0:
+					c+=1
+					try:
+						Datashelve[str(fileid)]=[filepath,fileid,fileversion,cctag]				
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))							
+				else:
+					try:
+						if str(fileid) in Datashelve:
+							shelvedfile=Datashelve[str(fileid)]
+							#print(shelvedfile[2])
+							if shelvedfile[1]==fileid:
+								if int(shelvedfile[2])>int(fileversion):							
+									Datashelve[str(fileid)]=shelvedfile								
+								elif int(shelvedfile[2])== int(fileversion):								
+									Datashelve[str(fileid)]=shelvedfile	
+								else:										
+									Datashelve[str(fileid)]=[filepath,fileid,fileversion,cctag]									
+							else:		
+								pass	
+						else:
+							Datashelve[str(fileid)]=[filepath,str(fileid),fileversion,cctag]							
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))		
+			del filelist2			
+				
+			for filepath in filelist:
+				fileid='unknown';fileversion='unknown';cctag='unknown'
+				tid1=list()
+				tid2=list()
+				tid1=[pos for pos, char in enumerate(filepath) if char == '[']
+				tid2=[pos for pos, char in enumerate(filepath) if char == ']']
+				if len(tid1)>=len(tid2):
+					lentlist=len(tid1)					
+				elif len(tid1)<len(tid2):
+					lentlist=len(tid2)						
+				for i in range(lentlist):	
+					try:
+						i1=tid1[i]+1
+						i2=tid2[i]					
+						t=filepath[i1:i2]
+						#print(t)
+						if len(t)==16: 
+							try:
+								test1=filepath[i1:i2]
+								int(filepath[i1:i2], 16)
+								fileid=str(filepath[i1:i2]).upper()
+								if fileid !='unknown':
+									if int(fileid[-3:])==800:
+										cctag='UPD'
+									elif int(fileid[-3:])==000:
+										cctag='BASE'
+									else:
+										try:
+											int(fileid[-3:])
+											cctag='DLC'											
+										except:pass
+									break
+							except:
+								try:
+									fileid=str(filepath[i1:i2]).upper()
+									if str(fileid[-3:])!='800' or str(fileid[-3:])!='000':
+										DLCnumb=str(fileid)
+										DLCnumb="0000000000000"+DLCnumb[-3:]									
+										DLCnumb=bytes.fromhex(DLCnumb)
+										DLCnumb=str(int.from_bytes(DLCnumb, byteorder='big'))									
+										DLCnumb=int(DLCnumb)
+										cctag='DLC'
+								except:continue
+					except:pass	
+				for i in range(lentlist):	
+					try:
+						i1=tid1[i]+1
+						i2=tid2[i]
+					except:pass									
+					if (str(filepath[(i1)]).upper())=='V':
+						try:
+							test2=filepath[(i1+1):i2]
+							fileversion=int(filepath[(i1+1):i2])
+							if fileversion !='unknown':
+								break
+						except:
+							continue
+					
+				#print(fileid+' '+str(fileversion)+' '+cctag)
+				#print(filepath)	
+				if fileid == 'unknown' or fileversion == 'unknown':
+					print(fileid+' '+str(fileversion))					
+					print(str(os.path.basename(os.path.abspath(filepath))))
+					print(test1)
+					print(test2)
+				
+				if cctag!="DLC" and cctag!="BASE" and cctag!="UPD":
+					print(str(os.path.basename(os.path.abspath(filepath))))
+					
+				try:
+					if str(fileid) in Datashelve:
+						shelvedfile=Datashelve[str(fileid)]	
+						if str(filepath) != str(shelvedfile[0]):
+							if int(shelvedfile[2])>=int(fileversion):
+								print(fileid +' v'+str(fileversion))
+								with open(exportlist,"a", encoding='utf8') as tfile: 	
+									tfile.write(filepath+'\n')							
+					else:
+						pass
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))	
+			Datashelve.close()		
+			try:os.remove('File01.dshlv')
+			except:pass			
+			
+
+		# ...................................................						
+		# OUTDATED XCI LIST
+		# ...................................................	
+		#parser.add_argument('-cr_xcioutlist', '--cr_outdated_xci_list', nargs='+', help='Creates a include list from a textfile and a folder')	
+		#parser.add_argument('-tfile_aux', '--text_file_aux', help='Auxiliary text file')			
+		if args.cr_outdated_xci_list:
+			# if args.ofolder:		
+				# for input in args.ofolder:
+					# try:
+						# ofolder = input
+					# except BaseException as e:
+						# Print.error('Exception: ' + str(e))	
+			# else:
+				# for filepath in args.cr_outdated_xci_list:
+					# ofolder=os.path.abspath(filepath)
+					# ofolder=os.path.join(ofolder, 'old')
+			# if not os.path.exists(ofolder):
+				# os.makedirs(ofolder) 
+			# duplicates_f=os.path.join(ofolder, 'duplicates')
+			# if not os.path.exists(duplicates_f):
+				# os.makedirs(duplicates_f) 	
+			if args.fexport:		
+				for input in args.fexport:
+					try:
+						exportlist = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))					
+			baselist=list()		
+			addonlist=list()		
+			updlist=list();updtomove=list()
+			filelist=list()
+			if args.text_file:
+				tfile=args.text_file
+				with open(tfile,"r+", encoding='utf8') as f: 	
+					for line in f:
+						fp=line.strip()
+						filelist.append(fp)	
+			if args.text_file_aux:	
+				filelist2=list()				
+				tfile2=args.text_file_aux
+				with open(tfile2,"r+", encoding='utf8') as f: 	
+					for line in f:
+						fp=line.strip()
+						filelist2.append(fp)	
+			else:						
+				filelist2=list()			
+				ruta=args.cr_outdated_xci_list[0]			
+				if ruta[-1]=='"':
+					ruta=ruta[:-1]
+				if ruta[0]=='"':
+					ruta=ruta[1:]	
+				extlist=list()
+				extlist.append('.nsp')
+				extlist.append('.xci')
+				if args.filter:
+					for f in args.filter:
+						filter=f	
+				#print(ruta)		
+				try:
+					fname=""
+					binbin='RECYCLE.BIN'
+					for ext in extlist:
+						#print (ext)
+						#print (ruta)
+						if os.path.isdir(ruta):
+							for dirpath, dirnames, filenames in os.walk(ruta):
+								for filename in [f for f in filenames if f.endswith(ext.lower()) or f.endswith(ext.upper()) or f[:-1].endswith(ext.lower()) or f[:-1].endswith(ext.lower())]:
+									fname=""
+									if args.filter:
+										if filter.lower() in filename.lower():
+											fname=filename
+									else:
+										fname=filename
+										#print(fname)
+									if fname != "":
+										if binbin.lower() not in filename.lower():
+											filelist2.append(os.path.join(dirpath, filename))
+						else:		
+							if ruta.endswith(ext.lower()) or ruta.endswith(ext.upper()) or ruta[:-1].endswith(ext.lower()) or ruta[:-1].endswith(ext.upper()):
+								filename = ruta
+								#print(ruta)
+								fname=""
+								if args.filter:
+									if filter.lower() in filename.lower():
+										fname=filename
+								else:
+									fname=filename		
+								if fname != "":
+									if binbin.lower() not in filename.lower():					
+										filelist2.append(filename)	
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))
+					pass
+			'''	
+			for file in filelist2:		
+				print(file)
+				pass
+			'''	
+			test2="";test=""
+			Datashelve = dbmodule.Dict('File01.dshlv');c=0
+			for filepath in filelist2:
+				fileid='unknown';fileversion='unknown';cctag='unknown'
+				tid1=list()
+				tid2=list()
+				tid1=[pos for pos, char in enumerate(filepath) if char == '[']
+				tid2=[pos for pos, char in enumerate(filepath) if char == ']']
+				if len(tid1)>=len(tid2):
+					lentlist=len(tid1)					
+				elif len(tid1)<len(tid2):
+					lentlist=len(tid2)						
+				for i in range(lentlist):	
+					try:
+						i1=tid1[i]+1
+						i2=tid2[i]					
+						t=filepath[i1:i2]
+						#print(t)
+						if len(t)==16: 
+							try:
+								test1=filepath[i1:i2]
+								int(filepath[i1:i2], 16)
+								fileid=str(filepath[i1:i2]).upper()
+								if fileid !='unknown':
+									if int(fileid[-3:])==800:
+										cctag='UPD'
+									elif int(fileid[-3:])==000:
+										cctag='BASE'
+									else:
+										try:
+											int(fileid[-3:])
+											cctag='DLC'											
+										except:pass
+									break
+							except:
+								try:
+									fileid=str(filepath[i1:i2]).upper()
+									if str(fileid[-3:])!='800' or str(fileid[-3:])!='000':
+										DLCnumb=str(fileid)
+										DLCnumb="0000000000000"+DLCnumb[-3:]									
+										DLCnumb=bytes.fromhex(DLCnumb)
+										DLCnumb=str(int.from_bytes(DLCnumb, byteorder='big'))									
+										DLCnumb=int(DLCnumb)
+										cctag='DLC'
+								except:continue
+					except:pass	
+				for i in range(lentlist):	
+					try:
+						i1=tid1[i]+1
+						i2=tid2[i]
+					except:pass									
+					if (str(filepath[(i1)]).upper())=='V':
+						try:
+							test2=filepath[(i1+1):i2]
+							fileversion=int(filepath[(i1+1):i2])
+							#print(fileversion)
+							if fileversion !='unknown':
+								break
+						except:
+							continue
+				if cctag=="BASE" and fileversion == 'unknown':
+					fileversion=0
+				#print(fileid+' '+str(fileversion)+' '+cctag)
+				if fileid == 'unknown' or fileversion == 'unknown':
+					print(fileid+' '+str(fileversion))					
+					print(str(os.path.basename(os.path.abspath(filepath))))
+					print(test1)
+					print(test2)
+								
+				if cctag!="DLC" and cctag!="BASE" and cctag!="UPD":
+					print(str(os.path.basename(os.path.abspath(filepath))))				
+				if c==0:
+					c+=1
+					try:
+						Datashelve[str(fileid)]=[filepath,fileid,fileversion,cctag]				
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))							
+				else:
+					try:
+						if str(fileid) in Datashelve:
+							shelvedfile=Datashelve[str(fileid)]
+							#print(shelvedfile[2])
+							if shelvedfile[1]==fileid:
+								if int(shelvedfile[2])>int(fileversion):							
+									Datashelve[str(fileid)]=shelvedfile								
+								elif int(shelvedfile[2])== int(fileversion):								
+									Datashelve[str(fileid)]=shelvedfile	
+								else:										
+									Datashelve[str(fileid)]=[filepath,fileid,fileversion,cctag]									
+							else:		
+								pass	
+						else:
+							Datashelve[str(fileid)]=[filepath,str(fileid),fileversion,cctag]							
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))		
+			del filelist2			
+				
+			for filepath in filelist:
+				fileid='unknown';fileversion='unknown';cctag='unknown'
+				tid1=list()
+				tid2=list()
+				tid1=[pos for pos, char in enumerate(filepath) if char == '[']
+				tid2=[pos for pos, char in enumerate(filepath) if char == ']']
+				if len(tid1)>=len(tid2):
+					lentlist=len(tid1)					
+				elif len(tid1)<len(tid2):
+					lentlist=len(tid2)						
+				for i in range(lentlist):	
+					try:
+						i1=tid1[i]+1
+						i2=tid2[i]					
+						t=filepath[i1:i2]
+						#print(t)
+						if len(t)==16: 
+							try:
+								test1=filepath[i1:i2]
+								int(filepath[i1:i2], 16)
+								fileid=str(filepath[i1:i2]).upper()
+								if fileid !='unknown':
+									if int(fileid[-3:])==800:
+										cctag='UPD'
+									elif int(fileid[-3:])==000:
+										cctag='BASE'
+									else:
+										try:
+											int(fileid[-3:])
+											cctag='DLC'											
+										except:pass
+									break
+							except:
+								try:
+									fileid=str(filepath[i1:i2]).upper()
+									if str(fileid[-3:])!='800' or str(fileid[-3:])!='000':
+										DLCnumb=str(fileid)
+										DLCnumb="0000000000000"+DLCnumb[-3:]									
+										DLCnumb=bytes.fromhex(DLCnumb)
+										DLCnumb=str(int.from_bytes(DLCnumb, byteorder='big'))									
+										DLCnumb=int(DLCnumb)
+										cctag='DLC'
+								except:continue
+					except:pass	
+				for i in range(lentlist):	
+					try:
+						i1=tid1[i]+1
+						i2=tid2[i]
+					except:pass									
+					if (str(filepath[(i1)]).upper())=='V':
+						try:
+							test2=filepath[(i1+1):i2]
+							fileversion=int(filepath[(i1+1):i2])
+							if fileversion !='unknown':
+								break
+						except:
+							continue
+					
+				#print(fileid+' '+str(fileversion)+' '+cctag)
+				#print(filepath)	
+
+				if cctag=="BASE" and fileversion == 'unknown':
+					fileversion=0				
+				
+				if fileid == 'unknown' or fileversion == 'unknown':
+					print(fileid+' '+str(fileversion))					
+					print(str(os.path.basename(os.path.abspath(filepath))))
+					print(test1)
+					print(test2)
+				
+				if cctag!="DLC" and cctag!="BASE" and cctag!="UPD":
+					print(str(os.path.basename(os.path.abspath(filepath))))
+
+				isbase=False	
+				if str(fileid[-3:])=='000':
+					isbase=True
+				elif str(fileid[-3:])=='800':
+					fileid=str(fileid[:-3])+'000'
+				else:
+					pass
+
+				try:
+					if str(fileid) in Datashelve:
+						shelvedfile=Datashelve[str(fileid)]					
+						if int(shelvedfile[2])<int(fileversion):
+							print(fileid +' v'+str(fileversion))
+							with open(exportlist,"a", encoding='utf8') as tfile: 	
+								tfile.write(filepath+'\n')							
+					elif isbase==True:
+						print(fileid +' v'+str(fileversion))					
+						#print(filepath)	
+						#tfname='testmissdlc.txt'			
+						with open(exportlist,"a", encoding='utf8') as tfile: 	
+							tfile.write(filepath+'\n')		
+					else:
+						pass
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))	
+			Datashelve.close()		
+			try:os.remove('File01.dshlv')
+			except:pass			
+			
+		# ...................................................						
+		# EXPAND LIST
+		# ...................................................	
+		#parser.add_argument('-cr_xexplist', '--cr_expand_list', nargs='+', help='Expands the list with games by baseid')	
+		#parser.add_argument('-tfile_aux', '--text_file_aux', help='Auxiliary text file')			
+		if args.cr_expand_list:
+			# if args.ofolder:		
+				# for input in args.ofolder:
+					# try:
+						# ofolder = input
+					# except BaseException as e:
+						# Print.error('Exception: ' + str(e))	
+			# else:
+				# for filepath in args.cr_expand_list:
+					# ofolder=os.path.abspath(filepath)
+					# ofolder=os.path.join(ofolder, 'old')
+			# if not os.path.exists(ofolder):
+				# os.makedirs(ofolder) 
+			# duplicates_f=os.path.join(ofolder, 'duplicates')
+			# if not os.path.exists(duplicates_f):
+				# os.makedirs(duplicates_f) 	
+			if args.fexport:		
+				for input in args.fexport:
+					try:
+						exportlist = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))					
+			baselist=list()		
+			addonlist=list()		
+			updlist=list();updtomove=list()
+			filelist=list()
+			if args.text_file:
+				tfile=args.text_file
+				with open(tfile,"r+", encoding='utf8') as f: 	
+					for line in f:
+						fp=line.strip()
+						filelist.append(fp)	
+			if args.text_file_aux:	
+				filelist2=list()				
+				tfile2=args.text_file_aux
+				with open(tfile2,"r+", encoding='utf8') as f: 	
+					for line in f:
+						fp=line.strip()
+						filelist2.append(fp)	
+			else:						
+				filelist2=list()			
+				ruta=args.cr_expand_list[0]			
+				if ruta[-1]=='"':
+					ruta=ruta[:-1]
+				if ruta[0]=='"':
+					ruta=ruta[1:]	
+				extlist=list()
+				extlist.append('.nsp')
+				extlist.append('.xci')
+				if args.filter:
+					for f in args.filter:
+						filter=f	
+				#print(ruta)		
+				try:
+					fname=""
+					binbin='RECYCLE.BIN'
+					for ext in extlist:
+						#print (ext)
+						#print (ruta)
+						if os.path.isdir(ruta):
+							for dirpath, dirnames, filenames in os.walk(ruta):
+								for filename in [f for f in filenames if f.endswith(ext.lower()) or f.endswith(ext.upper()) or f[:-1].endswith(ext.lower()) or f[:-1].endswith(ext.lower())]:
+									fname=""
+									if args.filter:
+										if filter.lower() in filename.lower():
+											fname=filename
+									else:
+										fname=filename
+										#print(fname)
+									if fname != "":
+										if binbin.lower() not in filename.lower():
+											filelist2.append(os.path.join(dirpath, filename))
+						else:		
+							if ruta.endswith(ext.lower()) or ruta.endswith(ext.upper()) or ruta[:-1].endswith(ext.lower()) or ruta[:-1].endswith(ext.upper()):
+								filename = ruta
+								#print(ruta)
+								fname=""
+								if args.filter:
+									if filter.lower() in filename.lower():
+										fname=filename
+								else:
+									fname=filename		
+								if fname != "":
+									if binbin.lower() not in filename.lower():					
+										filelist2.append(filename)	
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))
+					pass
+			'''	
+			for file in filelist2:		
+				print(file)
+				pass
+			'''	
+			test2="";test=""
+			Datashelve = dbmodule.Dict('File01.dshlv');c=0
+			for filepath in filelist2:
+				fileid='unknown';fileversion='unknown';cctag='unknown'
+				tid1=list()
+				tid2=list()
+				tid1=[pos for pos, char in enumerate(filepath) if char == '[']
+				tid2=[pos for pos, char in enumerate(filepath) if char == ']']
+				if len(tid1)>=len(tid2):
+					lentlist=len(tid1)					
+				elif len(tid1)<len(tid2):
+					lentlist=len(tid2)						
+				for i in range(lentlist):	
+					try:
+						i1=tid1[i]+1
+						i2=tid2[i]					
+						t=filepath[i1:i2]
+						#print(t)
+						if len(t)==16: 
+							try:
+								test1=filepath[i1:i2]
+								int(filepath[i1:i2], 16)
+								fileid=str(filepath[i1:i2]).upper()
+								if fileid !='unknown':
+									if int(fileid[-3:])==800:
+										cctag='UPD'
+									elif int(fileid[-3:])==000:
+										cctag='BASE'
+									else:
+										try:
+											int(fileid[-3:])
+											cctag='DLC'											
+										except:pass
+									break
+							except:
+								try:
+									fileid=str(filepath[i1:i2]).upper()
+									if str(fileid[-3:])!='800' or str(fileid[-3:])!='000':
+										DLCnumb=str(fileid)
+										DLCnumb="0000000000000"+DLCnumb[-3:]									
+										DLCnumb=bytes.fromhex(DLCnumb)
+										DLCnumb=str(int.from_bytes(DLCnumb, byteorder='big'))									
+										DLCnumb=int(DLCnumb)
+										cctag='DLC'
+								except:continue
+					except:pass	
+				for i in range(lentlist):	
+					try:
+						i1=tid1[i]+1
+						i2=tid2[i]
+					except:pass									
+					if (str(filepath[(i1)]).upper())=='V':
+						try:
+							test2=filepath[(i1+1):i2]
+							fileversion=int(filepath[(i1+1):i2])
+							#print(fileversion)
+							if fileversion !='unknown':
+								break
+						except:
+							continue
+
+				if cctag=="BASE" and fileversion == 'unknown':
+					fileversion=0						
+				#print(fileid+' '+str(fileversion)+' '+cctag)
+				if fileid == 'unknown' or fileversion == 'unknown':
+					print(fileid+' '+str(fileversion))					
+					print(str(os.path.basename(os.path.abspath(filepath))))
+					print(test1)
+					print(test2)
+								
+				if cctag!="DLC" and cctag!="BASE" and cctag!="UPD":
+					print(str(os.path.basename(os.path.abspath(filepath))))				
+				if c==0:
+					c+=1
+					try:
+						Datashelve[str(fileid)]=[filepath,fileid,fileversion,cctag]				
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))							
+				else:
+					try:
+						if str(fileid) in Datashelve:
+							shelvedfile=Datashelve[str(fileid)]
+							#print(shelvedfile[2])
+							if shelvedfile[1]==fileid:
+								if int(shelvedfile[2])>int(fileversion):							
+									Datashelve[str(fileid)]=shelvedfile								
+								elif int(shelvedfile[2])== int(fileversion):								
+									Datashelve[str(fileid)]=shelvedfile	
+								else:										
+									Datashelve[str(fileid)]=[filepath,fileid,fileversion,cctag]									
+							else:		
+								pass	
+						else:
+							Datashelve[str(fileid)]=[filepath,str(fileid),fileversion,cctag]							
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))		
+			del filelist2			
+				
+			for filepath in filelist:
+				fileid='unknown';fileversion='unknown';cctag='unknown'
+				tid1=list()
+				tid2=list()
+				tid1=[pos for pos, char in enumerate(filepath) if char == '[']
+				tid2=[pos for pos, char in enumerate(filepath) if char == ']']
+				if len(tid1)>=len(tid2):
+					lentlist=len(tid1)					
+				elif len(tid1)<len(tid2):
+					lentlist=len(tid2)						
+				for i in range(lentlist):	
+					try:
+						i1=tid1[i]+1
+						i2=tid2[i]					
+						t=filepath[i1:i2]
+						#print(t)
+						if len(t)==16: 
+							try:
+								test1=filepath[i1:i2]
+								int(filepath[i1:i2], 16)
+								fileid=str(filepath[i1:i2]).upper()
+								if fileid !='unknown':
+									if int(fileid[-3:])==800:
+										cctag='UPD'
+									elif int(fileid[-3:])==000:
+										cctag='BASE'
+									else:
+										try:
+											int(fileid[-3:])
+											cctag='DLC'											
+										except:pass
+									break
+							except:
+								try:
+									fileid=str(filepath[i1:i2]).upper()
+									if str(fileid[-3:])!='800' or str(fileid[-3:])!='000':
+										DLCnumb=str(fileid)
+										DLCnumb="0000000000000"+DLCnumb[-3:]									
+										DLCnumb=bytes.fromhex(DLCnumb)
+										DLCnumb=str(int.from_bytes(DLCnumb, byteorder='big'))									
+										DLCnumb=int(DLCnumb)
+										cctag='DLC'
+								except:continue
+					except:pass	
+				for i in range(lentlist):	
+					try:
+						i1=tid1[i]+1
+						i2=tid2[i]
+					except:pass									
+					if (str(filepath[(i1)]).upper())=='V':
+						try:
+							test2=filepath[(i1+1):i2]
+							fileversion=int(filepath[(i1+1):i2])
+							if fileversion !='unknown':
+								break
+						except:
+							continue
+				if cctag=="BASE" and fileversion == 'unknown':
+					fileversion=0					
+				#print(fileid+' '+str(fileversion)+' '+cctag)
+				#print(filepath)	
+				if fileid == 'unknown' or fileversion == 'unknown':
+					print(fileid+' '+str(fileversion))					
+					print(str(os.path.basename(os.path.abspath(filepath))))
+					print(test1)
+					print(test2)
+				
+				if cctag!="DLC" and cctag!="BASE" and cctag!="UPD":
+					print(str(os.path.basename(os.path.abspath(filepath))))
+				if str(fileid[-3:])=='800':
+					fileid=str(fileid[:-3])+'000'
+				elif str(fileid[-3:])=='000':
+					fileid=str(fileid)
+				else:
+					#print(str(fileid))
+					DLCnumb=str(fileid)
+					#print(hx(b''+bytes.fromhex('0'+DLCnumb[-4:-3])))
+					token=int(hx(bytes.fromhex('0'+DLCnumb[-4:-3])),16)-int('1',16)
+					token=str(hex(token))[-1]
+					token=token.upper()
+					#print(token)
+					fileid=fileid[:-4]+token+'000'
+					#print(fileid)
+				try:
+					if str(fileid) in Datashelve:
+						shelvedfile=Datashelve[str(fileid)]	
+						if str(shelvedfile[0])!=str(filepath):
+							print(str(fileid) +' v'+str(fileversion))
+							with open(exportlist,"a", encoding='utf8') as tfile: 	
+								tfile.write(str(filepath)+'\n')								
+					elif  str(fileid[:-3]+'800') in Datashelve:
+						fileid=str(fileid[:-3]+'800')
+						shelvedfile=Datashelve[str(fileid)]	
+						if str(shelvedfile[0])!=str(filepath):
+							print(str(fileid) +' v'+str(fileversion))
+							with open(exportlist,"a", encoding='utf8') as tfile: 	
+								tfile.write(str(filepath)+'\n')							
+					else:
+						pass			
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))	
+			Datashelve.close()		
+			try:os.remove('File01.dshlv')
+			except:pass						
+		
+		#parser.add_argument('-blckl', '--black_list', nargs='+', help='Deletes blacklisted files from a list')			
+		if args.black_list:
+			try:
+				if args.fexport:		
+					for input in args.fexport:
+						try:
+							exportlist = input
+						except BaseException as e:
+							Print.error('Exception: ' + str(e))					
+				baselist=list()		
+				addonlist=list()		
+				updlist=list();updtomove=list()
+				blacklist=list()
+				if args.black_list:
+					t_blacklist=args.black_list[0]
+					if args.black_list[1]:
+						if str(args.black_list[1]).lower()=='true':
+							blacklistbaseid=True
+						else:
+							blacklistbaseid=False
+					else:	
+						blacklistbaseid=False
+					with open(t_blacklist,"r+", encoding='utf8') as f: 	
+						for line in f:
+							fp=line.strip()
+							blacklist.append(fp)	
+				if args.text_file:	
+					filelist2=list()				
+					tfile2=args.text_file
+					with open(tfile2,"r+", encoding='utf8') as f: 	
+						for line in f:
+							fp=line.strip()
+							filelist2.append(fp)	
+				else:						
+					filelist2=list()			
+					ruta=args.cr_incl_list[0]			
+					if ruta[-1]=='"':
+						ruta=ruta[:-1]
+					if ruta[0]=='"':
+						ruta=ruta[1:]	
+					extlist=list()
+					extlist.append('.nsp')
+					extlist.append('.xci')
+					if args.filter:
+						for f in args.filter:
+							filter=f	
+					#print(ruta)		
+					try:
+						fname=""
+						binbin='RECYCLE.BIN'
+						for ext in extlist:
+							#print (ext)
+							#print (ruta)
+							if os.path.isdir(ruta):
+								for dirpath, dirnames, filenames in os.walk(ruta):
+									for filename in [f for f in filenames if f.endswith(ext.lower()) or f.endswith(ext.upper()) or f[:-1].endswith(ext.lower()) or f[:-1].endswith(ext.lower())]:
+										fname=""
+										if args.filter:
+											if filter.lower() in filename.lower():
+												fname=filename
+										else:
+											fname=filename
+											#print(fname)
+										if fname != "":
+											if binbin.lower() not in filename.lower():
+												filelist2.append(os.path.join(dirpath, filename))
+							else:		
+								if ruta.endswith(ext.lower()) or ruta.endswith(ext.upper()) or ruta[:-1].endswith(ext.lower()) or ruta[:-1].endswith(ext.upper()):
+									filename = ruta
+									#print(ruta)
+									fname=""
+									if args.filter:
+										if filter.lower() in filename.lower():
+											fname=filename
+									else:
+										fname=filename		
+									if fname != "":
+										if binbin.lower() not in filename.lower():					
+											filelist2.append(filename)	
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+						pass
+				test2="";test=""
+				Datashelve = dbmodule.Dict('File01.dshlv');c=0
+				for filepath in filelist2:
+					fileid='unknown';fileversion='unknown';cctag='unknown'	
+					try:
+						fileid,fileversion,cctag,nG,nU,nD,baseid=listmanager.parsetags(filepath)
+					except:pass	
+					if 	cctag !='unknown':
+						try:
+							Datashelve[str(fileid)]=[filepath,str(fileid),fileversion,cctag,nG,nU,nD,baseid]					
+						except: pass	
+				del filelist2	
+				tfile=open(exportlist,"w", encoding='utf8')	
+				tfile.close()					
+				for filepath in blacklist:
+					fileid='unknown';fileversion='unknown';cctag='unknown'	
+					try:
+						fileid,fileversion,cctag,nG,nU,nD,baseid=listmanager.parsetags(filepath)
+						#print(baseid)
+					except:pass	
+					if 	cctag !='unknown':		
+						try:
+							if str(fileid) in Datashelve:
+								del Datashelve[str(fileid)]
+							else:
+								keylist=list()
+								for k in Datashelve.keys():
+									keylist.append(k)
+								for k in keylist:								
+									if k in Datashelve:
+										entry=Datashelve[k]
+										test=str(entry[0]).lower()
+										fp=str(filepath).lower()
+										if test==fp:
+											del Datashelve[k]										
+							if blacklistbaseid==False:
+								pass
+							else:
+								keylist=list()
+								for k in Datashelve.keys():
+									keylist.append(k)
+								for k in keylist:								
+									if k in Datashelve:
+										entry=Datashelve[k]
+										test=str(entry[-1]).lower()
+										baseid=str(baseid).lower()
+										if test==baseid:
+											del Datashelve[k]												
+						except BaseException as e:
+							Print.error('Exception: ' + str(e))	
+							continue
+				del blacklist		
+				for k in Datashelve.keys():						
+					with open(exportlist,"a", encoding='utf8') as tfile: 
+						entry=Datashelve[k]
+						fp=str(entry[0])
+						tfile.write(fp+'\n')										
+				Datashelve.close()		
+				try:os.remove('File01.dshlv')
+				except:pass		
+			except:pass
+			
+		#parser.add_argument('-chdlcn', '--chck_dlc_numb', nargs='+', help='Checks if xci has corrent number of dlcs')				
+		if args.chck_dlc_numb:
+			try:
+				if args.fexport:		
+					for input in args.fexport:
+						try:
+							exportlist = input
+						except BaseException as e:
+							Print.error('Exception: ' + str(e))					
+				baselist=list()		
+				addonlist=list()		
+				updlist=list();updtomove=list()
+				dlclist=list()
+				if args.chck_dlc_numb:
+					t_dlc_list=args.chck_dlc_numb[0]
+					with open(t_dlc_list,"r+", encoding='utf8') as f: 	
+						for line in f:
+							fp=line.strip()
+							dlclist.append(fp)	
+				if args.text_file:	
+					filelist2=list()				
+					tfile2=args.text_file
+					with open(tfile2,"r+", encoding='utf8') as f: 	
+						for line in f:
+							fp=line.strip()
+							filelist2.append(fp)	
+				else:						
+					filelist2=list()			
+					ruta=args.cr_incl_list[0]			
+					if ruta[-1]=='"':
+						ruta=ruta[:-1]
+					if ruta[0]=='"':
+						ruta=ruta[1:]	
+					extlist=list()
+					extlist.append('.nsp')
+					extlist.append('.xci')
+					if args.filter:
+						for f in args.filter:
+							filter=f	
+					#print(ruta)		
+					try:
+						fname=""
+						binbin='RECYCLE.BIN'
+						for ext in extlist:
+							#print (ext)
+							#print (ruta)
+							if os.path.isdir(ruta):
+								for dirpath, dirnames, filenames in os.walk(ruta):
+									for filename in [f for f in filenames if f.endswith(ext.lower()) or f.endswith(ext.upper()) or f[:-1].endswith(ext.lower()) or f[:-1].endswith(ext.lower())]:
+										fname=""
+										if args.filter:
+											if filter.lower() in filename.lower():
+												fname=filename
+										else:
+											fname=filename
+											#print(fname)
+										if fname != "":
+											if binbin.lower() not in filename.lower():
+												filelist2.append(os.path.join(dirpath, filename))
+							else:		
+								if ruta.endswith(ext.lower()) or ruta.endswith(ext.upper()) or ruta[:-1].endswith(ext.lower()) or ruta[:-1].endswith(ext.upper()):
+									filename = ruta
+									#print(ruta)
+									fname=""
+									if args.filter:
+										if filter.lower() in filename.lower():
+											fname=filename
+									else:
+										fname=filename		
+									if fname != "":
+										if binbin.lower() not in filename.lower():					
+											filelist2.append(filename)	
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+						pass
+				test2="";test=""
+				Datashelve = dbmodule.Dict('File01.dshlv');c=0
+				for filepath in filelist2:
+					fileid='unknown';fileversion='unknown';cctag='unknown'	
+					try:
+						fileid,fileversion,cctag,nG,nU,nD,baseid=listmanager.parsetags(filepath)
+					except:pass	
+					if 	cctag !='unknown':
+						try:
+							Datashelve[str(fileid)]=[filepath,str(fileid),fileversion,cctag,nG,nU,nD,baseid]					
+						except: pass	
+				del filelist2	
+				tfile=open(exportlist,"w", encoding='utf8')	
+				tfile.close()					
+				keylist=list()
+				for k in Datashelve.keys():
+					keylist.append(k)				
+				for k in keylist:								
+					if k in Datashelve:
+						entry=Datashelve[k]
+						numbDLC=entry[6]
+						test=str(entry[1]).lower()
+						count=0
+						dlcpaths=list()
+						# test2='['+test[:-4]
+						for filepath in dlclist:
+							fileid='unknown';fileversion='unknown';cctag='unknown'	
+							# print(test2)
+							# if test2 in str(filepath).lower():
+							try:
+								# print(filepath)
+								fileid,fileversion,cctag,nG,nU,nD,baseid=listmanager.parsetags(filepath)
+								# print(baseid)
+								# print(test)
+								baseid=baseid.lower()
+								if (str(baseid).lower())==test:
+									if not filepath in dlcpaths:
+										count+=1
+										dlcpaths.append(filepath)
+									dlclist.remove(filepath)
+							except BaseException as e:
+								Print.error('Exception: ' + str(e))
+								pass
+							# print(str(count))
+							# print(str(numbDLC))							
+						if count>int(numbDLC):
+							with open(exportlist,"a", encoding='utf8') as tfile: 
+								tfile.write(str(entry[0])+'\n')									
+				Datashelve.close()		
+				try:os.remove('File01.dshlv')
+				except:pass		
+			except:pass		
 		# ...................................................						
 		# Restore. File Restoration
 		# ...................................................
@@ -7200,7 +9199,7 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				buffer = 32768	
+				buffer = 65536	
 			if not os.path.exists(ofolder):
 				os.makedirs(ofolder)	
 			if args.text_file:

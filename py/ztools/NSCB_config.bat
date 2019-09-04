@@ -276,6 +276,8 @@ echo Input "9" to set file FAT32\EXFAT options
 echo Input "10" to how to ORGANIZE output files
 echo Input "11" to set NEW MODE OR LEGACY MODE
 echo Input "12" to ROMANIZE names when using direct-multi
+echo Input "13" to TRANSLATE game description lines in file info
+echo Input "14" to change number of WORKERS IN THREADED OPERATIONS
 echo.
 echo Input "c" to read CURRENT GLOBAL SETTINGS
 echo Input "d" to set DEFAULT GLOBAL SETTINGS
@@ -296,6 +298,8 @@ if /i "%bs%"=="9" goto op_fat
 if /i "%bs%"=="10" goto op_oforg
 if /i "%bs%"=="11" goto op_nscbmode
 if /i "%bs%"=="12" goto op_romanize
+if /i "%bs%"=="13" goto op_translate
+if /i "%bs%"=="14" goto op_threads
 
 if /i "%bs%"=="c" call :curr_set2
 if /i "%bs%"=="c" echo.
@@ -891,6 +895,104 @@ echo.
 pause
 goto sc3
 
+:op_translate
+cls
+call :logo
+echo *****************************************************************************
+echo TRANSLATE GAME DESCRIPTION LINES TO ENGLISH FROM JAPANESE, CHINES, KOREAN
+echo *****************************************************************************
+echo.
+echo NOTE: Unlike romaji for translations NSCB makes API calls to GOOGLE TRANSLATE
+echo.
+echo Input "1" to translate descriptions (default)
+echo Input "2" to keep descriptions as read on nutdb files
+echo.
+echo Input "b" to return to GLOBAL OPTIONS
+echo Input "0" to return to CONFIG MENU
+echo Input "e" to go back to the MAIN PROGRAM
+echo ...........................................................................
+echo.
+set /p bs="Enter your choice: "
+set "v_trans=none"
+if /i "%bs%"=="1" set "v_trans=TRUE"
+if /i "%bs%"=="2" set "v_trans=FALSE"
+
+if /i "%bs%"=="b" goto sc3
+if /i "%bs%"=="0" goto sc1
+if /i "%bs%"=="e" goto salida
+
+if "%v_trans%"=="none" echo WRONG CHOICE
+if "%v_trans%"=="none" echo.
+if "%v_trans%"=="none" goto op_translate
+
+set v_trans="transnutdb=%v_trans%"
+set v_trans="%v_trans%"
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "147" -nl "set %v_trans%" 
+echo.
+%pycommand% "%listmanager%" -rl "%op_file%" -ln "147" -nl "Line in config was changed to: "
+echo.
+pause
+goto sc3
+
+:op_threads
+cls
+call :logo
+echo ***************************************************************************
+echo SET NUMBER OF WORKERS FOR THREADED OPERATIONS
+echo ***************************************************************************
+echo Currently used in the renamer and database building modes
+echo For more values edit NSCB_options.cmd with a text editor
+echo.
+echo Input "1"  to USE 1 worker (default\deactivated)
+echo Input "2"  to USE 5 workers
+echo Input "3"  to USE 10 workers
+echo Input "4"  to USE 20 workers
+echo Input "5"  to USE 30 workers
+echo Input "6"  to USE 40 workers
+echo Input "7"  to USE 50 workers
+echo Input "8"  to USE 60 workers
+echo Input "9"  to USE 70 workers
+echo Input "10" to USE 80 workers
+echo Input "11" to USE 90 workers
+echo Input "12" to USE 100 workers
+echo.
+echo Input "b" to return to GLOBAL OPTIONS
+echo Input "0" to return to CONFIG MENU
+echo Input "e" to go back to the MAIN PROGRAM
+echo ...........................................................................
+echo.
+set /p bs="Enter your choice: "
+set "v_workers=none"
+if /i "%bs%"=="1" set "v_workers=-threads 1"
+if /i "%bs%"=="2" set "v_workers=-threads 5"
+if /i "%bs%"=="3" set "v_workers=-threads 10"
+if /i "%bs%"=="4" set "v_workers=-threads 20"
+if /i "%bs%"=="5" set "v_workers=-threads 30"
+if /i "%bs%"=="6" set "v_workers=-threads 40"
+if /i "%bs%"=="7" set "v_workers=-threads 50"
+if /i "%bs%"=="8" set "v_workers=-threads 60"
+if /i "%bs%"=="9" set "v_workers=-threads 70"
+if /i "%bs%"=="10" set "v_workers=-threads 80"
+if /i "%bs%"=="11" set "v_workers=-threads 90"
+if /i "%bs%"=="12" set "v_workers=-threads 100"
+
+if /i "%bs%"=="b" goto sc3
+if /i "%bs%"=="0" goto sc1
+if /i "%bs%"=="e" goto salida
+
+if "%v_workers%"=="none" echo WRONG CHOICE
+if "%v_workers%"=="none" echo.
+if "%v_workers%"=="none" goto op_threads
+
+set v_workers="workers=%v_workers%"
+set v_workers="%v_workers%"
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "153" -nl "set %v_workers%" 
+echo.
+%pycommand% "%listmanager%" -rl "%op_file%" -ln "153" -nl "Line in config was changed to: "
+echo.
+pause
+goto sc3
+
 :def_set1
 echo.
 echo **AUTO-MODE OPTIONS**
@@ -1021,11 +1123,25 @@ set v_nscbmode="%v_nscbmode%"
 %pycommand% "%listmanager%" -cl "%op_file%" -ln "132" -nl "set %v_nscbmode%" 
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "132" -nl "Line in config was changed to: "
 
+REM ROMAJI
 set "v_roma=TRUE"
 set v_roma="romaji=%v_roma%"
 set v_roma="%v_roma%"
 %pycommand% "%listmanager%" -cl "%op_file%" -ln "139" -nl "set %v_roma%" 
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "139" -nl "Line in config was changed to: "
+
+REM TRANSLATE
+set "v_trans=FALSE"
+set v_trans="transnutdb=%v_trans%"
+set v_trans="%v_trans%"
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "147" -nl "set %v_trans%" 
+%pycommand% "%listmanager%" -rl "%op_file%" -ln "147" -nl "Line in config was changed to: "
+
+REM WORKERS
+set v_workers="workers=-threads 1"
+set v_workers="%v_workers%"
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "153" -nl "set %v_workers%" 
+%pycommand% "%listmanager%" -rl "%op_file%" -ln "153" -nl "Line in config was changed to: "
 
 exit /B
 
@@ -1089,8 +1205,13 @@ REM NSCB MODE
 REM ROMANIZE
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "139" -nl "ROMANIZE option is set to: "
 
-exit /B
+REM TRANSLATE
+%pycommand% "%listmanager%" -rl "%op_file%" -ln "147" -nl "TRANSLATE option is set to: "
 
+REM WORKERS
+%pycommand% "%listmanager%" -rl "%op_file%" -ln "153" -nl "WORKERS option is set to: "
+
+exit /B
 
 :verify_keys
 cls
@@ -1112,8 +1233,6 @@ set bs=%bs:"=%
 if /i "%bs%"=="0" goto sc1
 if /i "%bs%"=="e" goto salida
 
-
-
 :salida
 exit /B
 
@@ -1132,7 +1251,7 @@ ECHO =============================     BY JULESONTHEROAD     ===================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                                POWERED BY SQUIRREL                                "
 ECHO "                    BASED IN THE WORK OF BLAWAR AND LUCA FRAGA                     "
-ECHO                                     VERSION 0.89
+ECHO                                     VERSION 0.90
 ECHO -------------------------------------------------------------------------------------                   
 ECHO Program's github: https://github.com/julesontheroad/NSC_BUILDER
 ECHO Blawar's github:  https://github.com/blawar

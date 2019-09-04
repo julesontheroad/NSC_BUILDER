@@ -38,27 +38,27 @@ Current version of the program allows you to:
 
 10.- Check data from nacp and cnmt files without extracting them from nsp\xci
 
-11.- Repack xci and nsp content in formats compatible with fat32
+10.- Repack xci and nsp content in formats compatible with fat32
 
-12.- Mass build xci files and nsp files in single and multi content format
+11.- Mass build xci files and nsp files in single and multi content format
 
-13.- Rename nsp,xci files to match it's content
+12.- Rename nsp,xci files to match it's content
 
-14.- Verify nsp, nsx, xci y nca files
+13.- Verify nsp, nsx, xci y nca files
 
-15.- Output information in text format
+14.- Output information in text format
 
-16.- Extract content of nsp files and secure partition of xci files
+15.- Extract content of nsp files and secure partition of xci files
 
-17.- Set jobs for later in multi mode
+16.- Set jobs for later in multi mode
 
-18.- Separate jobs by based-titleid in multi mode
+17.- Separate jobs by based-titleid in multi mode
 
-19.- Remove bad characters from filenames (sanitize) or convert asian names to romaji
+18.- Remove bad characters from filenames (sanitize) or convert asian names to romaji
 
-20.- Extract nca file contents for base games and dlcs or extract ncas as plaintext
+19.- Extract nca file contents for base games and dlcs or extract ncas as plaintext
 
-21.- Joiner for xc*,ns* and *0 fat32 files
+20.- Joiner for xc*,ns* and *0 fat32 files
 
 ## 4. Batch modes:
 
@@ -75,7 +75,7 @@ The behavior of the auto-mode is configured trough the “Configuration menu in 
 - MODE 0: Configuration mode. Let’s you configure the way the program works in both auto and manual mode.
 - MODE 1: Indidual packing. Let’s you process a list of files and pack them individually
   * Pack as nsp\xci
-  * Supertrimm xci files
+  * Supertrimm\Trimm\Untrimm xci files
   * Rename xci or nsp files
   * Rebuild nsp files in cnmt order and add cnmt.xml
   * Verify nsp,xci files
@@ -146,6 +146,13 @@ Pack xci or nsp in fat32 compatible formats or exfat format.
 #### ROMANIZE names when using direct-multi
 - Convert names to romaji (default)
 - Read names from file and keep asian namings when they're read
+#### TRANSLATE descriptions from game-info using google translator
+- FALSE (default)
+- TRUE. Translate japanese, chinese and korean descriptions.
+#### WORKERS use multi threading for renames and database building
+- 1 (default\DEACTIVATED)
+- YOUR NUMBER. Uses several workers to do multiple renames or create multiple database strings at the same time
+
 
 ## 7. Important
 
@@ -196,6 +203,8 @@ b.) Hacbuild: The xci repacking functions are based on hacbuild's code, made by 
 c.) Big thx to 0Liam for his constant help.
 
 d.) pyNCA3,pyNPDM,pyPFS0,pyRomFS libraries adapted from pythac (made by Rikikooo)
+
+e.) an adaptation of Pysos from dagnelies is used for some operations: https://github.com/dagnelies/pysos
 
 Also thanks to:
 

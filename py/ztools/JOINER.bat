@@ -161,7 +161,7 @@ echo YOU'VE ADDED !conta! FILES TO PROCESS
 echo .................................................
 endlocal
 
-goto exit /B
+goto checkagain
 
 :s_cl_wrongchoice
 echo wrong choice
@@ -190,11 +190,10 @@ CD /d "%prog_dir%"
 for /f "tokens=*" %%f in (joinlist.txt) do (
 
 %pycommand% "%nut%" %buffer% -o "%fold_output%" -tfile "%prog_dir%joinlist.txt" --joinfile ""
-if exist "%fold_output%output.nsp" ( %pycommand% "%nut%" -renf "%fold_output%output.nsp">"%prog_dir%nn")
-if exist "%fold_output%output.xci" ( %pycommand% "%nut%" -renf "%fold_output%output.xci">"%prog_dir%nn")
-if exist "%prog_dir%nn" del "%prog_dir%nn"
-more +1 "joinlist.txt">"joinlist.txt.new"
-move /y "joinlist.txt.new" "joinlist.txt" >nul
+if exist "%fold_output%\output.nsp" ( %pycommand% "%nut%" -t nsp -renf "%fold_output%\output.nsp" >NUL 2>&1)
+if exist "%fold_output%\output.xci" ( %pycommand% "%nut%" -t xci -renf "%fold_output%\output.xci" >NUL 2>&1)
+
+%pycommand% "%nut%" --strip_lines "%prog_dir%joinlist.txt"
 call :contador_NF
 )
 ECHO ---------------------------------------------------
@@ -263,7 +262,7 @@ ECHO =============================     BY JULESONTHEROAD     ===================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                                POWERED BY SQUIRREL                                "
 ECHO "                    BASED ON THE WORK OF BLAWAR AND LUCA FRAGA                     "
-ECHO                                     VERSION 0.89
+ECHO                                     VERSION 0.90
 ECHO -------------------------------------------------------------------------------------                   
 ECHO Program's github: https://github.com/julesontheroad/NSC_BUILDER
 ECHO Blawar's github:  https://github.com/blawar

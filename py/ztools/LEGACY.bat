@@ -2,7 +2,7 @@
 :TOP_INIT
 CD /d "%prog_dir%"
 set "bat_name=%~n0"
-Title NSC_Builder v0.89 -- Profile: %ofile_name% -- by JulesOnTheRoad
+Title NSC_Builder v0.90 -- Profile: %ofile_name% -- by JulesOnTheRoad
 
 ::Check if user is dragging a folder or a file
 if "%~1"=="" goto manual
@@ -596,8 +596,7 @@ set "ziptarget=%%f"
 if "%vrepack%" EQU "zip" ( set "zip_restore=true" )
 if "%%~nxf"=="%%~nf.nsp" call :nsp_manual
 if "%%~nxf"=="%%~nf.xci" call :xci_manual
-more +1 "list.txt">"list.txt.new"
-move /y "list.txt.new" "list.txt" >nul
+%pycommand% "%nut%" --strip_lines "%prog_dir%list.txt"
 call :contador_NF
 )
 ECHO ---------------------------------------------------
@@ -1014,8 +1013,7 @@ set "filename=%%~nxf"
 set "orinput=%%f"
 if "%%~nxf"=="%%~nf.nsp" call :multi_nsp_manual
 if "%%~nxf"=="%%~nf.xci" call :multi_xci_manual
-more +1 "mlist.txt">"mlist.txt.new"
-move /y "mlist.txt.new" "mlist.txt" >nul
+%pycommand% "%nut%" --strip_lines "%prog_dir%mlist.txt"
 call :multi_contador_NF
 )
 set "filename=%finalname%"
@@ -1383,8 +1381,7 @@ set "end_folder=%%~nf"
 set "orinput=%%f"
 if "%%~nxf"=="%%~nf.nsp" call :split_content
 if "%%~nxf"=="%%~nf.xci" call :split_content
-more +1 "splist.txt">"splist.txt.new"
-move /y "splist.txt.new" "splist.txt" >NUL 2>&1
+%pycommand% "%nut%" --strip_lines "%prog_dir%splist.txt"
 setlocal enabledelayedexpansion
 if exist "%fold_output%\!end_folder!" RD /S /Q "%fold_output%\!end_folder!" >NUL 2>&1
 MD "%fold_output%\!end_folder!" >NUL 2>&1
@@ -1447,8 +1444,7 @@ if "!sp_repack!" EQU "xci" ( call "%xci_lib%" "sp_repack" "%w_folder%" "!tfolder
 if "!sp_repack!" EQU "both" ( call "%nsp_lib%" "sp_convert" "%w_folder%" "!tfolder!" "!fname!" )
 if "!sp_repack!" EQU "both" ( call "%xci_lib%" "sp_repack" "%w_folder%" "!tfolder!" "!fname!" )
 endlocal
-more +1 "%w_folder%\dirlist.txt">"%w_folder%\dirlist.txt.new"
-move /y "%w_folder%\dirlist.txt.new" "%w_folder%\dirlist.txt" >nul
+%pycommand% "%nut%" --strip_lines "%prog_dir%dirlist.txt"
 )
 del "%w_folder%\dirlist.txt" >NUL 2>&1
 
@@ -1818,8 +1814,7 @@ set "filename=%%~nxf"
 set "orinput=%%f"
 if "%%~nxf"=="%%~nf.nsp" call :UPD_nsp_manual
 if "%%~nxf"=="%%~nf.xci" call :UPD_xci_manual
-more +1 "UPDlist.txt">"UPDlist.txt.new"
-move /y "UPDlist.txt.new" "UPDlist.txt" >nul
+%pycommand% "%nut%" --strip_lines "%prog_dir%UPDlist.txt"
 call :UPD_contador_NF
 )
 set "filename=%end_folder%[multi]"
@@ -2115,8 +2110,7 @@ if "%%~nxf"=="%%~nf.nsp" call :DBnsp_manual
 if "%%~nxf"=="%%~nf.nsx" call :DBnsp_manual
 if "%%~nxf"=="%%~nf.NSP" call :DBnsp_manual
 if "%%~nxf"=="%%~nf.NSX" call :DBnsp_manual
-more +1 "DBL.txt">"DBL.txt.new"
-move /y "DBL.txt.new" "DBL.txt" >nul
+%pycommand% "%nut%" --strip_lines "%prog_dir%DBL.txt"
 call :DBcontador_NF
 )
 ECHO ---------------------------------------------------
@@ -2171,8 +2165,7 @@ set "orinput=%%f"
 set "db_file=%prog_dir%INFO\%dbformat%_DB.txt"
 set "dbdir=%prog_dir%INFO\"
 call :DBGeneration
-more +1 "DBL.txt">"DBL.txt.new"
-move /y "DBL.txt.new" "DBL.txt" >nul
+%pycommand% "%nut%" --strip_lines "%prog_dir%DBL.txt"
 call :DBcontador_NF
 )
 ECHO ---------------------------------------------------
@@ -2247,7 +2240,7 @@ ECHO =============================     BY JULESONTHEROAD     ===================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                                POWERED BY SQUIRREL                                "
 ECHO "                    BASED ON THE WORK OF BLAWAR AND LUCA FRAGA                     "
-ECHO                                  VERSION 0.89 (LEGACY)
+ECHO                                  VERSION 0.90 (LEGACY)
 ECHO -------------------------------------------------------------------------------------                   
 ECHO Program's github: https://github.com/julesontheroad/NSC_BUILDER
 ECHO Blawar's github:  https://github.com/blawar

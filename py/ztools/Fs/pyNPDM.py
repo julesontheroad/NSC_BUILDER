@@ -134,10 +134,12 @@ class NPDM:
 		#string += 'NPDM:\n'
 		string += '  Title name:                 %s\n'   % self.title_name
 		string += '  Process category:           %s\n'   % self.process_category
+		string += '  Product code:               %s\n'   % self.product_code
 		string += '  MMU flags:                  %d\n'   % self.mmu_flags
 		string += '  Main stack thread priority: %d\n'   % self.main_thread_priority
 		string += '  Main thread stack size:     0x%x\n' % self.main_thread_stack_size
 		string += '  Default CPU ID:             %d\n'   % self.default_cpu_id
+		string += '  System resource size:       %d\n'   % self.resource_size 
 		string += '\n'
 		string += str(self.acid)
 		string += '\n'
@@ -150,10 +152,14 @@ class NPDM:
 		self.mmu_flags              = read_u8(self.f, 0xC)
 		self.main_thread_priority   = read_u8(self.f, 0xE)
 		self.default_cpu_id         = read_u8(self.f, 0xF)
+		self.resource_size          = read_u32(self.f, 0x14)
 		self.process_category       = self.process_categories[read_u32(self.f, 0x18)]
 		self.main_thread_stack_size = read_u32(self.f, 0x1C)
-		self.title_name             = read_at(self.f, 0x20, 0x50).strip(b'\0').decode()
-
+		self.title_name             = read_at(self.f, 0x20, 0x30).strip(b'\0').decode()
+		self.product_code           = read_at(self.f, 0x30, 0x40).strip(b'\0').decode()
+		if self.product_code=='':
+			self.product_code=0
+		
 		aci0_offset = read_u32(self.f, 0x70)
 		aci0_size   = read_u32(self.f, 0x74)
 		acid_offset = read_u32(self.f, 0x78)

@@ -21,8 +21,62 @@ Luca Fraga's github: https://github.com/LucaFraga
 ---------------
 0. Changelog
 ---------------
+v0.90- Several Bugfixes and aditions:
+	- Since i've been made aware of several bugs while i was on vacations I decided to
+	  release an early v0.90. Several experimental stuff has been added to squirrel 
+	  but is not available on NSCB yet.
+	- Bugfixes:
+	  * Fixed another error that prevented the creation of titlerights removed multi-nsps
+	  * Expanded xci trimming functions in indidual mode, after selecting trimming now
+	    there is these options:
+		- Supertrimmer. Removes ending padding, padding between partitions, logo partition,
+		  firmware from update partition and content from normal partition. Also removes 
+		  game updates from the xci but keeps dlc. Respects certificates.
+		  Meant for xci installation on tinfoil while keeping file verification
+		- Supertrimmer respecting updates. Supertrimm that keeps game updates.
+		- Normal trimming: Removes "FFFF" end padding
+		- Untrimmer: Adds back "FFFF" end padding
+	  * Fixed dlc naming. Current approach will use the nut json files. The json files are
+        downoaded to the DB folder for speed on demand. The url and refresh time of the json files is
+		controlled by "NUT_DB_TITLES_URL.txt" and "NUT_DB_REGIONS_URL.txt" in zconfig.
+		The refresh time has 3 parameters, representing hours, minutes and seconds. The defaulted
+		time is 24h for each json used.
+		Be aware that the json files are downloaded by demand. Titles json will be downloaded for 
+		dlc renames and US region for descriptions, genres, etc... The json will only refresh themselves
+		when the refresh period is reached and the json is needed.
+	  * Fixed error in joiner mode
+	  * Fixed false positive in decription verification for the updates included in 5 recent xci
+        which exefs doesn't include a main.npdm.
+    - Moved korean translation to zconfig\Regional. Paste those files to the main folder if you need that
+	  New NSCB functions aren't added yet but fixes made to squirrel will apply to those files.
+    - Added more information to game-info using information from the nut json files
+    - Added optional google translation for game descriptions. You can activate\deactivate this
+	  option on the program's configuration.
+	- Added removal of list objects and counters to squirrel to fix the too many 
+	  arguments in command line" issue that affected some users
+	- Added more characters to the banned lists on renames
+    - Added multi-threaded experimental option for renamer and database functions. 
+	  It increases significantly the speed of the renaming and database operations, 
+	  specially for vitual disks mounted from google drive (tested till 100 workers 
+	  using raidrive). 
+	  This option can be activated on the configuration.
+	  Note: Too many workers can mess a little the console prints and need a little work 
+	  for polished prints. 
+	  The writes to text files for the database operations are done on different files and
+	  joined after each cycle so they aren't affected.
+	  NOTE: Exe versions while they worked fine don't seem to have the advantage on speed 
+	  the python versions get it will be analized if it's due to the pyinstaller options
+	  used.
+    - UPCOMING: Next release will take some time, features i'm working on are:
+      Included permanent database for nsp and xci with search functions,library management 
+      functions, autoupdates,... and restore mode.
+	  
 v0.89b- Bugfix:
 	- Fixed error that prevented generation of titlerights removed multinsps
+	- If NSCB prompts the error "Too many arguments in command line" may be
+	  that the "more" function isn't working in your windows. Download the "more.com"
+	  binary attached to this release and copy it next to NSCB.bat to fix it.
+	  Solution thanks to RiggZh
 v0.89- Adds patcher for linked account requirement:
 	- Added patcher for linked-account flag in control nacp
 	  * Patcher was added to Advanced mode, option 5 "patch a linked account requirement"

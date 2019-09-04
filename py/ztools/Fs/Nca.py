@@ -28,6 +28,7 @@ import sq_tools
 import pykakasi
 from Fs.pyNCA3 import NCA3
 import io
+from googletrans import Translator
 
 MEDIA_SIZE = 0x200
 RSA_PUBLIC_EXPONENT = 0x10001
@@ -173,6 +174,15 @@ class NcaHeader(File):
 
 	def hasTitleRights(self):
 		return self.rightsId != (b'0' * 32)
+
+	def getTitleID(self):
+		self.seek(0x210)
+		return self.read(8)[::-1]		
+		
+	def setTitleID(self,tid):
+		self.seek(0x210)
+		tid=bytes.fromhex(tid)[::-1]
+		return self.write(tid)			
 
 	def getKeyBlock(self):
 		self.seek(0x300)
@@ -539,6 +549,42 @@ class Nca(File):
 						return False
 					else:	
 						return True		
+						
+	def get_cnmt_titleid(self, file = None, mode = 'rb'):	
+		indent = 1
+		tabs = '\t' * indent
+		for f in self:
+			cryptoType=f.get_cryptoType()
+			cryptoKey=f.get_cryptoKey()	
+			cryptoCounter=f.get_cryptoCounter()		
+		pfs0_offset=0xC00+self.header.get_htable_offset()+self.header.get_pfs0_offset()
+		super(Nca, self).open(file, mode, cryptoType, cryptoKey, cryptoCounter)
+		self.seek(pfs0_offset+0x8)
+		pfs0_table_size=self.readInt32()
+		cmt_offset=pfs0_offset+0x28+pfs0_table_size
+		self.seek(cmt_offset)		
+		titleid=self.read(8)[::-1]
+		return titleid								
+						
+	def write_cnmt_titleid(self, value,file = None, mode = 'rb'):	
+		indent = 1
+		tabs = '\t' * indent
+		for f in self:
+			cryptoType=f.get_cryptoType()
+			cryptoKey=f.get_cryptoKey()	
+			cryptoCounter=f.get_cryptoCounter()		
+		pfs0_offset=0xC00+self.header.get_htable_offset()+self.header.get_pfs0_offset()
+		super(Nca, self).open(file, mode, cryptoType, cryptoKey, cryptoCounter)
+		self.seek(pfs0_offset+0x8)
+		pfs0_table_size=self.readInt32()
+		cmt_offset=pfs0_offset+0x28+pfs0_table_size
+		self.seek(cmt_offset)		
+		titleid=bytes.fromhex(value)[::-1]
+		self.write(titleid)		
+		return(titleid)
+								
+						
+						
 	
 	def get_req_system(self, file = None, mode = 'rb'):	
 		indent = 1
@@ -1435,7 +1481,7 @@ class Nca(File):
 		return offset
 					
 					
-	def get_langueblock(self,title,roman=True):
+	def get_langueblock(self,title,roman=True,trans=False):
 		for f in self:
 			self.rewind()					
 			f.rewind()	
@@ -1678,9 +1724,18 @@ class Nca(File):
 								title=converter.do(title)	
 								title=title[0].upper()+title[1:]
 								editor=converter.do(editor)		
-								editor=editor[0].upper()+editor[1:]	
+								editor=editor[0].upper()+editor[1:]									
+								if trans==True:
+									try:
+										translator = Translator()
+										translation=translator.translate(title,src='ja',dest='en')	
+										title=translation.text
+										translation=translator.translate(editor,src='ja',dest='en')	
+										editor=translation.text											
+									except BaseException as e:
+										Print.error('Exception: ' + str(e))		
 							else:pass		
-						if i == 14 or i == 13 or i==12:	
+						elif i == 14 or i == 13 or i==12:	
 							if roman == True:						
 								kakasi = pykakasi.kakasi()
 								kakasi.setMode("H", "a")
@@ -1694,8 +1749,33 @@ class Nca(File):
 								title=converter.do(title)	
 								title=title[0].upper()+title[1:]
 								editor=converter.do(editor)		
+								editor=editor[0].upper()+editor[1:]									
+								if trans==True:
+									try:
+										translator = Translator()
+										translation=translator.translate(title,src='ja',dest='en')	
+										title=translation.text
+										translation=translator.translate(editor,src='ja',dest='en')	
+										editor=translation.text									
+									except BaseException as e:
+										Print.error('Exception: ' + str(e))	
+							else:pass		
+						else:
+							if roman == True: 
+								kakasi = pykakasi.kakasi()
+								kakasi.setMode("H", "a")
+								kakasi.setMode("K", "a")
+								kakasi.setMode("J", "a")
+								kakasi.setMode("s", True)
+								kakasi.setMode("E", "a")
+								kakasi.setMode("a", None)
+								kakasi.setMode("C", False)
+								converter = kakasi.getConverter()
+								title=converter.do(title)	
+								title=title[0].upper()+title[1:]
+								editor=converter.do(editor)		
 								editor=editor[0].upper()+editor[1:]	
-							else:pass									
+							else:pass							
 						title=re.sub(' +', ' ',title)
 						editor=re.sub(' +', ' ',editor)
 						return(title,editor,ediver,SupLg,regionstr[:-1],isdemo)

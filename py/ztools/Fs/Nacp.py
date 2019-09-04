@@ -6,6 +6,7 @@ import Print
 import Keys
 import re
 import pykakasi
+import io
 indent = 1
 tabs = '\t' * indent	
 
@@ -410,7 +411,7 @@ class Nacp(File):
 		self.presenceGroupId = self.readInt64('little')
 		return self.presenceGroupId	
 
-	def par_getRatingAge(self,data,i,feed=''):
+	def par_getRatingAge(self,data,i, feed =''):
 		b=data
 		if b == 0:
 			age = '0'
@@ -1017,3 +1018,409 @@ class Nacp(File):
 		Print.info('Repair: ' + str(self.getRepair()))
 		Print.info('ProgramIndex: ' + str(self.getProgramIndex()))
 		Print.info('RequiredNetworkServiceLicenseOnLaunch: ' + str(self.getRequiredNetworkServiceLicenseOnLaunch()))
+		
+############
+# RETURNS	
+############	
+	def get_NameandPub(self, data):
+		Langue = list()	
+		Langue = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14]	
+		lstring={}
+		editstring={}
+		for i in Langue:
+			off1=i*0x300;off2=off1+0x200;off3=off2+0x100
+			title=data[off1:off2]
+			title = title.split(b'\0', 1)[0].decode('utf-8')
+			title = (re.sub(r'[\/\\]+', ' ', title))
+			title = title.strip()
+			if title == '':
+				continue
+			else:
+				editor=data[off2:off3]						
+				editor = editor.split(b'\0', 1)[0].decode('utf-8')
+				editor = (re.sub(r'[\/\\]+', ' ', editor))
+				editor = editor.strip()	
+				Language=str(NacpLanguageType(i)).replace('NacpLanguageType.', '')
+				lstring[Language]=title
+				editstring[Language]=editor
+		return lstring,editstring			
+
+	def get_Isbn(self, data):
+		isbn=data.split(b'\0', 1)[0].decode('utf-8')
+		if isbn == '':	
+			isbn=None
+		return str(isbn)			
+		
+	def get_StartupUserAccount(self, data):
+		b=data
+		if b == 0:
+			StartupUserAccount = 'None'
+		elif b == 1:
+			StartupUserAccount = 'Required'
+		elif b == 2:
+			StartupUserAccount = 'RequiredWithNetworkServiceAccountAvailable'
+		else:
+			StartupUserAccount = 'Unknown'		
+		return str(StartupUserAccount)			
+
+	def get_UserAccountSwitchLock(self, data):
+		b=data
+		if b == 0:
+			userAccountSwitchLock = 'Disable'
+		elif b == 1:
+			userAccountSwitchLock = 'Enable'
+		else:
+			userAccountSwitchLock = 'Unknown'
+		return str(userAccountSwitchLock)			
+		
+	def get_AddOnContentRegistrationType(self, data):
+		b=data
+		if b == 0:
+			addOnContentRegistrationType = 'AllOnLaunch'
+		elif b == 1:
+			addOnContentRegistrationType = 'OnDemand'
+		else:
+			addOnContentRegistrationType = 'Unknown'
+		return str(addOnContentRegistrationType)			
+		
+		
+	def get_ContentType(self, data):
+		b=data
+		if b == 0:
+			content_type = 'False'
+		elif b == 1:
+			content_type = 'True'
+		elif b == 2:
+			content_type = 'RetailInteractiveDisplay'
+		else:
+			content_type = 'Unknown'
+		return str(content_type)			
+		
+	def get_ParentalControl(self, data):
+		b=data
+		if b == 0:
+			parentalControl = 'None'
+		elif b == 1:
+			parentalControl = 'FreeCommunication'
+		else:
+			parentalControl = 'Unknown'
+		return str(parentalControl)				
+		
+	def get_Screenshot(self, data):
+		b=data
+		if b == 0:
+			screenshot = 'Allowed'
+		elif b == 1:
+			screenshot = 'Denied'
+		else:
+			screenshot = 'Unknown'
+		return 	str(screenshot)			
+		
+	def get_VideoCapture(self, data):
+		b=data
+		if b == 0:
+			videoCapture = 'Disabled'
+		elif b == 1:
+			videoCapture = 'Manual'
+		elif b == 2:
+			videoCapture = 'Enabled'
+		else:
+			videoCapture = 'Unknown'
+		return str(videoCapture)			
+		
+	def get_dataLossConfirmation(self, data):
+		b=data
+		if b == 0:
+			dataLossConfirmation = 'None'
+		elif b == 1:
+			dataLossConfirmation = 'Required'
+		else:
+			dataLossConfirmation = 'Unknown'
+		return str(dataLossConfirmation)			
+		
+	def get_PlayLogPolicy(self, data):
+		b=data
+		if b == 0:
+			playLogPolicy = 'All'
+		elif b == 1:
+			playLogPolicy = 'LogOnly'
+		elif b == 2:
+			playLogPolicy = 'None'
+		else:
+			playLogPolicy = 'Unknown'
+		return str(playLogPolicy)			
+		
+	def get_PresenceGroupId(self, data):
+		b=data
+		PresenceGroupId='0x' + hex(data).replace('0x', '').zfill(16)
+		return PresenceGroupId			
+
+	def get_RatingAge(self,data):
+		inmemoryfile = io.BytesIO(data)
+		AgeRatings={}
+		for i in range(12):
+			b=int(inmemoryfile.read(1)[0])
+			if b == 0:
+				age = '0'
+			elif b == 3:
+				age = '3'
+			elif b == 4:
+				age = '4'
+			elif b == 6:
+				age = '6'
+			elif b == 7:
+				age = '7'
+			elif b == 8:
+				age = '8'
+			elif b == 10:
+				age = '10'
+			elif b == 12:
+				age = '12'
+			elif b == 13:
+				age = '13'
+			elif b == 14:
+				age = '14'
+			elif b == 15:
+				age = '15'
+			elif b == 16:
+				age = '16'
+			elif b == 17:
+				age = '17'
+			elif b == 18:
+				age = '18'
+			else:
+				age = 'Unknown'
+			if 	age != 'Unknown':
+				Org=str(OrganizationType(i)).replace('OrganizationType.', '')	
+				AgeRatings[Org]	=str(age)	
+		#print(AgeRatings)
+		return AgeRatings				
+		
+	def get_DisplayVersion(self, data):
+		b=data
+		buildnumber=data.split(b'\0', 1)[0].decode('utf-8')
+		return buildnumber			
+		
+	def get_AddOnContentBaseId(self, data):
+		b=data
+		AddOnContentBaseId= '0x' + (hex(data).replace('0x', '').zfill(16)).upper()
+		return AddOnContentBaseId			
+		
+	def get_SaveDataOwnerId(self, data):
+		b=data
+		SaveDataOwnerId='0x' + (hex(data).replace('0x', '').zfill(16)).upper()
+		return SaveDataOwnerId			
+		
+	def get_UserAccountSaveDataSize(self, data):
+		b=data
+		UserAccountSaveDataSize='0x' + (hex(data).replace('0x', '').zfill(16)).upper()			
+		return UserAccountSaveDataSize			
+		
+	def get_UserAccountSaveDataJournalSize(self, data):
+		b=data
+		UserAccountSaveDataJournalSize='0x' + (hex(data).replace('0x', '').zfill(16)).upper()
+		return UserAccountSaveDataJournalSize			
+	
+	def get_DeviceSaveDataSize(self, data):
+		b=data
+		if data==0:
+			DeviceSaveDataSize='None'
+		else:
+			DeviceSaveDataSize='0x' + (hex(data).replace('0x', '').zfill(16)).upper()
+		return DeviceSaveDataSize				
+		
+	def get_DeviceSaveDataJournalSize(self, data):
+		b=data
+		if data==0:
+			DeviceSaveDataJournalSize='None'
+		else:	
+			DeviceSaveDataJournalSize='0x' + (hex(data).replace('0x', '').zfill(16)).upper()
+		return DeviceSaveDataJournalSize				
+		
+	def get_BcatDeliveryCacheStorageSize(self, data):
+		b=data
+		if data==0:
+			BcatDeliveryCacheStorageSize='None'
+		else:
+			BcatDeliveryCacheStorageSize='0x' + (hex(data).replace('0x', '').zfill(16)).upper()
+		return BcatDeliveryCacheStorageSize				
+		
+	def get_ApplicationErrorCodeCategory(self, data):
+		b=data
+		applicationErrorCodeCategory = data.split(b'\0', 1)[0].decode('utf-8')
+		if applicationErrorCodeCategory == '':
+			applicationErrorCodeCategory='None'	
+		return applicationErrorCodeCategory	
+		
+	def get_LocalCommunicationId(self, data):
+		b=data
+		LocalCommunicationId='0x' + (hex(data).replace('0x', '').zfill(16)).upper()
+		return LocalCommunicationId	
+
+	def get_LogoType(self, data):
+		b=data
+		if b == 0:
+			logoType = 'LicensedByNintendo'
+		elif b == 2:
+			logoType = 'Nintendo'
+		else:
+			logoType = 'Unknown'	
+		return logoType		
+
+	def get_LogoHandling(self, data):
+		b=data
+		if b == 0:
+			logoHandling = 'Auto'
+		elif b == 1:
+			logoHandling = 'Manual'
+		else:
+			logoHandling = 'Unknown'		
+		return logoHandling		
+		
+	def get_RuntimeAddOnContentInstall(self, data):
+		b=data
+		if b == 0:
+			runtimeAddOnContentInstall = 'Deny'
+		elif b == 1:
+			runtimeAddOnContentInstall = 'AllowAppend'
+		else:
+			runtimeAddOnContentInstall = 'Unknown'		
+		return runtimeAddOnContentInstall	
+		
+	def get_CrashReport(self, data):
+		b=data
+		if b == 0:
+			crashReport = 'Deny'
+		elif b == 1:
+			crashReport = 'Allow'
+		else:
+			crashReport = 'Unknown'
+		return crashReport	
+
+	def get_Hdcp(self, data):
+		b=data
+		if b == 0:
+			hdcp = 'None'
+		elif b == 1:
+			hdcp = 'Required'
+		else:
+			hdcp = 'Unknown'
+		return hdcp		
+		
+	def get_SeedForPseudoDeviceId(self, data):
+		SeedForPseudoDeviceId='0x' + (hex(data).replace('0x', '').zfill(16)).upper()			
+		return SeedForPseudoDeviceId		
+		
+	def get_BcatPassphrase(self, data):
+		bcatPassphrase = data.split(b'\0', 1)[0].decode('utf-8')		
+		if bcatPassphrase == 0:
+			bcatPassphrase='None'
+		elif str(bcatPassphrase) == '':
+			bcatPassphrase='None'			
+		return bcatPassphrase	
+	
+	def get_UserAccountSaveDataSizeMax(self, data):
+		if data == 0:
+			UserAccountSaveDataSizeMax='None'	
+		else:
+			UserAccountSaveDataSizeMax='0x' + (hex(data).replace('0x', '').zfill(16)).upper()
+		return UserAccountSaveDataSizeMax		
+		
+	def get_UserAccountSaveDataJournalSizeMax(self, data):
+		if data == 0:
+			UserAccountSaveDataJournalSizeMax='None'	
+		else:	
+			UserAccountSaveDataJournalSizeMax='0x' + (hex(data).replace('0x', '').zfill(16)).upper()
+		return UserAccountSaveDataJournalSizeMax	
+		
+	def get_DeviceSaveDataSizeMax(self, data):
+		if data == 0:
+			DeviceSaveDataSizeMax='None'	
+		else:	
+			DeviceSaveDataSizeMax='0x' + (hex(data).replace('0x', '').zfill(16)).upper()
+		return DeviceSaveDataSizeMax		
+	
+	def get_DeviceSaveDataJournalSizeMax(self, data):
+		if data == 0:
+			DeviceSaveDataJournalSizeMax='None'	
+		else:	
+			DeviceSaveDataJournalSizeMax='0x' + (hex(data).replace('0x', '').zfill(16)).upper()
+		return DeviceSaveDataJournalSizeMax		
+
+	def get_TemporaryStorageSize(self, data):
+		if data == 0:
+			TemporaryStorageSize='None'	
+		else:	
+			TemporaryStorageSize='0x' + (hex(data).replace('0x', '').zfill(16)).upper()
+		return TemporaryStorageSize	
+
+	def get_CacheStorageSize(self, data):
+		if data == 0:
+			CacheStorageSize='None'	
+		else:	
+			CacheStorageSize='0x' + (hex(data).replace('0x', '').zfill(16)).upper()
+		return CacheStorageSize		
+	
+	def get_CacheStorageJournalSize(self, data):
+		if data == 0:
+			CacheStorageJournalSize='None'	
+		else:	
+			CacheStorageJournalSize='0x' + (hex(data).replace('0x', '').zfill(16)).upper()
+		return CacheStorageJournalSize		
+
+	def get_CacheStorageDataAndJournalSizeMax(self, data):
+		if data == 0:
+			CacheStorageDataAndJournalSizeMax='None'	
+		else:	
+			CacheStorageDataAndJournalSizeMax='0x' + (hex(data).replace('0x', '').zfill(16)).upper()
+		return CacheStorageDataAndJournalSizeMax		
+		
+	def get_CacheStorageIndexMax(self, data):
+		if data == 0:
+			CacheStorageIndexMax='None'	
+		else:	
+			CacheStorageIndexMax='0x' + (hex(data).replace('0x', '').zfill(16)).upper()
+		return CacheStorageIndexMax		
+		
+	def get_PlayLogQueryableApplicationId(self, data):
+		if data == 0:
+			PlayLogQueryableApplicationId='None'	
+		else:	
+			PlayLogQueryableApplicationId='0x' + (hex(data).replace('0x', '').zfill(16)).upper()
+		return PlayLogQueryableApplicationId		
+		
+	def get_PlayLogQueryCapability(self, data):
+		b = data
+		if b == 0:
+			playLogQueryCapability = 'None'
+		elif b == 1:
+			playLogQueryCapability = 'WhiteList'
+		elif b == 2:
+			playLogQueryCapability = 'All'
+		else:
+			playLogQueryCapability = 'Unknown'
+		return playLogQueryCapability		
+		
+	def get_Repair(self, data):
+		b = data
+		if b == 0:
+			repair = 'None'
+		elif b == 1:
+			repair = 'SuppressGameCardAccess'
+		else:
+			repair = 'Unknown'
+		return repair		
+	
+	def get_ProgramIndex(self, data):
+		ProgramIndex=str(data)
+		return ProgramIndex			
+		
+	def get_RequiredNetworkServiceLicenseOnLaunch(self, data):
+		b = data
+		if b == 0:
+			requiredNetworkServiceLicenseOnLaunch = 'None'
+		elif b == 1:
+			requiredNetworkServiceLicenseOnLaunch = 'Common'
+		else:
+			requiredNetworkServiceLicenseOnLaunch = 'Unknown'
+		return requiredNetworkServiceLicenseOnLaunch			

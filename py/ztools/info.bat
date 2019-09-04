@@ -114,8 +114,7 @@ goto n_info_wrong
 if not exist "%info_dir%" MD "%info_dir%">NUL 2>&1
 set "i_file=%info_dir%\%Name%-info.txt"
 %pycommand% "%nut%" -i "%targt%">"%i_file%"
-more +2 "%i_file%">"%i_file%.new"
-move /y "%i_file%.new" "%i_file%" >nul
+%pycommand% "%nut%" --strip_lines "%i_file%" "2"
 ECHO DONE
 goto sc2
 
@@ -125,7 +124,7 @@ call :logo
 echo ********************************************************
 echo SHOW INFORMATION AND DATA ABOUT THE REQUIRED FIRMWARE
 echo ********************************************************
-%pycommand% "%nut%" -o "%info_dir%" --fw_req "%targt%"
+%pycommand% "%nut%" -o "%info_dir%" --translate %transnutdb% --fw_req "%targt%"
 goto sc2
 
 :r_cnmt
@@ -236,8 +235,8 @@ goto n_info_wrong_nca
 if not exist "%info_dir%" MD "%info_dir%">NUL 2>&1
 set "i_file=%info_dir%\%Name%-info.txt"
 %pycommand% "%nut%" -i "%targt%">"%i_file%"
-more +2 "%i_file%">"%i_file%.new"
-move /y "%i_file%.new" "%i_file%" >nul
+%pycommand% "%nut%" -i "%targt%">"%i_file%"
+%pycommand% "%nut%" --strip_lines "%i_file%" "2"
 ECHO DONE
 goto sc3
 
@@ -297,7 +296,7 @@ ECHO =============================     BY JULESONTHEROAD     ===================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                                POWERED BY SQUIRREL                                "
 ECHO "                    BASED ON THE WORK OF BLAWAR AND LUCA FRAGA                     "
-ECHO                                     VERSION 0.89
+ECHO                                     VERSION 0.90
 ECHO -------------------------------------------------------------------------------------                   
 ECHO Program's github: https://github.com/julesontheroad/NSC_BUILDER
 ECHO Blawar's github:  https://github.com/blawar

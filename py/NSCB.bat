@@ -3,7 +3,7 @@
 set "prog_dir=%~dp0"
 set "bat_name=%~n0"
 set "ofile_name=%bat_name%_options.cmd"
-Title NSC_Builder v0.89 -- Profile: %ofile_name% -- by JulesOnTheRoad
+Title NSC_Builder v0.90 -- Profile: %ofile_name% -- by JulesOnTheRoad
 set "list_folder=%prog_dir%lists"
 ::-----------------------------------------------------
 ::EDIT THIS VARIABLE TO LINK OTHER OPTION FILE
@@ -28,6 +28,8 @@ set "skipRSVprompt=%skipRSVprompt%"
 set "oforg=%oforg%"
 set "NSBMODE=%NSBMODE%"
 set "romaji=%romaji%"
+set "transnutdb=%transnutdb%"
+set "workers=%workers%"
 REM set "trn_skip=%trn_skip%"
 REM set "updx_skip=%updx_skip%"
 REM set "ngx_skip=%ngx_skip%"
@@ -849,7 +851,7 @@ echo.
 echo SPECIAL OPTIONS:
 echo Input "4" to erase deltas from nsp files
 echo Input "5" to rename xci or nsp files
-echo Input "6" to xci supertrimmer
+echo Input "6" to xci supertrimmer\trimmer\untrimmer
 echo Input "7" to rebuild nsp by cnmt order
 echo Input "8" to verify files
 echo.
@@ -868,8 +870,7 @@ if /i "%bs%"=="4" set "vrepack=nodelta"
 if /i "%bs%"=="4" goto s_KeyChange_skip
 if /i "%bs%"=="5" set "vrepack=renamef"
 if /i "%bs%"=="5" goto rename
-if /i "%bs%"=="6" set "vrepack=xci_supertrimmer"
-if /i "%bs%"=="6" goto s_KeyChange_skip
+if /i "%bs%"=="6" goto s_trimmer_selection
 if /i "%bs%"=="7" set "vrepack=rebuild"
 if /i "%bs%"=="7" goto s_KeyChange_skip
 if /i "%bs%"=="8" set "vrepack=verify"
@@ -957,6 +958,46 @@ if /i "%vkey%"=="none" echo WRONG CHOICE
 if /i "%vkey%"=="none" goto s_KeyChange_wrongchoice
 goto s_KeyChange_skip
 
+:s_trimmer_selection
+echo *******************************************************
+echo SUPERTRIMMING\TRIMMING\UNTRIMMING
+echo *******************************************************
+echo DESCRYPTION:
+echo - Supetrimming
+echo   Removes System Firmware update, empties update partition, 
+echo   removes final and middle padding, removes logo partition
+echo   removes game update, keeps game certificate if exists
+echo   (Perfect for tinfoil installation)
+echo - Supetrimming  keeping game updates
+echo   Same as before but keeps game updates
+echo - Trimming
+echo   Removes final padding (empty data)
+echo - UnTrimming
+echo   Undoes the trimming of a normal trimming operation
+echo.
+echo Input "1" Supertrimm
+echo Input "2" Supertrimm keeping game updates
+echo Input "3" Trimm
+echo Input "4" UnTrimm
+echo.
+ECHO ******************************************
+echo Or Input "b" to return to the list options
+ECHO ******************************************
+echo.
+set /p bs="Enter your choice: "
+set bs=%bs:"=%
+set "vrepack=none"
+if /i "%bs%"=="1" set "vrepack=xci_supertrimmer"
+if /i "%bs%"=="2" set "vrepack=xci_supertrimmer_keep_upd"
+if /i "%bs%"=="3" set "vrepack=xci_trimmer"
+if /i "%bs%"=="4" set "vrepack=xci_untrimmer"
+if /i "%vrepack%"=="none" echo WRONG CHOICE
+if /i "%vrepack%"=="none" goto s_trimmer_selection
+ECHO ******************************************
+echo Or Input "b" to return to the list options
+ECHO ******************************************
+goto s_KeyChange_skip
+
 :s_vertype
 echo *******************************************************
 echo TYPE OF VERIFICATION
@@ -1002,9 +1043,8 @@ set "ziptarget=%%f"
 
 if "%%~nxf"=="%%~nf.nsp" call :nsp_manual
 if "%%~nxf"=="%%~nf.xci" call :xci_manual
-more +1 "list.txt">"list.txt.new"
-move /y "list.txt.new" "list.txt" >nul
-call :contador_NF
+%pycommand% "%nut%" --strip_lines "%prog_dir%list.txt" "1" "true"
+rem call :contador_NF
 )
 ECHO ---------------------------------------------------
 ECHO *********** ALL FILES WERE PROCESSED! *************
@@ -1125,11 +1165,14 @@ if /i "%addlangue%"=="none" goto s_rename_wrongchoice3
 echo.
 :s_rename_wrongchoice4
 echo *******************************************************
-echo KEEP DLC NAMES
+echo DLC NAMES FALLBACK
 echo *******************************************************
-echo Either keep name without tags or use DLC NUMBER X as name
-echo NOTE: This is done this way since dlc names can't be read
-echo from file, only dlc numbers
+echo Current version request dlc names to nutdb, this option
+echo states the fallback system to employ in case the name
+echo can't be retrieved.
+echo.
+echo Normal format basename [contentname]
+echo Option 3 format basename [contentname] [DLC Number]
 echo.
 echo Input "1" to KEEP basename
 echo Input "2" to RENAME as DLC Number
@@ -1154,10 +1197,9 @@ echo.
 cls
 call :program_logo
 for /f "tokens=*" %%f in (list.txt) do (
-%pycommand% "%nut%" -renf "single" -tfile "%prog_dir%list.txt" -t xci nsp -renm %renmode% -nover %nover% -oaid %oaid% -addl %addlangue% -dlcrn %dlcrname%
-more +1 "list.txt">"list.txt.new"
-move /y "list.txt.new" "list.txt" >nul
-call :contador_NF
+%pycommand% "%nut%" -renf "single" -tfile "%prog_dir%list.txt" -t xci nsp -renm %renmode% -nover %nover% -oaid %oaid% -addl %addlangue% -dlcrn %dlcrname% %workers%
+rem %pycommand% "%nut%" --strip_lines "%prog_dir%list.txt" "1" "true"
+rem call :contador_NF
 )
 ECHO ---------------------------------------------------
 ECHO *********** ALL FILES WERE PROCESSED! *************
@@ -1169,9 +1211,8 @@ cls
 call :program_logo
 for /f "tokens=*" %%f in (list.txt) do (
 %pycommand% "%nut%" -snz "single" -tfile "%prog_dir%list.txt" -t xci nsp
-more +1 "list.txt">"list.txt.new"
-move /y "list.txt.new" "list.txt" >nul
-call :contador_NF
+%pycommand% "%nut%" --strip_lines "%prog_dir%list.txt" "1" "true"
+rem call :contador_NF
 )
 ECHO ---------------------------------------------------
 ECHO *********** ALL FILES WERE PROCESSED! *************
@@ -1183,9 +1224,8 @@ cls
 call :program_logo
 for /f "tokens=*" %%f in (list.txt) do (
 %pycommand% "%nut%" -roma "single" -tfile "%prog_dir%list.txt" -t xci nsp
-more +1 "list.txt">"list.txt.new"
-move /y "list.txt.new" "list.txt" >nul
-call :contador_NF
+%pycommand% "%nut%" --strip_lines "%prog_dir%list.txt" "1" "true"
+rem call :contador_NF
 )
 ECHO ---------------------------------------------------
 ECHO *********** ALL FILES WERE PROCESSED! *************
@@ -1198,9 +1238,8 @@ cls
 call :program_logo
 for /f "tokens=*" %%f in (list.txt) do (
 %pycommand% "%nut%" -cltg "single" -tfile "%prog_dir%list.txt" -t xci nsp -tgtype "%tagtype%"
-more +1 "list.txt">"list.txt.new"
-move /y "list.txt.new" "list.txt" >nul
-call :contador_NF
+%pycommand% "%nut%" --strip_lines "%prog_dir%list.txt" "1" "true"
+rem call :contador_NF
 )
 ECHO ---------------------------------------------------
 ECHO *********** ALL FILES WERE PROCESSED! *************
@@ -1313,7 +1352,10 @@ set "showname=%orinput%"
 if "%vrepack%" EQU "nsp" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "nsp" -dc "%orinput%" -tfile "%prog_dir%list.txt")
 if "%vrepack%" EQU "xci" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "xci" -dc "%orinput%" -tfile "%prog_dir%list.txt")
 if "%vrepack%" EQU "both" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "both" -dc "%orinput%" -tfile "%prog_dir%list.txt")
-if "%vrepack%" EQU "xci_supertrimmer" ( %pycommand% "%nut%" %buffer% -o "%w_folder%" -xci_st "%orinput%" -tfile "%prog_dir%list.txt")
+if "%vrepack%" EQU "xci_supertrimmer" ( %pycommand% "%nut%" %buffer% -o "%w_folder%" -tfile "%prog_dir%list.txt" -xci_st "%orinput%")
+if "%vrepack%" EQU "xci_supertrimmer_keep_upd" ( %pycommand% "%nut%" %buffer% -o "%w_folder%" -t "xci" -dc "%orinput%" -tfile "%prog_dir%list.txt" )
+if "%vrepack%" EQU "xci_trimmer" ( %pycommand% "%nut%" %buffer% -o "%w_folder%" -tfile "%prog_dir%list.txt" -xci_tr "%orinput%")
+if "%vrepack%" EQU "xci_untrimmer" ( %pycommand% "%nut%" %buffer% -o "%w_folder%" -tfile "%prog_dir%list.txt" -xci_untr "%orinput%" )
 if "%vrepack%" EQU "verify" ( %pycommand% "%nut%" %buffer% -vt "%verif%" -tfile "%prog_dir%list.txt" -v "")
 if "%vrepack%" EQU "verify" ( goto end_xci_manual )
 
@@ -1753,10 +1795,9 @@ if "%vrepack%" EQU "both" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capR
 if "%vrepack%" EQU "both" call :program_logo
 if "%vrepack%" EQU "both" call :m_split_merge_list_name
 if "%vrepack%" EQU "both" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t xci -o "%w_folder%" -tfile "%mlistfol%\%%f" -roma %romaji% -dmul "calculate" )
-more +1 "mlist.txt">"mlist.txt.new"
-move /y "mlist.txt.new" "mlist.txt" >nul
+%pycommand% "%nut%" --strip_lines "%prog_dir%mlist.txt" "1" "true"
 if exist "%mlistfol%\%%f" del "%mlistfol%\%%f"
-call :multi_contador_NF
+rem call :multi_contador_NF
 )
 
 setlocal enabledelayedexpansion
@@ -1783,10 +1824,9 @@ set "listname=%%f"
 set "list=%mlistfol%\%%f"
 call :m_split_merge_list_name
 call :m_process_jobs_fat32_2
-more +1 "mlist.txt">"mlist.txt.new"
-move /y "mlist.txt.new" "mlist.txt" >nul
+%pycommand% "%nut%" --strip_lines "%prog_dir%mlist.txt" "1" "true"
 if exist "%mlistfol%\%%f" del "%mlistfol%\%%f"
-call :multi_contador_NF
+rem call :multi_contador_NF
 )
 goto m_exit_choice
 :m_process_jobs_fat32_2
@@ -1920,9 +1960,8 @@ set "filename=%%~nxf"
 set "orinput=%%f"
 if "%%~nxf"=="%%~nf.nsp" call :multi_nsp_manual
 if "%%~nxf"=="%%~nf.xci" call :multi_xci_manual
-more +1 "mlist.txt">"mlist.txt.new"
-move /y "mlist.txt.new" "mlist.txt" >nul
-call :multi_contador_NF
+%pycommand% "%nut%" --strip_lines "%prog_dir%mlist.txt" "1" "true"
+rem call :multi_contador_NF
 )
 set "filename=%finalname%"
 set "end_folder=%finalname%"
@@ -2280,8 +2319,7 @@ if "%%~nxf"=="%%~nf.nsp" call :split_content
 if "%%~nxf"=="%%~nf.NSP" call :split_content
 if "%%~nxf"=="%%~nf.xci" call :split_content
 if "%%~nxf"=="%%~nf.XCI" call :split_content
-more +1 "splist.txt">"splist.txt.new"
-move /y "splist.txt.new" "splist.txt" >NUL 2>&1
+%pycommand% "%nut%" --strip_lines "%prog_dir%splist.txt" "1" "true"
 setlocal enabledelayedexpansion
 if exist "%fold_output%\!end_folder!" RD /S /Q "%fold_output%\!end_folder!" >NUL 2>&1
 MD "%fold_output%\!end_folder!" >NUL 2>&1
@@ -2292,7 +2330,7 @@ move "%w_folder%\*.ns*" "%fold_output%\!end_folder!\" >NUL 2>&1
 if exist "%w_folder%\archfolder" ( %pycommand% "%nut%" -ifo "%w_folder%\archfolder" -archive "%fold_output%\!end_folder!\%filename%.nsp" )
 if exist "%w_folder%" RD /S /Q  "%w_folder%" >NUL 2>&1
 endlocal
-call :sp_contador_NF
+rem call :sp_contador_NF
 )
 ECHO ---------------------------------------------------
 ECHO *********** ALL FILES WERE PROCESSED! *************
@@ -2361,8 +2399,7 @@ if "!sp_repack!" EQU "xci" ( call "%xci_lib%" "sp_repack" "%w_folder%" "!tfolder
 if "!sp_repack!" EQU "both" ( call "%nsp_lib%" "sp_convert" "%w_folder%" "!tfolder!" "!fname!" )
 if "!sp_repack!" EQU "both" ( call "%xci_lib%" "sp_repack" "%w_folder%" "!tfolder!" "!fname!" )
 endlocal
-more +1 "%w_folder%\dirlist.txt">"%w_folder%\dirlist.txt.new"
-move /y "%w_folder%\dirlist.txt.new" "%w_folder%\dirlist.txt" >nul
+%pycommand% "%nut%" --strip_lines "%prog_dir%dirlist.txt" "1" "true"
 )
 del "%w_folder%\dirlist.txt" >NUL 2>&1
 
@@ -2600,9 +2637,8 @@ if "%%~nxf"=="%%~nf.NSP" call :DBnsp_manual
 if "%%~nxf"=="%%~nf.NSX" call :DBnsp_manual
 if "%%~nxf"=="%%~nf.xci" call :DBnsp_manual
 if "%%~nxf"=="%%~nf.XCI" call :DBnsp_manual
-more +1 "DBL.txt">"DBL.txt.new"
-move /y "DBL.txt.new" "DBL.txt" >nul
-call :DBcontador_NF
+%pycommand% "%nut%" --strip_lines "%prog_dir%DBL.txt" "1" "true"
+rem call :DBcontador_NF
 )
 ECHO ---------------------------------------------------
 ECHO *********** ALL FILES WERE PROCESSED! *************
@@ -2651,23 +2687,40 @@ call :delay
 exit /B
 
 :DBs_GENDB
-for /f "tokens=*" %%f in (DBL.txt) do (
-set "orinput=%%f"
 set "db_file=%prog_dir%INFO\%dbformat%_DB.txt"
 set "dbdir=%prog_dir%INFO\"
+if exist "%dbdir%temp" ( RD /S /Q "%dbdir%temp" ) >NUL 2>&1
+rem echo %dbdir%temp
+
+for /f "tokens=*" %%f in (DBL.txt) do (
+set "orinput=%%f"
+if exist "%dbdir%temp" ( RD /S /Q "%dbdir%temp" ) >NUL 2>&1
 call :DBGeneration
-more +1 "DBL.txt">"DBL.txt.new"
-move /y "DBL.txt.new" "DBL.txt" >nul
-call :DBcontador_NF
+if "%workers%" EQU "-threads 1" ( %pycommand% "%nut%" --strip_lines "%prog_dir%DBL.txt" "1" "true")
+if "%workers%" NEQ "-threads 1" ( call :DBcheck )
+rem if "%workers%" NEQ "-threads 1" ( call :DBcontador_NF )
 )
+:DBs_fin
 ECHO ---------------------------------------------------
 ECHO *********** ALL FILES WERE PROCESSED! *************
 ECHO ---------------------------------------------------
+if exist "%dbdir%temp" ( RD /S /Q "%dbdir%temp" ) >NUL 2>&1
 goto DBs_exit_choice
 
 :DBGeneration
 if not exist "%dbdir%" MD "%dbdir%">NUL 2>&1
-%pycommand% "%nut%" --dbformat "%dbformat%" -dbfile "%db_file%" -tfile "%prog_dir%DBL.txt" -nscdb "%orinput%" 
+%pycommand% "%nut%" --dbformat "%dbformat%" -dbfile "%db_file%" -tfile "%prog_dir%DBL.txt" -nscdb "%orinput%" %workers%
+exit /B
+
+:DBcheck
+setlocal enabledelayedexpansion
+set /a conta=0
+for /f "tokens=*" %%f in (DBL.txt) do (
+set /a conta=!conta! + 1
+)
+if !conta! LEQ 0 ( del DBL.txt )
+endlocal
+if not exist "DBL.txt" goto DBs_fin
 exit /B
 
 :DBcontador_NF
@@ -2733,7 +2786,7 @@ ECHO =============================     BY JULESONTHEROAD     ===================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                                POWERED BY SQUIRREL                                "
 ECHO "                    BASED ON THE WORK OF BLAWAR AND LUCA FRAGA                     "
-ECHO                                   VERSION 0.89 (NEW)
+ECHO                                   VERSION 0.90 (NEW)
 ECHO -------------------------------------------------------------------------------------                   
 ECHO Program's github: https://github.com/julesontheroad/NSC_BUILDER
 ECHO Blawar's github:  https://github.com/blawar
@@ -2758,7 +2811,6 @@ echo (__o)_    \
 echo       \    \
 echo.
 echo HOPE YOU HAVE A FUN TIME
-echo.
 exit /B
 
 :getname

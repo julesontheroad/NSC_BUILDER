@@ -114,8 +114,8 @@ set "skipRSVprompt=false"
 :: Choose to pack xci or for exfat cards or fat32 cards
 ::fatype can be fat32 or exfat
 ::fexport pack split nsp as files (sxos rommenu) or as folder (other installers)
-set "fatype=-fat exfat"
-set "fexport=-fx files"
+set "fatype=-fat fat32"
+set "fexport=-fx folder"
 
 ::--------------------------------------------------------------
 ::OPTION 13: END FOLDER ORGANIZATION
@@ -145,7 +145,7 @@ set "romaji=TRUE"
 ::Makes calls to google API
 ::translate ->TRUE
 ::don't transnutdb ->FALSE
-set "transnutdb=FALSE"
+set "transnutdb=TRUE"
 
 ::--------------------------------------------------------------
 ::OPTION 17: WORKERS FOR MULTI-THREADING
