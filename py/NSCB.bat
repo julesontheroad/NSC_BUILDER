@@ -2687,13 +2687,16 @@ call :delay
 exit /B
 
 :DBs_GENDB
-for /f "tokens=*" %%f in (DBL.txt) do (
-set "orinput=%%f"
 set "db_file=%prog_dir%INFO\%dbformat%_DB.txt"
 set "dbdir=%prog_dir%INFO\"
+if exist "%dbdir%temp" ( RD /S /Q "%dbdir%temp" ) >NUL 2>&1
+rem echo %dbdir%temp
+
+for /f "tokens=*" %%f in (DBL.txt) do (
+set "orinput=%%f"
+if exist "%dbdir%temp" ( RD /S /Q "%dbdir%temp" ) >NUL 2>&1
 call :DBGeneration
 if "%workers%" EQU "-threads 1" ( %pycommand% "%nut%" --strip_lines "%prog_dir%DBL.txt" "1" "true")
-if exist "%dbdir%temp" RD /S /Q "%dbdir%temp" >NUL 2>&1
 if "%workers%" NEQ "-threads 1" ( call :DBcheck )
 rem if "%workers%" NEQ "-threads 1" ( call :DBcontador_NF )
 )
@@ -2701,7 +2704,7 @@ rem if "%workers%" NEQ "-threads 1" ( call :DBcontador_NF )
 ECHO ---------------------------------------------------
 ECHO *********** ALL FILES WERE PROCESSED! *************
 ECHO ---------------------------------------------------
-if exist "%dbdir%temp" RD /S /Q "%dbdir%temp" >NUL 2>&1
+if exist "%dbdir%temp" ( RD /S /Q "%dbdir%temp" ) >NUL 2>&1
 goto DBs_exit_choice
 
 :DBGeneration

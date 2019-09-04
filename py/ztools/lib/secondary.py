@@ -5,7 +5,12 @@ import listmanager
 import Print
 
 sqdir=os.path.abspath(os.curdir)
-squirrel=os.path.join(sqdir, "squirrel.py")
+testroute1=os.path.join(sqdir, "squirrel.py")
+testroute2=os.path.join(sqdir, "squirrel.exe")
+if os.path.exists(testroute1):
+	squirrel=testroute1
+elif os.path.exists(testroute2):	
+	squirrel=testroute2
 allowedlist=['--renamef','--addtodb','--addtodb_new']
 	
 def route(args,workers):

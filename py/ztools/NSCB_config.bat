@@ -276,7 +276,8 @@ echo Input "9" to set file FAT32\EXFAT options
 echo Input "10" to how to ORGANIZE output files
 echo Input "11" to set NEW MODE OR LEGACY MODE
 echo Input "12" to ROMANIZE names when using direct-multi
-echo Input "13" to TRANSLATE game description lines
+echo Input "13" to TRANSLATE game description lines in file info
+echo Input "14" to change number of WORKERS IN THREADED OPERATIONS
 echo.
 echo Input "c" to read CURRENT GLOBAL SETTINGS
 echo Input "d" to set DEFAULT GLOBAL SETTINGS
@@ -932,6 +933,65 @@ echo.
 pause
 goto sc3
 
+:op_threads
+cls
+call :logo
+echo ***************************************************************************
+echo SET NUMBER OF WORKERS FOR THREADED OPERATIONS
+echo ***************************************************************************
+echo Currently used in the renamer and database building modes
+echo For more values edit NSCB_options.cmd with a text editor
+echo.
+echo Input "1"  to USE 1 worker (default\deactivated)
+echo Input "2"  to USE 5 workers
+echo Input "3"  to USE 10 workers
+echo Input "4"  to USE 20 workers
+echo Input "5"  to USE 30 workers
+echo Input "6"  to USE 40 workers
+echo Input "7"  to USE 50 workers
+echo Input "8"  to USE 60 workers
+echo Input "9"  to USE 70 workers
+echo Input "10" to USE 80 workers
+echo Input "11" to USE 90 workers
+echo Input "12" to USE 100 workers
+echo.
+echo Input "b" to return to GLOBAL OPTIONS
+echo Input "0" to return to CONFIG MENU
+echo Input "e" to go back to the MAIN PROGRAM
+echo ...........................................................................
+echo.
+set /p bs="Enter your choice: "
+set "v_workers=none"
+if /i "%bs%"=="1" set "v_workers=-threads 1"
+if /i "%bs%"=="2" set "v_workers=-threads 5"
+if /i "%bs%"=="3" set "v_workers=-threads 10"
+if /i "%bs%"=="4" set "v_workers=-threads 20"
+if /i "%bs%"=="5" set "v_workers=-threads 30"
+if /i "%bs%"=="6" set "v_workers=-threads 40"
+if /i "%bs%"=="7" set "v_workers=-threads 50"
+if /i "%bs%"=="8" set "v_workers=-threads 60"
+if /i "%bs%"=="9" set "v_workers=-threads 70"
+if /i "%bs%"=="10" set "v_workers=-threads 80"
+if /i "%bs%"=="11" set "v_workers=-threads 90"
+if /i "%bs%"=="12" set "v_workers=-threads 100"
+
+if /i "%bs%"=="b" goto sc3
+if /i "%bs%"=="0" goto sc1
+if /i "%bs%"=="e" goto salida
+
+if "%v_workers%"=="none" echo WRONG CHOICE
+if "%v_workers%"=="none" echo.
+if "%v_workers%"=="none" goto op_threads
+
+set v_workers="workers=%v_workers%"
+set v_workers="%v_workers%"
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "153" -nl "set %v_workers%" 
+echo.
+%pycommand% "%listmanager%" -rl "%op_file%" -ln "153" -nl "Line in config was changed to: "
+echo.
+pause
+goto sc3
+
 :def_set1
 echo.
 echo **AUTO-MODE OPTIONS**
@@ -1070,11 +1130,17 @@ set v_roma="%v_roma%"
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "139" -nl "Line in config was changed to: "
 
 REM TRANSLATE
-set "v_trans=TRUE"
+set "v_trans=FALSE"
 set v_trans="transnutdb=%v_trans%"
 set v_trans="%v_trans%"
 %pycommand% "%listmanager%" -cl "%op_file%" -ln "147" -nl "set %v_trans%" 
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "147" -nl "Line in config was changed to: "
+
+REM WORKERS
+set v_workers="workers=-threads 1"
+set v_workers="%v_workers%"
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "153" -nl "set %v_workers%" 
+%pycommand% "%listmanager%" -rl "%op_file%" -ln "153" -nl "Line in config was changed to: "
 
 exit /B
 
@@ -1140,6 +1206,9 @@ REM ROMANIZE
 
 REM TRANSLATE
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "147" -nl "TRANSLATE option is set to: "
+
+REM WORKERS
+%pycommand% "%listmanager%" -rl "%op_file%" -ln "153" -nl "WORKERS option is set to: "
 
 exit /B
 
