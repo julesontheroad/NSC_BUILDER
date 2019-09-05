@@ -28,6 +28,7 @@ elif os.path.exists(os.path.join(NSCB_dir,'ztools')):
 	squirrel_dir=squirrel_dir
 	ztools_dir=os.path.join(NSCB_dir, 'ztools')
 	zconfig_dir=os.path.join(NSCB_dir, 'zconfig')
+else:	
 	ztools_dir=os.path.join(NSCB_dir, 'ztools')
 	zconfig_dir=os.path.join(NSCB_dir, 'zconfig')
 
