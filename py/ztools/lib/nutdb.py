@@ -299,7 +299,7 @@ def get_dlcname(titleid,roman=True,format='tabs'):
 			elif cname!='None':
 				name=basename+' '+'['+cname+']'
 			else:
-				DLCnumb=str(titleid2)
+				DLCnumb=str(titleid)
 				DLCnumb="0000000000000"+DLCnumb[-3:]									
 				DLCnumb=bytes.fromhex(DLCnumb)
 				DLCnumb=str(int.from_bytes(DLCnumb, byteorder='big'))									
@@ -362,7 +362,7 @@ def get_dlcData(titleid,roman=True,format='tabs'):
 			elif cname!='None':
 				name=basename+' '+'['+cname+']'
 			else:
-				DLCnumb=str(titleid2)
+				DLCnumb=str(titleid)
 				DLCnumb="0000000000000"+DLCnumb[-3:]									
 				DLCnumb=bytes.fromhex(DLCnumb)
 				DLCnumb=str(int.from_bytes(DLCnumb, byteorder='big'))									

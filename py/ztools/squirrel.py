@@ -4363,7 +4363,7 @@ if __name__ == '__main__':
 			basename=str(os.path.basename(os.path.abspath(filename)))					
 			ofile=basename[:-4]+'-Fcontent.txt'
 			infotext=os.path.join(ofolder, ofile)
-			if filename.endswith('.nsp'):
+			if filename.endswith('.nsp') or filename.endswith('.nsx'):
 				try:
 					f = Fs.Nsp(filename, 'rb')
 					feed=f.adv_file_list()
@@ -4448,7 +4448,7 @@ if __name__ == '__main__':
 			basename=str(os.path.basename(os.path.abspath(filename)))					
 			ofile=basename[:-4]+'_ID_content.txt'
 			infotext=os.path.join(ofolder, ofile)		
-			if filename.endswith('.nsp'):
+			if filename.endswith('.nsp') or filename.endswith('.nsx'):
 				try:
 					f = Fs.Nsp(filename, 'rb')
 					feed=f.adv_content_list()
@@ -4538,7 +4538,7 @@ if __name__ == '__main__':
 			basename=str(os.path.basename(os.path.abspath(filename)))					
 			ofile=basename[:-4]+'-fwinfo.txt'
 			infotext=os.path.join(ofolder, ofile)		
-			if filename.endswith('.nsp'):
+			if filename.endswith('.nsp') or filename.endswith('.nsx'):
 				try:
 					f = Fs.Nsp(filename, 'rb')
 					feed=f.print_fw_req(trans)
@@ -4777,7 +4777,7 @@ if __name__ == '__main__':
 			basename=str(os.path.basename(os.path.abspath(filename)))					
 			ofile=basename[:-4]+'-nacp.txt'
 			infotext=os.path.join(ofolder, ofile)		
-			if filename.endswith('.nsp'):
+			if filename.endswith('.nsp') or filename.endswith('.nsx'):
 				try:
 					f = Fs.Nsp(filename, 'rb')
 					feed=f.read_nacp()
@@ -5246,7 +5246,7 @@ if __name__ == '__main__':
 			basename=str(os.path.basename(os.path.abspath(filename)))					
 			ofile=basename[:-4]+'-meta.txt'
 			infotext=os.path.join(ofolder, ofile)		
-			if filename.endswith('.nsp'):
+			if filename.endswith('.nsp') or filename.endswith('.nsx'):
 				try:
 					f = Fs.Nsp(filename, 'rb')
 					feed=f.read_cnmt()
