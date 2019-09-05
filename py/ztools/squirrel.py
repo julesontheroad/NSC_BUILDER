@@ -63,8 +63,20 @@ import nutdb
 # SET ENVIRONMENT
 squirrel_dir=os.path.abspath(os.curdir)
 NSCB_dir=os.path.abspath('../'+(os.curdir))
-ztools_dir=os.path.join(NSCB_dir, 'ztools')
-zconfig_dir=os.path.join(NSCB_dir, 'zconfig')
+
+if os.path.exists(os.path.join(squirrel_dir,'ztools')):
+	NSCB_dir=squirrel_dir
+	zconfig_dir=os.path.join(NSCB_dir, 'zconfig')	  
+	ztools_dir=os.path.join(NSCB_dir,'ztools')
+	squirrel_dir=ztools_dir
+elif os.path.exists(os.path.join(NSCB_dir,'ztools')):
+	squirrel_dir=squirrel_dir
+	ztools_dir=os.path.join(NSCB_dir, 'ztools')
+	zconfig_dir=os.path.join(NSCB_dir, 'zconfig')
+else:	
+	ztools_dir=os.path.join(NSCB_dir, 'ztools')
+	zconfig_dir=os.path.join(NSCB_dir, 'zconfig')
+
 if os.path.exists(zconfig_dir):
 	DATABASE_folder=os.path.join(zconfig_dir, 'DB')
 else:
@@ -72,10 +84,6 @@ else:
 	
 if not os.path.exists(DATABASE_folder):
 	os.makedirs(DATABASE_folder)	
-
-#print (ztools_dir)
-#print (NSCB_dir)
-
 
 if __name__ == '__main__':
 	try:
@@ -4363,7 +4371,7 @@ if __name__ == '__main__':
 			basename=str(os.path.basename(os.path.abspath(filename)))					
 			ofile=basename[:-4]+'-Fcontent.txt'
 			infotext=os.path.join(ofolder, ofile)
-			if filename.endswith('.nsp'):
+			if filename.endswith('.nsp') or filename.endswith('.nsx'):
 				try:
 					f = Fs.Nsp(filename, 'rb')
 					feed=f.adv_file_list()
@@ -4448,7 +4456,7 @@ if __name__ == '__main__':
 			basename=str(os.path.basename(os.path.abspath(filename)))					
 			ofile=basename[:-4]+'_ID_content.txt'
 			infotext=os.path.join(ofolder, ofile)		
-			if filename.endswith('.nsp'):
+			if filename.endswith('.nsp') or filename.endswith('.nsx'):
 				try:
 					f = Fs.Nsp(filename, 'rb')
 					feed=f.adv_content_list()
@@ -4538,7 +4546,7 @@ if __name__ == '__main__':
 			basename=str(os.path.basename(os.path.abspath(filename)))					
 			ofile=basename[:-4]+'-fwinfo.txt'
 			infotext=os.path.join(ofolder, ofile)		
-			if filename.endswith('.nsp'):
+			if filename.endswith('.nsp') or filename.endswith('.nsx'):
 				try:
 					f = Fs.Nsp(filename, 'rb')
 					feed=f.print_fw_req(trans)
@@ -4777,7 +4785,7 @@ if __name__ == '__main__':
 			basename=str(os.path.basename(os.path.abspath(filename)))					
 			ofile=basename[:-4]+'-nacp.txt'
 			infotext=os.path.join(ofolder, ofile)		
-			if filename.endswith('.nsp'):
+			if filename.endswith('.nsp') or filename.endswith('.nsx'):
 				try:
 					f = Fs.Nsp(filename, 'rb')
 					feed=f.read_nacp()
@@ -5246,7 +5254,7 @@ if __name__ == '__main__':
 			basename=str(os.path.basename(os.path.abspath(filename)))					
 			ofile=basename[:-4]+'-meta.txt'
 			infotext=os.path.join(ofolder, ofile)		
-			if filename.endswith('.nsp'):
+			if filename.endswith('.nsp') or filename.endswith('.nsx'):
 				try:
 					f = Fs.Nsp(filename, 'rb')
 					feed=f.read_cnmt()

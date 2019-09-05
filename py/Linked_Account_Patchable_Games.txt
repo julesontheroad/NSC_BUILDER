@@ -39,7 +39,7 @@ Fortnite [UPD][010025400AECE800][v4325376][US].nsp - YES
 InkyPen [BASE][01003A200BD8A000][v0][US].nsp - YES
 InkyPen [UPD][01003A200BD8A800][v65536][US].nsp - YES
 Izneo [BASE][0100D8E00C874000][v0][US].nsp - YES
-izneo [UPD][0100D8E00C874800][v65536][US].nsp - YES
+Izneo [UPD][0100D8E00C874800][v65536][US].nsp - YES
 Lightseekers [BASE][01009EA00C792000][v0][US].nsp - YES
 Lightseekers [UPD][01009EA00C792800][v196608][US].nsp - YES
 Magic Nations [BASE][0100F6600AC00000][v0][US].nsp - YES
@@ -73,6 +73,7 @@ SMITE [UPD][01005A600C318800][v1048576][US].nsp - YES
 SmuggleCraft [BASE][0100C4200B820000][v0][US].nsp - YES
 SmuggleCraft [UPD][0100C4200B820800][v65536][US].nsp - YES
 Stikbold! A Dodgeball Adventure DELUXE Demo [DEMO][0100454008DA8000][v0][US].nsp - YES
+Super Kirby Clash [01003FB00C5A8000][v0].nsp - YES
 Toy Stunt Bike Tiptop's Trials [BASE][01009FF00A160000][v0][US].nsp - YES
 Warhammer Age of Sigmar Champions [BASE][010089A00C7B0000][v0][US].nsp - YES
 Warhammer Age of Sigmar Champions [UPD][010089A00C7B0800][v262144][US].nsp - YES

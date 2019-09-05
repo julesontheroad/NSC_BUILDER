@@ -18,8 +18,19 @@ from googletrans import Translator
 # SET ENVIRONMENT
 squirrel_dir=os.path.abspath(os.curdir)
 NSCB_dir=os.path.abspath('../'+(os.curdir))
-ztools_dir=os.path.join(NSCB_dir, 'ztools')
-zconfig_dir=os.path.join(NSCB_dir, 'zconfig')
+
+if os.path.exists(os.path.join(squirrel_dir,'ztools')):
+	NSCB_dir=squirrel_dir
+	zconfig_dir=os.path.join(NSCB_dir, 'zconfig')	  
+	ztools_dir=os.path.join(NSCB_dir,'ztools')
+	squirrel_dir=ztools_dir
+elif os.path.exists(os.path.join(NSCB_dir,'ztools')):
+	squirrel_dir=squirrel_dir
+	ztools_dir=os.path.join(NSCB_dir, 'ztools')
+	zconfig_dir=os.path.join(NSCB_dir, 'zconfig')
+else:	
+	ztools_dir=os.path.join(NSCB_dir, 'ztools')
+	zconfig_dir=os.path.join(NSCB_dir, 'zconfig')
 
 def get_titlesurl(tfile):
 	with open(tfile,'rt',encoding='utf8') as csvfile:
@@ -299,7 +310,7 @@ def get_dlcname(titleid,roman=True,format='tabs'):
 			elif cname!='None':
 				name=basename+' '+'['+cname+']'
 			else:
-				DLCnumb=str(titleid2)
+				DLCnumb=str(titleid)
 				DLCnumb="0000000000000"+DLCnumb[-3:]									
 				DLCnumb=bytes.fromhex(DLCnumb)
 				DLCnumb=str(int.from_bytes(DLCnumb, byteorder='big'))									
@@ -362,7 +373,7 @@ def get_dlcData(titleid,roman=True,format='tabs'):
 			elif cname!='None':
 				name=basename+' '+'['+cname+']'
 			else:
-				DLCnumb=str(titleid2)
+				DLCnumb=str(titleid)
 				DLCnumb="0000000000000"+DLCnumb[-3:]									
 				DLCnumb=bytes.fromhex(DLCnumb)
 				DLCnumb=str(int.from_bytes(DLCnumb, byteorder='big'))									
