@@ -4,13 +4,32 @@ import argparse
 import listmanager
 import Print
 
-sqdir=os.path.abspath(os.curdir)
-testroute1=os.path.join(sqdir, "squirrel.py")
-testroute2=os.path.join(sqdir, "squirrel.exe")
+# SET ENVIRONMENT
+squirrel_dir=os.path.abspath(os.curdir)
+NSCB_dir=os.path.abspath('../'+(os.curdir))
+
+if os.path.exists(os.path.join(squirrel_dir,'ztools')):
+	NSCB_dir=squirrel_dir
+	zconfig_dir=os.path.join(NSCB_dir, 'zconfig')	  
+	ztools_dir=os.path.join(NSCB_dir,'ztools')
+	squirrel_dir=ztools_dir
+elif os.path.exists(os.path.join(NSCB_dir,'ztools')):
+	squirrel_dir=squirrel_dir
+	ztools_dir=os.path.join(NSCB_dir, 'ztools')
+	zconfig_dir=os.path.join(NSCB_dir, 'zconfig')
+else:	
+	ztools_dir=os.path.join(NSCB_dir, 'ztools')
+	zconfig_dir=os.path.join(NSCB_dir, 'zconfig')
+
+testroute1=os.path.join(squirrel_dir, "squirrel.py")
+testroute2=os.path.join(squirrel_dir, "squirrel.exe")
+isExe=False
 if os.path.exists(testroute1):
 	squirrel=testroute1
+	isExe=False
 elif os.path.exists(testroute2):	
 	squirrel=testroute2
+	isExe=True
 allowedlist=['--renamef','--addtodb','--addtodb_new']
 	
 def route(args,workers):
@@ -140,7 +159,8 @@ def getargs(args):
 	args=str(args)
 	args=args.split(', ')
 	arguments=list()
-	arguments.append("python")
+	if not isExe==True:
+		arguments.append("python")
 	arguments.append(squirrel)
 	for a in args:
 		if not 'None' in a and a != 'file=[]' and not 'threads' in a:
@@ -163,4 +183,3 @@ def getargs(args):
 					a=a[0]
 					arguments.append(a)					
 	return arguments,tfile		
-			
