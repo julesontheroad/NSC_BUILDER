@@ -21,6 +21,23 @@ Luca Fraga's github: https://github.com/LucaFraga
 ---------------
 0. Changelog
 ---------------
+v0.90b- Bugfixes:
+	- Fixes issue with name detection for dlcs non listed in the nutdb json files
+	- Adds nsx format to allowed for the info functions. Except for the npdm reader
+	  the reason is that without a titlekey you can't read the npdm file
+	- Fixes routes for the download of the nut json files for exe releases. Now the
+	  json get download correctly to zconfig\DB
+	- Fixes thread support for renaming and DB operations
+	- Fixes the option 14 not working on the configuration
+	- Note: For offline support on NSCB you need to download the json files and add
+	  a big refresh value to NUT_DB_REGIONS_URL and NUT_DB_REGIONS_URL.txt
+	  Then you can update them manually. I'll add support to manual update from the
+	  program on next release.
+	  For now a nutdb.zip that has been added to the release. The zip already includes
+	  the 4 nutdb json files that are being currently used, it also includes a value of
+	  9999 hours in the refresh time, that's more than a year.
+	  Download that file, and extract it in NSCB route. It already includes the zconfig
+	  folder. Overwrite the contents when asked by your system.
 v0.90- Several Bugfixes and aditions:
 	- Since i've been made aware of several bugs while i was on vacations I decided to
 	  release an early v0.90. Several experimental stuff has been added to squirrel 

@@ -30,7 +30,7 @@ if os.path.exists(testroute1):
 elif os.path.exists(testroute2):	
 	squirrel=testroute2
 	isExe=True
-allowedlist=['--renamef','--addtodb','--addtodb_new']
+allowedlist=['--renamef','--addtodb','--addtodb_new','--verify']
 	
 def route(args,workers):
 	arguments,tfile=getargs(args)
