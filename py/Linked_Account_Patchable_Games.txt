@@ -99,6 +99,8 @@ Mordheim Warband Skirmish [BASE][010071B009FB6000][v0][US].nsp - NO
 Mordheim Warband Skirmish [UPD][010071B009FB6800][v131072][WORLD].nsp - NO
 Nintendo Entertainment System - Nintendo Switch Online [BASE][0100D870045B6000][v0][US].nsp - NO
 Nintendo Entertainment System - Nintendo Switch Online [UPD][0100D870045B6800][v720896][US].nsp - NO
+Super Nintendo Entertainment System - Nintendo Switch Online [01008D300C50C000][v0].nsp - NO
+Super Famikon Nintendo Switch Online [0100E8600C504000][v0].nsp - NO 
 Trivial Pursuit LIVE - DEMO [DEMO][01005BA00BEE6000][v0][US].nsp - NO
 Trivial Pursuit LIVE - DEMO [DEMO][UPD][01005BA00BEE6800][v65536][WORLD].nsp - NO
 Use Your Words [BASE][01007C0003AEC000][v0][US].nsp - NO
