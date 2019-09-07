@@ -423,26 +423,37 @@ def get_content_langue(titleid):
 			break
 	return langue
 	
-def get_list_match(token,value,exclude=False,roma=True,show=False,Print=False):	
-	token=token.lower();value=value.lower()
-	tokenlist=list();valuelist=list();excludelist=list()
-	
+def get_list_match(token,roma=True,show=False,Print=False):	
+	token=token.lower()
+	tokenlist=list();
+	include_tk=list();exclude_tk=list();filter_tk=list()
+	include_val=list();exclude_val=list();filter_val=list()
+	langue='';match=''
 	if '{' in token or '}' in token:
 		var_=token[1:-1]
-		tokenlist=var_.split(".+")
-	else:
-		tokenlist.append(str(token))
-	if '{' in value or '}' in value:
-		var_=value[1:-1]
-		valuelist=var_.split(".+")
-	else:
-		valuelist.append(str(value))	
-	if exclude != False and exclude != True:
-		if '{' in str(exclude) or '}' in str(exclude):
-			var_=exclude[1:-1]
-			excludelist=var_.split(".+")
-		else:
-			excludelist.append(str(exclude))
+		tokenlist=var_.split(".")
+		for v in tokenlist:
+			if v[0]=='+':
+				par=v[1:]
+				p_=par.split(":")
+				include_tk.append(p_[0])
+				include_val.append(p_[1])				
+			elif v[0]=='-':
+				par=v[1:]
+				p_=par.split(":")
+				exclude_tk.append(p_[0])
+				exclude_val.append(p_[1])					
+			elif v[0]=='*':
+				par=v[1:]
+				p_=par.split(":")
+				filter_tk.append(p_[0])
+				filter_val.append(p_[1])	
+			else:			
+				par=v
+				p_=par.split(":")
+				include_tk.append(p_[0])
+				include_val.append(p_[1])			
+				
 	matchdict={};
 	rglist=['America','Europe','Japan','Asia']
 	for region in rglist:
@@ -451,7 +462,6 @@ def get_list_match(token,value,exclude=False,roma=True,show=False,Print=False):
 		check_region_file(region)
 		titleid=False;basename=False;version=0
 		with open(regionfile) as json_file:	
-			ismatch=False
 			data = json.load(json_file)		
 			for i in data:
 				dict=data[i]
@@ -474,39 +484,47 @@ def get_list_match(token,value,exclude=False,roma=True,show=False,Print=False):
 					if (contentname != '' or contentname != None) and roma == True:
 						converter = kakashi_conv()
 						contentname=converter.do(contentname)
+						contentname=contentname[0].upper()+contentname[1:]
 				if 'languages' in dict:
 					langue=dict['languages']
 					langue=ast.literal_eval(str(langue))
 					if isinstance(langue, list):
-						langue=','.join(langue)						
+						langue=','.join(langue)		
+				ismatch=False						
 				for j,k in data[i].items():
-					for i in range(len(tokenlist)):
-						token=tokenlist[i];value=valuelist[i]
-						if exclude != False:
-							exclude=excludelist[0]
+					for i in range(len(include_tk)):
+						token=include_tk[i];value=include_val[i]
 						if j.lower()==token:
 							entry=ast.literal_eval(str(k))
 							if isinstance(entry, list):
 								for val in entry:
 									if str(val).lower()==value:
-										ismatch=True									
-								if ismatch == True and exclude != False:
-									for j in excludelist:
-										exc_v=str(j).lower()
-										# print(entry)
-										for val in entry:
-											if str(val).lower()==exc_v:
-												ismatch=False	
-										# print(ismatch)	
+										ismatch=True
+										match=','.join(entry)											
 							else:
 								entry=str(entry).lower()
 								if value in entry:
 									ismatch=True
-								if ismatch == True and exclude != False:
-									for j in excludelist:								
-										exc_v=str(j).lower()
-										if exc_v in entry:
+									match=entry
+					if ismatch==True:
+						for i in range(len(exclude_tk)):					
+							token=exclude_tk[i];value=exclude_val[i]		
+							if j.lower()==token:
+								entry=ast.literal_eval(str(k))
+								if isinstance(entry, list):
+									for val in entry:
+										if str(val).lower()==value:
 											ismatch=False	
+					if ismatch==True:
+						for i in range(len(filter_tk)):					
+							token=filter_tk[i];value=filter_val[i]		
+							if j.lower()==token:
+								entry=ast.literal_eval(str(k))
+								if isinstance(entry, list):
+									for val in entry:
+										if str(val).lower()!=value:
+											ismatch=False	
+											
 				if 	not titleid in matchdict.keys() and titleid != False and ismatch==True:
 					if basename==False:
 						cname= "{} ({})[{}][v{}].nsp".format(contentname,langue,titleid,version)
