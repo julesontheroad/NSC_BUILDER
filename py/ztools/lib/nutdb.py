@@ -14,6 +14,7 @@ import time
 import csv
 import chardet
 from googletrans import Translator
+import ast
 
 # SET ENVIRONMENT
 squirrel_dir=os.path.abspath(os.curdir)
@@ -236,8 +237,8 @@ check_current()
 	
 def get_contentname(titleid,roman=True,format='tabs'):
 	cname=False
-	with open(nutdbfile) as json_file:			
-		data = json.load(json_file)	
+	with open(nutdbfile) as json_file:	
+		data = json.load(json_file)		
 		titleid=titleid.lower()
 		for i in data:
 			check=False
@@ -422,6 +423,132 @@ def get_content_langue(titleid):
 			break
 	return langue
 	
+def get_list_match(token,value,exclude=False,roma=True,show=False,Print=False):	
+	token=token.lower();value=value.lower()
+	tokenlist=list();valuelist=list();excludelist=list()
+	
+	if '{' in token or '}' in token:
+		var_=token[1:-1]
+		tokenlist=var_.split(".+")
+	else:
+		tokenlist.append(str(token))
+	if '{' in value or '}' in value:
+		var_=value[1:-1]
+		valuelist=var_.split(".+")
+	else:
+		valuelist.append(str(value))	
+	if exclude != False and exclude != True:
+		if '{' in str(exclude) or '}' in str(exclude):
+			var_=exclude[1:-1]
+			excludelist=var_.split(".+")
+		else:
+			excludelist.append(str(exclude))
+	matchdict={};
+	rglist=['America','Europe','Japan','Asia']
+	for region in rglist:
+		f='nutdb_'+region+'.json'
+		regionfile=os.path.join(DATABASE_folder,f)	
+		check_region_file(region)
+		titleid=False;basename=False;version=0
+		with open(regionfile) as json_file:	
+			ismatch=False
+			data = json.load(json_file)		
+			for i in data:
+				dict=data[i]
+				if 'id' in dict:
+					titleid=str(dict['id']).upper()
+					if titleid=='NONE':
+						break		
+					else:	
+						baseid=get_baseid(titleid)
+				if titleid !=baseid:
+					basename=get_dlcname(titleid,roman=rome)	
+				if 'version' in dict:
+					version=str(dict['version'])
+					if version=='None':
+						version=0
+				if 'name' in dict:
+					contentname=str(dict['name'])
+					if contentname=='None':				
+						contentname=''
+					if (contentname != '' or contentname != None) and roma == True:
+						converter = kakashi_conv()
+						contentname=converter.do(contentname)
+				if 'languages' in dict:
+					langue=dict['languages']
+					langue=ast.literal_eval(str(langue))
+					if isinstance(langue, list):
+						langue=','.join(langue)						
+				for j,k in data[i].items():
+					for i in range(len(tokenlist)):
+						token=tokenlist[i];value=valuelist[i]
+						if exclude != False:
+							exclude=excludelist[0]
+						if j.lower()==token:
+							entry=ast.literal_eval(str(k))
+							if isinstance(entry, list):
+								for val in entry:
+									if str(val).lower()==value:
+										ismatch=True									
+								if ismatch == True and exclude != False:
+									for j in excludelist:
+										exc_v=str(j).lower()
+										# print(entry)
+										for val in entry:
+											if str(val).lower()==exc_v:
+												ismatch=False	
+										# print(ismatch)	
+							else:
+								entry=str(entry).lower()
+								if value in entry:
+									ismatch=True
+								if ismatch == True and exclude != False:
+									for j in excludelist:								
+										exc_v=str(j).lower()
+										if exc_v in entry:
+											ismatch=False	
+				if 	not titleid in matchdict.keys() and titleid != False and ismatch==True:
+					if basename==False:
+						cname= "{} ({})[{}][v{}].nsp".format(contentname,langue,titleid,version)
+					else:
+						cname= "{} [{}]({})[{}][v{}].nsp".format(contentname,basename,langue,titleid,version)					
+					matchdict[titleid]=cname
+	if show==True:
+		showlist=list()
+		for key in matchdict.keys():
+			entry=matchdict[key]
+			showlist.append(entry)
+		showlist.sort()	
+		for entry in showlist:	
+			print(entry)
+	if Print!=False:
+		try:
+			dir=os.path.dirname(os.path.abspath(Print))
+			if not os.path.exists(dir):
+				os.makedirs(dir)	
+			printlist=list()
+			for key in matchdict.keys():
+				entry=matchdict[key]
+				printlist.append(entry)
+			printlist.sort()	
+			with open(Print,"a", encoding='utf8') as tfile: 
+				for entry in printlist:	
+					tfile.write(entry+'\n')	
+		except BaseException as e:
+			Print.error('Exception: ' + str(e))	
+			pass				
+	return 	matchdict
+	
+def get_baseid(titleid):
+	if str(titleid).endswith('000'):
+		baseid=titleid
+	elif str(titleid).endswith('800'):	
+		baseid=titleid[:-3]+'000'
+	else:
+		titleid=titleid.lower()
+		baseid=get_dlc_baseid(titleid)
+	return baseid.upper()	
+		
 def get_content_data(titleid,trans=True):	
 	releaseDate=False;nsuId=False;category=False;ratingContent=False;
 	numberOfPlayers=False;iconUrl=False;screenshots=False;bannerUrl=False

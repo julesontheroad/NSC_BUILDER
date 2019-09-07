@@ -276,7 +276,8 @@ if __name__ == '__main__':
 		parser.add_argument('-tgtype','--tagtype', help="Type of tag to remove")
 		parser.add_argument('-vorg','--v_organize', help="Aux variable to organize files")		
 		parser.add_argument('-vt','--vertype', help="Verification type for auto, needs --text_file. Opt: dec,sig,full [DECryption, decryption and SIGnature, previous and hash check]")			
-		parser.add_argument('-threads','--threads', help="Number threads to use for certain functions")			
+		parser.add_argument('-threads','--threads', help="Number threads to use for certain functions")		
+		parser.add_argument('-lib_call','--library_call', nargs='+',  help="Call a library function within squirrel")			
 		args = parser.parse_args()
 
 		Status.start()
@@ -284,6 +285,11 @@ if __name__ == '__main__':
 		indent = 1
 		tabs = '\t' * indent	
 		trans=False
+		
+		if args.library_call:
+			import secondary
+			vret=secondary.call_library(args.library_call)
+			Status.close()	
 
 		if args.threads:
 			import secondary
@@ -297,7 +303,7 @@ if __name__ == '__main__':
 					#secondary.printargs(args)
 					Status.close()
 				else:pass		
-			except:pass										
+			except:pass					
 # NCA/NSP IDENTIFICATION
 		# ..................................................
 		# Get titleid from nca file
