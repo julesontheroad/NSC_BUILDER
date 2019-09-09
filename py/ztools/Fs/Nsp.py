@@ -954,6 +954,98 @@ class Nsp(Pfs0):
 										break	
 							break	
 		return feed						
+		
+	def read_buildid(self):
+		ModuleId='';BuildID8='';BuildID16=''
+		files_list=sq_tools.ret_nsp_offsets(self._path)
+		# print(files_list)
+		for nca in self:								
+			if type(nca) == Fs.Nca:
+				if 	str(nca.header.contentType) == 'Content.PROGRAM':
+					if nca.header.getRightsId() == 0:						
+						decKey=nca.header.titleKeyDec
+					if nca.header.getRightsId() != 0:
+						correct, tkey = self.verify_nca_key(str(nca._path))		
+						if correct == True:
+							crypto1=nca.header.getCryptoType()
+							crypto2=nca.header.getCryptoType2()	
+							if crypto2>crypto1:
+								masterKeyRev=crypto2
+							if crypto2<=crypto1:	
+								masterKeyRev=crypto1	
+							decKey = Keys.decryptTitleKey(tkey, Keys.getMasterKeyIndex(int(masterKeyRev)))
+					for i in range(len(files_list)):	
+						if str(nca._path) == files_list[i][0]:
+							offset=files_list[i][1]
+							# print(offset)
+							break						
+					nca.rewind()
+					for fs in nca.sectionFilesystems:
+						#print(fs.fsType)
+						#print(fs.cryptoType)						
+						if fs.fsType == Type.Fs.PFS0 and fs.cryptoType == Type.Crypto.CTR:
+							nca.seek(0)
+							ncaHeader = NcaHeader()
+							ncaHeader.open(MemoryFile(nca.read(0x400), Type.Crypto.XTS, uhx(Keys.get('header_key'))))	
+							ncaHeader.seek(0)
+							fs.rewind()
+							pfs0=fs
+							sectionHeaderBlock = fs.buffer
+							nca.seek(fs.offset)	
+							pfs0Offset=fs.offset
+							pfs0Header = nca.read(0x10*14)
+							mem = MemoryFile(pfs0Header, Type.Crypto.CTR, decKey, pfs0.cryptoCounter, offset = pfs0Offset)
+							data = mem.read();
+							#Hex.dump(data)	
+							head=data[0:4]
+							n_files=(data[4:8])
+							n_files=int.from_bytes(n_files, byteorder='little')		
+							st_size=(data[8:12])
+							st_size=int.from_bytes(st_size, byteorder='little')		
+							junk=(data[12:16])
+							offset=(0x10 + n_files * 0x18)
+							stringTable=(data[offset:offset+st_size])
+							stringEndOffset = st_size
+							headerSize = 0x10 + 0x18 * n_files + st_size
+							#print(head)
+							#print(str(n_files))
+							#print(str(st_size))	
+							#print(str((stringTable)))		
+							files_list=list()
+							for i in range(n_files):
+								i = n_files - i - 1
+								pos=0x10 + i * 0x18
+								offset = data[pos:pos+8]
+								offset=int.from_bytes(offset, byteorder='little')			
+								size = data[pos+8:pos+16]
+								size=int.from_bytes(size, byteorder='little')			
+								nameOffset = data[pos+16:pos+20] # just the offset
+								nameOffset=int.from_bytes(nameOffset, byteorder='little')			
+								name = stringTable[nameOffset:stringEndOffset].decode('utf-8').rstrip(' \t\r\n\0')
+								stringEndOffset = nameOffset
+								junk2 = data[pos+20:pos+24] # junk data
+								#print(name)
+								#print(offset)	
+								#print(size)	
+								files_list.append([name,offset,size])	
+							files_list.reverse()	
+							#print(files_list)								
+							for i in range(len(files_list)):
+								if files_list[i][0] == 'main':
+									off1=files_list[i][1]+pfs0Offset+headerSize
+									nca.seek(off1)
+									np=nca.read(0x60)
+									mem = MemoryFile(np, Type.Crypto.CTR, decKey, pfs0.cryptoCounter, offset = off1)
+									mem.seek(0x40)
+									data = mem.read(0x20);
+									ModuleId=(str(hx(data)).upper())[2:-1]
+									BuildID8=(str(hx(data[:8])).upper())[2:-1]
+									BuildID16=(str(hx(data[:16])).upper())[2:-1]
+									# Hex.dump(data)	
+									break	
+						break	
+		return ModuleId,BuildID8,BuildID16					
+		
 
 	def extract_nca(self,ofolder,files_list,buffer=32768):
 		for nca in self:
@@ -3154,6 +3246,12 @@ class Nsp(Pfs0):
 								message=('- Patchable to: ' + str(MinRSV)+" -> " + RSV_rq_min+'\n');print(message);feed+=message+'\n'							
 							else:
 								message=('- Patchable to: DLC -> no RSV to patch\n');print(message);feed+=message+'\n'
+							if content_type_cnmt != 'AddOnContent':								
+								message=('ExeFS Data:');print(message);feed+=message+'\n'	
+								ModuleId,BuildID8,BuildID16=self.read_buildid()	
+								message=('- BuildID8:  '+ BuildID8);print(message);feed+=message+'\n'
+								message=('- BuildID16: '+ BuildID16);print(message);feed+=message+'\n'
+								message=('- BuildID32: '+ ModuleId +'\n');print(message);feed+=message+'\n'
 							if nsuId!=False or numberOfPlayers!=False or releaseDate!=False or category!=False or ratingContent!=False:
 								message=('Eshop Data:');print(message);feed+=message+'\n'								
 							if nsuId!=False:

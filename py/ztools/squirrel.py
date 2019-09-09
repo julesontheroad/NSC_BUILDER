@@ -98,7 +98,8 @@ if __name__ == '__main__':
 		parser.add_argument('--ADVcontentlist', nargs='+', help='Prints ADVANCED content list from NSP/XCI arranged by base titleid')			
 		parser.add_argument('--Read_cnmt', nargs='+', help='Read cnmt file inside NSP/XCI')
 		parser.add_argument('--Read_nacp', nargs='+', help='Read nacp file inside NSP/XCI')	
-		parser.add_argument('--Read_npdm', nargs='+', help='Read npdm file inside NSP/XCI')			
+		parser.add_argument('--Read_npdm', nargs='+', help='Read npdm file inside NSP/XCI')
+		parser.add_argument('--Read_build_id', nargs='+', help='Read npdm file inside NSP/XCI')			
 		parser.add_argument('--Read_hfs0', nargs='+', help='Read hfs0')		
 		parser.add_argument('--fw_req', nargs='+', help='Get information about fw requirements for NSP/XCI')		
 		parser.add_argument('--Read_xci_head', nargs='+', help='Get information about xci header and cert')				
@@ -5224,8 +5225,60 @@ if __name__ == '__main__':
 								print('WRONG CHOICE\n')							
 				except BaseException as e:
 					Print.error('Exception: ' + str(e))	
-					
-					
+
+		# ...........................................................................						
+		# Read build_id
+		# ...........................................................................									
+
+		if args.Read_build_id:
+			if args.ofolder:		
+				for var in args.ofolder:
+					try:
+						ofolder = var
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+			else:
+				for filename in args.Read_build_id:
+					dir=os.path.dirname(os.path.abspath(filename))	
+					info='INFO'
+					ofolder =os.path.join(dir,info)		
+			if not os.path.exists(ofolder):
+				os.makedirs(ofolder)	
+			if args.text_file:
+				tfile=args.text_file
+				dir=os.path.dirname(os.path.abspath(tfile))
+				if not os.path.exists(dir):
+					os.makedirs(dir)	
+				err='badfiles.txt'			
+				errfile = os.path.join(dir, err)						
+				with open(tfile,"r+", encoding='utf8') as filelist: 	
+					filename = filelist.readline()
+					filename=os.path.abspath(filename.rstrip('\n'))
+			else:									
+				for filename in args.Read_build_id:
+					filename=filename		
+			basename=str(os.path.basename(os.path.abspath(filename)))					
+			ofile=basename[:-4]+'-npdm.txt'
+			infotext=os.path.join(ofolder, ofile)																
+			if filename.endswith(".nsp"):	
+				try:
+					files_list=sq_tools.ret_nsp_offsets(filename)	
+					f = Fs.Nsp(filename, 'rb')
+					feed=f.read_buildid()
+					f.flush()
+					f.close()
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))									
+			if filename.endswith(".xci"):	
+				try:
+					files_list=sq_tools.ret_xci_offsets(filename)	
+					f = Fs.Xci(filename)					
+					feed=f.read_buildid(files_list)
+					f.flush()
+					f.close()					
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))						
+								
 		# ...................................................						
 		# Read cnmt inside nsp or xci
 		# ...................................................					
