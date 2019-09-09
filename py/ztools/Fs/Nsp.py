@@ -1738,7 +1738,7 @@ class Nsp(Pfs0):
 								message=("Titleinfo:");print(message);feed+=message+'\n'
 								message=("- Name: " + tit_name);print(message);feed+=message+'\n'
 								message=("- Editor: " + editor);print(message);feed+=message+'\n'
-								message=("- Build number: " + str(ediver));print(message);feed+=message+'\n'								
+								message=("- Display Version: " + str(ediver));print(message);feed+=message+'\n'								
 								message=("- Meta SDK version: " + sdkversion);print(message);feed+=message+'\n'	
 								message=("- Program SDK version: " + programSDKversion);print(message);feed+=message+'\n'
 								suplangue=str((', '.join(SupLg)))
@@ -3203,7 +3203,7 @@ class Nsp(Pfs0):
 								message=("Titleinfo:");print(message);feed+=message+'\n'								
 								message=("- Name: " + tit_name);print(message);feed+=message+'\n'								
 								message=("- Editor: " + editor);print(message);feed+=message+'\n'
-								message=("- Build number: " + str(ediver));print(message);feed+=message+'\n'
+								message=("- Display Version: " + str(ediver));print(message);feed+=message+'\n'
 								message=("- Meta SDK version: " + sdkversion);print(message);feed+=message+'\n'
 								message=("- Program SDK version: " + programSDKversion);print(message);feed+=message+'\n'									
 								suplangue=str((', '.join(SupLg)))								
