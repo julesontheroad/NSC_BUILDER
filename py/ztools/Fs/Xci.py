@@ -2759,12 +2759,14 @@ class Xci(File):
 										message=('- Patchable to: ' + str(MinRSV)+" -> " + RSV_rq_min+'\n');print(message);feed+=message+'\n'							
 									else:
 										message=('- Patchable to: DLC -> no RSV to patch\n');print(message);feed+=message+'\n'
-									if content_type_cnmt != 'AddOnContent':								
-										message=('ExeFS Data:');print(message);feed+=message+'\n'	
-										ModuleId,BuildID8,BuildID16=self.read_buildid()	
-										message=('- BuildID8:  '+ BuildID8);print(message);feed+=message+'\n'
-										message=('- BuildID16: '+ BuildID16);print(message);feed+=message+'\n'
-										message=('- BuildID32: '+ ModuleId +'\n');print(message);feed+=message+'\n'										
+									try:	
+										if content_type_cnmt != 'AddOnContent':								
+											message=('ExeFS Data:');print(message);feed+=message+'\n'	
+											ModuleId,BuildID8,BuildID16=self.read_buildid()	
+											message=('- BuildID8:  '+ BuildID8);print(message);feed+=message+'\n'
+											message=('- BuildID16: '+ BuildID16);print(message);feed+=message+'\n'
+											message=('- BuildID32: '+ ModuleId +'\n');print(message);feed+=message+'\n'			
+									except:pass		
 									if nsuId!=False or numberOfPlayers!=False or releaseDate!=False or category!=False or ratingContent!=False:
 										message=('Eshop Data:');print(message);feed+=message+'\n'								
 									if nsuId!=False:
