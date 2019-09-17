@@ -1198,7 +1198,7 @@ cls
 call :program_logo
 for /f "tokens=*" %%f in (list.txt) do (
 %pycommand% "%nut%" -renf "single" -tfile "%prog_dir%list.txt" -t xci nsp -renm %renmode% -nover %nover% -oaid %oaid% -addl %addlangue% -dlcrn %dlcrname% %workers%
-rem %pycommand% "%nut%" --strip_lines "%prog_dir%list.txt" "1" "true"
+%pycommand% "%nut%" --strip_lines "%prog_dir%list.txt" "1" "true"
 rem call :contador_NF
 )
 ECHO ---------------------------------------------------
