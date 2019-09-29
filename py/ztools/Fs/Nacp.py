@@ -124,7 +124,7 @@ class Nacp(File):
 		self.languages[i].publisher = self.languages[i].publisher.split(b'\0', 1)[0].decode('utf-8')
 		return self.languages[i].publisher			
 		
-	def par_getNameandPub(self, data, feed =''):
+	def par_getNameandPub(self, data, feed ='',gui=False,roma=True):
 		Langue = list()	
 		Langue = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14]	
 		for i in Langue:
@@ -139,35 +139,43 @@ class Nacp(File):
 				editor=data[off2:off3]						
 				editor = editor.split(b'\0', 1)[0].decode('utf-8')
 				editor = (re.sub(r'[\/\\]+', ' ', editor))
-				editor = editor.strip()	
-				if i == 2:					
-					kakasi = pykakasi.kakasi()
-					kakasi.setMode("H", "a")
-					kakasi.setMode("K", "a")
-					kakasi.setMode("J", "a")
-					kakasi.setMode("s", True)
-					kakasi.setMode("E", "a")
-					kakasi.setMode("a", None)
-					kakasi.setMode("C", False)
-					converter = kakasi.getConverter()
-					title=converter.do(title)	
-					title=title[0].upper()+title[1:]
-					editor=converter.do(editor)		
-					editor=editor[0].upper()+editor[1:]		
-				if i == 14 or i == 13 or i==12:					
-					kakasi = pykakasi.kakasi()
-					kakasi.setMode("H", "a")
-					kakasi.setMode("K", "a")
-					kakasi.setMode("J", "a")
-					kakasi.setMode("s", True)
-					kakasi.setMode("E", "a")
-					kakasi.setMode("a", None)
-					kakasi.setMode("C", False)			
-				message=('...............................');print(message);feed+=message+'\n'
-				message=('Language: '+ str(NacpLanguageType(i)).replace('NacpLanguageType.', ''));print(message);feed+=message+'\n'				
-				message=('...............................');print(message);feed+=message+'\n'					
-				message=('- Name: '+ title);print(message);feed+=message+'\n'					
-				message=('- Publisher: '+ editor);print(message);feed+=message+'\n'
+				editor = editor.strip()
+				if roma == True:
+					if i == 2:					
+						kakasi = pykakasi.kakasi()
+						kakasi.setMode("H", "a")
+						kakasi.setMode("K", "a")
+						kakasi.setMode("J", "a")
+						kakasi.setMode("s", True)
+						kakasi.setMode("E", "a")
+						kakasi.setMode("a", None)
+						kakasi.setMode("C", False)
+						converter = kakasi.getConverter()
+						title=converter.do(title)	
+						title=title[0].upper()+title[1:]
+						editor=converter.do(editor)		
+						editor=editor[0].upper()+editor[1:]		
+					if i == 14 or i == 13 or i==12:					
+						kakasi = pykakasi.kakasi()
+						kakasi.setMode("H", "a")
+						kakasi.setMode("K", "a")
+						kakasi.setMode("J", "a")
+						kakasi.setMode("s", True)
+						kakasi.setMode("E", "a")
+						kakasi.setMode("a", None)
+						kakasi.setMode("C", False)	
+				if gui==True:					
+					message=('...............................');print(message);feed+=message+'...............................'*2+'\n'	
+					message=('Language: '+ str(NacpLanguageType(i)).replace('NacpLanguageType.', ''));print(message);feed+=message+'\n'				
+					message=('...............................');print(message);feed+=message+'...............................'*2+'\n'						
+					message=('- Name: '+ title);print(message);feed+=message+'\n'					
+					message=('- Publisher: '+ editor);print(message);feed+=message+'\n'
+				else:
+					message=('...............................');print(message);feed+=message+'\n'		
+					message=('Language: '+ str(NacpLanguageType(i)).replace('NacpLanguageType.', ''));print(message);feed+=message+'\n'				
+					message=('...............................');print(message);feed+=message+'\n'						
+					message=('- Name: '+ title);print(message);feed+=message+'\n'					
+					message=('- Publisher: '+ editor);print(message);feed+=message+'\n'				
 		return feed			
 		
 		

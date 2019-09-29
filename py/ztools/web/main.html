@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+	<title>NSC Builder by JulesOnTheRoad</title>
+	<link rel="icon" type="image/vnd.microsoft.icon" href="img/squirrelv2.ico" sizes="16x16 24x24 36x36 48x48">	
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <!-- Metro 4 -->
+    <link rel="stylesheet" href="css/metro-all.min.css">
+	<style>
+		::-webkit-scrollbar {
+			width: 0px;  /* Remove scrollbar space */
+			background: transparent;  /* Optional: just make scrollbar invisible */
+		}
+	</style>
+    <script type="text/javascript" src="/eel.js"></script>
+</head>
+<body  class="bg-lightGray fg-white h-vh-100 m4-cloak">
+<div class="head-bar pos-absolute bg-cobalt fg-white">
+    <span class="app-title">NSC Builder 0.91 - File Info</span>
+    <div style="margin-left:auto;margin-right:0;"><button class="expand-button light" id="collapse_toggle_2"><span></span></button></div>
+	<div class="pos-absolute z-dropdown" style="margin-top:131px;left:auto;right:0;position:absolute">
+		<div class="bg-lightCobalt fg-white" data-role="collapse"
+			 data-toggle-element="#collapse_toggle_2" data-collapsed="true">
+			 <ul data-role="listview" class="bg-lightCobalt fg-white">
+				<!-- <li class="bg-cobalt-hover" onclick="close_topmenu()"><strong>1: Individual Processing Mode</strong></li> -->
+				<li class="bg-cobalt-hover" onclick="sideviewclicks()"><strong>1: Individual Processing Mode</strong></li>				
+				<li class="bg-cobalt-hover" onclick="sideviewclicks()"><strong>2: Multicontent Generation Mode</strong></li>	
+				<li class="bg-cobalt-hover" onclick="sideviewclicks()"><strong>3: Multicontent Splitter Mode</strong></li>	
+				<li class="bg-cobalt-hover" onclick="sideviewclicks()"><strong>4: File Info Mode</strong></li>	
+				<li class="bg-cobalt-hover" onclick="sideviewclicks()"><strong>5: Database Mode</strong></li>		
+				<li class="bg-cobalt-hover" onclick="sideviewclicks()"><strong>6: Advanced Mode</strong></li>		
+				<li class="bg-cobalt-hover" onclick="sideviewclicks()"><strong>7: File Joiner Mode</strong></li>	
+				<li class="bg-cobalt-hover" onclick="sideviewclicks()"><strong>0: Configuration Mode</strong></li>				
+		</div>
+	</div>	
+</div>
+<div><ul class="app-bar-present pos-absolute"  data-expand="false"
+    data-role="materialtabs"
+    data-fixed-tabs="true"
+    data-deep="true"
+    data-cls-tab="bg-white fg-black text-bold "
+    data-cls-tab-active="text-bold fg-black"
+    data-cls-marker="bg-cobalt"
+>
+    <li><a href="#_Information_" onclick="show_gameinfo()" style="font-size: 1.86vh" id="info_tab">Information</a></li>
+    <!-- <li><a href="#"  style="font-size: 1.86vh">Description</a></li>	 -->
+    <li><a href="#_Information_" onclick="show_filedata()"   style="font-size: 1.86vh">Titles</a></li>
+    <li><a href="#_Information_" onclick="show_nacpdata()"   style="font-size: 1.86vh">Nacp</a></li>
+    <li><a href="#_Information_" onclick="show_npdmdata()"   style="font-size: 1.86vh">Npdm</a></li>
+    <li><a href="#_Information_" onclick="show_cnmtdata()"   style="font-size: 1.86vh">Cnmt</a></li>		
+    <li><a href="#_Information_" onclick="show_verdata()"   style="font-size: 1.86vh">Verification</a></li>	
+</ul></div>
+
+<div data-role="navview" data-compact="md" data-expanded="xxl" data-toggle="#pane-toggle" id="_Information_">
+	<nav class="navview-pane"  style="margin-top:100px;">
+		<button class="pull-button" onclick="navviewclick();" id="nav_view_but">
+			<span class="mif-menu fg-black"></span>
+		</button>
+
+		<ul class="navview-menu" style="margin-top:1px;margin-bottom:1px;">
+
+			<li class="item-header">Game Information</li>
+
+			<li>
+				<a href="#_Information_" onclick="show_gameinfo();" id="_inf_bar_but">
+					<span class="icon"><span class="mif-gamepad"></span></span>
+					<span class="caption">GameInfo</span>
+				</a>
+			</li>
+			<li>
+				<a href="#_Information_" onclick="show_description()" class="disabled" id="_desc_bar_but">
+					<span class="icon"><span class="mif-leanpub fg-steel" id="_desc_bar_but1"></span></span>
+					<span class="caption fg-steel" id="_desc_bar_but2">Description</span>
+				</a>
+			</li>
+			<li>
+				<a href="#_Information_" onclick="show_pictures()" class="disabled" id="_pict_bar_but">
+					<span class="icon"><span class="mif-images fg-steel" id="_pict_bar_but1"></span></span>
+					<span class="caption fg-steel"  id="_pict_bar_but2">Pictures</span>
+				</a>
+			</li>					
+			<li>
+				<a href="#_Information_" onclick="show_gametree()" class="disabled" id="_gtree_bar_but">
+					<span class="icon"><span class="mif-tree fg-steel" id="_gtree_bar_but1"></span></span>
+					<span class="caption fg-steel" id="_gtree_bar_but2">Game Tree</span>
+				</a>
+			</li>
+			<li>
+				<a href="#_Information_" onclick="show_cheats()" class="disabled" id="_cheats_bar_but">
+					<span class="icon"><span class="mif-bug fg-steel" id="_cheats_bar_but1"></span></span>
+					<span class="caption fg-steel" id="_cheats_bar_but2">Cheats</span>
+				</a>
+			</li>					
+		</ul>
+	</nav>
+	<div class="navview-content pl-4-md pr-4-md bg-lightGray" id="_Info_">	
+		<span></span>
+		<p class="mif-menu fg-light" height='100px'></p>		
+		<div class="grid" style="margin-top:75px">
+			<div class="row" style="height: 80vh;margin-bottom: 1px;overflow:auto;" id="_viewspace_">
+				<div class="cell" style="font-size: 1.86vh;overflow-z:auto;" id="_GameInfo_"><div><div style="width: 55vw">
+					<p style="margin-bottom: 2px;margin-top: 2px;font-size: 2vh"><strong>Titleinfo: </strong></p>		
+					<ul style="margin-bottom: 2px;margin-top: 3px">
+					<li style="margin-bottom: 2px;margin-top: 3px"><strong>Name: </strong><span  id="tname">-</span></li>
+					<li style="margin-bottom: 2px;margin-top: 3px"><strong>Editor: </strong><span  id="editor">-</span></li>
+					<li style="margin-bottom: 2px;margin-top: 3px"><strong>Content type: </strong><span  id="ctype">-</span></li>					
+					<li style="margin-bottom: 2px;margin-top: 3px"><strong>TitleID: </strong><span  id="tid">-</span></li>	
+					<li style="margin-bottom: 2px;margin-top: 3px"><strong>Version: </strong><span  id="version">-</span></li>			
+					<li style="margin-bottom: 2px;margin-top: 3px"><strong>Display Version: </strong><span  id="dispver">-</span></li>	
+					<li style="margin-bottom: 2px;margin-top: 3px"><strong>Meta SDK version: </strong><span  id="metasdk">-</span></li>		
+					<li style="margin-bottom: 2px;margin-top: 3px"><strong>Program SDK version: </strong><span  id="exesdk">-</span></li>		
+					<li style="margin-bottom: 2px;margin-top: 3px"><strong>Languages: </strong><span  id="langue">-</span></li>		
+					<!-- <li style="margin-bottom: 2px;margin-top: 3px"><strong>Distribution Type: </strong><span  id="disttype">-</span></li>		 -->
+					<li style="margin-bottom: 2px;margin-top: 3px"><strong>Html Manual: </strong><span  id="htmlmanual">-</span></li>
+					<li style="margin-bottom: 2px;margin-top: 3px"><strong>Linked Account: </strong><span  id="linkedacc">-</span></li>		
+					<li style="margin-bottom: 2px;margin-top: 3px"><strong>Multi Content: </strong><span  id="multicontent">-</span></li>						
+					<li style="margin-bottom: 2px;margin-top: 3px"><strong>Titlekey: </strong><span  id="titlekey">-</span></li>					
+					</ul>
+					<p style="margin-bottom: 2px;margin-top: 5px;font-size: 2vh"><strong>Required Firmware: </strong></p>	
+					<ul style="margin-bottom: 2px;margin-top: 3px">
+					<li style="margin-bottom: 2px;margin-top: 3px"><strong>RequiredSystemVersion: </strong><span  id="rsv">-</span></li>
+					<li style="margin-bottom: 2px;margin-top: 3px;visibility:hidden;display:none;" id="rgv_holder"><strong>RequiredGameVersion: </strong><span  id="rgv">-</span></li>					
+					<li style="margin-bottom: 2px;margin-top: 3px"><strong>Encryption (keygeneration): </strong><span  id="keygeneration">-</span></li>
+					<li style="margin-bottom: 2px;margin-top: 3px"><strong>Patchable to: </strong><span  id="patchable">-</span></li>	
+					</ul>
+					<p style="margin-bottom: 2px;margin-top: 5px;font-size: 2vh;visibility:visible;" class="exefsdata"><strong>ExeFs Data: </strong></p>	
+					<ul style="margin-bottom: 2px;margin-top: 3px;visibility:visible;" class="exefsdata">
+					<li style="margin-bottom: 2px;margin-top: 3px;visibility:visible;" class="exefsdata"><strong>BuildID8: </strong><span  id="buildid8">-</span></li>
+					<li style="margin-bottom: 2px;margin-top: 3px;word-break: break-all;visibility:visible;" class="exefsdata"><strong>BuildID: &nbsp;&nbsp;</strong><span  id="buildid">-</span></li>
+					</ul>			
+			</div></div></div>
+			
+				<div class="cell" id="_Description_" style="font-size: 1.86vh;display:none;overflow-z:auto;"><div><div style="width: 55vw;margin-left:0;margin-right:auto;">
+					<p style="font-size: 16px; justify;text-justify: inter-word;"><i><strong id="introduction"></strong></i></p>						
+					<p style="font-size: 2vh;text-align: justify;text-justify: inter-word;white-space: pre-line;" id="description"></p>					
+			</div></div></div>			
+
+				<div class="cell" id="_Pictures_" style="font-size: 1.86vh;display:none;overflow-z:auto;"><div><div style="width: 55vw;margin-left:0;margin-right:auto;">
+					<p style="margin-bottom: 2px;margin-top: 2px;font-size: 2vh"><strong>Pictures: </strong></p>				
+			</div></div></div>		
+			
+				<div class="cell" id="_Gametree_" style="font-size: 1.86vh;display:none;overflow-z:auto;"><div><div style="width: 55vw;margin-left:0;margin-right:auto;">
+					<p style="font-size: 2vh;text-align: justify;text-justify: inter-word;white-space: pre-line;" id="gametree"></p>		
+			</div></div></div>		
+			
+				<div class="cell" id="_Cheats_" style="font-size: 1.86vh;display:none;overflow-z:auto;"><div><div style="width: 55vw;margin-left:0;margin-right:auto;">
+					<p style="font-size: 2vh;text-align: justify;text-justify: inter-word;white-space: pre-line;" id="cheat_data"></p>
+			</div></div></div>					
+			
+
+				<div class="cell" id="_Files_" style="font-size: 1.86vh;display:none;overflow-z:auto;"><div><div style="width: 62.5vw;margin-left:0;margin-right:auto;">
+					<div id="_filedata_"></div>		
+			</div></div></div>		
+
+				<div class="cell" id="_Nacp_" style="font-size: 1.86vh;display:none;overflow-z:auto;"><div><div style="width: 62.5vw;margin-left:0;margin-right:auto;">
+					<div id="_nacpdata_"></div>	
+			</div></div></div>		
+
+				<div class="cell" id="_Npdm_" style="font-size: 1.86vh;display:none;overflow-z:auto;"><div><div style="width: 62.5vw;margin-left:0;margin-right:auto;">
+					<div id="_npdmdata_"></div>	
+			</div></div></div>		
+
+				<div class="cell" id="_Cnmt_" style="font-size: 1.86vh;display:none;overflow-z:auto;"><div><div style="width: 65vw;margin-left:0;margin-right:auto;">
+					<div id="_cnmtdata_"></div>	
+			</div></div></div>		
+
+				<div class="cell" id="_Verification_" style="font-size: 1.86vh;display:none;overflow-z:auto;"><div><div style="width: 65vw;margin-left:0;margin-right:auto;">
+					<p style="font-size: 1.86vh;text-align: left;white-space: pre-line;"><strong><span id="_verificationdata_"></span></strong></p>
+			</div></div></div>		
+
+			<div class="cell" style="height: 72vh;margin-right:1px;overflow-z:auto;" id="_imagebox_">
+				<div style="position:relative;border:0;"><img src="img/placeholder.gif" style="position:relative;width:30vw;height:30vw;max-width:45vh;max-height:45vh;border:0;" class="img-container drop-shadow" id="gamepicture">
+				<h6 id="ctag_overlay" class="fg-light bg-red" style="position:absolute;  bottom: 0px;margin-bottom:0px; left:0px;  width:30vw;max-width:45vh;height:4vh; 
+					opacity:0.80;text-align: center;visibility:hidden;font-size:3vh;"><span width="37vh";>CONTENT</span></h6></div>			
+				<p style="margin-bottom: 2px;margin-top: 10px;font-size: 1.86vh"><strong>nsuID: </strong><span  id="nsuid">-</span></p>	
+				<p style="margin-bottom: 2px;margin-top: 2px;font-size: 1.86vh"><strong>Distribution: </strong><span  id="distributiontype">-</span></p>				
+				<p style="margin-bottom: 2px;margin-top: 2px;font-size: 1.86vh"><strong>Regions: </strong><span  id="regions">-</span></p>	
+				<p style="margin-bottom: 2px;margin-top: 2px;font-size: 1.86vh"><strong>Release Date: </strong><span  id="worldreleasedate">-</span></p>	
+				<p style="margin-bottom: 2px;margin-top: 2px;font-size: 1.86vh;visibility:hidden;display:none;" id="GamecardSize_holder"><strong>GamecardSize: </strong><span  id="GamecardSize">-</span></p>						
+				<p style="margin-bottom: 2px;margin-top: 2px;font-size: 1.86vh"><strong>InstalledSize: </strong><span  id="InstalledSize">-</span></p>				
+				<p style="margin-bottom: 2px;margin-top: 2px;font-size: 1.86vh"><strong>AgeRating: </strong><span  id="AgeRatings">-</span></p>		
+				<p style="margin-bottom: 2px;margin-top: 2px;font-size: 1.86vh"><strong>Number of players: </strong><span  id="numberOfPlayers">-</span></p>				
+				<p style="margin-bottom: 2px;margin-top: 2px;font-size: 1.86vh"><strong>Genres: </strong><span  id="genretags">-</span></p>
+				<p style="margin-bottom: 2px;margin-top: 2px;font-size: 1.86vh"><strong>RatingTags: </strong><span  id="ratingtags">-</span></p>			
+			</div></div></div>	
+			<div class="row" style="margin-bottom: 2px;margin-top: 1px;height: 3vh;bottom:4vh; position:absolute;">
+				<div class="cell" style='width:55vw;'></div>		
+				<div class="cell" style="width:35vw;">
+					<button class="button alert"  style="height: 40px; width:70px;left:auto;right:-1;margin-right:0;margin-left:80%; position:absolute;" onclick="start()">
+					<span class="caption">Load</span></button></div>
+			</div>	
+	</div>	
+</div>
+
+<script src="js/jquery-3.4.1.min.js"></script>
+<script src="js/metro.min.js"></script>
+<script>
+navclicks=0;
+sideclicks=0;
+function navviewclick(){
+if (navclicks>0){navclicks=0}
+else{navclicks = navclicks+1;}	
+<!-- console.log(navclicks); -->
+}
+function sideviewclicks(){
+document.getElementById("collapse_toggle_2").click();
+}
+async function start(){
+	show_gameinfo()
+	var fname=await eel.getfname()();
+	<!-- console.log("Hello from"); -->
+	resetInfo()		
+	showicon(fname)	
+	getinfo(fname)
+	get_adv_filelist(fname)
+	get_nacp_data(fname)
+	get_npdm_data(fname)
+	get_cnmt_data(fname)
+	get_verification_data(fname)
+}
+
+function showicon(fname){	
+	eel.showicon(fname)(setImage)
+	<!-- eel.getinfo()(setInfo)	 -->
+}
+
+function getinfo(fname){	
+	eel.getinfo(fname)(setInfo)
+}
+
+function get_adv_filelist(fname){	
+	eel.getfiledata(fname)(set_adv_filelist)
+}
+
+function get_nacp_data(fname){	
+	eel.getnacpdata(fname)(set_nacp_data)
+}
+
+function get_npdm_data(fname){	
+	eel.getnpdmdata(fname)(set_npdm_data)
+}
+
+function get_cnmt_data(fname){	
+	eel.getcnmtdata(fname)(set_cnmt_data)
+}
+
+function get_verification_data(fname){	
+	eel.getverificationdata(fname)(set_ver_data)
+}
+
+function setImage(base64) {
+	<!-- console.log(base64) -->
+	document.getElementById("gamepicture").src = base64
+	if (base64!=''){document.getElementById("gamepicture").src = base64}
+	else{document.getElementById("gamepicture").src = "img/placeholder.gif"}	
+}
+	
+function set_adv_filelist(data) {
+	document.getElementById("_filedata_").innerHTML = data;
+}
+
+function set_nacp_data(data) {
+	document.getElementById("_nacpdata_").innerHTML = data;
+}
+
+function set_npdm_data(data) {
+	document.getElementById("_npdmdata_").innerHTML = data;
+}
+
+function set_cnmt_data(data) {
+	document.getElementById("_cnmtdata_").innerHTML = data;
+}
+
+function set_ver_data(data) {
+	document.getElementById("_verificationdata_").innerHTML = data;
+}
+
+function setInfo(data) {
+	document.getElementById("tname").innerHTML = data[0];
+	document.getElementById("editor").innerHTML = data[1];	
+	document.getElementById("tid").innerHTML = data[2];	
+	document.getElementById("version").innerHTML = data[3];	
+	document.getElementById("ctype").innerHTML = data[4];	
+	document.getElementById("dispver").innerHTML = data[5];	
+	document.getElementById("metasdk").innerHTML = data[6];	
+	document.getElementById("exesdk").innerHTML = data[7];	
+	document.getElementById("langue").innerHTML = data[8];
+	document.getElementById("rsv").innerHTML = data[9];	
+	document.getElementById("keygeneration").innerHTML = data[10];	
+	<!-- document.getElementById("PATCHABLE").innerHTML = data[9]; -->
+	document.getElementById("nsuid").innerHTML = data[11];
+	document.getElementById("genretags").innerHTML = data[12];
+	document.getElementById("ratingtags").innerHTML = data[13];	
+	document.getElementById("worldreleasedate").innerHTML = data[14];	
+	document.getElementById("numberOfPlayers").innerHTML = data[15];		
+	document.getElementById("AgeRatings").innerHTML = data[16];		
+	document.getElementById("InstalledSize").innerHTML = data[17];	
+	document.getElementById("buildid8").innerHTML = data[18];		
+	document.getElementById("buildid").innerHTML = data[19];			
+	document.getElementById("titlekey").innerHTML = data[20];		
+	document.getElementById("patchable").innerHTML = data[21];		
+	document.getElementById("regions").innerHTML = data[22];	
+	document.getElementById("introduction").innerHTML = data[23];		
+	document.getElementById("description").innerHTML = data[24];
+	document.getElementById("htmlmanual").innerHTML = data[25];
+	document.getElementById("linkedacc").innerHTML = data[26];
+	document.getElementById("multicontent").innerHTML = data[27];		
+	document.getElementById("distributiontype").innerHTML = data[28];	
+	document.getElementById("GamecardSize").innerHTML = data[29];	
+	if (data[29]!== "-"){
+	document.getElementById("GamecardSize_holder").style.visibility = 'visible';
+	document.getElementById("GamecardSize_holder").style.display = "block";		
+	}	
+	document.getElementById("_Pictures_").innerHTML = data[30];				
+	document.getElementById("_desc_bar_but").setAttribute("class", "enabled");
+	document.getElementById("_desc_bar_but1").setAttribute("class", "mif-leanpub fg-black");	
+	document.getElementById("_desc_bar_but2").setAttribute("class", "caption fg-black");	
+	document.getElementById("_pict_bar_but").setAttribute("class", "enabled");	
+	document.getElementById("_pict_bar_but1").setAttribute("class", "mif-images fg-black");	
+	document.getElementById("_pict_bar_but2").setAttribute("class", "caption fg-black");	
+	document.getElementById("ctag_overlay").innerHTML = data[4];
+	if (data[4]!== "GAME" && data[4]!== undefined){
+	document.getElementById("ctag_overlay").style.visibility = 'visible';
+	}	
+	if (data[4] == "DLC"){
+    var dataToHide = document.getElementsByClassName("exefsdata"); 
+    for(var i = 0; i < dataToHide.length; i++){
+        dataToHide[i].style.visibility = "hidden";}
+	document.getElementById("rgv").innerHTML = data[31];
+	document.getElementById("rgv_holder").style.visibility = 'visible';
+	document.getElementById("rgv_holder").style.display = "list-item";			
+	}
+	eel.getfiletree(data[2])(set_filetree)
+	eel.getcheats(data[2])(set_cheats)	
+}
+
+function set_filetree(data) {
+	document.getElementById("gametree").innerHTML = data;
+	document.getElementById("_gtree_bar_but").setAttribute("class", "enabled");	
+	document.getElementById("_gtree_bar_but1").setAttribute("class", "mif-tree fg-black");	
+	document.getElementById("_gtree_bar_but2").setAttribute("class", "caption fg-black");		
+}
+
+function set_cheats(data) {
+	document.getElementById("cheat_data").innerHTML = data;
+	document.getElementById("_cheats_bar_but").setAttribute("class", "enabled");
+	document.getElementById("_cheats_bar_but1").setAttribute("class", "mif-bug fg-black");	
+	document.getElementById("_cheats_bar_but2").setAttribute("class", "caption fg-black");		
+}
+
+
+function resetInfo() {
+	eel.clear()
+	document.getElementById("_Description_").style.display = "none";
+	document.getElementById("_Pictures_").style.display = "none";
+	document.getElementById("_Gametree_").style.display = "none";
+	document.getElementById("_Cheats_").style.display = "none";	
+	document.getElementById("_GameInfo_").style.display = "block";	
+	document.getElementById("gamepicture").src = "img/placeholder.gif"
+	document.getElementById("tname").innerHTML = '-';
+	document.getElementById("editor").innerHTML = '-';	
+	document.getElementById("tid").innerHTML = '-';	
+	document.getElementById("version").innerHTML = '-';	
+	document.getElementById("ctype").innerHTML = '-';	
+	document.getElementById("dispver").innerHTML = '-';	
+	document.getElementById("metasdk").innerHTML = '-';	
+	document.getElementById("exesdk").innerHTML = '-';	
+	document.getElementById("langue").innerHTML = '-';
+	document.getElementById("rsv").innerHTML = '-';	
+	document.getElementById("keygeneration").innerHTML = '-';	
+	document.getElementById("nsuid").innerHTML = '-';
+	document.getElementById("genretags").innerHTML ='-';
+	document.getElementById("ratingtags").innerHTML = '-';
+	document.getElementById("worldreleasedate").innerHTML ='-';	
+	document.getElementById("numberOfPlayers").innerHTML = '-';		
+	document.getElementById("AgeRatings").innerHTML = '-';	
+	document.getElementById("InstalledSize").innerHTML = '-';
+	document.getElementById("buildid8").innerHTML = '-';	
+	document.getElementById("buildid").innerHTML = '-';		
+	document.getElementById("titlekey").innerHTML = '-';		
+	document.getElementById("patchable").innerHTML = '-';		
+	document.getElementById("regions").innerHTML = '-';	
+	document.getElementById("introduction").innerHTML ='';		
+	document.getElementById("description").innerHTML = '';	
+	document.getElementById("htmlmanual").innerHTML = '-';
+	document.getElementById("linkedacc").innerHTML ='-';
+	document.getElementById("multicontent").innerHTML ='-';		
+	document.getElementById("distributiontype").innerHTML ='-';		
+	document.getElementById("GamecardSize").innerHTML = '-';	
+	document.getElementById("GamecardSize_holder").style.visibility = 'hidden';
+	document.getElementById("GamecardSize_holder").style.display = "none";	
+	document.getElementById("rgv_holder").style.visibility = 'hidden';
+	document.getElementById("rgv_holder").style.display = "none"	
+	document.getElementById("_desc_bar_but").setAttribute("class", "disabled");
+	document.getElementById("_desc_bar_but1").setAttribute("class", "mif-leanpub fg-steel");	
+	document.getElementById("_desc_bar_but2").setAttribute("class", "caption fg-steel");	
+	document.getElementById("_pict_bar_but").setAttribute("class", "disabled");	
+	document.getElementById("_pict_bar_but1").setAttribute("class", "mif-images fg-steel");	
+	document.getElementById("_pict_bar_but2").setAttribute("class", "caption fg-steel");	
+	document.getElementById("_gtree_bar_but").setAttribute("class", "disabled");
+	document.getElementById("_gtree_bar_but1").setAttribute("class", "mif-tree fg-steel");	
+	document.getElementById("_gtree_bar_but2").setAttribute("class", "caption fg-steel");		
+	document.getElementById("_cheats_bar_but").setAttribute("class", "disabled");	
+	document.getElementById("_cheats_bar_but1").setAttribute("class", "mif-bug fg-steel");	
+	document.getElementById("_cheats_bar_but2").setAttribute("class", "caption fg-steel");	
+	
+	document.getElementById("ctag_overlay").style.visibility = 'hidden';	
+    var dataToHide = document.getElementsByClassName("exefsdata"); 
+    for(var i = 0; i < dataToHide.length; i++){
+        dataToHide[i].style.visibility = "visible";}
+	document.getElementById("_filedata_").innerHTML = '';
+	document.getElementById("_nacpdata_").innerHTML = '';
+	document.getElementById("_npdmdata_").innerHTML = '';
+	document.getElementById("_cnmtdata_").innerHTML = '';
+	document.getElementById("_verificationdata_").innerHTML = '';
+	document.getElementById("gametree").innerHTML = ''; 	
+	document.getElementById("cheat_data").innerHTML = '';
+}
+function show_gameinfo(){
+if (navclicks>0){
+document.getElementById("nav_view_but").click();
+}
+document.getElementById("info_tab").click();
+document.getElementById("_inf_bar_but").click();
+window.scrollTo(0,0);
+document.getElementById("_Description_").style.display = "none";
+document.getElementById("_Pictures_").style.display = "none";
+document.getElementById("_Gametree_").style.display = "none";
+document.getElementById("_Cheats_").style.display = "none";
+document.getElementById("_Files_").style.display = "none";
+document.getElementById("_Nacp_").style.display = "none";
+document.getElementById("_Npdm_").style.display = "none";
+document.getElementById("_Cnmt_").style.display = "none";
+document.getElementById("_Verification_").style.display = "none";
+document.getElementById("_GameInfo_").style.display = "block";
+document.getElementById("_imagebox_").style.display = "block";
+document.getElementById("_viewspace_").style.height = "80vh";
+}
+function show_description(){
+if (navclicks>0){
+document.getElementById("nav_view_but").click();
+}
+document.getElementById("info_tab").click();
+window.scrollTo(0,0);
+document.getElementById("_GameInfo_").style.display = "none";
+document.getElementById("_Pictures_").style.display = "none";
+document.getElementById("_Gametree_").style.display = "none";
+document.getElementById("_Cheats_").style.display = "none";
+document.getElementById("_Files_").style.display = "none";
+document.getElementById("_Nacp_").style.display = "none";
+document.getElementById("_Npdm_").style.display = "none";
+document.getElementById("_Cnmt_").style.display = "none";
+document.getElementById("_Verification_").style.display = "none";
+document.getElementById("_Description_").style.display = "block";
+document.getElementById("_imagebox_").style.display = "block";
+document.getElementById("_viewspace_").style.height = "80vh";
+}
+function show_pictures(){
+if (navclicks>0){
+document.getElementById("nav_view_but").click();
+}
+document.getElementById("info_tab").click();
+window.scrollTo(0,0);
+document.getElementById("_GameInfo_").style.display = "none";
+document.getElementById("_imagebox_").style.display = "none";
+document.getElementById("_Gametree_").style.display = "none";
+document.getElementById("_Cheats_").style.display = "none";
+document.getElementById("_Description_").style.display = "none";
+document.getElementById("_Files_").style.display = "none";
+document.getElementById("_Nacp_").style.display = "none";
+document.getElementById("_Npdm_").style.display = "none";
+document.getElementById("_Cnmt_").style.display = "none";
+document.getElementById("_Verification_").style.display = "none";
+document.getElementById("_Pictures_").style.display = "block";
+document.getElementById("_viewspace_").style.height = "80vh";
+}
+
+function show_gametree(){
+if (navclicks>0){
+document.getElementById("nav_view_but").click();
+}
+document.getElementById("info_tab").click();
+window.scrollTo(0,0);
+document.getElementById("_GameInfo_").style.display = "none";
+document.getElementById("_Pictures_").style.display = "none";
+document.getElementById("_Description_").style.display = "none";
+document.getElementById("_Cheats_").style.display = "none";
+document.getElementById("_Files_").style.display = "none";
+document.getElementById("_Nacp_").style.display = "none";
+document.getElementById("_Npdm_").style.display = "none";
+document.getElementById("_Cnmt_").style.display = "none";
+document.getElementById("_Verification_").style.display = "none";
+document.getElementById("_Gametree_").style.display = "block";
+document.getElementById("_imagebox_").style.display = "block";
+document.getElementById("_viewspace_").style.height = "80vh";
+}
+
+function show_cheats(){
+if (navclicks>0){
+document.getElementById("nav_view_but").click();
+}
+document.getElementById("info_tab").click();
+window.scrollTo(0,0);
+document.getElementById("_GameInfo_").style.display = "none";
+document.getElementById("_Pictures_").style.display = "none";
+document.getElementById("_Gametree_").style.display = "none";
+document.getElementById("_Description_").style.display = "none";
+document.getElementById("_Files_").style.display = "none";
+document.getElementById("_Nacp_").style.display = "none";
+document.getElementById("_Npdm_").style.display = "none";
+document.getElementById("_Cnmt_").style.display = "none";
+document.getElementById("_Verification_").style.display = "none";
+document.getElementById("_Cheats_").style.display = "block";
+document.getElementById("_imagebox_").style.display = "block";
+document.getElementById("_viewspace_").style.height = "80vh";
+}
+
+function show_filedata(){
+if (navclicks>0){
+document.getElementById("nav_view_but").click();
+}
+<!-- document.getElementById("_inf_bar_but").click(); -->
+window.scrollTo(0,0);
+document.getElementById("_GameInfo_").style.display = "none";
+document.getElementById("_imagebox_").style.display = "none";
+document.getElementById("_Description_").style.display = "none";
+document.getElementById("_Gametree_").style.display = "none";
+document.getElementById("_Cheats_").style.display = "none";
+document.getElementById("_Pictures_").style.display = "none";
+document.getElementById("_Nacp_").style.display = "none";
+document.getElementById("_Npdm_").style.display = "none";
+document.getElementById("_Cnmt_").style.display = "none";
+document.getElementById("_Verification_").style.display = "none";
+document.getElementById("_Files_").style.display = "block";
+document.getElementById("_viewspace_").style.height = "80vh";
+}
+function show_nacpdata(){
+if (navclicks>0){
+document.getElementById("nav_view_but").click();
+}
+<!-- document.getElementById("_inf_bar_but").click(); -->
+window.scrollTo(0,0);
+document.getElementById("_GameInfo_").style.display = "none";
+document.getElementById("_imagebox_").style.display = "none";
+document.getElementById("_Description_").style.display = "none";
+document.getElementById("_Gametree_").style.display = "none";
+document.getElementById("_Cheats_").style.display = "none";
+document.getElementById("_Pictures_").style.display = "none";
+document.getElementById("_Files_").style.display = "none";
+document.getElementById("_Npdm_").style.display = "none";
+document.getElementById("_Cnmt_").style.display = "none";
+document.getElementById("_Verification_").style.display = "none";
+document.getElementById("_Nacp_").style.display = "block";
+document.getElementById("_viewspace_").style.height = "80vh";
+}
+function show_npdmdata(){
+if (navclicks>0){
+document.getElementById("nav_view_but").click();
+}
+<!-- document.getElementById("_inf_bar_but").click(); -->
+window.scrollTo(0,0);
+document.getElementById("_GameInfo_").style.display = "none";
+document.getElementById("_imagebox_").style.display = "none";
+document.getElementById("_Description_").style.display = "none";
+document.getElementById("_Gametree_").style.display = "none";
+document.getElementById("_Cheats_").style.display = "none";
+document.getElementById("_Pictures_").style.display = "none";
+document.getElementById("_Files_").style.display = "none";
+document.getElementById("_Nacp_").style.display = "none";
+document.getElementById("_Cnmt_").style.display = "none";
+document.getElementById("_Verification_").style.display = "none";
+document.getElementById("_Npdm_").style.display = "block";
+document.getElementById("_viewspace_").style.height = "80vh";
+}
+function show_cnmtdata(){
+if (navclicks>0){
+document.getElementById("nav_view_but").click();
+}
+<!-- document.getElementById("_inf_bar_but").click(); -->
+window.scrollTo(0,0);
+document.getElementById("_GameInfo_").style.display = "none";
+document.getElementById("_imagebox_").style.display = "none";
+document.getElementById("_Description_").style.display = "none";
+document.getElementById("_Gametree_").style.display = "none";
+document.getElementById("_Cheats_").style.display = "none";
+document.getElementById("_Pictures_").style.display = "none";
+document.getElementById("_Files_").style.display = "none";
+document.getElementById("_Nacp_").style.display = "none";
+document.getElementById("_Npdm_").style.display = "none";
+document.getElementById("_Verification_").style.display = "none";
+document.getElementById("_Cnmt_").style.display = "block";
+document.getElementById("_viewspace_").style.height = "80vh";
+}
+function show_verdata(){
+if (navclicks>0){
+document.getElementById("nav_view_but").click();
+}
+<!-- document.getElementById("_inf_bar_but").click(); -->
+window.scrollTo(0,0);
+document.getElementById("_GameInfo_").style.display = "none";
+document.getElementById("_imagebox_").style.display = "none";
+document.getElementById("_Description_").style.display = "none";
+document.getElementById("_Gametree_").style.display = "none";
+document.getElementById("_Cheats_").style.display = "none";
+document.getElementById("_Pictures_").style.display = "none";
+document.getElementById("_Files_").style.display = "none";
+document.getElementById("_Nacp_").style.display = "none";
+document.getElementById("_Npdm_").style.display = "none";
+document.getElementById("_Cnmt_").style.display = "none";
+document.getElementById("_Verification_").style.display = "block";
+document.getElementById("_viewspace_").style.height = "80vh";
+}
+function setmainimage(route){
+document.getElementById("mainpicture").src = route
+}
+<!-- function zoommainimage(){ -->
+<!-- MediumLightbox('figure.zoom-effect'); -->
+<!-- } -->
+</script>
+</body>
+</html>

@@ -92,7 +92,7 @@ set "zip_restore=false"
 :: "6.0.0-4 - 6.1.0" 	   -> vkey = 6 
 :: "6.2.0"	    	 	   -> vkey = 7
 :: "7.0.0 - 8.01"	  	   -> vkey = 8
-:: "6.2.0 - ?"	  	 	   -> vkey = 9
+:: "8.1.0 "	  	           -> vkey = 9
 set "vkey=-kp false"
 
 ::--------------------------------------------------------------
@@ -151,4 +151,4 @@ set "transnutdb=FALSE"
 ::OPTION 17: WORKERS FOR MULTI-THREADING
 ::--------------------------------------------------------------
 ::Currently applies to renames
-set "workers=-threads 1"
+set "workers=-threads 10"

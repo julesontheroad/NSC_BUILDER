@@ -1822,6 +1822,9 @@ class Nca(File):
 			masterKeyRev=crypto1		
 		currkg=masterKeyRev		
 		if verification == True:
+			try:
+				bar.close()
+			except:pass
 			message=(indent+self._path+arrow+'is PROPER');print(message);feed+=message+'\n'			
 			#print(hx(headdata))		
 			return True,False,self._path,feed,currkg,False,False,self.header.getgamecard()

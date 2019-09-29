@@ -10,7 +10,8 @@ echo ********************************************************
 echo Input "1" for AUTO-MODE OPTIONS
 echo Input "2" for GLOBAL AND MANUAL OPTIONS
 echo Input "3" to VERIFY KEYS.TXT 
-REM echo Input "4" to INSTALL DEPENDENCIES
+echo Input "4" to UPDATE NUTDB
+REM echo Input "5" to INSTALL DEPENDENCIES
 echo.
 echo Input "c" to read CURRENT PROFILE
 echo Input "d" to set DEFAULT SETTINGS
@@ -21,7 +22,8 @@ set /p bs="Enter your choice: "
 if /i "%bs%"=="1" goto sc2
 if /i "%bs%"=="2" goto sc3
 if /i "%bs%"=="3" goto verify_keys
-rem if /i "%bs%"=="4" goto idepend
+if /i "%bs%"=="4" goto update_nutdb
+rem if /i "%bs%"=="5" goto idepend
 
 if /i "%bs%"=="c" call :curr_set1
 if /i "%bs%"=="c" call :curr_set2
@@ -1236,6 +1238,29 @@ if /i "%bs%"=="e" goto salida
 :salida
 exit /B
 
+:update_nutdb
+cls
+call :logo
+echo ***************************************************************************
+echo FORCING NUT_DB UPDATE
+echo ***************************************************************************
+
+%pycommand% "%nut%" -lib_call nutdb force_refresh
+
+echo ...........................................................................
+echo Input "0" to return to CONFIG MENU
+echo Input "1" to go back to the MAIN PROGRAM
+echo ...........................................................................
+echo.
+set /p bs="Enter your choice: "
+set bs=%bs:"=%
+
+if /i "%bs%"=="0" goto sc1
+if /i "%bs%"=="e" goto salida
+
+:salida
+exit /B
+
 :logo
 ECHO                                        __          _ __    __         
 ECHO                  ____  _____ ____     / /_  __  __(_) /___/ /__  _____
@@ -1251,7 +1276,7 @@ ECHO =============================     BY JULESONTHEROAD     ===================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                                POWERED BY SQUIRREL                                "
 ECHO "                    BASED IN THE WORK OF BLAWAR AND LUCA FRAGA                     "
-ECHO                                     VERSION 0.90
+ECHO                                     VERSION 0.91
 ECHO -------------------------------------------------------------------------------------                   
 ECHO Program's github: https://github.com/julesontheroad/NSC_BUILDER
 ECHO Blawar's github:  https://github.com/blawar

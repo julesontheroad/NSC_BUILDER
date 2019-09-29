@@ -58,8 +58,8 @@ class ACID:
 		string = '  ACID:\n'
 		string += '    ACID flags:     %d\n'          % self.flags
 		string += '    TitleID range:  %016x-%016x\n' % (self.tid_min, self.tid_max)
-		string += memdump(self.rsa_sig, message='    RSA signature:  ') + '\n'
-		string += memdump(self.rsa_pubk, message='    RSA public key: ') + '\n'
+		string += memdump(self.rsa_sig, message='    RSA signature:  \n') + '\n'
+		string += memdump(self.rsa_pubk, message='    RSA public key: \n') + '\n'
 		string += '\n' + str(self.fs_access_control)
 		string += '\n' + str(self.service_access_control)
 		string += '\n' + str(self.kernel_access_control)
