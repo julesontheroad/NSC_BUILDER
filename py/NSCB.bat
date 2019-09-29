@@ -3,7 +3,7 @@
 set "prog_dir=%~dp0"
 set "bat_name=%~n0"
 set "ofile_name=%bat_name%_options.cmd"
-Title NSC_Builder v0.90 -- Profile: %ofile_name% -- by JulesOnTheRoad
+Title NSC_Builder v0.91 -- Profile: %ofile_name% -- by JulesOnTheRoad
 set "list_folder=%prog_dir%lists"
 ::-----------------------------------------------------
 ::EDIT THIS VARIABLE TO LINK OTHER OPTION FILE
@@ -924,6 +924,7 @@ echo Input "6" to change top keygeneration to 6 (FW 6.0.0-6.1.0)
 echo Input "7" to change top keygeneration to 7 (FW 6.2.0)
 echo Input "8" to change top keygeneration to 8 (FW 7.0.0-8.0.1)
 echo Input "9" to change top keygeneration to 9 (FW 8.1.0)
+echo Input "10" to change top keygeneration to 10 (FW 9.0.0)
 echo.
 ECHO ******************************************
 echo Or Input "b" to return to the list options
@@ -954,6 +955,8 @@ if /i "%bs%"=="8" set "vkey=-kp 8"
 if /i "%bs%"=="8" set "capRSV=--RSVcap 469762048"
 if /i "%bs%"=="9" set "vkey=-kp 9"
 if /i "%bs%"=="9" set "capRSV=--RSVcap 537919488"
+if /i "%bs%"=="10" set "vkey=-kp 10"
+if /i "%bs%"=="10" set "capRSV=--RSVcap 603979776"
 if /i "%vkey%"=="none" echo WRONG CHOICE
 if /i "%vkey%"=="none" goto s_KeyChange_wrongchoice
 goto s_KeyChange_skip
@@ -1196,15 +1199,28 @@ if /i "%dlcrname%"=="none" goto s_rename_wrongchoice4
 echo.
 cls
 call :program_logo
+set "workers=-threads 1"
 for /f "tokens=*" %%f in (list.txt) do (
-%pycommand% "%nut%" -renf "single" -tfile "%prog_dir%list.txt" -t xci nsp -renm %renmode% -nover %nover% -oaid %oaid% -addl %addlangue% -dlcrn %dlcrname% %workers%
+%pycommand% "%nut%" -renf "single" -tfile "%prog_dir%list.txt" -t nsp xci nsx -renm %renmode% -nover %nover% -oaid %oaid% -addl %addlangue% -dlcrn %dlcrname% %workers%
 if "%workers%" EQU "-threads 1" ( %pycommand% "%nut%" --strip_lines "%prog_dir%list.txt" "1" "true" )
+if "%workers%" NEQ "-threads 1" ( call :renamecheck )
 rem call :contador_NF
 )
 ECHO ---------------------------------------------------
 ECHO *********** ALL FILES WERE PROCESSED! *************
 ECHO ---------------------------------------------------
 goto s_exit_choice
+
+:renamecheck
+setlocal enabledelayedexpansion
+set /a conta=0
+for /f "tokens=*" %%f in (list.txt) do (
+set /a conta=!conta! + 1
+)
+if !conta! LEQ 0 ( del list.txt )
+endlocal
+if not exist "list.txt" goto s_exit_choice
+exit /B
 
 :sanitize
 cls
@@ -1450,7 +1466,7 @@ endlocal
 set skip_list_split="false"
 set "mlistfol=%list_folder%\m_multi"
 echo Drag files or folders to create a list
-echo Note: Remember to press enter after each dile\folder dragged
+echo Note: Remember to press enter after each file\folder dragged
 echo.
 ECHO ***********************************************
 echo Input "1" to process PREVIOUSLY SAVED JOBS
@@ -1698,6 +1714,7 @@ echo Input "6" to change top keygeneration to 6 (FW 6.0.0-6.1.0)
 echo Input "7" to change top keygeneration to 7 (FW 6.2.0)
 echo Input "8" to change top keygeneration to 8 (FW 7.0.0-8.0.1)
 echo Input "9" to change top keygeneration to 9 (FW 8.1.0)
+echo Input "10" to change top keygeneration to 10 (FW 9.0.0)
 echo.
 ECHO *****************************************
 echo Or Input "b" to return to the option list
@@ -1728,6 +1745,8 @@ if /i "%bs%"=="8" set "vkey=-kp 8"
 if /i "%bs%"=="8" set "capRSV=--RSVcap 469762048"
 if /i "%bs%"=="9" set "vkey=-kp 9"
 if /i "%bs%"=="9" set "capRSV=--RSVcap 537919488"
+if /i "%bs%"=="10" set "vkey=-kp 10"
+if /i "%bs%"=="10" set "capRSV=--RSVcap 603979776"
 if /i "%vkey%"=="none" echo WRONG CHOICE
 if /i "%vkey%"=="none" goto m_KeyChange_wrongchoice
 
@@ -2786,7 +2805,7 @@ ECHO =============================     BY JULESONTHEROAD     ===================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                                POWERED BY SQUIRREL                                "
 ECHO "                    BASED ON THE WORK OF BLAWAR AND LUCA FRAGA                     "
-ECHO                                   VERSION 0.90 (NEW)
+ECHO                                   VERSION 0.91 (NEW)
 ECHO -------------------------------------------------------------------------------------                   
 ECHO Program's github: https://github.com/julesontheroad/NSC_BUILDER
 ECHO Blawar's github:  https://github.com/blawar
@@ -2929,7 +2948,7 @@ echo You're missing the following things:
 echo ....................................
 echo.
 if not exist "%op_file%" echo - The config file is not correctly pointed or is missing.
-if not exist "%nut%" echo - "nut_RTR.py" is not correctly pointed or is missing.
+if not exist "%nut%" echo - "squirrel.py" is not correctly pointed or is missing.
 if not exist "%xci_lib%" echo - "XCI.bat" is not correctly pointed or is missing.
 if not exist "%nsp_lib%" echo - "NSP.bat" is not correctly pointed or is missing.
 if not exist "%zip%" echo - "7za.exe" is not correctly pointed or is missing.
