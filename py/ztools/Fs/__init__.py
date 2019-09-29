@@ -9,6 +9,9 @@ from Fs.Pfs0 import Pfs0
 from Fs.Hfs0 import Hfs0
 from Fs.Ticket import Ticket
 from Fs.File import File
+from Fs.ChromeNsp import ChromeNsp
+from Fs.ChromeXci import ChromeXci
+from Fs.ChromeNacp import ChromeNacp
 
 def factory(name):
 	if name.endswith('.xci'):

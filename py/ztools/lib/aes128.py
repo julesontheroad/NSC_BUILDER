@@ -2,6 +2,8 @@
 # SciresM, 2017
 from struct import unpack as up, pack as pk
 from binascii import hexlify as hx, unhexlify as uhx
+from Crypto.Cipher import AES
+from Crypto.Util import Counter
 
 def sxor(s1, s2):
 	assert(len(s1) == len(s2))
@@ -50,29 +52,17 @@ class AESCBC:
 class AESCTR:
 	'''Class for performing AES CTR cipher operations.'''
 
-	def __init__(self, key, ctr):
-		self.aes = AESECB(key)
-		if len(ctr) != self.aes.block_size:
-			raise ValueError('CTR must be of size %X!' % self.aes.block_size)
-		self.ctr = int(hx(ctr), 0x10)
+	def __init__(self, key, nonce, offset = 0):
+		self.key = key
+		self.nonce = nonce
+		self.seek(offset)
+		#self.aes = AES.new(self.key, AES.MODE_CTR, initial_value=self.ctr[0:8])
 
 	def encrypt(self, data, ctr=None):
 		'''Encrypts some data in CTR mode.'''
 		if ctr is None:
 			ctr = self.ctr
-		elif type(ctr) is not int:
-			ctr = int(hx(ctr), 16)
-		out = b''
-		ln = len(data)
-		while ln:
-			xorpad = self.aes.encrypt_block_ecb(uhx('%032X' % ctr))
-			l = min(0x10, ln)
-			out += sxor(data[:l], xorpad[:l])
-			data = data[l:]
-			ln -= l
-			ctr += 1
-		self.ctr = ctr
-		return out
+		return self.aes.encrypt(data)
 
 	def decrypt(self, data, ctr=None):
 		'''Decrypts some data in CTR mode.
@@ -80,10 +70,12 @@ class AESCTR:
 		'''
 		return self.encrypt(data, ctr)
 
-	def set_ctr(self, ctr):
-		if len(ctr) != self.aes.block_size:
-			raise ValueError('CTR must be of size %X!' % self.aes.block_size)
-		self.ctr = int(hx(ctr), 0x10)
+	def seek(self, offset):
+		#print('sizeof nonce = %d, key = %d' % (len(self.nonce), len(self.key)))
+		self.ctr = Counter.new(64, prefix=self.nonce[0:8], initial_value=(offset >> 4))
+		self.aes = AES.new(self.key, AES.MODE_CTR, counter=self.ctr)
+		#self.initial_value 
+		#raise IOError('unsupported set_ctr')
 
 class AESXTS:
 	'''Class for performing AES XTS cipher operations'''

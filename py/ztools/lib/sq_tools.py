@@ -39,10 +39,12 @@ versions =
 	469827584: "7.0.1"    ->   keygeneration = 8  
 	536870912: "8.0.0"    ->   keygeneration = 8
 	536936448: "8.0.1"    ->   keygeneration = 8	
-	537919488: "8.1.0"    ->   keygeneration = 9		
+	537919488: "8.1.0"    ->   keygeneration = 9
+	603979776: "9.0.0"    ->   keygeneration = 10		
 '''	
 def kgstring(kg=list()):
 	kg=list()
+	kg10=[603979776];kg.append(kg10)		
 	kg9=[537919488];kg.append(kg9)		
 	kg8=[536936448,536870912,469827584,469762048];kg.append(kg8)	
 	kg7=[404750336];kg.append(kg7)	
@@ -82,6 +84,8 @@ def getTopRSV(keygeneration, RSV):
 		return 536936448
 	if keygeneration == 9:
 		return 537919488		
+	if keygeneration == 10:
+		return 603979776			
 	else:
 		return RSV
 
@@ -113,7 +117,10 @@ def getMinRSV(keygeneration, RSV):
 		return RSV	
 	if keygeneration == 9:
 		RSV=8*67108864+1*1048576
-		return RSV			
+		return RSV	
+	if keygeneration == 10:
+		RSV=9*67108864
+		return RSV				
 	else:
 		return RSV		
 		
@@ -137,7 +144,9 @@ def getFWRangeKG(keygeneration):
 	if keygeneration == 8:
 		return "(7.0.0 - 8.0.1)"	
 	if keygeneration == 9:
-		return "(8.1.0 - >8.1.0)"			
+		return "(8.1.0)"	
+	if keygeneration == 10:
+		return "(9.0.0 - >9.0.0)"				
 	else:
 		return "UNKNOWN"		
 
@@ -451,6 +460,10 @@ def verify_nkeys(fileName):
 		print("master_key_08 is Missing")
 	else:
 		counter+=1		
+	if 'master_key_09' not in checkkeys:
+		print("master_key_08 is Missing")
+	else:
+		counter+=1				
 		
 	if 'header_key' not in checkkeys:
 		print("header_key is Missing")	
@@ -637,6 +650,17 @@ def verify_nkeys(fileName):
 				print(tabs+'> Key is valid!!!')
 			else:
 				print(tabs+'> Key is invalid!!! -> PLEASE CHECK YOUR KEYS.TXT!!!')			
+			print('')			
+
+		if i == 'master_key_09':
+			master_key_09=checkkeys[i][:]
+			print('master_key_09: '+master_key_08)
+			sha=sha256(uhx(master_key_09)).hexdigest()
+			print('  > HEX SHA256: '+sha)	
+			if sha == '9d486a98067c44b37cf173d3bf577891eb6081ff6b4a166347d9dbbf7025076b':
+				print(tabs+'> Key is valid!!!')
+			else:
+				print(tabs+'> Key is invalid!!! -> PLEASE CHECK YOUR KEYS.TXT!!!')			
 			print('')				
 
 		if i == 'header_key':
@@ -744,17 +768,28 @@ def verify_nkeys_startup(fileName):
 		print("master_key_06 is Missing!!!")
 		print("The program won't be able to decrypt games content that uses this key")
 		print("This key represents FW 6.2.0 requirement")
-		startup=True		
+		startup=True	
+	else:
+		counter+=1		
 	if 'master_key_07' not in checkkeys:
 		print("master_key_07 is Missing!!!")
 		print("The program won't be able to decrypt games content that uses this key")
 		print("This key represents FW 7.0.0-8.0.1 requirement")
-		startup=True	
+		startup=True
+	else:
+		counter+=1		
 	if 'master_key_08' not in checkkeys:
 		print("master_key_08 is Missing!!!")
 		print("The program won't be able to decrypt games content that uses this key")
 		print("This key represents FW 8.1 requirement")
-		startup=True			
+		startup=True
+	else:
+		counter+=1		
+	if 'master_key_09' not in checkkeys:
+		print("master_key_09 is Missing!!!")
+		print("The program won't be able to decrypt games content that uses this key")
+		print("This key represents FW 9.0 requirement")
+		startup=True		
 	else:
 		counter+=1
 		
@@ -930,7 +965,17 @@ def verify_nkeys_startup(fileName):
 				print('  > HEX SHA256: '+sha)
 				print(tabs+'> Key is invalid!!! -> PLEASE CHECK YOUR KEYS.TXT!!!')		
 				startup=True				
-			print('')		
+			print('')
+
+		if i == 'master_key_09':
+			master_key_08=checkkeys[i][:]
+			sha=sha256(uhx(master_key_08)).hexdigest()
+			if sha != '9d486a98067c44b37cf173d3bf577891eb6081ff6b4a166347d9dbbf7025076b':
+				print('master_key_07: '+aes_kek_generation_source )	
+				print('  > HEX SHA256: '+sha)
+				print(tabs+'> Key is invalid!!! -> PLEASE CHECK YOUR KEYS.TXT!!!')		
+				startup=True				
+			print('')					
 
 		if i == 'header_key':
 			header_key=checkkeys[i][:]
@@ -1238,3 +1283,54 @@ def ret_xci_offsets(filepath):
 	except BaseException as e:
 		Print.error('Exception: ' + str(e))
 	return files_list
+
+def count_content(filepath):
+	counter=0
+	if filepath.endswith('.nsp')or filepath.endswith('.nsx'):
+		files_list=ret_nsp_offsets(filepath)
+	elif filepath.endswith('.xci'):	
+		files_list=ret_xci_offsets(filepath)
+	for i in range(len(files_list)):
+		entry=files_list[i]
+		if str(entry[0]).endswith('cnmt.nca'):
+			counter+=1
+	return counter		
+	
+def trimm_module_id(moduleid):	
+	moduleid=str(moduleid)
+	while moduleid[-2:]=='00':
+		moduleid=moduleid[:-2]
+	return moduleid	
+	
+def get_mc_isize(filepath):
+	counter=0;size=0
+	if filepath.endswith('.nsp')or filepath.endswith('.nsx'):
+		files_list=ret_nsp_offsets(filepath)
+	elif filepath.endswith('.xci'):	
+		files_list=ret_xci_offsets(filepath)
+	for i in range(len(files_list)):
+		entry=files_list[i]
+		size+=int(entry[3])
+	return size		
+
+def cnmt_type(type_n):
+	if str(hx(type_n)) == "b'1'":
+		ctype='SystemProgram'		
+	if str(hx(type_n)) == "b'2'":
+		ctype='SystemData'
+	if str(hx(type_n)) == "b'3'":
+		ctype='SystemUpdate'
+	if str(hx(type_n)) == "b'4'":
+		ctype='BootImagePackage'		
+	if str(hx(type_n)) == "b'5'":
+		ctype='BootImagePackageSafe'		
+	if str(hx(type_n)) == "b'80'":
+		ctype='GAME'			
+	if str(hx(type_n)) == "b'81'":
+		ctype='UPDATE'
+	if str(hx(type_n)) == "b'82'":
+		ctype='DLC'
+	if str(hx(type_n)) == "b'83'":
+		ctype='Delta'
+	return ctype	
+		

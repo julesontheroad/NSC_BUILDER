@@ -32,6 +32,8 @@ elif os.path.exists(testroute2):
 	squirrel=testroute2
 	isExe=True
 allowedlist=['--renamef','--addtodb','--addtodb_new','--verify']
+
+#print (squirrel)
 	
 def call_library(args):	
 	vret=None
@@ -75,7 +77,13 @@ def call_library(args):
 				vret=function(*var)					
 	except BaseException as e:
 		Print.error('Exception: ' + str(e))	
-	return 	vret
+	try:
+		if str(args[2]).lower() == 'print' or str(args[3]).lower() == 'print':
+			print(str(vret))
+		else:
+			print(str(vret))		
+	except:	
+		return 	vret
 
 	
 	
@@ -118,6 +126,7 @@ def route(args,workers):
 				os.makedirs(ruta)				
 		for f in filelist:	
 			arguments[ind]=f
+			#print (arguments)
 			if ind2 !=False:
 				if not os.path.isdir(sub_r) and not str(sub_r).endswith('all_DB.txt'):  			
 					fi=str(os.path.basename(os.path.abspath(sub_r)))+'_'+str(c)	
@@ -133,10 +142,12 @@ def route(args,workers):
 					#print(arguments)
 				c+=1	
 			process.append(subprocess.Popen(arguments))		
+			#print(process)
 			#print(f)		
 		#print(len(process))	
 		for p in process: 	
 			p.wait()
+			# print(str(p.poll()))
 			while p.poll()==None:
 				if p.poll()!=None:
 					p.terminate();	

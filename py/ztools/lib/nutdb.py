@@ -47,48 +47,71 @@ def get_titlesurl(tfile):
 			else:	
 				url=str(row[weburl])
 				return url	
+				
+def get_otherurl(tfile,dbname):
+	with open(tfile,'rt',encoding='utf8') as csvfile:
+		readCSV = csv.reader(csvfile, delimiter='|')	
+		i=0	
+		for row in readCSV:
+			if i==0:
+				csvheader=row
+				i=1
+				if 'URL' and 'NAME' in csvheader:
+					weburl=csvheader.index('URL')
+					name=csvheader.index('NAME')
+				else:break	
+			else:
+				if dbname.lower() == str(row[name]).lower():
+					url=str(row[weburl])
+					return url
 
 if os.path.exists(zconfig_dir):
 	DATABASE_folder=os.path.join(zconfig_dir, 'DB')
 	nutdbfile=os.path.join(DATABASE_folder,'nutdb.json')	
-	urlconfig=os.path.join(zconfig_dir,'NUT_DB_TITLES_URL.txt')
+	urlconfig=os.path.join(zconfig_dir,'NUT_DB_URL.txt')
 	urlregions=os.path.join(zconfig_dir,'NUT_DB_REGIONS_URL.txt')	
 	if os.path.exists(urlconfig):
 		json_url = get_titlesurl(urlconfig)	
 	else:
-		urlconfig=os.path.join(squirrel_dir,'NUT_DB_TITLES_URL.txt')
+		urlconfig=os.path.join(squirrel_dir,'NUT_DB_URL.txt')
 		urlregions=os.path.join(squirrel_dir,'NUT_DB_REGIONS_URL.txt')		
 		DATABASE_folder=squirrel_dir
 		if os.path.exists(urlconfig):	
 			json_url = get_titlesurl(urlconfig)		
 		else:	
-			json_url='https://raw.githubusercontent.com/blawar/nut/master/titledb/titles.US.en.json'
+			json_url='https://raw.githubusercontent.com/blawar/titledb/master/titles.US.en.json'
 else:
 	nutdbfile='nutdb.json'
-	urlconfig=os.path.join(squirrel_dir,'NUT_DB_TITLES_URL.txt')
+	urlconfig=os.path.join(squirrel_dir,'NUT_DB_URL.txt')
 	urlregions=os.path.join(squirrel_dir,'NUT_DB_REGIONS_URL.txt')
 	DATABASE_folder=squirrel_dir	
 	if os.path.exists(urlconfig):	
 		json_url = get_titlesurl(urlconfig)		
 	else:	
-		json_url='https://raw.githubusercontent.com/blawar/nut/master/titledb/titles.US.en.json'
+		json_url='https://raw.githubusercontent.com/blawar/titledb/master/titles.US.en.json'
 
 def getnutdb():
-	if os.path.exists(nutdbfile):
-		try:os.remove(nutdbfile)
-		except:pass	
 	response = requests.get(json_url, stream=True)
-	try:
-		with open(nutdbfile,'wb') as nutfile:
-			print('Getting NUTDB json')
-			for data in response.iter_content(65536):
-				nutfile.write(data)
-				if not data:
-					break
-	except BaseException as e:
-		Print.error('Exception: ' + str(e))		
-		try:os.remove(nutdbfile)
-		except:pass	
+	if '<Response [404]>'!=str(response):
+		if os.path.exists(nutdbfile):
+			try:os.remove(nutdbfile)
+			except:pass			
+		try:
+			with open(nutdbfile,'wb') as nutfile:
+				print('Getting NUTDB json')
+				for data in response.iter_content(65536):
+					nutfile.write(data)
+					if not data:
+						break
+		except BaseException as e:
+			Print.error('Exception: ' + str(e))		
+			try:os.remove(nutdbfile)
+			except:pass	
+		return True				
+	else:
+		print(json_url)
+		print("Response 404. Old Files weren't removed")
+		return False			
 
 def regionurl(region):	
 	with open(urlregions,'rt',encoding='utf8') as csvfile:
@@ -141,6 +164,41 @@ def region_refresh_time(region):
 					except:	pass		
 					break
 	return th,tm,ts		
+	
+def others_refresh_time(tfile,dbname):	
+	th=24;tm=0;ts=0
+	with open(tfile,'rt',encoding='utf8') as csvfile:
+		readCSV = csv.reader(csvfile, delimiter='|')	
+		i=0	
+		for row in readCSV:
+			if i==0:
+				csvheader=row
+				i=1
+				if 'NAME'in csvheader:
+					name=csvheader.index('NAME')
+				else:break	
+				if 'REFRESH(h)'in csvheader:
+					indexh=csvheader.index('REFRESH(h)')
+				else:break		
+				if 'REFRESH(m)'in csvheader:
+					indexm=csvheader.index('REFRESH(m)')
+				else:break	
+				if 'REFRESH(s)'in csvheader:
+					indexs=csvheader.index('REFRESH(s)')
+				else:break								
+			else:	
+				if str(dbname).lower()==str(row[name]).lower():
+					try:
+						th=int(str(row[indexh]))
+					except:	pass
+					try:
+						tm=int(str(row[indexm]))
+					except:	pass
+					try:
+						ts=int(str(row[indexs]))
+					except:	pass		
+					break
+	return th,tm,ts		
 
 def titles_refresh_time():	
 	th=24;tm=0;ts=0
@@ -182,35 +240,109 @@ def check_region_file(region):
 	regionfile=os.path.join(DATABASE_folder,f)		
 	if not os.path.exists(regionfile):
 		get_regionDB(region)
+		return True			
 	elif (time.time() - os.path.getmtime(regionfile)) > (th*60*60+tm*60+ts):
-		get_regionDB(region)		
+		get_regionDB(region)	
+		return True			
 	else:
 		try:
 			with open(regionfile) as json_file:
 				pass
+				return 'Refresh time limit not reached'
 		except:
 			get_regionDB(region)	
-	return							
-					
+			return True
+	return	False							
+			
+def check_other_file(dbfile,dbname):	
+	if str(dbname.lower()).endswith('_txt'):
+		ext='.txt'
+		enderf=dbname[:-4]
+	else:
+		ext='.json'	
+		enderf=dbname
+	try:
+		th,tm,ts=others_refresh_time(dbfile,dbname)
+	except:
+		th=24;tm=0;ts=0
+	f='nutdb_'+enderf+ext
+	_dbfile_=os.path.join(DATABASE_folder,f)		
+	if not os.path.exists(_dbfile_):
+		get_otherDB(dbfile,dbname,f)
+		return True
+	elif (time.time() - os.path.getmtime(_dbfile_)) > (th*60*60+tm*60+ts):
+		get_otherDB(dbfile,dbname,f)	
+		return True		
+	else:
+		try:
+			with open(_dbfile_) as json_file:
+				pass
+				return 'Refresh time limit not reached'
+		except:
+			get_otherDB(dbfile,dbname,f)
+			return True
+	return	False
+
+def get_otherDB(dbfile,dbname,f):
+	url=get_otherurl(dbfile,dbname)
+	_dbfile_=os.path.join(DATABASE_folder,f)	
+	response = requests.get(url, stream=True)
+	if '<Response [404]>'!=str(response):	
+		if os.path.exists(_dbfile_):
+			try:os.remove(_dbfile_)
+			except:pass		
+		try:
+			with open(_dbfile_,'wb') as nutfile:
+				print('Getting NUTDB json "'+dbname+'"')
+				for data in response.iter_content(65536):
+					nutfile.write(data)
+					if not data:
+						break
+		except BaseException as e:
+			Print.error('Exception: ' + str(e))		
+			try:os.remove(_dbfile_)
+			except:pass	
+		return True				
+	else:
+		print(json_url)
+		print("Response 404. Old Files weren't removed")	
+		return False			
+		
 def get_regionDB(region):
 	url=regionurl(region)
 	f='nutdb_'+region+'.json'
 	regionfile=os.path.join(DATABASE_folder,f)	
-	if os.path.exists(regionfile):
-		try:os.remove(regionfile)
-		except:pass	
-	response = requests.get(url, stream=True)
-	try:
-		with open(regionfile,'wb') as nutfile:
-			print('Getting NUTDB json "'+region+'"')
-			for data in response.iter_content(65536):
-				nutfile.write(data)
-				if not data:
-					break
-	except BaseException as e:
-		Print.error('Exception: ' + str(e))		
-		try:os.remove(regionfile)
-		except:pass	
+	response = requests.get(url, stream=True)	
+	if '<Response [404]>'!=str(response):	
+		if os.path.exists(regionfile):
+			try:os.remove(regionfile)
+			except:pass	
+		try:
+			with open(regionfile,'wb') as nutfile:
+				print('Getting NUTDB json "'+region+'"')
+				for data in response.iter_content(65536):
+					nutfile.write(data)
+					if not data:
+						break
+		except BaseException as e:
+			Print.error('Exception: ' + str(e))		
+			try:os.remove(regionfile)
+			except:pass	
+		return True	
+	else:
+		print(json_url)
+		print("Response 404. Old Files weren't removed")
+		return False		
+		
+def force_refresh():
+	getnutdb()
+	get_regionDB('America')	
+	get_regionDB('Europe')	
+	get_regionDB('Japan')	
+	get_regionDB('Asia')		
+	get_otherDB(urlconfig,'versions_txt','nutdb_versions.txt')
+	get_otherDB(urlconfig,'cheats','nutdb_cheats.json')		
+	return True
 					
 def check_current():	
 	try:
@@ -219,16 +351,20 @@ def check_current():
 		th=24;tm=0;ts=0	
 	if not os.path.exists(nutdbfile):
 		getnutdb()
+		return True			
 	elif (time.time() - os.path.getmtime(nutdbfile)) > (th*60*60+tm*60+ts):
 		getnutdb()		
+		return True			
 	else:
 		try:
 			with open(nutdbfile) as json_file:
 				pass
+				return 'Refresh time limit not reached'
 		except:
 			getnutdb()	
-	return		
-
+			return True
+	return	False	
+	
 def force_update():			
 	getnutdb()
 	return
@@ -260,6 +396,82 @@ def get_contentname(titleid,roman=True,format='tabs'):
 		if cname==False:
 			return False
 	return 	cname			
+
+
+def get_contenregions(titleid):
+	baseid=get_baseid(titleid);baseid=baseid.lower()	
+	langue=False
+	rglist=['America','Europe','Japan','Asia']
+	regions=list()
+	titleid=titleid.lower()	
+	if str(titleid).endswith('000'):
+		baseid=titleid
+	elif str(titleid).endswith('800'):	
+		baseid=titleid[:-3]+'000'
+	else:
+		titleid=titleid.lower()
+		baseid=get_dlc_baseid(titleid);baseid=baseid.lower()	
+	for region in rglist:
+		f='nutdb_'+region+'.json'
+		regionfile=os.path.join(DATABASE_folder,f)	
+		check_region_file(region)
+		with open(regionfile) as json_file:	
+			data = json.load(json_file)		
+			for i in data:
+				dict=data[i]
+				if 'id' in dict and not region in regions:
+					if str(dict['id']).lower()==baseid:
+						regions.append(region)
+						break
+	return regions
+	
+def get_icon(titleid):
+	baseid=get_baseid(titleid);baseid=baseid.lower()	
+	iconUrl=False
+	rglist=['America','Europe','Japan','Asia']
+	regions=list()
+	titleid=titleid.lower()	
+	if str(titleid).endswith('000'):
+		baseid=titleid
+	elif str(titleid).endswith('800'):	
+		baseid=titleid[:-3]+'000'
+	else:
+		titleid=titleid.lower()
+		baseid=get_dlc_baseid(titleid);baseid=baseid.lower()	
+	for region in rglist:
+		f='nutdb_'+region+'.json'
+		regionfile=os.path.join(DATABASE_folder,f)	
+		check_region_file(region)
+		with open(regionfile) as json_file:	
+			data = json.load(json_file)		
+			for i in data:
+				dict=data[i]
+				if 'id' in dict and not region in regions:
+					if str(dict['id']).lower()==titleid:
+						if 'iconUrl' in dict:
+							iconUrl=str(dict['iconUrl'])	
+							if iconUrl=='None' or iconUrl=='':
+								iconUrl=False	
+							else:	
+								return iconUrl	
+	for region in rglist:
+		f='nutdb_'+region+'.json'
+		regionfile=os.path.join(DATABASE_folder,f)	
+		check_region_file(region)
+		with open(regionfile) as json_file:	
+			data = json.load(json_file)		
+			for i in data:
+				dict=data[i]
+				if 'id' in dict and not region in regions:
+					if str(dict['id']).lower()==baseid:
+						if 'iconUrl' in dict:
+							iconUrl=str(dict['iconUrl'])	
+							if iconUrl=='None' or iconUrl=='':
+								iconUrl=False	
+							else:	
+								return iconUrl						
+	return regions	
+
 
 def get_dlcname(titleid,roman=True,format='tabs'):
 	cname=False;basename=False;name=False
@@ -453,7 +665,16 @@ def get_list_match(token,roma=True,show=False,Print=False):
 				p_=par.split(":")
 				include_tk.append(p_[0])
 				include_val.append(p_[1])			
-				
+	# print(include_tk)			
+	# print(include_val)
+	# print(exclude_tk)			
+	# print(exclude_val)
+	# print(filter_tk)			
+	# print(filter_val)	
+	# print(roma)
+	# print(show)
+	# print(Print)	
+
 	matchdict={};
 	rglist=['America','Europe','Japan','Asia']
 	for region in rglist:
@@ -531,6 +752,7 @@ def get_list_match(token,roma=True,show=False,Print=False):
 					else:
 						cname= "{} [{}]({})[{}][v{}].nsp".format(contentname,basename,langue,titleid,version)					
 					matchdict[titleid]=cname
+
 	if show==True:
 		showlist=list()
 		for key in matchdict.keys():
@@ -596,15 +818,17 @@ def get_content_data(titleid,trans=True):
 								releaseDate=False
 							else:
 								b=releaseDate
-								releaseDate=b[-2:]+'/'+b[5:-2]+'/'+b[:4]
+								releaseDate=b[6:]+'/'+b[4:6]+'/'+b[:4]
 						if 'nsuId' in dict:
 							nsuId=str(dict['nsuId'])
 							if nsuId=='None' or nsuId=='':
 								nsuId=False
 						if 'category' in dict:
-							category=str(dict['category'])								
-							x = [x.strip() for x in eval(category)]							
-							category=x
+							category=str(dict['category'])
+							try:	
+								x = [x.strip() for x in eval(category)]							
+								category=x
+							except:pass	
 							if category=='None' or str((', '.join(category)))=='':
 								category=False		
 							elif region=='Japan' or region=='Asia':
@@ -616,9 +840,11 @@ def get_content_data(titleid,trans=True):
 									romalist.append(item)
 								category=romalist	
 						if 'ratingContent' in dict:
-							ratingContent=str(dict['ratingContent'])								
-							x = [x.strip() for x in eval(ratingContent)]							
-							ratingContent=x
+							ratingContent=str(dict['ratingContent'])							
+							try:									
+								x = [x.strip() for x in eval(ratingContent)]							
+								ratingContent=x
+							except:pass	
 							if ratingContent=='None' or str((', '.join(ratingContent)))=='':
 								ratingContent=False	
 							elif region=='Japan' or region=='Asia':
@@ -758,6 +984,158 @@ def get_dlc_baseid(titleid):
 	token=token.upper()
 	baseid=baseid[:-4]+token+'000'	
 	return baseid
+
+
+def get_content_cheats(titleid,version=False,buildId=False):	
+	cheatID_list=list();
+	titleid=titleid.lower()	
+	if str(titleid).endswith('000'):
+		baseid=titleid
+	elif str(titleid).endswith('800'):	
+		baseid=titleid[:-3]+'000'
+	else:
+		titleid=titleid.lower()
+		baseid=get_dlc_baseid(titleid);baseid=baseid.lower()	
+	f='nutdb_'+'cheats'+'.json'
+	_dbfile_=os.path.join(DATABASE_folder,f)	
+	check_other_file(urlconfig,'cheats')
+	with open(_dbfile_) as json_file:	
+		data = json.load(json_file)		
+		for i in data:
+			if i.lower()==baseid.lower():
+				dict=data[i]
+				for j in dict:
+					jsonbID=j
+					datalv2=dict[j]
+					if 'version' in datalv2:
+						titleid=str(i).upper()
+						version=str(datalv2['version'])
+						BuildID=str(j).upper()
+						# print (titleid+' v'+version)
+						# print('BuildID: '+str(j))
+						cheats=list()
+						for k in datalv2:
+							if k!='version':
+								datalv3=datalv2[k]
+								if 'title' in datalv3:
+									cheat_title=datalv3['title']
+									# print("Title: "+datalv3['title'])
+								if 'source' in datalv3:
+									cheat_source=datalv3['source']
+									# print(datalv3['source'])	
+									if not 'title' in datalv3:
+										cheat_title=''
+									cheats.append([cheat_title,cheat_source])
+						cheatID_list.append([titleid,version,BuildID,cheats])			
+				break
+	return cheatID_list
+	
+def BaseID_tree(titleid,printinfo=True):	
+	feed=''
+	titleid=titleid.lower()	
+	if str(titleid).endswith('000'):
+		baseid=titleid
+	elif str(titleid).endswith('800'):	
+		baseid=titleid[:-3]+'000'
+	else:
+		titleid=titleid.lower()
+		baseid=get_dlc_baseid(titleid);baseid=baseid.lower()		
+	f='nutdb_'+'versions'+'.txt'
+	_dbfile_=os.path.join(DATABASE_folder,f)	
+	check_other_file(urlconfig,'versions_txt')
+	baselist=list();updlist=list();dlclist=list()
+	with open(_dbfile_,'rt',encoding='utf8') as csvfile:
+		readCSV = csv.reader(csvfile, delimiter='|')	
+		i=0	
+		for row in readCSV:
+			if i==0:
+				csvheader=row
+				i=1
+				if 'id' and 'version' in csvheader:
+					id=csvheader.index('id')
+					ver=csvheader.index('version')	
+				else:break	
+			else:	
+				tid=str(row[id]).lower() 
+				if str(tid).endswith('000'):
+					bid=tid
+				elif str(tid).endswith('800'):	
+					bid=tid[:-3]+'000'
+				else:
+					tid=tid.lower()
+					bid=get_dlc_baseid(tid);bid=bid.lower()				
+				if baseid==bid:
+					v_=str(row[ver])
+					if v_=='':
+						v_='0'
+					if tid.endswith('000'):
+						baselist.append([tid,v_])
+						if printinfo==True:
+							message=('Base:   '+tid.upper()+' v'+str(v_));print(message);feed+=message+'\n'
+					elif tid.endswith('800'):
+						updlist.append([tid,v_])
+						if printinfo==True:
+							message=('Update: '+tid.upper()+' v'+str(v_));print(message);feed+=message+'\n'		
+					else:
+						dlclist.append([tid,v_])
+						if printinfo==True:
+							message=('DLC:    '+tid.upper()+' v'+str(v_));print(message);feed+=message+'\n'
+				else:pass
+	return feed,baselist,updlist,dlclist			
+
+def latest_upd(titleid):	
+	titleid=titleid.lower()	
+	if str(titleid).endswith('000'):
+		baseid=titleid[:-3]+'000'
+	elif str(titleid).endswith('800'):	
+		baseid=titleid[:-3]+'000'
+	else:
+		titleid=titleid.lower()
+		baseid=get_dlc_baseid(titleid);baseid=baseid.lower()
+	updid=baseid[:-3]+'800'
+	f='nutdb_'+'versions'+'.txt'
+	_dbfile_=os.path.join(DATABASE_folder,f)	
+	check_other_file(urlconfig,'versions_txt')
+	feed=list()
+	with open(_dbfile_,'rt',encoding='utf8') as csvfile:
+		readCSV = csv.reader(csvfile, delimiter='|')	
+		i=0	
+		for row in readCSV:
+			if i==0:
+				csvheader=row
+				i=1
+				if 'id' and 'version' in csvheader:
+					id=csvheader.index('id')
+					ver=csvheader.index('version')	
+				else:break	
+			else:	
+				tid=str(row[id]).lower() 		
+				if updid==tid:
+					v_=str(row[ver])				
+					return ('v'+str(v_))
+
+def latest_ver(titleid):	
+	titleid=titleid.lower()	
+	f='nutdb_'+'versions'+'.txt'
+	_dbfile_=os.path.join(DATABASE_folder,f)	
+	check_other_file(urlconfig,'versions_txt')
+	feed=list()
+	with open(_dbfile_,'rt',encoding='utf8') as csvfile:
+		readCSV = csv.reader(csvfile, delimiter='|')	
+		i=0	
+		for row in readCSV:
+			if i==0:
+				csvheader=row
+				i=1
+				if 'id' and 'version' in csvheader:
+					id=csvheader.index('id')
+					ver=csvheader.index('version')	
+				else:break	
+			else:	
+				tid=str(row[id]).lower() 		
+				if titleid==tid:
+					v_=str(row[ver])				
+					return ('v'+str(v_))					
 
 def set_roma_uppercases(input):
 	if '(' in str(input):

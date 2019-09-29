@@ -58,7 +58,6 @@ from datetime import datetime
 import math  
 import pykakasi
 from Fs.pyNCA3 import NCA3
-import nutdb
 
 # SET ENVIRONMENT
 squirrel_dir=os.path.abspath(os.curdir)
@@ -98,8 +97,8 @@ if __name__ == '__main__':
 		parser.add_argument('--ADVcontentlist', nargs='+', help='Prints ADVANCED content list from NSP/XCI arranged by base titleid')			
 		parser.add_argument('--Read_cnmt', nargs='+', help='Read cnmt file inside NSP/XCI')
 		parser.add_argument('--Read_nacp', nargs='+', help='Read nacp file inside NSP/XCI')	
+		parser.add_argument('--Read_icon', nargs='+', help='Read icon files inside NSP/XCI')			
 		parser.add_argument('--Read_npdm', nargs='+', help='Read npdm file inside NSP/XCI')
-		parser.add_argument('--Read_build_id', nargs='+', help='Read npdm file inside NSP/XCI')			
 		parser.add_argument('--Read_hfs0', nargs='+', help='Read hfs0')		
 		parser.add_argument('--fw_req', nargs='+', help='Get information about fw requirements for NSP/XCI')		
 		parser.add_argument('--Read_xci_head', nargs='+', help='Get information about xci header and cert')				
@@ -267,7 +266,7 @@ if __name__ == '__main__':
 		parser.add_argument('-renf','--renamef', help='Rename file with proper name')	
 		parser.add_argument('-renftxt','--renameftxt', help='Rename file with proper name using a text list')		
 		parser.add_argument('-snz','--sanitize', help='Remove unreadable characters from names')			
-		parser.add_argument('-roma','--romanize', help='Translate kanji and extended kanna to romaji and sanitize name')			
+		parser.add_argument('-roma','--romanize', nargs='+', help='Translate kanji and extended kanna to romaji and sanitize name')			
 		parser.add_argument('-oaid','--onlyaddid', help='Rename file with proper name')		
 		parser.add_argument('-renm','--renmode', help='Rename mode (force,skip_corr_tid,skip_if_tid)')		
 		parser.add_argument('-addl','--addlangue', help='Add language string')
@@ -3913,10 +3912,10 @@ if __name__ == '__main__':
 					#print(oflist)
 					#print(osizelist)
 					#print(sec_hashlist)
-					if totSize <= 4294901760:
+					if totSize <= 4294934528:
 						fat="exfat"			
 					if fat=="fat32":
-						splitnumb=math.ceil(totSize/4294901760)
+						splitnumb=math.ceil(totSize/4294934528)
 						index=0
 						endfile=endfile[:-1]+str(index)
 						
@@ -3974,7 +3973,7 @@ if __name__ == '__main__':
 										for i in range(len(GClist)):
 											if GClist[i][0] == file:
 												GC=GClist[i][1]
-										endfile,index,c = f.append_clean_content(endfile,file,buffer,t,GC,vkeypatch,metapatch,RSV_cap,fat,fx,c,index)
+										endfile,index,c = f.append_clean_content(endfile,file,buffer,t,GC,vkeypatch,metapatch,RSV_cap,fat,fx,c,index,block=4294934528)
 								f.flush()
 								f.close()		
 							except BaseException as e:
@@ -3988,7 +3987,7 @@ if __name__ == '__main__':
 										for i in range(len(GClist)):
 											if GClist[i][0] == file:
 												GC=GClist[i][1]									
-										endfile,index,c = f.append_clean_content(endfile,file,buffer,t,GC,vkeypatch,metapatch,RSV_cap,fat,fx,c,index)
+										endfile,index,c = f.append_clean_content(endfile,file,buffer,t,GC,vkeypatch,metapatch,RSV_cap,fat,fx,c,index,block=4294934528)
 								f.flush()
 								f.close()		
 							except BaseException as e:
@@ -4523,7 +4522,16 @@ if __name__ == '__main__':
 				if str(args.translate).lower()=="true":
 					trans=True
 			else:
-				trans=False			
+				trans=False
+			if args.romanize:
+				for val_ in args.romanize:
+					roman=str(val_).upper()
+					if roman == "FALSE":
+						roman = False
+					else:
+						roman = True
+			else:
+				roman = True						
 			if args.ofolder:		
 				for var in args.ofolder:
 					try:
@@ -4556,7 +4564,7 @@ if __name__ == '__main__':
 			if filename.endswith('.nsp') or filename.endswith('.nsx'):
 				try:
 					f = Fs.Nsp(filename, 'rb')
-					feed=f.print_fw_req(trans)
+					feed=f.print_fw_req(trans,roma=roman)
 					f.flush()
 					f.close()
 					if not args.text_file:						
@@ -4582,7 +4590,7 @@ if __name__ == '__main__':
 				try:
 					f = Fs.factory(filename)
 					f.open(filename, 'rb')
-					feed=f.print_fw_req(trans)
+					feed=f.print_fw_req(trans,roma=roman)
 					f.flush()
 					f.close()
 					if not args.text_file:						
@@ -4763,6 +4771,15 @@ if __name__ == '__main__':
 		# ...................................................					
 
 		if args.Read_nacp:
+			if args.romanize:
+				for val_ in args.romanize:
+					roman=str(val_).upper()
+					if roman == "FALSE":
+						roman = False
+					else:
+						roman = True
+			else:
+				roman = True					
 			if args.ofolder:		
 				for var in args.ofolder:
 					try:
@@ -4795,7 +4812,7 @@ if __name__ == '__main__':
 			if filename.endswith('.nsp') or filename.endswith('.nsx'):
 				try:
 					f = Fs.Nsp(filename, 'rb')
-					feed=f.read_nacp()
+					feed=f.read_nacp(roma=roman)
 					f.flush()
 					f.close()
 					if not args.text_file:						
@@ -4821,7 +4838,7 @@ if __name__ == '__main__':
 				try:
 					f = Fs.factory(filename)
 					f.open(filename, 'rb')
-					feed=f.read_nacp()
+					feed=f.read_nacp(roma=roman)
 					f.flush()
 					f.close()
 					if not args.text_file:						
@@ -4874,6 +4891,32 @@ if __name__ == '__main__':
 								print('WRONG CHOICE\n')							
 				except BaseException as e:
 					Print.error('Exception: ' + str(e))	
+
+		# ...................................................						
+		# Read ncap inside nsp or xci
+		# ...................................................					
+
+		if args.Read_icon:
+			for filename in args.Read_icon:
+				filename=filename		
+			if filename.endswith('.nsp') or filename.endswith('.nsx'):
+				try:
+					files_list=sq_tools.ret_nsp_offsets(filename)	
+					f = Fs.Nsp(filename, 'rb')
+					f.icon_info(files_list)
+					f.flush()
+					f.close()						
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))
+			if filename.endswith('.xci'):
+				try:
+					files_list=sq_tools.ret_xci_offsets(filename)	
+					f = Fs.Xci(filename)
+					f.icon_info(files_list)
+					f.flush()
+					f.close()						
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))					
 
 		# ......................................................................						
 		# Raw extraction. For cases when a file is bad and triggers a exception
@@ -5226,59 +5269,6 @@ if __name__ == '__main__':
 				except BaseException as e:
 					Print.error('Exception: ' + str(e))	
 
-		# ...........................................................................						
-		# Read build_id
-		# ...........................................................................									
-
-		if args.Read_build_id:
-			if args.ofolder:		
-				for var in args.ofolder:
-					try:
-						ofolder = var
-					except BaseException as e:
-						Print.error('Exception: ' + str(e))	
-			else:
-				for filename in args.Read_build_id:
-					dir=os.path.dirname(os.path.abspath(filename))	
-					info='INFO'
-					ofolder =os.path.join(dir,info)		
-			if not os.path.exists(ofolder):
-				os.makedirs(ofolder)	
-			if args.text_file:
-				tfile=args.text_file
-				dir=os.path.dirname(os.path.abspath(tfile))
-				if not os.path.exists(dir):
-					os.makedirs(dir)	
-				err='badfiles.txt'			
-				errfile = os.path.join(dir, err)						
-				with open(tfile,"r+", encoding='utf8') as filelist: 	
-					filename = filelist.readline()
-					filename=os.path.abspath(filename.rstrip('\n'))
-			else:									
-				for filename in args.Read_build_id:
-					filename=filename		
-			basename=str(os.path.basename(os.path.abspath(filename)))					
-			ofile=basename[:-4]+'-npdm.txt'
-			infotext=os.path.join(ofolder, ofile)																
-			if filename.endswith(".nsp"):	
-				try:
-					files_list=sq_tools.ret_nsp_offsets(filename)	
-					f = Fs.Nsp(filename, 'rb')
-					feed=f.read_buildid()
-					f.flush()
-					f.close()
-				except BaseException as e:
-					Print.error('Exception: ' + str(e))									
-			if filename.endswith(".xci"):	
-				try:
-					files_list=sq_tools.ret_xci_offsets(filename)	
-					f = Fs.Xci(filename)					
-					feed=f.read_buildid(files_list)
-					f.flush()
-					f.close()					
-				except BaseException as e:
-					Print.error('Exception: ' + str(e))						
-								
 		# ...................................................						
 		# Read cnmt inside nsp or xci
 		# ...................................................					
@@ -6087,6 +6077,7 @@ if __name__ == '__main__':
 		#parser.add_argument('-dlcrn','--dlcrname', help="If false keeps base name in dlcs")				
 
 		if args.renamef:
+			import nutdb
 			if args.onlyaddid:
 				if args.onlyaddid=="true" or args.onlyaddid == "True" or args.onlyaddid == "TRUE":
 					onaddid=True
@@ -9293,9 +9284,14 @@ if __name__ == '__main__':
 					Print.error('Exception: ' + str(e))
 		'''
 
-		Status.close()		
-	
+		Status.close()
+
 		
+		def init_interface():
+			import secondary
+			parameters=["Interface","start"]
+			vret=secondary.call_library(parameters)
+		#init_interface()
 
 	except KeyboardInterrupt:
 		Config.isRunning = False

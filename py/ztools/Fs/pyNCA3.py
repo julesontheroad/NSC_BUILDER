@@ -303,6 +303,13 @@ class NCA3:
 				npdm = NPDM(sec.fs.open('main.npdm'))
 				n=npdm.ret
 				return n
+				
+	def ret_main(self):
+		for _, sec in enumerate(self.sections):
+			if sec.is_exefs:
+				npdm = NPDM(sec.fs.open('main'))
+				n=npdm.ret
+				return n				
 
 	def print_npdm(self):
 		for _, sec in enumerate(self.sections):

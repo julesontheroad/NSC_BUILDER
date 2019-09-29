@@ -326,7 +326,7 @@ class BufferedFile(BaseFile):
 		if self.crypto:
 			if self.cryptoType == Fs.Type.Crypto.CTR:
 				#Print.info('reading ctr from ' + hex(self._bufferOffset))
-				self.crypto.set_ctr(self.setCounter(self.offset + self._bufferOffset))
+				self.crypto.seek(self.offset + self._bufferOffset)
 			else:
 				pass
 				#Print.info('reading from ' + hex(self._bufferOffset))
@@ -386,7 +386,7 @@ class File(BufferedFile):
 		if self.crypto:
 			if self.cryptoType == Fs.Type.Crypto.CTR:
 				#Print.info('reading ctr from ' + hex(self._bufferOffset))
-				self.crypto.set_ctr(self.setCounter(self.offset + self._bufferOffset))
+				self.crypto.seek(self.offset + self._bufferOffset)
 			else:
 				pass
 				#Print.info('reading from ' + hex(self._bufferOffset))
@@ -403,7 +403,7 @@ class MemoryFile(File):
 
 		if self.crypto:
 			if self.cryptoType == Fs.Type.Crypto.CTR:
-				self.crypto.set_ctr(self.setCounter(offset))
+				self.crypto.seek(offset)
 
 			self.buffer = self.crypto.decrypt(self.buffer)
 
