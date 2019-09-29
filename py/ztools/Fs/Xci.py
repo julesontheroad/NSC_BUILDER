@@ -19,7 +19,7 @@ import Titles
 import Hex
 import sq_tools
 from struct import pack as pk, unpack as upk
-from hashlib import sha256
+from hashlib import sha256,sha1
 import re
 import pathlib
 import Config
@@ -32,6 +32,7 @@ import DBmodule
 import io
 import nutdb
 import textwrap
+from PIL import Image
 
 MEDIA_SIZE = 0x200
 RSA_PUBLIC_EXPONENT = 65537
@@ -837,7 +838,7 @@ class Xci(File):
 				return 'FALSE'	
 
 #READ NACP FILE WITHOUT EXTRACTION	
-	def read_nacp(self,feed=''):
+	def read_nacp(self,feed='',gui=False,roma=True):
 		for nspF in self.hfs0:
 			if str(nspF._path)=="secure":
 				for nca in nspF:	
@@ -847,10 +848,15 @@ class Xci(File):
 							for f in nca:
 								f.seek(offset)
 								nacp = Nacp()	
-								feed=nacp.par_getNameandPub(f.read(0x300*15),feed)
-								message='...............................';print(message);feed+=message+'\n'	
-								message='NACP FLAGS';print(message);feed+=message+'\n'						
-								message='...............................';print(message);feed+=message+'\n'
+								feed=nacp.par_getNameandPub(f.read(0x300*15),feed,gui,roma)
+								if gui==True:
+									message='...............................';print(message);feed+=message+'...............................'*2+'\n'	
+									message='NACP FLAGS';print(message);feed+=message+'\n'						
+									message='...............................';print(message);feed+=message+'...............................'*2+'\n'
+								else:	
+									message='...............................';print(message);feed+=message+'\n'		
+									message='NACP FLAGS';print(message);feed+=message+'\n'						
+									message='...............................';print(message);feed+=message+'\n'							
 								f.seek(offset+0x3000)							
 								feed=nacp.par_Isbn(f.read(0x24),feed)		
 								f.seek(offset+0x3025)							
@@ -866,15 +872,25 @@ class Xci(File):
 								feed=nacp.par_getPresenceGroupId(f.readInt64('little'),feed)
 								f.seek(offset+0x3040)
 								listages=list()
-								message='...............................';print(message);feed+=message+'\n'						
-								message='Age Ratings';print(message);feed+=message+'\n'	
-								message='...............................';print(message);feed+=message+'\n'						
+								if gui==True:
+									message='...............................';print(message);feed+=message+'...............................'*2+'\n'						
+									message='Age Ratings';print(message);feed+=message+'\n'	
+									message='...............................';print(message);feed+=message+'...............................'*2+'\n'
+								else:		
+									message='...............................';print(message);feed+=message+'\n'							
+									message='Age Ratings';print(message);feed+=message+'\n'	
+									message='...............................';print(message);feed+=message+'\n'						
 								for i in range(12):
 									feed=nacp.par_getRatingAge(f.readInt8('little'),i,feed)
-								f.seek(offset+0x3060)		
-								message='...............................';print(message);feed+=message+'\n'						
-								message='NACP ATTRIBUTES';print(message);feed+=message+'\n'	
-								message='...............................';print(message);feed+=message+'\n'
+								f.seek(offset+0x3060)	
+								if gui==True:	
+									message='...............................';print(message);feed+=message+'...............................'*2+'\n'						
+									message='NACP ATTRIBUTES';print(message);feed+=message+'\n'	
+									message='...............................';print(message);feed+=message+'...............................'*2+'\n'	
+								else:	
+									message='...............................';print(message);feed+=message+'\n'							
+									message='NACP ATTRIBUTES';print(message);feed+=message+'\n'	
+									message='...............................';print(message);feed+=message+'\n'								
 								try:
 									feed=nacp.par_getDisplayVersion(f.read(0xF),feed)		
 									f.seek(offset+0x3070)							
@@ -929,7 +945,7 @@ class Xci(File):
 								except:continue	
 		return feed
 		
-	def read_npdm(self,files_list):
+	def read_npdm(self,files_list,buffer=32768):
 		feed=''
 		for nspF in self.hfs0:
 			if str(nspF._path)=="secure":
@@ -947,6 +963,7 @@ class Xci(File):
 								nca3=NCA3(fp,int(offset),str(nca._path),decKey)
 								feed=nca3.print_npdm()
 								fp.close();
+								return feed
 							except BaseException as e:
 								#Print.error('Exception: ' + str(e))
 								nca.rewind()					
@@ -957,6 +974,7 @@ class Xci(File):
 											npdm = NPDM(inmemoryfile)
 											n=npdm.__str__()
 											print(n)	
+											return n
 					if type(nca) == Fs.Nca and nca.header.getRightsId() != 0:
 						if 	str(nca.header.contentType) == 'Content.PROGRAM':	
 							correct, tkey = self.verify_nca_key(str(nca._path))		
@@ -978,6 +996,7 @@ class Xci(File):
 								nca3=NCA3(fp,int(offset),str(nca._path),decKey)
 								feed=nca3.print_npdm()
 								fp.close();
+								return feed
 							except BaseException as e:
 								#Print.error('Exception: ' + str(e))
 								nca.rewind()
@@ -1043,9 +1062,11 @@ class Xci(File):
 												npdm = NPDM(inmemoryfile)
 												n=npdm.__str__()
 												print(n)
+												return n
 												break	
 									break	
-		return feed							
+								return feed			
+		return feed					
 									
 	def read_buildid(self):
 		ModuleId='';BuildID8='';BuildID16=''
@@ -1130,15 +1151,19 @@ class Xci(File):
 											nca.seek(off1)
 											np=nca.read(0x60)
 											mem = MemoryFile(np, Type.Crypto.CTR, decKey, pfs0.cryptoCounter, offset = off1)
-											mem.seek(0x40)
-											data = mem.read(0x20);
-											ModuleId=(str(hx(data)).upper())[2:-1]
-											BuildID8=(str(hx(data[:8])).upper())[2:-1]
-											BuildID16=(str(hx(data[:16])).upper())[2:-1]
-											# Hex.dump(data)	
-											break	
+											magic=mem.read(0x4)
+											if magic==b'NSO0':
+												mem.seek(0x40)
+												data = mem.read(0x20);
+												ModuleId=(str(hx(data)).upper())[2:-1]
+												BuildID8=(str(hx(data[:8])).upper())[2:-1]
+												BuildID16=(str(hx(data[:16])).upper())[2:-1]
+												iscorrect=True;
+											break
 								break	
-		return ModuleId,BuildID8,BuildID16										
+		if iscorrect==False:
+			ModuleId='';BuildID8='';BuildID16='';
+		return ModuleId,BuildID8,BuildID16											
 																		
 	def copy_as_plaintext(self,ofolder,files_list,buffer=32768):
 		for nspF in self.hfs0:
@@ -2605,7 +2630,7 @@ class Xci(File):
 									break		
 		return 	programSDKversion,dataSDKversion					
 
-	def print_fw_req(self,trans=True):	
+	def print_fw_req(self,trans=True,roma=True):	
 		feed=''	
 		for nspF in self.hfs0:
 			if str(nspF._path)=="secure":
@@ -2635,7 +2660,7 @@ class Xci(File):
 									if content_type_cnmt == 'Patch':
 										content_type='Update'
 										reqtag='- RequiredSystemVersion: '
-										tit_name,editor,ediver,SupLg,regionstr,isdemo = self.inf_get_title(target,offset,content_entries,original_ID)							
+										tit_name,editor,ediver,SupLg,regionstr,isdemo = self.inf_get_title(target,offset,content_entries,original_ID,roman=rom)							
 										if tit_name=='DLC':
 											tit_name='-'
 											editor='-'						
@@ -2646,11 +2671,11 @@ class Xci(File):
 									if content_type_cnmt == 'AddOnContent':
 										content_type='DLC'
 										reqtag='- RequiredUpdateNumber: '
-										tit_name,editor,ediver,SupLg,regionstr,isdemo = self.inf_get_title(target,offset,content_entries,original_ID)	
+										tit_name,editor,ediver,SupLg,regionstr,isdemo = self.inf_get_title(target,offset,content_entries,original_ID,roman=rom)	
 									if content_type_cnmt == 'Application':
 										content_type='Base Game or Application'
 										reqtag='- RequiredSystemVersion: '	
-										tit_name,editor,ediver,SupLg,regionstr,isdemo = self.inf_get_title(target,offset,content_entries,original_ID)
+										tit_name,editor,ediver,SupLg,regionstr,isdemo = self.inf_get_title(target,offset,content_entries,original_ID,roman=rom)
 										if tit_name=='DLC':
 											tit_name='-'
 											editor='-'	
@@ -2765,7 +2790,7 @@ class Xci(File):
 											ModuleId,BuildID8,BuildID16=self.read_buildid()	
 											message=('- BuildID8:  '+ BuildID8);print(message);feed+=message+'\n'
 											message=('- BuildID16: '+ BuildID16);print(message);feed+=message+'\n'
-											message=('- BuildID32: '+ ModuleId +'\n');print(message);feed+=message+'\n'			
+											message=('- BuildID32: '+ ModuleId +'\n');print(message);feed+=message+'\n'	
 									except:pass		
 									if nsuId!=False or numberOfPlayers!=False or releaseDate!=False or category!=False or ratingContent!=False:
 										message=('Eshop Data:');print(message);feed+=message+'\n'								
@@ -3367,16 +3392,17 @@ class Xci(File):
 										c=0
 										dat2=newheader[0x00:0x00+int(n2)]
 										outf.write(dat2)
-										outf.flush()
-										outf.close()	
 										t.update(len(dat2))
+										outf.flush()
+										outf.close()
 										index=index+1
 										outfile=outfile[0:-1]
 										outfile=outfile+str(index)
 										outf = open(outfile, 'wb')	
 										dat2=newheader[0x00+int(n2)+1:]
 										outf.write(dat2)						
-										t.update(len(dat2))									
+										t.update(len(dat2))
+										c+=len(dat2)
 										outf.flush()	
 									else:
 										outf.write(newheader)
@@ -3511,8 +3537,8 @@ class Xci(File):
 					dat2=inmemoryfile.read(n2)									
 					outf.write(dat2)
 					outf.flush()
-					outf.close()						
-					c=c+len(dat2)
+					outf.close()		
+					t.update(len(dat2))					
 					wrdata=wrdata+len(dat2)						
 					break	
 				else:	
@@ -3587,6 +3613,7 @@ class Xci(File):
 					inmemoryfile.seek(0)
 					dat2=inmemoryfile.read(n2)									
 					outf.write(dat2)
+					t.update(len(dat2))
 					outf.flush()
 					outf.close()						
 					c=c+len(dat2)
@@ -3610,12 +3637,14 @@ class Xci(File):
 				outfile=outfile[0:-1]
 				outfile=outfile+str(index)
 				outf = open(outfile, 'wb')
+				c=0
 				n3=totSize-valid_data-n2
 				outf.write(bytes.fromhex('FF'*n3))						
-				t.update(n3)													
+				t.update(n3)	
+				c+=len(n3)				
 				outf.flush()	
 			else:
-				bytes_tofill=int(round((int(totSize-valid_data)/buffer),0))
+				bytes_tofill=int(round((int(totSize-valid_data)/int(buffer)),0))
 				#print(str(bytes_tofill))
 				count=0
 				while count<bytes_tofill:
@@ -4097,7 +4126,8 @@ class Xci(File):
 									dat2=inmemoryfile.read(len(newheader)-n2)
 									inmemoryfile.close()
 									outf.write(dat2)						
-									t.update(len(dat2))									
+									t.update(len(dat2))		
+									c+=len(dat2)										
 									outf.flush()	
 								else:
 									outf.write(newheader)
@@ -4125,7 +4155,8 @@ class Xci(File):
 									dat2=inmemoryfile.read(len(data)-n2)
 									inmemoryfile.close()
 									outf.write(dat2)						
-									t.update(len(dat2))									
+									t.update(len(dat2))	
+									c+=len(dat2)										
 									outf.flush()	
 								else:
 									outf.write(data)				
@@ -4163,7 +4194,8 @@ class Xci(File):
 								dat2=inmemoryfile.read(len(data)-n2)
 								inmemoryfile.close()
 								outf.write(dat2)						
-								t.update(len(dat2))									
+								t.update(len(dat2))
+								c+=len(dat2)									
 								outf.flush()	
 							else:
 								outf.write(data)				
@@ -4203,7 +4235,8 @@ class Xci(File):
 									dat2=inmemoryfile.read(len(data)-n2)
 									inmemoryfile.close()
 									outf.write(dat2)						
-									t.update(len(dat2))									
+									t.update(len(dat2))	
+									c+=len(dat2)										
 									outf.flush()	
 								else:
 									outf.write(data)				
@@ -4424,12 +4457,13 @@ class Xci(File):
 									dat2=inmemoryfile.read(len(newheader)-n2)
 									inmemoryfile.close()
 									outf.write(dat2)						
-									t.update(len(dat2))									
-									outf.flush()	
+									t.update(len(dat2))		
+									c+=len(dat2)										
+									outf.flush()
 								else:
 									outf.write(newheader)
 									t.update(len(newheader))	
-									c=c+len(newheader)							
+									c+=len(newheader)							
 								nca.seek(0xC00)									
 								i+=1		
 							else:			
@@ -4452,12 +4486,13 @@ class Xci(File):
 									dat2=inmemoryfile.read(len(data)-n2)
 									inmemoryfile.close()
 									outf.write(dat2)						
-									t.update(len(dat2))									
+									t.update(len(dat2))		
+									c+=len(dat2)										
 									outf.flush()	
 								else:
 									outf.write(data)				
 									t.update(len(data))
-									c=c+len(data)									
+									c+=len(data)									
 									outf.flush()
 								if not data:
 									break
@@ -4547,7 +4582,8 @@ class Xci(File):
 								dat2=inmemoryfile.read(len(data)-n2)
 								inmemoryfile.close()
 								outf.write(dat2)						
-								t.update(len(dat2))									
+								t.update(len(dat2))	
+								c+=len(dat2)								
 								outf.flush()	
 							else:
 								outf.write(data)				
@@ -5139,7 +5175,8 @@ class Xci(File):
 									dat2=inmemoryfile.read(len(newheader)-n2)
 									inmemoryfile.close()
 									outf.write(dat2)						
-									t.update(len(dat2))									
+									t.update(len(dat2))	
+									c+=len(dat2)									
 									outf.flush()	
 								else:
 									outf.write(newheader)
@@ -5167,7 +5204,8 @@ class Xci(File):
 									dat2=inmemoryfile.read(len(data)-n2)
 									inmemoryfile.close()
 									outf.write(dat2)						
-									t.update(len(dat2))									
+									t.update(len(dat2))	
+									c+=len(dat2)									
 									outf.flush()		
 								else:
 									outf.write(data)				
@@ -5199,7 +5237,8 @@ class Xci(File):
 								dat2=inmemoryfile.read(len(data)-n2)
 								inmemoryfile.close()
 								outf.write(dat2)						
-								t.update(len(dat2))									
+								t.update(len(dat2))	
+								c+=len(dat2)								
 								outf.flush()	
 							else:		
 								outf.write(data)
@@ -5437,7 +5476,8 @@ class Xci(File):
 									dat2=inmemoryfile.read(len(newheader)-n2)
 									inmemoryfile.close()
 									outf.write(dat2)						
-									t.update(len(dat2))									
+									t.update(len(dat2))	
+									c+=len(dat2)									
 									outf.flush()	
 								else:
 									outf.write(newheader)
@@ -5465,7 +5505,8 @@ class Xci(File):
 									dat2=inmemoryfile.read(len(data)-n2)
 									inmemoryfile.close()
 									outf.write(dat2)						
-									t.update(len(dat2))									
+									t.update(len(dat2))		
+									c+=len(dat2)									
 									outf.flush()
 								else:	
 									outf.write(data)
@@ -6106,8 +6147,7 @@ class Xci(File):
 									fp.close()					
 									break	
 
-	def append_clean_content(self,outf,target,buffer,t,gamecard,keypatch,metapatch,RSV_cap,fat,fx,c,index):	
-		block=4294934528		
+	def append_clean_content(self,outf,target,buffer,t,gamecard,keypatch,metapatch,RSV_cap,fat,fx,c,index,block=4294901760):	
 		indent = 1
 		tabs = '\t' * indent	
 		ticketlist=list()
@@ -6206,7 +6246,7 @@ class Xci(File):
 											outf=outf+str(index)
 											fp = open(outf, 'wb')	
 											inmemoryfile.seek(n2)
-											dat2=inmemoryfile.read(len(newheader)-n2)
+											dat2=inmemoryfile.read()
 											inmemoryfile.close()
 											fp.write(dat2)						
 											t.update(len(dat2))		
@@ -6237,7 +6277,7 @@ class Xci(File):
 											outf=outf+str(index)
 											fp = open(outf, 'wb')	
 											inmemoryfile.seek(n2)
-											dat2=inmemoryfile.read(len(data)-n2)
+											dat2=inmemoryfile.read()
 											inmemoryfile.close()
 											fp.write(dat2)						
 											t.update(len(dat2))		
@@ -6288,10 +6328,11 @@ class Xci(File):
 											outf=outf+str(index)
 											fp = open(outf, 'wb')	
 											inmemoryfile.seek(n2)
-											dat2=inmemoryfile.read(len(newheader)-n2)
+											dat2=inmemoryfile.read()
 											inmemoryfile.close()
 											fp.write(dat2)						
-											t.update(len(dat2))												
+											t.update(len(dat2))	
+											c+=len(dat2)											
 											fp.flush()	
 											sha.update(newheader)												
 										else:														
@@ -6318,7 +6359,7 @@ class Xci(File):
 											outf=outf+str(index)
 											fp = open(outf, 'wb')	
 											inmemoryfile.seek(n2)
-											dat2=inmemoryfile.read(len(data)-n2)
+											dat2=inmemoryfile.read()
 											inmemoryfile.close()
 											fp.write(dat2)						
 											t.update(len(dat2))		
@@ -6372,7 +6413,7 @@ class Xci(File):
 										outf=outf+str(index)
 										fp = open(outf, 'wb')	
 										inmemoryfile.seek(n2)
-										dat2=inmemoryfile.read(len(data)-n2)
+										dat2=inmemoryfile.read()
 										inmemoryfile.close()
 										fp.write(dat2)						
 										t.update(len(dat2))		
@@ -6419,7 +6460,7 @@ class Xci(File):
 											outf=outf+str(index)
 											fp = open(outf, 'wb')	
 											inmemoryfile.seek(n2)
-											dat2=inmemoryfile.read(len(data)-n2)
+											dat2=inmemoryfile.read()
 											inmemoryfile.close()
 											fp.write(dat2)						
 											t.update(len(dat2))		
@@ -6456,7 +6497,7 @@ class Xci(File):
 									outf=outf+str(index)
 									fp = open(outf, 'wb')	
 									inmemoryfile.seek(n2)
-									dat2=inmemoryfile.read(len(data)-n2)
+									dat2=inmemoryfile.read()
 									inmemoryfile.close()
 									fp.write(dat2)						
 									t.update(len(dat2))		
@@ -7676,14 +7717,68 @@ class Xci(File):
 				DBmodule.MainDB.initializeDB(dbfile)		
 			if not dbkey in Datashelve:
 				Datashelve[dbkey]=DBdict
-		Datashelve.close()		
-		
-	def getDBdict(self,cnmtname,json=False,trans=True):
+		Datashelve.close()	
+
+	def return_DBdict(self):
+		cnmtnames=list()	
+		for nspF in self.hfs0:
+			if str(nspF._path)=="secure":
+				for nca in nspF:
+					if type(nca) == Nca:
+						if 	str(nca.header.contentType) == 'Content.META':	
+							cnmtnames.append(str(nca._path))
+		content_number=len(cnmtnames)	
+		if content_number>1:
+			file,mcstring,mGame=self.choosecnmt(cnmtnames)	
+			DBdict=self.getDBdict(file,content_number=content_number,mcstring=mcstring,mGame=mGame)
+		else:
+			DBdict=self.getDBdict(cnmtnames[0],content_number=content_number)	
+		return DBdict		
+			
+	def choosecnmt(self,cnmtnames):		
+		file=False;titleid=False;nG=0;nU=0;nD=0;mcstring="";mGame=False
+		for nspF in self.hfs0:
+			if str(nspF._path)=="secure":
+				for nca in nspF:
+					if str(nca._path) in cnmtnames:
+						if type(nca) == Nca:
+							if titleid==False:
+								file=str(nca._path)
+							titleid=str(nca.header.titleId)								
+							if str(nca.header.titleId).endswith('000'):	
+								nG+=1
+							elif str(nca.header.titleId).endswith('800'):
+								if nU==0 and nG<2:
+									file=str(nca._path)
+								nU+=1
+							else:
+								nD+=1
+		if nG>0:
+			mcstring+='{} Game'.format(str(nG))
+			if nG>1:
+				mcstring+='s'
+				mGame=True
+		if nU>0:
+			if nG>0:
+				mcstring+=', '
+			mcstring+='{} Update'.format(str(nU))	
+			if nU>1:
+				mcstring+='s'			
+		if nD>0:
+			if nG>0 or nU>0: 
+				mcstring+=', '		
+			mcstring+='{} DLC'.format(str(nD))	
+			if nD>1:
+				mcstring+='s'			
+		return file,mcstring,mGame								
+
+	def getDBdict(self,cnmtname,json=False,trans=True,content_number=False,mcstring=False,mGame=False):
 		DBdict={}
 		titleid,titleversion,base_ID,keygeneration,rightsId,RSV,RGV,ctype,metasdkversion,exesdkversion,hasHtmlManual,Installedsize,DeltaSize,ncadata=self.get_data_from_cnmt(cnmtname)
-		#print(ncadata)
-		sqname,sqeditor,SupLg,ctype=self.DB_get_names(ctype,ncadata)
-		#print(sqname)
+		try:
+			sqname,sqeditor,SupLg,ctype=self.DB_get_names(ctype,ncadata)
+		except:
+			sqname,sqeditor,SupLg=self.DB_get_names_from_nutdb(titleid)
 		if ctype != 'DLC':
 			nacpdict=self.get_data_from_nacp(ncadata)			
 		titlekey,dectkey=self.db_get_titlekey(rightsId,keygeneration)
@@ -7718,7 +7813,7 @@ class Xci(File):
 					DBdict['linkedAccRequired']='True'		
 				else:
 					DBdict['linkedAccRequired']='False'			
-				DBdict['buildnumber']=nacpdict['BuildNumber']		
+				DBdict['dispversion']=nacpdict['BuildNumber']		
 				DBdict['RegionalBaseNames']=nacpdict['RegionalNames']
 				DBdict['RegionalContentNames']='-'		
 				DBdict['RegionalEditors']=nacpdict['RegionalEditors']
@@ -7769,7 +7864,7 @@ class Xci(File):
 		#ticket flags	
 		if titlekey==False:
 			titlekey='-'
-			dectkey='-'		
+			dectkey='-'
 		DBdict['key']=titlekey		
 		DBdict['deckey']=dectkey	
 		
@@ -7782,46 +7877,80 @@ class Xci(File):
 			DBdict['DistCard']='True'
 			
 		# #xci flags		
-		# DBdict['FWoncard']='-'		
-		# DBdict['multicontentCard']='-'		
+		# DBdict['FWoncard']='-'			
 		# DBdict['multicontentCardname']='-'		
-		# DBdict['multicontentIDsoncard']='-'		
-		# DBdict['GCSize']='-'
-		# DBdict['TrimmedSize']='-'	
+		
+		GCFlag=(str(hx(self.gamecardSize))[2:-1]).upper()
+		valid_data=int(((self.validDataEndOffset+0x1)*0x200))
+		GCSize=sq_tools.getGCsizeinbytes(GCFlag)
+		GCSize=int(GCSize)	
+		DBdict['GCSize']=GCSize	
+		DBdict['TrimmedSize']=valid_data	
 
+		#Check if multicontent
+		if content_number==False:
+			content_number=sq_tools.count_content(self._path)
+		# print(str(content_number))
+		DBdict['ContentNumber']=str(content_number)
+		if mcstring !=False:
+			DBdict['ContentString']=mcstring
+		if content_number!=False and content_number>1:
+			if mGame==True:
+				DBdict['Type']="MULTIGAME"			
+			else:
+				DBdict['Type']="MULTICONTENT"
+			DBdict['InstalledSize']=sq_tools.get_mc_isize(self._path)
+			
+		DBdict['nsuId']='-'	
+		DBdict['genretags']='-'	
+		DBdict['ratingtags']='-'
+		DBdict['worldreleasedate']='-'			
+		DBdict['numberOfPlayers']='-'
+		DBdict['iconUrl']='-'					
+		DBdict['screenshots']='-'			
+		DBdict['bannerUrl']='-'			
+		DBdict['intro']='-'			
+		DBdict['description']='-'			
 		if ctype=='GAME' or ctype=='DLC' or ctype=='DEMO':	
-			DBdict['nsuId']='-'	
-			DBdict['genretags']='-'	
-			DBdict['ratingtags']='-'
-			DBdict['worldreleasedate']='-'			
-			DBdict['numberOfPlayers']='-'
-			DBdict['iconUrl']='-'					
-			DBdict['screenshots']='-'			
-			DBdict['bannerUrl']='-'			
-			DBdict['intro']='-'			
-			DBdict['description']='-'	
 			nsuId,worldreleasedate,genretags,ratingtags,numberOfPlayers,intro,description,iconUrl,screenshots,bannerUrl,region,rating=nutdb.get_content_data(titleid,trans)
-			if 	nsuId!=False:
-				DBdict['nsuId']=nsuId
-			if 	genretags!=False:
-				DBdict['genretags']=genretags
-			if 	ratingtags!=False:
-				DBdict['ratingtags']=ratingtags
-			if 	worldreleasedate!=False:
-				DBdict['worldreleasedate']=worldreleasedate
-			if 	numberOfPlayers!=False:
-				DBdict['numberOfPlayers']=numberOfPlayers
-			if 	iconUrl!=False:
-				DBdict['iconUrl']=iconUrl
-			if 	screenshots!=False:				
-				DBdict['screenshots']=screenshots
-			if 	bannerUrl!=False:				
-				DBdict['bannerUrl']=bannerUrl			
-			if 	intro!=False:	
-				DBdict['intro']=intro			
-			if 	description!=False:	
-				DBdict['description']=description														
+			regions=nutdb.get_contenregions(titleid)
+		else:
+			nsuId,worldreleasedate,genretags,ratingtags,numberOfPlayers,intro,description,iconUrl,screenshots,bannerUrl,region,rating=nutdb.get_content_data(base_ID,trans)
+			regions=nutdb.get_contenregions(base_ID)		
+		if 	nsuId!=False:
+			DBdict['nsuId']=nsuId
+		if 	genretags!=False:
+			DBdict['genretags']=genretags
+		if 	ratingtags!=False:
+			DBdict['ratingtags']=ratingtags
+		if 	worldreleasedate!=False:
+			DBdict['worldreleasedate']=worldreleasedate
+		if 	numberOfPlayers!=False:
+			DBdict['numberOfPlayers']=numberOfPlayers
+		if 	iconUrl!=False:
+			DBdict['iconUrl']=iconUrl
+		if 	screenshots!=False:				
+			DBdict['screenshots']=screenshots
+		if 	bannerUrl!=False:				
+			DBdict['bannerUrl']=bannerUrl			
+		if 	intro!=False:	
+			DBdict['intro']=intro			
+		if 	description!=False:	
+			DBdict['description']=description		
+		if 	rating!=False:	
+			DBdict['eshoprating']=rating	
+		if 	len(regions)>0:	
+			DBdict['regions']=regions					
 		return DBdict
+
+	def DB_get_names_from_nutdb(self,titleid):
+		try:
+			sqname,sqeditor=nutdb.get_dlcData(titleid)
+			SupLg=nutdb.get_content_langue(titleid)		
+			return sqname,sqeditor,SupLg
+		except BaseException as e:
+			Print.error('Exception: ' + str(e))	
+			return "-","-","-"
 	
 	def get_data_from_cnmt(self,cnmtname):	
 		for nspF in self.hfs0:
@@ -7857,9 +7986,6 @@ class Xci(File):
 										cnmt.seek(0x20)
 										base_ID=cnmt.readInt64()
 										base_ID=(str(hx(base_ID.to_bytes(8, byteorder='big')))[2:-1]).upper()
-										#cnmt.rewind()
-										#cnmt.seek(0x28)		
-										#cnmt.writeInt64(336592896)
 										cnmt.rewind()
 										cnmt.seek(0x28)					
 										min_sversion=cnmt.readInt32()
@@ -7901,6 +8027,8 @@ class Xci(File):
 										ncadata=list()	
 										hasHtmlManual=False	
 										Installedsize=int(nca.header.size);DeltaSize=0
+										cnmt.rewind()
+										cnmt.seek(0x20+offset)								
 										for i in range(content_entries):	
 											data={}
 											vhash = cnmt.read(0x20)
@@ -7933,7 +8061,7 @@ class Xci(File):
 										cnmtdata['Hash']=str(nsha)
 										ncadata.append(cnmtdata)
 								rightsId=titleid+'000000000000000'+str(crypto2)	
-								return 	titleid,titleversion,base_ID,keygeneration,rightsId,RSV,RGV,ctype,metasdkversion,exesdkversion,hasHtmlManual,Installedsize,DeltaSize,ncadata						
+								return 	titleid,titleversion,base_ID,keygeneration,rightsId,RSV,RGV,ctype,metasdkversion,exesdkversion,hasHtmlManual,Installedsize,DeltaSize,ncadata							
 			
 	def get_data_from_nacp(self,ncadata):
 		for entry in ncadata:
@@ -7953,6 +8081,7 @@ class Xci(File):
 									dict['RegionalNames'],dict['RegionalEditors']=nacp.get_NameandPub(f.read(0x300*15))							
 									f.seek(offset+0x3000)	
 									dict['ISBN']=nacp.get_Isbn(f.read(0x24))		
+									f.seek(offset+0x3025)									
 									dict['StartupUserAccount']=nacp.get_StartupUserAccount(f.readInt8('little'))	
 									dict['UserAccountSwitchLock']=nacp.get_UserAccountSwitchLock(f.readInt8('little'))		
 									dict['AddOnContentRegistrationType']=nacp.get_AddOnContentRegistrationType(f.readInt8('little'))						
@@ -8035,7 +8164,7 @@ class Xci(File):
 								title,editor,ediver,SupLg,regionstr,isdemo=nca.get_langueblock('DLC',roman=True)
 								if ctype=='GAME':
 									if isdemo==1:
-										ctype='UPDATE'
+										ctype='DEMO'
 									if isdemo==2:
 										ctype='RETAILINTERACTIVEDISPLAY'
 								elif ctype=='UPDATE':		
@@ -8066,4 +8195,64 @@ class Xci(File):
 							#print(deckey)	
 							return str(titleKey),str(deckey)
 		return False,False		
-				
+
+	def icon_info(self,files_list,buffer = 65536):
+		for nspF in self.hfs0:
+			if str(nspF._path)=="secure":
+				for nca in nspF:		
+					if type(nca) == Nca:
+						if 	str(nca.header.contentType) == 'Content.CONTROL':
+							tk=nca.header.titleKeyDec	
+							for i in range(len(files_list)):	
+								if str(nca._path) == files_list[i][0]:
+									offset=files_list[i][1]
+									#print(offset)
+									break
+							checksums = list()		
+							try:
+								fp=open(str(self._path), 'rb')			
+								nca3=NCA3(fp,int(offset),str(nca._path),tk)
+								for dat in self.open_all_dat(nca3):
+									checksum = sha1(dat.read()).digest()
+									if checksum not in checksums:
+										checksums.append(checksum)
+										a=self.print_dat(dat)
+										return a
+										break		
+								fp.close()
+							except BaseException as e:
+								# Print.error('Exception: ' + str(e))	
+								try:	
+									with open(str(self._path), 'rb') as f:
+										f.seek(offset)
+										inmemoryfile = io.BytesIO(f.read(files_list[i][3]))
+										nca3=NCA3(inmemoryfile,int(0),str(nca._path),tk,buffer)
+										for dat in self.open_all_dat(nca3):
+											checksum = sha1(dat.read()).digest()
+											if checksum not in checksums:
+												checksums.append(checksum)
+												a=self.print_dat(dat)	
+												return a
+												break
+										fp.close()							
+								except BaseException as e:						
+									#Print.error('Exception: ' + str(e))							
+									pass						
+	def open_all_dat(self,nca):
+		# Iterators that yields all the icon file handles inside an NCA
+		for _, sec in enumerate(nca.sections):
+			if sec.fs_type == 'PFS0':
+				continue
+			cur_file = sec.fs.first_file
+			while cur_file is not None:
+				if cur_file.name.endswith('.dat'):
+					yield sec.fs.open(cur_file)
+				cur_file = cur_file.next
+
+	def print_dat(self,dat):
+		dat.seek(0)
+		a=dat.read()
+		# print(a)
+		# img = Image.open(dat)
+		# img.show()
+		return a		
