@@ -199,13 +199,18 @@ b.) Hacbuild: The xci repacking functions are based on hacbuild's code, made by 
 
 - Revised hacbuild by me: https://github.com/julesontheroad/hacbuild
 
-c.) Big thx to 0Liam for his constant help.
+c.) nsz,xcz and ncz specification by blawar: https://github.com/blawar/nsz
 
-d.) pyNCA3,pyNPDM,pyPFS0,pyRomFS libraries adapted from pythac (made by Rikikooo)
+d.) Big thx to 0Liam for his constant help.
 
-e.) an adaptation of Pysos from dagnelies is used for some operations: https://github.com/dagnelies/pysos
+e.) pyNCA3,pyNPDM,pyPFS0,pyRomFS libraries adapted from pythac (made by Rikikooo)
+
+f.) an adaptation of Pysos from dagnelies is used for some operations: https://github.com/dagnelies/pysos
 
 Also thanks to:
+
+Nicoboss for the original nsp and xci compression idea:
+https://github.com/nicoboss/nsZip/
 
 AnalogMan. He made splitNSP.py, figured the needed block size for Horizon format splitted nsps (wich differs from the splitted xci block size) and the need to archive the folders)
 https://github.com/AnalogMan151/splitNSP/releases
