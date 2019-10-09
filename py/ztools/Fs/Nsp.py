@@ -37,6 +37,10 @@ import io
 import nutdb
 import textwrap
 from PIL import Image
+import zstandard
+from Crypto.Cipher import AES
+from Crypto.Util import Counter
+
 
 #from Cryptodome.Signature import pss
 #from Cryptodome.PublicKey import RSA
@@ -46,6 +50,40 @@ from PIL import Image
 MEDIA_SIZE = 0x200
 indent = 1
 tabs = '\t' * indent		
+
+def readInt64(f, byteorder='little', signed = False):
+		return int.from_bytes(f.read(8), byteorder=byteorder, signed=signed)
+
+def readInt128(f, byteorder='little', signed = False):
+	return int.from_bytes(f.read(16), byteorder=byteorder, signed=signed)
+
+class AESCTR:
+	def __init__(self, key, nonce, offset = 0):
+		self.key = key
+		self.nonce = nonce
+		self.seek(offset)
+
+	def encrypt(self, data, ctr=None):
+		if ctr is None:
+			ctr = self.ctr
+		return self.aes.encrypt(data)
+
+	def decrypt(self, data, ctr=None):
+		return self.encrypt(data, ctr)
+
+	def seek(self, offset):
+		self.ctr = Counter.new(64, prefix=self.nonce[0:8], initial_value=(offset >> 4))
+		self.aes = AES.new(self.key, AES.MODE_CTR, counter=self.ctr)
+		
+class Section:
+	def __init__(self, f):
+		self.f = f
+		self.offset = readInt64(f)
+		self.size = readInt64(f)
+		self.cryptoType = readInt64(f)
+		readInt64(f) # padding
+		self.cryptoKey = f.read(16)
+		self.cryptoCounter = f.read(16)		
 
 class Nsp(Pfs0):
 		
@@ -8498,3 +8536,146 @@ class Nsp(Pfs0):
 		# img = Image.open(dat)
 		# img.show()
 		return a
+
+	def decompress(self,output,buffer = 65536):	
+		print('Decompressing {}'.format(self._path))
+		files_list=sq_tools.ret_nsp_offsets(self._path)
+		files=list();filesizes=list()
+		for i in range(len(files_list)):
+			entry=files_list[i]
+			filepath=entry[0]
+			if filepath.endswith('.cnmt.nca'):
+				titleid,titleversion,base_ID,keygeneration,rightsId,RSV,RGV,ctype,metasdkversion,exesdkversion,hasHtmlManual,Installedsize,DeltaSize,ncadata=self.get_data_from_cnmt(filepath)
+				for j in range(len(ncadata)):
+					row=ncadata[j]
+					# print(row)
+					if row['NCAtype']!='Meta':
+						# print(str(row['NcaId'])+'.nca')
+						files.append(str(row['NcaId'])+'.nca')
+						filesizes.append(int(row['Size']))					
+					else:
+						# print(str(row['NcaId'])+'.cnmt.nca')
+						files.append(str(row['NcaId'])+'.cnmt.nca')
+						filesizes.append(int(row['Size']))					
+				for k in range(len(files_list)):
+					entry=files_list[k]
+					fp=entry[0];sz=int(entry[3])
+					if fp.endswith('xml'):
+						files.append(fp)
+						filesizes.append(sz)					
+				for k in range(len(files_list)):
+					entry=files_list[k]
+					fp=entry[0];sz=int(entry[3])
+					if fp.endswith('.tik'):
+						files.append(fp)	
+						filesizes.append(sz)					
+				for k in range(len(files_list)):
+					entry=files_list[k]
+					fp=entry[0];sz=int(entry[3])
+					if fp.endswith('.cert'):
+						files.append(fp)	
+						filesizes.append(sz)
+		nspheader=sq_tools.gen_nsp_header(files,filesizes)
+		totsize=0
+		for s in filesizes:
+			totsize+=s
+		for i in range(len(files_list)):
+			entry=files_list[i]
+			fp=entry[0]	
+			if fp.endswith('.ncz'):
+				for j in range(len(files)):
+					fp2=files[j]
+					if str(fp2[:-1])==str(fp[:-1]):
+						totsize+=filesizes[j]
+		t = tqdm(total=totsize, unit='B', unit_scale=True, leave=False)					
+		# Hex.dump(nspheader)
+		with open(output, 'wb') as o:
+			o.write(nspheader)	
+			t.update(len(nspheader))
+		for file in files:	
+			if file.endswith('cnmt.nca'):		
+				for nca in self:
+					if str(nca._path)==file:
+						t.write('- Appending {}'.format(str(nca._path)))
+						nca.rewind()
+						data=nca.read()
+						with open(output, 'ab') as o:
+							o.write(data)
+							t.update(len(data))							
+			elif file.endswith('nca'):		
+				for nca in self:
+					if str(nca._path)[:-1]==file[:-1] and not str(nca._path).endswith('.ncz'):	
+						t.write('- Appending {}'.format(str(nca._path)))					
+						o = open(output, 'ab+')
+						nca.rewind()
+						for data in iter(lambda: nca.read(int(buffer)), ""):
+							o.write(data)
+							t.update(len(data))
+							o.flush()
+							if not data:
+								o.close()
+								break				
+					elif str(nca._path)[:-1]==file[:-1] and str(nca._path).endswith('ncz'):
+						# print(nca._path)
+						nca.rewind()
+						header = nca.read(0x4000)
+						magic = readInt64(nca)
+						sectionCount = readInt64(nca)
+						sections = []
+						for i in range(sectionCount):
+							sections.append(Section(nca))		
+						# print(sections)	
+						dctx = zstandard.ZstdDecompressor()
+						reader = dctx.stream_reader(nca)							
+						with open(output, 'rb+') as o:
+							o.seek(0, os.SEEK_END)
+							curr_off= o.tell()
+							t.write('- Appending decompressed {}'.format(str(nca._path)))		
+							t.write('  Writing nca header')							
+							o.write(header)
+							t.update(len(header))	
+							t.write('  Writing decompressed body in plaintext')								
+							while True:							
+								chunk = reader.read(16384)								
+								if not chunk:
+									break									
+								o.write(chunk)	
+								t.update(len(chunk))	
+							c=0	
+							t.write('  + Restoring crypto in sections')								
+							for s in sections:
+								c+=1
+								if s.cryptoType == 1: #plain text
+									t.write('   * Section {} is plaintext'.format(str(c)))
+									t.write('     %x - %d bytes, Crypto type %d' % ((s.offset), s.size, s.cryptoType))
+									t.update(s.size)	
+									continue									
+								if s.cryptoType != 3:
+									raise IOError('unknown crypto type')	
+								t.write('   * Section {} needs decompression'.format(str(c)))	
+								t.write('     %x - %d bytes, Crypto type %d' % ((s.offset), s.size, s.cryptoType))								
+								i = s.offset								
+								crypto = AESCTR(s.cryptoKey, s.cryptoCounter)
+								end = s.offset + s.size			
+								while i < end:
+									o.seek(i+curr_off)
+									crypto.seek(i)
+									chunkSz = 0x10000 if end - i > 0x10000 else end - i
+									buf = o.read(chunkSz)									
+									if not len(buf):
+										break									
+									o.seek(i+curr_off)
+									o.write(crypto.encrypt(buf))		
+									t.update(len(buf))										
+									i += chunkSz									
+			else:
+				for ot in self:
+					if str(ot._path)==file:
+						t.write('- Appending {}'.format(str(ot._path)))						
+						ot.rewind()
+						data=ot.read()
+						with open(output, 'ab') as o:
+							o.write(data)
+							t.update(len(data))						
+
+						

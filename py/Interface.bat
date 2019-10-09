@@ -3,7 +3,7 @@
 set "prog_dir=%~dp0"
 set "bat_name=%~n0"
 set "ofile_name=%bat_name%_options.cmd"
-Title NSC_Builder v0.90 -- Profile: %ofile_name% -- by JulesOnTheRoad
+Title NSC_Builder v0.92 -- Profile: %ofile_name% -- by JulesOnTheRoad
 set "list_folder=%prog_dir%lists"
 ::-----------------------------------------------------
 ::EDIT THIS VARIABLE TO LINK OTHER OPTION FILE
@@ -86,6 +86,24 @@ if not exist "%fold_output%" MD "%fold_output%"
 if not exist "%fold_output%" MD "%~dp0%fold_output%"
 if exist "%~dp0%fold_output%"  set "fold_output=%~dp0%fold_output%"
 
+if not exist "%dec_keys%" ( goto missing_things )
 
 %pycommand% "%squirrel%" -lib_call Interface start
+goto salida
+
+:missing_things
+echo ....................................
+echo You're missing the following things:
+echo ....................................
+echo.
+::File full route
+if not exist "%dec_keys%" echo - "keys.txt" is not correctly pointed or is missing.
+echo.
+pause
+echo Program will exit now
+PING -n 2 127.0.0.1 >NUL 2>&1
+goto salida
+:salida
+::pause
+exit
 

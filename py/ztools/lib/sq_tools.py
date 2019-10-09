@@ -1011,9 +1011,7 @@ def gen_nsp_header(files,fileSizes):
 	headerSize = 0x10 + (filesNb)*0x18 + len(stringTable)
 	remainder = 0x10 - headerSize%0x10
 	headerSize += remainder
-
 	fileOffsets = [sum(fileSizes[:n]) for n in range(filesNb)]
-	
 	fileNamesLengths = [len(str(nca))+1 for nca in files] # +1 for the \x00
 	stringTableOffsets = [sum(fileNamesLengths[:n]) for n in range(filesNb)]
 	
@@ -1332,5 +1330,4 @@ def cnmt_type(type_n):
 		ctype='DLC'
 	if str(hx(type_n)) == "b'83'":
 		ctype='Delta'
-	return ctype	
-		
+	return ctype		

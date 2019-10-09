@@ -34,6 +34,9 @@ else:
 tmpfolder =os.path.join(NSCB_dir,'tmp')
 chromiumpath=os.path.join(ztools_dir,'chromium')
 chromiumpath_alt=os.path.join(squirrel_dir,'chromium')
+slimjet='slimjet.exe'
+slimpath=os.path.join(chromiumpath,slimjet)
+slimpath_alt=os.path.join(chromiumpath_alt,slimjet)
 chrom='chrlauncher.exe'
 chromiumpath=os.path.join(chromiumpath,chrom)
 chromiumpath_alt=os.path.join(chromiumpath_alt,chrom)
@@ -157,7 +160,7 @@ def getfname():
 def showicon(filename):
 	print('* Seeking icon')
 	try:
-		if filename.endswith('.nsp')or filename.endswith('.nsx'):
+		if filename.endswith('.nsp')or filename.endswith('.nsx') or filename.endswith('.nsz'):
 			files_list=sq_tools.ret_nsp_offsets(filename)	
 			f = Fs.Nsp(filename, 'rb')
 		elif filename.endswith('.xci'):	
@@ -177,7 +180,7 @@ def showicon(filename):
 		else:return ""	
 		
 def retrieve_icon_from_server(filename):
-	if filename.endswith('.nsp')or filename.endswith('.nsx'):	
+	if filename.endswith('.nsp')or filename.endswith('.nsx') or filename.endswith('.nsz'):	
 		f = Fs.Nsp(filename, 'rb')
 		titleid=f.getnspid()		
 	elif filename.endswith('.xci'):	
@@ -191,7 +194,7 @@ def retrieve_icon_from_server(filename):
 @eel.expose	
 def getinfo(filename):
 	print('* Retrieving Game Information')
-	if filename.endswith('.nsp')or filename.endswith('.nsx'):
+	if filename.endswith('.nsp')or filename.endswith('.nsx') or filename.endswith('.nsz'):
 		f = Fs.ChromeNsp(filename, 'rb')
 	elif filename.endswith('.xci'):	
 		f = Fs.ChromeXci(filename)		
@@ -343,7 +346,7 @@ def getinfo(filename):
 			send_.append("-")	
 	except:send_.append("-")		
 	try:	
-		if filename.endswith('.nsp')or filename.endswith('.nsx'):
+		if filename.endswith('.nsp')or filename.endswith('.nsx') or filename.endswith('.nsz'):
 			send_.append("Eshop")	
 		elif filename.endswith('.xci'):
 			send_.append("Gamecard")	
@@ -418,7 +421,7 @@ def getfiledata(filename):
 @eel.expose	
 def getnacpdata(filename):
 	print('* Reading Data from Nacp')
-	if filename.endswith('.nsp')or filename.endswith('.nsx'):
+	if filename.endswith('.nsp')or filename.endswith('.nsx') or filename.endswith('.nsz'):
 		f = Fs.ChromeNsp(filename, 'rb')
 	elif filename.endswith('.xci'):	
 		f = Fs.ChromeXci(filename)		
@@ -433,7 +436,7 @@ def getnacpdata(filename):
 @eel.expose	
 def getnpdmdata(filename):
 	print('* Reading Data from Npdm')
-	if filename.endswith('.nsp')or filename.endswith('.nsx'):
+	if filename.endswith('.nsp')or filename.endswith('.nsx') or filename.endswith('.nsz'):
 		f = Fs.ChromeNsp(filename, 'rb')
 		files_list=sq_tools.ret_nsp_offsets(filename)			
 	elif filename.endswith('.xci'):	
@@ -450,7 +453,7 @@ def getnpdmdata(filename):
 @eel.expose	
 def getcnmtdata(filename):
 	print('* Reading Data from Cnmt')
-	if filename.endswith('.nsp')or filename.endswith('.nsx'):
+	if filename.endswith('.nsp')or filename.endswith('.nsx') or filename.endswith('.nsz'):
 		f = Fs.ChromeNsp(filename, 'rb')
 	elif filename.endswith('.xci'):	
 		f = Fs.ChromeXci(filename)	
@@ -463,7 +466,7 @@ def getcnmtdata(filename):
 @eel.expose	
 def getverificationdata(filename):
 	print('* Verifying files')
-	if filename.endswith('.nsp')or filename.endswith('.nsx'):
+	if filename.endswith('.nsp')or filename.endswith('.nsx') or filename.endswith('.nsz'):
 		f = Fs.ChromeNsp(filename, 'rb')
 	elif filename.endswith('.xci'):	
 		f = Fs.ChromeXci(filename)		
@@ -498,7 +501,7 @@ def About():
 	print("Program's github: https://github.com/julesontheroad/NSC_BUILDER                       ")
 	print('Cheats and Eshop information from nutdb and http://tinfoil.io                         ')
 	print('------------------------------------------------------------------------------------- ')
-
+slimpath
 def start():
 	try:
 		if os.path.exists(chromiumpath):
@@ -510,14 +513,24 @@ def start():
 			eel.browsers.set_path('chrome', chromiumpath_alt)
 			About()
 			print("Launched using: "+chromiumpath_alt)
-			eel.start('main.html', mode='chrome-app', size=(800, 700))			
+			eel.start('main.html', mode='chrome', size=(800, 700))		
+		if os.path.exists(slimpath):
+			eel.browsers.set_path('chrome', slimpath)
+			About()
+			print("Launched using: "+slimpath)
+			eel.start('main.html', mode='chrome', size=(800, 700))		
+		elif os.path.exists(slimpath_alt):	
+			eel.browsers.set_path('chrome', slimpath_alt)
+			About()
+			print("Launched using: "+slimpath_alt)
+			eel.start('main.html', mode='chrome', size=(800, 700))						
 		else:
 			try:
 				About()
 				print("Launched using Chrome Installation")
 				eel.start('main.html', mode='chrome', size=(800, 700))
 			except EnvironmentError:
-				print("Launched using Windows Edge")			
+				print("Chrome wasn't detected. Launched using Windows Edge with limited compatibility")	
 				if sys.platform in ['win32', 'win64'] and int(platform.release()) >= 10:
 					# print(platform.release())
 					eel.start('main.html', mode='edge', size=(800, 700))

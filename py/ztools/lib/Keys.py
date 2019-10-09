@@ -53,6 +53,23 @@ def generateKek(src, masterKey, kek_seed, key_seed):
 		return crypto.decrypt(key_seed)
 	else:
 		return src_kek
+		
+def unwrapAesWrappedTitlekey(wrappedKey, keyGeneration):
+	aes_kek_generation_source = uhx(keys['aes_kek_generation_source'])
+	aes_key_generation_source = uhx(keys['aes_key_generation_source'])
+
+	kek = generateKek(uhx(keys['key_area_key_application_source']), uhx(keys['master_key_0' + str(keyGeneration)]), aes_kek_generation_source, aes_key_generation_source)
+
+	crypto = aes128.AESECB(kek)
+	return crypto.decrypt(wrappedKey)		
+	
+def getKey(key):
+	if key not in keys:
+		raise IOError('%s missing from keys.txt' % key)
+	return uhx(keys[key])
+
+def masterKey(masterKeyIndex):
+	return getKey('master_key_0' + str(masterKeyIndex))
 
 def load(fileName):
 	global keyAreaKeys

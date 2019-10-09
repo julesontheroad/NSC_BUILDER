@@ -1,10 +1,9 @@
-from Fs.File import File
-import Fs.Type
+from nutFs.File import File
+import nutFs.Type
 from binascii import hexlify as hx, unhexlify as uhx
 import Print
 import Keys
-indent = 1
-tabs = '\t' * indent	
+
 
 class Ticket(File):
 	def __init__(self, path = None, mode = None, cryptoType = -1, cryptoKey = -1, cryptoCounter = -1):
@@ -24,19 +23,19 @@ class Ticket(File):
 		self.accountId = None
 
 		self.signatureSizes = {}
-		self.signatureSizes[Fs.Type.TicketSignature.RSA_4096_SHA1] = 0x200
-		self.signatureSizes[Fs.Type.TicketSignature.RSA_2048_SHA1] = 0x100
-		self.signatureSizes[Fs.Type.TicketSignature.ECDSA_SHA1] = 0x3C
-		self.signatureSizes[Fs.Type.TicketSignature.RSA_4096_SHA256] = 0x200
-		self.signatureSizes[Fs.Type.TicketSignature.RSA_2048_SHA256] = 0x100
-		self.signatureSizes[Fs.Type.TicketSignature.ECDSA_SHA256] = 0x3C
+		self.signatureSizes[nutFs.Type.TicketSignature.RSA_4096_SHA1] = 0x200
+		self.signatureSizes[nutFs.Type.TicketSignature.RSA_2048_SHA1] = 0x100
+		self.signatureSizes[nutFs.Type.TicketSignature.ECDSA_SHA1] = 0x3C
+		self.signatureSizes[nutFs.Type.TicketSignature.RSA_4096_SHA256] = 0x200
+		self.signatureSizes[nutFs.Type.TicketSignature.RSA_2048_SHA256] = 0x100
+		self.signatureSizes[nutFs.Type.TicketSignature.ECDSA_SHA256] = 0x3C
 
 	def open(self, file = None, mode = 'rb', cryptoType = -1, cryptoKey = -1, cryptoCounter = -1):
 		super(Ticket, self).open(file, mode, cryptoType, cryptoKey, cryptoCounter)
 		self.rewind()
 		self.signatureType = self.readInt32()
 		try:
-			self.signatureType = Fs.Type.TicketSignature(self.signatureType)
+			self.signatureType = nutFs.Type.TicketSignature(self.signatureType)
 		except:
 			raise IOError('Invalid ticket format')
 
@@ -135,15 +134,6 @@ class Ticket(File):
 	def getMasterKeyRevision(self):
 		self.seekStart(0x145)
 		self.masterKeyRevision = self.readInt8() | self.readInt8()
-		if self.masterKeyRevision == 0:
-			self.rewind()
-			self.seekStart(0x144)
-			self.masterKeyRevision = self.readInt8() | self.readInt8()
-			if self.masterKeyRevision == 0:
-				filename = str(self._path)
-				filename = filename[:-4] 
-				filename = filename[-1] 
-				self.masterKeyRevision = int(filename) 
 		return self.masterKeyRevision
 
 	def setMasterKeyRevision(self, value):
@@ -200,36 +190,35 @@ class Ticket(File):
 		self.writeInt32(value, 'big')
 		return self.accountId
 
-	def printInfo(self, indent = 0):
+	def titleId(self):
+		rightsId = format(self.getRightsId(), 'X').zfill(32)
+		return rightsId[0:16]
+
+	def titleKey(self):
+		return format(self.getTitleKeyBlock(), 'X').zfill(32)
+
+
+
+
+	def printInfo(self, maxDepth = 3, indent = 0):
 		tabs = '\t' * indent
+
+		rightsId = format(self.getRightsId(), 'X').zfill(32)
+		titleId = rightsId[0:16]
+		titleKey = format(self.getTitleKeyBlock(), 'X').zfill(32)
+
 		Print.info('\n%sTicket\n' % (tabs))
-		super(Ticket, self).printInfo(indent)
+		super(Ticket, self).printInfo(maxDepth, indent)
 		Print.info(tabs + 'signatureType = ' + str(self.signatureType))
 		Print.info(tabs + 'keyType = ' + str(self.keyType))
-		Print.info(tabs + 'masterKeyRev = ' + str(self.getMasterKeyRevision()))
+		Print.info(tabs + 'masterKeyRev = ' + str(self.masterKeyRevision))
 		Print.info(tabs + 'ticketId = ' + str(self.ticketId))
 		Print.info(tabs + 'deviceId = ' + str(self.deviceId))
-		Print.info(tabs + 'rightsId = ' + hex(self.getRightsId()))
+		Print.info(tabs + 'rightsId = ' + rightsId)
 		Print.info(tabs + 'accountId = ' + str(self.accountId))
-		Print.info(tabs + 'titleKey = ' + hex(self.getTitleKeyBlock()))
+		Print.info(tabs + 'titleId = ' + titleId)
+		Print.info(tabs + 'titleKey = ' + titleKey)
 		Print.info(tabs + 'titleKeyDec = ' + str(hx(Keys.decryptTitleKey((self.getTitleKey()), self.masterKeyRevision))))
 
-	def generate(self,outfolder,titleid,titlekey,keygeneration):
-		tabs = '\t' * indent
-		tikname=str(titleid)+'0000000000000000000000000000000'+keygeneration+'.tik'
-		tikpath=os.path.join(outfolder, tikname)
-		fake_sig='FF'*0x104
-		padding='00'*0x3C
-		sigtype=b'Root-CA00000003-XS00000020'	
-		padding2='00'*0x26
-		titlekey=titlekey
-		padding3='00'*0xF0
-		fixed=b'02'
-		padding4='00'*0x4
-		keygeneration=keygeneration
-		rightsid=tikname[:-4]
-		end_line=b'0000000000000000C002000000000000'
-		
-		#with open(tikpath, 'w+b') as tik:			
 
 

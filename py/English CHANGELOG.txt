@@ -21,6 +21,103 @@ Luca Fraga's github: https://github.com/LucaFraga
 ---------------
 0. Changelog
 ---------------
+v0.92 - Adds compression and decompression of snp files to NSCB:
+	- Added mode 8 which implements direct compression and decompression of nsp
+	  files using the nsz standard from blawar.
+	  https://github.com/blawar/nsz
+	- For now it only supports base games and dlcs. Xcz implementation coming soon.
+	- Added reads for game info, cnmt and nacp in NSCB for nsz files
+	- Added reads in NSCB File_Info GUI for nsz files. Titles tab is currently 
+	  unsupported for nsz.
+	- Added slimjet portable as option for file_info gui. Just drop slimjet portable
+	  in ztools\Chromium
+	- Fixed Game-Info reader for xci files
+v0.91 - Introducing NSCB File_Info:
+	- NSCB File_Info is a html based gui that gives a graphic interface to NSCB info.
+	  Yes, it has game-icons, pictures and that stuff you guys like.
+	- Current functions are:
+	  * Game Information. Combines data read from file with eshop data from nutdb
+	  * Description: Description from the eshop (nutdb)
+	  * Image Gallery: Pictures from the eshop (nutdb)
+	  * BaseID File-Tree: Shows the lates version for dlcs and updates associated to
+		the game (nutdb)
+	  * Titles: Advanced Files List from NSCB-new
+	  * NACP Reader from NSCB
+	  * NPDM Reader from NSCB
+	  * CNMT Reader from NSCB
+	  * Verification from NSCB, till Level 2 so it's loaded fast. Use normal NSCB for
+		hashing for now.
+	- You'll notice some information like BuildIDs is added now, the cnmt was made more
+	  readable and I added detection for multiprogram games like Grandia and Hotline 
+	  Miami
+	- Known Issues:
+	  * CSS probably needs some work, specially for fullscreen.
+	  * Upper corner menu is a placeholder
+	  * NPDM decryption is failing in some games, is on my TODO list
+	  * Multicontent files (generally xci) may need some work to improve parsing speeds
+	  * Not reading yet splitted files (ns*,xc*,0*) but will add that soon
+	- TODO:	  	  
+	  * Output css to a file for theming
+	  * Language translations
+	  * Porting NSCB functions
+	  * Let user choose nutdb files
+	- How to use:	  
+	  * If you have Chrome or Chromium Installed you're good to go.
+	  * If you don't want to install those browsers you can use chromium portable.
+	    1. Get the last version for your system here: https://chromium.woolyss.com/
+		2. Create a folder in ztools called "Chromium"
+		3. Decompress the chromium files somewhere in your pc and execute 
+		   "chrlauncher 2.5.6 (64-bit).exe" or whatever is called in your zip to get the
+		   needed files downloaded
+		4. Move all files to ztools\Chromium and rename "chrlauncher 2.5.6 (64-bit).exe"
+		   to "chrlauncher.exe". This takes priority over a chrome\chromium installation
+	  * Once you have all setup just execute "Interface.bat"
+        5. Rememeber you need to fill keys_template.txt in ztools but i imagine you 
+		   already know that
+	- I use python:		   
+	  * Just get latest python 3 and install these dependencies: 
+		urllib3 unidecode tqdm bs4 tqdm requests image pywin32 pycryptodome pykakasi 
+		googletrans chardet eel bottle
+	  * Now the tricky part, I use the unreleased version of eel that isn't in pypy so go
+		here https://github.com/ChrisKnott/Eel Download the master, seek the folder where 
+		your eel installation is and overwrite the files with the ones in the master.
+		If you have trouble finding it try doing again pip install eel it'll tell you is
+		up to date and installed in 'X' folder.
+	  * Then execute "Interface.bat" 
+	- I use linux or mac:			  
+	  * Well i tested it on linux and i'll give you a build at a later time, have to admit 	
+	    I didn't test anything on mac though i imagine it works
+	  * Install python and:
+	  	urllib3 unidecode tqdm bs4 tqdm requests image pycryptodome pykakasi 
+		googletrans chardet eel bottle
+	  * Basically same as before ignoring pywin32 that NSCB uses to set the archive bit
+        in folders	
+	  * Replace the eel files for the ones in the master like explained above.	
+	  * Run squirrel with:
+		squirrel.py -lib_call Interface starting
+	  * Or wait a few days for a build if you don't like python
+	- Enough with the gui you fixed something did you not? Yep, here's the NSCB changelog:
+	  * Added BuildID to gameinfo
+	  * Fixed issue where fat32 files are bigger than the allowed block in fat32 cards
+	  * Couldn't fixed the issue where some files are a little smaller when using mode2 yet
+	    but tested the files itself and they work fine, remember SX OS allows any block size
+		for splitted files in ns0 and xc0 formats.
+	  * Fixed issue in untrimmer.
+	  * Added check when refreshing nutdb against 404 errors
+	  * Added force update option for nutdb in MODE0: CONFIGURATION
+	  * Added hash for masterkey9
+	  * Added options in verification to check 9.0 RSV
+	  * Added keygeneration10 to the patch limit in all options
+	  * Probably something else that I don't remember.
+	  * Fixed times in not autoupdate zip.	  
+	  * Changed packed squirrel.exe system to onefolder. While less visually pleasing the gui
+	    made squirrel bigger which also increased the gui boot times. Onefolder doesn't have
+		the files compressed which gives it faster boot times
+	- Final Note: If you want support for cxci and titlerights removed files don't update to
+	  FW9.0 SX OS Beta9. I'll wait and see if they fix the several bugs the beta has before 
+	  I try some alternatives to make converted files run in 9.0.
+	- Big thanks to blawar for nutdb and nut of course, ChrisKnott for Eel and Metro4 for 
+	  their great css¦javascript library.	
 v0.90b- Bugfixes:
 	- Fixes issue with name detection for dlcs non listed in the nutdb json files
 	- Adds nsx format to allowed for the info functions. Except for the npdm reader

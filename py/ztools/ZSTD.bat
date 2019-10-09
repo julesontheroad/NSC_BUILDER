@@ -4,29 +4,29 @@ CD /d "%prog_dir%"
 
 REM //////////////////////////////////////////////////
 REM /////////////////////////////////////////////////
-REM ADVANCE MODE
+REM COMPRESSION
 REM /////////////////////////////////////////////////
 REM ////////////////////////////////////////////////
 :normalmode
 cls
 call :program_logo
 echo -------------------------------------------------
-echo ADVANCE MODE ACTIVATED
+echo COMPRESS\DECOMPRESS MODE ACTIVATED
 echo -------------------------------------------------
-if exist "advlist.txt" goto prevlist
+if exist "zzlist.txt" goto prevlist
 goto manual_INIT
 :prevlist
 set conta=0
-for /f "tokens=*" %%f in (advlist.txt) do (
+for /f "tokens=*" %%f in (zzlist.txt) do (
 echo %%f
 ) >NUL 2>&1
 setlocal enabledelayedexpansion
-for /f "tokens=*" %%f in (advlist.txt) do (
+for /f "tokens=*" %%f in (zzlist.txt) do (
 set /a conta=!conta! + 1
 ) >NUL 2>&1
-if !conta! LEQ 0 ( del advlist.txt )
+if !conta! LEQ 0 ( del zzlist.txt )
 endlocal
-if not exist "advlist.txt" goto manual_INIT
+if not exist "zzlist.txt" goto manual_INIT
 ECHO .......................................................
 ECHO A PREVIOUS LIST WAS FOUND. WHAT DO YOU WANT TO DO?
 :prevlist0
@@ -47,17 +47,17 @@ set /p bs="Enter your choice: "
 set bs=%bs:"=%
 if /i "%bs%"=="3" goto showlist
 if /i "%bs%"=="2" goto delist
-if /i "%bs%"=="1" goto start_cleaning
+if /i "%bs%"=="1" goto start
 if /i "%bs%"=="0" exit /B
 echo.
 echo BAD CHOICE
 goto prevlist0
 :delist
-del advlist.txt
+del zzlist.txt
 cls
 call :program_logo
 echo -------------------------------------------------
-echo ADVANCE MODE ACTIVATED
+echo COMPRESS\DECOMPRESS MODE ACTIVATED
 echo -------------------------------------------------
 echo ..................................
 echo YOU'VE DECIDED TO START A NEW LIST
@@ -69,7 +69,7 @@ ECHO ***********************************************
 echo Input "0" to return to the MODE SELECTION MENU
 ECHO ***********************************************
 echo.
-%pycommand% "%nut%" -t nsp xci nsx -tfile "%prog_dir%advlist.txt" -uin "%uinput%" -ff "uinput"
+%pycommand% "%nut%" -t nsp xci nsz -tfile "%prog_dir%zzlist.txt" -uin "%uinput%" -ff "uinput"
 set /p eval=<"%uinput%"
 set eval=%eval:"=%
 setlocal enabledelayedexpansion
@@ -93,7 +93,7 @@ ECHO *************************************************
 echo Or Input "0" to return to the MODE SELECTION MENU
 ECHO *************************************************
 echo.
-%pycommand% "%nut%" -t nsp xci -tfile "%prog_dir%advlist.txt" -uin "%uinput%" -ff "uinput"
+%pycommand% "%nut%" -t nsp xci nsz -tfile "%prog_dir%zzlist.txt" -uin "%uinput%" -ff "uinput"
 set /p eval=<"%uinput%"
 set eval=%eval:"=%
 setlocal enabledelayedexpansion
@@ -101,11 +101,11 @@ echo+ >"%uinput%"
 endlocal
 
 if /i "%eval%"=="0" exit /B
-if /i "%eval%"=="1" goto start_cleaning
+if /i "%eval%"=="1" goto start
 if /i "%eval%"=="e" goto salida
 if /i "%eval%"=="i" goto showlist
 if /i "%eval%"=="r" goto r_files
-if /i "%eval%"=="z" del advlist.txt
+if /i "%eval%"=="z" del zzlist.txt
 
 goto checkagain
 
@@ -115,7 +115,7 @@ set bs=%bs:"=%
 
 setlocal enabledelayedexpansion
 set conta=
-for /f "tokens=*" %%f in (advlist.txt) do (
+for /f "tokens=*" %%f in (zzlist.txt) do (
 set /a conta=!conta! + 1
 )
 
@@ -132,28 +132,26 @@ set string=%string%,
 set skiplist=%string%
 Set "skip=%skiplist%"
 setlocal DisableDelayedExpansion
-(for /f "tokens=1,*delims=:" %%a in (' findstr /n "^" ^<advlist.txt'
+(for /f "tokens=1,*delims=:" %%a in (' findstr /n "^" ^<zzlist.txt'
 ) do Echo=%skip%|findstr ",%%a," 2>&1>NUL ||Echo=%%b
-)>advlist.txt.new
+)>zzlist.txt.new
 endlocal
-move /y "advlist.txt.new" "advlist.txt" >nul
+move /y "zzlist.txt.new" "zzlist.txt" >nul
 endlocal
 
 :showlist
 cls
 call :program_logo
 echo -------------------------------------------------
-echo ADVANCE MODE ACTIVATED
+echo COMPRESS\DECOMPRESS MODE ACTIVATED
 echo -------------------------------------------------
-ECHO -------------------------------------------------
-ECHO                 FILES TO PROCESS 
-ECHO -------------------------------------------------
-for /f "tokens=*" %%f in (advlist.txt) do (
+ECHO FILES TO PROCESS: 
+for /f "tokens=*" %%f in (zzlist.txt) do (
 echo %%f
 )
 setlocal enabledelayedexpansion
 set conta=
-for /f "tokens=*" %%f in (advlist.txt) do (
+for /f "tokens=*" %%f in (zzlist.txt) do (
 set /a conta=!conta! + 1
 )
 echo .................................................
@@ -161,20 +159,17 @@ echo YOU'VE ADDED !conta! FILES TO PROCESS
 echo .................................................
 endlocal
 
-goto exit /B
+goto checkagain
 
 :s_cl_wrongchoice
 echo wrong choice
 echo ............
-:start_cleaning
+:start
 echo *******************************************************
 echo CHOOSE HOW TO PROCESS THE FILES
 echo *******************************************************
-echo Input "1" to extract all files from nsp\xci
-echo Input "2" for raw extraction (Use in case a nca gives magic error)
-echo Input "3" to extract all nca files as plaintext
-echo Input "4" to extract nca contents from nsp\xci
-echo Input "5" to patch a linked account requirement
+echo Input "1" to compress nsp to nsz
+echo Input "2" for decompress nsz
 echo.
 ECHO ******************************************
 echo Or Input "b" to return to the list options
@@ -182,126 +177,48 @@ ECHO ******************************************
 echo.
 set /p bs="Enter your choice: "
 set bs=%bs:"=%
-set vrepack=none
+set choice=none
 if /i "%bs%"=="b" goto checkagain
-if /i "%bs%"=="1" goto extract
-if /i "%bs%"=="2" goto raw_extract
-if /i "%bs%"=="3" goto ext_plaintext
-if /i "%bs%"=="4" goto ext_fromnca
-if /i "%bs%"=="5" goto patch_lnkacc
-if %vrepack%=="none" goto s_cl_wrongchoice
+if /i "%bs%"=="1" goto levels
+if /i "%bs%"=="2" goto decompress
+if %choice%=="none" goto s_cl_wrongchoice
 
 
-:extract
-cls
-call :program_logo
-echo ********************************************************
-echo EXTRACT ALL FILES FROM A NSP\XCI
-echo ********************************************************
-CD /d "%prog_dir%"
-for /f "tokens=*" %%f in (advlist.txt) do (
-
-%pycommand% "%nut%" %buffer% -o "%prog_dir%NSCB_extracted" -tfile "%prog_dir%advlist.txt" -x ""
-
-%pycommand% "%nut%" --strip_lines "%prog_dir%advlist.txt"
-call :contador_NF
-)
-ECHO ---------------------------------------------------
-ECHO *********** ALL FILES WERE PROCESSED! *************
-ECHO ---------------------------------------------------
-goto s_exit_choice
-
-:raw_extract
-cls
-call :program_logo
-echo ********************************************************
-echo EXTRACT ALL FILES FROM A NSP\XCI IN RAW MODE
-echo ********************************************************
-CD /d "%prog_dir%"
-for /f "tokens=*" %%f in (advlist.txt) do (
-
-%pycommand% "%nut%" %buffer% -o "%prog_dir%NSCB_extracted" -tfile "%prog_dir%advlist.txt" -raw_x ""
-
-%pycommand% "%nut%" --strip_lines "%prog_dir%advlist.txt"
-call :contador_NF
-)
-ECHO ---------------------------------------------------
-ECHO *********** ALL FILES WERE PROCESSED! *************
-ECHO ---------------------------------------------------
-goto s_exit_choice
-
-:ext_plaintext
-cls
-call :program_logo
-echo ********************************************************
-echo EXTRACT ALL FILES FROM A NSP\XCI AS PLAINTEXT
-echo ********************************************************
-CD /d "%prog_dir%"
-for /f "tokens=*" %%f in (advlist.txt) do (
-
-%pycommand% "%nut%" %buffer% -o "%prog_dir%NSCB_extracted" -tfile "%prog_dir%advlist.txt" -plx ""
-
-%pycommand% "%nut%" --strip_lines "%prog_dir%advlist.txt"
-call :contador_NF
-)
-ECHO ---------------------------------------------------
-ECHO *********** ALL FILES WERE PROCESSED! *************
-ECHO ---------------------------------------------------
-goto s_exit_choice
-
-:ext_fromnca
-cls
-call :program_logo
-echo ********************************************************
-echo EXTRACT INTERNAL NCA FILES FROM A NSP\XCI
-echo ********************************************************
-CD /d "%prog_dir%"
-for /f "tokens=*" %%f in (advlist.txt) do (
-
-%pycommand% "%nut%" %buffer% -o "%prog_dir%NSCB_extracted" -tfile "%prog_dir%advlist.txt" -nfx ""
-
-%pycommand% "%nut%" --strip_lines "%prog_dir%advlist.txt"
-call :contador_NF
-)
-ECHO ---------------------------------------------------
-ECHO *********** ALL FILES WERE PROCESSED! *************
-ECHO ---------------------------------------------------
-goto s_exit_choice
-
-:patch_lnkacc_wrongchoice
-echo wrong choice
-echo ............
-:patch_lnkacc
+:levels
 echo *******************************************************
-echo CHOOSE HOW TO PROCESS THE FILES
+echo INPUT COMPRESSION LEVEL
 echo *******************************************************
-echo Input "1" to patch directly the original file
-echo Input "2" to generate a new file
+echo Input a compression level between 1 and 22
+echo Notes:
+echo  + Level 1 - Fast and smaller compression ratio
+echo  + Level 22 - Slow but better compression ratio
+echo  Levels 10-17 are recommended in the spec
 echo.
-ECHO ***********************************************
-echo Or Input "b" to return to the previous options
-ECHO ***********************************************
+ECHO ******************************************
+echo Input "d" for default (level 17)
+echo Or Input "b" to return to the list options
+ECHO ******************************************
 echo.
 set /p bs="Enter your choice: "
 set bs=%bs:"=%
-set vrepack=none
-if /i "%bs%"=="b" goto start_cleaning
-if /i "%bs%"=="1" goto patch_lnkacc_mode1
-if /i "%bs%"=="2" goto patch_lnkacc_mode2
-if %vrepack%=="none" goto patch_lnkacc_wrongchoice
+set choice=none
+if /i "%bs%"=="b" goto checkagain
+if /i "%bs%"=="d" set "level=17"
+set "level=%bs%"
+if %choice%=="none" goto s_cl_wrongchoice
 
-:patch_lnkacc_mode1
+:compress
 cls
 call :program_logo
-echo ********************************************************
-echo PATCH A LINKED ACCOUNT REQUIREMENT
-echo ********************************************************
+echo *******************************
+echo COMPRESS A NSP INTO NSZ FORMAT
+echo *******************************
 CD /d "%prog_dir%"
-for /f "tokens=*" %%f in (advlist.txt) do (
+for /f "tokens=*" %%f in (zzlist.txt) do (
 
-%pycommand% "%nut%" %buffer% -tfile "%prog_dir%advlist.txt" --remlinkacc ""
+%pycommand% "%nut%" %buffer% -o "%fold_output%" -tfile "%prog_dir%zzlist.txt" --compress "%level%"
 
-%pycommand% "%nut%" --strip_lines "%prog_dir%advlist.txt"
+%pycommand% "%nut%" --strip_lines "%prog_dir%zzlist.txt"
 call :contador_NF
 )
 ECHO ---------------------------------------------------
@@ -309,34 +226,18 @@ ECHO *********** ALL FILES WERE PROCESSED! *************
 ECHO ---------------------------------------------------
 goto s_exit_choice
 
-:patch_lnkacc_mode2
+:decompress
 cls
 call :program_logo
-echo ********************************************************
-echo PATCH A LINKED ACCOUNT REQUIREMENT
-echo ********************************************************
+echo **************************
+echo DECOMPRESS A NSZ INTO NSP
+echo **************************
 CD /d "%prog_dir%"
-for /f "tokens=*" %%f in (advlist.txt) do (
-%pycommand% "%nut%" %buffer% %skdelta% --xml_gen "true" -o "%w_folder%" -tfile "%prog_dir%advlist.txt" --rebuild_nsp ""
-%pycommand% "%nut%" %buffer% -o "%w_folder%" -tfile "%prog_dir%advlist.txt" --xci_trim ""
-%pycommand% "%nut%" -t nsp xci -tfile "%prog_dir%templist.txt" -ff "%w_folder%"
-%pycommand% "%nut%" %buffer% -tfile "%prog_dir%templist.txt" --remlinkacc ""
+for /f "tokens=*" %%f in (zzlist.txt) do (
 
-move "%w_folder%\*.xci" "%fold_output%" >NUL 2>&1
-move  "%w_folder%\*.xc*" "%fold_output%" >NUL 2>&1
-move "%w_folder%\*.nsp" "%fold_output%" >NUL 2>&1
-move "%w_folder%\*.ns*" "%fold_output%" >NUL 2>&1
-if exist "%w_folder%\*.zip" ( MD "%zip_fold%" ) >NUL 2>&1
-move "%w_folder%\*.zip" "%zip_fold%" >NUL 2>&1
-if exist "%w_folder%\archfolder" ( %pycommand% "%nut%" -ifo "%w_folder%\archfolder" -archive "%fold_output%\%filename%.nsp" )
+%pycommand% "%nut%" -o "%fold_output%" -tfile "%prog_dir%zzlist.txt" --decompress "auto"
 
-RD /S /Q "%w_folder%" >NUL 2>&1
-echo DONE
-call :thumbup
-call :delay
-if exist templist.txt del templist.txt
-
-%pycommand% "%nut%" --strip_lines "%prog_dir%advlist.txt"
+%pycommand% "%nut%" --strip_lines "%prog_dir%zzlist.txt"
 call :contador_NF
 )
 ECHO ---------------------------------------------------
@@ -345,7 +246,7 @@ ECHO ---------------------------------------------------
 goto s_exit_choice
 
 :s_exit_choice
-if exist advlist.txt del advlist.txt
+if exist zzlist.txt del zzlist.txt
 if /i "%va_exit%"=="true" echo PROGRAM WILL CLOSE NOW
 if /i "%va_exit%"=="true" ( PING -n 2 127.0.0.1 >NUL 2>&1 )
 if /i "%va_exit%"=="true" goto salida
@@ -362,7 +263,7 @@ goto s_exit_choice
 :contador_NF
 setlocal enabledelayedexpansion
 set /a conta=0
-for /f "tokens=*" %%f in (advlist.txt) do (
+for /f "tokens=*" %%f in (zzlist.txt) do (
 set /a conta=!conta! + 1
 )
 echo ...................................................

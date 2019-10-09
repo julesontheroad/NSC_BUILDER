@@ -1,6 +1,8 @@
 indent = 1
 tabs = '\t' * indent	
 from binascii import hexlify as hx, unhexlify as uhx
+import Print
+import os
 
 def striplines(textfile,number=1,counter=False):
 	#print(textfile)
@@ -179,3 +181,39 @@ def parsetags(filepath):
 		# else:
 			# print(fileid+' '+str(fileversion)+' '+cctag)		
 	return str(fileid),str(fileversion),cctag,int(nG),int(nU),int(nD),baseid
+	
+def folder_to_list(ifolder,extlist=['nsp'],filter=False):	
+	ruta=ifolder
+	filelist=list()
+	try:
+		fname=""
+		binbin='RECYCLE.BIN'
+		for ext in extlist:
+			#print (ext)
+			if os.path.isdir(ruta):
+				for dirpath, dirnames, filenames in os.walk(ruta):
+					for filename in [f for f in filenames if f.endswith(ext.lower()) or f.endswith(ext.upper()) or f[:-1].endswith(ext.lower()) or f[:-1].endswith(ext.lower())]:
+						fname=""
+						if filter != False:
+							if filter.lower() in filename.lower():
+								fname=filename
+						else:
+							fname=filename
+						if fname != "":
+							if binbin.lower() not in filename.lower():
+								filelist.append(os.path.join(dirpath, filename))
+			else:
+				if ruta.endswith(ext.lower()) or ruta.endswith(ext.upper()) or ruta[:-1].endswith(ext.lower()) or ruta[:-1].endswith(ext.upper()):
+					filename = ruta
+					fname=""
+					if filter != False:
+						if filter.lower() in filename.lower():
+							fname=filename
+					else:
+						fname=filename
+					if fname != "":
+						if binbin.lower() not in filename.lower():
+							filelist.append(filename)
+	except BaseException as e:
+		Print.error('Exception: ' + str(e))													
+	return filelist

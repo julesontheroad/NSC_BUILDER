@@ -1,24 +1,18 @@
 import aes128
-import Title
-import Titles
 import Hex
 from binascii import hexlify as hx, unhexlify as uhx
 from struct import pack as pk, unpack as upk
-from Fs.File import File
+from nutFs.File import File
 from hashlib import sha256
-import  Fs.Type
+import  nutFs.Type
 import os
 import re
 import pathlib
 import Keys
-import Config
 import Print
-import Nsps
-from tqdm import tqdm
 
 MEDIA_SIZE = 0x200
-indent = 1
-tabs = '\t' * indent	
+
 
 class IvfcLevel:
 	def __init__(self, offset, size, blockSize, reserved):

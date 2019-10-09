@@ -18,6 +18,7 @@ if "%Extension%" EQU ".nsp" ( goto sc2 )
 if "%Extension%" EQU ".nsx" ( goto sc2 )
 if "%Extension%" EQU ".xci" ( goto sc2 )
 if "%Extension%" EQU ".nca" ( goto sc3 )
+if "%Extension%" EQU ".nsz" ( goto sc2_1 )
 echo WRONG TYPE OF FILE
 pause
 goto sc1
@@ -47,6 +48,7 @@ if "%Extension%" EQU ".*" ( goto wch )
 if "%Extension%" EQU ".nsp" ( goto snfi )
 if "%Extension%" EQU ".nsx" ( goto snfi )
 if "%Extension%" EQU ".xci" ( goto snfi )
+if "%Extension%" EQU ".nsz" ( goto snfi2 )
 if "%Extension%" EQU ".nca" ( goto snfi_nca ) 
 
 if /i "%bs%"=="1" goto g_file_content
@@ -62,14 +64,55 @@ if /i "%bs%"=="b" goto sc1
 if /i "%bs%"=="0" goto salida
 goto wch
 
+:sc2_1
+cls
+call :logo
+echo .......................................................
+echo Input "1" to get GAME-INFO and FW requirements
+echo Input "2" to READ the CNMT from the xci\nsp
+echo Input "3" to READ the NACP from the xci\nsp
+echo.
+echo Input "b" to go back to FILE LOADING
+echo Input "0" to go back to the MAIN PROGRAM
+echo.
+echo --- Or DRAG a New File to change the current target ---
+echo .......................................................
+echo.
+set /p bs="Enter your choice: "
+set bs=%bs:"=%
+for /f "delims=" %%a in ("%bs%") do set "Extension=%%~xa"
+if "%Extension%" EQU ".*" ( goto wch )
+if "%Extension%" EQU ".nsp" ( goto snfi )
+if "%Extension%" EQU ".nsx" ( goto snfi )
+if "%Extension%" EQU ".xci" ( goto snfi )
+if "%Extension%" EQU ".nsz" ( goto snfi2 )
+if "%Extension%" EQU ".nca" ( goto snfi_nca ) 
+
+if /i "%bs%"=="1" goto f_info2
+if /i "%bs%"=="2" goto r_cnmt2
+if /i "%bs%"=="3" goto r_nacp2
+
+if /i "%bs%"=="b" goto sc1
+if /i "%bs%"=="0" goto salida
+goto wch2
+
 :snfi
 for /f "delims=" %%a in ("%bs%") do set "Name=%%~na"
 set "targt=%bs%"
 goto sc2
+:snfi2
+for /f "delims=" %%a in ("%bs%") do set "Name=%%~na"
+set "targt=%bs%"
+goto sc2_1
 :wch
 echo WRONG CHOICE
 pause
 goto sc2
+
+:wch2
+echo WRONG CHOICE
+pause
+goto sc2_1
 
 :g_file_content
 cls
@@ -127,6 +170,15 @@ echo ********************************************************
 %pycommand% "%nut%" -o "%info_dir%" --translate %transnutdb% --fw_req "%targt%"
 goto sc2
 
+:f_info2
+cls
+call :logo
+echo ********************************************************
+echo SHOW INFORMATION AND DATA ABOUT THE REQUIRED FIRMWARE
+echo ********************************************************
+%pycommand% "%nut%" -o "%info_dir%" --translate %transnutdb% --fw_req "%targt%"
+goto sc2_1
+
 :r_cnmt
 cls
 call :logo
@@ -134,7 +186,18 @@ echo ********************************************************
 echo SHOW CMT DATA FROM META NCA IN NSP\XCI
 echo ********************************************************
 %pycommand% "%nut%" -o "%info_dir%" --Read_cnmt "%targt%"
+if "%Extension%" EQU ".nsz" ( goto sc2_1 )
 goto sc2
+
+:r_cnmt2
+cls
+call :logo
+echo ********************************************************
+echo SHOW CMT DATA FROM META NCA IN NSP\XCI
+echo ********************************************************
+%pycommand% "%nut%" -o "%info_dir%" --Read_cnmt "%targt%"
+if "%Extension%" EQU ".nsz" ( goto sc2_1 )
+goto sc2_1
 
 :r_nacp
 cls
@@ -144,7 +207,19 @@ echo SHOW NACP DATA FROM CONTROL NCA IN NSP\XCI
 echo ********************************************************
 echo IMPLEMENTATION OF 0LIAM'S NACP LIBRARY
 %pycommand% "%nut%" -o "%info_dir%" --Read_nacp "%targt%"
+if "%Extension%" EQU ".nsz" ( goto sc2_1 )
 goto sc2
+
+:r_nacp2
+cls
+call :logo
+echo ********************************************************
+echo SHOW NACP DATA FROM CONTROL NCA IN NSP\XCI
+echo ********************************************************
+echo IMPLEMENTATION OF 0LIAM'S NACP LIBRARY
+%pycommand% "%nut%" -o "%info_dir%" --Read_nacp "%targt%"
+if "%Extension%" EQU ".nsz" ( goto sc2_1 )
+goto sc2_1
 
 :r_npdm
 cls
@@ -296,7 +371,7 @@ ECHO =============================     BY JULESONTHEROAD     ===================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                                POWERED BY SQUIRREL                                "
 ECHO "                    BASED ON THE WORK OF BLAWAR AND LUCA FRAGA                     "
-ECHO                                     VERSION 0.91
+ECHO                                     VERSION 0.92
 ECHO -------------------------------------------------------------------------------------                   
 ECHO Program's github: https://github.com/julesontheroad/NSC_BUILDER
 ECHO Blawar's github:  https://github.com/blawar

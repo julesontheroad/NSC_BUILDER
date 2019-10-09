@@ -16,12 +16,18 @@ from Fs.ChromeNacp import ChromeNacp
 def factory(name):
 	if name.endswith('.xci'):
 		f = Xci()
+	elif name.endswith('.xcz'):
+		f = Xci()		
 	elif name.endswith('.nsp'):
 		f = Nsp()
+	elif name.endswith('.nsz'):
+		f = Nsp()		
 	elif name.endswith('.nsx'):
 		f = Nsp()
 	elif name.endswith('.nca'):
 		f =  Nca()
+	elif name.endswith('.ncz'):
+		f =  File()		
 	elif name.endswith('.nacp'):
 		f =  Nacp()
 	elif name.endswith('.tik'):
