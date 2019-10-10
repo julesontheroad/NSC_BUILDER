@@ -2578,19 +2578,32 @@ if __name__ == '__main__':
 					with open(tfile,"r+", encoding='utf8') as filelist: 	
 						filepath = filelist.readline()
 						filepath=os.path.abspath(filepath.rstrip('\n'))	
-					inputs=len(args.compress)	
-					if inputs==1:
-						level=int(args.compress[0])			
-					elif inputs>1:
-						level=int(args.compress[(int(inputs)-1)])
+					if isinstance(args.compress, list):
+						inputs=len(args.compress)	
+						try:
+							if inputs==1:
+								level=int(args.compress[0])			
+							elif inputs>1:
+								level=int(args.compress[(int(inputs)-1)])
+							else:
+								level=17
+						except:		
+							level=17
 					else:
-						level=17
+						try:
+							level=int(args.compress)
+						except:	
+							level=17
 				else:
-					filepath=args.compress[0]
-					inputs=len(args.compress)	
-					if inputs>1:
-						level=int(args.compress[(int(inputs)-1)])
+					if isinstance(args.compress, list):
+						filepath=args.compress[0]
+						inputs=len(args.compress)	
+						if inputs>1:
+							level=int(args.compress[(int(inputs)-1)])
+						else:
+							level=17
 					else:
+						filepath=args.compress
 						level=17
 				if filepath.endswith(".nsp"):			
 					import compressor
