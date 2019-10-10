@@ -3185,7 +3185,7 @@ class Nsp(Pfs0):
 							if content_type_cnmt == 'Patch':
 								content_type='Update'
 								reqtag='- RequiredSystemVersion: '
-								tit_name,editor,ediver,SupLg,regionstr,isdemo = self.inf_get_title(target,offset,content_entries,original_ID,roman=rom)							
+								tit_name,editor,ediver,SupLg,regionstr,isdemo = self.inf_get_title(target,offset,content_entries,original_ID,roman=roma)							
 								if tit_name=='DLC':
 									tit_name='-'
 									editor='-'						
@@ -3196,7 +3196,7 @@ class Nsp(Pfs0):
 							if content_type_cnmt == 'AddOnContent':
 								content_type='DLC'
 								reqtag='- RequiredUpdateNumber: '
-								tit_name,editor,ediver,SupLg,regionstr,isdemo = self.inf_get_title(target,offset,content_entries,original_ID,roman=rom)	
+								tit_name,editor,ediver,SupLg,regionstr,isdemo = self.inf_get_title(target,offset,content_entries,original_ID,roman=roma)	
 							if content_type_cnmt == 'Application':
 								content_type='Base Game or Application'
 								reqtag='- RequiredSystemVersion: '	
