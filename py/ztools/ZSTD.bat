@@ -183,7 +183,9 @@ if /i "%bs%"=="1" goto levels
 if /i "%bs%"=="2" goto decompress
 if %choice%=="none" goto s_cl_wrongchoice
 
-
+:levels_wrongchoice
+echo wrong choice
+echo ............
 :levels
 echo *******************************************************
 echo INPUT COMPRESSION LEVEL
@@ -199,13 +201,43 @@ echo Input "d" for default (level 17)
 echo Or Input "b" to return to the list options
 ECHO ******************************************
 echo.
-set /p bs="Enter your choice: "
+set /p bs="Input level number: "
 set bs=%bs:"=%
 set choice=none
 if /i "%bs%"=="b" goto checkagain
-if /i "%bs%"=="d" set "level=17"
+if /i "%bs%"=="d" set "bs=17"
 set "level=%bs%"
-if %choice%=="none" goto s_cl_wrongchoice
+if %choice%=="none" goto levels_wrongchoice
+goto threads
+:threads_wrongchoice
+echo wrong choice
+echo ............
+:threads
+echo *******************************************************
+echo INPUT NUMBER OF THREADS TO USE
+echo *******************************************************
+echo Input a number of threads to use between 0 and 4
+echo Notes:
+echo  + By using threads you may gain a little speed bump 
+echo    but you'll loose compression ratio
+echo  + Level 22 and 4 threads may run you out of memory
+echo  + For maximum threads level 17 compression is advised
+echo    but you'll loose compression ratio
+echo.
+ECHO *********************************************
+echo Input "d" for default (0 threads)
+echo Or Input "b" to return to the previous option
+echo Or Input "x" to return to the list options
+ECHO *********************************************
+echo.
+set /p bs="Input number of threads: "
+set bs=%bs:"=%
+set choice=none
+if /i "%bs%"=="x" goto checkagain
+if /i "%bs%"=="b" goto levels
+if /i "%bs%"=="d" set "bs=0"
+set "workers=%bs%"
+if %choice%=="none" goto threads_wrongchoice
 
 :compress
 cls
@@ -216,7 +248,7 @@ echo *******************************
 CD /d "%prog_dir%"
 for /f "tokens=*" %%f in (zzlist.txt) do (
 
-%pycommand% "%nut%" %buffer% -o "%fold_output%" -tfile "%prog_dir%zzlist.txt" --compress "%level%"
+%pycommand% "%nut%" %buffer% -o "%fold_output%" -tfile "%prog_dir%zzlist.txt" --compress "%level%" --threads "%workers%"
 
 %pycommand% "%nut%" --strip_lines "%prog_dir%zzlist.txt"
 call :contador_NF

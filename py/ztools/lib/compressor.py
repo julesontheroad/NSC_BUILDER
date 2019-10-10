@@ -12,6 +12,7 @@ from contextlib import closing
 import zstandard
 import listmanager
 from tqdm import tqdm
+import time
 
 def sortednutFs(nca):
 	fs = []
@@ -38,7 +39,7 @@ def isNcaPacked(nca):
 
 	return True
 	
-def foldercompress(ifolder, ofolder = None, level = 17, t=['nsp']):
+def foldercompress(ifolder, ofolder = None, level = 17, threads = 0, t=['nsp']):
 	mylist=listmanager.folder_to_list(ifolder,t)
 	counter=len(mylist)
 	for item in mylist:
@@ -47,12 +48,12 @@ def foldercompress(ifolder, ofolder = None, level = 17, t=['nsp']):
 			nszPath = item[0:-1] + 'z'		
 		else:
 			nszPath = os.path.join(ofolder, os.path.basename(item[0:-1] + 'z'))
-		compress(item,ofolder=None,level=level,ofile=nszPath)
+		compress(item,ofolder=None,level=level,threads=threads,ofile=nszPath)
 		counter-=1
 		print('\nStill %d files to compress\n'%(counter))
 
 
-def compress(filePath,ofolder = None, level = 17, ofile= None):
+def compress(filePath,ofolder = None, level = 17,  threads = 0, ofile= None):
 	compressionLevel=int(level)
 	container = nutFs.factory(filePath)
 
@@ -69,15 +70,15 @@ def compress(filePath,ofolder = None, level = 17, ofile= None):
 		
 	nszPath = os.path.abspath(nszPath)
 	
-	Print.info('Compressing with level %d' % (compressionLevel))	
-	Print.info('  %s -> %s \n' % (filePath, nszPath))	
+	Print.info('Compressing with level %d and %d threads' % (compressionLevel, threads))	
+	Print.info('\n  %s -> %s \n' % (filePath, nszPath))	
 
 	newNsp = nutFs.Pfs0.Pfs0Stream(nszPath)
 
 	for nspf in container:
 		if isinstance(nspf, nutFs.Nca.Nca) and (nspf.header.contentType == nutFs.Type.Content.PROGRAM or nspf.header.contentType == nutFs.Type.Content.PUBLICDATA):
 			if isNcaPacked(nspf):
-				cctx = zstandard.ZstdCompressor(level=compressionLevel)
+				cctx = zstandard.ZstdCompressor(level=compressionLevel, threads = threads)
 
 				newFileName = nspf._path[0:-1] + 'z'
 
@@ -106,7 +107,7 @@ def compress(filePath,ofolder = None, level = 17, ofile= None):
 					
 				f.write(header)
 				written += len(header)
-				
+				timestamp = time.time()
 				decompressedBytes = 0x4000
 				totsize=0
 				for fs in sortednutFs(nspf):
@@ -126,10 +127,17 @@ def compress(filePath,ofolder = None, level = 17, ofile= None):
 						decompressedBytes += len(buffer)
 				t.close()	
 				compressor.flush(zstandard.FLUSH_FRAME)
+
+				elapsed = time.time() - timestamp
+				minutes = elapsed / 60
+				seconds = elapsed % 60
 				
-				print('  * %d written vs %d tell' % (written, f.tell() - start))
+				speed = 0 if elapsed == 0 else (nspf.size / elapsed)				
+				
+				print('\n  * %d written vs %d tell' % (written, f.tell() - start))
 				written = f.tell() - start
 				print('  * Compressed %d%% %d -> %d  - %s' % (int(written * 100 / nspf.size), decompressedBytes, written, nspf._path))
+				print('  * Compressed in %02d:%02d at speed: %.1f MB/s\n' % (minutes, seconds, speed / 1000000.0))				
 				newNsp.resize(newFileName, written)
 				continue
 			else:

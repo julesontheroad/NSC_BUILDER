@@ -294,7 +294,7 @@ if __name__ == '__main__':
 			vret=secondary.call_library(args.library_call)
 			Status.close()
 
-		if args.threads:
+		if args.threads and not args.compress and not args.decompress:
 			import secondary
 			workers=1
 			try:
@@ -2559,8 +2559,7 @@ if __name__ == '__main__':
 			#	Print.info(filePath)
 			Status.close()
 
-		# parser.add_argument('-C', '--compress', action="store_true", help='Compress a nsp or xci')
-		# parser.add_argument('-D', '--decompress', action="store_true", help='deCompress a nsz, xcz or ncz')
+		# parser.add_argument('-cpr', '--compress', help='Compress a nsp or xci')
 		if args.compress:
 			if args.ofolder:		
 				for input in args.ofolder:
@@ -2571,7 +2570,17 @@ if __name__ == '__main__':
 			else:
 				for filepath in args.compress:
 					dir=os.path.dirname(os.path.abspath(filepath))
-					ofolder =os.path.join(dir, 'output')		
+					ofolder =os.path.join(dir, 'output')	
+			if args.threads:
+				workers=0
+				try:
+					workers=int(args.threads)
+					if workers<0:
+						workers=0
+					elif workers>4:
+						workers=4
+				except:
+					workers=0			
 			if args.compress:
 				if args.text_file:
 					tfile=args.text_file
@@ -2615,8 +2624,9 @@ if __name__ == '__main__':
 							level=1
 					except:
 						level=17
-					compressor.compress(filepath,ofolder,level)
+					compressor.compress(filepath,ofolder,level,workers)
 
+		# parser.add_argument('-dcpr', '--decompress', help='deCompress a nsz, xcz or ncz')
 		if args.decompress:
 			if args.ofolder:		
 				for input in args.ofolder:

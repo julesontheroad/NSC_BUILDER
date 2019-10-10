@@ -40,6 +40,7 @@ from PIL import Image
 import zstandard
 from Crypto.Cipher import AES
 from Crypto.Util import Counter
+import time
 
 
 #from Cryptodome.Signature import pss
@@ -8634,6 +8635,7 @@ class Nsp(Pfs0):
 							t.write('  Writing nca header')							
 							o.write(header)
 							t.update(len(header))	
+							timestamp = time.time()
 							t.write('  Writing decompressed body in plaintext')								
 							while True:							
 								chunk = reader.read(16384)								
@@ -8641,22 +8643,23 @@ class Nsp(Pfs0):
 									break									
 								o.write(chunk)	
 								t.update(len(chunk))	
-							c=0	
+							c=0;spsize=0	
 							t.write('  + Restoring crypto in sections')								
 							for s in sections:
 								c+=1
 								if s.cryptoType == 1: #plain text
-									t.write('   * Section {} is plaintext'.format(str(c)))
-									t.write('     %x - %d bytes, Crypto type %d' % ((s.offset), s.size, s.cryptoType))
-									t.update(s.size)	
+									t.write('    * Section {} is plaintext'.format(str(c)))
+									t.write('      %x - %d bytes, Crypto type %d' % ((s.offset), s.size, s.cryptoType))
+									t.update(s.size);spsize+=s.size	
 									continue									
 								if s.cryptoType != 3:
 									raise IOError('unknown crypto type')	
-								t.write('   * Section {} needs decompression'.format(str(c)))	
-								t.write('     %x - %d bytes, Crypto type %d' % ((s.offset), s.size, s.cryptoType))								
+								t.write('    * Section {} needs decompression'.format(str(c)))	
+								t.write('      %x - %d bytes, Crypto type %d' % ((s.offset), s.size, s.cryptoType))								
 								i = s.offset								
 								crypto = AESCTR(s.cryptoKey, s.cryptoCounter)
-								end = s.offset + s.size			
+								end = s.offset + s.size		
+								spsize+=s.size									
 								while i < end:
 									o.seek(i+curr_off)
 									crypto.seek(i)
@@ -8667,7 +8670,14 @@ class Nsp(Pfs0):
 									o.seek(i+curr_off)
 									o.write(crypto.encrypt(buf))		
 									t.update(len(buf))										
-									i += chunkSz									
+									i += chunkSz
+							elapsed = time.time() - timestamp
+							minutes = elapsed / 60
+							seconds = elapsed % 60
+							
+							speed = 0 if elapsed == 0 else (spsize / elapsed)
+							t.write('\n    Decompressed in %02d:%02d at speed: %.1f MB/s\n' % (minutes, seconds, speed / 1000000.0))				
+								
 			else:
 				for ot in self:
 					if str(ot._path)==file:
