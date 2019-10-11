@@ -21,7 +21,14 @@ Luca Fraga's github: https://github.com/LucaFraga
 ---------------
 0. Changelog
 ---------------
-v0.92 - Adds compression and decompression of snp files to NSCB:
+v0.93 - Adds update compression and decompression to NSCB:
+	- Added update compression and decompression by blawar to NSCB
+	- Fix GAME-INFO and FW requirements reads for updates and DLCs
+	  Note: Nothing to do with SX OS note or xci game-info, that
+	  wasn't changed since hacbuild got replaced by squirrel in
+	  v0.79 27 of January 2019. Any xci gameinfo after that date is
+	  perfectly fine and previous xcis can get fixed when reprocessed.
+v0.92 - Adds compression and decompression of nsp files to NSCB:
 	- Added mode 8 which implements direct compression and decompression of nsp
 	  files using the nsz standard from blawar.
 	  https://github.com/blawar/nsz
