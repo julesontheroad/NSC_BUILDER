@@ -55,7 +55,7 @@ def foldercompress(ifolder, ofolder = None, level = 17, threads = 0, t=['nsp']):
 		print('\nStill %d files to compress\n'%(counter))
 
 
-def compress(filePath,ofolder = None, level = 17,  threads = 0, ofile= None):
+def compress(filePath,ofolder = None, level = 17,  threads = 0, delta=False, ofile= None):
 	compressionLevel=int(level)
 	container = nutFs.factory(filePath)
 
@@ -78,7 +78,7 @@ def compress(filePath,ofolder = None, level = 17,  threads = 0, ofile= None):
 	newNsp = nutFs.Pfs0.Pfs0Stream(nszPath)
 
 	for nspf in container:
-		if isinstance(nspf, nutFs.Nca.Nca) and nspf.header.contentType == nutFs.Type.Content.DATA:
+		if isinstance(nspf, nutFs.Nca.Nca) and nspf.header.contentType == nutFs.Type.Content.DATA and delta==False:
 			Print.info('-> Skipping delta fragment')
 			continue
 			

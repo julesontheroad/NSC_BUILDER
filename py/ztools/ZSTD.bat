@@ -248,7 +248,7 @@ echo *******************************
 CD /d "%prog_dir%"
 for /f "tokens=*" %%f in (zzlist.txt) do (
 
-%pycommand% "%nut%" %buffer% -o "%fold_output%" -tfile "%prog_dir%zzlist.txt" --compress "%level%" --threads "%workers%"
+%pycommand% "%nut%" %buffer% -o "%fold_output%" -tfile "%prog_dir%zzlist.txt" --compress "%level%" --threads "%workers%" --nodelta "%skdelta%"
 
 %pycommand% "%nut%" --strip_lines "%prog_dir%zzlist.txt"
 call :contador_NF

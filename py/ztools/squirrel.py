@@ -2561,6 +2561,17 @@ if __name__ == '__main__':
 
 		# parser.add_argument('-cpr', '--compress', help='Compress a nsp or xci')
 		if args.compress:
+			if args.nodelta:
+				for input in args.nodelta:
+					try:
+						if input == "true" or input == "True" or input == "TRUE":
+							delta=False
+						elif input == "false" or input == "False" or input == "FALSE":
+							delta=True
+						else:
+							delta=False
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))		
 			if args.ofolder:		
 				for input in args.ofolder:
 					try:
@@ -2624,7 +2635,7 @@ if __name__ == '__main__':
 							level=1
 					except:
 						level=17
-					compressor.compress(filepath,ofolder,level,workers)
+					compressor.compress(filepath,ofolder,level,workers,delta)
 
 		# parser.add_argument('-dcpr', '--decompress', help='deCompress a nsz, xcz or ncz')
 		if args.decompress:
