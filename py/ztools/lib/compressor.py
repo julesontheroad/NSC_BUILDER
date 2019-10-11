@@ -14,7 +14,9 @@ import listmanager
 from tqdm import tqdm
 import time
 
-def sortednutFs(nca):
+ncaHeaderSize = 0x4000
+
+def sortedFs(nca):
 	fs = []
 	for i in nca.sections:
 		fs.append(i)
@@ -22,12 +24,12 @@ def sortednutFs(nca):
 	return fs
 
 def isNcaPacked(nca):
-	fs = sortednutFs(nca)
+	fs = sortedFs(nca)
 
 	if len(fs) == 0:
 		return True
 
-	next = 0x4000
+	next = ncaHeaderSize
 	for i in range(len(fs)):
 		if fs[i].offset != next:
 			return False
@@ -76,6 +78,10 @@ def compress(filePath,ofolder = None, level = 17,  threads = 0, ofile= None):
 	newNsp = nutFs.Pfs0.Pfs0Stream(nszPath)
 
 	for nspf in container:
+		if isinstance(nspf, nutFs.Nca.Nca) and nspf.header.contentType == nutFs.Type.Content.DATA:
+			Print.info('-> Skipping delta fragment')
+			continue
+			
 		if isinstance(nspf, nutFs.Nca.Nca) and (nspf.header.contentType == nutFs.Type.Content.PROGRAM or nspf.header.contentType == nutFs.Type.Content.PUBLICDATA):
 			if isNcaPacked(nspf):
 				cctx = zstandard.ZstdCompressor(level=compressionLevel, threads = threads)
@@ -87,18 +93,22 @@ def compress(filePath,ofolder = None, level = 17,  threads = 0, ofile= None):
 				start = f.tell()
 
 				nspf.seek(0)
-				f.write(nspf.read(0x4000))
-				written = 0x4000
+				f.write(nspf.read(ncaHeaderSize))
+				written = ncaHeaderSize
 
 				compressor = cctx.stream_writer(f)
 				
+				sections = []
+				for fs in sortedFs(nspf):
+					sections += fs.getEncryptionSections()							
+				
 				header = b'NCZSECTN'
-				header += len(sortednutFs(nspf)).to_bytes(8, 'little')
+				header += len(sections).to_bytes(8, 'little')
 				
 				i = 0
-				for fs in sortednutFs(nspf):
+				for fs in sections:
 					i += 1
-					header += fs.realOffset().to_bytes(8, 'little')
+					header += fs.offset.to_bytes(8, 'little')
 					header += fs.size.to_bytes(8, 'little')
 					header += fs.cryptoType.to_bytes(8, 'little')
 					header += b'\x00' * 8
@@ -108,24 +118,26 @@ def compress(filePath,ofolder = None, level = 17,  threads = 0, ofile= None):
 				f.write(header)
 				written += len(header)
 				timestamp = time.time()
-				decompressedBytes = 0x4000
+				decompressedBytes = ncaHeaderSize
 				totsize=0
-				for fs in sortednutFs(nspf):
+				for fs in sortedFs(nspf):
 					totsize+=fs.size
 				t = tqdm(total=totsize, unit='B', unit_scale=True, leave=False)
-				
-				for fs in sortednutFs(nspf):
-					fs.seek(0)			
-					while not fs.eof():
-						buffer = fs.read(CHUNK_SZ)
-						t.update(len(buffer))
+
+				for section in sections:
+					#print('offset: %x\t\tsize: %x\t\ttype: %d\t\tiv%s' % (section.offset, section.size, section.cryptoType, str(hx(section.cryptoCounter))))
+					o = nspf.partition(offset = section.offset, size = section.size, n = None, cryptoType = section.cryptoType, cryptoKey = section.cryptoKey, cryptoCounter = bytearray(section.cryptoCounter), autoOpen = True)
+					
+					while not o.eof():
+						buffer = o.read(CHUNK_SZ)
+						t.update(len(buffer))						
 						if len(buffer) == 0:
 							raise IOError('read failed')
 
 						written += compressor.write(buffer)
 						
 						decompressedBytes += len(buffer)
-				t.close()	
+				t.close()							
 				compressor.flush(zstandard.FLUSH_FRAME)
 
 				elapsed = time.time() - timestamp

@@ -1,8 +1,8 @@
 from nutFs.File import File
-import Type
+import nutFs.Type
 import Print
 from nutFs.File import MemoryFile
-import Bktr
+import nutFs.Bktr as Bktr
 from binascii import hexlify as hx, unhexlify as uhx
 
 class EncryptedSection:
@@ -97,7 +97,8 @@ class BaseFs(File):
 			try:
 				self.bktrRelocation = Bktr.Bktr1(MemoryFile(self.bktr1Buffer), 'rb', nca = self)
 			except BaseException as e:
-				Print.info('bktr reloc exception: ' + str(e))
+				pass
+				# Print.info('bktr reloc exception: ' + str(e))
 			
 		if self.bktr2Buffer:
 			try:

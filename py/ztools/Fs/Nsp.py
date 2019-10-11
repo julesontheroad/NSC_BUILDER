@@ -84,7 +84,7 @@ class Section:
 		self.cryptoType = readInt64(f)
 		readInt64(f) # padding
 		self.cryptoKey = f.read(16)
-		self.cryptoCounter = f.read(16)		
+		self.cryptoCounter = f.read(16)	
 
 class Nsp(Pfs0):
 		
@@ -8542,6 +8542,10 @@ class Nsp(Pfs0):
 		print('Decompressing {}'.format(self._path))
 		files_list=sq_tools.ret_nsp_offsets(self._path)
 		files=list();filesizes=list()
+		fplist=list()
+		for k in range(len(files_list)):
+			entry=files_list[k]
+			fplist.append(entry[0])
 		for i in range(len(files_list)):
 			entry=files_list[i]
 			filepath=entry[0]
@@ -8551,9 +8555,11 @@ class Nsp(Pfs0):
 					row=ncadata[j]
 					# print(row)
 					if row['NCAtype']!='Meta':
-						# print(str(row['NcaId'])+'.nca')
-						files.append(str(row['NcaId'])+'.nca')
-						filesizes.append(int(row['Size']))					
+						test1=str(row['NcaId'])+'.nca';test2=str(row['NcaId'])+'.ncz'
+						if test1 in fplist or test2 in fplist:
+							# print(str(row['NcaId'])+'.nca')
+							files.append(str(row['NcaId'])+'.nca')
+							filesizes.append(int(row['Size']))					
 					else:
 						# print(str(row['NcaId'])+'.cnmt.nca')
 						files.append(str(row['NcaId'])+'.cnmt.nca')
@@ -8652,10 +8658,11 @@ class Nsp(Pfs0):
 									t.write('      %x - %d bytes, Crypto type %d' % ((s.offset), s.size, s.cryptoType))
 									t.update(s.size);spsize+=s.size	
 									continue									
-								if s.cryptoType != 3:
-									raise IOError('unknown crypto type')	
+								if s.cryptoType not in (3, 4):
+									raise IOError('Unknown crypto type: %d' % s.cryptoType)	
 								t.write('    * Section {} needs decompression'.format(str(c)))	
-								t.write('      %x - %d bytes, Crypto type %d' % ((s.offset), s.size, s.cryptoType))								
+								t.write('      %x - %d bytes, Crypto type %d' % ((s.offset), s.size, s.cryptoType))		
+								t.write('      Key: %s, IV: %s' % (str(hx(s.cryptoKey)), str(hx(s.cryptoCounter))))																
 								i = s.offset								
 								crypto = AESCTR(s.cryptoKey, s.cryptoCounter)
 								end = s.offset + s.size		
