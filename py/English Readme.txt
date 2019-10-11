@@ -60,6 +60,10 @@ Current version of the program allows you to:
 
 20.- Joiner for xc*,ns* and *0 fat32 files
 
+21.- Compression of nsp files into .nsz files 
+
+22.- Graphical interface for file information trough a gui running on chromium\chrome
+
 ## 4. Batch modes:
 
 The batch has 2 modes:
@@ -98,7 +102,11 @@ The behavior of the auto-mode is configured trough the “Configuration menu in 
   * 1. Extracts all contents from a nsp\xci
   * 2. Extracts all contents from a nsp\xci in raw mode
   * 3. Extracts all contents from a nsp\xci in plaintext
-  * 4. Extracts files from nca inside a nsp\xci   
+  * 4. Extracts files from nca inside a nsp\xci  
+- MODE 7: File joiner mode. Joins fat32 splitted files  
+- MODE 8: Compression\Decompression
+  * 1. Compress nsp files into nsz format
+  * 2. Decompress nsz files into nsp files
 - L: Legacy Mode. Old functions
 
 ## 6. Configuration mode:
@@ -153,7 +161,65 @@ Pack xci or nsp in fat32 compatible formats or exfat format.
 - 1 (default\DEACTIVATED)
 - YOUR NUMBER. Uses several workers to do multiple renames or create multiple database strings at the same time
 
-## 7. Important
+## 7. Gui for file  information:
+
+- NSCB File_Info is a html based gui that gives a graphic interface to NSCB info.
+  Yes, it has game-icons, pictures and that stuff you guys like.
+- Current functions are:
+  * Game Information. Combines data read from file with eshop data from nutdb
+  * Description: Description from the eshop (nutdb)
+  * Image Gallery: Pictures from the eshop (nutdb)
+  * BaseID File-Tree: Shows the lates version for dlcs and updates associated to the game (nutdb)
+  * Titles: Advanced Files List from NSCB-new
+  * NACP Reader from NSCB
+  * NPDM Reader from NSCB
+  * CNMT Reader from NSCB
+  * Verification from NSCB, till Level 2 so it's loaded fast. Use normal NSCB for hashing for now.
+- You'll notice some information like BuildIDs is added now, the cnmt was made more readable and I added detection for multiprogram games like Grandia and Hotline 
+  Miami
+- Known Issues:
+  * CSS probably needs some work, specially for fullscreen.
+  * Upper corner menu is a placeholder
+  * NPDM decryption is failing in some games, is on my TODO list
+  * Multicontent files (generally xci) may need some work to improve parsing speeds
+  * Not reading yet splitted files (ns*,xc*,0*) but will add that soon
+- TODO:	  	  
+  * Output css to a file for theming
+  * Language translations
+  * Porting NSCB functions
+  * Let user choose nutdb files
+- How to use:	  
+  * If you have Chrome or Chromium Installed you're good to go.
+  * If you don't want to install those browsers you can use chromium portable.
+	1. Get the last version for your system here: https://chromium.woolyss.com/
+	2. Create a folder in ztools called "Chromium"
+	3. Decompress the chromium files somewhere in your pc and execute "chrlauncher 2.5.6 (64-bit).exe" or whatever is called in your zip to get the needed files downloaded
+	4. Move all files to ztools\Chromium and rename "chrlauncher 2.5.6 (64-bit).exe" to "chrlauncher.exe". This takes priority over a chrome\chromium installation
+  * Once you have all setup just execute "Interface.bat"
+	5. Rememeber you need to fill keys_template.txt in ztools but i imagine you already know that
+- I use python:		   
+  * Just get latest python 3 and install these dependencies: 
+	urllib3 unidecode tqdm bs4 tqdm requests image pywin32 pycryptodome pykakasi googletrans chardet eel bottle
+  * Now the tricky part, I use the unreleased version of eel that isn't in pypy so go here https://github.com/ChrisKnott/Eel Download the master, seek the folder where  your eel installation is and overwrite the files with the ones in the master.
+	If you have trouble finding it try doing again pip install eel it'll tell you is up to date and installed in 'X' folder.
+  * Then execute "Interface.bat" 
+- I use linux or mac:			  
+  * Well i tested it on linux and i'll give you a build at a later time, have to admit I didn't test anything on mac though i imagine it works
+  * Install python and:
+	urllib3 unidecode tqdm bs4 tqdm requests image pycryptodome pykakasi googletrans chardet eel bottle
+  * Basically same as before ignoring pywin32 that NSCB uses to set the archive bit in folders	
+  * Replace the eel files for the ones in the master like explained above.	
+  * Run squirrel with:
+	squirrel.py -lib_call Interface starting
+  * Or wait a few days for a build if you don't like python
+
+## 8. File_Info Gui examples:
+
+![Picture](https://i.ibb.co/12kCsDk/FI1.png)
+![Picture2](https://i.ibb.co/R93H02v/FI3.png)
+![Picture3](https://i.ibb.co/HCfTdxj/FI11.png)
+
+## 9. Important
 
 This program attempts to modify the minimum data possible in nsp and xci files, due to that reason it requires signature patches to ignore both signatures at NCA headers. Firmwares that already include them are:
 - SX OS
@@ -172,7 +238,12 @@ https://github.com/digableinc/tinfoil
 - Blawar’s lithium:
 https://github.com/blawar/lithium
 
-## 8. Requirements 
+To install ncz files you need:
+- SX OS installer
+- Blawar’s tinfoil:
+https://github.com/digableinc/tinfoil
+
+## 10. Requirements 
 
 - A computer with a Window's OS is needed
 - Fill keys_template.txt on the ztools folder and rename it to keys.txt
@@ -181,12 +252,12 @@ https://github.com/blawar/lithium
   If you want to add the xci_header_key a friend will need to lend it to you.
   https://github.com/shchmue/Lockpick/releases
 
-## 9. Limitations 
+## 11. Limitations 
 - You can't make multi-content xci files with more than 8 games. It'll give error when loading in horizon. I suspect it may be a qlauncher limitation so it could work with theme mods but INTRO didn't test it.
 Note: This means “games”, updates and dl car not hold by that limitation.
 - Title-rights remove dlcs give a message prompt of incomplete content for some games from 6.0 onwards, that message can be skipped and the dlcs will work fine despite the prompt.
 
-## 7. Thanks and credits to 
+## 12. Thanks and credits to 
 
 NSC_Builder is based on
 
