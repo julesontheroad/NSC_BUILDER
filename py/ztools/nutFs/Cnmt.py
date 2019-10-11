@@ -30,6 +30,7 @@ class Cnmt(File):
 		self.titleId = None
 		self.version = None
 		self.titleType = None
+		self.IdOffset = None		
 		self.headerOffset = None
 		self.contentEntryCount = None
 		self.metaEntryCount = None
@@ -44,8 +45,7 @@ class Cnmt(File):
 		self.titleId = hx(self.read(8)[::-1]).decode()
 		self.version = self.readInt32()
 		self.titleType = self.readInt8()
-
-		self.readInt8() # junk
+		self.IdOffset = self.readInt8()
 
 		self.headerOffset = self.readInt16()
 		self.contentEntryCount = self.readInt16()
@@ -71,6 +71,7 @@ class Cnmt(File):
 		Print.info('%stitleId = %s' % (tabs, self.titleId))
 		Print.info('%sversion = %x' % (tabs, self.version))
 		Print.info('%stitleType = %x' % (tabs, self.titleType))
+		Print.info('%IdOffset = %x' % (tabs, self.IdOffset))		
 
 		for i in self.contentEntries:
 			Print.info('%s\tncaId: %s  type = %x' % (tabs, i.ncaId, i.type))
