@@ -179,15 +179,15 @@ set /p bs="Enter your choice: "
 set bs=%bs:"=%
 set choice=none
 if /i "%bs%"=="b" goto checkagain
-if /i "%bs%"=="1" goto levels
+if /i "%bs%"=="1" goto compression_presets_menu
 if /i "%bs%"=="2" goto decompress
 if %choice%=="none" goto s_cl_wrongchoice
 
 
-:levels_wrongchoice
+:compression_presets_wrongchoice
 echo wrong choice
 echo ............
-:compression_pressets
+:compression_presets_menu
 echo *******************************************************
 echo COMPRESSION PRESETS
 echo *******************************************************
@@ -227,7 +227,7 @@ if /i "%bs%"=="5" set "workers=0"
 if /i "%bs%"=="6" set "level=%compression_lv%"
 if /i "%bs%"=="6" set "workers=%compression_threads%"
 
-if %choice%=="none" goto levels_wrongchoice
+if %choice%=="none" goto compression_presets_wrongchoice
 goto compress
 
 
