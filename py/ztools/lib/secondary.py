@@ -37,53 +37,55 @@ allowedlist=['--renamef','--addtodb','--addtodb_new','--verify']
 	
 def call_library(args):	
 	vret=None
+
 	try:
 		if args[0]:
 			library=args[0]
 			lib=__import__(library)
 	except:pass	
 	
-	try:	
-		if args[2]:		
-			var=args[2]
-			try:
-				var=var.split(",")	
-				for i in range(len(var)):
-					if var[i]=='True':
-						var[i]=True
-					elif var[i]=='False':
-						var[i]=False					
-					elif '=' in var[i]:
-						try:
-							asignation=var[i].split("=")
-							if asignation[1]=='True':
-								var[i]=True
-							elif asignation[1]=='False':	
-								var[i]=False
-							else:
-								var[i]=asignation[1]
-						except:pass
-					else:pass
-			except:pass
-	except:	
-		var=None
-	try:	
-		if args[1]:
-			fimport=args[1]
-			function = getattr(__import__(library,fromlist=[fimport]), fimport)	
-			if var==None:
-				vret=function()
+	if len(args)>1:	
+		try:	
+			if args[2]:		
+				var=args[2]
+				try:
+					var=var.split(",")	
+					for i in range(len(var)):
+						if var[i]=='True':
+							var[i]=True
+						elif var[i]=='False':
+							var[i]=False					
+						elif '=' in var[i]:
+							try:
+								asignation=var[i].split("=")
+								if asignation[1]=='True':
+									var[i]=True
+								elif asignation[1]=='False':	
+									var[i]=False
+								else:
+									var[i]=asignation[1]
+							except:pass
+						else:pass
+				except:pass
+		except:	
+			var=None
+		try:	
+			if args[1]:
+				fimport=args[1]
+				function = getattr(__import__(library,fromlist=[fimport]), fimport)	
+				if var==None:
+					vret=function()
+				else:
+					vret=function(*var)					
+		except BaseException as e:
+			Print.error('Exception: ' + str(e))	
+		try:
+			if str(args[2]).lower() == 'print' or str(args[3]).lower() == 'print':
+				print(str(vret))
 			else:
-				vret=function(*var)					
-	except BaseException as e:
-		Print.error('Exception: ' + str(e))	
-	try:
-		if str(args[2]).lower() == 'print' or str(args[3]).lower() == 'print':
-			print(str(vret))
-		else:
-			print(str(vret))		
-	except:	
-		return 	vret
+				print(str(vret))		
+		except:	
+			return 	vret
 
 	
 	

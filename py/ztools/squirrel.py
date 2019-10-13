@@ -128,7 +128,7 @@ if __name__ == '__main__':
 		parser.add_argument('-dmul', '--direct_multi', nargs='+', help='Create directly a multi nsp or xci')
 		parser.add_argument('-ed', '--erase_deltas', nargs='+', help='Take of deltas from updates')
 		parser.add_argument('-rbnsp', '--rebuild_nsp', nargs='+', help='Rebuild nsp by cnmt order')
-		#parser.add_argument('-rst', '--restore', nargs='+', help='Restore a xci or nsp file')
+		parser.add_argument('-rst', '--restore', nargs='+', help='Restore a xci or nsp file')
 
 		# nca/nsp identification
 		parser.add_argument('--ncatitleid', nargs='+', help='Returns titleid from a nca input')
@@ -7355,6 +7355,63 @@ if __name__ == '__main__':
 							errfile.write(date+'\n')
 							errfile.write("Filename: "+str(filename)+'\n')
 							errfile.write('Exception: ' + str(e)+'\n')
+			if filename.endswith('.nsz'):
+				try:
+					f = Fs.Nsp(filename, 'rb')
+					check,feed=f.verify()
+					f.flush()
+					f.close()
+					if not args.text_file:
+						f = Fs.Nsp(filename, 'rb')
+						verdict,headerlist,feed=f.verify_sig(feed,tmpfolder)
+						f.flush()
+						f.close()
+						i=0
+						print('\n********************************************************')
+						print('Do you want to verify the hash of the nca files?')
+						print('********************************************************')
+						while i==0:
+							print('Input "1" to VERIFY hash of files')
+							print('Input "2" to NOT verify hash  of files\n')
+							ck=input('Input your answer: ')
+							if ck ==str(1):
+								print('')
+								f = Fs.Nsp(filename, 'rb')
+								verdict,feed=f.nsz_hasher(buffer,headerlist,verdict,feed)
+								f.flush()
+								f.close()
+								i=1
+							elif ck ==str(2):
+								f.flush()
+								f.close()
+								i=1
+							else:
+								print('WRONG CHOICE\n')
+						print('\n********************************************************')
+						print('Do you want to print the information to a text file')
+						print('********************************************************')
+						i=0
+						while i==0:
+							print('Input "1" to print to text file')
+							print('Input "2" to NOT print to text file\n')
+							ck=input('Input your answer: ')
+							if ck ==str(1):
+								with open(infotext, 'w') as info:
+									info.write(feed)
+								i=1
+							elif ck ==str(2):
+								i=1
+							else:
+								print('WRONG CHOICE\n')	
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))
+					if args.text_file:
+						with open(errfile, 'a') as errfile:
+							now=datetime.now()
+							date=now.strftime("%x")+". "+now.strftime("%X")
+							errfile.write(date+'\n')
+							errfile.write("Filename: "+str(filename)+'\n')
+							errfile.write('Exception: ' + str(e)+'\n')								
 			if filename.endswith('.nca'):
 				try:
 					f = Fs.Nca(filename, 'rb')
@@ -9401,7 +9458,7 @@ if __name__ == '__main__':
 		# ...................................................
 		# Restore. File Restoration
 		# ...................................................
-		'''
+		
 		if args.restore:
 			feed=''
 			if args.buffer:
@@ -9412,8 +9469,19 @@ if __name__ == '__main__':
 						Print.error('Exception: ' + str(e))
 			else:
 				buffer = 65536
+			if args.ofolder:
+				for input in args.ofolder:
+					try:
+						ofolder = input
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+			else:
+				for filename in args.restore:
+					dir=os.path.dirname(os.path.abspath(filename))
+					ofolder =os.path.join(dir, 'output')				
 			if not os.path.exists(ofolder):
 				os.makedirs(ofolder)
+			tmpfolder =os.path.join(ofolder, 'tmp')	
 			if args.text_file:
 				tfile=args.text_file
 				dir=os.path.dirname(os.path.abspath(tfile))
@@ -9425,18 +9493,76 @@ if __name__ == '__main__':
 					filename = filelist.readline()
 					filename=os.path.abspath(filename.rstrip('\n'))
 			else:
-				for filename in args.verify:
+				for filename in args.restore:
 					filename=filename
+			ofile=str(os.path.basename(os.path.abspath(filename)))
+			ofile=os.path.join(ofolder, ofile)
 			if filename.endswith('.nsp') or filename.endswith('.nsx'):
 				try:
 					f = Fs.Nsp(filename, 'rb')
 					check,feed=f.verify()
 					verdict,headerlist,feed=f.verify_sig(feed,tmpfolder)
+					output_type='nsp';multi=False;cnmtcount=0
 					if verdict == True:
-						pass
+						isrestored=True
+						for i in range(len(headerlist)):
+							entry=headerlist[i]
+							if str(entry[0]).endswith('.cnmt.nca'):
+								cnmtcount+=1
+							if entry[1]!=False:
+								if int(entry[-1])==1:
+									output_type='xci'
+								isrestored=False	
+							else:
+								pass
+						if	isrestored == False:	
+							print('\nFILE WAS MODIFIED. FILE IS RESTORABLE')
+							if cnmtcount<2:
+								if not os.path.exists(ofolder):
+									os.makedirs(ofolder)
+								f.restore_ncas(buffer,headerlist,verdict,ofile,feed,output_type)
+							else:
+								print(" -> Current Implementation doesn't support multicontent files")
+								print("    Please use the multicontent splitter first")
+						else:
+							print("\nFILE WASN'T MODIFIED. SKIPPING RESTORATION")
+					if verdict == False:		
+						print("\nFILE WAS MODIFIED. FILE ISN'T RESTORABLE")					
 				except BaseException as e:
 					Print.error('Exception: ' + str(e))
-		'''
+			if filename.endswith('.xci'):		
+				try:
+					f = Fs.Xci(filename)
+					check,feed=f.verify()
+					verdict,headerlist,feed=f.verify_sig(feed,tmpfolder)
+					output_type='nsp';multi=False;cnmtcount=0
+					if verdict == True:
+						isrestored=True
+						for i in range(len(headerlist)):
+							entry=headerlist[i]
+							if str(entry[0]).endswith('.cnmt.nca'):
+								cnmtcount+=1
+							if entry[1]!=False:
+								if int(entry[-1])==1:
+									output_type='xci'
+								isrestored=False	
+							else:
+								pass
+						if	isrestored == False:	
+							print('\nFILE WAS MODIFIED. FILE IS RESTORABLE')
+							if cnmtcount<2:
+								if not os.path.exists(ofolder):
+									os.makedirs(ofolder)
+								f.restore_ncas(buffer,headerlist,verdict,ofile,feed,output_type)
+							else:
+								print(" -> Current Implementation doesn't support multicontent files")
+								print("    Please use the multicontent splitter first")
+						else:
+							print("\nFILE WASN'T MODIFIED. SKIPPING RESTORATION")
+					elif verdict == False:		
+						print("\nFILE WAS MODIFIED. FILE ISN'T RESTORABLE")					
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))			
 
 		Status.close()
 

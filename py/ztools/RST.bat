@@ -4,29 +4,29 @@ CD /d "%prog_dir%"
 
 REM //////////////////////////////////////////////////
 REM /////////////////////////////////////////////////
-REM FILE JOINER
+REM FILE RESTORATION
 REM /////////////////////////////////////////////////
 REM ////////////////////////////////////////////////
 :normalmode
 cls
 call :program_logo
 echo -------------------------------------------------
-echo FILE JOINER ACTIVATED
+echo FILE RESTORATION ACTIVATED
 echo -------------------------------------------------
-if exist "joinlist.txt" goto prevlist
+if exist "rstlist.txt" goto prevlist
 goto manual_INIT
 :prevlist
 set conta=0
-for /f "tokens=*" %%f in (joinlist.txt) do (
+for /f "tokens=*" %%f in (rstlist.txt) do (
 echo %%f
 ) >NUL 2>&1
 setlocal enabledelayedexpansion
-for /f "tokens=*" %%f in (joinlist.txt) do (
+for /f "tokens=*" %%f in (rstlist.txt) do (
 set /a conta=!conta! + 1
 ) >NUL 2>&1
-if !conta! LEQ 0 ( del joinlist.txt )
+if !conta! LEQ 0 ( del rstlist.txt )
 endlocal
-if not exist "joinlist.txt" goto manual_INIT
+if not exist "rstlist.txt" goto manual_INIT
 ECHO .......................................................
 ECHO A PREVIOUS LIST WAS FOUND. WHAT DO YOU WANT TO DO?
 :prevlist0
@@ -53,11 +53,11 @@ echo.
 echo BAD CHOICE
 goto prevlist0
 :delist
-del joinlist.txt
+del rstlist.txt
 cls
 call :program_logo
 echo -------------------------------------------------
-echo FILE JOINER ACTIVATED
+echo FILE RESTORATION ACTIVATED
 echo -------------------------------------------------
 echo ..................................
 echo YOU'VE DECIDED TO START A NEW LIST
@@ -69,7 +69,7 @@ ECHO ***********************************************
 echo Input "0" to return to the MODE SELECTION MENU
 ECHO ***********************************************
 echo.
-%pycommand% "%nut%" -t ns0 xc0 00 -tfile "%prog_dir%joinlist.txt" -uin "%uinput%" -ff "uinput"
+%pycommand% "%nut%" -t nsp xci -tfile "%prog_dir%rstlist.txt" -uin "%uinput%" -ff "uinput"
 set /p eval=<"%uinput%"
 set eval=%eval:"=%
 setlocal enabledelayedexpansion
@@ -93,7 +93,7 @@ ECHO *************************************************
 echo Or Input "0" to return to the MODE SELECTION MENU
 ECHO *************************************************
 echo.
-%pycommand% "%nut%" -t ns0 xc0 00 -tfile "%prog_dir%joinlist.txt" -uin "%uinput%" -ff "uinput"
+%pycommand% "%nut%" -t nsp xci -tfile "%prog_dir%rstlist.txt" -uin "%uinput%" -ff "uinput"
 set /p eval=<"%uinput%"
 set eval=%eval:"=%
 setlocal enabledelayedexpansion
@@ -105,7 +105,7 @@ if /i "%eval%"=="1" goto start_cleaning
 if /i "%eval%"=="e" goto salida
 if /i "%eval%"=="i" goto showlist
 if /i "%eval%"=="r" goto r_files
-if /i "%eval%"=="z" del joinlist.txt
+if /i "%eval%"=="z" del rstlist.txt
 
 goto checkagain
 
@@ -115,7 +115,7 @@ set bs=%bs:"=%
 
 setlocal enabledelayedexpansion
 set conta=
-for /f "tokens=*" %%f in (joinlist.txt) do (
+for /f "tokens=*" %%f in (rstlist.txt) do (
 set /a conta=!conta! + 1
 )
 
@@ -132,11 +132,11 @@ set string=%string%,
 set skiplist=%string%
 Set "skip=%skiplist%"
 setlocal DisableDelayedExpansion
-(for /f "tokens=1,*delims=:" %%a in (' findstr /n "^" ^<joinlist.txt'
+(for /f "tokens=1,*delims=:" %%a in (' findstr /n "^" ^<rstlist.txt'
 ) do Echo=%skip%|findstr ",%%a," 2>&1>NUL ||Echo=%%b
-)>joinlist.txt.new
+)>rstlist.txt.new
 endlocal
-move /y "joinlist.txt.new" "joinlist.txt" >nul
+move /y "rstlist.txt.new" "rstlist.txt" >nul
 endlocal
 
 :showlist
@@ -148,12 +148,12 @@ echo -------------------------------------------------
 ECHO -------------------------------------------------
 ECHO                 FILES TO PROCESS 
 ECHO -------------------------------------------------
-for /f "tokens=*" %%f in (joinlist.txt) do (
+for /f "tokens=*" %%f in (rstlist.txt) do (
 echo %%f
 )
 setlocal enabledelayedexpansion
 set conta=
-for /f "tokens=*" %%f in (joinlist.txt) do (
+for /f "tokens=*" %%f in (rstlist.txt) do (
 set /a conta=!conta! + 1
 )
 echo .................................................
@@ -170,7 +170,20 @@ echo ............
 echo *******************************************************
 echo CHOOSE HOW TO PROCESS THE FILES
 echo *******************************************************
-echo Input "1" to join .xc*,.ns*,.0* files
+echo If the files where modified with NSCB from legit sources
+echo their nca files are restorable, if not you're not in luck
+echo.
+echo This mode will restore:
+echo   - Conversions between xci\nsp (done by NSCB)
+echo   - Titlerights removal operations
+echo   - Keygeneration and RSV changes
+echo.
+echo + Restoration of the link account patcher is not supported yet
+echo + Multicontent files need to be processed by the multicontent
+echo   splitter first in this first implementation.
+echo.
+echo ------------------------------------------
+echo Input "1" to process the files
 echo.
 ECHO ******************************************
 echo Or Input "b" to return to the list options
@@ -180,20 +193,26 @@ set /p bs="Enter your choice: "
 set bs=%bs:"=%
 set vrepack=none
 if /i "%bs%"=="b" goto checkagain
-if /i "%bs%"=="1" goto joinfiles
+if /i "%bs%"=="1" goto restorefiles
 if %vrepack%=="none" goto s_cl_wrongchoice
 
-:joinfiles
+:restorefiles
 cls
 call :program_logo
 CD /d "%prog_dir%"
-for /f "tokens=*" %%f in (joinlist.txt) do (
+MD "%fold_output%" >NUL 2>&1
+for /f "tokens=*" %%f in (rstlist.txt) do (
+MD "%w_folder%" >NUL 2>&1
 
-%pycommand% "%nut%" %buffer% -o "%fold_output%" -tfile "%prog_dir%joinlist.txt" --joinfile ""
-if exist "%fold_output%\output.nsp" ( %pycommand% "%nut%" -t nsp -renf "%fold_output%\output.nsp" >NUL 2>&1)
-if exist "%fold_output%\output.xci" ( %pycommand% "%nut%" -t xci -renf "%fold_output%\output.xci" >NUL 2>&1)
+%pycommand% "%nut%" %buffer% -o "%w_folder%" %buffer% -tfile "%prog_dir%rstlist.txt" --restore ""
+%pycommand% "%nut%" --strip_lines "%prog_dir%rstlist.txt"
 
-%pycommand% "%nut%" --strip_lines "%prog_dir%joinlist.txt"
+move "%w_folder%\*.xci" "%fold_output%" >NUL 2>&1
+move  "%w_folder%\*.xc*" "%fold_output%" >NUL 2>&1
+move "%w_folder%\*.nsp" "%fold_output%" >NUL 2>&1
+move "%w_folder%\*.ns*" "%fold_output%" >NUL 2>&1
+
+RD /S /Q "%w_folder%" >NUL 2>&1
 call :contador_NF
 )
 ECHO ---------------------------------------------------
@@ -202,7 +221,7 @@ ECHO ---------------------------------------------------
 goto s_exit_choice
 
 :s_exit_choice
-if exist joinlist.txt del joinlist.txt
+if exist rstlist.txt del rstlist.txt
 if /i "%va_exit%"=="true" echo PROGRAM WILL CLOSE NOW
 if /i "%va_exit%"=="true" ( PING -n 2 127.0.0.1 >NUL 2>&1 )
 if /i "%va_exit%"=="true" goto salida
@@ -219,7 +238,7 @@ goto s_exit_choice
 :contador_NF
 setlocal enabledelayedexpansion
 set /a conta=0
-for /f "tokens=*" %%f in (joinlist.txt) do (
+for /f "tokens=*" %%f in (rstlist.txt) do (
 set /a conta=!conta! + 1
 )
 echo ...................................................

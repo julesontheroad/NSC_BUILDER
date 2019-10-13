@@ -1891,16 +1891,18 @@ class Nca(File):
 						chkkg=orkg	
 					if cardchange == True:				
 						if self.header.getgamecard() != 0:
+							OGGC=0
 							if progress != False:
 								message=(tabs+'* '+"ISGAMECARD WAS CHANGED FROM 0 TO 1");bar.write(message);feed+=message+'\n'								
 							else:
 								message=(tabs+'* '+"ISGAMECARD WAS CHANGED FROM 0 TO 1");print(message);feed+=message+'\n'	
 						else:
+							OGGC=1
 							if progress != False:
 								message=(tabs+'* '+"ISGAMECARD WAS CHANGED FROM 1 TO 0");bar.write(message);feed+=message+'\n'								
 							else:						
 								message=(tabs+'* '+"ISGAMECARD WAS CHANGED FROM 1 TO 0");print(message);feed+=message+'\n'									
-					return True,orig_header,self._path,feed,chkkg,False,False,self.header.getgamecard()		
+					return True,orig_header,self._path,feed,chkkg,False,False,OGGC		
 				else:
 					if self.header.contentType == Type.Content.META:
 						if targetkg == False:
@@ -2103,7 +2105,9 @@ class Nca(File):
 		crypto = aes128.AESECB(key)
 		decKeyBlock = crypto.decrypt(encKeyBlock[:16])			
 		titleKeyEnc = Keys.encryptTitleKey(decKeyBlock, Keys.getMasterKeyIndex(masterKeyRev))
-
+		
+		currdecKeyBlock=decKeyBlock
+		
 		self.header.seek(0x200)	
 		headdata = b''
 		headdata += self.header.read(0x30)
@@ -2146,7 +2150,7 @@ class Nca(File):
 					encKeyBlock = self.header.getKeyBlock()
 					key = Keys.keyAreaKey(Keys.getMasterKeyIndex(masterKeyRev), self.header.keyIndex)		
 					crypto = aes128.AESECB(key)
-					decKeyBlock = crypto.decrypt(encKeyBlock[:16])			
+					decKeyBlock = currdecKeyBlock		
 					titleKeyEnc = Keys.encryptTitleKey(decKeyBlock, Keys.getMasterKeyIndex(masterKeyRev))		
 					
 					tr1=nca_id+'000000000000000'+str(crypto2[1])					

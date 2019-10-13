@@ -71,6 +71,7 @@ echo .......................................................
 echo Input "1" to get GAME-INFO and FW requirements
 echo Input "2" to READ the CNMT from the xci\nsp
 echo Input "3" to READ the NACP from the xci\nsp
+echo Input "4" to VERIFY file
 echo.
 echo Input "b" to go back to FILE LOADING
 echo Input "0" to go back to the MAIN PROGRAM
@@ -91,6 +92,7 @@ if "%Extension%" EQU ".nca" ( goto snfi_nca )
 if /i "%bs%"=="1" goto f_info2
 if /i "%bs%"=="2" goto r_cnmt2
 if /i "%bs%"=="3" goto r_nacp2
+if /i "%bs%"=="4" goto verify2
 
 if /i "%bs%"=="b" goto sc1
 if /i "%bs%"=="0" goto salida
@@ -240,6 +242,15 @@ echo ********************************************************
 %pycommand% "%nut%" %buffer% -o "%info_dir%" -v "%targt%" 
 
 goto sc2
+
+:verify2
+cls
+call :logo
+echo ********************************************************
+echo VERIFY A NSZ
+echo ********************************************************
+%pycommand% "%nut%" %buffer% -o "%info_dir%" -v "%targt%" 
+goto sc2_1
 
 :sc3
 cls

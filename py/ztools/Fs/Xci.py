@@ -7174,7 +7174,7 @@ class Xci(File):
 					if type(f) == Nca and f.header.contentType != Type.Content.META:
 						message=(str(f.header.titleId)+' - '+str(f.header.contentType));print(message);feed+=message+'\n'											
 						verify,origheader,ncaname,feed,origkg,tr,tkey,iGC=f.verify(feed)				
-						headerlist.append([ncaname,origheader,hlisthash])		
+						headerlist.append([ncaname,origheader,hlisthash,tr,tkey,iGC])
 						keygenerationlist.append([ncaname,origkg])
 						if verdict == True:
 							verdict=verify
@@ -7694,9 +7694,219 @@ class Xci(File):
 ##################		
 #FILE RESTORATION
 ##################
-
-
-
+	def restore_ncas(self,buffer,headerlist,didverify,ofile,feed='',output_type='nsp'):	
+		from Fs.Ticket import PublicCert
+		from Fs.Ticket import PublicTik	
+		files_list=sq_tools.ret_xci_offsets(self._path)
+		files=list();filesizes=list()
+		fplist=list()
+		for k in range(len(files_list)):
+			entry=files_list[k]
+			fplist.append(entry[0])
+		for i in range(len(files_list)):
+			entry=files_list[i]
+			filepath=entry[0]
+			if filepath.endswith('.cnmt.nca'):
+				titleid,titleversion,base_ID,keygeneration,rightsId,RSV,RGV,ctype,metasdkversion,exesdkversion,hasHtmlManual,Installedsize,DeltaSize,ncadata=self.get_data_from_cnmt(filepath)
+				for j in range(len(ncadata)):
+					row=ncadata[j]
+					# print(row)
+					if row['NCAtype']!='Meta':
+						test1=str(row['NcaId'])+'.nca';test2=str(row['NcaId'])+'.ncz'
+						if test1 in fplist or test2 in fplist:
+							# print(str(row['NcaId'])+'.nca')
+							files.append(str(row['NcaId'])+'.nca')
+							filesizes.append(int(row['Size']))					
+					else:
+						# print(str(row['NcaId'])+'.cnmt.nca')
+						files.append(str(row['NcaId'])+'.cnmt.nca')
+						filesizes.append(int(row['Size']))					
+				for k in range(len(files_list)):
+					entry=files_list[k]
+					fp=entry[0];sz=int(entry[3])
+					if fp.endswith('xml'):
+						files.append(fp)
+						filesizes.append(sz)	
+		rightslist=list();ticketlist=list();certlist=list()
+		for i in range(len(headerlist)):
+			entry=headerlist[i]
+			import Hex
+			if entry[1]!=False and entry[4]!=False :
+				rights=str(hx(entry[3]))[2:-1]
+				key=str(hx(entry[4]))[2:-1]
+				key=key.upper()
+				if rights not in rightslist:
+					rightslist.append(rights)
+					tik=PublicTik();cert=PublicCert()
+					gencert=cert.generate()
+					gentik=tik.generate(rights[:16],key,rights[-2:])
+					ticketlist.append(gentik);certlist.append(gencert)
+					tikname=str(rights.lower())+'.tik'
+					certname=str(rights.lower())+'.cert'
+					files.append(tikname);files.append(certname)
+					filesizes.append(len(gentik));filesizes.append(len(gencert))
+		if output_type=='nsp':
+			outheader=sq_tools.gen_nsp_header(files,filesizes)
+			ofile=ofile[:-3]+'nsp'			
+		else:
+			files_aux=list();filesizes_aux=list()
+			for item in range(len(files)):
+				if not (files[item]).endswith('.xml'):
+					files_aux.append(files[item])
+					filesizes_aux.append(filesizes[item])
+			files=files_aux
+			filesizes=filesizes_aux
+			sec_hashlist=list()
+			try:
+				for file in files:
+					sha,size,gamecard=self.file_hash(file)
+					# print(sha)
+					if sha != False:
+						sec_hashlist.append(sha)
+			except BaseException as e:
+				Print.error('Exception: ' + str(e))				
+			xci_header,game_info,sig_padding,xci_certificate,root_header,upd_header,norm_header,sec_header,rootSize,upd_multiplier,norm_multiplier,sec_multiplier=sq_tools.get_xciheader(files,filesizes,sec_hashlist)	
+			outheader=xci_header
+			outheader+=game_info
+			outheader+=sig_padding
+			outheader+=xci_certificate
+			outheader+=root_header
+			outheader+=upd_header
+			outheader+=norm_header
+			outheader+=sec_header
+			ofile=ofile[:-3]+'xci'
+		# files_list=sq_tools.ret_xci_offsets(self._path)
+		totsize=0
+		for s in filesizes:
+			totsize+=s
+		t = tqdm(total=totsize, unit='B', unit_scale=True, leave=False)				
+		with open(ofile, 'wb+') as o:
+			o.write(outheader)	
+			t.update(len(outheader))
+		with open(ofile, 'rb+') as o:
+			o.seek(0, os.SEEK_END)	
+			for file in files:	
+				if file.endswith('cnmt.nca'):		
+					for i in range(len(files_list)):
+						if files_list[i][0]==file:
+							o.seek(0, os.SEEK_END)
+							head_off= o.tell()		
+							ncahead=False
+							for k in range(len(headerlist)):
+								entry=headerlist[k]
+								if entry[0]==file and entry[1]!=False:
+									ncahead=entry[1]						
+							off1=files_list[i][1]
+							off2=files_list[i][2]						
+							t.write('- Appending {}'.format(files_list[i][0]))
+							s=files_list[i][3]
+							if int(buffer)>s:
+								buf=s
+							else:
+								buf=buffer
+							with open(self._path, 'r+b') as f:	
+								f.seek(off1);c=0
+								for data in iter(lambda: f.read(int(buf)), ""):
+									o.write(data)
+									o.flush()
+									c=len(data)+c
+									t.update(len(data))
+									if c+int(buf)>s:
+										if (s-c)<0:
+											t.close()
+											o.close()
+											break
+										data=f.read(s-c)
+										o.write(data)
+										t.update(len(data))
+										break
+									if not data:
+										break	
+							if ncahead!=False:
+								o.seek(head_off)
+								o.write(ncahead)
+								o.seek(0, os.SEEK_END)										
+				elif file.endswith('.nca'):	
+					for i in range(len(files_list)):
+						if files_list[i][0]==file:
+							o.seek(0, os.SEEK_END)
+							head_off= o.tell()		
+							ncahead=False
+							for k in range(len(headerlist)):
+								entry=headerlist[k]
+								if entry[0]==file and entry[1]!=False:
+									ncahead=entry[1]							
+							off1=files_list[i][1]
+							off2=files_list[i][2]						
+							t.write('- Appending {}'.format(files_list[i][0]))
+							s=files_list[i][3]
+							if int(buffer)>s:
+								buf=s
+							else:
+								buf=buffer
+							with open(self._path, 'r+b') as f:	
+								f.seek(off1);c=0
+								for data in iter(lambda: f.read(int(buf)), ""):
+									o.write(data)
+									o.flush()
+									c=len(data)+c
+									t.update(len(data))
+									if c+int(buf)>s:
+										if (s-c)<0:
+											t.close()
+											o.close()
+											break
+										data=f.read(s-c)
+										o.write(data)
+										t.update(len(data))
+										break
+									if not data:
+										break
+							if ncahead!=False:
+								o.seek(head_off)
+								o.write(ncahead)
+								o.seek(0, os.SEEK_END)
+				elif file.endswith('.xml'):			
+					for i in range(len(files_list)):
+						if files_list[i][0]==file:
+							off1=files_list[i][1]
+							off2=files_list[i][2]						
+							t.write('- Appending {}'.format(files_list[i][0]))
+							s=files_list[i][3]
+							if int(buffer)>s:
+								buf=s
+							else:
+								buf=buffer
+							with open(self._path, 'r+b') as f:	
+								f.seek(off1);c=0
+								for data in iter(lambda: f.read(int(buf)), ""):
+									o.write(data)
+									o.flush()
+									c=len(data)+c
+									t.update(len(data))
+									if c+int(buf)>s:
+										if (s-c)<0:
+											t.close()
+											o.close()
+											break
+										data=f.read(s-c)
+										o.write(data)
+										t.update(len(data))
+										break
+									if not data:
+										break		
+				elif file.endswith('.tik')or file.endswith('.cert'):	
+					pass
+				
+			for i in range(len(ticketlist)):		
+				t.write('- Appending tickets and certs')			
+				o.write(ticketlist[i])	
+				t.update(len(ticketlist[i]))
+				o.flush()			
+				o.write(certlist[i])	
+				t.update(len(certlist[i]))			
+				o.flush()	
+		t.close()
 
 ##################		
 #DB DATA

@@ -7340,7 +7340,9 @@ class Nsp(Pfs0):
 			if str(file._path).endswith('.nca'):		
 				listed_files.append(str(file._path))
 			if type(file) == Nca:
-				validfiles.append(str(file._path))				
+				validfiles.append(str(file._path))	
+			if str(file._path).endswith('.ncz'):		
+				listed_files.append(str(file._path))				
 		for file in self:
 			if str(file._path).endswith('.tik'):		
 				listed_files.append(str(file._path))
@@ -7401,8 +7403,11 @@ class Nsp(Pfs0):
 							if checktik == False and f.header.getRightsId() != 0:
 								checktik = self.verify_key(str(f._path),tikfile)	
 								if 	checktik == True:
-									break								
-					message=('Content.TICKET');print(message);feed+=message+'\n'												
+									break		
+					if checktik==False and str(self._path).endswith('.nsz'):
+						pass
+					else:	
+						message=('Content.TICKET');print(message);feed+=message+'\n'												
 					correct = checktik				
 				else:
 					correct=False	
@@ -7419,7 +7424,7 @@ class Nsp(Pfs0):
 					message=(tabs+file+tabs+'  -> is CORRUPT <<<-');print(message);feed+=message+'\n'					
 					if baddec == True:
 						print(tabs+'  * NOTE: S.C. CONVERSION WAS PERFORMED WITH BAD KEY')					
-				elif file.endswith('tik'):		
+				elif file.endswith('tik') and not str(self._path).endswith('.nsz'):		
 					message=(tabs+file+tabs+'  -> titlekey is INCORRECT <<<-');print(message);feed+=message+'\n'					
 		for nca in self:
 			if type(nca) == Nca:
@@ -7476,9 +7481,11 @@ class Nsp(Pfs0):
 								titleid3 ='['+ titleid2+']'
 								nca_name=str(hx(NcaId))
 								nca_name=nca_name[2:-1]+'.nca'
+								ncz_name=nca_name[:-4]+'.ncz'
 								if (nca_name not in listed_files and ncatype!=6) or (nca_name not in validfiles and ncatype!=6):
-									verdict = False
-									message=('\n- Missing file from '+titleid2+': '+nca_name);print(message);feed+=message+'\n'
+									if ncz_name not in listed_files:
+										verdict = False
+										message=('\n- Missing file from '+titleid2+': '+nca_name);print(message);feed+=message+'\n'
 
 		ticketlist=list()
 		for ticket in self:
@@ -7516,11 +7523,23 @@ class Nsp(Pfs0):
 			if type(f) == Nca and f.header.contentType != Type.Content.META:
 				message=(str(f.header.titleId)+' - '+str(f.header.contentType));print(message);feed+=message+'\n'											
 				verify,origheader,ncaname,feed,origkg,tr,tkey,iGC=f.verify(feed)		
-				headerlist.append([ncaname,origheader,hlisthash])		
+				# headerlist.append([ncaname,origheader,hlisthash])		
+				headerlist.append([ncaname,origheader,hlisthash,tr,tkey,iGC])					
 				keygenerationlist.append([ncaname,origkg])
 				if verdict == True:
 					verdict=verify
 				message='';print(message);feed+=message+'\n'	
+			if str(f._path).endswith('.ncz'):
+				ncz=Nca(f)
+				ncz._path=f._path
+				message=(str(ncz.header.titleId)+' - '+str(ncz.header.contentType));print(message);feed+=message+'\n'											
+				verify,origheader,ncaname,feed,origkg,tr,tkey,iGC=ncz.verify(feed)		
+				# headerlist.append([ncaname,origheader,hlisthash])		
+				headerlist.append([ncaname,origheader,hlisthash,tr,tkey,iGC])					
+				keygenerationlist.append([ncaname,origkg])
+				if verdict == True:
+					verdict=verify
+				message='';print(message);feed+=message+'\n'				
 		for f in self:	
 			if type(f) == Nca and f.header.contentType == Type.Content.META:
 				meta_nca=f._path
@@ -8003,10 +8022,219 @@ class Nsp(Pfs0):
 ##################		
 #FILE RESTORATION
 ##################
-
-
-
-
+	def restore_ncas(self,buffer,headerlist,didverify,ofile,feed='',output_type='nsp'):	
+		from Fs.Ticket import PublicCert
+		from Fs.Ticket import PublicTik	
+		files_list=sq_tools.ret_nsp_offsets(self._path)
+		files=list();filesizes=list()
+		fplist=list()
+		for k in range(len(files_list)):
+			entry=files_list[k]
+			fplist.append(entry[0])
+		for i in range(len(files_list)):
+			entry=files_list[i]
+			filepath=entry[0]
+			if filepath.endswith('.cnmt.nca'):
+				titleid,titleversion,base_ID,keygeneration,rightsId,RSV,RGV,ctype,metasdkversion,exesdkversion,hasHtmlManual,Installedsize,DeltaSize,ncadata=self.get_data_from_cnmt(filepath)
+				for j in range(len(ncadata)):
+					row=ncadata[j]
+					# print(row)
+					if row['NCAtype']!='Meta':
+						test1=str(row['NcaId'])+'.nca';test2=str(row['NcaId'])+'.ncz'
+						if test1 in fplist or test2 in fplist:
+							# print(str(row['NcaId'])+'.nca')
+							files.append(str(row['NcaId'])+'.nca')
+							filesizes.append(int(row['Size']))					
+					else:
+						# print(str(row['NcaId'])+'.cnmt.nca')
+						files.append(str(row['NcaId'])+'.cnmt.nca')
+						filesizes.append(int(row['Size']))					
+				for k in range(len(files_list)):
+					entry=files_list[k]
+					fp=entry[0];sz=int(entry[3])
+					if fp.endswith('xml'):
+						files.append(fp)
+						filesizes.append(sz)	
+		rightslist=list();ticketlist=list();certlist=list()
+		for i in range(len(headerlist)):
+			entry=headerlist[i]
+			import Hex
+			if entry[1]!=False and entry[4]!=False :
+				rights=str(hx(entry[3]))[2:-1]
+				key=str(hx(entry[4]))[2:-1]
+				key=key.upper()
+				if rights not in rightslist:
+					rightslist.append(rights)
+					tik=PublicTik();cert=PublicCert()
+					gencert=cert.generate()
+					gentik=tik.generate(rights[:16],key,rights[-2:])
+					ticketlist.append(gentik);certlist.append(gencert)
+					tikname=str(rights.lower())+'.tik'
+					certname=str(rights.lower())+'.cert'
+					files.append(tikname);files.append(certname)
+					filesizes.append(len(gentik));filesizes.append(len(gencert))
+		if output_type=='nsp':
+			outheader=sq_tools.gen_nsp_header(files,filesizes)
+			ofile=ofile[:-3]+'nsp'					
+		else:
+			files_aux=list();filesizes_aux=list()
+			for item in range(len(files)):
+				if not (files[item]).endswith('.xml'):
+					files_aux.append(files[item])
+					filesizes_aux.append(filesizes[item])
+			files=files_aux
+			filesizes=filesizes_aux
+			sec_hashlist=list()
+			try:
+				for file in files:
+					sha,size,gamecard=self.file_hash(file)
+					# print(sha)
+					if sha != False:
+						sec_hashlist.append(sha)
+			except BaseException as e:
+				Print.error('Exception: ' + str(e))				
+			xci_header,game_info,sig_padding,xci_certificate,root_header,upd_header,norm_header,sec_header,rootSize,upd_multiplier,norm_multiplier,sec_multiplier=sq_tools.get_xciheader(files,filesizes,sec_hashlist)	
+			outheader=xci_header
+			outheader+=game_info
+			outheader+=sig_padding
+			outheader+=xci_certificate
+			outheader+=root_header
+			outheader+=upd_header
+			outheader+=norm_header
+			outheader+=sec_header
+			ofile=ofile[:-3]+'xci'
+		# files_list=sq_tools.ret_nsp_offsets(self._path)
+		totsize=0
+		for s in filesizes:
+			totsize+=s
+		t = tqdm(total=totsize, unit='B', unit_scale=True, leave=False)				
+		with open(ofile, 'wb+') as o:
+			o.write(outheader)	
+			t.update(len(outheader))
+		with open(ofile, 'rb+') as o:
+			o.seek(0, os.SEEK_END)	
+			for file in files:	
+				if file.endswith('cnmt.nca'):		
+					for i in range(len(files_list)):
+						if files_list[i][0]==file:
+							o.seek(0, os.SEEK_END)
+							head_off= o.tell()		
+							ncahead=False
+							for k in range(len(headerlist)):
+								entry=headerlist[k]
+								if entry[0]==file and entry[1]!=False:
+									ncahead=entry[1]						
+							off1=files_list[i][1]
+							off2=files_list[i][2]						
+							t.write('- Appending {}'.format(files_list[i][0]))
+							s=files_list[i][3]
+							if int(buffer)>s:
+								buf=s
+							else:
+								buf=buffer
+							with open(self._path, 'r+b') as f:	
+								f.seek(off1);c=0
+								for data in iter(lambda: f.read(int(buf)), ""):
+									o.write(data)
+									o.flush()
+									c=len(data)+c
+									t.update(len(data))
+									if c+int(buf)>s:
+										if (s-c)<0:
+											t.close()
+											o.close()
+											break
+										data=f.read(s-c)
+										o.write(data)
+										t.update(len(data))
+										break
+									if not data:
+										break	
+							if ncahead!=False:
+								o.seek(head_off)
+								o.write(ncahead)
+								o.seek(0, os.SEEK_END)										
+				elif file.endswith('.nca'):	
+					for i in range(len(files_list)):
+						if files_list[i][0]==file:
+							o.seek(0, os.SEEK_END)
+							head_off= o.tell()		
+							ncahead=False
+							for k in range(len(headerlist)):
+								entry=headerlist[k]
+								if entry[0]==file and entry[1]!=False:
+									ncahead=entry[1]							
+							off1=files_list[i][1]
+							off2=files_list[i][2]						
+							t.write('- Appending {}'.format(files_list[i][0]))
+							s=files_list[i][3]
+							if int(buffer)>s:
+								buf=s
+							else:
+								buf=buffer
+							with open(self._path, 'r+b') as f:	
+								f.seek(off1);c=0
+								for data in iter(lambda: f.read(int(buf)), ""):
+									o.write(data)
+									o.flush()
+									c=len(data)+c
+									t.update(len(data))
+									if c+int(buf)>s:
+										if (s-c)<0:
+											t.close()
+											o.close()
+											break
+										data=f.read(s-c)
+										o.write(data)
+										t.update(len(data))
+										break
+									if not data:
+										break
+							if ncahead!=False:
+								o.seek(head_off)
+								o.write(ncahead)
+								o.seek(0, os.SEEK_END)
+				elif file.endswith('.xml'):			
+					for i in range(len(files_list)):
+						if files_list[i][0]==file:
+							off1=files_list[i][1]
+							off2=files_list[i][2]						
+							t.write('- Appending {}'.format(files_list[i][0]))
+							s=files_list[i][3]
+							if int(buffer)>s:
+								buf=s
+							else:
+								buf=buffer
+							with open(self._path, 'r+b') as f:	
+								f.seek(off1);c=0
+								for data in iter(lambda: f.read(int(buf)), ""):
+									o.write(data)
+									o.flush()
+									c=len(data)+c
+									t.update(len(data))
+									if c+int(buf)>s:
+										if (s-c)<0:
+											t.close()
+											o.close()
+											break
+										data=f.read(s-c)
+										o.write(data)
+										t.update(len(data))
+										break
+									if not data:
+										break		
+				elif file.endswith('.tik')or file.endswith('.cert'):	
+					pass
+				
+			for i in range(len(ticketlist)):		
+				t.write('- Appending tickets and certs')			
+				o.write(ticketlist[i])	
+				t.update(len(ticketlist[i]))
+				o.flush()			
+				o.write(certlist[i])	
+				t.update(len(certlist[i]))			
+				o.flush()	
+		t.close()
 ##################		
 #DB DATA
 ##################
@@ -8693,6 +8921,452 @@ class Nsp(Pfs0):
 						data=ot.read()
 						with open(output, 'ab') as o:
 							o.write(data)
-							t.update(len(data))						
+							t.update(len(data))		
+							
+	def decompress_direct(self,output,buffer = 65536):	
+		print('Decompressing {}'.format(self._path))
+		files_list=sq_tools.ret_nsp_offsets(self._path)
+		files=list();filesizes=list()
+		fplist=list()
+		for k in range(len(files_list)):
+			entry=files_list[k]
+			fplist.append(entry[0])
+		for i in range(len(files_list)):
+			entry=files_list[i]
+			filepath=entry[0]
+			if filepath.endswith('.cnmt.nca'):
+				titleid,titleversion,base_ID,keygeneration,rightsId,RSV,RGV,ctype,metasdkversion,exesdkversion,hasHtmlManual,Installedsize,DeltaSize,ncadata=self.get_data_from_cnmt(filepath)
+				for j in range(len(ncadata)):
+					row=ncadata[j]
+					# print(row)
+					if row['NCAtype']!='Meta':
+						test1=str(row['NcaId'])+'.nca';test2=str(row['NcaId'])+'.ncz'
+						if test1 in fplist or test2 in fplist:
+							# print(str(row['NcaId'])+'.nca')
+							files.append(str(row['NcaId'])+'.nca')
+							filesizes.append(int(row['Size']))					
+					else:
+						# print(str(row['NcaId'])+'.cnmt.nca')
+						files.append(str(row['NcaId'])+'.cnmt.nca')
+						filesizes.append(int(row['Size']))					
+				for k in range(len(files_list)):
+					entry=files_list[k]
+					fp=entry[0];sz=int(entry[3])
+					if fp.endswith('xml'):
+						files.append(fp)
+						filesizes.append(sz)					
+				for k in range(len(files_list)):
+					entry=files_list[k]
+					fp=entry[0];sz=int(entry[3])
+					if fp.endswith('.tik'):
+						files.append(fp)	
+						filesizes.append(sz)					
+				for k in range(len(files_list)):
+					entry=files_list[k]
+					fp=entry[0];sz=int(entry[3])
+					if fp.endswith('.cert'):
+						files.append(fp)	
+						filesizes.append(sz)
+		nspheader=sq_tools.gen_nsp_header(files,filesizes)
+		totsize=0
+		for s in filesizes:
+			totsize+=s
+		t = tqdm(total=totsize, unit='B', unit_scale=True, leave=False)					
+		# Hex.dump(nspheader)
+		with open(output, 'wb') as o:
+			o.write(nspheader)	
+			t.update(len(nspheader))
+		for file in files:	
+			if file.endswith('cnmt.nca'):		
+				for nca in self:
+					if str(nca._path)==file:
+						t.write('- Appending {}'.format(str(nca._path)))
+						nca.rewind()
+						data=nca.read()
+						with open(output, 'ab') as o:
+							o.write(data)
+							t.update(len(data))							
+			elif file.endswith('nca'):		
+				for nca in self:
+					if str(nca._path)[:-1]==file[:-1] and not str(nca._path).endswith('.ncz'):	
+						t.write('- Appending {}'.format(str(nca._path)))					
+						o = open(output, 'ab+')
+						nca.rewind()
+						for data in iter(lambda: nca.read(int(buffer)), ""):
+							o.write(data)
+							t.update(len(data))
+							o.flush()
+							if not data:
+								o.close()
+								break				
+					elif str(nca._path)[:-1]==file[:-1] and str(nca._path).endswith('ncz'):
+						# print(nca._path)
+						nca.rewind()
+						header = nca.read(0x4000)
+						magic = readInt64(nca)
+						sectionCount = readInt64(nca)
+						sections = []
+						for i in range(sectionCount):
+							sections.append(Section(nca))		
+						# print(sections)	
+						dctx = zstandard.ZstdDecompressor()
+						reader = dctx.stream_reader(nca)							
+						with open(output, 'rb+') as o:
+							o.seek(0, os.SEEK_END)
+							curr_off= o.tell()
+							t.write('- Appending decompressed {}'.format(str(nca._path)))		
+							t.write('  Writing nca header')							
+							o.write(header)
+							t.update(len(header))	
+							timestamp = time.time()
+							t.write('  Writing decompressed body in plaintext')				
+							count=0;checkstarter=0
+							dctx = zstandard.ZstdDecompressor()
+							reader = dctx.stream_reader(nca)			
+							c=0;spsize=0							
+							for s in sections:
+								end = s.offset + s.size		
+								if s.cryptoType == 1: #plain text
+									t.write('    * Section {} is plaintext'.format(str(c)))
+									t.write('      %x - %d bytes, Crypto type %d' % ((s.offset), s.size, s.cryptoType))
+									spsize+=s.size	
+									end = s.offset + s.size	
+									i = s.offset									
+									while i < end:
+										chunkSz = buffer if end - i > buffer else end - i									
+										chunk = reader.read(chunkSz)		
+										if not len(chunk):
+											break	
+										o.write(chunk)	
+										t.update(len(chunk))	
+										i += chunkSz
+								elif s.cryptoType not in (3, 4):
+									raise IOError('Unknown crypto type: %d' % s.cryptoType)	
+								else: 	
+									t.write('    * Section {} needs decompression'.format(str(c)))	
+									t.write('      %x - %d bytes, Crypto type %d' % ((s.offset), s.size, s.cryptoType))		
+									t.write('      Key: %s, IV: %s' % (str(hx(s.cryptoKey)), str(hx(s.cryptoCounter))))		
+									crypto = AESCTR(s.cryptoKey, s.cryptoCounter)
+									spsize+=s.size	
+									test=int(spsize/(buffer))
+									i = s.offset									
+									while i < end:
+										crypto.seek(i)
+										chunkSz = buffer if end - i > buffer else end - i
+										chunk = reader.read(chunkSz)	
+										if not len(chunk):
+											break											
+										o.write(crypto.encrypt(chunk))	
+										t.update(len(chunk))									
+										i += chunkSz
 
-						
+							elapsed = time.time() - timestamp
+							minutes = elapsed / 60
+							seconds = elapsed % 60
+							
+							speed = 0 if elapsed == 0 else (spsize / elapsed)
+							t.write('\n    Decompressed in %02d:%02d at speed: %.1f MB/s\n' % (minutes, seconds, speed / 1000000.0))				
+								
+			else:
+				for ot in self:
+					if str(ot._path)==file:
+						t.write('- Appending {}'.format(str(ot._path)))						
+						ot.rewind()
+						data=ot.read()
+						with open(output, 'ab') as o:
+							o.write(data)
+							t.update(len(data))									
+							
+							
+							
+	def verify_nsz(self,buffer = 65536):	
+		# print('Decompressing {}'.format(self._path))
+		files_list=sq_tools.ret_nsp_offsets(self._path)
+		files=list();filesizes=list()
+		fplist=list()
+		for k in range(len(files_list)):
+			entry=files_list[k]
+			fplist.append(entry[0])
+		for i in range(len(files_list)):
+			entry=files_list[i]
+			filepath=entry[0]
+			if filepath.endswith('.cnmt.nca'):
+				titleid,titleversion,base_ID,keygeneration,rightsId,RSV,RGV,ctype,metasdkversion,exesdkversion,hasHtmlManual,Installedsize,DeltaSize,ncadata=self.get_data_from_cnmt(filepath)
+				for j in range(len(ncadata)):
+					row=ncadata[j]
+					# print(row)
+					if row['NCAtype']!='Meta':
+						test1=str(row['NcaId'])+'.nca';test2=str(row['NcaId'])+'.ncz'
+						if test1 in fplist or test2 in fplist:
+							# print(str(row['NcaId'])+'.nca')
+							files.append(str(row['NcaId'])+'.nca')
+							filesizes.append(int(row['Size']))					
+					else:
+						# print(str(row['NcaId'])+'.cnmt.nca')
+						files.append(str(row['NcaId'])+'.cnmt.nca')
+						filesizes.append(int(row['Size']))					
+				for k in range(len(files_list)):
+					entry=files_list[k]
+					fp=entry[0];sz=int(entry[3])
+					if fp.endswith('xml'):
+						files.append(fp)
+						filesizes.append(sz)					
+				for k in range(len(files_list)):
+					entry=files_list[k]
+					fp=entry[0];sz=int(entry[3])
+					if fp.endswith('.tik'):
+						files.append(fp)	
+						filesizes.append(sz)					
+				for k in range(len(files_list)):
+					entry=files_list[k]
+					fp=entry[0];sz=int(entry[3])
+					if fp.endswith('.cert'):
+						files.append(fp)	
+						filesizes.append(sz)
+		nspheader=sq_tools.gen_nsp_header(files,filesizes)
+		# print(files)		
+		totsize=0
+		for s in filesizes:
+			totsize+=s
+		for i in range(len(files_list)):
+			entry=files_list[i]
+			fp=entry[0]	
+			if fp.endswith('.ncz'):
+				for j in range(len(files)):
+					fp2=files[j]
+					if str(fp2[:-1])==str(fp[:-1]):
+						totsize+=filesizes[j]	
+		# Hex.dump(nspheader)
+		for file in files:		
+			if file.endswith('nca'):		
+				for nca in self:
+					if str(nca._path)[:-1]==file[:-1] and str(nca._path).endswith('ncz'):
+						# print(nca._path)
+						nca.rewind()
+						header = nca.read(0x4000)
+						magic = readInt64(nca)
+						sectionCount = readInt64(nca)
+						sections = []
+						for i in range(sectionCount):
+							sections.append(Section(nca))	
+						count=0;checkstarter=0
+						if titleid.endswith('000'):
+							for s in sections:
+								count+=1
+								if count==3:
+									break
+								print(s.cryptoType)
+								print(s.size)
+								checkstarter+=s.size
+								print(s.size)
+							dctx = zstandard.ZstdDecompressor()
+							reader = dctx.stream_reader(nca)	
+							test=int(checkstarter/(16384))
+							for i in (range(test+1)):
+								reader.seek(16384,1)	
+							chunk = reader.read(16384)		
+							# print(len(chunk))
+							magic=chunk[:4]
+							print(magic)								
+						if not titleid.endswith('800'):
+							dctx = zstandard.ZstdDecompressor()
+							reader = dctx.stream_reader(nca)	
+							chunk = reader.read(16384)		
+							# print(len(chunk))
+							bl1=chunk[:64]
+							Hex.dump(bl1)							
+						elif titleid.endswith('800'):
+							dctx = zstandard.ZstdDecompressor()
+							reader = dctx.stream_reader(nca)	
+							chunk = reader.read(16384)		
+							bl1=chunk[:64]
+							Hex.dump(bl1)								
+							for s in sections:
+								# print(len(chunk))
+								checkstarter+=s.size		
+								test=checkstarter+16384
+								test=int(test)
+								for i in (range(test+1)):
+									reader.seek(16384,1)	
+								chunk = reader.read(16384)	
+								bl1=chunk[:64]
+								Hex.dump(bl1)									
+							
+
+	def nsz_hasher(self,buffer,headerlist,didverify,feed):	
+		buffer=int(buffer)
+		verdict=True		
+		if feed == False:
+			feed=''				
+		message='\n***************';print(message);feed+=message+'\n'
+		message=('HASH TEST');print(message);feed+=message+'\n'
+		message='***************';print(message);feed+=message+'\n'			
+		for f in self:						
+			if type(f) == Nca:
+				origheader=False
+				for i in range(len(headerlist)):
+					if str(f._path)==headerlist[i][0]:
+						origheader=headerlist[i][1]
+						listedhash=headerlist[i][2]
+						break			
+				message=(str(f.header.titleId)+' - '+str(f.header.contentType));print(message);feed+=message+'\n'
+				ncasize=f.header.size						
+				t = tqdm(total=ncasize, unit='B', unit_scale=True, leave=False)	
+				i=0		
+				f.rewind();
+				rawheader=f.read(0xC00)
+				f.rewind()												
+				for data in iter(lambda: f.read(int(buffer)), ""):				
+					if i==0:	
+						sha=sha256()
+						f.seek(0xC00)
+						sha.update(rawheader)
+						if origheader != False and listedhash == False:
+							sha0=sha256()
+							sha0.update(origheader)	
+						i+=1
+						t.update(len(data))
+						f.flush()
+					else:		
+						sha.update(data)
+						if origheader != False and listedhash == False:
+							sha0.update(data)								
+						t.update(len(data))
+						f.flush()
+						if not data:				
+							break						
+				t.close()	
+				sha=sha.hexdigest()	
+				if listedhash != False:
+					sha0=listedhash
+				elif origheader != False:
+					sha0=sha0.hexdigest()						
+				message=('  - File name: '+f._path);print(message);feed+=message+'\n'
+				message=('  - SHA256: '+sha);print(message);feed+=message+'\n'
+				if origheader != False:
+					message=('  - ORIG_SHA256: '+sha0);print(message);feed+=message+'\n'						
+				if str(f._path)[:16] == str(sha)[:16]:
+					message=('   > FILE IS CORRECT');print(message);feed+=message+'\n'
+				elif origheader != False:
+					if str(f._path)[:16] == str(sha0)[:16]:		
+						message=('   > FILE IS CORRECT');print(message);feed+=message+'\n'
+					else:
+						message=('   > FILE IS CORRUPT');print(message);feed+=message+'\n'
+						verdict = False	
+				elif  f.header.contentType == Type.Content.META and didverify == True:		
+					message=('   > RSV WAS CHANGED');print(message);feed+=message+'\n'
+					#print('   > CHECKING INTERNAL HASHES')								
+					message=('     * FILE IS CORRECT');print(message);feed+=message+'\n'							
+				else:
+					message=('   > FILE IS CORRUPT');print(message);feed+=message+'\n'
+					verdict = False
+				message=('');print(message);feed+=message+'\n'		
+			if (f._path).endswith('ncz'):
+				ncz=Nca(f)
+				ncz._path=f._path
+				origheader=False
+				for i in range(len(headerlist)):
+					if str(f._path)==headerlist[i][0]:
+						origheader=headerlist[i][1]
+						listedhash=headerlist[i][2]
+						break	
+				message=(str(ncz.header.titleId)+' - '+str(ncz.header.contentType));print(message);feed+=message+'\n'
+				ncasize=ncz.header.size						
+				t = tqdm(total=ncasize, unit='B', unit_scale=True, leave=False)	
+				i=0		
+				f.rewind();
+				rawheader=f.read(0xC00)
+				f.rewind()			
+				sha=sha256()
+				f.seek(0xC00)
+				sha.update(rawheader)
+				if origheader != False and listedhash == False:
+					sha0=sha256()
+					sha0.update(origheader)	
+				i+=1
+				t.update(len(rawheader))
+				f.flush()
+				size=0x4000-0xC00
+				dif = f.read(size)
+				sha.update(dif)
+				if origheader != False and listedhash == False:
+					sha0.update(dif)
+				t.update(len(dif))
+				f.flush()	
+				f.seek(0x4000)						
+				magic = readInt64(f)
+				sectionCount = readInt64(f)
+				sections = []
+				for i in range(sectionCount):
+					sections.append(Section(f))		
+				# print(sections)	
+				count=0;checkstarter=0
+				dctx = zstandard.ZstdDecompressor()
+				reader = dctx.stream_reader(f)			
+				c=0;spsize=0			
+				for s in sections:
+					end = s.offset + s.size		
+					if s.cryptoType == 1: #plain text
+						spsize+=s.size	
+						end = s.offset + s.size	
+						i = s.offset									
+						while i < end:
+							chunkSz = buffer if end - i > buffer else end - i									
+							chunk = reader.read(chunkSz)		
+							if not len(chunk):
+								break	
+							sha.update(chunk)
+							if origheader != False and listedhash == False:
+								sha0.update(chunk)
+							t.update(len(chunk))	
+							i += chunkSz
+					elif s.cryptoType not in (3, 4):
+						raise IOError('Unknown crypto type: %d' % s.cryptoType)	
+					else: 		
+						crypto = AESCTR(s.cryptoKey, s.cryptoCounter)
+						spsize+=s.size	
+						test=int(spsize/(buffer))
+						i = s.offset									
+						while i < end:
+							crypto.seek(i)
+							chunkSz = buffer if end - i > buffer else end - i
+							chunk = reader.read(chunkSz)	
+							if not len(chunk):
+								break				
+							crpt=crypto.encrypt(chunk)		
+							sha.update(crpt)
+							if origheader != False and listedhash == False:
+								sha0.update(crpt)
+							t.update(len(chunk))									
+							i += chunkSz	
+				t.close()			
+				sha=sha.hexdigest()
+				if listedhash != False:
+					sha0=listedhash		
+				elif origheader != False:
+					sha0=sha0.hexdigest()							
+				message=('  - File name: '+ncz._path);print(message);feed+=message+'\n'
+				message=('  - SHA256: '+sha);print(message);feed+=message+'\n'	
+				if origheader != False:
+					message=('  - ORIG_SHA256: '+sha0);print(message);feed+=message+'\n'						
+				if str(ncz._path)[:16] == str(sha)[:16]:
+					message=('   > FILE IS CORRECT');print(message);feed+=message+'\n'
+				elif origheader != False:
+					if str(ncz._path)[:16] == str(sha0)[:16]:		
+						message=('   > FILE IS CORRECT');print(message);feed+=message+'\n'
+					else:
+						message=('   > FILE IS CORRUPT');print(message);feed+=message+'\n'
+						verdict = False	
+				elif  ncz.header.contentType == Type.Content.META and didverify == True:		
+					message=('   > RSV WAS CHANGED');print(message);feed+=message+'\n'
+					#print('   > CHECKING INTERNAL HASHES')								
+					message=('     * FILE IS CORRECT');print(message);feed+=message+'\n'							
+				else:
+					message=('   > FILE IS CORRUPT');print(message);feed+=message+'\n'
+					verdict = False
+				message=('');print(message);feed+=message+'\n'	
+		if verdict == False:
+			message=("VERDICT: NSP FILE IS CORRUPT");print(message);feed+=message+'\n'
+		if verdict == True:	
+			message=('VERDICT: NSP FILE IS CORRECT');print(message);feed+=message+'\n'
+		return 	verdict,feed		

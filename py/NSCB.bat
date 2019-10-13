@@ -651,6 +651,7 @@ echo Input "5" to enter into DATABASE building mode
 echo Input "6" to enter into ADVANCED mode
 echo Input "7" to enter into FILE-JOINER mode
 echo Input "8" to enter into COMPRESSOR\DECOMPRESSOR mode
+echo Input "9" to enter into FILE-RESTORATION mode
 echo Input "0" to enter into CONFIGURATION mode
 echo.
 echo Input "L" to enter LEGACY MODES
@@ -666,6 +667,7 @@ if /i "%bs%"=="5" goto DBMODE
 if /i "%bs%"=="6" goto ADVmode
 if /i "%bs%"=="7" goto JOINmode
 if /i "%bs%"=="8" goto ZSTDmode
+if /i "%bs%"=="9" goto RSTmode
 if /i "%bs%"=="L" goto LegacyMode
 if /i "%bs%"=="0" goto OPT_CONFIG
 goto manual_Reentry
@@ -678,6 +680,9 @@ call "%prog_dir%ztools\JOINER.bat"
 goto manual_Reentry
 :ZSTDmode
 call "%prog_dir%ztools\ZSTD.bat"
+goto manual_Reentry
+:RSTmode
+call "%prog_dir%ztools\RST.bat"
 goto manual_Reentry
 :LegacyMode
 call "%prog_dir%ztools\LEGACY.bat"

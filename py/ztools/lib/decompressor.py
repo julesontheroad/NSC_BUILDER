@@ -97,6 +97,19 @@ def decompress_ncz(input,output):
 
 def decompress_nsz(input,output,buffer = 65536):
 	f = Nsp(input, 'r+b')
-	f.decompress(output,buffer)
+	f.decompress_direct(output,buffer)
 	f.flush()
 	f.close()
+
+def verify_nsz(input,buffer = 65536):	
+	f = Nsp(input, 'r+b')
+	f.verify_nsz(buffer)
+	f.flush()
+	f.close()
+	
+def nsz_hasher(input,buffer = 65536):	
+	f = Nsp(input, 'r+b')
+	f.nsz_hasher(buffer)
+	f.flush()
+	f.close()	
+	

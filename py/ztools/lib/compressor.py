@@ -55,13 +55,13 @@ def foldercompress(ifolder, ofolder = None, level = 17, threads = 0, t=['nsp']):
 		print('\nStill %d files to compress\n'%(counter))
 
 
-def compress(filePath,ofolder = None, level = 17,  threads = 0, delta=False, ofile= None):
+def compress(filePath,ofolder = None, level = 17,  threads = 0, delta=False, ofile= None, buffer=65536):
 	compressionLevel=int(level)
 	container = nutFs.factory(filePath)
 
 	container.open(filePath, 'rb')
 
-	CHUNK_SZ = 0x1000000
+	CHUNK_SZ = buffer
 	
 	if ofolder is None and ofile is None:
 		nszPath = filePath[0:-1] + 'z'

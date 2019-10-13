@@ -368,8 +368,9 @@ def check_current():
 def force_update():			
 	getnutdb()
 	return
-	
-check_current()
+try:	
+	check_current()
+except:pass	
 	
 def get_contentname(titleid,roman=True,format='tabs'):
 	cname=False
