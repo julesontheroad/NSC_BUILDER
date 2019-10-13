@@ -753,7 +753,7 @@ ECHO ***********************************************
 echo Input "0" to return to the MODE SELECTION MENU
 ECHO ***********************************************
 echo.
-%pycommand% "%nut%" -t nsp xci -tfile "%prog_dir%list.txt" -uin "%uinput%" -ff "uinput"
+%pycommand% "%nut%" -t nsp xci nsz -tfile "%prog_dir%list.txt" -uin "%uinput%" -ff "uinput"
 set /p eval=<"%uinput%"
 set eval=%eval:"=%
 setlocal enabledelayedexpansion
@@ -777,7 +777,7 @@ ECHO *************************************************
 echo Or Input "0" to return to the MODE SELECTION MENU
 ECHO *************************************************
 echo.
-%pycommand% "%nut%" -t nsp xci -tfile "%prog_dir%list.txt" -uin "%uinput%" -ff "uinput"
+%pycommand% "%nut%" -t nsp xci nsz -tfile "%prog_dir%list.txt" -uin "%uinput%" -ff "uinput"
 set /p eval=<"%uinput%"
 set eval=%eval:"=%
 setlocal enabledelayedexpansion
