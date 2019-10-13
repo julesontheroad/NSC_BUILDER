@@ -150,5 +150,11 @@ set "transnutdb=FALSE"
 ::--------------------------------------------------------------
 ::OPTION 17: WORKERS FOR MULTI-THREADING
 ::--------------------------------------------------------------
-::Currently applies to renames
-set "workers=-threads 10"
+::Currently applies to DB
+set "workers=-threads 1"
+
+::--------------------------------------------------------------
+::OPTION 18: NSZ user options
+::--------------------------------------------------------------
+set "compression_lv=17"
+set "compression_threads=1"

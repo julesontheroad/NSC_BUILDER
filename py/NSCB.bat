@@ -30,9 +30,8 @@ set "NSBMODE=%NSBMODE%"
 set "romaji=%romaji%"
 set "transnutdb=%transnutdb%"
 set "workers=%workers%"
-REM set "trn_skip=%trn_skip%"
-REM set "updx_skip=%updx_skip%"
-REM set "ngx_skip=%ngx_skip%"
+set "compression_lv=%compression_lv%"
+set "compression_threads=%compression_threads%"
 
 REM Copy function
 set "pycommand=%pycommand%"

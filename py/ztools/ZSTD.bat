@@ -183,6 +183,54 @@ if /i "%bs%"=="1" goto levels
 if /i "%bs%"=="2" goto decompress
 if %choice%=="none" goto s_cl_wrongchoice
 
+
+:levels_wrongchoice
+echo wrong choice
+echo ............
+:compression_pressets
+echo *******************************************************
+echo COMPRESSION PRESETS
+echo *******************************************************
+echo Compression presets for ease of use
+echo.
+echo 0. MANUAL SETUP
+echo 1. FAST                  - LEVEL 1  | 4 treads
+echo 2. INTERMEDIATE          - LEVEL 10 | 4 treads
+echo 3. AVERAGE (THREADED)    - LEVEL 17 | 2 treads
+echo 3. AVERAGE (UNTHREADED)  - LEVEL 17 | no treads
+echo 5. AVERAGE (THREADED)    - LEVEL 22 | no treads
+echo 6. USER VALUE (SETUP IN CONFIG)
+
+ECHO ******************************************
+echo Input "d" for default (level 17|no threads)
+echo Or Input "b" to return to the list options
+ECHO ******************************************
+echo.
+set /p bs="Input level number: "
+set bs=%bs:"=%
+set choice=none
+if /i "%bs%"=="b" goto checkagain
+if /i "%bs%"=="d" set "level=17"
+if /i "%bs%"=="d" set "workers=0"
+
+if /i "%bs%"=="0" goto levels
+if /i "%bs%"=="1" set "level=1"
+if /i "%bs%"=="1" set "workers=4"
+if /i "%bs%"=="2" set "level=10"
+if /i "%bs%"=="2" set "workers=4"
+if /i "%bs%"=="3" set "level=17"
+if /i "%bs%"=="3" set "workers=2"
+if /i "%bs%"=="4" set "level=17"
+if /i "%bs%"=="4" set "workers=0"
+if /i "%bs%"=="5" set "level=22"
+if /i "%bs%"=="5" set "workers=0"
+if /i "%bs%"=="6" set "level=%compression_lv%"
+if /i "%bs%"=="6" set "workers=%compression_threads%"
+
+if %choice%=="none" goto levels_wrongchoice
+goto compress
+
+
 :levels_wrongchoice
 echo wrong choice
 echo ............
@@ -198,13 +246,15 @@ echo  Levels 10-17 are recommended in the spec
 echo.
 ECHO ******************************************
 echo Input "d" for default (level 17)
-echo Or Input "b" to return to the list options
+echo Or Input "b" to return to the previous option
+echo Or Input "x" to return to the list options
 ECHO ******************************************
 echo.
 set /p bs="Input level number: "
 set bs=%bs:"=%
 set choice=none
-if /i "%bs%"=="b" goto checkagain
+if /i "%bs%"=="x" goto checkagain
+if /i "%bs%"=="b" goto compression_pressets
 if /i "%bs%"=="d" set "bs=17"
 set "level=%bs%"
 if %choice%=="none" goto levels_wrongchoice
