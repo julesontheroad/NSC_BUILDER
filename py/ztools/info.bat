@@ -247,7 +247,7 @@ goto sc2
 cls
 call :logo
 echo ********************************************************
-echo VERIFY A NSZ
+echo VERIFY A NSZ FILE
 echo ********************************************************
 %pycommand% "%nut%" %buffer% -o "%info_dir%" -v "%targt%" 
 goto sc2_1

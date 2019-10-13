@@ -7342,7 +7342,8 @@ class Nsp(Pfs0):
 			if type(file) == Nca:
 				validfiles.append(str(file._path))	
 			if str(file._path).endswith('.ncz'):		
-				listed_files.append(str(file._path))				
+				listed_files.append(str(file._path))
+				validfiles.append(str(file._path))					
 		for file in self:
 			if str(file._path).endswith('.tik'):		
 				listed_files.append(str(file._path))
@@ -7394,7 +7395,15 @@ class Nsp(Pfs0):
 								if correct == True and f.header.getRightsId() == 0:
 									correct = f.pr_noenc_check()				
 									if correct == False:
-										baddec=True									
+										baddec=True				
+				elif file.endswith('.ncz'):
+					for f in self:	
+						if str(f._path)[:-1] == file[:-1]:				
+							ncztype=Nca(f)
+							ncztype._path=f._path
+							message=(str(ncztype.header.titleId)+' - '+str(ncztype.header.contentType));print(message);feed+=message+'\n'
+							correct=self.verify_ncz(file)
+							break
 				elif file.endswith('.tik'):	
 					tikfile=str(file)				
 					checktik == False
@@ -7415,7 +7424,9 @@ class Nsp(Pfs0):
 				if file.endswith('cnmt.nca'):				
 					message=(tabs+file+' -> is CORRECT');print(message);feed+=message+'\n'					
 				else:
-					message=(tabs+file+tabs+'  -> is CORRECT');print(message);feed+=message+'\n'									
+					message=(tabs+file+tabs+'  -> is CORRECT');print(message);feed+=message+'\n'	
+			elif correct=='ncz':
+				message=(tabs+file+tabs+'  -> ncz file needs HASH check');print(message);feed+=message+'\n'
 			else:
 				verdict=False			
 				if file.endswith('cnmt.nca'):	
@@ -9078,11 +9089,9 @@ class Nsp(Pfs0):
 							t.update(len(data))									
 							
 							
-							
-	def verify_nsz(self,buffer = 65536):	
-		# print('Decompressing {}'.format(self._path))
+	def verify_ncz(self,target):	
 		files_list=sq_tools.ret_nsp_offsets(self._path)
-		files=list();filesizes=list()
+		files=list();
 		fplist=list()
 		for k in range(len(files_list)):
 			entry=files_list[k]
@@ -9099,44 +9108,9 @@ class Nsp(Pfs0):
 						test1=str(row['NcaId'])+'.nca';test2=str(row['NcaId'])+'.ncz'
 						if test1 in fplist or test2 in fplist:
 							# print(str(row['NcaId'])+'.nca')
-							files.append(str(row['NcaId'])+'.nca')
-							filesizes.append(int(row['Size']))					
-					else:
-						# print(str(row['NcaId'])+'.cnmt.nca')
-						files.append(str(row['NcaId'])+'.cnmt.nca')
-						filesizes.append(int(row['Size']))					
-				for k in range(len(files_list)):
-					entry=files_list[k]
-					fp=entry[0];sz=int(entry[3])
-					if fp.endswith('xml'):
-						files.append(fp)
-						filesizes.append(sz)					
-				for k in range(len(files_list)):
-					entry=files_list[k]
-					fp=entry[0];sz=int(entry[3])
-					if fp.endswith('.tik'):
-						files.append(fp)	
-						filesizes.append(sz)					
-				for k in range(len(files_list)):
-					entry=files_list[k]
-					fp=entry[0];sz=int(entry[3])
-					if fp.endswith('.cert'):
-						files.append(fp)	
-						filesizes.append(sz)
-		nspheader=sq_tools.gen_nsp_header(files,filesizes)
-		# print(files)		
-		totsize=0
-		for s in filesizes:
-			totsize+=s
-		for i in range(len(files_list)):
-			entry=files_list[i]
-			fp=entry[0]	
-			if fp.endswith('.ncz'):
-				for j in range(len(files)):
-					fp2=files[j]
-					if str(fp2[:-1])==str(fp[:-1]):
-						totsize+=filesizes[j]	
-		# Hex.dump(nspheader)
+							if str(row['NcaId'])==target[:-4]:
+								files.append(str(row['NcaId'])+'.nca')
+								break
 		for file in files:		
 			if file.endswith('nca'):		
 				for nca in self:
@@ -9155,10 +9129,10 @@ class Nsp(Pfs0):
 								count+=1
 								if count==3:
 									break
-								print(s.cryptoType)
-								print(s.size)
+								# print(s.cryptoType)
+								# print(s.size)
 								checkstarter+=s.size
-								print(s.size)
+								# print(s.size)
 							dctx = zstandard.ZstdDecompressor()
 							reader = dctx.stream_reader(nca)	
 							test=int(checkstarter/(16384))
@@ -9167,14 +9141,21 @@ class Nsp(Pfs0):
 							chunk = reader.read(16384)		
 							# print(len(chunk))
 							magic=chunk[:4]
-							print(magic)								
+							if magic == b'PFS0':
+								return True
+							else:
+								return 'ncz'
 						if not titleid.endswith('800'):
 							dctx = zstandard.ZstdDecompressor()
 							reader = dctx.stream_reader(nca)	
 							chunk = reader.read(16384)		
 							# print(len(chunk))
-							bl1=chunk[:64]
-							Hex.dump(bl1)							
+							bl=chunk[:32]
+							b2=chunk[32:64]
+							if sum(b1)!=0 and sum(b2)==0:
+								return True
+							else:
+								return 'ncz'							
 						elif titleid.endswith('800'):
 							dctx = zstandard.ZstdDecompressor()
 							reader = dctx.stream_reader(nca)	
@@ -9189,8 +9170,12 @@ class Nsp(Pfs0):
 								for i in (range(test+1)):
 									reader.seek(16384,1)	
 								chunk = reader.read(16384)	
-								bl1=chunk[:64]
-								Hex.dump(bl1)									
+								bl=chunk[:32]
+								b2=chunk[32:64]
+								if sum(b1)!=0 and sum(b2)==0:
+									return True
+								else:
+									return 'ncz'								
 							
 
 	def nsz_hasher(self,buffer,headerlist,didverify,feed):	
