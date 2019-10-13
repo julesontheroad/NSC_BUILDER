@@ -23,6 +23,7 @@ Luca Fraga's github: https://github.com/LucaFraga
 ---------------
 v0.93 - Adds update compression and decompression to NSCB:
 	- Added update compression and decompression by blawar to NSCB
+	- Added thread option (0-4) and timings for compression and decompression.
 	- Fix GAME-INFO and FW requirements reads for updates and DLCs
 	  Note: Nothing to do with SX OS note or xci game-info, that
 	  wasn't changed since hacbuild got replaced by squirrel in
