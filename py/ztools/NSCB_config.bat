@@ -270,7 +270,7 @@ echo Input "1" to change text and background COLOR
 echo Input "2" to change WORK FOLDER's name
 echo Input "3" to change OUTPUT FOLDER's name
 echo Input "4" to change DELTA files treatment
-echo Input "5" to change ZIP configuration
+echo Input "5" to change ZIP configuration (LEGACY)
 echo Input "6" to change AUTO-EXIT configuration
 echo Input "7" to skip KEY-GENERATION PROMPT
 echo Input "8" to set file stream BUFFER
@@ -279,7 +279,8 @@ echo Input "10" to how to ORGANIZE output files
 echo Input "11" to set NEW MODE OR LEGACY MODE
 echo Input "12" to ROMANIZE names when using direct-multi
 echo Input "13" to TRANSLATE game description lines in file info
-echo Input "14" to change number of WORKERS IN THREADED OPERATIONS
+echo Input "14" to change number of WORKERS IN THREADED OPERATIONS (TEMPORARLY DISABLED) 
+echo Input "15" to setup NSZ COMPRESSION USER PRESET
 echo.
 echo Input "c" to read CURRENT GLOBAL SETTINGS
 echo Input "d" to set DEFAULT GLOBAL SETTINGS
@@ -302,6 +303,7 @@ if /i "%bs%"=="11" goto op_nscbmode
 if /i "%bs%"=="12" goto op_romanize
 if /i "%bs%"=="13" goto op_translate
 if /i "%bs%"=="14" goto op_threads
+if /i "%bs%"=="15" goto op_NSZ
 
 if /i "%bs%"=="c" call :curr_set2
 if /i "%bs%"=="c" echo.
@@ -995,6 +997,80 @@ echo.
 pause
 goto sc3
 
+:op_NSZ1
+cls
+call :logo
+echo ***************************************************************************
+echo USER COMPRESSION OPTIONS
+echo ***************************************************************************
+echo ************************
+echo INPUT COMPRESSION LEVEL
+echo ************************
+echo Input a compression level between 1 and 22
+echo Notes:
+echo  + Level 1 - Fast and smaller compression ratio
+echo  + Level 22 - Slow but better compression ratio
+echo  Levels 10-17 are recommended in the spec
+echo.
+echo Input "b" to return to GLOBAL OPTIONS
+echo Input "0" to return to CONFIG MENU
+echo Input "e" to go back to the MAIN PROGRAM
+echo ...........................................................................
+echo.
+set /p bs="Enter your choice: "
+set "v_nszlevels=none"
+
+if /i "%bs%"=="b" goto sc3
+if /i "%bs%"=="0" goto sc1
+if /i "%bs%"=="e" goto salida
+
+if "%v_nszlevels%"=="none" echo WRONG CHOICE
+if "%v_nszlevels%"=="none" echo.
+if "%v_nszlevels%"=="none" goto op_NSZ1
+set "v_nszlevels=%bs%"
+set v_nszlevels="compression_lv=%v_nszlevels%"
+set v_nszlevels="%v_nszlevels%"
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "158" -nl "set %v_nszlevels%" 
+echo.
+%pycommand% "%listmanager%" -rl "%op_file%" -ln "158" -nl "Line in config was changed to: "
+:op_NSZ2
+echo.
+echo *******************************************************
+echo INPUT NUMBER OF THREADS TO USE
+echo *******************************************************
+echo Input a number of threads to use between 0 and 4
+echo Notes:
+echo  + By using threads you may gain a little speed bump 
+echo    but you'll loose compression ratio
+echo  + Level 22 and 4 threads may run you out of memory
+echo  + For maximum threads level 17 compression is advised
+echo    but you'll loose compression ratio
+echo.
+echo Input "b" to return to GLOBAL OPTIONS
+echo Input "0" to return to CONFIG MENU
+echo Input "e" to go back to the MAIN PROGRAM
+echo ...........................................................................
+echo.
+set /p bs="Enter your choice: "
+set "v_nszthreads=none"
+
+if /i "%bs%"=="b" goto sc3
+if /i "%bs%"=="0" goto sc1
+if /i "%bs%"=="e" goto salida
+
+if "%v_nszthreads%"=="none" echo WRONG CHOICE
+if "%v_nszthreads%"=="none" echo.
+if "%v_nszthreads%"=="none" goto op_NSZ2
+set "v_nszthreads=%bs%"
+set v_nszthreads="compression_threads=%v_nszthreads%"
+set v_nszthreads="%v_nszthreads%"
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "159" -nl "set %v_nszthreads%" 
+echo.
+%pycommand% "%listmanager%" -rl "%op_file%" -ln "159" -nl "Line in config was changed to: "
+echo.
+pause
+goto sc3
+
 :def_set1
 echo.
 echo **AUTO-MODE OPTIONS**
@@ -1145,6 +1221,16 @@ set v_workers="%v_workers%"
 %pycommand% "%listmanager%" -cl "%op_file%" -ln "153" -nl "set %v_workers%" 
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "153" -nl "Line in config was changed to: "
 
+REM COMPRESSION
+set "v_nszlevels=17"
+set v_nszlevels="compression_lv=%v_nszlevels%"
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "158" -nl "set %v_nszlevels%" 
+%pycommand% "%listmanager%" -rl "%op_file%" -ln "158" -nl "Line in config was changed to: "
+set "v_nszlevels=0"
+set v_nszlevels="compression_threads=%v_nszlevels%"
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "159" -nl "set %v_nszlevels%" 
+%pycommand% "%listmanager%" -rl "%op_file%" -ln "159" -nl "Line in config was changed to: "
+
 exit /B
 
 :curr_set1
@@ -1212,6 +1298,10 @@ REM TRANSLATE
 
 REM WORKERS
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "153" -nl "WORKERS option is set to: "
+
+REM COMPRESSION
+%pycommand% "%listmanager%" -rl "%op_file%" -ln "158" -nl "COMPRESSION LEVELS option is set to: "
+%pycommand% "%listmanager%" -rl "%op_file%" -ln "159" -nl "COMPRESSION THREADS option is set to: "
 
 exit /B
 
