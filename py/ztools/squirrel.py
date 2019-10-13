@@ -7403,6 +7403,44 @@ if __name__ == '__main__':
 								i=1
 							else:
 								print('WRONG CHOICE\n')	
+					elif args.text_file:
+						if vertype == "lv2":
+							f = Fs.Nsp(filename, 'rb')
+							verdict,headerlist,feed=f.verify_sig(feed,tmpfolder)
+							f.flush()
+							f.close()
+							if check == True:
+								check=verdict
+						elif vertype == "lv3":
+							f = Fs.Nsp(filename, 'rb')
+							verdict,headerlist,feed=f.verify_sig(feed,tmpfolder)
+							f.flush()
+							f.close()
+							if check == True:
+								check=verdict
+							f = Fs.Nsp(filename, 'rb')
+							verdict,feed=f.nsz_hasher(buffer,headerlist,verdict,feed)
+							f.flush()
+							f.close()
+							if check == True:
+								check=verdict
+						if check == False:
+							with open(errfile, 'a') as errfile:
+								now=datetime.now()
+								date=now.strftime("%x")+". "+now.strftime("%X")
+								errfile.write(date+'\n')
+								errfile.write("Filename: "+str(filename)+'\n')
+								errfile.write("IS INCORRECT"+'\n')
+						dir=os.path.dirname(os.path.abspath(tfile))
+						info='INFO'
+						subf='MASSVERIFY'
+						ofolder =os.path.join(dir,info)
+						ofolder =os.path.join(ofolder,subf)
+						if not os.path.exists(ofolder):
+							os.makedirs(ofolder)
+						infotext=os.path.join(ofolder, ofile)
+						with open(infotext, 'w') as info:
+							info.write(feed)
 				except BaseException as e:
 					Print.error('Exception: ' + str(e))
 					if args.text_file:
@@ -7411,7 +7449,7 @@ if __name__ == '__main__':
 							date=now.strftime("%x")+". "+now.strftime("%X")
 							errfile.write(date+'\n')
 							errfile.write("Filename: "+str(filename)+'\n')
-							errfile.write('Exception: ' + str(e)+'\n')								
+							errfile.write('Exception: ' + str(e)+'\n')						
 			if filename.endswith('.nca'):
 				try:
 					f = Fs.Nca(filename, 'rb')
