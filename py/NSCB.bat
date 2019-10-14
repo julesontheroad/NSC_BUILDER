@@ -1055,6 +1055,7 @@ set "orinput=%%f"
 set "ziptarget=%%f" 
 
 if "%%~nxf"=="%%~nf.nsp" call :nsp_manual
+if "%%~nxf"=="%%~nf.nsz" call :nsp_manual
 if "%%~nxf"=="%%~nf.xci" call :xci_manual
 %pycommand% "%nut%" --strip_lines "%prog_dir%list.txt" "1" "true"
 rem call :contador_NF
