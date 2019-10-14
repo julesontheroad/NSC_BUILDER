@@ -254,7 +254,7 @@ set /p bs="Input level number: "
 set bs=%bs:"=%
 set choice=none
 if /i "%bs%"=="x" goto checkagain
-if /i "%bs%"=="b" goto compression_pressets
+if /i "%bs%"=="b" goto compression_presets_menu
 if /i "%bs%"=="d" set "bs=17"
 set "level=%bs%"
 if %choice%=="none" goto levels_wrongchoice
