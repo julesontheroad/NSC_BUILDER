@@ -194,15 +194,15 @@ echo *******************************************************
 echo Compression presets for ease of use
 echo.
 echo 0. MANUAL SETUP
-echo 1. FAST                  - LEVEL 1  | 4 treads
-echo 2. INTERMEDIATE          - LEVEL 10 | 4 treads
-echo 3. AVERAGE (THREADED)    - LEVEL 17 | 2 treads
-echo 3. AVERAGE (UNTHREADED)  - LEVEL 17 | no treads
-echo 5. AVERAGE (THREADED)    - LEVEL 22 | no treads
+echo 1. FAST                  - LEVEL 1  _ 4 treads
+echo 2. INTERMEDIATE          - LEVEL 10 _ 4 treads
+echo 3. AVERAGE (THREADED)    - LEVEL 17 _ 2 treads
+echo 3. AVERAGE (UNTHREADED)  - LEVEL 17 _ no treads
+echo 5. AVERAGE (THREADED)    - LEVEL 22 _ no treads
 echo 6. USER VALUE (SETUP IN CONFIG)
 
 ECHO ******************************************
-echo Input "d" for default (level 17|no threads)
+echo Input "d" for default (level 17_no threads)
 echo Or Input "b" to return to the list options
 ECHO ******************************************
 echo.
@@ -226,7 +226,7 @@ if /i "%bs%"=="5" set "level=22"
 if /i "%bs%"=="5" set "workers=0"
 if /i "%bs%"=="6" set "level=%compression_lv%"
 if /i "%bs%"=="6" set "workers=%compression_threads%"
-
+pause
 if %choice%=="none" goto compression_presets_wrongchoice
 goto compress
 
