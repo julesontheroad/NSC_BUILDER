@@ -198,7 +198,7 @@ echo 1. FAST                  - LEVEL 1  _ 4 treads
 echo 2. INTERMEDIATE          - LEVEL 10 _ 4 treads
 echo 3. AVERAGE (THREADED)    - LEVEL 17 _ 2 treads
 echo 3. AVERAGE (UNTHREADED)  - LEVEL 17 _ no treads
-echo 5. AVERAGE (THREADED)    - LEVEL 22 _ no treads
+echo 5. HARD  (THREADED)      - LEVEL 22 _ no treads
 echo 6. USER VALUE (SETUP IN CONFIG)
 
 ECHO ******************************************
