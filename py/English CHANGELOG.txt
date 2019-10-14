@@ -29,7 +29,8 @@ v0.94 - Improvements in compression support and restore mode:
 	- Added verification for nsz compressed files. Notes:
 	  * Level 1 verification runs normally in nca objects
 	  * Level 1 verification works in ncz base games and dlc ncz objects
-	  * Level 1 verification works in some updates, the rest need hashing
+	  * In the testing fase a level1 verifcation failure in a ncz object will prompt 
+	    to hash the file.
 	  * Ticket verification only works when there is nca with titlerights 
 	    uncompressed in the nsz if not is ommited
 	  * Level 2 verification works normally as it does in nsp\xci files	
@@ -53,6 +54,13 @@ v0.94 - Improvements in compression support and restore mode:
 		multicontent splitter to separate the files before restoration.
 	  * Won't work with conversion methods that change the signature or create a 
         nsp from files.
+	- Added option to NSCB config to start the Interface.bat minimized when starting 
+	  the File-Info Web Interface (GUI)
+	  * While the console is useful for debugging errors some people don't like how
+	    it starts on top. Just modify the variable in zconfig\Interface_options.cmd 
+	  * Alternatively an option was added in the NSCB.bat CONFIGURATION MODE. This
+	    option is kept separate from Auto and Global options and doesn't get modified
+		when restoring the defaults unless is from the option itself.		
 v0.93 - Adds update compression and decompression to NSCB:
 	- Added update compression and decompression by blawar to NSCB
 	- Added thread option (0-4) and timings for compression and decompression.
