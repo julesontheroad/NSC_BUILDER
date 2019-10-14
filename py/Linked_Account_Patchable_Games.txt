@@ -10,7 +10,7 @@ LIST OF GAMES THAT REQUIRE A LINK ACCOUNT
 CAN YOU BYPASS THE LINK ACCOUNT REQUIREMENT?
 
 -------------------------------------------------------------------------------------
-PATCHABLE IN NSCB_V0.89 WITH CONTROL NACP PATCH
+PATCHABLE IN NSCB_V0.92 WITH CONTROL NACP PATCH
 -------------------------------------------------------------------------------------
 #KILLALLZOMBIES [BASE][01004D100C510000][v0][US].nsp - YES
 99Moves [BASE][0100DE900CB84000][v0][US].nsp - YES
@@ -20,10 +20,13 @@ Arena of Valor BETA [DEMO][0100944009646000][v0][US].nsp - YES
 Arena of Valor BETA [DEMO][UPD][0100944009646800][v65536][WORLD].nsp - YES
 Arena of Valor [BASE][01008D8006A6A000][v0][US].nsp - YES
 Arena of Valor [UPD][01008D8006A6A800][v458752][WORLD].nsp - YES
+Asphalt 9 Legends [01007B000C834000][v0].nsp - NO
 Awkward [BASE][010073900A7A0000][v0][US].nsp - YES
 Bloodstained Ritual of the Night [BASE][0100BF500207C000][v0][US].nsp - YES
 Bloodstained Ritual of the Night [UPD][0100BF500207C800][v131072][WORLD].nsp - YES
 Darts Up [BASE][0100BA500B660000][v0][US].nsp - YES
+DC Universe Online [01005B000D786000][v0].nsp - YES
+DC Universe Online [01005B000D786800][v65536].nsp - YES
 Defunct [BASE][010039300BDB2000][v0][US].nsp - YES
 Defunct [UPD][010039300BDB2800][v65536][US].nsp - YES
 DOOM 1993 [BASE][010018900DD00000][v0][US].nsp - YES (NEEDS SAVE IMPORT WITH BNET ACCOUNT LINKED)
@@ -32,6 +35,7 @@ DOOM II Classic [BASE][0100D4F00DD02000][v0][US].nsp - YES (NEEDS SAVE IMPORT WI
 DOOM II Classic [UPD][0100D4F00DD02800][v65536][WORLD].nsp - YES (NEEDS SAVE IMPORT WITH BNET ACCOUNT LINKED)
 Elemental Knights R [BASE][01005FA009370000][v0][US].nsp - YES
 Elemental Knights R [UPD][01005FA009370800][v262144][US].nsp - YES
+Eternal Card Game [0100F0B00A214000][v0].nsp - NO
 Fallout Shelter [BASE][010043500A17A000][v0][US].nsp - YES
 Fallout Shelter [UPD][010043500A17A800][v131072][WORLD].nsp - YES
 Fortnite [BASE][010025400AECE000][v0][US].nsp - YES
@@ -39,7 +43,7 @@ Fortnite [UPD][010025400AECE800][v4325376][US].nsp - YES
 InkyPen [BASE][01003A200BD8A000][v0][US].nsp - YES
 InkyPen [UPD][01003A200BD8A800][v65536][US].nsp - YES
 Izneo [BASE][0100D8E00C874000][v0][US].nsp - YES
-Izneo [UPD][0100D8E00C874800][v65536][US].nsp - YES
+izneo [UPD][0100D8E00C874800][v65536][US].nsp - YES
 Lightseekers [BASE][01009EA00C792000][v0][US].nsp - YES
 Lightseekers [UPD][01009EA00C792800][v196608][US].nsp - YES
 Magic Nations [BASE][0100F6600AC00000][v0][US].nsp - YES
@@ -80,13 +84,17 @@ Warhammer Age of Sigmar Champions [UPD][010089A00C7B0800][v262144][US].nsp - YES
 ダーツUP [BASE][0100D1C00BC7E000][v0][JP].nsp - YES
 ドラゴンクエストⅩ ベーシックパック [BASE][0100647003750000][v0][JP].nsp - YES
 ドラゴンクエストⅩ ベーシックパック [UPD][0100647003750800][v3211264][JAP].nsp - YES
+すすめ！！ まもって騎士 姫の突撃セレナーデ [010095F0094DC000][v0].nsp - YES
 
 -------------------------------------------------------------------------------------
-NOT PATCHABLE IN NSCB_V0.89
+NOT PATCHABLE IN NSCB_V0.92
 -------------------------------------------------------------------------------------
 BIOHAZARD 7 resident evil cloud version [BASE][01006EA00A294000][v0][JP].nsp - NO
 Danger Mouse The Danger Games [BASE][01003ED0099B0000][v0][US].nsp - NO
-Eiyudensetu AkatukinoKiseki Mobile [0100D4900DEF4000][v0].nsp - NO
+Dead by Daylight [01004C400CF96000][v0].nsp - NO
+Dead by Daylight [UPD][01004C400CF96800][v65536][WORLD].nsp - NO
+Eiyudensetu AkatukinoKiseki Mobile [0100D4900DEF4000][v0].nsp
+Eternal Card Game [0100F0B00A214800][v196608].nsp - NO
 GALAK-Z Variant S [BASE][0100C9800A454000][v0][US].nsp - NO
 GALAK-Z Variant S [UPD][0100C9800A454800][v131072][US].nsp - NO
 Gems of War [BASE][0100BD800986E000][v0][US].nsp - NO
@@ -100,7 +108,6 @@ Mordheim Warband Skirmish [UPD][010071B009FB6800][v131072][WORLD].nsp - NO
 Nintendo Entertainment System - Nintendo Switch Online [BASE][0100D870045B6000][v0][US].nsp - NO
 Nintendo Entertainment System - Nintendo Switch Online [UPD][0100D870045B6800][v720896][US].nsp - NO
 Super Nintendo Entertainment System - Nintendo Switch Online [01008D300C50C000][v0].nsp - NO
-Super Famikon Nintendo Switch Online [0100E8600C504000][v0].nsp - NO 
 Trivial Pursuit LIVE - DEMO [DEMO][01005BA00BEE6000][v0][US].nsp - NO
 Trivial Pursuit LIVE - DEMO [DEMO][UPD][01005BA00BEE6800][v65536][WORLD].nsp - NO
 Use Your Words [BASE][01007C0003AEC000][v0][US].nsp - NO
@@ -134,8 +141,11 @@ UNTESTED
 -------------------------------------------------------------------------------------
 Doragonkuesuto Ⅹ onrain be-ta han [DEMO][UPD][0100459000302800][v327680][JAP].nsp - UNTESTED
 블러드스테인드 리추얼 오브 더 나이트 [UPD][0100E9600DD6C800][v65536][WORLD].nsp - UNTESTED
-DC Universe Online [01005B000D786000][v0].nsp
-DC Universe Online [01005B000D786800][v65536].nsp
+血咒之城：暗夜儀式 [UPD][010025A00DF2A800][v65536][].nsp - UNTESTED
+血咒之城：暗夜儀式 [BASE][010025A00DF2A000][v0][HK].nsx - UNTESTED
+Rally Rock 'N Racing [0100AFA00F048000][v0].nsx - UNTESTED
+Overwatch Legendary Edition [0100F8600E21E800][v65536].nsp - UNTESTED
+MilkChoco [010056D00B0F4800][v65536].nsp - UNTESTED
 
 -------------------------------------------------------------------------------------
 Thanks to my good friend "the tester"
