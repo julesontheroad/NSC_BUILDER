@@ -226,7 +226,7 @@ if /i "%bs%"=="5" set "level=22"
 if /i "%bs%"=="5" set "workers=0"
 if /i "%bs%"=="6" set "level=%compression_lv%"
 if /i "%bs%"=="6" set "workers=%compression_threads%"
-pause
+
 if %choice%=="none" goto compression_presets_wrongchoice
 goto compress
 
