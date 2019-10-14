@@ -208,7 +208,7 @@ ECHO ******************************************
 echo.
 set /p bs="Input level number: "
 set bs=%bs:"=%
-set choice=none
+set level=none
 if /i "%bs%"=="b" goto checkagain
 if /i "%bs%"=="d" set "level=17"
 if /i "%bs%"=="d" set "workers=0"
@@ -227,7 +227,7 @@ if /i "%bs%"=="5" set "workers=0"
 if /i "%bs%"=="6" set "level=%compression_lv%"
 if /i "%bs%"=="6" set "workers=%compression_threads%"
 
-if %choice%=="none" goto compression_presets_wrongchoice
+if "%level%"=="none" goto compression_presets_wrongchoice
 goto compress
 
 
