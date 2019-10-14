@@ -42,7 +42,7 @@ Current version of the program allows you to:
 
 12.- Rename nsp,xci files to match it's content
 
-13.- Verify nsp, nsx, xci y nca files
+13.- Verify nsp, nsx, nsz, xci and nca files
 
 14.- Output information in text format
 
@@ -61,6 +61,8 @@ Current version of the program allows you to:
 21.- Compression of nsp files into .nsz files 
 
 22.- Graphical interface for file information trough a gui running on chromium\chrome
+
+23.- Restoration of nsp\xci modified with NSC_Builder to their original game nca files.
 
 ## 4. Batch modes:
 
