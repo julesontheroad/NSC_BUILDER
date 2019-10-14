@@ -3,12 +3,10 @@ https://github.com/julesontheroad/NSC_BUILDER
 
 ## 1. Description
 
-NSC_Builder is the merged Project that continues xci_builder and Nut_Batch_Cleaner.
+Nintendo Switch Cleaner and Builder. A batchfile, python and html script based in hacbuild and Nut's python libraries. Designed initially to erase titlerights encryption from nsp files and make multicontent nsp/xci files, nowadays is a multicontent tool specialized in batch processing and file information, someone called it a Switch's Knife and he may be right.
 
-NSC_Builder is based both in the works of Blawar’s nut.py and Luca Fraga’s hacbuild and powered by “squirrel” a nut’s fork with added functions that removes the CDN based functions from nut while tweaks the title-rights modification functions and adds some useful ones for file management.
-From version v0.8 the program doesn’t rely on hacbuild for xci generation and new code was made for a better integration on squirrel.
-
-Squirrel will get a new github repository soon and be packed as exe for NSCB from beta v0.8. Old squirrel code can be seen in the NSCB main repository, new code will be published in it’s own repository at the end of NSCB beta phase after some cleanup it’s done on it’s code.
+NSC_Builder is based both in the works of Blawar’s nut.py and Luca Fraga’s hacbuild and powered by “squirrel” a originally a nut’s fork with added functions nowadays it can be considered it's own separate program.
+From version v0.8 the program doesn’t rely on hacbuild for xci generation and new code was made for a better integration with squirrel.
 
 ## 2. What’s the meaning of “REMOVING TITLE RIGHTS”.
 When you remove the titlerights encryption from nsp files you can install the games without any need of tickets, which leaves a smaller trackable footprint on your console, providing you aren’t sending telemetry data to Nintendo.
