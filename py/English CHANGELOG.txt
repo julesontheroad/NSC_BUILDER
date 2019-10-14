@@ -21,6 +21,38 @@ Luca Fraga's github: https://github.com/LucaFraga
 ---------------
 0. Changelog
 ---------------
+v0.94 - Improvements in compression support and restore mode:
+	- Compression\decompression is now tied to the buffer option which reduces 
+	  hangups in the process
+	- Decompression is done in a single operation now which makes it faster and
+	  enables the progress bar to be equal to the size of the file
+	- Added verification for nsz compressed files. Notes:
+	  * Level 1 verification runs normally in nca objects
+	  * Level 1 verification works in ncz base games and dlc ncz objects
+	  * Level 1 verification works in some updates, the rest need hashing
+	  * Ticket verification only works when there is nca with titlerights 
+	    uncompressed in the nsz if not is ommited
+	  * Level 2 verification works normally as it does in nsp\xci files	
+	  * Level 3 verification aka hashing works normally without decompression to
+	    the disk
+	  * If all ncz files hash properly the ticket should be ok.
+	- Added pressets for compression.
+	  * The user is welcomed now with a screen where he can choose to set compression
+	    level and threads manually or to use 5 presets. A 6th preset can be setup in
+		the program CONFIGURATION MODE.
+	- Added file restoration for nsp and xci files as MODE 9. This can undo NSCB 
+	  operations.
+	  * Can restore headers and detect if original file was xci or nsp
+	  * Can undo titlerights removal, keygeneration changes, RSV changes and 
+	    isgamecard changes
+	  * Linked account patched restoration is not supported yet
+	  * Basically if a file passes trough NSCB verification it can be restored
+	  * For now multifiles are blocked, the reason is the content must be splitted
+	    between origins in some occasions so the program should give xci and nsp 
+		files sometimes. This will be added in the future, for now use the 
+		multicontent splitter to separate the files before restoration.
+	  * Won't work with conversion methods that change the signature or create a 
+        nsp from files.
 v0.93 - Adds update compression and decompression to NSCB:
 	- Added update compression and decompression by blawar to NSCB
 	- Added thread option (0-4) and timings for compression and decompression.
