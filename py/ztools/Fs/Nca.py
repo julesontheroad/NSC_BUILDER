@@ -1875,6 +1875,7 @@ class Nca(File):
 				else:
 					orig_header = False				
 				if ver == True:
+					OGGC=self.header.getgamecard()
 					chkkg=currkg
 					if targetkg == False:
 						message=(indent+self._path+arrow+'is PROPER');print(message);feed+=message+'\n'	

@@ -7414,7 +7414,7 @@ class Nsp(Pfs0):
 								if 	checktik == True:
 									break		
 					if checktik==False and str(self._path).endswith('.nsz'):
-						pass
+						checktik='nsz'
 					else:	
 						message=('Content.TICKET');print(message);feed+=message+'\n'												
 					correct = checktik				
@@ -7427,6 +7427,8 @@ class Nsp(Pfs0):
 					message=(tabs+file+tabs+'  -> is CORRECT');print(message);feed+=message+'\n'	
 			elif correct=='ncz':
 				message=(tabs+file+tabs+'  -> ncz file needs HASH check');print(message);feed+=message+'\n'
+			elif correct=='nsz':
+				pass
 			else:
 				verdict=False			
 				if file.endswith('cnmt.nca'):	
@@ -7513,11 +7515,19 @@ class Nsp(Pfs0):
 						if mtick not in ticketlist:			
 							message=('\n- File has titlerights!!! Missing ticket: '+mtick);print(message);feed+=message+'\n'
 							verdict = False
-									
+							
+		if str(self.path).endswith('.nsz'):
+			token='NSZ'
+		elif str(self.path).endswith('.nsx'):
+			token='NSX'		
+		elif str(self.path).endswith('.nsp'):
+			token='NSP'			
+		else:
+			token='NSP'																
 		if verdict == False:
-			message='\nVERDICT: NSP FILE IS CORRUPT OR MISSES FILES\n';print(message);feed+=message+'\n'				
+			message='\nVERDICT: {} FILE IS CORRUPT OR MISSES FILES\n'.format(token);print(message);feed+=message+'\n'				
 		if verdict == True:	
-			message='\nVERDICT: NSP FILE IS CORRECT\n';print(message);feed+=message
+			message='\nVERDICT: {} FILE IS CORRECT\n'.format(token);print(message);feed+=message
 		return verdict,feed			
 			
 	def verify_sig(self,feed,tmpfolder):	
@@ -7657,11 +7667,19 @@ class Nsp(Pfs0):
 				message='';print(message);feed+=message+'\n'		
 		try:
 			shutil.rmtree(tmpfolder)
-		except:pass						
+		except:pass					
+		if str(self.path).endswith('.nsz'):
+			token='NSZ'
+		elif str(self.path).endswith('.nsx'):
+			token='NSX'		
+		elif str(self.path).endswith('.nsp'):
+			token='NSP'			
+		else:
+			token='NSP'						
 		if verdict == False:
-			message=("VERDICT: NSP FILE COULD'VE BEEN TAMPERED WITH");print(message);feed+=message+'\n'												
+			message=("VERDICT: {} FILE COULD'VE BEEN TAMPERED WITH").format(token);print(message);feed+=message+'\n'												
 		if verdict == True:	
-			message=('VERDICT: NSP FILE IS SAFE');print(message);feed+=message+'\n'				
+			message=('VERDICT: {}  FILE IS SAFE').format(token);print(message);feed+=message+'\n'				
 		return 	verdict,headerlist,feed			
 
 	def find_addecuatekg(self,ncameta,keygenerationlist):
@@ -7777,11 +7795,19 @@ class Nsp(Pfs0):
 				else:
 					message=('   > FILE IS CORRUPT');print(message);feed+=message+'\n'
 					verdict = False
-				message=('');print(message);feed+=message+'\n'			
+				message=('');print(message);feed+=message+'\n'	
+		if str(self.path).endswith('.nsz'):
+			token='NSZ'
+		elif str(self.path).endswith('.nsx'):
+			token='NSX'		
+		elif str(self.path).endswith('.nsp'):
+			token='NSP'			
+		else:
+			token='NSP'										
 		if verdict == False:
-			message=("VERDICT: NSP FILE IS CORRUPT");print(message);feed+=message+'\n'
+			message=("VERDICT: {} FILE IS CORRUPT").format(token);print(message);feed+=message+'\n'
 		if verdict == True:	
-			message=('VERDICT: NSP FILE IS CORRECT');print(message);feed+=message+'\n'
+			message=('VERDICT: {} FILE IS CORRECT').format(token);print(message);feed+=message+'\n'
 		return 	verdict,feed			
 									
 	def verify_enforcer(self,nca):
@@ -9127,7 +9153,7 @@ class Nsp(Pfs0):
 						if titleid.endswith('000'):
 							for s in sections:
 								count+=1
-								if count==3:
+								if count==2:
 									break
 								# print(s.cryptoType)
 								# print(s.size)
@@ -9138,20 +9164,19 @@ class Nsp(Pfs0):
 							test=int(checkstarter/(16384))
 							for i in (range(test+1)):
 								reader.seek(16384,1)	
-							chunk = reader.read(16384)		
-							# print(len(chunk))
-							magic=chunk[:4]
-							if magic == b'PFS0':
+							chunk = reader.read(16384)	
+							b1=chunk[:32];# Hex.dump(b1)
+							b2=chunk[32:64];# Hex.dump(b2)	
+							if sum(b1)!=0 and sum(b2)==0:
 								return True
 							else:
-								return 'ncz'
+								return 'ncz'		
 						if not titleid.endswith('800'):
 							dctx = zstandard.ZstdDecompressor()
 							reader = dctx.stream_reader(nca)	
 							chunk = reader.read(16384)		
-							# print(len(chunk))
-							bl=chunk[:32]
-							b2=chunk[32:64]
+							b1=chunk[:32];# Hex.dump(b1)
+							b2=chunk[32:64];# Hex.dump(b2)					
 							if sum(b1)!=0 and sum(b2)==0:
 								return True
 							else:
@@ -9160,22 +9185,12 @@ class Nsp(Pfs0):
 							dctx = zstandard.ZstdDecompressor()
 							reader = dctx.stream_reader(nca)	
 							chunk = reader.read(16384)		
-							bl1=chunk[:64]
-							Hex.dump(bl1)								
-							for s in sections:
-								# print(len(chunk))
-								checkstarter+=s.size		
-								test=checkstarter+16384
-								test=int(test)
-								for i in (range(test+1)):
-									reader.seek(16384,1)	
-								chunk = reader.read(16384)	
-								bl=chunk[:32]
-								b2=chunk[32:64]
-								if sum(b1)!=0 and sum(b2)==0:
-									return True
-								else:
-									return 'ncz'								
+							b1=chunk[:32];# Hex.dump(b1)
+							b2=chunk[32:64];# Hex.dump(b2)						
+							if sum(b1)!=0 and sum(b2)==0:
+								return True
+							else:
+								return 'ncz'								
 							
 
 	def nsz_hasher(self,buffer,headerlist,didverify,feed):	
@@ -9350,8 +9365,16 @@ class Nsp(Pfs0):
 					message=('   > FILE IS CORRUPT');print(message);feed+=message+'\n'
 					verdict = False
 				message=('');print(message);feed+=message+'\n'	
+		if str(self.path).endswith('.nsz'):
+			token='NSZ'
+		elif str(self.path).endswith('.nsx'):
+			token='NSX'		
+		elif str(self.path).endswith('.nsp'):
+			token='NSP'			
+		else:
+			token='NSP'			
 		if verdict == False:
-			message=("VERDICT: NSP FILE IS CORRUPT");print(message);feed+=message+'\n'
+			message=("VERDICT: {} FILE IS CORRUPT").format(token);print(message);feed+=message+'\n'
 		if verdict == True:	
-			message=('VERDICT: NSP FILE IS CORRECT');print(message);feed+=message+'\n'
+			message=('VERDICT: {} FILE IS CORRECT').format(token);print(message);feed+=message+'\n'
 		return 	verdict,feed		
