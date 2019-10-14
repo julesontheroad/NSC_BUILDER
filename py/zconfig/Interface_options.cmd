@@ -12,4 +12,4 @@ set "nut=ztools\squirrel.py"
 ::python command
 set "pycommand=py -3"
 ::START console minimized with GUI yes\no
-set "start_minimized=yes"
+set "start_minimized=no"

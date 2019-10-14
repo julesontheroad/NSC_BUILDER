@@ -3,13 +3,14 @@
 set "prog_dir=%~dp0"
 set "bat_name=%~n0"
 set "ofile_name=%bat_name%_options.cmd"
+set "opt_interface=Interface_options.cmd"
 Title NSC_Builder v0.94 -- Profile: %ofile_name% -- by JulesOnTheRoad
 set "list_folder=%prog_dir%lists"
 ::-----------------------------------------------------
 ::EDIT THIS VARIABLE TO LINK OTHER OPTION FILE
 ::-----------------------------------------------------
 set "op_file=%~dp0zconfig\%ofile_name%"
-
+set "opt_interface=%~dp0zconfig\%opt_interface%"
 ::-----------------------------------------------------
 ::COPY OPTIONS FROM OPTION FILE
 ::-----------------------------------------------------

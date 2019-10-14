@@ -11,7 +11,7 @@ echo Input "1" for AUTO-MODE OPTIONS
 echo Input "2" for GLOBAL AND MANUAL OPTIONS
 echo Input "3" to VERIFY KEYS.TXT 
 echo Input "4" to UPDATE NUTDB
-REM echo Input "5" to INSTALL DEPENDENCIES
+echo Input "5" to INTERFACE OPTIONS
 echo.
 echo Input "c" to read CURRENT PROFILE
 echo Input "d" to set DEFAULT SETTINGS
@@ -23,7 +23,7 @@ if /i "%bs%"=="1" goto sc2
 if /i "%bs%"=="2" goto sc3
 if /i "%bs%"=="3" goto verify_keys
 if /i "%bs%"=="4" goto update_nutdb
-rem if /i "%bs%"=="5" goto idepend
+if /i "%bs%"=="5" goto interface
 
 if /i "%bs%"=="c" call :curr_set1
 if /i "%bs%"=="c" call :curr_set2
@@ -1347,6 +1347,45 @@ set bs=%bs:"=%
 
 if /i "%bs%"=="0" goto sc1
 if /i "%bs%"=="e" goto salida
+
+:interface
+cls
+call :logo
+echo ***************************************************************************
+echo START INTERFACE.BAT MINIMIZED?
+echo ***************************************************************************
+echo Controls if the debugging console starts minimized together with the web
+echo interface
+echo.
+echo Input "1"  to start MINIMIZED
+echo Input "2"  to NOT start MINIMIZED
+echo Input "D"  for default (NOT MINIMIZED)
+echo.
+echo Input "0" to return to CONFIG MENU
+echo Input "e" to go back to the MAIN PROGRAM
+echo.
+set /p bs="Enter your choice: "
+set "v_interface=none"
+if /i "%bs%"=="1" set "v_interface=yes"
+if /i "%bs%"=="2" set "v_interface=no"
+if /i "%bs%"=="d" set "v_interface=no"
+
+if /i "%bs%"=="0" goto sc1
+if /i "%bs%"=="e" goto salida
+
+if "%v_interface%"=="none" echo WRONG CHOICE
+if "%v_interface%"=="none" echo.
+if "%v_interface%"=="none" goto interface
+
+set v_interface="start_minimized=%v_interface%"
+set v_interface="%v_interface%"
+%pycommand% "%listmanager%" -cl "%opt_interface%" -ln "14" -nl "set %v_interface%" 
+echo.
+%pycommand% "%listmanager%" -rl "%opt_interface%" -ln "14" -nl "Line in config was changed to: "
+echo.
+pause
+goto sc1
+
 
 :salida
 exit /B
