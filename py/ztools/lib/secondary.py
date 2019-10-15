@@ -49,7 +49,7 @@ def call_library(args):
 			if args[2]:		
 				var=args[2]
 				try:
-					var=var.split(",")	
+					var=var.split('","')	
 					for i in range(len(var)):
 						if var[i]=='True':
 							var[i]=True

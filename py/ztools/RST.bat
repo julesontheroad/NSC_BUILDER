@@ -143,7 +143,7 @@ endlocal
 cls
 call :program_logo
 echo -------------------------------------------------
-echo FILE JOINER ACTIVATED
+echo FILE RESTORATION ACTIVATED
 echo -------------------------------------------------
 ECHO -------------------------------------------------
 ECHO                 FILES TO PROCESS 

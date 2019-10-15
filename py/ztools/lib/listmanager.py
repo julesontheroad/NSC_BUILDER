@@ -56,10 +56,54 @@ def read_lines_to_list(textfile,number=1,all=False):
 					filelist.append(fp)					
 					i+=1
 	else:
+		with open(textfile,'r', encoding='utf8') as f:
 			for line in f:			
 				fp=line.strip()	
 				filelist.append(fp)		
 	return 	filelist		
+	
+def filter_list(textfile,ext=False,token=False):	
+	if ext==False and token==False and not textfile.endswith('.txt'):
+		print("List wasn't filtered")
+		return None
+	extlist=list()		
+	if ext!=False:
+		if isinstance(ext, list):	
+			extlist=ext
+		else:	
+			ext=ast.literal_eval(str(ext))
+			if isinstance(ext, list):	
+				extlist=ext
+			else:
+				extlist.append(ext)
+		filelist=list()
+		i=0
+	if ext!=False:	
+		with open(textfile,'r', encoding='utf8') as f:
+			for line in f:			
+				fp=line.strip()	
+				for xt in extlist:
+					if (fp.lower()).endswith(xt.lower()):
+						filelist.append(fp)	
+	if token!=False:	
+		with open(textfile,'r', encoding='utf8') as f:
+			for line in f:			
+				fp=line.strip()	
+				if token.lower() in fp.lower():
+						filelist.append(fp)							
+
+	if ext!=False or token!=False:							
+		with open(textfile,"w", encoding='utf8') as tfile:
+			for line in filelist:
+				try:
+					tfile.write(line+"\n")
+				except:
+					continue		
+		
+		
+	
+	
+	
 
 def parsetags(filepath):	
 	fileid='unknown';fileversion='unknown';cctag='unknown';nG=0;nU=0;nD=0;

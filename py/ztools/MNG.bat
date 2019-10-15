@@ -4,29 +4,29 @@ CD /d "%prog_dir%"
 
 REM //////////////////////////////////////////////////
 REM /////////////////////////////////////////////////
-REM COMPRESSION
+REM FILE MANAGEMENT
 REM /////////////////////////////////////////////////
 REM ////////////////////////////////////////////////
 :normalmode
 cls
 call :program_logo
 echo -------------------------------------------------
-echo COMPRESS\DECOMPRESS MODE ACTIVATED
+echo FILE MANAGEMENT ACTIVATED
 echo -------------------------------------------------
-if exist "zzlist.txt" goto prevlist
+if exist "mnglist.txt" goto prevlist
 goto manual_INIT
 :prevlist
 set conta=0
-for /f "tokens=*" %%f in (zzlist.txt) do (
+for /f "tokens=*" %%f in (mnglist.txt) do (
 echo %%f
 ) >NUL 2>&1
 setlocal enabledelayedexpansion
-for /f "tokens=*" %%f in (zzlist.txt) do (
+for /f "tokens=*" %%f in (mnglist.txt) do (
 set /a conta=!conta! + 1
 ) >NUL 2>&1
-if !conta! LEQ 0 ( del zzlist.txt )
+if !conta! LEQ 0 ( del mnglist.txt )
 endlocal
-if not exist "zzlist.txt" goto manual_INIT
+if not exist "mnglist.txt" goto manual_INIT
 ECHO .......................................................
 ECHO A PREVIOUS LIST WAS FOUND. WHAT DO YOU WANT TO DO?
 :prevlist0
@@ -47,17 +47,17 @@ set /p bs="Enter your choice: "
 set bs=%bs:"=%
 if /i "%bs%"=="3" goto showlist
 if /i "%bs%"=="2" goto delist
-if /i "%bs%"=="1" goto start
+if /i "%bs%"=="1" goto start_cleaning
 if /i "%bs%"=="0" exit /B
 echo.
 echo BAD CHOICE
 goto prevlist0
 :delist
-del zzlist.txt
+del mnglist.txt
 cls
 call :program_logo
 echo -------------------------------------------------
-echo COMPRESS\DECOMPRESS MODE ACTIVATED
+echo FILE MANAGEMENT ACTIVATED
 echo -------------------------------------------------
 echo ..................................
 echo YOU'VE DECIDED TO START A NEW LIST
@@ -69,7 +69,7 @@ ECHO ***********************************************
 echo Input "0" to return to the MODE SELECTION MENU
 ECHO ***********************************************
 echo.
-%pycommand% "%nut%" -t nsp xci nsz -tfile "%prog_dir%zzlist.txt" -uin "%uinput%" -ff "uinput"
+%pycommand% "%nut%" -t nsp nsx -tfile "%prog_dir%mnglist.txt" -uin "%uinput%" -ff "uinput"
 set /p eval=<"%uinput%"
 set eval=%eval:"=%
 setlocal enabledelayedexpansion
@@ -93,7 +93,7 @@ ECHO *************************************************
 echo Or Input "0" to return to the MODE SELECTION MENU
 ECHO *************************************************
 echo.
-%pycommand% "%nut%" -t nsp xci nsz -tfile "%prog_dir%zzlist.txt" -uin "%uinput%" -ff "uinput"
+%pycommand% "%nut%" -t nsp nsx -tfile "%prog_dir%mnglist.txt" -uin "%uinput%" -ff "uinput"
 set /p eval=<"%uinput%"
 set eval=%eval:"=%
 setlocal enabledelayedexpansion
@@ -101,11 +101,11 @@ echo+ >"%uinput%"
 endlocal
 
 if /i "%eval%"=="0" exit /B
-if /i "%eval%"=="1" goto start
+if /i "%eval%"=="1" goto start_cleaning
 if /i "%eval%"=="e" goto salida
 if /i "%eval%"=="i" goto showlist
 if /i "%eval%"=="r" goto r_files
-if /i "%eval%"=="z" del zzlist.txt
+if /i "%eval%"=="z" del mnglist.txt
 
 goto checkagain
 
@@ -115,7 +115,7 @@ set bs=%bs:"=%
 
 setlocal enabledelayedexpansion
 set conta=
-for /f "tokens=*" %%f in (zzlist.txt) do (
+for /f "tokens=*" %%f in (mnglist.txt) do (
 set /a conta=!conta! + 1
 )
 
@@ -132,26 +132,28 @@ set string=%string%,
 set skiplist=%string%
 Set "skip=%skiplist%"
 setlocal DisableDelayedExpansion
-(for /f "tokens=1,*delims=:" %%a in (' findstr /n "^" ^<zzlist.txt'
+(for /f "tokens=1,*delims=:" %%a in (' findstr /n "^" ^<mnglist.txt'
 ) do Echo=%skip%|findstr ",%%a," 2>&1>NUL ||Echo=%%b
-)>zzlist.txt.new
+)>mnglist.txt.new
 endlocal
-move /y "zzlist.txt.new" "zzlist.txt" >nul
+move /y "mnglist.txt.new" "mnglist.txt" >nul
 endlocal
 
 :showlist
 cls
 call :program_logo
 echo -------------------------------------------------
-echo COMPRESS\DECOMPRESS MODE ACTIVATED
+echo FILE MANAGEMENT ACTIVATED
 echo -------------------------------------------------
-ECHO FILES TO PROCESS: 
-for /f "tokens=*" %%f in (zzlist.txt) do (
+ECHO -------------------------------------------------
+ECHO                 FILES TO PROCESS 
+ECHO -------------------------------------------------
+for /f "tokens=*" %%f in (mnglist.txt) do (
 echo %%f
 )
 setlocal enabledelayedexpansion
 set conta=
-for /f "tokens=*" %%f in (zzlist.txt) do (
+for /f "tokens=*" %%f in (mnglist.txt) do (
 set /a conta=!conta! + 1
 )
 echo .................................................
@@ -164,12 +166,12 @@ goto checkagain
 :s_cl_wrongchoice
 echo wrong choice
 echo ............
-:start
+:start_cleaning
 echo *******************************************************
 echo CHOOSE HOW TO PROCESS THE FILES
 echo *******************************************************
-echo Input "1" to compress nsp to nsz
-echo Input "2" for decompress nsz
+echo.
+echo Input "1" to check nsp\nsx extension depending on tk
 echo.
 ECHO ******************************************
 echo Or Input "b" to return to the list options
@@ -177,164 +179,24 @@ ECHO ******************************************
 echo.
 set /p bs="Enter your choice: "
 set bs=%bs:"=%
-set choice=none
+set vrepack=none
 if /i "%bs%"=="b" goto checkagain
-if /i "%bs%"=="1" goto compression_presets_menu
-if /i "%bs%"=="2" goto decompress
-if %choice%=="none" goto s_cl_wrongchoice
+if /i "%bs%"=="1" goto renamensx
+if %vrepack%=="none" goto s_cl_wrongchoice
 
-
-:compression_presets_wrongchoice
-echo wrong choice
-echo ............
-:compression_presets_menu
-echo *******************************************************
-echo COMPRESSION PRESETS
-echo *******************************************************
-echo Compression presets for ease of use
-echo.
-echo 0. MANUAL SETUP
-echo 1. FAST                      - LEVEL 1  _ 4   threads
-echo 2. FAST (UNTHREADED)         - LEVEL 1  _ no  threads
-echo 3. INTERMEDIATE (THREADED)   - LEVEL 10 _ 4   threads
-echo 4. INTERMEDIATE (UNTHREADED) - LEVEL 10 _ no  threads
-echo 5. AVERAGE (THREADED)        - LEVEL 17 _ 2   threads
-echo 6. AVERAGE (UNTHREADED)      - LEVEL 17 _ no  threads
-echo 7. HARD    (UNTHREADED)      - LEVEL 22 _ no  threads
-echo 8. USER VALUE (SETUP IN CONFIG)
-echo. 
-ECHO ******************************************
-echo Input "d" for default (level 17_no threads)
-echo Or Input "b" to return to the list options
-ECHO ******************************************
-echo.
-set /p bs="Input level number: "
-set bs=%bs:"=%
-set level=none
-if /i "%bs%"=="b" goto checkagain
-if /i "%bs%"=="d" set "level=17"
-if /i "%bs%"=="d" set "workers=0"
-
-if /i "%bs%"=="0" goto levels
-if /i "%bs%"=="1" set "level=1"
-if /i "%bs%"=="1" set "workers=4"
-if /i "%bs%"=="2" set "level=1"
-if /i "%bs%"=="2" set "workers=0"
-if /i "%bs%"=="3" set "level=10"
-if /i "%bs%"=="3" set "workers=4"
-if /i "%bs%"=="4" set "level=10"
-if /i "%bs%"=="4" set "workers=0"
-if /i "%bs%"=="5" set "level=17"
-if /i "%bs%"=="5" set "workers=2"
-if /i "%bs%"=="6" set "level=17"
-if /i "%bs%"=="6" set "workers=0"
-if /i "%bs%"=="7" set "level=22"
-if /i "%bs%"=="7" set "workers=0"
-if /i "%bs%"=="8" set "level=%compression_lv%"
-if /i "%bs%"=="8" set "workers=%compression_threads%"
-
-if "%level%"=="none" goto compression_presets_wrongchoice
-goto compress
-
-
-:levels_wrongchoice
-echo wrong choice
-echo ............
-:levels
-echo *******************************************************
-echo INPUT COMPRESSION LEVEL
-echo *******************************************************
-echo Input a compression level between 1 and 22
-echo Notes:
-echo  + Level 1 - Fast and smaller compression ratio
-echo  + Level 22 - Slow but better compression ratio
-echo  Levels 10-17 are recommended in the spec
-echo.
-ECHO ******************************************
-echo Input "d" for default (level 17)
-echo Or Input "b" to return to the previous option
-echo Or Input "x" to return to the list options
-ECHO ******************************************
-echo.
-set /p bs="Input level number: "
-set bs=%bs:"=%
-set choice=none
-if /i "%bs%"=="x" goto checkagain
-if /i "%bs%"=="b" goto compression_presets_menu
-if /i "%bs%"=="d" set "bs=17"
-set "level=%bs%"
-if %choice%=="none" goto levels_wrongchoice
-goto threads
-:threads_wrongchoice
-echo wrong choice
-echo ............
-:threads
-echo *******************************************************
-echo INPUT NUMBER OF THREADS TO USE
-echo *******************************************************
-echo Input a number of threads to use between 0 and 4
-echo Notes:
-echo  + By using threads you may gain a little speed bump 
-echo    but you'll loose compression ratio
-echo  + Level 22 and 4 threads may run you out of memory
-echo  + For maximum threads level 17 compression is advised
-echo    but you'll loose compression ratio
-echo.
-ECHO *********************************************
-echo Input "d" for default (0 threads)
-echo Or Input "b" to return to the previous option
-echo Or Input "x" to return to the list options
-ECHO *********************************************
-echo.
-set /p bs="Input number of threads: "
-set bs=%bs:"=%
-set choice=none
-if /i "%bs%"=="x" goto checkagain
-if /i "%bs%"=="b" goto levels
-if /i "%bs%"=="d" set "bs=0"
-set "workers=%bs%"
-if %choice%=="none" goto threads_wrongchoice
-
-:compress
+:renamensx
 cls
 call :program_logo
-echo *******************************
-echo COMPRESS A NSP INTO NSZ FORMAT
-echo *******************************
 CD /d "%prog_dir%"
-for /f "tokens=*" %%f in (zzlist.txt) do (
+%pycommand% "%nut%" -lib_call management rename_nsx "%prog_dir%mnglist.txt"
 
-%pycommand% "%nut%" %buffer% -o "%fold_output%" -tfile "%prog_dir%zzlist.txt" --compress "%level%" --threads "%workers%" --nodelta "%skdelta%"
-
-%pycommand% "%nut%" --strip_lines "%prog_dir%zzlist.txt"
-call :contador_NF
-)
-ECHO ---------------------------------------------------
-ECHO *********** ALL FILES WERE PROCESSED! *************
-ECHO ---------------------------------------------------
-goto s_exit_choice
-
-:decompress
-cls
-call :program_logo
-echo **************************
-echo DECOMPRESS A NSZ INTO NSP
-echo **************************
-CD /d "%prog_dir%"
-for /f "tokens=*" %%f in (zzlist.txt) do (
-
-%pycommand% "%nut%" -o "%fold_output%" -tfile "%prog_dir%zzlist.txt" --decompress "auto"
-
-%pycommand% "%nut%" --strip_lines "%prog_dir%zzlist.txt"
-call :contador_NF
-)
 ECHO ---------------------------------------------------
 ECHO *********** ALL FILES WERE PROCESSED! *************
 ECHO ---------------------------------------------------
 goto s_exit_choice
 
 :s_exit_choice
-if exist zzlist.txt del zzlist.txt
+if exist mnglist.txt del mnglist.txt
 if /i "%va_exit%"=="true" echo PROGRAM WILL CLOSE NOW
 if /i "%va_exit%"=="true" ( PING -n 2 127.0.0.1 >NUL 2>&1 )
 if /i "%va_exit%"=="true" goto salida
@@ -351,7 +213,7 @@ goto s_exit_choice
 :contador_NF
 setlocal enabledelayedexpansion
 set /a conta=0
-for /f "tokens=*" %%f in (zzlist.txt) do (
+for /f "tokens=*" %%f in (mnglist.txt) do (
 set /a conta=!conta! + 1
 )
 echo ...................................................
@@ -361,7 +223,6 @@ PING -n 2 127.0.0.1 >NUL 2>&1
 set /a conta=0
 endlocal
 exit /B
-
 
 
 ::///////////////////////////////////////////////////

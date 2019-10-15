@@ -5581,7 +5581,7 @@ if __name__ == '__main__':
 						newname=nsha[:32] + '.cnmt.nca'
 						Print.info('New name: ' + newname )
 						dir=os.path.dirname(os.path.abspath(filename))
-						newpath=dir+ '\\' + newname
+						newpath =os.path.join(dir, newname)
 						os.rename(filename, newpath)
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
@@ -5657,7 +5657,7 @@ if __name__ == '__main__':
 					newname=nsha[:32] + '.cnmt.nca'
 					Print.info('New name: ' + newname )
 					dir=os.path.dirname(os.path.abspath(filename))
-					newpath=dir+ '\\' + newname
+					newpath =os.path.join(dir, newname)					
 					os.rename(filename, newpath)
 				except BaseException as e:
 					Print.error('Exception: ' + str(e))
@@ -5715,7 +5715,7 @@ if __name__ == '__main__':
 						newname=nsha[:32] + '.cnmt.nca'
 						Print.info('New name: ' + newname )
 						dir=os.path.dirname(os.path.abspath(filename))
-						newpath=dir+ '\\' + newname
+						newpath =os.path.join(dir, newname)
 						os.rename(filename, newpath)
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
@@ -5783,7 +5783,7 @@ if __name__ == '__main__':
 						newname=nsha[:32] + '.cnmt.nca'
 						Print.info('New name: ' + newname )
 						dir=os.path.dirname(os.path.abspath(filename))
-						newpath=dir+ '\\' + newname
+						newpath =os.path.join(dir, newname)
 						os.rename(filename, newpath)
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
