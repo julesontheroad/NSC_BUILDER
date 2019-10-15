@@ -3,6 +3,7 @@ tabs = '\t' * indent
 from binascii import hexlify as hx, unhexlify as uhx
 import Print
 import os
+import ast
 
 def striplines(textfile,number=1,counter=False):
 	#print(textfile)
@@ -62,7 +63,7 @@ def read_lines_to_list(textfile,number=1,all=False):
 				filelist.append(fp)		
 	return 	filelist		
 	
-def filter_list(textfile,ext=False,token=False):	
+def filter_list(textfile,ext=False,token=False):
 	if ext==False and token==False and not textfile.endswith('.txt'):
 		print("List wasn't filtered")
 		return None
@@ -70,11 +71,14 @@ def filter_list(textfile,ext=False,token=False):
 	if ext!=False:
 		if isinstance(ext, list):	
 			extlist=ext
-		else:	
-			ext=ast.literal_eval(str(ext))
-			if isinstance(ext, list):	
-				extlist=ext
-			else:
+		else:
+			try:
+				ext=ast.literal_eval(str(ext))
+				if isinstance(ext, list):	
+					extlist=ext
+				else:
+					extlist.append(ext)
+			except:		
 				extlist.append(ext)
 		filelist=list()
 		i=0
