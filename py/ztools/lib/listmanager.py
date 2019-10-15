@@ -63,9 +63,11 @@ def read_lines_to_list(textfile,number=1,all=False):
 				filelist.append(fp)		
 	return 	filelist		
 	
-def filter_list(textfile,ext=False,token=False):
+def filter_list(textfile,ext=False,token=False,Print=True):
+	ext=ext.split(' ')	
 	if ext==False and token==False and not textfile.endswith('.txt'):
-		print("List wasn't filtered")
+		if Print==True:
+			print("List wasn't filtered")
 		return None
 	extlist=list()		
 	if ext!=False:
@@ -82,6 +84,8 @@ def filter_list(textfile,ext=False,token=False):
 				extlist.append(ext)
 		filelist=list()
 		i=0
+	if Print==True:		
+		print("Filtering list {}".format(textfile))			
 	if ext!=False:	
 		with open(textfile,'r', encoding='utf8') as f:
 			for line in f:			
@@ -89,26 +93,83 @@ def filter_list(textfile,ext=False,token=False):
 				for xt in extlist:
 					if (fp.lower()).endswith(xt.lower()):
 						filelist.append(fp)	
+		for xt in extlist:
+			if Print==True:				
+				print(" - Added items matching extension {}".format(xt))					
 	if token!=False:	
 		with open(textfile,'r', encoding='utf8') as f:
 			for line in f:			
 				fp=line.strip()	
 				if token.lower() in fp.lower():
-						filelist.append(fp)							
-
-	if ext!=False or token!=False:							
+					filelist.append(fp)		
+			if Print==True:								
+				print(" - Added items matching search {}".format(token))				
+	if ext!=False or token!=False:	
+		if Print==True:			
+			print(" - Writing list")		
 		with open(textfile,"w", encoding='utf8') as tfile:
 			for line in filelist:
 				try:
 					tfile.write(line+"\n")
 				except:
-					continue		
+					continue	
+		if Print==True:							
+			print("List was filtered")		
+			
+	
+def remove_from_list(textfile,ext=False,token=False,Print=True):
+	ext=ext.split(' ')
+	if ext==False and token==False and not textfile.endswith('.txt'):
+		if Print==True:
+			print("List wasn't filtered")
+		return None
+	extlist=list()	
+	if ext!=False:
+		if isinstance(ext, list):	
+			extlist=ext
+		else:
+			try:
+				ext=ast.literal_eval(str(ext))
+				if isinstance(ext, list):	
+					extlist=ext
+				else:
+					extlist.append(ext)
+			except:		
+				extlist.append(ext)
+		filelist=list()
+		i=0
+	if Print==True:		
+		print("Filtering list {}".format(textfile))			
+	if ext!=False:	
+		with open(textfile,'r', encoding='utf8') as f:
+			for line in f:			
+				fp=line.strip()	
+				for xt in extlist:
+					if not (fp.lower()).endswith(xt.lower()):
+						filelist.append(fp)	
+		for xt in extlist:
+			if Print==True:				
+				print(" - Added items matching extension {}".format(xt))					
+	if token!=False:	
+		with open(textfile,'r', encoding='utf8') as f:
+			for line in f:			
+				fp=line.strip()	
+				if not token.lower() in fp.lower():
+					filelist.append(fp)		
+			if Print==True:								
+				print(" - Added items matching search {}".format(token))				
+	if ext!=False or token!=False:	
+		if Print==True:			
+			print(" - Writing list")		
+		with open(textfile,"w", encoding='utf8') as tfile:
+			for line in filelist:
+				try:
+					tfile.write(line+"\n")
+				except:
+					continue	
+		if Print==True:							
+			print("List was filtered")				
 		
-		
-	
-	
-	
-
 def parsetags(filepath):	
 	fileid='unknown';fileversion='unknown';cctag='unknown';nG=0;nU=0;nD=0;
 	tid1=list()

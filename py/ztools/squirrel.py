@@ -6360,7 +6360,7 @@ if __name__ == '__main__':
 						if not args.text_file:
 							print(tabs+'> Still '+str(counter)+' to go')
 						continue
-					if filepath.endswith('.nsp'):
+					if filepath.endswith('.nsp') or filepath.endswith('.nsx') or filepath.endswith('.nsz'):
 						try:
 							prlist=list()
 							f = Fs.Nsp(filepath)
@@ -6435,7 +6435,7 @@ if __name__ == '__main__':
 							counter-=1
 							Print.error('Exception: ' + str(e))
 							continue
-					if filepath.endswith('.xci') or filepath.endswith('.nsp'):
+					if filepath.endswith('.xci') or filepath.endswith('.nsp') or filepath.endswith('.nsx') or filepath.endswith('.nsz'):
 						basecount=0; basename='';basever='';baseid='';basefile=''
 						updcount=0; updname='';updver='';updid='';updfile=''
 						dlccount=0; dlcname='';dlcver='';dlcid='';dlcfile=''
@@ -6499,7 +6499,7 @@ if __name__ == '__main__':
 									continue
 							if filepath.endswith('.xci'):
 								f = Fs.Xci(basefile)
-							elif filepath.endswith('.nsp'):
+							elif filepath.endswith('.nsp') or filepath.endswith('.nsx') or filepath.endswith('.nsz'):
 								f = Fs.Nsp(basefile)
 							ctitl=f.get_title(baseid)
 							if addlangue==True:
@@ -6528,7 +6528,7 @@ if __name__ == '__main__':
 									continue
 							if filepath.endswith('.xci'):
 								f = Fs.Xci(updfile)
-							elif filepath.endswith('.nsp'):
+							elif filepath.endswith('.nsp') or filepath.endswith('.nsx') or filepath.endswith('.nsz'):
 								f = Fs.Nsp(updfile)
 							ctitl=f.get_title(updid)
 							if addlangue==True:
@@ -6557,7 +6557,7 @@ if __name__ == '__main__':
 								else:
 									if filepath.endswith('.xci'):
 										f = Fs.Xci(dlcfile)
-									elif filepath.endswith('.nsp'):
+									elif filepath.endswith('.nsp') or filepath.endswith('.nsx') or filepath.endswith('.nsz'):
 										f = Fs.Nsp(dlcfile)
 									ctitl=f.get_title(dlcid)
 									f.flush()
@@ -6602,7 +6602,7 @@ if __name__ == '__main__':
 								if dlcrname == 'tag':
 									if filepath.endswith('.xci'):
 										f = Fs.Xci(dlcfile)
-									elif filepath.endswith('.nsp'):
+									elif filepath.endswith('.nsp') or filepath.endswith('.nsx') or filepath.endswith('.nsz'):
 										f = Fs.Nsp(dlcfile)
 									dlctag=f.get_title(dlcid,tag=True)
 									dlctag='['+dlctag+']'
@@ -6612,7 +6612,7 @@ if __name__ == '__main__':
 							else:
 								if filepath.endswith('.xci'):
 									f = Fs.Xci(dlcfile)
-								elif filepath.endswith('.nsp'):
+								elif filepath.endswith('.nsp') or filepath.endswith('.nsx') or filepath.endswith('.nsz'):
 									f = Fs.Nsp(dlcfile)
 								ctitl=f.get_title(dlcid)
 								f.flush()
@@ -6714,6 +6714,10 @@ if __name__ == '__main__':
 						endname=endname+'.xci'
 					elif filepath.endswith('.nsp'):
 						endname=endname+'.nsp'
+					elif filepath.endswith('.nsx'):
+						endname=endname+'.nsx'
+					elif filepath.endswith('.nsz'):
+						endname=endname+'.nsz'						
 					basename=str(os.path.basename(os.path.abspath(filepath)))
 					dir=os.path.dirname(os.path.abspath(filepath))
 					newpath=os.path.join(dir,endname)
@@ -6728,9 +6732,15 @@ if __name__ == '__main__':
 						if filepath.endswith('.xci'):
 							endname=basename[:-4]+' (needscheck)'+'.xci'
 							newpath=os.path.join(dir,endname)
-						if filepath.endswith('.nsp'):
+						elif filepath.endswith('.nsp'):
 							endname=basename[:-4]+' (needscheck)'+'.nsp'
 							newpath=os.path.join(dir,endname)
+						elif filepath.endswith('.nsx'):
+							endname=basename[:-4]+' (needscheck)'+'.nsx'
+							newpath=os.path.join(dir,endname)
+						elif filepath.endswith('.nsz'):
+							endname=basename[:-4]+' (needscheck)'+'.nsz'
+							newpath=os.path.join(dir,endname)							
 					print('Old Filename: '+basename)
 					print('Filename: '+endname)
 					os.rename(filepath, newpath)
@@ -6744,7 +6754,9 @@ if __name__ == '__main__':
 				counter-=1
 				Print.error('Exception: ' + str(e))
 			Status.close()
-
+		# **********************
+		# Rename sing txt file
+		# **********************
 		if args.renameftxt:
 			ruta=args.renameftxt
 			if args.romanize:

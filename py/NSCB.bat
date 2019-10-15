@@ -1011,9 +1011,6 @@ if /i "%bs%"=="3" set "vrepack=xci_trimmer"
 if /i "%bs%"=="4" set "vrepack=xci_untrimmer"
 if /i "%vrepack%"=="none" echo WRONG CHOICE
 if /i "%vrepack%"=="none" goto s_trimmer_selection
-ECHO ******************************************
-echo Or Input "b" to return to the list options
-ECHO ******************************************
 goto s_KeyChange_skip
 
 :s_vertype
@@ -1051,8 +1048,17 @@ if /i "%verif%"=="none" echo.
 if /i "%verif%"=="none" goto s_vertype
 
 :s_KeyChange_skip
+echo Filtering extensions from list according to options chosen
+if "%vrepack%" EQU "xci_supertrimmer" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=nsz nsx nsp","token=False",Print="False" )
+if "%vrepack%" EQU "xci_supertrimmer_keep_upd" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=nsz nsx nsp","token=False",Print="False" )
+if "%vrepack%" EQU "xci_trimmer" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=nsz nsx nsp","token=False",Print="False" )
+if "%vrepack%" EQU "xci_untrimmer" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=nsz nsx nsp","token=False",Print="False" )
+REM if "%vrepack%" NEQ "verify" ( %pycommand% "%nut%" -lib_call listmanager remove_from_list "%prog_dir%list.txt","ext=nsz","token=False",Print="False" )
+if "%vrepack%" EQU "rebuild" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=nsz xci","token=False",Print="False" )
+if "%vrepack%" EQU "nodelta" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=nsz xci","token=False",Print="False" )
 cls
 call :program_logo
+
 for /f "tokens=*" %%f in (list.txt) do (
 set "name=%%~nf"
 set "filename=%%~nxf"
@@ -1217,7 +1223,7 @@ cls
 call :program_logo
 set "workers=-threads 1"
 for /f "tokens=*" %%f in (list.txt) do (
-%pycommand% "%nut%" -renf "single" -tfile "%prog_dir%list.txt" -t nsp xci nsx -renm %renmode% -nover %nover% -oaid %oaid% -addl %addlangue% -dlcrn %dlcrname% %workers%
+%pycommand% "%nut%" -renf "single" -tfile "%prog_dir%list.txt" -t nsp xci nsx nsz -renm %renmode% -nover %nover% -oaid %oaid% -addl %addlangue% -dlcrn %dlcrname% %workers%
 if "%workers%" EQU "-threads 1" ( %pycommand% "%nut%" --strip_lines "%prog_dir%list.txt" "1" "true" )
 if "%workers%" NEQ "-threads 1" ( call :renamecheck )
 rem call :contador_NF
