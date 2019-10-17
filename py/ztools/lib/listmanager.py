@@ -1,9 +1,11 @@
 indent = 1
 tabs = '\t' * indent	
 from binascii import hexlify as hx, unhexlify as uhx
-import Print
+import Print as nutPrint
 import os
 import ast
+import tkinter as tk
+from tkinter import filedialog
 
 def striplines(textfile,number=1,counter=False):
 	#print(textfile)
@@ -82,8 +84,8 @@ def filter_list(textfile,ext=False,token=False,Print=True):
 					extlist.append(ext)
 			except:		
 				extlist.append(ext)
-		filelist=list()
-		i=0
+	filelist=list()
+	i=0
 	if Print==True:		
 		print("Filtering list {}".format(textfile))			
 	if ext!=False:	
@@ -136,8 +138,8 @@ def remove_from_list(textfile,ext=False,token=False,Print=True):
 					extlist.append(ext)
 			except:		
 				extlist.append(ext)
-		filelist=list()
-		i=0
+	filelist=list()
+	i=0
 	if Print==True:		
 		print("Filtering list {}".format(textfile))			
 	if ext!=False:	
@@ -324,5 +326,94 @@ def folder_to_list(ifolder,extlist=['nsp'],filter=False):
 						if binbin.lower() not in filename.lower():
 							filelist.append(filename)
 	except BaseException as e:
-		Print.error('Exception: ' + str(e))													
+		nutPrint.error('Exception: ' + str(e))													
+	return filelist
+
+
+def selector2list(textfile,mode='folder',ext=False,filter=False,Print=False):	
+	root = tk.Tk()
+	root.withdraw()
+	root.wm_attributes('-topmost', 1)
+	if mode=='file':
+		filepath = filedialog.askopenfilename()		
+	else:
+		filepath = filedialog.askdirectory()	
+	extlist=list()
+	if ext!=False:
+		if isinstance(ext, list):	
+			extlist=ext
+		else:
+			try:
+				ext=ast.literal_eval(str(ext))
+				if isinstance(ext, list):	
+					extlist=ext
+				else:
+					extlist.append(ext)
+			except:		
+				extlist.append(ext)	
+				
+	ruta=filepath
+	filelist=list()
+	try:
+		fname=""
+		binbin='RECYCLE.BIN'
+		if ext!=False:
+			for ext in extlist:
+				# print (ext)
+				if os.path.isdir(ruta):
+					for dirpath, dirnames, filenames in os.walk(ruta):
+						for filename in [f for f in filenames if f.endswith(ext.lower()) or f.endswith(ext.upper()) or f[:-1].endswith(ext.lower()) or f[:-1].endswith(ext.lower())]:
+							fname=""
+							if filter != False:
+								if filter.lower() in filename.lower():
+									fname=filename
+							else:
+								fname=filename
+							if fname != "":
+								if binbin.lower() not in filename.lower():
+									filelist.append(os.path.join(dirpath, filename))
+				else:
+					if ruta.endswith(ext.lower()) or ruta.endswith(ext.upper()) or ruta[:-1].endswith(ext.lower()) or ruta[:-1].endswith(ext.upper()):
+						filename = ruta
+						fname=""
+						if filter != False:
+							if filter.lower() in filename.lower():
+								fname=filename
+						else:
+							fname=filename
+						if fname != "":
+							if binbin.lower() not in filename.lower():
+								filelist.append(filename)
+		elif os.path.isdir(ruta):
+			for dirpath, dirnames, filenames in os.walk(ruta):
+				for filename in [f for f in filenames]:
+					fname=""
+					if filter != False:
+						if filter.lower() in filename.lower():
+							fname=filename
+					else:
+						fname=filename
+					if fname != "":
+						if binbin.lower() not in filename.lower():
+							filelist.append(os.path.join(dirpath, filename))
+		elif not os.path.isdir(ruta):	
+			filename = ruta
+			fname=""
+			if filter != False:
+				if filter.lower() in filename.lower():
+					fname=filename
+			else:
+				fname=filename
+			if fname != "":
+				if binbin.lower() not in filename.lower():
+					filelist.append(filename)		
+							
+		with open(textfile,"a", encoding='utf8') as tfile:
+			for line in filelist:
+				try:
+					tfile.write(line+"\n")
+				except:
+					continue							
+	except BaseException as e:
+		nutPrint.error('Exception: ' + str(e))													
 	return filelist
