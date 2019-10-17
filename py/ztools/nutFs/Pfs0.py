@@ -16,11 +16,11 @@ import nutFs.Titles as Titles
 MEDIA_SIZE = 0x200
 
 class Pfs0Stream():
-	def __init__(self, path):
+	def __init__(self, path,headsize=0x8000,mode='wb'):
 		os.makedirs(os.path.dirname(path), exist_ok = True)
 		self.path = path
-		self.f = open(path, 'wb')
-		self.offset = 0x8000
+		self.f = open(path, mode)
+		self.offset = headsize
 		self.files = []
 
 		self.f.seek(self.offset)

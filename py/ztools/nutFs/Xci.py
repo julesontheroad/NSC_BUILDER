@@ -1,11 +1,47 @@
 from binascii import hexlify as hx, unhexlify as uhx
-from nutFs.File import File
 from nutFs.Hfs0 import Hfs0
+from nutFs.Ticket import Ticket
+from nutFs.Nca import Nca
+from nutFs.File import File
+from nutFs.Nca import NcaHeader
+from nutFs.File import MemoryFile
+from nutFs import Type
+from nutFs.Nacp import Nacp
 import os
 import Print
-
+import Keys
+import aes128
+import Title
+import Titles
+import Hex
+import sq_tools
+from struct import pack as pk, unpack as upk
+from hashlib import sha256,sha1
+import re
+import pathlib
+import Config
+import Print
+from tqdm import tqdm
+import math  
+from operator import itemgetter, attrgetter, methodcaller
+import shutil
+import DBmodule
+import io
+import nutdb
+import textwrap
+from PIL import Image
 
 MEDIA_SIZE = 0x200
+RSA_PUBLIC_EXPONENT = 65537
+HFS0_START = 0xf000
+XCI_SIGNATURE_SIZE = 0x100
+XCI_IV_SIZE = 0x10
+XCI_HASH_SIZE = 0x20
+XCI_GAMECARD_INFO_LENGTH = 0x70
+XCI_GAMECARD_INFO_PADDING_LENGTH = 0x38
+indent = 1
+tabs = '\t' * indent	
+ncaHeaderSize = 0x4000
 
 class GamecardInfo(File):
 	def __init__(self, file = None):
@@ -65,6 +101,7 @@ class Xci(File):
 		self.packageId = None
 		self.validDataEndOffset = None
 		self.gamecardInfo = None
+		self.gamecardInfoIV = None
 		
 		self.hfs0Offset = None
 		self.hfs0HeaderSize = None
@@ -90,12 +127,13 @@ class Xci(File):
 		self.secureOffset = self.readInt32()
 		self.backupOffset = self.readInt32()
 		self.titleKekIndex = self.readInt8()
-		self.gamecardSize = self.readInt8()
+		self.gamecardSize = self.read(0x1)
 		self.gamecardHeaderVersion = self.readInt8()
 		self.gamecardFlags = self.readInt8()
 		self.packageId = self.readInt64()
 		self.validDataEndOffset = self.readInt64()
 		self.gamecardInfo = self.read(0x10)
+		self.gamecardInfoIV = self.gamecardInfo
 		
 		self.hfs0Offset = self.readInt64()
 		self.hfs0HeaderSize = self.readInt64()

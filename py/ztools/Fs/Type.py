@@ -19,7 +19,7 @@ class Crypto(IntEnum):
 	XTS = 2
 	CTR = 3
 	BKTR = 4
-	NCA0 = 0x3041434
+	NCA0 = 0x3041434E
 
 class TicketSignature(IntEnum):
 	RSA_4096_SHA1 = 0x010000

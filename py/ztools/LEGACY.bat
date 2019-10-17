@@ -1564,6 +1564,8 @@ echo ..................................
 :upd_ADD_UPD_FILES
 ECHO.
 ECHO *******************************************************************
+echo Input "1" to add folder to list via selector
+echo Input "2" to add file to list via selector
 ECHO PLEASE ADD THE FILES YOU WANT TO USE TO UPDATE THE BASE CONTENT
 ECHO *******************************************************************
 ECHO.
@@ -1573,6 +1575,8 @@ ECHO.
 set /p eval=<"%uinput%"
 set eval=%eval:"=%
 if /i "%eval%"=="0" goto manual_Reentry
+if /i "%eval%"=="1" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%UPDlist.txt",mode=folder,ext=nsp xci ) 2>&1>NUL
+if /i "%eval%"=="2" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%UPDlist.txt",mode=file,ext=nsp xci  )  2>&1>NUL
 goto upd_checkagain
 
 echo.
@@ -1583,7 +1587,9 @@ echo ......................................................................
 echo "DRAG ANOTHER FILE OR FOLDER AND PRESS ENTER TO ADD ITEMS TO THE LIST"
 echo.
 echo Input "1" to start processing
-echo Input "2" to change basecontent
+echo Input "2" to add another folder to list via selector
+echo Input "3" to add another file to list via selector
+echo Input "4" to change basecontent
 echo Input "i" to see list of files to process
 echo Input "b" to see the current base content
 echo Input "r" to remove some files (counting from bottom)
@@ -1603,7 +1609,9 @@ endlocal
 
 if /i "%eval%"=="0" goto manual_Reentry
 if /i "%eval%"=="1" goto upd_starts
-if /i "%eval%"=="2" goto upd_ADD_BASE
+if /i "%eval%"=="2" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%UPDlist.txt",mode=folder,ext=nsp xci ) 2>&1>NUL
+if /i "%eval%"=="3" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%UPDlist.txt",mode=file,ext=nsp xci )  2>&1>NUL
+if /i "%eval%"=="4" goto upd_ADD_BASE
 if /i "%eval%"=="e" goto salida
 if /i "%eval%"=="i" goto upd_showlist
 if /i "%eval%"=="b" goto upd_showbase

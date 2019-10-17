@@ -6,7 +6,7 @@ class Content(IntEnum):
 	CONTROL = 0x2
 	MANUAL = 0x3 # HtmlDocument, LegalInformation
 	DATA = 0x4 # DeltaFragment
-	PUBLICDATA = 0x5
+	PUBLIC_DATA = 0x5
 
 class nutFs(IntEnum):
 	NONE = 0x0

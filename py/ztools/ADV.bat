@@ -47,7 +47,7 @@ set /p bs="Enter your choice: "
 set bs=%bs:"=%
 if /i "%bs%"=="3" goto showlist
 if /i "%bs%"=="2" goto delist
-if /i "%bs%"=="1" goto start_cleaning
+if /i "%bs%"=="1" goto start
 if /i "%bs%"=="0" exit /B
 echo.
 echo BAD CHOICE
@@ -66,6 +66,8 @@ echo ..................................
 :manual_INIT
 endlocal
 ECHO ***********************************************
+echo Input "1" to add folder to list via selector
+echo Input "2" to add file to list via selector
 echo Input "0" to return to the MODE SELECTION MENU
 ECHO ***********************************************
 echo.
@@ -76,6 +78,8 @@ setlocal enabledelayedexpansion
 echo+ >"%uinput%"
 endlocal
 if /i "%eval%"=="0" exit /B
+if /i "%eval%"=="1" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%advlist.txt",mode=folder,ext=nsp xci nsx ) 2>&1>NUL
+if /i "%eval%"=="2" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%advlist.txt",mode=file,ext=nsp xci nsx )  2>&1>NUL
 goto checkagain
 echo.
 :checkagain
@@ -84,6 +88,8 @@ echo ......................................................................
 echo "DRAG ANOTHER FILE OR FOLDER AND PRESS ENTER TO ADD ITEMS TO THE LIST"
 echo.
 echo Input "1" to start processing
+echo Input "2" to add another folder to list via selector
+echo Input "3" to add another file to list via selector
 echo Input "e" to exit
 echo Input "i" to see list of files to process
 echo Input "r" to remove some files (counting from bottom)
@@ -101,7 +107,9 @@ echo+ >"%uinput%"
 endlocal
 
 if /i "%eval%"=="0" exit /B
-if /i "%eval%"=="1" goto start_cleaning
+if /i "%eval%"=="1" goto start
+if /i "%eval%"=="2" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%advlist.txt",mode=folder,ext=nsp xci nsx ) 2>&1>NUL
+if /i "%eval%"=="3" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%advlist.txt",mode=file,ext=nsp xci nsx )  2>&1>NUL
 if /i "%eval%"=="e" goto salida
 if /i "%eval%"=="i" goto showlist
 if /i "%eval%"=="r" goto r_files
@@ -166,7 +174,7 @@ goto exit /B
 :s_cl_wrongchoice
 echo wrong choice
 echo ............
-:start_cleaning
+:start
 echo *******************************************************
 echo CHOOSE HOW TO PROCESS THE FILES
 echo *******************************************************
@@ -285,7 +293,7 @@ echo.
 set /p bs="Enter your choice: "
 set bs=%bs:"=%
 set vrepack=none
-if /i "%bs%"=="b" goto start_cleaning
+if /i "%bs%"=="b" goto start
 if /i "%bs%"=="1" goto patch_lnkacc_mode1
 if /i "%bs%"=="2" goto patch_lnkacc_mode2
 if %vrepack%=="none" goto patch_lnkacc_wrongchoice

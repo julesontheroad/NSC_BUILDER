@@ -1513,14 +1513,27 @@ class Nsp(Pfs0):
 		
 	def seteshop(self):
 		for nca in self:
-			if type(nca) == Nca:
-				nca.header.setgamecard(0)
+			try:
+				if type(nca) == Nca:
+					nca.header.setgamecard(0)
+				elif str(nca._path).endswith('.ncz'):
+					ncztype=Nca(nca)
+					ncztype._path=nca._path
+					ncztype.header.setgamecard(0)		
+					ncztype.close()
+			except:pass						
 			
 	def setcgame(self):
 		for nca in self:
-			if type(nca) == Nca:
-				nca.header.setgamecard(1)	
-				
+			try:
+				if type(nca) == Nca:
+					nca.header.setgamecard(1)	
+				elif str(nca._path).endswith('.ncz'):
+					ncztype=Nca(nca)
+					ncztype._path=nca._path
+					ncztype.header.setgamecard(1)
+					ncztype.close()
+			except:pass		
 				
 				
 	def getnspid(self):
@@ -7436,7 +7449,7 @@ class Nsp(Pfs0):
 				elif file.endswith('nca'):		
 					message=(tabs+file+tabs+'  -> is CORRUPT <<<-');print(message);feed+=message+'\n'					
 					if baddec == True:
-						print(tabs+'  * NOTE: S.C. CONVERSION WAS PERFORMED WITH BAD KEY')					
+						message=(tabs+'  * NOTE: S.C. CONVERSION WAS PERFORMED WITH BAD KEY');print(message);feed+=message+'\n'							
 				elif file.endswith('tik') and not str(self._path).endswith('.nsz'):		
 					message=(tabs+file+tabs+'  -> titlekey is INCORRECT <<<-');print(message);feed+=message+'\n'					
 		for nca in self:

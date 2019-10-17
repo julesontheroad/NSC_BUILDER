@@ -42,7 +42,6 @@ import listmanager
 import Keys
 import Titles
 import Fs
-import nutFs
 import Config
 import Print
 import Status
@@ -2625,7 +2624,7 @@ if __name__ == '__main__':
 					else:
 						filepath=args.compress
 						level=17
-				if filepath.endswith(".nsp"):			
+				if filepath.endswith(".nsp") or filepath.endswith(".xci"):			
 					import compressor
 					try:
 						level=int(level)
@@ -2635,7 +2634,20 @@ if __name__ == '__main__':
 							level=1
 					except:
 						level=17
-					compressor.compress(filepath,ofolder,level,workers,delta)
+					if filepath.endswith(".nsp"): 	
+						compressor.compress(filepath,ofolder,level,workers,delta)
+					elif filepath.endswith(".xci"):	
+						basename=os.path.basename(os.path.abspath(filepath))
+						outfile=basename[:-3]+'nsz'
+						outfile =os.path.join(ofolder,outfile)	
+						# nszPath=compressor.xci_to_nsz(filepath,buffer=65536,outfile=outfile,keepupd=False,level = level, threads = workers)												
+						# try:
+							# f=Fs.Nsp(nszPath,'rb')
+							# f.seteshop()
+							# f.flush
+							# f.close()
+						# except:pass	
+						compressor.supertrim_xci(filepath,buffer=65536,outfile=outfile,keepupd=False,level = 17, threads = workers)						
 
 		# parser.add_argument('-dcpr', '--decompress', help='deCompress a nsz, xcz or ncz')
 		if args.decompress:
