@@ -303,7 +303,7 @@ if /i "%bs%"=="11" goto op_nscbmode
 if /i "%bs%"=="12" goto op_romanize
 if /i "%bs%"=="13" goto op_translate
 if /i "%bs%"=="14" goto op_threads
-if /i "%bs%"=="15" goto op_NSZ
+if /i "%bs%"=="15" goto op_NSZ1
 
 if /i "%bs%"=="c" call :curr_set2
 if /i "%bs%"=="c" echo.
@@ -1024,12 +1024,12 @@ if /i "%bs%"=="b" goto sc3
 if /i "%bs%"=="0" goto sc1
 if /i "%bs%"=="e" goto salida
 
-if "%v_nszlevels%"=="none" echo WRONG CHOICE
-if "%v_nszlevels%"=="none" echo.
-if "%v_nszlevels%"=="none" goto op_NSZ1
 set "v_nszlevels=%bs%"
 set v_nszlevels="compression_lv=%v_nszlevels%"
 set v_nszlevels="%v_nszlevels%"
+if "%v_nszlevels%"=="none" echo WRONG CHOICE
+if "%v_nszlevels%"=="none" echo.
+if "%v_nszlevels%"=="none" goto op_NSZ1
 %pycommand% "%listmanager%" -cl "%op_file%" -ln "158" -nl "set %v_nszlevels%" 
 echo.
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "158" -nl "Line in config was changed to: "
@@ -1058,12 +1058,12 @@ if /i "%bs%"=="b" goto sc3
 if /i "%bs%"=="0" goto sc1
 if /i "%bs%"=="e" goto salida
 
-if "%v_nszthreads%"=="none" echo WRONG CHOICE
-if "%v_nszthreads%"=="none" echo.
-if "%v_nszthreads%"=="none" goto op_NSZ2
 set "v_nszthreads=%bs%"
 set v_nszthreads="compression_threads=%v_nszthreads%"
 set v_nszthreads="%v_nszthreads%"
+if "%v_nszthreads%"=="none" echo WRONG CHOICE
+if "%v_nszthreads%"=="none" echo.
+if "%v_nszthreads%"=="none" goto op_NSZ2
 %pycommand% "%listmanager%" -cl "%op_file%" -ln "159" -nl "set %v_nszthreads%" 
 echo.
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "159" -nl "Line in config was changed to: "
