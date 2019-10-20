@@ -2670,9 +2670,9 @@ if __name__ == '__main__':
 							outfile =os.path.join(ofolder,outfile)	
 							nszPath=compressor.xci_to_nsz(filepath,buffer=65536,outfile=outfile,keepupd=False,level = level, threads = workers)												
 							try:
-								f=Fs.Nsp(nszPath,'rb')
+								f=Fs.Nsp(nszPath,'rb+')
 								f.seteshop()
-								f.flush
+								f.flush()
 								f.close()
 							except:pass	
 						else:	

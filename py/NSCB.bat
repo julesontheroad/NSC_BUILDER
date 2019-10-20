@@ -33,6 +33,7 @@ set "transnutdb=%transnutdb%"
 set "workers=%workers%"
 set "compression_lv=%compression_lv%"
 set "compression_threads=%compression_threads%"
+set "xci_export=%xci_export%"
 
 REM Copy function
 set "pycommand=%pycommand%"
