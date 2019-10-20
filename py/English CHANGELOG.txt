@@ -30,13 +30,14 @@ v0.95 - xcz format, fixes and other stuff:
 	- Added renaming for nsz and xcz.
 	- xcz and nsz support will be added slowly to all functions
 	- Added option to convert xci to nsz when compressing them in configuration. It
-      is a highly unneeded thing to do since tinfoil would install xcz or nsz files but
-      to each their own if you feel the need of converting at least do it in a restorable
-      and verifiable way.  
+          is a highly unneeded thing to do since tinfoil would install xcz or nsz files but
+          to each their own if you feel the need of converting at least do it in a restorable
+          and verifiable way.  
 	- Added more information options in the FILE-INFO mode for nsz\xcz
 	- Fixed user compression profile configuration.
 	- Added -1 threads as an option. This sets the threads depending on the cpu logic
 	  cores.
+        - Reduced nsz header size and change file order to standard cnmt order.
 	- Individual mode will now filter the extensions not supported for the selected  function
 	  preprocessing.
 	- Added romaji conversion as optional when renaming files.
