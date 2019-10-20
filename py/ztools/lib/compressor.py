@@ -23,6 +23,7 @@ import io
 from Fs import Type as FsType
 import Keys
 from binascii import hexlify as hx, unhexlify as uhx
+from DBmodule import Exchange as exchangefile
 
 ncaHeaderSize = 0x4000
 
@@ -67,14 +68,18 @@ def foldercompress(ifolder, ofolder = None, level = 17, threads = 0, t=['nsp']):
 		
 		
 def supertrim_xci(filepath,buffer=65536,outfile=None,keepupd=False, level = 17,  threads = 0):
+	try:
+		exchangefile.deletefile()
+	except:pass	
 	f=squirrelXCI(filepath)
 	for nspF in f.hfs0:
 		if str(nspF._path)=="secure":
-			for nca in nspF:						
-				if str(nca._path).endswith('.nca'):
-					if nca.header.getRightsId() != 0:
-						print('Currently not supporting xci with titlerights please remove them first')
-						return
+			for ticket in nspF:						
+				if str(ticket._path).endswith('.tik'):
+					print('- Titlerights: '+ticket.rightsId)
+					tk=(str(hex(ticket.getTitleKeyBlock()))[2:]).upper()
+					print('- Titlekey: '+tk)
+					exchangefile.add(ticket.rightsId,tk)
 	f.flush()
 	f.close()
 	files_list=sq_tools.ret_xci_offsets(filepath)
@@ -274,11 +279,28 @@ def supertrim_xci(filepath,buffer=65536,outfile=None,keepupd=False, level = 17, 
 	with open(nszPath, 'rb+') as o:
 		o.seek(0)
 		o.write(outheader)		
-	return nszPath
+	try:
+		exchangefile.deletefile()
+	except:pass			
+	return nszPath	
 	
 		
 		
 def xci_to_nsz(filepath,buffer=65536,outfile=None,keepupd=False, level = 17,  threads = 0):
+	try:
+		exchangefile.deletefile()
+	except:pass	
+	f=squirrelXCI(filepath)
+	for nspF in f.hfs0:
+		if str(nspF._path)=="secure":
+			for ticket in nspF:						
+				if str(ticket._path).endswith('.tik'):
+					print('- Titlerights: '+ticket.rightsId)
+					tk=(str(hex(ticket.getTitleKeyBlock()))[2:]).upper()
+					print('- Titlekey: '+tk)
+					exchangefile.add(ticket.rightsId,tk)
+	f.flush()
+	f.close()	
 	files_list=sq_tools.ret_xci_offsets(filepath)
 	files=list();filesizes=list()
 	fplist=list()
@@ -430,7 +452,10 @@ def xci_to_nsz(filepath,buffer=65536,outfile=None,keepupd=False, level = 17,  th
 					t.update(len(buffer))
 					f.write(buffer)
 				t.close()	
-	newNsp.close()			
+	newNsp.close()		
+	try:
+		exchangefile.deletefile()
+	except:pass		
 	return nszPath
 
 def compress(filePath,ofolder = None, level = 17,  threads = 0, delta=False, ofile= None, buffer=65536):

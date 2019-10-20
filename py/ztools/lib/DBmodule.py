@@ -18,13 +18,10 @@ except:
 from binascii import hexlify as hx, unhexlify as uhx
 import ast
 import textwrap
-import nutdb
 
 indent = 1
 tabs = '\t' * indent	
 
-nutdb.check_current()
-		
 def parseLine(line):
 	#print(line)
 	(left, sep, right) = line.partition(b'\t')
@@ -47,6 +44,53 @@ def _int2bytes(i,n):
 
 def _bytes2int(b):
 	return int.from_bytes(b, byteorder='little', signed=False)
+	
+# SET ENVIRONMENT
+squirrel_dir=os.path.abspath(os.curdir)
+NSCB_dir=os.path.abspath('../'+(os.curdir))
+
+if os.path.exists(os.path.join(squirrel_dir,'ztools')):
+	NSCB_dir=squirrel_dir
+	zconfig_dir=os.path.join(NSCB_dir, 'zconfig')	  
+	ztools_dir=os.path.join(NSCB_dir,'ztools')
+	squirrel_dir=ztools_dir
+elif os.path.exists(os.path.join(NSCB_dir,'ztools')):
+	squirrel_dir=squirrel_dir
+	ztools_dir=os.path.join(NSCB_dir, 'ztools')
+	zconfig_dir=os.path.join(NSCB_dir, 'zconfig')
+else:	
+	ztools_dir=os.path.join(NSCB_dir, 'ztools')
+	zconfig_dir=os.path.join(NSCB_dir, 'zconfig')
+	
+if os.path.exists(zconfig_dir):
+	DATABASE_folder=os.path.join(zconfig_dir, 'DB')
+	exchangefile=os.path.join(DATABASE_folder,'exchange.txt')
+else:
+	DATABASE_folder=squirrel_dir	
+	exchangefile=os.path.join(DATABASE_folder,'titlekeys.txt')
+
+if not os.path.exists(DATABASE_folder):
+	os.makedirs(DATABASE_folder)		
+	
+class Exchange():	
+	def add(titlerights,titlekey):
+		dbstr=str()
+		dbstr+=str(titlerights).upper()+'|'
+		dbstr+=str(titlekey).upper()
+		with open(exchangefile, 'a') as dbfile:			
+			dbfile.write(dbstr+ '\n')		
+			
+	def retrievekey(titlerights):
+		with open(exchangefile,'rt',encoding='utf8') as csvfile:
+			readCSV = csv.reader(csvfile, delimiter='|')		
+			for row in readCSV:
+				if row[0]==titlerights.upper():
+					return row[1]
+		return None			
+		
+	def deletefile():
+		try:os.remove(exchangefile)
+		except:pass		
 
 class Dict(dict):
 	START_FLAG = b'# FILE-DICT v1\n'

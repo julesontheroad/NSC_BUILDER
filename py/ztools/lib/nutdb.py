@@ -90,6 +90,8 @@ else:
 	else:	
 		json_url='https://raw.githubusercontent.com/blawar/titledb/master/titles.US.en.json'
 
+if not os.path.exists(DATABASE_folder):
+	os.makedirs(DATABASE_folder)	
 def getnutdb():
 	response = requests.get(json_url, stream=True)
 	if '<Response [404]>'!=str(response):

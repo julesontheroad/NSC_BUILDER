@@ -15,6 +15,7 @@ from nutFs.Rom import Rom
 from nutFs.Pfs0 import Pfs0
 from nutFs.BaseFs import BaseFs
 import nutFs.Titles as Titles
+from DBmodule import Exchange as exchangefile
 
 MEDIA_SIZE = 0x200
 
@@ -125,11 +126,17 @@ class NcaHeader(File):
 
 		if self.hasTitleRights():
 			titleRightsTitleId = self.rightsId.decode()[0:16].upper()
-
-			if titleRightsTitleId in Titles.keys() and Titles.get(titleRightsTitleId).key:
-				self.titleKeyDec = Keys.decryptTitleKey(uhx(Titles.get(titleRightsTitleId).key), self.masterKey)
-			else:
-				Print.info('could not find title key!')
+			try:
+				if titleRightsTitleId in Titles.keys() and Titles.get(titleRightsTitleId).key:
+					self.titleKeyDec = Keys.decryptTitleKey(uhx(Titles.get(titleRightsTitleId).key), self.masterKey)
+				else:
+					Print.info('could not find title key!')
+			except:
+				rightsID_=self.rightsId.decode()[0:32].upper()
+				tk=exchangefile.retrievekey(rightsID_)
+				if tk==None:
+					raise Exception('Non valid titlekey detected for rightsid: '+rightsID_)
+				self.titleKeyDec = Keys.decryptTitleKey(uhx(tk), self.masterKey)
 		else:
 			self.titleKeyDec = self.key()
 
