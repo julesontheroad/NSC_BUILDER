@@ -158,4 +158,4 @@ set "workers=-threads 1"
 ::--------------------------------------------------------------
 set compression_lv=17
 set compression_threads=0
-set "xci_export=nsz"
+set xci_export=xcz

@@ -761,15 +761,15 @@ echo Input "2" to add file to list via selector
 echo Input "0" to return to the MODE SELECTION MENU
 ECHO ***********************************************
 echo.
-%pycommand% "%nut%" -t nsp xci nsz -tfile "%prog_dir%list.txt" -uin "%uinput%" -ff "uinput"
+%pycommand% "%nut%" -t nsp xci nsz nsx xcz -tfile "%prog_dir%list.txt" -uin "%uinput%" -ff "uinput"
 set /p eval=<"%uinput%"
 set eval=%eval:"=%
 setlocal enabledelayedexpansion
 echo+ >"%uinput%"
 endlocal
 if /i "%eval%"=="0" goto manual_Reentry
-if /i "%eval%"=="1" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%list.txt",mode=folder,ext=nsp xci nsz ) 2>&1>NUL
-if /i "%eval%"=="2" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%list.txt",mode=file,ext=nsp xci nsz )  2>&1>NUL
+if /i "%eval%"=="1" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%list.txt",mode=folder,ext=nsp xci nsz nsx xcz ) 2>&1>NUL
+if /i "%eval%"=="2" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%list.txt",mode=file,ext=nsp xci nsz nsx xcz )  2>&1>NUL
 goto checkagain
 echo.
 :checkagain
@@ -789,7 +789,7 @@ ECHO *************************************************
 echo Or Input "0" to return to the MODE SELECTION MENU
 ECHO *************************************************
 echo.
-%pycommand% "%nut%" -t nsp xci nsz -tfile "%prog_dir%list.txt" -uin "%uinput%" -ff "uinput"
+%pycommand% "%nut%" -t nsp xci nsz nsx xcz -tfile "%prog_dir%list.txt" -uin "%uinput%" -ff "uinput"
 set /p eval=<"%uinput%"
 set eval=%eval:"=%
 setlocal enabledelayedexpansion
@@ -798,8 +798,8 @@ endlocal
 
 if /i "%eval%"=="0" goto manual_Reentry
 if /i "%eval%"=="1" goto start_cleaning
-if /i "%eval%"=="2" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%list.txt",mode=folder,ext=nsp xci nsz ) 2>&1>NUL
-if /i "%eval%"=="3" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%list.txt",mode=file,ext=nsp xci nsz )  2>&1>NUL
+if /i "%eval%"=="2" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%list.txt",mode=folder,ext=nsp xci nsz nsx xcz ) 2>&1>NUL
+if /i "%eval%"=="3" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%list.txt",mode=file,ext=nsp xci nsz nsx xcz )  2>&1>NUL
 if /i "%eval%"=="e" goto salida
 if /i "%eval%"=="i" goto showlist
 if /i "%eval%"=="r" goto r_files
@@ -1058,13 +1058,15 @@ if /i "%verif%"=="none" goto s_vertype
 
 :s_KeyChange_skip
 echo Filtering extensions from list according to options chosen
-if "%vrepack%" EQU "xci_supertrimmer" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=nsz nsx nsp","token=False",Print="False" )
-if "%vrepack%" EQU "xci_supertrimmer_keep_upd" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=nsz nsx nsp","token=False",Print="False" )
-if "%vrepack%" EQU "xci_trimmer" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=nsz nsx nsp","token=False",Print="False" )
-if "%vrepack%" EQU "xci_untrimmer" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=nsz nsx nsp","token=False",Print="False" )
-REM if "%vrepack%" NEQ "verify" ( %pycommand% "%nut%" -lib_call listmanager remove_from_list "%prog_dir%list.txt","ext=nsz","token=False",Print="False" )
-if "%vrepack%" EQU "rebuild" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=nsz xci","token=False",Print="False" )
-if "%vrepack%" EQU "nodelta" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=nsz xci","token=False",Print="False" )
+if "%vrepack%" EQU "xci_supertrimmer" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=nsz nsx nsp xcz","token=False",Print="False" )
+if "%vrepack%" EQU "xci_supertrimmer_keep_upd" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=nsz nsx nsp xcz","token=False",Print="False" )
+if "%vrepack%" EQU "xci_trimmer" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=nsz nsx nsp xcz","token=False",Print="False" )
+if "%vrepack%" EQU "xci_untrimmer" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=nsz nsx nsp xcz","token=False",Print="False" )
+if "%vrepack%" EQU "nsp" ( %pycommand% "%nut%" -lib_call listmanager remove_from_list "%prog_dir%list.txt","ext=nsz xcz","token=False",Print="False" )
+if "%vrepack%" EQU "xci" ( %pycommand% "%nut%" -lib_call listmanager remove_from_list "%prog_dir%list.txt","ext=nsz xcz","token=False",Print="False" )
+if "%vrepack%" EQU "both" ( %pycommand% "%nut%" -lib_call listmanager remove_from_list "%prog_dir%list.txt","ext=nsz xcz","token=False",Print="False" )
+if "%vrepack%" EQU "rebuild" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=nsz xci xcz","token=False",Print="False" )
+if "%vrepack%" EQU "nodelta" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=nsz xci xcz","token=False",Print="False" )
 cls
 call :program_logo
 
@@ -1232,7 +1234,7 @@ cls
 call :program_logo
 set "workers=-threads 1"
 for /f "tokens=*" %%f in (list.txt) do (
-%pycommand% "%nut%" -renf "single" -tfile "%prog_dir%list.txt" -t nsp xci nsx nsz -renm %renmode% -nover %nover% -oaid %oaid% -addl %addlangue% -roma %romaji% -dlcrn %dlcrname% %workers%
+%pycommand% "%nut%" -renf "single" -tfile "%prog_dir%list.txt" -t nsp xci nsx nsz xcz -renm %renmode% -nover %nover% -oaid %oaid% -addl %addlangue% -roma %romaji% -dlcrn %dlcrname% %workers%
 if "%workers%" EQU "-threads 1" ( %pycommand% "%nut%" --strip_lines "%prog_dir%list.txt" "1" "true" )
 if "%workers%" NEQ "-threads 1" ( call :renamecheck )
 rem call :contador_NF
@@ -1257,7 +1259,7 @@ exit /B
 cls
 call :program_logo
 for /f "tokens=*" %%f in (list.txt) do (
-%pycommand% "%nut%" -snz "single" -tfile "%prog_dir%list.txt" -t xci nsp
+%pycommand% "%nut%" -snz "single" -tfile "%prog_dir%list.txt" -t nsp xci nsx nsz xcz
 %pycommand% "%nut%" --strip_lines "%prog_dir%list.txt" "1" "true"
 rem call :contador_NF
 )
@@ -1270,7 +1272,7 @@ goto s_exit_choice
 cls
 call :program_logo
 for /f "tokens=*" %%f in (list.txt) do (
-%pycommand% "%nut%" -roma "single" -tfile "%prog_dir%list.txt" -t xci nsp
+%pycommand% "%nut%" -roma "single" -tfile "%prog_dir%list.txt" -t nsp xci nsx nsz xcz
 %pycommand% "%nut%" --strip_lines "%prog_dir%list.txt" "1" "true"
 rem call :contador_NF
 )
@@ -1284,7 +1286,7 @@ goto s_exit_choice
 cls
 call :program_logo
 for /f "tokens=*" %%f in (list.txt) do (
-%pycommand% "%nut%" -cltg "single" -tfile "%prog_dir%list.txt" -t xci nsp -tgtype "%tagtype%"
+%pycommand% "%nut%" -cltg "single" -tfile "%prog_dir%list.txt" -t nsp xci nsx nsz xcz -tgtype "%tagtype%"
 %pycommand% "%nut%" --strip_lines "%prog_dir%list.txt" "1" "true"
 rem call :contador_NF
 )

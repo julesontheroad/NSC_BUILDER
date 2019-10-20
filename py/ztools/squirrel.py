@@ -6247,9 +6247,18 @@ if __name__ == '__main__':
 						if filepath.endswith('.xci'):
 							endname=endname[:-4]+' (SeemsDuplicate)'+'.xci'
 							newpath=os.path.join(dir,endname)
-						if filepath.endswith('.nsp'):
+						elif filepath.endswith('.nsp'):
 							endname=endname[:-4]+' (SeemsDuplicate)'+'.nsp'
 							newpath=os.path.join(dir,endname)
+						elif filepath.endswith('.xcz'):
+							endname=endname[:-4]+' (SeemsDuplicate)'+'.xcz'
+							newpath=os.path.join(dir,endname)
+						elif filepath.endswith('.nsx'):
+							endname=endname[:-4]+' (SeemsDuplicate)'+'.nsx'
+							newpath=os.path.join(dir,endname)	
+						elif filepath.endswith('.nsz'):
+							endname=endname[:-4]+' (SeemsDuplicate)'+'.nsz'
+							newpath=os.path.join(dir,endname)								
 					try:
 						os.rename(filepath, newpath)
 						print(tabs+'> File was renamed to: '+endname)
@@ -6454,7 +6463,7 @@ if __name__ == '__main__':
 							Print.error('Exception: ' + str(e))
 							continue
 						#print(prlist)
-					if filepath.endswith('.xci'):
+					if filepath.endswith('.xci') or filepath.endswith('.xcz'):
 						filepath.strip()
 						print("Processing "+filepath)
 						#print(filepath)
@@ -6493,7 +6502,7 @@ if __name__ == '__main__':
 							counter-=1
 							Print.error('Exception: ' + str(e))
 							continue
-					if filepath.endswith('.xci') or filepath.endswith('.nsp') or filepath.endswith('.nsx') or filepath.endswith('.nsz'):
+					if filepath.endswith('.xci') or filepath.endswith('.nsp') or filepath.endswith('.nsx') or filepath.endswith('.nsz') or filepath.endswith('.xcz'):
 						basecount=0; basename='';basever='';baseid='';basefile=''
 						updcount=0; updname='';updver='';updid='';updfile=''
 						dlccount=0; dlcname='';dlcver='';dlcid='';dlcfile=''
@@ -6555,7 +6564,7 @@ if __name__ == '__main__':
 									if not args.text_file:
 										print(tabs+'> Still '+str(counter)+' to go')
 									continue
-							if filepath.endswith('.xci'):
+							if filepath.endswith('.xci') or filepath.endswith('.xcz'):
 								f = Fs.Xci(basefile)
 							elif filepath.endswith('.nsp') or filepath.endswith('.nsx') or filepath.endswith('.nsz'):
 								f = Fs.Nsp(basefile)
@@ -6584,7 +6593,7 @@ if __name__ == '__main__':
 									if not args.text_file:
 										print(tabs+'> Still '+str(counter)+' to go')
 									continue
-							if filepath.endswith('.xci'):
+							if filepath.endswith('.xci') or filepath.endswith('.xcz'):
 								f = Fs.Xci(updfile)
 							elif filepath.endswith('.nsp') or filepath.endswith('.nsx') or filepath.endswith('.nsz'):
 								f = Fs.Nsp(updfile)
@@ -6613,7 +6622,7 @@ if __name__ == '__main__':
 										print(tabs+'> Still '+str(counter)+' to go')
 									continue
 								else:
-									if filepath.endswith('.xci'):
+									if filepath.endswith('.xci') or filepath.endswith('.xcz'):
 										f = Fs.Xci(dlcfile)
 									elif filepath.endswith('.nsp') or filepath.endswith('.nsx') or filepath.endswith('.nsz'):
 										f = Fs.Nsp(dlcfile)
@@ -6652,13 +6661,13 @@ if __name__ == '__main__':
 										t=dlcname[i3:i4]
 										dlcname=dlcname.replace(t,'')
 										dlcname=dlcname.replace('  ',' ')
-									if dlcname.endswith('.xci') or dlcname.endswith('.nsp'):
+									if dlcname.endswith('.xci') or dlcname.endswith('.nsp') or dlcname.endswith('.xcz') or dlcname.endswith('.nsz'):
 										dlcname=dlcname[:-4]
 									if dlcname.endswith(' '):
 										dlcname=dlcname[:-1]
 								ctitl=dlcname
 								if dlcrname == 'tag':
-									if filepath.endswith('.xci'):
+									if filepath.endswith('.xci') or filepath.endswith('.xcz'):
 										f = Fs.Xci(dlcfile)
 									elif filepath.endswith('.nsp') or filepath.endswith('.nsx') or filepath.endswith('.nsz'):
 										f = Fs.Nsp(dlcfile)
@@ -6668,7 +6677,7 @@ if __name__ == '__main__':
 									f.flush()
 									f.close()
 							else:
-								if filepath.endswith('.xci'):
+								if filepath.endswith('.xci') or filepath.endswith('.xcz'):
 									f = Fs.Xci(dlcfile)
 								elif filepath.endswith('.nsp') or filepath.endswith('.nsx') or filepath.endswith('.nsz'):
 									f = Fs.Nsp(dlcfile)
@@ -6704,7 +6713,7 @@ if __name__ == '__main__':
 									endname=basename[:-4]+' '+baseid
 								elif nover == True and (ccount==''):
 									endname=ctitl+' '+baseid
-								elif filepath.endswith('.xci') and nover=="xci_no_v0" and ccount=='':
+								elif (filepath.endswith('.xci') or filepath.endswith('.xcz')) and nover=="xci_no_v0" and ccount=='':
 									if renmode=="force":
 										endname=ctitl+' '+baseid+' '+ccount+' '+mgame
 									elif onaddid==True:
@@ -6770,6 +6779,8 @@ if __name__ == '__main__':
 					except:pass
 					if filepath.endswith('.xci'):
 						endname=endname+'.xci'
+					elif filepath.endswith('.xcz'):
+						endname=endname+'.xcz'						
 					elif filepath.endswith('.nsp'):
 						endname=endname+'.nsp'
 					elif filepath.endswith('.nsx'):
@@ -6783,13 +6794,25 @@ if __name__ == '__main__':
 						if filepath.endswith('.xci'):
 							endname=endname[:-4]+' (SeemsDuplicate)'+'.xci'
 							newpath=os.path.join(dir,endname)
-						if filepath.endswith('.nsp'):
+						elif filepath.endswith('.xcz'):
+							endname=endname[:-4]+' (SeemsDuplicate)'+'.xcz'
+							newpath=os.path.join(dir,endname)							
+						elif filepath.endswith('.nsp'):
 							endname=endname[:-4]+' (SeemsDuplicate)'+'.nsp'
 							newpath=os.path.join(dir,endname)
+						elif filepath.endswith('.nsx'):
+							endname=endname[:-4]+' (SeemsDuplicate)'+'.nsx'
+							newpath=os.path.join(dir,endname)
+						elif filepath.endswith('.nsz'):
+							endname=endname[:-4]+' (SeemsDuplicate)'+'.nsz'
+							newpath=os.path.join(dir,endname)							
 					if 	ctitl=='UNKNOWN':
 						if filepath.endswith('.xci'):
 							endname=basename[:-4]+' (needscheck)'+'.xci'
 							newpath=os.path.join(dir,endname)
+						elif filepath.endswith('.xcz'):
+							endname=basename[:-4]+' (needscheck)'+'.xcz'
+							newpath=os.path.join(dir,endname)							
 						elif filepath.endswith('.nsp'):
 							endname=basename[:-4]+' (needscheck)'+'.nsp'
 							newpath=os.path.join(dir,endname)
