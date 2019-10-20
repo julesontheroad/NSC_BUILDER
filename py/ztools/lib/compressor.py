@@ -67,6 +67,16 @@ def foldercompress(ifolder, ofolder = None, level = 17, threads = 0, t=['nsp']):
 		
 		
 def supertrim_xci(filepath,buffer=65536,outfile=None,keepupd=False, level = 17,  threads = 0):
+	f=squirrelXCI(filepath)
+	for nspF in f.hfs0:
+		if str(nspF._path)=="secure":
+			for nca in nspF:						
+				if str(nca._path).endswith('.nca'):
+					if nca.header.getRightsId() != 0:
+						print('Currently not supporting xci with titlerights please remove them first')
+						return
+	f.flush()
+	f.close()
 	files_list=sq_tools.ret_xci_offsets(filepath)
 	files=list();filesizes=list()
 	fplist=list()
