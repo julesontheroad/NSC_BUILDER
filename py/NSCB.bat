@@ -4,7 +4,7 @@ set "prog_dir=%~dp0"
 set "bat_name=%~n0"
 set "ofile_name=%bat_name%_options.cmd"
 set "opt_interface=Interface_options.cmd"
-Title NSC_Builder v0.94 -- Profile: %ofile_name% -- by JulesOnTheRoad
+Title NSC_Builder v0.95 -- Profile: %ofile_name% -- by JulesOnTheRoad
 set "list_folder=%prog_dir%lists"
 ::-----------------------------------------------------
 ::EDIT THIS VARIABLE TO LINK OTHER OPTION FILE
@@ -653,7 +653,7 @@ echo Input "6"  to enter into ADVANCED mode
 echo Input "7"  to enter into FILE-JOINER mode
 echo Input "8"  to enter into COMPRESSOR\DECOMPRESSOR mode
 echo Input "9"  to enter into FILE-RESTORATION mode
-echo Input "10" to enter into FILE-MANAGEMENT mode
+REM echo Input "10" to enter into FILE-MANAGEMENT mode
 echo Input "0"  to enter into CONFIGURATION mode
 echo.
 echo Input "L" to enter LEGACY MODES
@@ -670,7 +670,7 @@ if /i "%bs%"=="6" goto ADVmode
 if /i "%bs%"=="7" goto JOINmode
 if /i "%bs%"=="8" goto ZSTDmode
 if /i "%bs%"=="9" goto RSTmode
-if /i "%bs%"=="10" goto MNGmode
+REM if /i "%bs%"=="10" goto MNGmode
 if /i "%bs%"=="L" goto LegacyMode
 if /i "%bs%"=="0" goto OPT_CONFIG
 goto manual_Reentry
@@ -2852,7 +2852,7 @@ ECHO =============================     BY JULESONTHEROAD     ===================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                                POWERED BY SQUIRREL                                "
 ECHO "                    BASED ON THE WORK OF BLAWAR AND LUCA FRAGA                     "
-ECHO                                   VERSION 0.94 (NEW)
+ECHO                                   VERSION 0.95 (NEW)
 ECHO -------------------------------------------------------------------------------------                   
 ECHO Program's github: https://github.com/julesontheroad/NSC_BUILDER
 ECHO Blawar's github:  https://github.com/blawar
