@@ -281,6 +281,7 @@ echo Input "12" to ROMANIZE names when using direct-multi
 echo Input "13" to TRANSLATE game description lines in file info
 echo Input "14" to change number of WORKERS IN THREADED OPERATIONS (TEMPORARLY DISABLED) 
 echo Input "15" to setup NSZ COMPRESSION USER PRESET
+echo Input "16" to setup COMPRESSED XCI EXPORT FORMAT
 echo.
 echo Input "c" to read CURRENT GLOBAL SETTINGS
 echo Input "d" to set DEFAULT GLOBAL SETTINGS
@@ -304,6 +305,7 @@ if /i "%bs%"=="12" goto op_romanize
 if /i "%bs%"=="13" goto op_translate
 if /i "%bs%"=="14" goto op_threads
 if /i "%bs%"=="15" goto op_NSZ1
+if /i "%bs%"=="16" goto op_NSZ3
 
 if /i "%bs%"=="c" call :curr_set2
 if /i "%bs%"=="c" echo.
@@ -1013,7 +1015,7 @@ echo  + Level 22 - Slow but better compression ratio
 echo  Levels 10-17 are recommended in the spec
 echo.
 echo Input "b" to return to GLOBAL OPTIONS
-echo Input "0" to return to CONFIG MENU
+echo Input "x" to return to CONFIG MENU
 echo Input "e" to go back to the MAIN PROGRAM
 echo ...........................................................................
 echo.
@@ -1021,7 +1023,7 @@ set /p bs="Enter your choice: "
 set "v_nszlevels=none"
 
 if /i "%bs%"=="b" goto sc3
-if /i "%bs%"=="0" goto sc1
+if /i "%bs%"=="x" goto sc1
 if /i "%bs%"=="e" goto salida
 
 set "v_nszlevels=%bs%"
@@ -1047,7 +1049,7 @@ echo  + For maximum threads level 17 compression is advised
 echo    but you'll loose compression ratio
 echo.
 echo Input "b" to return to GLOBAL OPTIONS
-echo Input "0" to return to CONFIG MENU
+echo Input "x" to return to CONFIG MENU
 echo Input "e" to go back to the MAIN PROGRAM
 echo ...........................................................................
 echo.
@@ -1055,7 +1057,7 @@ set /p bs="Enter your choice: "
 set "v_nszthreads=none"
 
 if /i "%bs%"=="b" goto sc3
-if /i "%bs%"=="0" goto sc1
+if /i "%bs%"=="x" goto sc1
 if /i "%bs%"=="e" goto salida
 
 set "v_nszthreads=%bs%"
@@ -1067,7 +1069,47 @@ if "%v_nszthreads%"=="none" goto op_NSZ2
 %pycommand% "%listmanager%" -cl "%op_file%" -ln "159" -nl "set %v_nszthreads%" 
 echo.
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "159" -nl "Line in config was changed to: "
+pause
+goto sc3
+:op_NSZ3
 echo.
+echo *******************************************************
+echo FORMAT TO EXPORT XCI
+echo *******************************************************
+echo.
+echo Input "1"  to export as xcz -supertrimmed-(default)
+echo Input "2"  to export as nsz
+echo.
+echo Remember, tinfoil can install both formats so is not
+echo advised to export as nsz. If you really want to have
+echo them as nsz please do it this way to make the nca
+echo files from the game restorable.
+echo Note: Currently this restoration needs to uncompressed
+echo the file into nsp first a direct restoration will better
+echo included soon.
+echo.echo.
+echo Input "b" to return to GLOBAL OPTIONS
+echo Input "x" to return to CONFIG MENU
+echo Input "e" to go back to the MAIN PROGRAM
+echo ...........................................................................
+echo.
+set "v_xcz_export=none"
+set /p bs="Enter your choice: "
+
+if /i "%bs%"=="b" goto sc3
+if /i "%bs%"=="x" goto sc1
+if /i "%bs%"=="e" goto salida
+
+if /i "%bs%"=="1" set "v_xcz_export=xcz"
+if /i "%bs%"=="2" set "v_xcz_export=nsz"
+set v_xcz_export="xci_export=%v_xcz_export%"
+set v_xcz_export="%v_xcz_export%"
+if "%v_xcz_export%"=="none" echo WRONG CHOICE
+if "%v_xcz_export%"=="none" echo.
+if "%v_xcz_export%"=="none" goto op_NSZ3
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "160" -nl "set %v_xcz_export%" 
+echo.
+%pycommand% "%listmanager%" -rl "%op_file%" -ln "160" -nl "Line in config was changed to: "
 pause
 goto sc3
 
@@ -1230,6 +1272,10 @@ set "v_nszlevels=0"
 set v_nszlevels="compression_threads=%v_nszlevels%"
 %pycommand% "%listmanager%" -cl "%op_file%" -ln "159" -nl "set %v_nszlevels%" 
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "159" -nl "Line in config was changed to: "
+set "v_xcz_export=xcz"
+set v_xcz_export="xci_export=%v_xcz_export%"
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "160" -nl "set %v_xcz_export%" 
+%pycommand% "%listmanager%" -rl "%op_file%" -ln "160" -nl "Line in config was changed to: "
 
 exit /B
 
@@ -1302,7 +1348,7 @@ REM WORKERS
 REM COMPRESSION
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "158" -nl "COMPRESSION LEVELS option is set to: "
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "159" -nl "COMPRESSION THREADS option is set to: "
-
+%pycommand% "%listmanager%" -rl "%op_file%" -ln "160" -nl "COMPRESSED XCIS EXPORT option is set to: "
 exit /B
 
 :verify_keys

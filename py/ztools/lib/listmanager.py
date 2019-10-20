@@ -4,8 +4,10 @@ from binascii import hexlify as hx, unhexlify as uhx
 import Print as nutPrint
 import os
 import ast
-import tkinter as tk
-from tkinter import filedialog
+try:
+	import tkinter as tk
+	from tkinter import filedialog
+except:pass	
 
 def striplines(textfile,number=1,counter=False):
 	#print(textfile)

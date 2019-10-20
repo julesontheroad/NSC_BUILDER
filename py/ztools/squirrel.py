@@ -279,6 +279,7 @@ if __name__ == '__main__':
 		parser.add_argument('-vorg','--v_organize', help="Aux variable to organize files")
 		parser.add_argument('-vt','--vertype', help="Verification type for auto, needs --text_file. Opt: dec,sig,full [DECryption, decryption and SIGnature, previous and hash check]")
 		parser.add_argument('-threads','--threads', help="Number threads to use for certain functions")
+		parser.add_argument('-pararell','--pararell', help="Number threads to use for certain functions")		
 		parser.add_argument('-lib_call','--library_call', nargs='+',  help="Call a library function within squirrel")
 		args = parser.parse_args()
 
@@ -306,6 +307,16 @@ if __name__ == '__main__':
 					Status.close()
 				else:pass
 			except:pass
+		elif args.pararell and args.threads :
+			import secondary
+			instances=2
+			if args.pararell=='true':
+				try:
+					instances=int(args.threads)
+				except:	
+					instances=2
+				secondary.route(args,instances)
+						
 # NCA/NSP IDENTIFICATION
 		# ..................................................
 		# Get titleid from nca file
@@ -2571,6 +2582,19 @@ if __name__ == '__main__':
 							delta=False
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))		
+			if args.fexport:
+				for input in args.fexport:
+					try:
+						if input == "nsz":
+							xci_exp="nsz"
+						elif input == "xcz":
+							xci_exp="xcz"
+						else:
+							xci_exp="xcz"
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+			else:
+				xci_exp="xcz"
 			if args.ofolder:		
 				for input in args.ofolder:
 					try:
@@ -2581,12 +2605,14 @@ if __name__ == '__main__':
 				for filepath in args.compress:
 					dir=os.path.dirname(os.path.abspath(filepath))
 					ofolder =os.path.join(dir, 'output')	
+			workers=0
 			if args.threads:
-				workers=0
 				try:
 					workers=int(args.threads)
 					if workers<0:
 						workers=0
+					elif workers==-1:
+						workers=-1
 					elif workers>4:
 						workers=4
 				except:
@@ -2638,16 +2664,20 @@ if __name__ == '__main__':
 						compressor.compress(filepath,ofolder,level,workers,delta)
 					elif filepath.endswith(".xci"):	
 						basename=os.path.basename(os.path.abspath(filepath))
-						outfile=basename[:-3]+'nsz'
-						outfile =os.path.join(ofolder,outfile)	
-						# nszPath=compressor.xci_to_nsz(filepath,buffer=65536,outfile=outfile,keepupd=False,level = level, threads = workers)												
-						# try:
-							# f=Fs.Nsp(nszPath,'rb')
-							# f.seteshop()
-							# f.flush
-							# f.close()
-						# except:pass	
-						compressor.supertrim_xci(filepath,buffer=65536,outfile=outfile,keepupd=False,level = 17, threads = workers)						
+						if xci_exp=='nsz':
+							outfile=basename[:-3]+'nsz'
+							outfile =os.path.join(ofolder,outfile)	
+							nszPath=compressor.xci_to_nsz(filepath,buffer=65536,outfile=outfile,keepupd=False,level = level, threads = workers)												
+							try:
+								f=Fs.Nsp(nszPath,'rb')
+								f.seteshop()
+								f.flush
+								f.close()
+							except:pass	
+						else:	
+							outfile=basename[:-3]+'xcz'
+							outfile =os.path.join(ofolder,outfile)							
+							compressor.supertrim_xci(filepath,buffer=65536,outfile=outfile,keepupd=False,level = 17, threads = workers)						
 
 		# parser.add_argument('-dcpr', '--decompress', help='deCompress a nsz, xcz or ncz')
 		if args.decompress:
@@ -2672,7 +2702,13 @@ if __name__ == '__main__':
 					basename=os.path.basename(os.path.abspath(filepath))
 					endname=basename[:-1]+'p'
 					endname =os.path.join(ofolder,endname)
-					decompressor.decompress_nsz(filepath,endname)					
+					decompressor.decompress_nsz(filepath,endname)		
+				if filepath.endswith(".xcz"):	
+					import decompressor	
+					basename=os.path.basename(os.path.abspath(filepath))
+					endname=basename[:-3]+'xci'
+					endname =os.path.join(ofolder,endname)
+					decompressor.decompress_xcz(filepath,endname)					
 		# ...................................................
 		# Repack NCA files to partition hfs0
 		# ...................................................
@@ -3471,7 +3507,7 @@ if __name__ == '__main__':
 			else:
 				buffer = 65536
 			if args.romanize:
-				for input in args.ofolder:
+				for input in args.romanize:
 					roman=str(input).upper()
 					if roman == "FALSE":
 						roman = False
@@ -4526,7 +4562,7 @@ if __name__ == '__main__':
 			basename=str(os.path.basename(os.path.abspath(filename)))
 			ofile=basename[:-4]+'-Fcontent.txt'
 			infotext=os.path.join(ofolder, ofile)
-			if filename.endswith('.nsp') or filename.endswith('.nsx'):
+			if filename.endswith('.nsp') or filename.endswith('.nsx') or filename.endswith('.nsz'):
 				try:
 					f = Fs.Nsp(filename, 'rb')
 					feed=f.adv_file_list()
@@ -4551,7 +4587,7 @@ if __name__ == '__main__':
 								print('WRONG CHOICE\n')
 				except BaseException as e:
 					Print.error('Exception: ' + str(e))
-			if filename.endswith('.xci'):
+			if filename.endswith('.xci') or filename.endswith('.xcz'):
 				try:
 					f = Fs.factory(filename)
 					f.open(filename, 'rb')
@@ -4611,7 +4647,7 @@ if __name__ == '__main__':
 			basename=str(os.path.basename(os.path.abspath(filename)))
 			ofile=basename[:-4]+'_ID_content.txt'
 			infotext=os.path.join(ofolder, ofile)
-			if filename.endswith('.nsp') or filename.endswith('.nsx'):
+			if filename.endswith('.nsp') or filename.endswith('.nsx') or filename.endswith('.nsz'):
 				try:
 					f = Fs.Nsp(filename, 'rb')
 					feed=f.adv_content_list()
@@ -4636,7 +4672,7 @@ if __name__ == '__main__':
 								print('WRONG CHOICE\n')
 				except BaseException as e:
 					Print.error('Exception: ' + str(e))
-			if filename.endswith('.xci'):
+			if filename.endswith('.xci') or filename.endswith('.xcz'):
 				try:
 					f = Fs.factory(filename)
 					f.open(filename, 'rb')
@@ -4735,7 +4771,7 @@ if __name__ == '__main__':
 								print('WRONG CHOICE\n')
 				except BaseException as e:
 					Print.error('Exception: ' + str(e))
-			if filename.endswith('.xci'):
+			if filename.endswith('.xci') or filename.endswith('.xcz'):
 				try:
 					f = Fs.factory(filename)
 					f.open(filename, 'rb')
@@ -4782,7 +4818,7 @@ if __name__ == '__main__':
 		# ...................................................
 		if args.addtodb:
 			if args.romanize:
-				for input in args.ofolder:
+				for input in args.romanize:
 					roman=str(input).upper()
 					if roman == "FALSE":
 						roman = False
@@ -4986,7 +5022,7 @@ if __name__ == '__main__':
 								print('WRONG CHOICE\n')
 				except BaseException as e:
 					Print.error('Exception: ' + str(e))
-			if filename.endswith('.xci'):
+			if filename.endswith('.xci') or filename.endswith('.xcz'):
 				try:
 					f = Fs.factory(filename)
 					f.open(filename, 'rb')
@@ -5483,7 +5519,7 @@ if __name__ == '__main__':
 								print('WRONG CHOICE\n')
 				except BaseException as e:
 					Print.error('Exception: ' + str(e))
-			if filename.endswith('.xci'):
+			if filename.endswith('.xci') or filename.endswith('.xcz'):
 				try:
 					f = Fs.factory(filename)
 					f.open(filename, 'rb')
@@ -6234,6 +6270,15 @@ if __name__ == '__main__':
 
 		if args.renamef:
 			import nutdb
+			if args.romanize:
+				for input in args.romanize:
+					roman=str(input).upper()
+					if roman == "FALSE":
+						roman = False
+					else:
+						roman = True
+			else:
+				roman = True			
 			if args.onlyaddid:
 				if args.onlyaddid=="true" or args.onlyaddid == "True" or args.onlyaddid == "TRUE":
 					onaddid=True
@@ -6513,7 +6558,7 @@ if __name__ == '__main__':
 								f = Fs.Xci(basefile)
 							elif filepath.endswith('.nsp') or filepath.endswith('.nsx') or filepath.endswith('.nsz'):
 								f = Fs.Nsp(basefile)
-							ctitl=f.get_title(baseid)
+							ctitl=f.get_title(baseid,roman)
 							if addlangue==True:
 								languetag=f.get_lang_tag(baseid)
 								if languetag != False:
@@ -6542,7 +6587,7 @@ if __name__ == '__main__':
 								f = Fs.Xci(updfile)
 							elif filepath.endswith('.nsp') or filepath.endswith('.nsx') or filepath.endswith('.nsz'):
 								f = Fs.Nsp(updfile)
-							ctitl=f.get_title(updid)
+							ctitl=f.get_title(updid,roman)
 							if addlangue==True:
 								languetag=f.get_lang_tag(baseid)
 								if languetag != False:
@@ -6571,7 +6616,7 @@ if __name__ == '__main__':
 										f = Fs.Xci(dlcfile)
 									elif filepath.endswith('.nsp') or filepath.endswith('.nsx') or filepath.endswith('.nsz'):
 										f = Fs.Nsp(dlcfile)
-									ctitl=f.get_title(dlcid)
+									ctitl=f.get_title(dlcid,roman)
 									f.flush()
 									f.close()
 							elif dlcrname == False or dlcrname == 'tag':
@@ -6772,7 +6817,7 @@ if __name__ == '__main__':
 		if args.renameftxt:
 			ruta=args.renameftxt
 			if args.romanize:
-				for input in args.ofolder:
+				for input in args.romanize:
 					roman=str(input).upper()
 					if roman == "FALSE":
 						roman = False
@@ -7004,7 +7049,7 @@ if __name__ == '__main__':
 
 		#parser.add_argument('-snz','--sanitize', help='Remove unreadable characters from names')
 		#parser.add_argument('-roma','--romanize', help='Translate kanji and extended kanna to romaji and sanitize name')
-		if not args.direct_multi and not args.fw_req and not args.renameftxt and not args.Read_nacp and not args.addtodb and (args.sanitize or args.romanize):
+		if not args.direct_multi and not args.fw_req and not args.renameftxt and not args.renamef and not args.Read_nacp and not args.addtodb and (args.sanitize or args.romanize):
 			if args.sanitize:
 				san=True; rom=False
 				route=args.sanitize
@@ -7473,7 +7518,102 @@ if __name__ == '__main__':
 							date=now.strftime("%x")+". "+now.strftime("%X")
 							errfile.write(date+'\n')
 							errfile.write("Filename: "+str(filename)+'\n')
-							errfile.write('Exception: ' + str(e)+'\n')						
+							errfile.write('Exception: ' + str(e)+'\n')		
+			if filename.endswith('.xcz'):
+				try:
+					f = Fs.Xci(filename)
+					check,feed=f.verify()
+					f.flush()
+					f.close()
+					if not args.text_file:
+						f = Fs.Xci(filename)
+						verdict,headerlist,feed=f.verify_sig(feed,tmpfolder)
+						f.flush()
+						f.close()
+						i=0
+						print('\n********************************************************')
+						print('Do you want to verify the hash of the nca files?')
+						print('********************************************************')
+						while i==0:
+							print('Input "1" to VERIFY hash of files')
+							print('Input "2" to NOT verify hash  of files\n')
+							ck=input('Input your answer: ')
+							if ck ==str(1):
+								print('')
+								f = Fs.Xci(filename)
+								verdict,feed=f.xcz_hasher(buffer,headerlist,verdict,feed)
+								f.flush()
+								f.close()
+								i=1
+							elif ck ==str(2):
+								f.flush()
+								f.close()
+								i=1
+							else:
+								print('WRONG CHOICE\n')
+						print('\n********************************************************')
+						print('Do you want to print the information to a text file')
+						print('********************************************************')
+						i=0
+						while i==0:
+							print('Input "1" to print to text file')
+							print('Input "2" to NOT print to text file\n')
+							ck=input('Input your answer: ')
+							if ck ==str(1):
+								with open(infotext, 'w') as info:
+									info.write(feed)
+								i=1
+							elif ck ==str(2):
+								i=1
+							else:
+								print('WRONG CHOICE\n')	
+					elif args.text_file:
+						if vertype == "lv2":
+							f = Fs.Xci(filename)
+							verdict,headerlist,feed=f.verify_sig(feed,tmpfolder)
+							f.flush()
+							f.close()
+							if check == True:
+								check=verdict
+						elif vertype == "lv3":
+							f = Fs.Nsp(filename, 'rb')
+							verdict,headerlist,feed=f.verify_sig(feed,tmpfolder)
+							f.flush()
+							f.close()
+							if check == True:
+								check=verdict
+							f = Fs.Xci(filename)
+							verdict,feed=f.xcz_hasher(buffer,headerlist,verdict,feed)
+							f.flush()
+							f.close()
+							if check == True:
+								check=verdict
+						if check == False:
+							with open(errfile, 'a') as errfile:
+								now=datetime.now()
+								date=now.strftime("%x")+". "+now.strftime("%X")
+								errfile.write(date+'\n')
+								errfile.write("Filename: "+str(filename)+'\n')
+								errfile.write("IS INCORRECT"+'\n')
+						dir=os.path.dirname(os.path.abspath(tfile))
+						info='INFO'
+						subf='MASSVERIFY'
+						ofolder =os.path.join(dir,info)
+						ofolder =os.path.join(ofolder,subf)
+						if not os.path.exists(ofolder):
+							os.makedirs(ofolder)
+						infotext=os.path.join(ofolder, ofile)
+						with open(infotext, 'w') as info:
+							info.write(feed)
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))
+					if args.text_file:
+						with open(errfile, 'a') as errfile:
+							now=datetime.now()
+							date=now.strftime("%x")+". "+now.strftime("%X")
+							errfile.write(date+'\n')
+							errfile.write("Filename: "+str(filename)+'\n')
+							errfile.write('Exception: ' + str(e)+'\n')								
 			if filename.endswith('.nca'):
 				try:
 					f = Fs.Nca(filename, 'rb')

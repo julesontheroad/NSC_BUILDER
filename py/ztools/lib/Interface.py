@@ -163,7 +163,7 @@ def showicon(filename):
 		if filename.endswith('.nsp')or filename.endswith('.nsx') or filename.endswith('.nsz'):
 			files_list=sq_tools.ret_nsp_offsets(filename)	
 			f = Fs.Nsp(filename, 'rb')
-		elif filename.endswith('.xci'):	
+		elif filename.endswith('.xci') or filename.endswith('.xcz'):	
 			files_list=sq_tools.ret_xci_offsets(filename)		
 			f = Fs.Xci(filename)	
 		else: return ""
@@ -183,7 +183,7 @@ def retrieve_icon_from_server(filename):
 	if filename.endswith('.nsp')or filename.endswith('.nsx') or filename.endswith('.nsz'):	
 		f = Fs.Nsp(filename, 'rb')
 		titleid=f.getnspid()		
-	elif filename.endswith('.xci'):	
+	elif filename.endswith('.xci') or filename.endswith('.xcz'):	
 		f = Fs.Xci(filename)	
 		titleid=f.getxciid()		
 	else:	
@@ -196,7 +196,7 @@ def getinfo(filename):
 	print('* Retrieving Game Information')
 	if filename.endswith('.nsp')or filename.endswith('.nsx') or filename.endswith('.nsz'):
 		f = Fs.ChromeNsp(filename, 'rb')
-	elif filename.endswith('.xci'):	
+	elif filename.endswith('.xci') or filename.endswith('.xcz'):	
 		f = Fs.ChromeXci(filename)		
 	else: return []		
 	dict=f.return_DBdict()
@@ -348,7 +348,7 @@ def getinfo(filename):
 	try:	
 		if filename.endswith('.nsp')or filename.endswith('.nsx') or filename.endswith('.nsz'):
 			send_.append("Eshop")	
-		elif filename.endswith('.xci'):
+		elif filename.endswith('.xci') or filename.endswith('.xcz'):
 			send_.append("Gamecard")	
 		else:		
 			send_.append("-")			
@@ -408,9 +408,9 @@ def getcheats(ID):
 @eel.expose	
 def getfiledata(filename):
 	print('* Generating Titles File Data')
-	if filename.endswith('.nsp')or filename.endswith('.nsx'):
+	if filename.endswith('.nsp') or filename.endswith('.nsx') or filename.endswith('.nsz'):
 		f = Fs.ChromeNsp(filename, 'rb')
-	elif filename.endswith('.xci'):	
+	elif filename.endswith('.xci') or filename.endswith('.xcz'):	
 		f = Fs.ChromeXci(filename)	
 	else: return ""		
 	feed=f.adv_file_list()
@@ -423,7 +423,7 @@ def getnacpdata(filename):
 	print('* Reading Data from Nacp')
 	if filename.endswith('.nsp')or filename.endswith('.nsx') or filename.endswith('.nsz'):
 		f = Fs.ChromeNsp(filename, 'rb')
-	elif filename.endswith('.xci'):	
+	elif filename.endswith('.xci') or filename.endswith('.xcz'):	
 		f = Fs.ChromeXci(filename)		
 	else: return ""		
 	feed=f.read_nacp(gui=True)
@@ -439,7 +439,7 @@ def getnpdmdata(filename):
 	if filename.endswith('.nsp')or filename.endswith('.nsx') or filename.endswith('.nsz'):
 		f = Fs.ChromeNsp(filename, 'rb')
 		files_list=sq_tools.ret_nsp_offsets(filename)			
-	elif filename.endswith('.xci'):	
+	elif filename.endswith('.xci') or filename.endswith('.xcz'):	
 		f = Fs.ChromeXci(filename)			
 		files_list=sq_tools.ret_xci_offsets(filename)	
 	else: return ""			
@@ -455,7 +455,7 @@ def getcnmtdata(filename):
 	print('* Reading Data from Cnmt')
 	if filename.endswith('.nsp')or filename.endswith('.nsx') or filename.endswith('.nsz'):
 		f = Fs.ChromeNsp(filename, 'rb')
-	elif filename.endswith('.xci'):	
+	elif filename.endswith('.xci') or filename.endswith('.xcz'):	
 		f = Fs.ChromeXci(filename)	
 	else: return ""			
 	feed=f.read_cnmt()
@@ -468,7 +468,7 @@ def getverificationdata(filename):
 	print('* Verifying files')
 	if filename.endswith('.nsp')or filename.endswith('.nsx') or filename.endswith('.nsz'):
 		f = Fs.ChromeNsp(filename, 'rb')
-	elif filename.endswith('.xci'):	
+	elif filename.endswith('.xci') or filename.endswith('.xcz'):	
 		f = Fs.ChromeXci(filename)		
 	else: return ""			
 	check,feed=f.verify()

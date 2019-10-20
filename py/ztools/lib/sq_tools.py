@@ -40,11 +40,12 @@ versions =
 	536870912: "8.0.0"    ->   keygeneration = 8
 	536936448: "8.0.1"    ->   keygeneration = 8	
 	537919488: "8.1.0"    ->   keygeneration = 9
-	603979776: "9.0.0"    ->   keygeneration = 10		
+	603979776: "9.0.0"    ->   keygeneration = 10	
+	604045312: "9.0.1"    ->   keygeneration = 10			
 '''	
 def kgstring(kg=list()):
 	kg=list()
-	kg10=[603979776];kg.append(kg10)		
+	kg10=[603979776,604045312];kg.append(kg10)		
 	kg9=[537919488];kg.append(kg9)		
 	kg8=[536936448,536870912,469827584,469762048];kg.append(kg8)	
 	kg7=[404750336];kg.append(kg7)	

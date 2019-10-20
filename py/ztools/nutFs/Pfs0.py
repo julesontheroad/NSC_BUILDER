@@ -12,6 +12,7 @@ import Keys
 import Print
 from nutFs.BaseFs import BaseFs
 import nutFs.Titles as Titles
+import sq_tools
 
 MEDIA_SIZE = 0x200
 
@@ -26,7 +27,7 @@ class Pfs0Stream():
 		self.f.seek(self.offset)
 
 	def add(self, name, size):
-		Print.info('- Adding file %s %d bytes to NSP' % (name, int(size)))
+		Print.info('- Appending: %s (%s)' % (name,str(sq_tools.getSize(int(size)))))
 		self.files.append({'name': name, 'size': size, 'offset': self.f.tell()})
 		t = {'name': name, 'size': size, 'offset': self.f.tell()}
 		return self.f

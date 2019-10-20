@@ -3,6 +3,7 @@ import zstandard
 from Crypto.Cipher import AES
 from Crypto.Util import Counter
 import Fs.Nsp as Nsp
+import Fs.Xci as Xci
 import sq_tools
 import Hex
 from binascii import hexlify as hx, unhexlify as uhx
@@ -100,6 +101,12 @@ def decompress_nsz(input,output,buffer = 65536):
 	f.decompress_direct(output,buffer)
 	f.flush()
 	f.close()
+
+def decompress_xcz(input,output,buffer = 65536):
+	f = Xci(input)
+	f.decompress_direct(output,buffer)
+	f.flush()
+	f.close()	
 
 def verify_nsz(input,buffer = 65536):	
 	f = Nsp(input, 'r+b')

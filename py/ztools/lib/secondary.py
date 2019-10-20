@@ -31,7 +31,7 @@ if os.path.exists(testroute1):
 elif os.path.exists(testroute2):	
 	squirrel=testroute2
 	isExe=True
-allowedlist=['--renamef','--addtodb','--addtodb_new','--verify']
+allowedlist=['--renamef','--addtodb','--addtodb_new','--verify','--compress']
 
 #print (squirrel)
 	
@@ -92,6 +92,7 @@ def call_library(args):
 def route(args,workers):
 	arguments,tfile=getargs(args)
 	#print(arguments)
+	# print(tfile)
 	if tfile==False:
 		process=subprocess.Popen(arguments)	
 		while process.poll()==None and process2.poll()==None:
@@ -223,9 +224,9 @@ def getargs(args):
 		arguments.append("python")
 	arguments.append(squirrel)
 	for a in args:
-		if not 'None' in a and a != 'file=[]' and not 'threads' in a:
+		if not 'None' in a and a != 'file=[]' and not 'threads' in a and not 'pararell' in a:
 			a=a.split('=')
-			#print(a)
+			# print(a)
 			try:
 				b=a[1]
 				b=b[1:-1]

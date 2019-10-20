@@ -1966,8 +1966,7 @@ class Nca(File):
 				message=(tabs+'* '+"NOT VERIFIABLE!!!");print(message);feed+=message+'\n'				
 			return False,False,self._path,feed,False,False,False,self.header.getgamecard()		
 			
-	def verify_cnmt_withkg(self,targetkg):	
-		targetkg=int(targetkg)	
+	def verify_cnmt_withkg(self,targetkg):
 		sign1 = self.header.signature1		
 		self.header.seek(0x200)	
 		headdata = self.header.read(0x200)
@@ -2023,12 +2022,18 @@ class Nca(File):
 		crypto = aes128.AESECB(key)
 		reEncKeyBlock = crypto.encrypt(decKeyBlock)		
 		i=targetkg
+		cr2=str(hex(i))[2:]	
 		if i<3:
 			crypto1='0'+str(i)
 			crypto2='00'
 		else:
-			crypto1='02'
-			crypto2='0'+str(i)	
+			cr2=str(hex(i))[2:]					
+			if len(str(cr2))==1:						
+				crypto1='02'
+				crypto2='0'+str(cr2)	
+			elif len(str(cr2))==2:			
+				crypto1='02'
+				crypto2=str(cr2)		
 		crypto1=bytes.fromhex(crypto1);crypto2=bytes.fromhex(crypto2)				
 		headdata1 = b''				
 		headdata1=headdata[0x00:0x04]+card+headdata[0x05:0x06]+crypto1+headdata[0x07:0x20]+crypto2+headdata[0x21:0x100]+reEncKeyBlock+headdata[0x140:]
@@ -2094,7 +2099,11 @@ class Nca(File):
 		crypto1=self.header.getCryptoType()
 		crypto2=self.header.getCryptoType2()		
 		nca_id=self.header.titleId	
-		tr=nca_id+'000000000000000'+str(crypto2)	
+		cr2=str(hex(crypto2))[2:]
+		if len(str(cr2))==1:
+			tr=nca_id+'000000000000000'+str(cr2)	
+		elif len(str(cr2))==2:
+			tr=nca_id+'00000000000000'+str(cr2)				
 		tr=bytes.fromhex(tr)				
 		if crypto1>crypto2:
 			masterKeyRev = crypto1
@@ -2127,7 +2136,11 @@ class Nca(File):
 		if verification == True:
 			return True,False,titleKeyEnc,tr,headdata,masterKeyRev
 		else:
-			tr2=nca_id[:-3]+'800000000000000000'+str(crypto2)	
+			cr2=str(hex(crypto2))[2:]	
+			if len(str(cr2))==1:
+				tr2=nca_id[:-3]+'800000000000000000'+str(cr2)	
+			elif len(str(cr2))==2:
+				tr2=nca_id[:-3]+'80000000000000000'+str(cr2)				
 			tr2=bytes.fromhex(tr2)
 			headdata2 = b''
 			headdata2=headdata[0x00:0x30]+tr2+headdata[0x40:]
@@ -2137,17 +2150,22 @@ class Nca(File):
 				return True,False,titleKeyEnc,tr2,headdata2,masterKeyRev			
 			else:
 				nlist=list()
-				for i in range(9):
+				for i in range(11):
 					nlist.append(i)
-				sorted(nlist, key=int, reverse=True)		
+				nlist=sorted(nlist, key=int, reverse=True)		
 				for i in nlist:
 					if i<3:
 						crypto1='0'+str(i)
 						crypto2='00'
 					else:
-						crypto1='02'
-						crypto2='0'+str(i)	
-					masterKeyRev = i	
+						cr2=str(hex(i))[2:]					
+						if len(str(cr2))==1:						
+							crypto1='02'
+							crypto2='0'+str(cr2)	
+						elif len(str(cr2))==2:			
+							crypto1='02'
+							crypto2=str(cr2)						
+					masterKeyRev = i					
 					encKeyBlock = self.header.getKeyBlock()
 					key = Keys.keyAreaKey(Keys.getMasterKeyIndex(masterKeyRev), self.header.keyIndex)		
 					crypto = aes128.AESECB(key)
@@ -2227,16 +2245,21 @@ class Nca(File):
 		encKeyBlock = self.header.getKeyBlock()
 		decKeyBlock = crypto.decrypt(encKeyBlock)	
 		nlist=list()
-		for i in range(9):
+		for i in range(11):
 			nlist.append(i)
-		sorted(nlist, key=int, reverse=True)		
+		nlist=sorted(nlist, key=int, reverse=True)		
 		for i in nlist:
 			if i<3:
 				crypto1='0'+str(i)
 				crypto2='00'
 			else:
-				crypto1='02'
-				crypto2='0'+str(i)	
+				cr2=str(hex(i))[2:]					
+				if len(str(cr2))==1:						
+					crypto1='02'
+					crypto2='0'+str(cr2)	
+				elif len(str(cr2))==2:			
+					crypto1='02'
+					crypto2=str(cr2)	
 			newMasterKeyRev=i
 			key = Keys.keyAreaKey(Keys.getMasterKeyIndex(newMasterKeyRev), self.header.keyIndex)				
 			crypto = aes128.AESECB(key)

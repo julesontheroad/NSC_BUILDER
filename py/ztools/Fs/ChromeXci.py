@@ -34,6 +34,10 @@ import io
 import nutdb
 import textwrap
 from PIL import Image
+import zstandard
+from Crypto.Cipher import AES
+from Crypto.Util import Counter
+import time
 
 MEDIA_SIZE = 0x200
 RSA_PUBLIC_EXPONENT = 65537
@@ -45,6 +49,40 @@ XCI_GAMECARD_INFO_LENGTH = 0x70
 XCI_GAMECARD_INFO_PADDING_LENGTH = 0x38
 indent = 1
 tabs = '\t' * indent	
+
+def readInt64(f, byteorder='little', signed = False):
+		return int.from_bytes(f.read(8), byteorder=byteorder, signed=signed)
+
+def readInt128(f, byteorder='little', signed = False):
+	return int.from_bytes(f.read(16), byteorder=byteorder, signed=signed)
+
+class AESCTR:
+	def __init__(self, key, nonce, offset = 0):
+		self.key = key
+		self.nonce = nonce
+		self.seek(offset)
+
+	def encrypt(self, data, ctr=None):
+		if ctr is None:
+			ctr = self.ctr
+		return self.aes.encrypt(data)
+
+	def decrypt(self, data, ctr=None):
+		return self.encrypt(data, ctr)
+
+	def seek(self, offset):
+		self.ctr = Counter.new(64, prefix=self.nonce[0:8], initial_value=(offset >> 4))
+		self.aes = AES.new(self.key, AES.MODE_CTR, counter=self.ctr)
+		
+class Section:
+	def __init__(self, f):
+		self.f = f
+		self.offset = readInt64(f)
+		self.size = readInt64(f)
+		self.cryptoType = readInt64(f)
+		readInt64(f) # padding
+		self.cryptoKey = f.read(16)
+		self.cryptoCounter = f.read(16)
 
 class GamecardInfo(File):
 	def __init__(self, file = None):
@@ -122,6 +160,7 @@ class ChromeXci(File):
 		
 		if file:
 			self.open(file)
+		self.path=file	
 		
 	def readHeader(self):
 	
@@ -1578,7 +1617,8 @@ class ChromeXci(File):
 											message=["Size:",(str(sq_tools.getSize(int.from_bytes(size, byteorder='little', signed=True))))];feed=self.html_feed(feed,3,message)
 											ncatype = cnmt.read(0x1)
 											message=["Ncatype:",(sq_tools.getmetacontenttype(str(int.from_bytes(ncatype, byteorder='little', signed=True))))];feed=self.html_feed(feed,3,message)									
-											unknown = cnmt.read(0x1)	
+											IdOffset = cnmt.read(0x1)	
+											message=["IdOffset:",(str(int.from_bytes(IdOffset, byteorder='little', signed=True)))];feed=self.html_feed(feed,3,message)			
 		return feed						
 										
 									
@@ -2336,7 +2376,7 @@ class ChromeXci(File):
 										feed+='</ul>'
 										feed=self.html_feed(feed,5,message=('TOTAL SIZE: '+size_pr))
 									if self.actually_has_other(titleid2,ncalist)=="true":	
-										feed=self.html_feed(feed,2,message=('Other types of files:'))	
+										feed=self.html_feed(feed,2,message=('- Other types of files:'))	
 										feed+='<ul style="margin-bottom: 2px;margin-top: 3px">'	
 										othersize=0;os1=0;os2=0;os3=0
 										os1,feed=self.print_xml_by_title(ncalist,contentlist,feed)
@@ -2349,17 +2389,19 @@ class ChromeXci(File):
 										feed=self.html_feed(feed,5,message=('TOTAL SIZE: '+size_pr))										
 							finalsize=size1+size2+size3	
 							size_pr=sq_tools.getSize(finalsize)	
-							feed=self.html_feed(feed,2,message=('FULL CONTENT TOTAL SIZE: '+size_pr))						
-				self.printnonlisted(contentlist,feed)	
-		return feed				
+							feed=self.html_feed(feed,2,message=('FULL CONTENT TOTAL SIZE: '+size_pr))	
+		self.printnonlisted(contentlist,feed)
+		return feed			
 																				
 	def print_nca_by_title(self,nca_name,ncatype,feed):	
 		tab="\t"
+		size=0
+		ncz_name=nca_name[:-1]+'z'			
 		for nspF in self.hfs0:
 			if str(nspF._path)=="secure":
-				for nca in nspF:		
+				for nca in nspF:
+					filename = str(nca._path)				
 					if type(nca) == Nca:
-						filename = str(nca._path)
 						if filename == nca_name:
 							size=nca.header.size
 							size_pr=sq_tools.getSize(size)
@@ -2367,10 +2409,24 @@ class ChromeXci(File):
 							content=content[8:]+": "
 							ncatype=sq_tools.getTypeFromCNMT(ncatype)	
 							if ncatype != "Meta: ":
-								message=[ncatype,str(filename),'Size:',size_pr];feed=self.html_feed(feed,4,message)
+								message=[ncatype,str(filename),'Size:',size_pr];feed=self.html_feed(feed,4,message)						
 							else:
-								message=[ncatype,str(filename),'Size:',size_pr];feed=self.html_feed(feed,4,message)
+								message=[ncatype,str(filename),'Size:',size_pr];feed=self.html_feed(feed,4,message)					
 							return size,feed		
+					elif filename == ncz_name:
+						ncztype=Nca(nca)
+						ncztype._path=nca._path							
+						size=ncztype.header.size
+						size_pr=sq_tools.getSize(size)
+						content=str(ncztype.header.contentType)
+						content=content[8:]+": "
+						ncatype=sq_tools.getTypeFromCNMT(ncatype)	
+						if ncatype != "Meta: ":
+							message=[ncatype,str(filename),'Size:',size_pr];feed=self.html_feed(feed,4,message)						
+						else:
+							message=[ncatype,str(filename),'Size:',size_pr];feed=self.html_feed(feed,4,message)					
+						return size,feed		
+		return size,feed							
 	def print_xml_by_title(self,ncalist,contentlist,feed):	
 		tab="\t"
 		size2return=0
@@ -2474,7 +2530,7 @@ class ChromeXci(File):
 							vother="true"	
 							break	
 		return vother					
-	def printnonlisted(self,contentlist,feed):
+	def printnonlisted(self,contentlist,feed=''):
 		tab="\t"	
 		list_nonlisted="false"
 		for nspF in self.hfs0:
@@ -2490,7 +2546,8 @@ class ChromeXci(File):
 				if str(nspF._path)=="secure":		
 					for file in nspF:				
 						filename =  str(file._path)
-						if not filename in contentlist:
+						nczname= str(file._path)[:-1]+'z'
+						if not filename in contentlist and not nczname in contentlist:
 							totsnl=totsnl+file.size
 							size_pr=sq_tools.getSize(file.size)						
 							message=['OTHER:',str(filename),'Size:',size_pr];feed=self.html_feed(feed,4,message)
@@ -2561,48 +2618,48 @@ class ChromeXci(File):
 				if len(applist) != 0:
 					for i in range(len(applist)):		
 						tid=applist[i][1]		
-						message='------------------------------------------------';print(message);feed+=message+'\n'
-						message='BASE CONTENT ID: ' + str(tid);print(message);feed+=message+'\n'
-						message='------------------------------------------------';print(message);feed+=message+'\n'				
-						message='Name: '+applist[i][3];print(message);feed+=message+'\n'
-						message='Editor: '+applist[i][4];print(message);feed+=message+'\n'
-						message='------------------------------------------------';print(message);feed+=message+'\n'
-						message=applist[i][1]+" [BASE]"+" v"+applist[i][2];print(message);feed+=message+'\n'				
+						message='------------------------------------------------';feed+=message+'\n'
+						message='BASE CONTENT ID: ' + str(tid);feed+=message+'\n'
+						message='------------------------------------------------';feed+=message+'\n'				
+						message='Name: '+applist[i][3];feed+=message+'\n'
+						message='Editor: '+applist[i][4];feed+=message+'\n'
+						message='------------------------------------------------';feed+=message+'\n'
+						message=applist[i][1]+" [BASE]"+" v"+applist[i][2];feed+=message+'\n'				
 						cupd=0
 						for j in range(len(patchlist)):
 							if tid == patchlist[j][1]:
 								v=patchlist[j][2]
 								v_number=str(int(int(v)/65536))
-								message=patchlist[j][3]+" [UPD]"+" v"+patchlist[j][2]+" -> Patch("+v_number+")";print(message);feed+=message+'\n'								
+								message=patchlist[j][3]+" [UPD]"+" v"+patchlist[j][2]+" -> Patch("+v_number+")";feed+=message+'\n'								
 								cupd+=1
 								patch_called.append(patchlist[j])
 						cdlc=0					
 						for k in range(len(dlclist)):
 							if tid == dlclist[k][1]:
-								message=dlclist[k][3]+" [DLC "+str(dlclist[k][4])+"]"+" v"+dlclist[k][2];print(message);feed+=message+'\n'								
+								message=dlclist[k][3]+" [DLC "+str(dlclist[k][4])+"]"+" v"+dlclist[k][2];feed+=message+'\n'								
 								cdlc+=1		
 								dlc_called.append(dlclist[k])	
-						message='------------------------------------------------';print(message);feed+=message+'\n'
-						message='CONTENT INCLUDES: 1 BASEGAME '+str(cupd)+' UPDATES '+str(cdlc)+' DLCS';print(message);feed+=message+'\n'				
-						message='------------------------------------------------';print(message);feed+=message+'\n'				
+						message='------------------------------------------------';feed+=message+'\n'
+						message='CONTENT INCLUDES: 1 BASEGAME '+str(cupd)+' UPDATES '+str(cdlc)+' DLCS';feed+=message+'\n'				
+						message='------------------------------------------------';feed+=message+'\n'				
 						if len(patchlist) != len(patch_called):
-							message='------------------------------------------------';print(message);feed+=message+'\n'	
-							message='ORPHANED UPDATES:';print(message);feed+=message+'\n'						
-							message='------------------------------------------------';print(message);feed+=message+'\n'					
+							message='------------------------------------------------';feed+=message+'\n'	
+							message='ORPHANED UPDATES:';feed+=message+'\n'						
+							message='------------------------------------------------';feed+=message+'\n'					
 							for j in range(len(patchlist)):	
 								if patchlist[j] not in patch_called:
 									v=patchlist[j][2]
 									v_number=str(int(int(v)/65536))
-									message=patchlist[j][3]+" [UPD]"+" v"+patchlist[j][2]+" -> Patch("+v_number+")";print(message);feed+=message+'\n'														
+									message=patchlist[j][3]+" [UPD]"+" v"+patchlist[j][2]+" -> Patch("+v_number+")";feed+=message+'\n'														
 						if len(dlclist) != len(dlc_called):
-							message='------------------------------------------------';print(message);feed+=message+'\n'
-							message='ORPHANED DLCS:';print(message);feed+=message+'\n'					
-							message='------------------------------------------------';print(message);feed+=message+'\n'	
+							message='------------------------------------------------';feed+=message+'\n'
+							message='ORPHANED DLCS:';feed+=message+'\n'					
+							message='------------------------------------------------';feed+=message+'\n'	
 							for k in range(len(dlclist)):	
 								if dlclist[k] not in dlc_called:
-									message=dlclist[k][3]+" [DLC "+str(dlclist[k][4])+"]"+" v"+dlclist[k][2];print(message);feed+=message+'\n'
+									message=dlclist[k][3]+" [DLC "+str(dlclist[k][4])+"]"+" v"+dlclist[k][2];feed+=message+'\n'
 				else:	
-					message='This option is currently meant for multicontent, that includes at least a base game';print(message);feed+=message+'\n'	
+					message='This option is currently meant for multicontent, that includes at least a base game';feed+=message+'\n'	
 		return feed						
 				
 				
@@ -2747,93 +2804,93 @@ class ChromeXci(File):
 									programSDKversion,dataSDKversion=self.getsdkvertit(titleid2)
 									nsuId,releaseDate,category,ratingContent,numberOfPlayers,intro,description,iconUrl,screenshots,bannerUrl,region,rating=nutdb.get_content_data(titleid2,trans)
 									sdkversion=nca.get_sdkversion()						
-									message=('-----------------------------');print(message);feed+=message+'\n'								
-									message=('CONTENT ID: ' + str(titleid2));print(message);feed+=message+'\n'	
-									message=('-----------------------------');print(message);feed+=message+'\n'				
+									message=('-----------------------------');feed+=message+'\n'								
+									message=('CONTENT ID: ' + str(titleid2));feed+=message+'\n'	
+									message=('-----------------------------');feed+=message+'\n'				
 									if content_type_cnmt != 'AddOnContent':	
-										message=("Titleinfo:");print(message);feed+=message+'\n'								
-										message=("- Name: " + tit_name);print(message);feed+=message+'\n'								
-										message=("- Editor: " + editor);print(message);feed+=message+'\n'						
-										message=("- Display Version: " + str(ediver));print(message);feed+=message+'\n'
-										message=("- Meta SDK version: " + sdkversion);print(message);feed+=message+'\n'
-										message=("- Program SDK version: " + programSDKversion);print(message);feed+=message+'\n'									
+										message=("Titleinfo:");feed+=message+'\n'								
+										message=("- Name: " + tit_name);feed+=message+'\n'								
+										message=("- Editor: " + editor);feed+=message+'\n'						
+										message=("- Display Version: " + str(ediver));feed+=message+'\n'
+										message=("- Meta SDK version: " + sdkversion);feed+=message+'\n'
+										message=("- Program SDK version: " + programSDKversion);feed+=message+'\n'									
 										suplangue=str((', '.join(SupLg)))								
 										message=("- Supported Languages: "+suplangue);
 										par = textwrap.dedent(message).strip()	
-										message=(textwrap.fill(par,width=80,initial_indent='', subsequent_indent='  ',replace_whitespace=True,fix_sentence_endings=True));print(message);feed+=message+'\n'								
-										message=("- Content type: "+content_type);print(message);feed+=message+'\n'									
-										message=("- Version: " + version+' -> '+content_type_cnmt+' ('+str(v_number)+')');print(message);feed+=message+'\n'																									
+										message=(textwrap.fill(par,width=80,initial_indent='', subsequent_indent='  ',replace_whitespace=True,fix_sentence_endings=True));feed+=message+'\n'								
+										message=("- Content type: "+content_type);feed+=message+'\n'									
+										message=("- Version: " + version+' -> '+content_type_cnmt+' ('+str(v_number)+')');feed+=message+'\n'																									
 									if content_type_cnmt == 'AddOnContent':
 										nsuId=nutdb.get_dlcnsuId(titleid2)
-										message=("Titleinfo:");print(message);feed+=message+'\n'								
+										message=("Titleinfo:");feed+=message+'\n'								
 										if tit_name != "DLC":
-											message=("- Name: " + tit_name);print(message);feed+=message+'\n'								
-											message=("- Editor: " + editor);print(message);feed+=message+'\n'									
-										message=("- Content type: "+"DLC");print(message);feed+=message+'\n'							
+											message=("- Name: " + tit_name);feed+=message+'\n'								
+											message=("- Editor: " + editor);feed+=message+'\n'									
+										message=("- Content type: "+"DLC");feed+=message+'\n'							
 										DLCnumb=str(titleid2)
 										DLCnumb="0000000000000"+DLCnumb[-3:]									
 										DLCnumb=bytes.fromhex(DLCnumb)
 										DLCnumb=str(int.from_bytes(DLCnumb, byteorder='big'))									
 										DLCnumb=int(DLCnumb)
-										message=("- DLC number: "+str(DLCnumb)+' -> '+"AddOnContent"+' ('+str(DLCnumb)+')');print(message);feed+=message+'\n'																
-										message=("- DLC version Number: " + version+' -> '+"Version"+' ('+str(v_number)+')');print(message);feed+=message+'\n'								
-										message=("- Meta SDK version: " + sdkversion);print(message);feed+=message+'\n'								
-										message=("- Data SDK version: " + dataSDKversion);print(message);feed+=message+'\n'															
+										message=("- DLC number: "+str(DLCnumb)+' -> '+"AddOnContent"+' ('+str(DLCnumb)+')');feed+=message+'\n'																
+										message=("- DLC version Number: " + version+' -> '+"Version"+' ('+str(v_number)+')');feed+=message+'\n'								
+										message=("- Meta SDK version: " + sdkversion);feed+=message+'\n'								
+										message=("- Data SDK version: " + dataSDKversion);feed+=message+'\n'															
 										if SupLg !='':
 											suplangue=str((', '.join(SupLg)))
 											message=("- Supported Languages: "+suplangue);
 											par = textwrap.dedent(message).strip()	
-											message=(textwrap.fill(par,width=80,initial_indent='', subsequent_indent='  ',replace_whitespace=True,fix_sentence_endings=True));print(message);feed+=message+'\n'										
-									message=("\nRequired Firmware:");print(message);feed+=message+'\n'								
+											message=(textwrap.fill(par,width=80,initial_indent='', subsequent_indent='  ',replace_whitespace=True,fix_sentence_endings=True));feed+=message+'\n'										
+									message=("\nRequired Firmware:");feed+=message+'\n'								
 									if content_type_cnmt == 'AddOnContent':
 										if v_number == 0:
-											message=("- Required game version: " + str(RSversion)+' -> '+"Application"+' ('+str(RS_number)+')');print(message);feed+=message+'\n'																	
+											message=("- Required game version: " + str(RSversion)+' -> '+"Application"+' ('+str(RS_number)+')');feed+=message+'\n'																	
 										if v_number > 0:
-											message=("- Required game version: " + str(RSversion)+' -> '+"Patch"+' ('+str(RS_number)+')');print(message);feed+=message+'\n'																																																
+											message=("- Required game version: " + str(RSversion)+' -> '+"Patch"+' ('+str(RS_number)+')');feed+=message+'\n'																																																
 									else:
-										message=(reqtag + str(RSversion)+" -> " +RSV_rq);print(message);feed+=message+'\n'	
-									message=('- Encryption (keygeneration): ' + str(keygen)+" -> " +FW_rq);print(message);feed+=message+'\n'								
+										message=(reqtag + str(RSversion)+" -> " +RSV_rq);feed+=message+'\n'	
+									message=('- Encryption (keygeneration): ' + str(keygen)+" -> " +FW_rq);feed+=message+'\n'								
 									if content_type_cnmt != 'AddOnContent':	
-										message=('- Patchable to: ' + str(MinRSV)+" -> " + RSV_rq_min+'\n');print(message);feed+=message+'\n'							
+										message=('- Patchable to: ' + str(MinRSV)+" -> " + RSV_rq_min+'\n');feed+=message+'\n'							
 									else:
-										message=('- Patchable to: DLC -> no RSV to patch\n');print(message);feed+=message+'\n'
+										message=('- Patchable to: DLC -> no RSV to patch\n');feed+=message+'\n'
 									try:	
 										if content_type_cnmt != 'AddOnContent':								
-											message=('ExeFS Data:');print(message);feed+=message+'\n'	
+											message=('ExeFS Data:');feed+=message+'\n'	
 											ModuleId,BuildID8,BuildID16=self.read_buildid()	
-											message=('- BuildID8:  '+ BuildID8);print(message);feed+=message+'\n'
-											message=('- BuildID16: '+ BuildID16);print(message);feed+=message+'\n'
-											message=('- BuildID32: '+ ModuleId +'\n');print(message);feed+=message+'\n'	
+											message=('- BuildID8:  '+ BuildID8);feed+=message+'\n'
+											message=('- BuildID16: '+ BuildID16);feed+=message+'\n'
+											message=('- BuildID32: '+ ModuleId +'\n');feed+=message+'\n'	
 									except:pass		
 									if nsuId!=False or numberOfPlayers!=False or releaseDate!=False or category!=False or ratingContent!=False:
-										message=('Eshop Data:');print(message);feed+=message+'\n'								
+										message=('Eshop Data:');feed+=message+'\n'								
 									if nsuId!=False:
-										message=("- nsuId: " + nsuId);print(message);feed+=message+'\n'
+										message=("- nsuId: " + nsuId);feed+=message+'\n'
 									if region!=False:								
-										message=('- Data from Region: ' + region);print(message);feed+=message+'\n'									
+										message=('- Data from Region: ' + region);feed+=message+'\n'									
 									if numberOfPlayers!=False:
-										message=("- Number of Players: " + numberOfPlayers);print(message);feed+=message+'\n'								
+										message=("- Number of Players: " + numberOfPlayers);feed+=message+'\n'								
 									if releaseDate!=False:
-										message=("- Release Date: " + releaseDate);print(message);feed+=message+'\n'		
+										message=("- Release Date: " + releaseDate);feed+=message+'\n'		
 									if category!=False:
 										category=str((', '.join(category)))	
 										message=("- Genres: " + category);
 										par = textwrap.dedent(message).strip()	
-										message=(textwrap.fill(par,width=80,initial_indent='', subsequent_indent='  ',replace_whitespace=True,fix_sentence_endings=True));print(message);feed+=message+'\n'	
+										message=(textwrap.fill(par,width=80,initial_indent='', subsequent_indent='  ',replace_whitespace=True,fix_sentence_endings=True));feed+=message+'\n'	
 									if rating!=False:								
-										message=("- AgeRating: " + rating);print(message);feed+=message+'\n'										
+										message=("- AgeRating: " + rating);feed+=message+'\n'										
 									if ratingContent!=False:
 										ratingContent=str((', '.join(ratingContent)))	
 										message=("- Rating tags: " + ratingContent);
 										par = textwrap.dedent(message).strip()	
-										message=(textwrap.fill(par,width=80,initial_indent='', subsequent_indent='  ',replace_whitespace=True,fix_sentence_endings=True));print(message);feed+=message+'\n'							
+										message=(textwrap.fill(par,width=80,initial_indent='', subsequent_indent='  ',replace_whitespace=True,fix_sentence_endings=True));feed+=message+'\n'							
 									if intro!=False or description!=False:
-										message=('\nDescription:');print(message);feed+=message+'\n'								
+										message=('\nDescription:');feed+=message+'\n'								
 									if intro!=False:							
 										par = textwrap.dedent(intro).strip().upper()	
-										message=('-----------------------------------------------------------------------------');print(message);feed+=message+'\n'																								
-										message=(textwrap.fill(par,width=80,initial_indent=' ', subsequent_indent=' ',replace_whitespace=True,fix_sentence_endings=True));print(message);feed+=message+'\n'								
-										message=('-----------------------------------------------------------------------------');print(message);feed+=message+'\n'																
+										message=('-----------------------------------------------------------------------------');feed+=message+'\n'																								
+										message=(textwrap.fill(par,width=80,initial_indent=' ', subsequent_indent=' ',replace_whitespace=True,fix_sentence_endings=True));feed+=message+'\n'								
+										message=('-----------------------------------------------------------------------------');feed+=message+'\n'																
 									if description!=False:
 										if "•" in description:
 											data=description.split("• ")
@@ -2862,7 +2919,7 @@ class ChromeXci(File):
 												d=token+d
 											i+=1	
 											par = textwrap.dedent(d).strip()	
-											message=(textwrap.fill(par,width=80,initial_indent=' ', subsequent_indent=' ',replace_whitespace=True,fix_sentence_endings=True));print(message);feed+=message+'\n'								
+											message=(textwrap.fill(par,width=80,initial_indent=' ', subsequent_indent=' ',replace_whitespace=True,fix_sentence_endings=True));feed+=message+'\n'								
 		return feed									
 						
 	def inf_get_title(self,target,offset,content_entries,original_ID,roman=True):
@@ -6975,7 +7032,10 @@ class ChromeXci(File):
 					if str(file._path).endswith('.nca'):		
 						listed_files.append(str(file._path))
 					if type(file) == Nca:
-						validfiles.append(str(file._path))					
+						validfiles.append(str(file._path))	
+					if str(file._path).endswith('.ncz'):		
+						listed_files.append(str(file._path))
+						validfiles.append(str(file._path))							
 				
 		for nspF in self.hfs0:
 			if str(nspF._path)=="secure":
@@ -7035,6 +7095,16 @@ class ChromeXci(File):
 											correct = f.pr_noenc_check()				
 											if correct == False:
 												baddec=True	
+				elif file.endswith('.ncz'):
+					for nspF in self.hfs0:
+						if str(nspF._path)=="secure":
+							for f in nspF:					
+								if str(f._path)[:-1] == file[:-1]:				
+									ncztype=Nca(f)
+									ncztype._path=f._path
+									message=(str(ncztype.header.titleId)+' - '+str(ncztype.header.contentType));feed+=message+'\n'
+									correct=self.verify_ncz(file)
+									break												
 				elif file.endswith('.tik'):
 					tikfile=str(file)
 					checktik == False
@@ -7046,8 +7116,11 @@ class ChromeXci(File):
 										checktik = self.verify_key(str(f._path),tikfile)	
 										if 	checktik == True:
 											break
-							message=('Content.TICKET');feed+=message+'\n'												
-							correct = checktik				
+							if checktik==False and str(self._path).endswith('.xcz'):
+								checktik='xcz'
+							else:	
+								message=('Content.TICKET');feed+=message+'\n'												
+							correct = checktik		
 				else:
 					correct=False	
 					
@@ -7055,7 +7128,11 @@ class ChromeXci(File):
 				if file.endswith('cnmt.nca'):		
 					message=(tabs+file+' -> is CORRECT');feed+=message+'\n'					
 				else:
-					message=(tabs+file+tabs+'  -> is CORRECT');feed+=message+'\n'									
+					message=(tabs+file+tabs+'  -> is CORRECT');feed+=message+'\n'
+			elif correct=='ncz':
+				message=(tabs+file+tabs+'  -> ncz file needs HASH check');feed+=message+'\n'
+			elif correct=='xcz':
+				pass					
 			else:
 				verdict=False					
 				if file.endswith('cnmt.nca'):	
@@ -7123,10 +7200,11 @@ class ChromeXci(File):
 										titleid3 ='['+ titleid2+']'
 										nca_name=str(hx(NcaId))
 										nca_name=nca_name[2:-1]+'.nca'
+										ncz_name=nca_name[:-4]+'.ncz'										
 										if (nca_name not in listed_files and ncatype!=6) or (nca_name not in validfiles and ncatype!=6):
-											verdict = False
-											message=('\n- Missing file from '+titleid2+': '+nca_name);feed+=message+'\n'
-											
+											if ncz_name not in listed_files:
+												verdict = False
+												message=('\n- Missing file from '+titleid2+': '+nca_name);feed+=message+'\n'
 		ticketlist=list()
 		for nspF in self.hfs0:
 			if str(nspF._path)=="secure":				
@@ -7146,11 +7224,16 @@ class ChromeXci(File):
 								if mtick not in ticketlist:		
 									message=('\n- File has titlerights!!! Missing ticket: '+mtick);feed+=message+'\n'
 									verdict = False									
-											
+		if str(self.path).endswith('.xcz'):
+			token='XCZ'
+		elif str(self.path).endswith('.xci'):
+			token='XCI'				
+		else:
+			token='XCI'																
 		if verdict == False:
-			message='\nVERDICT: XCI FILE IS CORRUPT OR MISSES FILES\n';feed+=message+'\n'				
+			message='\nVERDICT: {} FILE IS CORRUPT OR MISSES FILES\n'.format(token);feed+=message+'\n'				
 		if verdict == True:	
-			message='\nVERDICT: XCI FILE IS CORRECT\n';feed+=message	
+			message='\nVERDICT: {} FILE IS CORRECT\n'.format(token);feed+=message
 		return verdict,feed	
 			
 	def verify_sig(self,feed,tmpfolder):	
@@ -7167,11 +7250,22 @@ class ChromeXci(File):
 					if type(f) == Nca and f.header.contentType != Type.Content.META:
 						message=(str(f.header.titleId)+' - '+str(f.header.contentType));feed+=message+'\n'											
 						verify,origheader,ncaname,feed,origkg,tr,tkey,iGC=f.verify(feed)				
-						headerlist.append([ncaname,origheader,hlisthash])		
+						headerlist.append([ncaname,origheader,hlisthash,tr,tkey,iGC])
 						keygenerationlist.append([ncaname,origkg])
 						if verdict == True:
 							verdict=verify
 						message='';feed+=message+'\n'	
+					if str(f._path).endswith('.ncz'):
+						ncz=Nca(f)
+						ncz._path=f._path
+						message=(str(ncz.header.titleId)+' - '+str(ncz.header.contentType));feed+=message+'\n'											
+						verify,origheader,ncaname,feed,origkg,tr,tkey,iGC=ncz.verify(feed)		
+						# headerlist.append([ncaname,origheader,hlisthash])		
+						headerlist.append([ncaname,origheader,hlisthash,tr,tkey,iGC])					
+						keygenerationlist.append([ncaname,origkg])
+						if verdict == True:
+							verdict=verify
+						message='';feed+=message+'\n'						
 		for nspF in self.hfs0:
 			if str(nspF._path)=="secure":
 				for f in nspF:
@@ -7277,12 +7371,17 @@ class ChromeXci(File):
 						message='';feed+=message+'\n'	
 		try:
 			shutil.rmtree(tmpfolder)
-		except:pass					
-		message=("");feed+=message+'\n'			
+		except:pass								
+		if str(self.path).endswith('.xcz'):
+			token='XCZ'
+		elif str(self.path).endswith('.xci'):
+			token='XCI'			
+		else:
+			token='XCI'						
 		if verdict == False:
-			message=("VERDICT: XCI FILE COULD'VE BEEN TAMPERED WITH");feed+=message+'\n'												
-		if verdict == True:
-			message=('VERDICT: XCI FILE IS SAFE');feed+=message+'\n'				
+			message=("VERDICT: {} FILE COULD'VE BEEN TAMPERED WITH").format(token);feed+=message+'\n'												
+		if verdict == True:	
+			message=('VERDICT: {}  FILE IS SAFE').format(token);feed+=message+'\n'				
 		return 	verdict,headerlist,feed
 
 	def find_addecuatekg(self,ncameta,keygenerationlist):
@@ -7339,9 +7438,9 @@ class ChromeXci(File):
 		verdict=True		
 		if feed == False:
 			feed=''			
-		message='\n***************';print(message);feed+=message+'\n'
-		message=('HASH TEST');print(message);feed+=message+'\n'
-		message='***************';print(message);feed+=message+'\n'												
+		message='\n***************';feed+=message+'\n'
+		message=('HASH TEST');feed+=message+'\n'
+		message='***************';feed+=message+'\n'												
 		for nspF in self.hfs0:
 			if str(nspF._path)=="secure":
 				for f in nspF:						
@@ -7352,7 +7451,7 @@ class ChromeXci(File):
 								origheader=headerlist[i][1]
 								break
 						#print(origheader)		
-						message=(str(f.header.titleId)+' - '+str(f.header.contentType));print(message);feed+=message+'\n'
+						message=(str(f.header.titleId)+' - '+str(f.header.contentType));feed+=message+'\n'
 						ncasize=f.header.size						
 						t = tqdm(total=ncasize, unit='B', unit_scale=True, leave=False)
 						i=0		
@@ -7382,30 +7481,30 @@ class ChromeXci(File):
 						sha=sha.hexdigest()	
 						if origheader != False:
 							sha0=sha0.hexdigest()						
-						message=('  - File name: '+f._path);print(message);feed+=message+'\n'
-						message=('  - SHA256: '+sha);print(message);feed+=message+'\n'
+						message=('  - File name: '+f._path);feed+=message+'\n'
+						message=('  - SHA256: '+sha);feed+=message+'\n'
 						if origheader != False:
-							message=('  - ORIG_SHA256: '+sha0);print(message);feed+=message+'\n'						
+							message=('  - ORIG_SHA256: '+sha0);feed+=message+'\n'						
 						if str(f._path)[:16] == str(sha)[:16]:
-							message=('   > FILE IS CORRECT');print(message);feed+=message+'\n'
+							message=('   > FILE IS CORRECT');feed+=message+'\n'
 						elif origheader != False:
 							if str(f._path)[:16] == str(sha0)[:16]:		
-								message=('   > FILE IS CORRECT');print(message);feed+=message+'\n'
+								message=('   > FILE IS CORRECT');feed+=message+'\n'
 							else:
-								message=('   > FILE IS CORRUPT');print(message);feed+=message+'\n'
+								message=('   > FILE IS CORRUPT');feed+=message+'\n'
 								verdict = False	
 						elif  f.header.contentType == Type.Content.META and didverify == True:		
-							message=('   > RSV WAS CHANGED');print(message);feed+=message+'\n'
+							message=('   > RSV WAS CHANGED');feed+=message+'\n'
 							#print('   > CHECKING INTERNAL HASHES')								
-							message=('     * FILE IS CORRECT');print(message);feed+=message+'\n'							
+							message=('     * FILE IS CORRECT');feed+=message+'\n'							
 						else:
-							message=('   > FILE IS CORRUPT');print(message);feed+=message+'\n'
+							message=('   > FILE IS CORRUPT');feed+=message+'\n'
 							verdict = False
-						message=('');print(message);feed+=message+'\n'			
+						message=('');feed+=message+'\n'			
 		if verdict == False:
-			message=("VERDICT: XCI FILE IS CORRUPT");print(message);feed+=message+'\n'
+			message=("VERDICT: XCI FILE IS CORRUPT");feed+=message+'\n'
 		if verdict == True:	
-			message=('VERDICT: XCI FILE IS CORRECT');print(message);feed+=message+'\n'
+			message=('VERDICT: XCI FILE IS CORRECT');feed+=message+'\n'
 		return 	verdict,feed						
 		
 	def verify_enforcer(self,nca):
@@ -7689,8 +7788,219 @@ class ChromeXci(File):
 #FILE RESTORATION
 ##################
 
-
-
+	def restore_ncas(self,buffer,headerlist,didverify,ofile,feed='',output_type='nsp'):	
+		from Fs.Ticket import PublicCert
+		from Fs.Ticket import PublicTik	
+		files_list=sq_tools.ret_xci_offsets(self._path)
+		files=list();filesizes=list()
+		fplist=list()
+		for k in range(len(files_list)):
+			entry=files_list[k]
+			fplist.append(entry[0])
+		for i in range(len(files_list)):
+			entry=files_list[i]
+			filepath=entry[0]
+			if filepath.endswith('.cnmt.nca'):
+				titleid,titleversion,base_ID,keygeneration,rightsId,RSV,RGV,ctype,metasdkversion,exesdkversion,hasHtmlManual,Installedsize,DeltaSize,ncadata=self.get_data_from_cnmt(filepath)
+				for j in range(len(ncadata)):
+					row=ncadata[j]
+					# print(row)
+					if row['NCAtype']!='Meta':
+						test1=str(row['NcaId'])+'.nca';test2=str(row['NcaId'])+'.ncz'
+						if test1 in fplist or test2 in fplist:
+							# print(str(row['NcaId'])+'.nca')
+							files.append(str(row['NcaId'])+'.nca')
+							filesizes.append(int(row['Size']))					
+					else:
+						# print(str(row['NcaId'])+'.cnmt.nca')
+						files.append(str(row['NcaId'])+'.cnmt.nca')
+						filesizes.append(int(row['Size']))					
+				for k in range(len(files_list)):
+					entry=files_list[k]
+					fp=entry[0];sz=int(entry[3])
+					if fp.endswith('xml'):
+						files.append(fp)
+						filesizes.append(sz)	
+		rightslist=list();ticketlist=list();certlist=list()
+		for i in range(len(headerlist)):
+			entry=headerlist[i]
+			import Hex
+			if entry[1]!=False and entry[4]!=False :
+				rights=str(hx(entry[3]))[2:-1]
+				key=str(hx(entry[4]))[2:-1]
+				key=key.upper()
+				if rights not in rightslist:
+					rightslist.append(rights)
+					tik=PublicTik();cert=PublicCert()
+					gencert=cert.generate()
+					gentik=tik.generate(rights[:16],key,rights[-2:])
+					ticketlist.append(gentik);certlist.append(gencert)
+					tikname=str(rights.lower())+'.tik'
+					certname=str(rights.lower())+'.cert'
+					files.append(tikname);files.append(certname)
+					filesizes.append(len(gentik));filesizes.append(len(gencert))
+		if output_type=='nsp':
+			outheader=sq_tools.gen_nsp_header(files,filesizes)
+			ofile=ofile[:-3]+'nsp'			
+		else:
+			files_aux=list();filesizes_aux=list()
+			for item in range(len(files)):
+				if not (files[item]).endswith('.xml'):
+					files_aux.append(files[item])
+					filesizes_aux.append(filesizes[item])
+			files=files_aux
+			filesizes=filesizes_aux
+			sec_hashlist=list()
+			try:
+				for file in files:
+					sha,size,gamecard=self.file_hash(file)
+					# print(sha)
+					if sha != False:
+						sec_hashlist.append(sha)
+			except BaseException as e:
+				Print.error('Exception: ' + str(e))				
+			xci_header,game_info,sig_padding,xci_certificate,root_header,upd_header,norm_header,sec_header,rootSize,upd_multiplier,norm_multiplier,sec_multiplier=sq_tools.get_xciheader(files,filesizes,sec_hashlist)	
+			outheader=xci_header
+			outheader+=game_info
+			outheader+=sig_padding
+			outheader+=xci_certificate
+			outheader+=root_header
+			outheader+=upd_header
+			outheader+=norm_header
+			outheader+=sec_header
+			ofile=ofile[:-3]+'xci'
+		# files_list=sq_tools.ret_xci_offsets(self._path)
+		totsize=0
+		for s in filesizes:
+			totsize+=s
+		t = tqdm(total=totsize, unit='B', unit_scale=True, leave=False)				
+		with open(ofile, 'wb+') as o:
+			o.write(outheader)	
+			t.update(len(outheader))
+		with open(ofile, 'rb+') as o:
+			o.seek(0, os.SEEK_END)	
+			for file in files:	
+				if file.endswith('cnmt.nca'):		
+					for i in range(len(files_list)):
+						if files_list[i][0]==file:
+							o.seek(0, os.SEEK_END)
+							head_off= o.tell()		
+							ncahead=False
+							for k in range(len(headerlist)):
+								entry=headerlist[k]
+								if entry[0]==file and entry[1]!=False:
+									ncahead=entry[1]						
+							off1=files_list[i][1]
+							off2=files_list[i][2]						
+							t.write('- Appending {}'.format(files_list[i][0]))
+							s=files_list[i][3]
+							if int(buffer)>s:
+								buf=s
+							else:
+								buf=buffer
+							with open(self._path, 'r+b') as f:	
+								f.seek(off1);c=0
+								for data in iter(lambda: f.read(int(buf)), ""):
+									o.write(data)
+									o.flush()
+									c=len(data)+c
+									t.update(len(data))
+									if c+int(buf)>s:
+										if (s-c)<0:
+											t.close()
+											o.close()
+											break
+										data=f.read(s-c)
+										o.write(data)
+										t.update(len(data))
+										break
+									if not data:
+										break	
+							if ncahead!=False:
+								o.seek(head_off)
+								o.write(ncahead)
+								o.seek(0, os.SEEK_END)										
+				elif file.endswith('.nca'):	
+					for i in range(len(files_list)):
+						if files_list[i][0]==file:
+							o.seek(0, os.SEEK_END)
+							head_off= o.tell()		
+							ncahead=False
+							for k in range(len(headerlist)):
+								entry=headerlist[k]
+								if entry[0]==file and entry[1]!=False:
+									ncahead=entry[1]							
+							off1=files_list[i][1]
+							off2=files_list[i][2]						
+							t.write('- Appending {}'.format(files_list[i][0]))
+							s=files_list[i][3]
+							if int(buffer)>s:
+								buf=s
+							else:
+								buf=buffer
+							with open(self._path, 'r+b') as f:	
+								f.seek(off1);c=0
+								for data in iter(lambda: f.read(int(buf)), ""):
+									o.write(data)
+									o.flush()
+									c=len(data)+c
+									t.update(len(data))
+									if c+int(buf)>s:
+										if (s-c)<0:
+											t.close()
+											o.close()
+											break
+										data=f.read(s-c)
+										o.write(data)
+										t.update(len(data))
+										break
+									if not data:
+										break
+							if ncahead!=False:
+								o.seek(head_off)
+								o.write(ncahead)
+								o.seek(0, os.SEEK_END)
+				elif file.endswith('.xml'):			
+					for i in range(len(files_list)):
+						if files_list[i][0]==file:
+							off1=files_list[i][1]
+							off2=files_list[i][2]						
+							t.write('- Appending {}'.format(files_list[i][0]))
+							s=files_list[i][3]
+							if int(buffer)>s:
+								buf=s
+							else:
+								buf=buffer
+							with open(self._path, 'r+b') as f:	
+								f.seek(off1);c=0
+								for data in iter(lambda: f.read(int(buf)), ""):
+									o.write(data)
+									o.flush()
+									c=len(data)+c
+									t.update(len(data))
+									if c+int(buf)>s:
+										if (s-c)<0:
+											t.close()
+											o.close()
+											break
+										data=f.read(s-c)
+										o.write(data)
+										t.update(len(data))
+										break
+									if not data:
+										break		
+				elif file.endswith('.tik')or file.endswith('.cert'):	
+					pass
+				
+			for i in range(len(ticketlist)):		
+				t.write('- Appending tickets and certs')			
+				o.write(ticketlist[i])	
+				t.update(len(ticketlist[i]))
+				o.flush()			
+				o.write(certlist[i])	
+				t.update(len(certlist[i]))			
+				o.flush()	
+		t.close()
 
 ##################		
 #DB DATA
@@ -8155,4 +8465,269 @@ class ChromeXci(File):
 		# print(a)
 		# img = Image.open(dat)
 		# img.show()
-		return a		
+		return a
+		
+	def verify_ncz(self,target):	
+		files_list=sq_tools.ret_xci_offsets(self._path)
+		files=list();
+		fplist=list()
+		for k in range(len(files_list)):
+			entry=files_list[k]
+			fplist.append(entry[0])
+		for i in range(len(files_list)):
+			entry=files_list[i]
+			filepath=entry[0]
+			if filepath.endswith('.cnmt.nca'):
+				titleid,titleversion,base_ID,keygeneration,rightsId,RSV,RGV,ctype,metasdkversion,exesdkversion,hasHtmlManual,Installedsize,DeltaSize,ncadata=self.get_data_from_cnmt(filepath)
+				for j in range(len(ncadata)):
+					row=ncadata[j]
+					# print(row)
+					if row['NCAtype']!='Meta':
+						test1=str(row['NcaId'])+'.nca';test2=str(row['NcaId'])+'.ncz'
+						if test1 in fplist or test2 in fplist:
+							# print(str(row['NcaId'])+'.nca')
+							if str(row['NcaId'])==target[:-4]:
+								files.append(str(row['NcaId'])+'.nca')
+								break
+		for file in files:		
+			if file.endswith('nca'):		
+				for nspF in self.hfs0:
+					if str(nspF._path)=="secure":
+						for nca in nspF:		
+							if str(nca._path)[:-1]==file[:-1] and str(nca._path).endswith('ncz'):
+								# print(nca._path)
+								nca.rewind()
+								header = nca.read(0x4000)
+								magic = readInt64(nca)
+								sectionCount = readInt64(nca)
+								sections = []
+								for i in range(sectionCount):
+									sections.append(Section(nca))	
+								count=0;checkstarter=0
+								if titleid.endswith('000'):
+									for s in sections:
+										count+=1
+										if count==2:
+											break
+										# print(s.cryptoType)
+										# print(s.size)
+										checkstarter+=s.size
+										# print(s.size)
+									dctx = zstandard.ZstdDecompressor()
+									reader = dctx.stream_reader(nca)	
+									test=int(checkstarter/(16384))
+									for i in (range(test+1)):
+										reader.seek(16384,1)	
+									chunk = reader.read(16384)	
+									b1=chunk[:32];# Hex.dump(b1)
+									b2=chunk[32:64];# Hex.dump(b2)	
+									if sum(b1)!=0 and sum(b2)==0:
+										return True
+									else:
+										return 'ncz'		
+								if not titleid.endswith('800'):
+									dctx = zstandard.ZstdDecompressor()
+									reader = dctx.stream_reader(nca)	
+									chunk = reader.read(16384)		
+									b1=chunk[:32];# Hex.dump(b1)
+									b2=chunk[32:64];# Hex.dump(b2)					
+									if sum(b1)!=0 and sum(b2)==0:
+										return True
+									else:
+										return 'ncz'							
+								elif titleid.endswith('800'):
+									dctx = zstandard.ZstdDecompressor()
+									reader = dctx.stream_reader(nca)	
+									chunk = reader.read(16384)		
+									b1=chunk[:32];# Hex.dump(b1)
+									b2=chunk[32:64];# Hex.dump(b2)						
+									if sum(b1)!=0 and sum(b2)==0:
+										return True
+									else:
+										return 'ncz'										
+
+	def xcz_hasher(self,buffer,headerlist,didverify,feed):	
+		buffer=int(buffer)
+		verdict=True		
+		if feed == False:
+			feed=''				
+		message='\n***************';feed+=message+'\n'
+		message=('HASH TEST');feed+=message+'\n'
+		message='***************';feed+=message+'\n'			
+		for nspF in self.hfs0:
+			if str(nspF._path)=="secure":
+				for f in nspF:						
+					if type(f) == Nca:
+						origheader=False
+						for i in range(len(headerlist)):
+							if str(f._path)==headerlist[i][0]:
+								origheader=headerlist[i][1]
+								listedhash=headerlist[i][2]
+								break			
+						message=(str(f.header.titleId)+' - '+str(f.header.contentType));feed+=message+'\n'
+						ncasize=f.header.size						
+						t = tqdm(total=ncasize, unit='B', unit_scale=True, leave=False)	
+						i=0		
+						f.rewind();
+						rawheader=f.read(0xC00)
+						f.rewind()												
+						for data in iter(lambda: f.read(int(buffer)), ""):				
+							if i==0:	
+								sha=sha256()
+								f.seek(0xC00)
+								sha.update(rawheader)
+								if origheader != False and listedhash == False:
+									sha0=sha256()
+									sha0.update(origheader)	
+								i+=1
+								t.update(len(data))
+								f.flush()
+							else:		
+								sha.update(data)
+								if origheader != False and listedhash == False:
+									sha0.update(data)								
+								t.update(len(data))
+								f.flush()
+								if not data:				
+									break						
+						t.close()	
+						sha=sha.hexdigest()	
+						if listedhash != False:
+							sha0=listedhash
+						elif origheader != False:
+							sha0=sha0.hexdigest()						
+						message=('  - File name: '+f._path);feed+=message+'\n'
+						message=('  - SHA256: '+sha);feed+=message+'\n'
+						if origheader != False:
+							message=('  - ORIG_SHA256: '+sha0);feed+=message+'\n'						
+						if str(f._path)[:16] == str(sha)[:16]:
+							message=('   > FILE IS CORRECT');feed+=message+'\n'
+						elif origheader != False:
+							if str(f._path)[:16] == str(sha0)[:16]:		
+								message=('   > FILE IS CORRECT');feed+=message+'\n'
+							else:
+								message=('   > FILE IS CORRUPT');feed+=message+'\n'
+								verdict = False	
+						elif  f.header.contentType == Type.Content.META and didverify == True:		
+							message=('   > RSV WAS CHANGED');feed+=message+'\n'
+							#print('   > CHECKING INTERNAL HASHES')								
+							message=('     * FILE IS CORRECT');feed+=message+'\n'							
+						else:
+							message=('   > FILE IS CORRUPT');feed+=message+'\n'
+							verdict = False
+						message=('');feed+=message+'\n'		
+					if (f._path).endswith('ncz'):
+						ncz=Nca(f)
+						ncz._path=f._path
+						origheader=False
+						for i in range(len(headerlist)):
+							if str(f._path)==headerlist[i][0]:
+								origheader=headerlist[i][1]
+								listedhash=headerlist[i][2]
+								break	
+						message=(str(ncz.header.titleId)+' - '+str(ncz.header.contentType));feed+=message+'\n'
+						ncasize=ncz.header.size						
+						t = tqdm(total=ncasize, unit='B', unit_scale=True, leave=False)	
+						i=0		
+						f.rewind();
+						rawheader=f.read(0xC00)
+						f.rewind()			
+						sha=sha256()
+						f.seek(0xC00)
+						sha.update(rawheader)
+						if origheader != False and listedhash == False:
+							sha0=sha256()
+							sha0.update(origheader)	
+						i+=1
+						t.update(len(rawheader))
+						f.flush()
+						size=0x4000-0xC00
+						dif = f.read(size)
+						sha.update(dif)
+						if origheader != False and listedhash == False:
+							sha0.update(dif)
+						t.update(len(dif))
+						f.flush()	
+						f.seek(0x4000)						
+						magic = readInt64(f)
+						sectionCount = readInt64(f)
+						sections = []
+						for i in range(sectionCount):
+							sections.append(Section(f))		
+						# print(sections)	
+						count=0;checkstarter=0
+						dctx = zstandard.ZstdDecompressor()
+						reader = dctx.stream_reader(f)			
+						c=0;spsize=0			
+						for s in sections:
+							end = s.offset + s.size		
+							if s.cryptoType == 1: #plain text
+								spsize+=s.size	
+								end = s.offset + s.size	
+								i = s.offset									
+								while i < end:
+									chunkSz = buffer if end - i > buffer else end - i									
+									chunk = reader.read(chunkSz)		
+									if not len(chunk):
+										break	
+									sha.update(chunk)
+									if origheader != False and listedhash == False:
+										sha0.update(chunk)
+									t.update(len(chunk))	
+									i += chunkSz
+							elif s.cryptoType not in (3, 4):
+								raise IOError('Unknown crypto type: %d' % s.cryptoType)	
+							else: 		
+								crypto = AESCTR(s.cryptoKey, s.cryptoCounter)
+								spsize+=s.size	
+								test=int(spsize/(buffer))
+								i = s.offset									
+								while i < end:
+									crypto.seek(i)
+									chunkSz = buffer if end - i > buffer else end - i
+									chunk = reader.read(chunkSz)	
+									if not len(chunk):
+										break				
+									crpt=crypto.encrypt(chunk)		
+									sha.update(crpt)
+									if origheader != False and listedhash == False:
+										sha0.update(crpt)
+									t.update(len(chunk))									
+									i += chunkSz	
+						t.close()			
+						sha=sha.hexdigest()
+						if listedhash != False:
+							sha0=listedhash		
+						elif origheader != False:
+							sha0=sha0.hexdigest()							
+						message=('  - File name: '+ncz._path);feed+=message+'\n'
+						message=('  - SHA256: '+sha);feed+=message+'\n'	
+						if origheader != False:
+							message=('  - ORIG_SHA256: '+sha0);feed+=message+'\n'						
+						if str(ncz._path)[:16] == str(sha)[:16]:
+							message=('   > FILE IS CORRECT');feed+=message+'\n'
+						elif origheader != False:
+							if str(ncz._path)[:16] == str(sha0)[:16]:		
+								message=('   > FILE IS CORRECT');feed+=message+'\n'
+							else:
+								message=('   > FILE IS CORRUPT');feed+=message+'\n'
+								verdict = False	
+						elif  ncz.header.contentType == Type.Content.META and didverify == True:		
+							message=('   > RSV WAS CHANGED');feed+=message+'\n'
+							#print('   > CHECKING INTERNAL HASHES')								
+							message=('     * FILE IS CORRECT');feed+=message+'\n'							
+						else:
+							message=('   > FILE IS CORRUPT');feed+=message+'\n'
+							verdict = False
+						message=('');feed+=message+'\n'	
+		if str(self.path).endswith('.xcz'):
+			token='XCZ'
+		elif str(self.path).endswith('.xci'):
+			token='XCI'			
+		else:
+			token='XCI'			
+		if verdict == False:
+			message=("VERDICT: {} FILE IS CORRUPT").format(token);feed+=message+'\n'
+		if verdict == True:	
+			message=('VERDICT: {} FILE IS CORRECT').format(token);feed+=message+'\n'
+		return 	verdict,feed						

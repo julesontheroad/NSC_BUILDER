@@ -19,6 +19,7 @@ if "%Extension%" EQU ".nsx" ( goto sc2 )
 if "%Extension%" EQU ".xci" ( goto sc2 )
 if "%Extension%" EQU ".nca" ( goto sc3 )
 if "%Extension%" EQU ".nsz" ( goto sc2_1 )
+if "%Extension%" EQU ".xcz" ( goto sc2_1 )
 echo WRONG TYPE OF FILE
 pause
 goto sc1
@@ -49,6 +50,7 @@ if "%Extension%" EQU ".nsp" ( goto snfi )
 if "%Extension%" EQU ".nsx" ( goto snfi )
 if "%Extension%" EQU ".xci" ( goto snfi )
 if "%Extension%" EQU ".nsz" ( goto snfi2 )
+if "%Extension%" EQU ".xcz" ( goto snfi2 )
 if "%Extension%" EQU ".nca" ( goto snfi_nca ) 
 
 if /i "%bs%"=="1" goto g_file_content
@@ -68,10 +70,12 @@ goto wch
 cls
 call :logo
 echo .......................................................
-echo Input "1" to get GAME-INFO and FW requirements
-echo Input "2" to READ the CNMT from the xci\nsp
-echo Input "3" to READ the NACP from the xci\nsp
-echo Input "4" to VERIFY file
+echo Input "1" to get FILE LIST of the xci\nsp
+echo Input "2" to get CONTENT LIST of the xci\nsp
+echo Input "3" to get GAME-INFO and FW requirements
+echo Input "4" to READ the CNMT from the xci\nsp
+echo Input "5" to READ the NACP from the xci\nsp
+echo Input "6" to VERIFY file
 echo.
 echo Input "b" to go back to FILE LOADING
 echo Input "0" to go back to the MAIN PROGRAM
@@ -87,12 +91,15 @@ if "%Extension%" EQU ".nsp" ( goto snfi )
 if "%Extension%" EQU ".nsx" ( goto snfi )
 if "%Extension%" EQU ".xci" ( goto snfi )
 if "%Extension%" EQU ".nsz" ( goto snfi2 )
+if "%Extension%" EQU ".xcz" ( goto snfi2 )
 if "%Extension%" EQU ".nca" ( goto snfi_nca ) 
 
-if /i "%bs%"=="1" goto f_info2
-if /i "%bs%"=="2" goto r_cnmt2
-if /i "%bs%"=="3" goto r_nacp2
-if /i "%bs%"=="4" goto verify2
+if /i "%bs%"=="1" goto g_file_content2
+if /i "%bs%"=="2" goto g_content_list2
+if /i "%bs%"=="3" goto f_info2
+if /i "%bs%"=="4" goto r_cnmt2
+if /i "%bs%"=="5" goto r_nacp2
+if /i "%bs%"=="6" goto verify2
 
 if /i "%bs%"=="b" goto sc1
 if /i "%bs%"=="0" goto salida
@@ -125,6 +132,15 @@ echo ********************************************************
 %pycommand% "%nut%" -o "%info_dir%" --ADVfilelist "%targt%"
 goto sc2
 
+:g_file_content2
+cls
+call :logo
+echo ********************************************************
+echo SHOW NSZ FILE CONTENT OR XCZ SECURE PARTITION CONTENT
+echo ********************************************************
+%pycommand% "%nut%" -o "%info_dir%" --ADVfilelist "%targt%"
+goto sc2_1
+
 :g_content_list
 cls
 call :logo
@@ -133,6 +149,15 @@ echo SHOW NSP OR XCI CONTENT ARRANGED BY ID
 echo ********************************************************
 %pycommand% "%nut%" -o "%info_dir%" --ADVcontentlist "%targt%"
 goto sc2
+
+:g_content_list2
+cls
+call :logo
+echo ********************************************************
+echo SHOW NSP OR XCI CONTENT ARRANGED BY ID
+echo ********************************************************
+%pycommand% "%nut%" -o "%info_dir%" --ADVcontentlist "%targt%"
+goto sc2_1
 
 :n_info
 cls
@@ -179,6 +204,7 @@ echo ********************************************************
 echo SHOW INFORMATION AND DATA ABOUT THE REQUIRED FIRMWARE
 echo ********************************************************
 %pycommand% "%nut%" -o "%info_dir%" --translate %transnutdb% --fw_req "%targt%"
+
 goto sc2_1
 
 :r_cnmt
@@ -189,6 +215,7 @@ echo SHOW CMT DATA FROM META NCA IN NSP\XCI
 echo ********************************************************
 %pycommand% "%nut%" -o "%info_dir%" --Read_cnmt "%targt%"
 if "%Extension%" EQU ".nsz" ( goto sc2_1 )
+if "%Extension%" EQU ".xcz" ( goto sc2_1 )
 goto sc2
 
 :r_cnmt2
@@ -199,6 +226,7 @@ echo SHOW CMT DATA FROM META NCA IN NSP\XCI
 echo ********************************************************
 %pycommand% "%nut%" -o "%info_dir%" --Read_cnmt "%targt%"
 if "%Extension%" EQU ".nsz" ( goto sc2_1 )
+if "%Extension%" EQU ".xcz" ( goto sc2_1 )
 goto sc2_1
 
 :r_nacp
@@ -210,6 +238,7 @@ echo ********************************************************
 echo IMPLEMENTATION OF 0LIAM'S NACP LIBRARY
 %pycommand% "%nut%" -o "%info_dir%" --Read_nacp "%targt%"
 if "%Extension%" EQU ".nsz" ( goto sc2_1 )
+if "%Extension%" EQU ".xcz" ( goto sc2_1 )
 goto sc2
 
 :r_nacp2
@@ -221,6 +250,7 @@ echo ********************************************************
 echo IMPLEMENTATION OF 0LIAM'S NACP LIBRARY
 %pycommand% "%nut%" -o "%info_dir%" --Read_nacp "%targt%"
 if "%Extension%" EQU ".nsz" ( goto sc2_1 )
+if "%Extension%" EQU ".xcz" ( goto sc2_1 )
 goto sc2_1
 
 :r_npdm
@@ -247,9 +277,10 @@ goto sc2
 cls
 call :logo
 echo ********************************************************
-echo VERIFY A NSZ FILE
+echo VERIFY A NSZ\XCZ FILE
 echo ********************************************************
 %pycommand% "%nut%" %buffer% -o "%info_dir%" -v "%targt%" 
+
 goto sc2_1
 
 :sc3

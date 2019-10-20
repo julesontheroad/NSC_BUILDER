@@ -145,8 +145,8 @@ class Ticket(File):
 			if self.masterKeyRevision == 0:
 				filename = str(self._path)
 				filename = filename[:-4] 
-				filename = filename[-1] 
-				self.masterKeyRevision = int(filename) 
+				filename = filename[-2:-1] 
+				self.masterKeyRevision = int(filename,16) 
 		return self.masterKeyRevision
 
 	def setMasterKeyRevision(self, value):
@@ -220,11 +220,15 @@ class Ticket(File):
 
 class PublicTik():
 	def generate(self,titleid,titlekey,keygeneration,outfolder=None):
+		if int(keygeneration,16)>9:
+			keygeneration=str(hex(int(keygeneration,16)))[2:]
 		try:
+			# print(len(str(keygeneration)))
 			if len(str(keygeneration))==1:
-				tikname=str(titleid).lower()+'0000000000000000'+keygeneration+'.tik'
+				tikname=str(titleid).lower()+'000000000000000'+keygeneration+'.tik'
 			elif len(str(keygeneration))==2:
-				tikname=str(titleid)+'00000000000000'+keygeneration+'.tik'				
+				tikname=str(titleid)+'00000000000000'+keygeneration+'.tik'		
+			print(tikname)	
 			if outfolder != None:
 				tikpath=os.path.join(outfolder, tikname)	
 			chain=''	
@@ -240,6 +244,7 @@ class PublicTik():
 			keygeneration=tikname[-6:-4];chain+=keygeneration
 			padding5='0000000000000000000000000000000000000000000000000000';chain+=padding5
 			rightsid=(str(tikname)[:-4]).upper();chain+=rightsid
+			# print(rightsid)
 			end_line='0000000000000000C002000000000000';chain+=end_line	
 			chain=bytearray.fromhex(chain)
 			# Hex.dump(chain)
@@ -252,8 +257,10 @@ class PublicCert():
 	def generate(self,titleid=None,titlekey=None,keygeneration=None,outfolder=None):
 		try:	
 			if outfolder != None:
+				if int(keygeneration,16)>9:
+					keygeneration=str(hex(keygeneration))[2:]				
 				if len(str(keygeneration))==1:
-					certname=str(titleid).lower()+'0000000000000000'+keygeneration+'.cert'
+					certname=str(titleid).lower()+'000000000000000'+keygeneration+'.cert'
 				elif len(str(keygeneration))==2:
 					certname=str(titleid)+'00000000000000'+keygeneration+'.cert'				
 				certpath=os.path.join(outfolder, certname)		

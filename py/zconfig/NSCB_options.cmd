@@ -156,5 +156,6 @@ set "workers=-threads 1"
 ::--------------------------------------------------------------
 ::OPTION 18: NSZ user options
 ::--------------------------------------------------------------
-set "compression_lv=17"
-set "compression_threads=1"
+set compression_lv=17
+set compression_threads=0
+set xci_export=xcz

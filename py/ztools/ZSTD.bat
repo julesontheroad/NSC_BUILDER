@@ -73,15 +73,15 @@ echo Input "2" to add file to list via selector
 echo Input "0" to return to the MODE SELECTION MENU
 ECHO ***********************************************
 echo.
-%pycommand% "%nut%" -t nsp xci nsz -tfile "%prog_dir%zzlist.txt" -uin "%uinput%" -ff "uinput"
+%pycommand% "%nut%" -t nsp xci nsz xcz -tfile "%prog_dir%zzlist.txt" -uin "%uinput%" -ff "uinput"
 set /p eval=<"%uinput%"
 set eval=%eval:"=%
 setlocal enabledelayedexpansion
 echo+ >"%uinput%"
 endlocal
 if /i "%eval%"=="0" exit /B
-if /i "%eval%"=="1" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%zzlist.txt",mode=folder,ext=nsp xci nsz ) 2>&1>NUL
-if /i "%eval%"=="2" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%zzlist.txt",mode=file,ext=nsp xci nsz )  2>&1>NUL
+if /i "%eval%"=="1" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%zzlist.txt",mode=folder,ext=nsp xci nsz xcz ) 2>&1>NUL
+if /i "%eval%"=="2" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%zzlist.txt",mode=file,ext=nsp xci nsz xcz )  2>&1>NUL
 goto checkagain
 echo.
 :checkagain
@@ -101,7 +101,7 @@ ECHO *************************************************
 echo Or Input "0" to return to the MODE SELECTION MENU
 ECHO *************************************************
 echo.
-%pycommand% "%nut%" -t nsp xci nsz -tfile "%prog_dir%zzlist.txt" -uin "%uinput%" -ff "uinput"
+%pycommand% "%nut%" -t nsp xci nsz xcz -tfile "%prog_dir%zzlist.txt" -uin "%uinput%" -ff "uinput"
 set /p eval=<"%uinput%"
 set eval=%eval:"=%
 setlocal enabledelayedexpansion
@@ -110,8 +110,8 @@ endlocal
 
 if /i "%eval%"=="0" exit /B
 if /i "%eval%"=="1" goto start
-if /i "%eval%"=="2" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%zzlist.txt",mode=folder,ext=nsp xci nsz ) 2>&1>NUL
-if /i "%eval%"=="3" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%zzlist.txt",mode=file,ext=nsp xci nsz )  2>&1>NUL
+if /i "%eval%"=="2" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%zzlist.txt",mode=folder,ext=nsp xci nsz xcz ) 2>&1>NUL
+if /i "%eval%"=="3" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%zzlist.txt",mode=file,ext=nsp xci nsz xcz )  2>&1>NUL
 if /i "%eval%"=="e" goto salida
 if /i "%eval%"=="i" goto showlist
 if /i "%eval%"=="r" goto r_files
@@ -178,8 +178,8 @@ echo ............
 echo *******************************************************
 echo CHOOSE HOW TO PROCESS THE FILES
 echo *******************************************************
-echo Input "1" to compress nsp to nsz
-echo Input "2" for decompress nsz
+echo Input "1" to compress nsp\xci to nsz\xcz
+echo Input "2" for decompress nsz\xcz
 echo.
 ECHO ******************************************
 echo Or Input "b" to return to the list options
@@ -211,7 +211,8 @@ echo 4. INTERMEDIATE (UNTHREADED) - LEVEL 10 _ no  threads
 echo 5. AVERAGE (THREADED)        - LEVEL 17 _ 2   threads
 echo 6. AVERAGE (UNTHREADED)      - LEVEL 17 _ no  threads
 echo 7. HARD    (UNTHREADED)      - LEVEL 22 _ no  threads
-echo 8. USER VALUE (SETUP IN CONFIG)
+echo 8. HARD    (THREADED)        - LEVEL 22 _ 1   threads
+echo 9. USER VALUE (SETUP IN CONFIG)
 echo. 
 ECHO ******************************************
 echo Input "d" for default (level 17_no threads)
@@ -240,8 +241,10 @@ if /i "%bs%"=="6" set "level=17"
 if /i "%bs%"=="6" set "workers=0"
 if /i "%bs%"=="7" set "level=22"
 if /i "%bs%"=="7" set "workers=0"
-if /i "%bs%"=="8" set "level=%compression_lv%"
-if /i "%bs%"=="8" set "workers=%compression_threads%"
+if /i "%bs%"=="8" set "level=22"
+if /i "%bs%"=="8" set "workers=1"
+if /i "%bs%"=="9" set "level=%compression_lv%"
+if /i "%bs%"=="9" set "workers=%compression_threads%"
 
 if "%level%"=="none" goto compression_presets_wrongchoice
 goto compress
@@ -289,6 +292,7 @@ echo    but you'll loose compression ratio
 echo  + Level 22 and 4 threads may run you out of memory
 echo  + For maximum threads level 17 compression is advised
 echo    but you'll loose compression ratio
+echo  + -1 will set it to your number of logical threads
 echo.
 ECHO *********************************************
 echo Input "d" for default (0 threads)
@@ -309,12 +313,13 @@ if %choice%=="none" goto threads_wrongchoice
 cls
 call :program_logo
 echo *******************************
-echo COMPRESS A NSP INTO NSZ FORMAT
+echo COMPRESS A NSP\XCI
 echo *******************************
 CD /d "%prog_dir%"
 for /f "tokens=*" %%f in (zzlist.txt) do (
 
 %pycommand% "%nut%" %buffer% -o "%fold_output%" -tfile "%prog_dir%zzlist.txt" --compress "%level%" --threads "%workers%" --nodelta "%skdelta%"
+REM %pycommand% "%nut%" %buffer% -o "%fold_output%" -tfile "%prog_dir%zzlist.txt" --compress "%level%" --threads "%workers%" --nodelta "%skdelta%" --pararell "true" 
 
 %pycommand% "%nut%" --strip_lines "%prog_dir%zzlist.txt"
 call :contador_NF
@@ -328,7 +333,7 @@ goto s_exit_choice
 cls
 call :program_logo
 echo **************************
-echo DECOMPRESS A NSZ INTO NSP
+echo DECOMPRESS A NSZ\XCZ
 echo **************************
 CD /d "%prog_dir%"
 for /f "tokens=*" %%f in (zzlist.txt) do (

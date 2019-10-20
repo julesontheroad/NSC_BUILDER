@@ -1231,7 +1231,7 @@ cls
 call :program_logo
 set "workers=-threads 1"
 for /f "tokens=*" %%f in (list.txt) do (
-%pycommand% "%nut%" -renf "single" -tfile "%prog_dir%list.txt" -t nsp xci nsx nsz -renm %renmode% -nover %nover% -oaid %oaid% -addl %addlangue% -dlcrn %dlcrname% %workers%
+%pycommand% "%nut%" -renf "single" -tfile "%prog_dir%list.txt" -t nsp xci nsx nsz -renm %renmode% -nover %nover% -oaid %oaid% -addl %addlangue% -roma %romaji% -dlcrn %dlcrname% %workers%
 if "%workers%" EQU "-threads 1" ( %pycommand% "%nut%" --strip_lines "%prog_dir%list.txt" "1" "true" )
 if "%workers%" NEQ "-threads 1" ( call :renamecheck )
 rem call :contador_NF

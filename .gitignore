@@ -8,8 +8,6 @@ py/ztools/nutFs/__pycache__
 py/ztools/lib/__pycache__
 py/list.txt
 py/advlist.txt
-py/ztools/hactool.exe
-py/ztools/nstool.exe
 py/ztools/dbwork
 py/badfiles.txt
 py/mlist.txt
@@ -22,3 +20,8 @@ py/ztools/lib/tester.py
 py/zzlist.txt
 py/mnglist.txt
 py/rstlist.txt
+py/*.nsp
+py/*.xci
+py/*.nsz
+py/*.nsx
+py/*.nsz

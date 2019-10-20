@@ -1949,15 +1949,17 @@ class ChromeNsp(Pfs0):
 					finalsize=size1+size2+size3	
 					size_pr=sq_tools.getSize(finalsize)	
 					feed=self.html_feed(feed,2,message=('FULL CONTENT TOTAL SIZE: '+size_pr))	
-		self.printnonlisted(contentlist)
+		self.printnonlisted(contentlist,feed)
 		return feed
 					
 																				
 	def print_nca_by_title(self,nca_name,ncatype,feed=''):	
 		tab="\t";
+		size=0
+		ncz_name=nca_name[:-1]+'z'			
 		for nca in self:
+			filename = str(nca._path)			
 			if type(nca) == Nca:
-				filename = str(nca._path)
 				if filename == nca_name:
 					size=nca.header.size
 					size_pr=sq_tools.getSize(size)
@@ -1968,7 +1970,21 @@ class ChromeNsp(Pfs0):
 						message=[ncatype,str(filename),'Size:',size_pr];feed=self.html_feed(feed,4,message)						
 					else:
 						message=[ncatype,str(filename),'Size:',size_pr];feed=self.html_feed(feed,4,message)					
-					return size,feed		
+					return size,feed	
+			elif filename == ncz_name:
+				ncztype=Nca(nca)
+				ncztype._path=nca._path				
+				size=nca.header.size
+				size_pr=sq_tools.getSize(size)
+				content=str(nca.header.contentType)
+				content=content[8:]+": "
+				ncatype=sq_tools.getTypeFromCNMT(ncatype)	
+				if ncatype != "Meta: ":
+					message=[ncatype,str(filename),'Size:',size_pr];feed=self.html_feed(feed,4,message)						
+				else:
+					message=[ncatype,str(filename),'Size:',size_pr];feed=self.html_feed(feed,4,message)					
+				return size,feed		
+		return size,feed						
 	def print_xml_by_title(self,ncalist,contentlist,feed=''):	
 		tab="\t";
 		size2return=0
@@ -2074,7 +2090,8 @@ class ChromeNsp(Pfs0):
 			totsnl=0
 			for file in self:
 				filename =  str(file._path)
-				if not filename in contentlist:
+				nczname= str(file._path)[:-1]+'z'
+				if not filename in contentlist and not nczname in contentlist:
 					totsnl=totsnl+file.size
 					size_pr=sq_tools.getSize(file.size)	
 					message=['OTHER:',str(filename),'Size:',size_pr];feed=self.html_feed(feed,4,message)
@@ -2441,7 +2458,8 @@ class ChromeNsp(Pfs0):
 									message=["Size:",(str(sq_tools.getSize(int.from_bytes(size, byteorder='little', signed=True))))];feed=self.html_feed(feed,3,message)
 									ncatype = cnmt.read(0x1)
 									message=["Ncatype:",(sq_tools.getmetacontenttype(str(int.from_bytes(ncatype, byteorder='little', signed=True))))];feed=self.html_feed(feed,3,message)									
-									unknown = cnmt.read(0x1)	
+									IdOffset = cnmt.read(0x1)	
+									message=["IdOffset:",(str(int.from_bytes(IdOffset, byteorder='little', signed=True)))];feed=self.html_feed(feed,3,message)																						
 		return feed										
 		
 #READ CNMT FILE WITHOUT EXTRACTION	

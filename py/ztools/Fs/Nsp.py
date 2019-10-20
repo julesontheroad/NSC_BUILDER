@@ -1841,7 +1841,7 @@ class Nsp(Pfs0):
 							ncasize = 0		
 							message=('......................');print(message);feed+=message+'\n'		
 							message=('NCA FILES (NON DELTAS)');print(message);feed+=message+'\n'
-							message=('......................');print(message);feed+=message+'\n'													
+							message=('......................');print(message);feed+=message+'\n'
 							for i in range(content_entries):
 								vhash = cnmt.read(0x20)
 								NcaId = cnmt.read(0x10)
@@ -1932,9 +1932,11 @@ class Nsp(Pfs0):
 																				
 	def print_nca_by_title(self,nca_name,ncatype,feed=''):	
 		tab="\t";
+		size=0
+		ncz_name=nca_name[:-1]+'z'
 		for nca in self:
+			filename = str(nca._path)				
 			if type(nca) == Nca:
-				filename = str(nca._path)
 				if filename == nca_name:
 					size=nca.header.size
 					size_pr=sq_tools.getSize(size)
@@ -1945,7 +1947,21 @@ class Nsp(Pfs0):
 						message=("- "+ncatype+tab+str(filename)+tab+tab+"Size: "+size_pr);print(message);feed+=message+'\n'						
 					else:
 						message=("- "+ncatype+tab+str(filename)+tab+"Size: "+size_pr);print(message);feed+=message+'\n'					
-					return size,feed		
+					return size,feed
+			elif filename == ncz_name:
+				ncztype=Nca(nca)
+				ncztype._path=nca._path			
+				size=ncztype.header.size
+				size_pr=sq_tools.getSize(size)
+				content=str(ncztype.header.contentType)
+				content=content[8:]+": "
+				ncatype=sq_tools.getTypeFromCNMT(ncatype)	
+				if ncatype != "Meta: ":
+					message=("- "+ncatype+tab+str(filename)+tab+tab+"Size: "+size_pr);print(message);feed+=message+'\n'						
+				else:
+					message=("- "+ncatype+tab+str(filename)+tab+"Size: "+size_pr);print(message);feed+=message+'\n'					
+				return size,feed					
+		return size,feed			
 	def print_xml_by_title(self,ncalist,contentlist,feed=''):	
 		tab="\t";
 		size2return=0
@@ -2053,7 +2069,8 @@ class Nsp(Pfs0):
 			totsnl=0
 			for file in self:
 				filename =  str(file._path)
-				if not filename in contentlist:
+				nczname= str(file._path)[:-1]+'z'
+				if not filename in contentlist and not nczname in contentlist:
 					totsnl=totsnl+file.size
 					size_pr=sq_tools.getSize(file.size)		
 					message=(str(filename)+3*tab+"Size: "+size_pr);print(message);feed+=message+'\n'							
@@ -2329,10 +2346,11 @@ class Nsp(Pfs0):
 								NcaId = cnmt.read(0x10)
 								message='NcaId =\t' + str(hx(NcaId));print(message);feed+=message+'\n'											
 								size = cnmt.read(0x6)
-								message='Size =\t' + str(int.from_bytes(size, byteorder='little', signed=True));print(message);feed+=message+'\n'								
+								message='Size =\t' + str(sq_tools.getSize(int.from_bytes(size, byteorder='little', signed=True)));print(message);feed+=message+'\n'								
 								ncatype = cnmt.read(0x1)
-								message='Ncatype = ' + str(int.from_bytes(ncatype, byteorder='little', signed=True));print(message);feed+=message+'\n'								
-								unknown = cnmt.read(0x1)	
+								message='Ncatype = ' + sq_tools.getmetacontenttype(str(int.from_bytes(ncatype, byteorder='little', signed=True)));print(message);feed+=message+'\n'								
+								IdOffset = cnmt.read(0x1)
+								message='IdOffset = ' + str(int.from_bytes(IdOffset, byteorder='little', signed=True));print(message);feed+=message+'\n'								
 							cnmt.seek(0x20+offset+content_entries*0x38+length_of_emeta)			
 							digest = cnmt.read(0x20)
 							message='\ndigest= '+str(hx(digest))+'\n';print(message);feed+=message+'\n'									
@@ -2367,9 +2385,9 @@ class Nsp(Pfs0):
 									unknown4=cnmt.read(0x4)	
 									message='Titleid = ' + str(hx(titleid.to_bytes(8, byteorder='big')));print(message);feed+=message+'\n'
 									message='Version = ' + str(int.from_bytes(titleversion, byteorder='little'));print(message);feed+=message+'\n'	
-									message='Type number = ' + str(hx(type_n));print(message);feed+=message+'\n'	
+									message='Content Type = ' + sq_tools.cnmt_type(type_n);print(message);feed+=message+'\n'	
 									message='Hash =\t' + str(hx(vhash));print(message);feed+=message+'\n'	
-									message='Content nca number = ' + str(int.from_bytes(unknown2, byteorder='little'));print(message);feed+=message+'\n'										
+									message='Ncatype = ' + sq_tools.getmetacontenttype(str(int.from_bytes(unknown2, byteorder='little')));print(message);feed+=message+'\n'										
 								for i in range(int.from_bytes(num_prev_delta, byteorder='little')):
 									message='...........................................';print(message);feed+=message+'\n'	
 									message='Previous delta records: '+ str(i+1);print(message);feed+=message+'\n'										
@@ -2384,7 +2402,7 @@ class Nsp(Pfs0):
 									message='New titleid = ' + str(hx(newtitleid.to_bytes(8, byteorder='big')));print(message);feed+=message+'\n'	
 									message='Old version = ' + str(int.from_bytes(oldtitleversion, byteorder='little'));print(message);feed+=message+'\n'	
 									message='New version = ' + str(int.from_bytes(newtitleversion, byteorder='little'));print(message);feed+=message+'\n'	
-									message='Size = ' + str(int.from_bytes(size, byteorder='little', signed=True));print(message);feed+=message+'\n'				
+									message='Size = ' + str(sq_tools.getSize(int.from_bytes(size, byteorder='little', signed=True)));print(message);feed+=message+'\n'				
 									#Print.info('unknown1 = ' + str(int.from_bytes(unknown1, byteorder='little')))			
 								for i in range(int.from_bytes(num_delta_info, byteorder='little')):
 									message='...........................................';print(message);feed+=message+'\n'	
@@ -2418,9 +2436,9 @@ class Nsp(Pfs0):
 									unknown2 = cnmt.read(0x4)		
 									message='OldNcaId = ' + str(hx(OldNcaId));print(message);feed+=message+'\n'	
 									message='NewNcaId = ' + str(hx(NewNcaId));print(message);feed+=message+'\n'	
-									message='Old size = ' +  str(int.from_bytes(old_size, byteorder='little', signed=True));print(message);feed+=message+'\n'	
+									message='Old size = ' + str(sq_tools.getSize(int.from_bytes(old_size, byteorder='little', signed=True))) ;print(message);feed+=message+'\n'	
 									message='Unknown1 = ' + str(int.from_bytes(unknown1, byteorder='little'));print(message);feed+=message+'\n'	
-									message='Ncatype =  ' + str(int.from_bytes(ncatype, byteorder='little', signed=True));print(message);feed+=message+'\n'	
+									message='Ncatype =  ' + sq_tools.getmetacontenttype(str(int.from_bytes(ncatype, byteorder='little', signed=True)));print(message);feed+=message+'\n'	
 									message='Installable = ' + str(int.from_bytes(installable, byteorder='little'));print(message);feed+=message+'\n'	
 									message='Upper 2 bytes of the new size=' + str(hx(up2bytes));print(message);feed+=message+'\n'	
 									message='Lower 4 bytes of the new size=' + str(hx(low4bytes));print(message);feed+=message+'\n'				
@@ -2433,8 +2451,8 @@ class Nsp(Pfs0):
 									ncatype = cnmt.read(0x1)	
 									unknown1 = cnmt.read(0x1)	
 									message='NcaId = '+ str(hx(NcaId));print(message);feed+=message+'\n'	
-									message='Size = '+ str(int.from_bytes(size, byteorder='little', signed=True));print(message);feed+=message+'\n'	
-									message='Ncatype = '+ str(int.from_bytes(ncatype, byteorder='little', signed=True));print(message);feed+=message+'\n'											
+									message='Size = '+ str(sq_tools.getSize(int.from_bytes(size, byteorder='little', signed=True)));print(message);feed+=message+'\n'	
+									message='Ncatype = '+ sq_tools.getmetacontenttype(str(int.from_bytes(ncatype, byteorder='little', signed=True)));print(message);feed+=message+'\n'											
 									#Print.info('unknown1 = '+ str(int.from_bytes(unknown1, byteorder='little')))	
 								for i in range(int.from_bytes(num_delta_content, byteorder='little')):
 									message='...........................................';print(message);feed+=message+'\n'	
@@ -2445,10 +2463,11 @@ class Nsp(Pfs0):
 									NcaId = cnmt.read(0x10)
 									message='NcaId =\t' + str(hx(NcaId));print(message);feed+=message+'\n'										
 									size = cnmt.read(0x6)
-									message='Size =\t' + str(int.from_bytes(size, byteorder='little', signed=True));print(message);feed+=message+'\n'									
+									message='Size =\t' + str(sq_tools.getSize(int.from_bytes(size, byteorder='little', signed=True)));print(message);feed+=message+'\n'									
 									ncatype = cnmt.read(0x1)
-									message='Ncatype = ' + str(int.from_bytes(ncatype, byteorder='little', signed=True));print(message);feed+=message+'\n'											
-									unknown = cnmt.read(0x1)	
+									message='Ncatype = ' + sq_tools.getmetacontenttype(str(int.from_bytes(ncatype, byteorder='little', signed=True)));print(message);feed+=message+'\n'											
+									IdOffset = cnmt.read(0x1)
+									message='IdOffset = ' + str(int.from_bytes(IdOffset, byteorder='little', signed=True));print(message);feed+=message+'\n'
 		return feed										
 		
 #READ CNMT FILE WITHOUT EXTRACTION	
@@ -3324,12 +3343,11 @@ class Nsp(Pfs0):
 							else:
 								message=('- Patchable to: DLC -> no RSV to patch\n');print(message);feed+=message+'\n'
 							try:	
-								if content_type_cnmt != 'AddOnContent':								
+								if content_type_cnmt != 'AddOnContent' and not str(self.path).endswith('.nsz'):								
 									message=('ExeFS Data:');print(message);feed+=message+'\n'	
 									ModuleId,BuildID8,BuildID16=self.read_buildid()	
-									message=('- BuildID8:  '+ BuildID8);print(message);feed+=message+'\n'
-									message=('- BuildID16: '+ BuildID16);print(message);feed+=message+'\n'
-									message=('- BuildID32: '+ ModuleId +'\n');print(message);feed+=message+'\n'
+									message=('- BuildID8: '+ BuildID8);print(message);feed+=message+'\n'
+									message=('- BuildID:  '+ sq_tools.trimm_module_id(ModuleId));print(message);feed+=message+'\n'
 							except:pass		
 							if nsuId!=False or numberOfPlayers!=False or releaseDate!=False or category!=False or ratingContent!=False:
 								message=('Eshop Data:');print(message);feed+=message+'\n'								
@@ -7298,14 +7316,15 @@ class Nsp(Pfs0):
 		return header,enc_info,sig_padding,fake_CERT,root_header,upd_header,norm_header,sec_header,rootSize,upd_multiplier,norm_multiplier,sec_multiplier
 			
 				
-	def file_hash(self,target):		
+	def file_hash(self,target):	
+		target2=target[:-1]+'z'	
 		indent = 1
 		gamecard = False
 		tabs = '\t' * indent	
 		sha=False;sizef=False
 		for file in self:
 			docheck = False		
-			if str(file._path) == target:
+			if str(file._path) == target or str(file._path) == target2:
 				file.rewind()
 				hblock = file.read(0x200)			
 				sha=sha256(hblock).hexdigest()	
@@ -7334,7 +7353,32 @@ class Nsp(Pfs0):
 						KB1L=file.header.getKB1L()
 						KB1L = crypto.decrypt(KB1L)	
 						if sum(KB1L) == 0:					
-							gamecard=True				
+							gamecard=True
+			elif str(file._path).endswith('.ncz'):
+				ncztype=Nca(f)
+				ncztype._path=f._path
+				if	ncztype.header.getgamecard() == 1:	
+					gamecard=True
+				else:
+					nca_id=ncztype.header.titleId
+					if nca_id.endswith('000') or nca_id.endswith('800'):
+						if 	str(ncztype.header.contentType) == 'Content.PROGRAM':					
+							docheck=True
+					else:
+						if 	str(ncztype.header.contentType) == 'Content.DATA':				
+							docheck=True				
+					if docheck == True:
+						crypto1=ncztype.header.getCryptoType()
+						crypto2=ncztype.header.getCryptoType2()	
+						if crypto2>crypto1:
+							masterKeyRev=crypto2
+						if crypto2<=crypto1:	
+							masterKeyRev=crypto1	
+						crypto = aes128.AESECB(Keys.keyAreaKey(Keys.getMasterKeyIndex(masterKeyRev), ncztype.header.keyIndex))
+						KB1L=ncztype.header.getKB1L()
+						KB1L = crypto.decrypt(KB1L)	
+						if sum(KB1L) == 0:					
+							gamecard=True		
 		return sha,sizef,gamecard
 		
 	def verify(self):		
@@ -7580,8 +7624,7 @@ class Nsp(Pfs0):
 				f.rewind();meta_dat=f.read()
 				message=(str(f.header.titleId)+' - '+str(f.header.contentType));print(message);feed+=message+'\n'	
 				targetkg,minrsv=self.find_addecuatekg(meta_nca,keygenerationlist)
-				verify,origheader,ncaname,feed,origkg,tr,tkey,iGC=f.verify(feed)
-				#print(targetkg)				
+				verify,origheader,ncaname,feed,origkg,tr,tkey,iGC=f.verify(feed)			
 				if verify == False:
 					tempfile=os.path.join(tmpfolder,meta_nca)
 					if not os.path.exists(tmpfolder):
@@ -8142,8 +8185,8 @@ class Nsp(Pfs0):
 					if sha != False:
 						sec_hashlist.append(sha)
 			except BaseException as e:
-				Print.error('Exception: ' + str(e))				
-			xci_header,game_info,sig_padding,xci_certificate,root_header,upd_header,norm_header,sec_header,rootSize,upd_multiplier,norm_multiplier,sec_multiplier=sq_tools.get_xciheader(files,filesizes,sec_hashlist)	
+				Print.error('Exception: ' + str(e))	
+			xci_header,game_info,sig_padding,xci_certificate,root_header,upd_header,norm_header,sec_header,rootSize,upd_multiplier,norm_multiplier,sec_multiplier=sq_tools.get_xciheader(files,filesizes,sec_hashlist)		
 			outheader=xci_header
 			outheader+=game_info
 			outheader+=sig_padding
