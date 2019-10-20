@@ -1285,9 +1285,9 @@ def ret_xci_offsets(filepath):
 
 def count_content(filepath):
 	counter=0
-	if filepath.endswith('.nsp')or filepath.endswith('.nsx'):
-		files_list=ret_nsp_offsets(filepath)
-	elif filepath.endswith('.xci'):	
+	if filepath.endswith('.nsp')or filepath.endswith('.nsx') or filepath.endswith('.nsz'):
+		files_listz=ret_nsp_offsets(filepath)
+	elif filepath.endswith('.xci') or filepath.endswith('.xcz'):	
 		files_list=ret_xci_offsets(filepath)
 	for i in range(len(files_list)):
 		entry=files_list[i]
@@ -1303,9 +1303,9 @@ def trimm_module_id(moduleid):
 	
 def get_mc_isize(filepath):
 	counter=0;size=0
-	if filepath.endswith('.nsp')or filepath.endswith('.nsx'):
+	if filepath.endswith('.nsp')or filepath.endswith('.nsx') or filepath.endswith('.nsz'):
 		files_list=ret_nsp_offsets(filepath)
-	elif filepath.endswith('.xci'):	
+	elif filepath.endswith('.xci') or filepath.endswith('.xcz'):	
 		files_list=ret_xci_offsets(filepath)
 	for i in range(len(files_list)):
 		entry=files_list[i]
