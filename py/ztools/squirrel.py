@@ -2608,13 +2608,14 @@ if __name__ == '__main__':
 			workers=0
 			if args.threads:
 				try:
-					workers=int(args.threads)
-					if workers<0:
-						workers=0
-					elif workers==-1:
-						workers=-1
-					elif workers>4:
-						workers=4
+					if workers=="-1":
+						workers=-1	
+					else:	
+						workers=int(args.threads)				
+						if workers<0:
+							workers=0
+						elif workers>4:
+							workers=4
 				except:
 					workers=0			
 			if args.compress:
@@ -2657,7 +2658,7 @@ if __name__ == '__main__':
 						if level>22:
 							level=22
 						if level<1:
-							level=1
+							level=1							
 					except:
 						level=17
 					if filepath.endswith(".nsp"): 	
@@ -2677,7 +2678,7 @@ if __name__ == '__main__':
 						else:	
 							outfile=basename[:-3]+'xcz'
 							outfile =os.path.join(ofolder,outfile)							
-							compressor.supertrim_xci(filepath,buffer=65536,outfile=outfile,keepupd=False,level = 17, threads = workers)						
+							compressor.supertrim_xci(filepath,buffer=65536,outfile=outfile,keepupd=False,level = level, threads = workers)						
 
 		# parser.add_argument('-dcpr', '--decompress', help='deCompress a nsz, xcz or ncz')
 		if args.decompress:
