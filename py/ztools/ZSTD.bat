@@ -337,7 +337,7 @@ echo **************************
 echo DECOMPRESS A NSZ\XCZ
 echo **************************
 CD /d "%prog_dir%"
-%pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%zzlist.txt","ext=nsz xcz","token=False",Print="False" )
+%pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%zzlist.txt","ext=nsz xcz","token=False",Print="False"
 for /f "tokens=*" %%f in (zzlist.txt) do (
 
 %pycommand% "%nut%" -o "%fold_output%" -tfile "%prog_dir%zzlist.txt" --decompress "auto"
