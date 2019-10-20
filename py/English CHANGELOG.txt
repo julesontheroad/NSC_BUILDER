@@ -21,6 +21,33 @@ Luca Fraga's github: https://github.com/LucaFraga
 ---------------
 0. Changelog
 ---------------
+v0.95 - xcz format, fixes and other stuff:
+	- Added xcz format supertrimmed to compressor. This means that it won't pack the
+	  update partition (system firmware content), a lossless compressor that will
+	  compress that partion will be added at a later time.
+	- Added more compression presets  
+	- Added nsz and xcz verification to both the file-info gui and the batch interface
+	- Added renaming for nsz and xcz.
+	- xcz and nsz support will be added slowly to all functions
+	- Added option to convert xci to nsz when compressing them in configuration. It
+      is a highly unneeded thing to do since tinfoil would install xcz or nsz files but
+      to each their own if you feel the need of converting at least do it in a restorable
+      and verifiable way.  
+	- Added more information options in the FILE-INFO mode for nsz\xcz
+	- Fixed user compression profile configuration.
+	- Added -1 threads as an option. This sets the threads depending on the cpu logic
+	  cores.
+	- Individual mode will now filter the extensions not supported for the selected  function
+	  preprocessing.
+	- Added romaji conversion as optional when renaming files.
+	- Added option to select files and folders to add to list via filebrowser window.
+	- Changed Read_cnmt option in File-Info to reflect the improvements made to it in the gui.
+	- Fixed restoration for keygeneration10
+	- Fixed verification for files transformed from keygeneration10 to a lower one.
+	  Note: All the building processes and verification of unmodified files were unafected the
+	  issue was in header restoration to keygeneration10 since it must be specified in hex as
+	  0A instead of 10.
+	- Added RSV for 9.01 to the RSV check and restoration.  
 v0.94 - Improvements in compression support and restore mode:
 	- Compression\decompression is now tied to the buffer option which reduces 
 	  hangups in the process

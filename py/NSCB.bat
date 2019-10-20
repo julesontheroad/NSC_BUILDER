@@ -1058,15 +1058,15 @@ if /i "%verif%"=="none" goto s_vertype
 
 :s_KeyChange_skip
 echo Filtering extensions from list according to options chosen
-if "%vrepack%" EQU "xci_supertrimmer" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=nsz nsx nsp xcz","token=False",Print="False" )
-if "%vrepack%" EQU "xci_supertrimmer_keep_upd" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=nsz nsx nsp xcz","token=False",Print="False" )
-if "%vrepack%" EQU "xci_trimmer" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=nsz nsx nsp xcz","token=False",Print="False" )
-if "%vrepack%" EQU "xci_untrimmer" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=nsz nsx nsp xcz","token=False",Print="False" )
-if "%vrepack%" EQU "nsp" ( %pycommand% "%nut%" -lib_call listmanager remove_from_list "%prog_dir%list.txt","ext=nsz xcz","token=False",Print="False" )
-if "%vrepack%" EQU "xci" ( %pycommand% "%nut%" -lib_call listmanager remove_from_list "%prog_dir%list.txt","ext=nsz xcz","token=False",Print="False" )
-if "%vrepack%" EQU "both" ( %pycommand% "%nut%" -lib_call listmanager remove_from_list "%prog_dir%list.txt","ext=nsz xcz","token=False",Print="False" )
-if "%vrepack%" EQU "rebuild" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=nsz xci xcz","token=False",Print="False" )
-if "%vrepack%" EQU "nodelta" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=nsz xci xcz","token=False",Print="False" )
+if "%vrepack%" EQU "xci_supertrimmer" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=xci","token=False",Print="False" )
+if "%vrepack%" EQU "xci_supertrimmer_keep_upd" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=xci","token=False",Print="False" )
+if "%vrepack%" EQU "xci_trimmer" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=xci","token=False",Print="False" )
+if "%vrepack%" EQU "xci_untrimmer" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=xci","token=False",Print="False" )
+if "%vrepack%" EQU "nsp" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=nsp xci","token=False",Print="False" )
+if "%vrepack%" EQU "xci" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=nsp xci","token=False",Print="False" )
+if "%vrepack%" EQU "both" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=nsp xci","token=False",Print="False" )
+if "%vrepack%" EQU "rebuild" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=nsp","token=False",Print="False" )
+if "%vrepack%" EQU "nodelta" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=nsp","token=False",Print="False" )
 cls
 call :program_logo
 
