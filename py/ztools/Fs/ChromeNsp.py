@@ -1974,9 +1974,9 @@ class ChromeNsp(Pfs0):
 			elif filename == ncz_name:
 				ncztype=Nca(nca)
 				ncztype._path=nca._path				
-				size=nca.header.size
+				size=ncztype.header.size
 				size_pr=sq_tools.getSize(size)
-				content=str(nca.header.contentType)
+				content=str(ncztype.header.contentType)
 				content=content[8:]+": "
 				ncatype=sq_tools.getTypeFromCNMT(ncatype)	
 				if ncatype != "Meta: ":

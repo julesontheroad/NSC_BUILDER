@@ -462,7 +462,7 @@ def verify_nkeys(fileName):
 	else:
 		counter+=1		
 	if 'master_key_09' not in checkkeys:
-		print("master_key_08 is Missing")
+		print("master_key_09 is Missing")
 	else:
 		counter+=1				
 		
@@ -655,7 +655,7 @@ def verify_nkeys(fileName):
 
 		if i == 'master_key_09':
 			master_key_09=checkkeys[i][:]
-			print('master_key_09: '+master_key_08)
+			print('master_key_09: '+master_key_09)
 			sha=sha256(uhx(master_key_09)).hexdigest()
 			print('  > HEX SHA256: '+sha)	
 			if sha == '9d486a98067c44b37cf173d3bf577891eb6081ff6b4a166347d9dbbf7025076b':
@@ -969,8 +969,8 @@ def verify_nkeys_startup(fileName):
 			print('')
 
 		if i == 'master_key_09':
-			master_key_08=checkkeys[i][:]
-			sha=sha256(uhx(master_key_08)).hexdigest()
+			master_key_09=checkkeys[i][:]
+			sha=sha256(uhx(master_key_09)).hexdigest()
 			if sha != '9d486a98067c44b37cf173d3bf577891eb6081ff6b4a166347d9dbbf7025076b':
 				print('master_key_07: '+aes_kek_generation_source )	
 				print('  > HEX SHA256: '+sha)
