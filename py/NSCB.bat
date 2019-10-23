@@ -1508,7 +1508,7 @@ echo Input "3" to add another file to list via selector
 echo Input "0" to return to the MODE SELECTION MENU
 ECHO ***********************************************
 echo.
-%pycommand% "%nut%" -t nsp xci -tfile "%prog_dir%mlist.txt" -uin "%uinput%" -ff "uinput"
+%pycommand% "%nut%" -t nsp xci nsz xcz -tfile "%prog_dir%mlist.txt" -uin "%uinput%" -ff "uinput"
 set /p eval=<"%uinput%"
 set eval=%eval:"=%
 setlocal enabledelayedexpansion
@@ -1517,8 +1517,8 @@ endlocal
 if /i "%eval%"=="0" goto manual_Reentry
 if /i "%eval%"=="1" set skip_list_split="true"
 if /i "%eval%"=="1" goto multi_start_cleaning
-if /i "%eval%"=="2" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%mlist.txt",mode=folder,ext=nsp xci ) 2>&1>NUL
-if /i "%eval%"=="3" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%mlist.txt",mode=file,ext=nsp xci )  2>&1>NUL
+if /i "%eval%"=="2" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%mlist.txt",mode=folder,ext=nsp xci nsz xcz ) 2>&1>NUL
+if /i "%eval%"=="3" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%mlist.txt",mode=file,ext=nsp xci nsz xcz )  2>&1>NUL
 goto multi_checkagain
 echo.
 :multi_checkagain
@@ -1555,8 +1555,8 @@ if /i "%eval%"=="2" set "mlistfol=%list_folder%\m_multi"
 if /i "%eval%"=="2" goto multi_start_cleaning
 if /i "%eval%"=="3" set "mlistfol=%list_folder%\m_multi"
 if /i "%eval%"=="3" goto multi_saved_for_later
-if /i "%eval%"=="4" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%mlist.txt",mode=folder,ext=nsp xci ) 2>&1>NUL
-if /i "%eval%"=="5" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%mlist.txt",mode=file,ext=nsp xci )  2>&1>NUL
+if /i "%eval%"=="4" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%mlist.txt",mode=folder,ext=nsp xci nsz xcz ) 2>&1>NUL
+if /i "%eval%"=="5" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%mlist.txt",mode=file,ext=nsp xci nsz xcz )  2>&1>NUL
 REM if /i "%eval%"=="2" goto multi_set_clogo
 if /i "%eval%"=="e" goto salida
 if /i "%eval%"=="i" goto multi_showlist

@@ -25,3 +25,4 @@ py/*.xci
 py/*.nsz
 py/*.nsx
 py/*.nsz
+py/zconfig/api.txt

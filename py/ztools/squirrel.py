@@ -3619,7 +3619,7 @@ if __name__ == '__main__':
 					prlist=list()
 					print ('Calculating final content:')
 					for filepath in filelist:
-						if filepath.endswith('.nsp'):
+						if filepath.endswith('.nsp') or filepath.endswith('.nsz'):
 							#print(filepath)
 							try:
 								c=list()
@@ -3670,7 +3670,7 @@ if __name__ == '__main__':
 							except BaseException as e:
 								Print.error('Exception: ' + str(e))
 
-						if filepath.endswith('.xci'):
+						if filepath.endswith('.xci') or filepath.endswith('.xcz'):
 							#print(filepath)
 							try:
 								c=list()
@@ -4036,7 +4036,7 @@ if __name__ == '__main__':
 					c=c+len(nspheader)
 					outf.close()
 					for filepath in filelist:
-						if filepath.endswith('.nsp'):
+						if filepath.endswith('.nsp') or filepath.endswith('.nsz'):
 							try:
 								f = Fs.Nsp(filepath)
 								for file in oflist:
@@ -4066,8 +4066,9 @@ if __name__ == '__main__':
 							ototlist.append(j[0])
 					sec_hashlist=list()
 					GClist=list()
+					# print(filelist)
 					for filepath in filelist:
-						if filepath.endswith('.nsp'):
+						if filepath.endswith('.nsp') or filepath.endswith('.nsz'):
 							try:
 								f = Fs.Nsp(filepath)
 								for file in oflist:
@@ -4080,7 +4081,7 @@ if __name__ == '__main__':
 								f.close()
 							except BaseException as e:
 								Print.error('Exception: ' + str(e))
-						if filepath.endswith('.xci'):
+						if filepath.endswith('.xci') or filepath.endswith('.xcz'):
 							try:
 								f = Fs.Xci(filepath)
 								for file in oflist:
@@ -4093,9 +4094,9 @@ if __name__ == '__main__':
 								f.close()
 							except BaseException as e:
 								Print.error('Exception: ' + str(e))
-					#print(oflist)
-					#print(osizelist)
-					#print(sec_hashlist)
+					# print(oflist)
+					# print(osizelist)
+					# print(sec_hashlist)
 					if totSize <= 4294934528:
 						fat="exfat"
 					if fat=="fat32":
@@ -4148,7 +4149,7 @@ if __name__ == '__main__':
 					outf.close()
 
 					for filepath in filelist:
-						if filepath.endswith('.nsp'):
+						if filepath.endswith('.nsp') or filepath.endswith('.nsz'):
 							try:
 								GC=False
 								f = Fs.Nsp(filepath)
@@ -4162,7 +4163,7 @@ if __name__ == '__main__':
 								f.close()
 							except BaseException as e:
 								Print.error('Exception: ' + str(e))
-						if filepath.endswith('.xci'):
+						if filepath.endswith('.xci') or filepath.endswith('.xcz'):
 							try:
 								GC=False
 								f = Fs.Xci(filepath)
@@ -4228,7 +4229,7 @@ if __name__ == '__main__':
 					c=c+len(nspheader)
 					outf.close()
 					for filepath in filelist:
-						if filepath.endswith('.nsp'):
+						if filepath.endswith('.nsp') or filepath.endswith('.nsz'):
 							try:
 								f = Fs.Nsp(filepath)
 								for file in oflist:
@@ -4238,7 +4239,7 @@ if __name__ == '__main__':
 								f.close()
 							except BaseException as e:
 								Print.error('Exception: ' + str(e))
-						if filepath.endswith('.xci'):
+						if filepath.endswith('.xci') or filepath.endswith('.xcz'):
 							try:
 								f = Fs.Xci(filepath)
 								for file in oflist:
@@ -6019,11 +6020,12 @@ if __name__ == '__main__':
 					userinput.write(varout)
 			else:
 				ruta=args.findfile
-			if ruta[-1]=='"':
-				ruta=ruta[:-1]
-			if ruta[0]=='"':
-				ruta=ruta[1:]
-
+			try:	
+				if ruta[-1]=='"':
+					ruta=ruta[:-1]
+				if ruta[0]=='"':
+					ruta=ruta[1:]
+			except:raise ('Empty input')
 			extlist=list()
 			if args.type:
 				for t in args.type:
