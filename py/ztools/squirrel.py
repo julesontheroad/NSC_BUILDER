@@ -2691,13 +2691,18 @@ if __name__ == '__main__':
 			else:
 				for filepath in args.decompress:
 					dir=os.path.dirname(os.path.abspath(filepath))
-					ofolder =os.path.join(dir, 'output')		
+					ofolder =os.path.join(dir, 'output')
+					break
 			if args.decompress:
 				if args.text_file:
 					tfile=args.text_file
 					with open(tfile,"r+", encoding='utf8') as filelist: 	
 						filepath = filelist.readline()
 						filepath=os.path.abspath(filepath.rstrip('\n'))	
+				else:
+					for inpt in args.decompress:
+						filepath=inpt
+						break
 				if filepath.endswith(".nsz"):	
 					import decompressor	
 					basename=os.path.basename(os.path.abspath(filepath))
@@ -2709,7 +2714,7 @@ if __name__ == '__main__':
 					basename=os.path.basename(os.path.abspath(filepath))
 					endname=basename[:-3]+'xci'
 					endname =os.path.join(ofolder,endname)
-					decompressor.decompress_xcz(filepath,endname)					
+					decompressor.decompress_xcz(filepath,endname)								
 		# ...................................................
 		# Repack NCA files to partition hfs0
 		# ...................................................
@@ -3151,11 +3156,23 @@ if __name__ == '__main__':
 						Print.error('Exception: ' + str(e))
 			else:
 				buffer = 65536
+			if args.type:
+				for input in args.type:
+					if input == "nsp":
+						export='nsp'
+					elif input == "nsz":
+						export='nsz'
+					else:
+						export='nsp'
+			else:
+				export='nsp'				
 			if args.text_file:
 				tfile=args.text_file
 				with open(tfile,"r+", encoding='utf8') as filelist:
 					filepath = filelist.readline()
 					filepath=os.path.abspath(filepath.rstrip('\n'))
+			elif args.ifolder:
+				filepath=args.ifolder
 			else:
 				for filepath in args.rebuild_nsp:
 					filepath=filepath
@@ -3239,16 +3256,30 @@ if __name__ == '__main__':
 						if os.path.exists(endfile):
 							skipper=True
 							print("Content exists in final destination. Skipping...")
-			if args.rebuild_nsp and skipper==False:
-				if filepath.endswith(".nsp"):
-					try:
-						print('Processing: '+filepath)
-						f = Fs.Nsp(filepath)
-						f.rebuild(buffer,endfile,delta,False,xml_gen)
-						f.flush()
-						f.close()
-					except BaseException as e:
-						Print.error('Exception: ' + str(e))
+			if not args.ifolder:
+				if args.rebuild_nsp and skipper==False:
+					if filepath.endswith(".nsp"):
+						try:
+							print('Processing: '+filepath)
+							f = Fs.Nsp(filepath)
+							f.rebuild(buffer,endfile,delta,False,xml_gen)
+							f.flush()
+							f.close()
+						except BaseException as e:
+							Print.error('Exception: ' + str(e))				
+					elif filepath.endswith(".nsz"):
+						if export == 'nsp':
+							try:
+								import decompressor	
+								basename=os.path.basename(os.path.abspath(filepath))
+								endname=basename[:-1]+'p'
+								endname =os.path.join(ofolder,endname)
+								decompressor.decompress_nsz(filepath,endname,buffer,delta,xml_gen)	
+							except BaseException as e:
+								Print.error('Exception: ' + str(e))	
+			else:
+				import batchprocess
+				batchprocess.rebuild_nsp(filepath,ofolder,buffer,delta,xml_gen,export)	
 			Status.close()
 		# ...................................................
 		# Direct NSP OR XCI

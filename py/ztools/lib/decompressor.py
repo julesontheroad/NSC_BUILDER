@@ -96,9 +96,9 @@ def decompress_ncz(input,output):
 					
 					i += chunkSz
 
-def decompress_nsz(input,output,buffer = 65536):
+def decompress_nsz(input,output,buffer = 65536,delta=False,xml_gen=False):
 	f = Nsp(input, 'r+b')
-	f.decompress_direct(output,buffer)
+	f.decompress_direct(output,buffer,delta,xml_gen)
 	f.flush()
 	f.close()
 

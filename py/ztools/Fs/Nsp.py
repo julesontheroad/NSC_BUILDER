@@ -9044,8 +9044,9 @@ class Nsp(Pfs0):
 		# img = Image.open(dat)
 		# img.show()
 		return a
-
-	def decompress(self,output,buffer = 65536):	
+							
+	def decompress_direct(self,output,buffer = 65536,delta=False,xml_gen=False):
+		buffer=int(buffer)
 		print('Decompressing {}'.format(self._path))
 		files_list=sq_tools.ret_nsp_offsets(self._path)
 		files=list();filesizes=list()
@@ -9070,170 +9071,45 @@ class Nsp(Pfs0):
 					else:
 						# print(str(row['NcaId'])+'.cnmt.nca')
 						files.append(str(row['NcaId'])+'.cnmt.nca')
-						filesizes.append(int(row['Size']))					
-				for k in range(len(files_list)):
-					entry=files_list[k]
-					fp=entry[0];sz=int(entry[3])
-					if fp.endswith('xml'):
-						files.append(fp)
-						filesizes.append(sz)					
-				for k in range(len(files_list)):
-					entry=files_list[k]
-					fp=entry[0];sz=int(entry[3])
-					if fp.endswith('.tik'):
-						files.append(fp)	
-						filesizes.append(sz)					
-				for k in range(len(files_list)):
-					entry=files_list[k]
-					fp=entry[0];sz=int(entry[3])
-					if fp.endswith('.cert'):
-						files.append(fp)	
-						filesizes.append(sz)
-		nspheader=sq_tools.gen_nsp_header(files,filesizes)
-		totsize=0
-		for s in filesizes:
-			totsize+=s
-		for i in range(len(files_list)):
-			entry=files_list[i]
-			fp=entry[0]	
-			if fp.endswith('.ncz'):
-				for j in range(len(files)):
-					fp2=files[j]
-					if str(fp2[:-1])==str(fp[:-1]):
-						totsize+=filesizes[j]
-		t = tqdm(total=totsize, unit='B', unit_scale=True, leave=False)					
-		# Hex.dump(nspheader)
-		with open(output, 'wb') as o:
-			o.write(nspheader)	
-			t.update(len(nspheader))
-		for file in files:	
-			if file.endswith('cnmt.nca'):		
-				for nca in self:
-					if str(nca._path)==file:
-						t.write('- Appending {}'.format(str(nca._path)))
-						nca.rewind()
-						data=nca.read()
-						with open(output, 'ab') as o:
-							o.write(data)
-							t.update(len(data))							
-			elif file.endswith('nca'):		
-				for nca in self:
-					if str(nca._path)[:-1]==file[:-1] and not str(nca._path).endswith('.ncz'):	
-						t.write('- Appending {}'.format(str(nca._path)))					
-						o = open(output, 'ab+')
-						nca.rewind()
-						for data in iter(lambda: nca.read(int(buffer)), ""):
-							o.write(data)
-							t.update(len(data))
-							o.flush()
-							if not data:
-								o.close()
-								break				
-					elif str(nca._path)[:-1]==file[:-1] and str(nca._path).endswith('ncz'):
-						# print(nca._path)
-						nca.rewind()
-						header = nca.read(0x4000)
-						magic = readInt64(nca)
-						sectionCount = readInt64(nca)
-						sections = []
-						for i in range(sectionCount):
-							sections.append(Section(nca))		
-						# print(sections)	
-						dctx = zstandard.ZstdDecompressor()
-						reader = dctx.stream_reader(nca)							
-						with open(output, 'rb+') as o:
-							o.seek(0, os.SEEK_END)
-							curr_off= o.tell()
-							t.write('- Appending decompressed {}'.format(str(nca._path)))		
-							t.write('  Writing nca header')							
-							o.write(header)
-							t.update(len(header))	
-							timestamp = time.time()
-							t.write('  Writing decompressed body in plaintext')								
-							while True:							
-								chunk = reader.read(16384)								
-								if not chunk:
-									break									
-								o.write(chunk)	
-								t.update(len(chunk))	
-							c=0;spsize=0	
-							t.write('  + Restoring crypto in sections')								
-							for s in sections:
-								c+=1
-								if s.cryptoType == 1: #plain text
-									t.write('    * Section {} is plaintext'.format(str(c)))
-									t.write('      %x - %d bytes, Crypto type %d' % ((s.offset), s.size, s.cryptoType))
-									t.update(s.size);spsize+=s.size	
-									continue									
-								if s.cryptoType not in (3, 4):
-									raise IOError('Unknown crypto type: %d' % s.cryptoType)	
-								t.write('    * Section {} needs decompression'.format(str(c)))	
-								t.write('      %x - %d bytes, Crypto type %d' % ((s.offset), s.size, s.cryptoType))		
-								t.write('      Key: %s, IV: %s' % (str(hx(s.cryptoKey)), str(hx(s.cryptoCounter))))																
-								i = s.offset								
-								crypto = AESCTR(s.cryptoKey, s.cryptoCounter)
-								end = s.offset + s.size		
-								spsize+=s.size									
-								while i < end:
-									o.seek(i+curr_off)
-									crypto.seek(i)
-									chunkSz = 0x10000 if end - i > 0x10000 else end - i
-									buf = o.read(chunkSz)									
-									if not len(buf):
-										break									
-									o.seek(i+curr_off)
-									o.write(crypto.encrypt(buf))		
-									t.update(len(buf))										
-									i += chunkSz
-							elapsed = time.time() - timestamp
-							minutes = elapsed / 60
-							seconds = elapsed % 60
-							
-							speed = 0 if elapsed == 0 else (spsize / elapsed)
-							t.write('\n    Decompressed in %02d:%02d at speed: %.1f MB/s\n' % (minutes, seconds, speed / 1000000.0))				
-								
-			else:
-				for ot in self:
-					if str(ot._path)==file:
-						t.write('- Appending {}'.format(str(ot._path)))						
-						ot.rewind()
-						data=ot.read()
-						with open(output, 'ab') as o:
-							o.write(data)
-							t.update(len(data))		
-							
-	def decompress_direct(self,output,buffer = 65536):	
-		print('Decompressing {}'.format(self._path))
-		files_list=sq_tools.ret_nsp_offsets(self._path)
-		files=list();filesizes=list()
-		fplist=list()
-		for k in range(len(files_list)):
-			entry=files_list[k]
-			fplist.append(entry[0])
-		for i in range(len(files_list)):
-			entry=files_list[i]
-			filepath=entry[0]
-			if filepath.endswith('.cnmt.nca'):
-				titleid,titleversion,base_ID,keygeneration,rightsId,RSV,RGV,ctype,metasdkversion,exesdkversion,hasHtmlManual,Installedsize,DeltaSize,ncadata=self.get_data_from_cnmt(filepath)
-				for j in range(len(ncadata)):
-					row=ncadata[j]
-					# print(row)
-					if row['NCAtype']!='Meta':
-						test1=str(row['NcaId'])+'.nca';test2=str(row['NcaId'])+'.ncz'
-						if test1 in fplist or test2 in fplist:
-							# print(str(row['NcaId'])+'.nca')
-							files.append(str(row['NcaId'])+'.nca')
-							filesizes.append(int(row['Size']))					
-					else:
-						# print(str(row['NcaId'])+'.cnmt.nca')
-						files.append(str(row['NcaId'])+'.cnmt.nca')
-						filesizes.append(int(row['Size']))					
-				for k in range(len(files_list)):
-					entry=files_list[k]
-					fp=entry[0];sz=int(entry[3])
-					if fp.endswith('xml'):
-						files.append(fp)
-						filesizes.append(sz)					
+						filesizes.append(int(row['Size']))	
+						if xml_gen == True:
+							tg=str(row['NcaId'])+'.cnmt.nca'
+							for nca in self:
+								if nca._path==tg:
+									target = Fs.Nca(nca, 'r+b')
+									target.rewind()		
+									dir=os.path.dirname(os.path.abspath(output))
+									outf= os.path.join(dir, str(nca._path))									
+									fp = open(outf, 'w+b')		
+									for data in iter(lambda: target.read(int(32768)), ""):	
+										fp.write(data)						
+										fp.flush()				
+										if not data:
+											fp.close()									
+											break	
+									target.close()
+									target = Fs.Nca(outf, 'r+b')										
+									block = target.read()			
+									nsha=sha256(block).hexdigest()	
+									target.rewind()	
+									xml=target.xml_gen(dir,nsha)									
+									xmlname=tg[:-3]+'xml'
+									xmlsize=os.path.getsize(xml)
+									files.append(xmlname)
+									filesizes.append(int(xmlsize))										
+									target.close()
+									try:
+										os.remove(outf) 	
+									except:
+										pass
+									break					
+				if xml_gen == True:						
+					for k in range(len(files_list)):
+						entry=files_list[k]
+						fp=entry[0];sz=int(entry[3])
+						if fp.endswith('xml') and fp not in files:
+							files.append(fp)
+							filesizes.append(sz)					
 				for k in range(len(files_list)):
 					entry=files_list[k]
 					fp=entry[0];sz=int(entry[3])
@@ -9346,6 +9222,29 @@ class Nsp(Pfs0):
 							speed = 0 if elapsed == 0 else (spsize / elapsed)
 							t.write('\n    Decompressed in %02d:%02d at speed: %.1f MB/s\n' % (minutes, seconds, speed / 1000000.0))				
 								
+			elif file.endswith('.cnmt.xml'):
+				dir=os.path.dirname(os.path.abspath(output))
+				input=os.path.join(dir, file)		
+				if os.path.exists(input):
+					t.write('- Appending {}'.format(file))		
+					with open(input, 'rb') as xml:
+						data=xml.read()
+						with open(output, 'ab') as o:
+							o.write(data)
+							t.update(len(data))
+					try:
+						os.remove(input) 	
+					except:
+						pass			
+				else:
+					for ot in self:
+						if str(ot._path)==file:
+							t.write('- Appending {}'.format(str(ot._path)))						
+							ot.rewind()
+							data=ot.read()
+							with open(output, 'ab') as o:
+								o.write(data)
+								t.update(len(data))				
 			else:
 				for ot in self:
 					if str(ot._path)==file:
