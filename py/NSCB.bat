@@ -1062,7 +1062,7 @@ if "%vrepack%" EQU "xci_supertrimmer" ( %pycommand% "%nut%" -lib_call listmanage
 if "%vrepack%" EQU "xci_supertrimmer_keep_upd" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=xci","token=False",Print="False" )
 if "%vrepack%" EQU "xci_trimmer" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=xci","token=False",Print="False" )
 if "%vrepack%" EQU "xci_untrimmer" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=xci","token=False",Print="False" )
-if "%vrepack%" EQU "nsp" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=nsp xci nsz","token=False",Print="False" )
+if "%vrepack%" EQU "nsp" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=nsp xci nsz xcz","token=False",Print="False" )
 if "%vrepack%" EQU "xci" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=nsp xci","token=False",Print="False" )
 if "%vrepack%" EQU "both" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=nsp xci","token=False",Print="False" )
 if "%vrepack%" EQU "rebuild" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=nsp nsz","token=False",Print="False" )
@@ -1079,6 +1079,7 @@ set "ziptarget=%%f"
 if "%%~nxf"=="%%~nf.nsp" call :nsp_manual
 if "%%~nxf"=="%%~nf.nsz" call :nsp_manual
 if "%%~nxf"=="%%~nf.xci" call :xci_manual
+if "%%~nxf"=="%%~nf.xcz" call :xci_manual
 %pycommand% "%nut%" --strip_lines "%prog_dir%list.txt" "1" "true"
 rem call :contador_NF
 )

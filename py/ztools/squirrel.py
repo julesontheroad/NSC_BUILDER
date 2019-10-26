@@ -3386,7 +3386,7 @@ if __name__ == '__main__':
 				else:
 					if filepath.endswith('.nsp') or filepath.endswith('.nsz'):
 						export='nsp'
-					elif filepath.endswith('.xci'):
+					elif filepath.endswith('.xci') or filepath.endswith('.xcz'):
 						export='xci'
 					else:
 						print ("Wrong Type!!!")
@@ -3466,7 +3466,7 @@ if __name__ == '__main__':
 						except BaseException as e:
 							Print.error('Exception: ' + str(e))
 
-				if filepath.endswith(".xci"):
+				if filepath.endswith(".xci") or filepath.endswith('.xcz'):
 					if export=='nsp':
 						try:
 							print("Processing: " + filepath)
@@ -3802,9 +3802,9 @@ if __name__ == '__main__':
 								ccount='('+bctag+updtag+dctag+')'
 							if baseid != "":
 								try:
-									if basefile.endswith('.xci'):
+									if basefile.endswith('.xci') or basefile.endswith('.xcz') :
 										f = Fs.Xci(basefile)
-									elif basefile.endswith('.nsp'):
+									elif basefile.endswith('.nsp') or basefile.endswith('.nsz') :
 										f = Fs.Nsp(basefile)
 									ctitl=f.get_title(baseid,roman)
 									f.flush()
@@ -3857,9 +3857,9 @@ if __name__ == '__main__':
 										ctitl=ctitl[1:]
 							elif updid !="":
 								try:
-									if updfile.endswith('.xci'):
+									if updfile.endswith('.xci') or updfile.endswith('.xcz') :
 										f = Fs.Xci(updfile)
-									elif updfile.endswith('.nsp'):
+									elif updfile.endswith('.nsp') or updfile.endswith('.nsz') :
 										f = Fs.Nsp(updfile)
 									ctitl=f.get_title(updid,roman)
 									f.flush()
@@ -3954,9 +3954,9 @@ if __name__ == '__main__':
 									if ctitl.startswith(' '):
 										ctitl=ctitl[1:]
 								except:
-									if dlcfile.endswith('.xci'):
+									if dlcfile.endswith('.xci') or dlcfile.endswith('.xcz'):
 										f = Fs.Xci(dlcfile)
-									elif dlcfile.endswith('.nsp'):
+									elif dlcfile.endswith('.nsp') or dlcfile.endswith('.nsz') :
 										f = Fs.Nsp(dlcfile)
 									ctitl=f.get_title(dlcid,roman)
 									f.flush()
