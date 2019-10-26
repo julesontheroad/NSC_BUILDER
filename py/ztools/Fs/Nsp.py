@@ -7195,6 +7195,7 @@ class Nsp(Pfs0):
 				self.cd_spl_xci(buffer,i[0],ofolder,i[4],fat,fx)				
 				
 	def cd_spl_nsp(self,buffer,ofile,ofolder,filelist,fat,fx):
+		buffer=int(buffer)
 		self.rewind()		
 		outfile=ofile+'.nsp'	
 		filepath = os.path.join(ofolder, outfile)	
@@ -7336,7 +7337,7 @@ class Nsp(Pfs0):
 						if not data:
 							break	
 				outf.close()							
-			if type(file) != Nca and file._path in contentlist:
+			elif type(file) != Nca and file._path in contentlist:
 				file.rewind()			
 				t.write(tabs+'- Appending: ' + str(file._path))		
 				outf = open(str(filepath), 'a+b')					
