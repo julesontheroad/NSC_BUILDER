@@ -4350,9 +4350,9 @@ if __name__ == '__main__':
 						else:
 							print ("Wrong Type!!!")
 				else:
-					if filepath.endswith('.nsp'):
+					if filepath.endswith('.nsp') or filepath.endswith('.nsz'):
 						export='nsp'
-					elif filepath.endswith('.xci'):
+					elif filepath.endswith('.xci') or filepath.endswith('.xcz'):
 						export='xci'
 					else:
 						print ("Wrong Type!!!")
@@ -4367,7 +4367,7 @@ if __name__ == '__main__':
 				else:
 					cskip=True
 
-				if filepath.endswith(".nsp"):
+				if filepath.endswith(".nsp") or filepath.endswith('.nsz'):
 					try:
 						f = Fs.Nsp(filepath)
 						f.sp_groupncabyid(buffer,ofolder,fat,fx,export)
@@ -4375,7 +4375,7 @@ if __name__ == '__main__':
 						f.close()
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
-				if filepath.endswith(".xci"):
+				if filepath.endswith(".xci") or filepath.endswith('.xcz'):
 					try:
 						f = Fs.Xci(filepath)
 						f.sp_groupncabyid(buffer,ofolder,fat,fx,export)
