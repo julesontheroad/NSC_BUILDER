@@ -6033,6 +6033,7 @@ if __name__ == '__main__':
 		#parser.add_argument('-bid', '--baseid', nargs='+', help='Filter with base titleid')
 
 		if args.findfile:
+			raised_error=False
 			if args.findfile  == 'uinput':
 				ruta=input("PLEASE DRAG A FILE OR FOLDER OVER THE WINDOW AND PRESS ENTER: ")
 				if '&' in ruta:
@@ -6056,31 +6057,45 @@ if __name__ == '__main__':
 					ruta=ruta[:-1]
 				if ruta[0]=='"':
 					ruta=ruta[1:]
-			except:raise ('Empty input')
-			extlist=list()
-			if args.type:
-				for t in args.type:
-					x='.'+t
-					extlist.append(x)
-					if x[-1]=='*':
-						x=x[:-1]
+			except:
+				raised_error=True
+			if raised_error==False:
+				extlist=list()
+				if args.type:
+					for t in args.type:
+						x='.'+t
 						extlist.append(x)
-					elif x==".00":
-						extlist.append('00')
-			#print(extlist)
-			if args.filter:
-				for f in args.filter:
-					filter=f
+						if x[-1]=='*':
+							x=x[:-1]
+							extlist.append(x)
+						elif x==".00":
+							extlist.append('00')
+				#print(extlist)
+				if args.filter:
+					for f in args.filter:
+						filter=f
 
-			filelist=list()
-			try:
-				fname=""
-				binbin='RECYCLE.BIN'
-				for ext in extlist:
-					#print (ext)
-					if os.path.isdir(ruta):
-						for dirpath, dirnames, filenames in os.walk(ruta):
-							for filename in [f for f in filenames if f.endswith(ext.lower()) or f.endswith(ext.upper()) or f[:-1].endswith(ext.lower()) or f[:-1].endswith(ext.lower())]:
+				filelist=list()
+				try:
+					fname=""
+					binbin='RECYCLE.BIN'
+					for ext in extlist:
+						#print (ext)
+						if os.path.isdir(ruta):
+							for dirpath, dirnames, filenames in os.walk(ruta):
+								for filename in [f for f in filenames if f.endswith(ext.lower()) or f.endswith(ext.upper()) or f[:-1].endswith(ext.lower()) or f[:-1].endswith(ext.lower())]:
+									fname=""
+									if args.filter:
+										if filter.lower() in filename.lower():
+											fname=filename
+									else:
+										fname=filename
+									if fname != "":
+										if binbin.lower() not in filename.lower():
+											filelist.append(os.path.join(dirpath, filename))
+						else:
+							if ruta.endswith(ext.lower()) or ruta.endswith(ext.upper()) or ruta[:-1].endswith(ext.lower()) or ruta[:-1].endswith(ext.upper()):
+								filename = ruta
 								fname=""
 								if args.filter:
 									if filter.lower() in filename.lower():
@@ -6089,36 +6104,24 @@ if __name__ == '__main__':
 									fname=filename
 								if fname != "":
 									if binbin.lower() not in filename.lower():
-										filelist.append(os.path.join(dirpath, filename))
-					else:
-						if ruta.endswith(ext.lower()) or ruta.endswith(ext.upper()) or ruta[:-1].endswith(ext.lower()) or ruta[:-1].endswith(ext.upper()):
-							filename = ruta
-							fname=""
-							if args.filter:
-								if filter.lower() in filename.lower():
-									fname=filename
-							else:
-								fname=filename
-							if fname != "":
-								if binbin.lower() not in filename.lower():
-									filelist.append(filename)
+										filelist.append(filename)
 
-				if args.text_file:
-					tfile=args.text_file
-					with open(tfile,"a", encoding='utf8') as tfile:
+					if args.text_file:
+						tfile=args.text_file
+						with open(tfile,"a", encoding='utf8') as tfile:
+							for line in filelist:
+								try:
+									tfile.write(line+"\n")
+								except:
+									continue
+					else:
 						for line in filelist:
 							try:
-								tfile.write(line+"\n")
+								print (line)
 							except:
 								continue
-				else:
-					for line in filelist:
-						try:
-							print (line)
-						except:
-							continue
-			except BaseException as e:
-				Print.error('Exception: ' + str(e))
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))
 
 		if args.nint_keys:
 			try:
