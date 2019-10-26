@@ -3975,7 +3975,7 @@ class Nsp(Pfs0):
 					return(languetag)					
 
 	def gen_nsp_head(self,files,delta,inc_xml,ofolder):
-	
+
 		filesNb = len(files)
 		stringTable = '\x00'.join(str(nca) for nca in files)
 		headerSize = 0x10 + (filesNb)*0x18 + len(stringTable)
@@ -4001,6 +4001,10 @@ class Nsp(Pfs0):
 					xmlpath = os.path.join(ofolder, xmlname)
 					size=os.path.getsize(xmlpath)					
 					fileSizes.append(int(size))
+			elif str(nca._path).endswith('.ncz'):
+				ncztype=Nca(nca)
+				ncztype._path=nca._path
+				fileSizes.append(ncztype.header.size)					
 				
 		fileOffsets = [sum(fileSizes[:n]) for n in range(filesNb)]
 		
@@ -4023,6 +4027,7 @@ class Nsp(Pfs0):
 		return header					
 					
 	def c_nsp_direct(self,buffer,outfile,ofolder,fat,fx,delta,metapatch,RSV_cap,keypatch):
+		buffer=int(buffer)
 	
 		t = tqdm(total=False, unit='B', unit_scale=False, leave=False)	
 		
@@ -4046,6 +4051,13 @@ class Nsp(Pfs0):
 					if nca.header.getCryptoType2() != masterKeyRev:
 						pass
 						raise IOError('Mismatched masterKeyRevs!')
+			elif str(nca._path).endswith('.ncz'):						
+				ncztype=Nca(nca)
+				ncztype._path=nca._path			
+				if ncztype.header.getRightsId() != 0:			
+					if ncztype.header.getCryptoType2() != masterKeyRev:
+						pass
+						raise IOError('Mismatched masterKeyRevs!')									
 		for nca in self:	
 			if type(nca) == Nca:		
 				if nca.header.getRightsId() != 0:
@@ -4054,6 +4066,15 @@ class Nsp(Pfs0):
 							masterKeyRev = 2						
 							titleKeyDec = Keys.decryptTitleKey(ticket.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(masterKeyRev))
 							break		
+			elif str(nca._path).endswith('.ncz'):
+				ncztype=Nca(nca)
+				ncztype._path=nca._path
+				if ncztype.header.getRightsId() != 0:
+					if ncztype.header.getCryptoType2() == 0:
+						if ncztype.header.getCryptoType() == 2:
+							masterKeyRev = 2						
+							titleKeyDec = Keys.decryptTitleKey(ticket.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(masterKeyRev))
+							break						
 
 		for nca in self:	
 			if type(nca) == Nca and str(nca.header.contentType) == 'Content.META':	
@@ -4131,6 +4152,11 @@ class Nsp(Pfs0):
 					xmlname=nca._path
 					xmlname=xmlname[:-3]+'xml'
 					contentlist.append(xmlname)	
+			elif str(nca._path).endswith('.ncz'):
+				ncapath=str(nca._path)[:-1]+'a'
+				contentlist.append(ncapath)							
+					
+					
 		hd = self.gen_nsp_head(contentlist,delta,True,ofolder)
 		
 		totSize = len(hd) 
@@ -4151,6 +4177,11 @@ class Nsp(Pfs0):
 					xmlname=xmlname[:-3]+'xml'
 					xmlpath = os.path.join(ofolder, xmlname)
 					totSize=totSize+os.path.getsize(xmlpath)
+			elif str(nca._path).endswith('.ncz'):
+				ncztype=Nca(nca)
+				ncztype._path=nca._path
+				totSize=totSize+ncztype.header.size
+			
 		if os.path.exists(outfile) and os.path.getsize(outfile) == totSize:
 			Print.info('\t\tRepack %s is already complete!' % outfile)
 			return					
@@ -4189,7 +4220,8 @@ class Nsp(Pfs0):
 		outf.write(hd)	
 		t.update(len(hd))
 		c=c+len(hd)		
-		block=4294901760		
+		block=4294901760	
+		outf.close()			
 		for nca in self:
 			vfragment="false"	
 			if type(nca) == Nca and (str(nca.header.contentType) != 'Content.META'):
@@ -4227,6 +4259,7 @@ class Nsp(Pfs0):
 				t.write(tabs+'- Appending: ' + str(nca._path))
 				nca.rewind()					
 				i=0
+				outf = open(outfile, 'a+b')	
 				for data in iter(lambda: nca.read(int(buffer)), ""):
 					if i==0:
 						newheader=self.get_newheader(nca,encKeyBlock,crypto1,crypto2,hcrypto,gc_flag)		
@@ -4287,14 +4320,16 @@ class Nsp(Pfs0):
 							outf.flush()						
 						if not data:
 							break
-			if type(nca) == Nca and str(nca.header.contentType) == 'Content.META':	
+				outf.close()			
+			elif type(nca) == Nca and str(nca.header.contentType) == 'Content.META':	
 				filename = str(nca._path)			
 				filepath = os.path.join(outfolder, filename)	
 				xml_file=filepath[:-3]+'xml'
 				target = Fs.Nca(filepath, 'r+b')
 				target.rewind()						
 				size=os.path.getsize(filepath)
-				t.write(tabs+'- Appending: ' + str(nca._path))						
+				t.write(tabs+'- Appending: ' + str(nca._path))			
+				outf = open(outfile, 'a+b')		
 				for data in iter(lambda: target.read(int(size)), ""):				
 					if fat=="fat32" and (c+len(data))>block:
 						n2=block-c
@@ -4370,11 +4405,99 @@ class Nsp(Pfs0):
 				try:
 					os.remove(xml_file) 	
 				except:
-					pass					
+					pass	
+				outf.close()					
+			elif str(nca._path).endswith('.ncz'):
+				ncztype=Nca(nca)
+				ncztype._path=nca._path
+				crypto1=ncztype.header.getCryptoType()
+				crypto2=ncztype.header.getCryptoType2()	
+				if crypto2>crypto1:
+					masterKeyRev=crypto2
+				if crypto2<=crypto1:	
+					masterKeyRev=crypto1	
+				crypto = aes128.AESECB(Keys.keyAreaKey(Keys.getMasterKeyIndex(masterKeyRev), ncztype.header.keyIndex))
+				hcrypto = aes128.AESXTS(uhx(Keys.get('header_key')))	
+				gc_flag='00'*0x01		
+				if ncztype.header.getRightsId() != 0:				
+					ncztype.rewind()	
+					encKeyBlock = crypto.encrypt(titleKeyDec * 4)
+					if keypatch != 'false':
+						if keypatch < ncztype.header.getCryptoType2():
+							encKeyBlock,crypto1,crypto2=self.get_new_cryptoblock(ncztype, keypatch,encKeyBlock,t)	
+				if ncztype.header.getRightsId() == 0:
+					ncztype.rewind()				
+					encKeyBlock = ncztype.header.getKeyBlock()	
+					if keypatch != 'false':					
+						if keypatch < ncztype.header.getCryptoType2():
+							encKeyBlock,crypto1,crypto2=self.get_new_cryptoblock(ncztype, keypatch,encKeyBlock,t)								
+				t.write('')							
+				t.write(tabs+'- Appending: ' + str(nca._path)[:-1]+'a')			
+				t.write(tabs+'  Writing nca header')					
+				i=0
+				newheader=self.get_newheader(ncztype,encKeyBlock,crypto1,crypto2,hcrypto,gc_flag)	
+				ncztype.rewind()
+				data=ncztype.read(0x4000)
+				with open(outfile, 'rb+') as o:
+					o.seek(0, os.SEEK_END)	
+					curr_off= o.tell()	
+					o.write(data)	
+					o.seek(curr_off)
+					o.write(newheader)
+				t.update(0x4000)
+				magic = readInt64(ncztype)
+				sectionCount = readInt64(ncztype)
+				sections = []
+				for i in range(sectionCount):
+					sections.append(Section(ncztype))		
+				# print(sections)							
+				with open(outfile, 'rb+') as o:
+					o.seek(0, os.SEEK_END)
+					t.write(tabs+'  Writing decompressed body in plaintext')								
+					count=0;checkstarter=0
+					dctx = zstandard.ZstdDecompressor()
+					reader = dctx.stream_reader(ncztype)			
+					c=0;spsize=0							
+					for s in sections:
+						end = s.offset + s.size		
+						if s.cryptoType == 1: #plain text
+							t.write(tabs+'    * Section {} is plaintext'.format(str(c)))
+							t.write(tabs+'      %x - %d bytes, Crypto type %d' % ((s.offset), s.size, s.cryptoType))
+							spsize+=s.size	
+							end = s.offset + s.size	
+							i = s.offset									
+							while i < end:
+								chunkSz = buffer if end - i > buffer else end - i									
+								chunk = reader.read(chunkSz)		
+								if not len(chunk):
+									break	
+								o.write(chunk)	
+								t.update(len(chunk))	
+								i += chunkSz
+						elif s.cryptoType not in (3, 4):
+							raise IOError('Unknown crypto type: %d' % s.cryptoType)	
+						else: 	
+							t.write(tabs+'    * Section {} needs decompression'.format(str(c)))	
+							t.write(tabs+'      %x - %d bytes, Crypto type %d' % ((s.offset), s.size, s.cryptoType))		
+							t.write(tabs+'      Key: %s' % (str(hx(s.cryptoKey))))	
+							t.write(tabs+'      IV: %s' % (str(hx(s.cryptoCounter))))								
+							crypto = AESCTR(s.cryptoKey, s.cryptoCounter)
+							spsize+=s.size	
+							test=int(spsize/(buffer))
+							i = s.offset									
+							while i < end:
+								crypto.seek(i)
+								chunkSz = buffer if end - i > buffer else end - i
+								chunk = reader.read(chunkSz)	
+								if not len(chunk):
+									break											
+								o.write(crypto.encrypt(chunk))	
+								t.update(len(chunk))									
+								i += chunkSz					
+				ncztype.close()									
 		t.close()		
 		print("")
-		print("Closing file. Please wait")		
-		outf.close()				
+		print("Closing file. Please wait")				
 
 #///////////////////////////////////////////////////								
 #ADD TO DATABASE
@@ -6257,34 +6380,31 @@ class Nsp(Pfs0):
 							break	
 					fp.close()
 			elif str(file._path) == targetZ:	
-				file.rewind()
-				header = file.read(0x4000)
-				magic = readInt64(file)
-				sectionCount = readInt64(file)
+				ncztype=Nca(file)
+				ncztype._path=file._path	
+				ncztype.rewind()				
+				header = ncztype.read(0x4000)
+				magic = readInt64(ncztype)
+				sectionCount = readInt64(ncztype)
 				sections = []
 				for i in range(sectionCount):
-					sections.append(Section(file))		
+					sections.append(Section(ncztype))		
 				# print(sections)	
-				dctx = zstandard.ZstdDecompressor()
-				reader = dctx.stream_reader(file)
 				with open(outf, 'rb+') as o:
 					o.seek(0, os.SEEK_END)
-					curr_off= o.tell()
-					t.write('- Appending decompressed {}'.format(str(file._path)))		
-					t.write('  Writing nca header')							
+					t.write(tabs+'  Writing nca header')	
 					o.write(header)
-					t.update(len(header))	
-					timestamp = time.time()
-					t.write('  Writing decompressed body in plaintext')				
+					t.update(0x4000)	
+					t.write(tabs+'  Writing decompressed body in plaintext')								
 					count=0;checkstarter=0
 					dctx = zstandard.ZstdDecompressor()
-					reader = dctx.stream_reader(file)			
+					reader = dctx.stream_reader(ncztype)			
 					c=0;spsize=0							
 					for s in sections:
 						end = s.offset + s.size		
 						if s.cryptoType == 1: #plain text
-							t.write('    * Section {} is plaintext'.format(str(c)))
-							t.write('      %x - %d bytes, Crypto type %d' % ((s.offset), s.size, s.cryptoType))
+							t.write(tabs+'    * Section {} is plaintext'.format(str(c)))
+							t.write(tabs+'      %x - %d bytes, Crypto type %d' % ((s.offset), s.size, s.cryptoType))
 							spsize+=s.size	
 							end = s.offset + s.size	
 							i = s.offset									
@@ -6299,9 +6419,10 @@ class Nsp(Pfs0):
 						elif s.cryptoType not in (3, 4):
 							raise IOError('Unknown crypto type: %d' % s.cryptoType)	
 						else: 	
-							t.write('    * Section {} needs decompression'.format(str(c)))	
-							t.write('      %x - %d bytes, Crypto type %d' % ((s.offset), s.size, s.cryptoType))		
-							t.write('      Key: %s, IV: %s' % (str(hx(s.cryptoKey)), str(hx(s.cryptoCounter))))		
+							t.write(tabs+'    * Section {} needs decompression'.format(str(c)))	
+							t.write(tabs+'      %x - %d bytes, Crypto type %d' % ((s.offset), s.size, s.cryptoType))		
+							t.write(tabs+'      Key: %s' % (str(hx(s.cryptoKey))))	
+							t.write(tabs+'      IV: %s' % (str(hx(s.cryptoCounter))))								
 							crypto = AESCTR(s.cryptoKey, s.cryptoCounter)
 							spsize+=s.size	
 							test=int(spsize/(buffer))
@@ -6314,7 +6435,8 @@ class Nsp(Pfs0):
 									break											
 								o.write(crypto.encrypt(chunk))	
 								t.update(len(chunk))									
-								i += chunkSz
+								i += chunkSz					
+				ncztype.close()		
 		return outf,index,c								
 						
 	def append_clean_content(self,outf,target,buffer,t,gamecard,keypatch,metapatch,RSV_cap,fat,fx,c,index,block=4294901760):
@@ -6758,46 +6880,49 @@ class Nsp(Pfs0):
 						for i in range(sectionCount):
 							sections.append(Section(ncztype))		
 						# print(sections)	
-						dctx = zstandard.ZstdDecompressor()
-						reader = dctx.stream_reader(ncztype)							
 						with open(outf, 'rb+') as o:
 							o.seek(0, os.SEEK_END)
-							t.write('  Writing decompressed body in plaintext')								
-							while True:							
-								chunk = reader.read(16384)								
-								if not chunk:
-									break									
-								o.write(chunk)	
-								t.update(len(chunk))	
-							c=0;spsize=0	
-							t.write('  + Restoring crypto in sections')								
+							t.write(tabs+'  Writing decompressed body in plaintext')								
+							count=0;checkstarter=0
+							dctx = zstandard.ZstdDecompressor()
+							reader = dctx.stream_reader(ncztype)			
+							c=0;spsize=0							
 							for s in sections:
-								c+=1
-								if s.cryptoType == 1: #plain text
-									t.write('    * Section {} is plaintext'.format(str(c)))
-									t.write('      %x - %d bytes, Crypto type %d' % ((s.offset), s.size, s.cryptoType))
-									t.update(s.size);spsize+=s.size	
-									continue									
-								if s.cryptoType not in (3, 4):
-									raise IOError('Unknown crypto type: %d' % s.cryptoType)	
-								t.write('    * Section {} needs decompression'.format(str(c)))	
-								t.write('      %x - %d bytes, Crypto type %d' % ((s.offset), s.size, s.cryptoType))		
-								t.write('      Key: %s, IV: %s' % (str(hx(s.cryptoKey)), str(hx(s.cryptoCounter))))																
-								i = s.offset								
-								crypto = AESCTR(s.cryptoKey, s.cryptoCounter)
 								end = s.offset + s.size		
-								spsize+=s.size									
-								while i < end:
-									o.seek(i+curr_off)
-									crypto.seek(i)
-									chunkSz = 0x10000 if end - i > 0x10000 else end - i
-									buf = o.read(chunkSz)									
-									if not len(buf):
-										break									
-									o.seek(i+curr_off)
-									o.write(crypto.encrypt(buf))		
-									t.update(len(buf))										
-									i += chunkSz						
+								if s.cryptoType == 1: #plain text
+									t.write(tabs+'    * Section {} is plaintext'.format(str(c)))
+									t.write(tabs+'      %x - %d bytes, Crypto type %d' % ((s.offset), s.size, s.cryptoType))
+									spsize+=s.size	
+									end = s.offset + s.size	
+									i = s.offset									
+									while i < end:
+										chunkSz = buffer if end - i > buffer else end - i									
+										chunk = reader.read(chunkSz)		
+										if not len(chunk):
+											break	
+										o.write(chunk)	
+										t.update(len(chunk))	
+										i += chunkSz
+								elif s.cryptoType not in (3, 4):
+									raise IOError('Unknown crypto type: %d' % s.cryptoType)	
+								else: 	
+									t.write(tabs+'    * Section {} needs decompression'.format(str(c)))	
+									t.write(tabs+'      %x - %d bytes, Crypto type %d' % ((s.offset), s.size, s.cryptoType))		
+									t.write(tabs+'      Key: %s' % (str(hx(s.cryptoKey))))	
+									t.write(tabs+'      IV: %s' % (str(hx(s.cryptoCounter))))									
+									crypto = AESCTR(s.cryptoKey, s.cryptoCounter)
+									spsize+=s.size	
+									test=int(spsize/(buffer))
+									i = s.offset									
+									while i < end:
+										crypto.seek(i)
+										chunkSz = buffer if end - i > buffer else end - i
+										chunk = reader.read(chunkSz)	
+										if not len(chunk):
+											break											
+										o.write(crypto.encrypt(chunk))	
+										t.update(len(chunk))									
+										i += chunkSz						
 						ncztype.close()
 		return outf,index,c									
 	

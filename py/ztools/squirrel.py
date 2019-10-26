@@ -3384,7 +3384,7 @@ if __name__ == '__main__':
 						else:
 							print ("Wrong Type!!!")
 				else:
-					if filepath.endswith('.nsp'):
+					if filepath.endswith('.nsp') or filepath.endswith('.nsz'):
 						export='nsp'
 					elif filepath.endswith('.xci'):
 						export='xci'
@@ -3401,7 +3401,7 @@ if __name__ == '__main__':
 				else:
 					cskip=True
 
-				if filepath.endswith(".nsp"):
+				if filepath.endswith(".nsp") or filepath.endswith('.nsz'):
 					f = Fs.Nsp(filepath)
 					TYPE=f.nsptype()
 					f.flush()
