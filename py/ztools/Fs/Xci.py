@@ -6077,7 +6077,7 @@ class Xci(File):
 										nca_name=str(hx(NcaId))
 										nca_name=nca_name[2:-1]+'.nca'
 										ncz_name=nca_name[:-1]+'z'
-										if nca_name in completefilelist or ncz_name in completefilelist :
+										if nca_name in completefilelist or ncz_name in completefilelist:
 											if delta==False and ncatype==6:	
 												print(tabs+'- Excluding delta fragment '+nca_name)
 												continue	
@@ -6494,7 +6494,7 @@ class Xci(File):
 				sectionCount = readInt64(ncztype)
 				sections = []
 				for i in range(sectionCount):
-					sections.append(Section(file))		
+					sections.append(Section(ncztype))		
 				# print(sections)	
 				with open(outf, 'rb+') as o:
 					o.seek(0, os.SEEK_END)
