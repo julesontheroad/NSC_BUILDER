@@ -2248,7 +2248,7 @@ echo Input "2" to add file to list via selector
 echo Input "0" to return to the MODE SELECTION MENU
 ECHO ***********************************************
 echo.
-%pycommand% "%nut%" -t nsp xci -tfile "%prog_dir%splist.txt" -uin "%uinput%" -ff "uinput"
+%pycommand% "%nut%" -t nsp xci nsz xcz -tfile "%prog_dir%splist.txt" -uin "%uinput%" -ff "uinput"
 set /p eval=<"%uinput%"
 set eval=%eval:"=%
 setlocal enabledelayedexpansion
@@ -2256,8 +2256,8 @@ echo+ >"%uinput%"
 endlocal
 
 if /i "%eval%"=="0" goto manual_Reentry
-if /i "%eval%"=="1" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%splist.txt",mode=folder,ext=nsp xci ) 2>&1>NUL
-if /i "%eval%"=="2" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%splist.txt",mode=file,ext=nsp xci )  2>&1>NUL
+if /i "%eval%"=="1" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%splist.txt",mode=folder,ext=nsp xci nsz xcz ) 2>&1>NUL
+if /i "%eval%"=="2" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%splist.txt",mode=file,ext=nsp xci nsz xcz )  2>&1>NUL
 
 echo.
 :sp_checkagain
@@ -2277,7 +2277,7 @@ ECHO *************************************************
 echo Or Input "0" to return to the MODE SELECTION MENU
 ECHO *************************************************
 echo.
-%pycommand% "%nut%" -t nsp xci -tfile "%prog_dir%splist.txt" -uin "%uinput%" -ff "uinput"
+%pycommand% "%nut%" -t nsp xci nsz xcz -tfile "%prog_dir%splist.txt" -uin "%uinput%" -ff "uinput"
 set /p eval=<"%uinput%"
 set eval=%eval:"=%
 setlocal enabledelayedexpansion
@@ -2286,8 +2286,8 @@ endlocal
 
 if /i "%eval%"=="0" goto manual_Reentry
 if /i "%eval%"=="1" goto sp_start_cleaning
-if /i "%eval%"=="2" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%splist.txt",mode=folder,ext=nsp xci ) 2>&1>NUL
-if /i "%eval%"=="3" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%splist.txt",mode=file,ext=nsp xci )  2>&1>NUL
+if /i "%eval%"=="2" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%splist.txt",mode=folder,ext=nsp xci nsz xcz ) 2>&1>NUL
+if /i "%eval%"=="3" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%splist.txt",mode=file,ext=nsp xci nsz xcz )  2>&1>NUL
 if /i "%eval%"=="e" goto salida
 if /i "%eval%"=="i" goto sp_showlist
 if /i "%eval%"=="r" goto sp_r_files
@@ -2381,8 +2381,12 @@ set "end_folder=%%~nf"
 set "orinput=%%f"
 if "%%~nxf"=="%%~nf.nsp" call :split_content
 if "%%~nxf"=="%%~nf.NSP" call :split_content
+if "%%~nxf"=="%%~nf.nsz" call :split_content
+if "%%~nxf"=="%%~nf.NSZ" call :split_content
 if "%%~nxf"=="%%~nf.xci" call :split_content
 if "%%~nxf"=="%%~nf.XCI" call :split_content
+if "%%~nxf"=="%%~nf.xcz" call :split_content
+if "%%~nxf"=="%%~nf.XCZ" call :split_content
 %pycommand% "%nut%" --strip_lines "%prog_dir%splist.txt" "1" "true"
 setlocal enabledelayedexpansion
 if exist "%fold_output%\!end_folder!" RD /S /Q "%fold_output%\!end_folder!" >NUL 2>&1

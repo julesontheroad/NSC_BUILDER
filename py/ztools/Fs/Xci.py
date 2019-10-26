@@ -5426,7 +5426,7 @@ class Xci(File):
 					elif str(file._path).endswith('.ncz'):
 						ncapath=str(file._path)[:-1]+'a'
 						if ncapath in filelist:
-							contentlist.append(file._path)							
+							contentlist.append(ncapath)							
 
 		hd = self.cd_spl_gen_nsph(contentlist)
 		totSize = len(hd) 
@@ -5438,8 +5438,8 @@ class Xci(File):
 					elif str(file._path).endswith('.ncz'):
 						ncapath=str(file._path)[:-1]+'a'		
 						if ncapath in contentlist:		
-							ncztype=Nca(nca)
-							ncztype._path=nca._path		
+							ncztype=Nca(file)
+							ncztype._path=file._path		
 							totSize=totSize+ncztype.header.size								
 
 		indent = 1
@@ -5666,8 +5666,8 @@ class Xci(File):
 					elif str(file._path).endswith('.ncz'):
 						ncapath=str(file._path)[:-1]+'a'
 						if ncapath in filelist:
-							ncztype=Nca(nca)
-							ncztype._path=nca._path	
+							ncztype=Nca(file)
+							ncztype._path=file._path	
 							fileSizes.append(ncztype.header.size)								
 
 		fileOffsets = [sum(fileSizes[:n]) for n in range(filesNb)]
@@ -5689,6 +5689,7 @@ class Xci(File):
 		return header						
 				
 	def cd_spl_xci(self,buffer,outfile,ofolder,filelist,fat,fx):	
+		buffer=int(buffer)	
 		outfile=outfile+'.xci'
 		filepath = os.path.join(ofolder, outfile)	
 		if os.path.exists(filepath) and os.path.getsize(filepath) == totSize:
@@ -5710,7 +5711,7 @@ class Xci(File):
 					elif str(file._path).endswith('.ncz'):
 						ncapath=str(file._path)[:-1]+'a'
 						if ncapath in filelist:
-							contentlist.append(file._path)									
+							contentlist.append(ncapath)									
 		
 		xci_header,game_info,sig_padding,xci_certificate,root_header,upd_header,norm_header,sec_header,rootSize,upd_multiplier,norm_multiplier,sec_multiplier=self.cd_spl_gen_xcih(contentlist)		
 		totSize=len(xci_header)+len(game_info)+len(sig_padding)+len(xci_certificate)+rootSize		
@@ -5786,7 +5787,7 @@ class Xci(File):
 						else:
 							contGC+=1			
 					elif str(nca._path).endswith('.ncz'):
-						ncapath=str(file._path)[:-1]+'a'	
+						ncapath=str(nca._path)[:-1]+'a'	
 						if ncapath in filelist:				
 							ncztype=Nca(nca)
 							ncztype._path=nca._path
@@ -5968,7 +5969,7 @@ class Xci(File):
 								if not data:
 									break
 						outf.close()									
-					elif str(nca._path).endswith('.ncz'):
+					elif str(nca._path).endswith('.ncz') and (str(nca._path)[:-1]+'a') in contentlist:
 						ncztype=Nca(nca)
 						ncztype._path=nca._path
 						crypto1=ncztype.header.getCryptoType()
@@ -5977,7 +5978,7 @@ class Xci(File):
 							masterKeyRev=crypto2
 						if crypto2<=crypto1:	
 							masterKeyRev=crypto1							
-						crypto = aes128.AESECB(Keys.keyAreaKey(Keys.getMasterKeyIndex(masterKeyRev), nca.header.keyIndex))
+						crypto = aes128.AESECB(Keys.keyAreaKey(Keys.getMasterKeyIndex(masterKeyRev), ncztype.header.keyIndex))
 						hcrypto = aes128.AESXTS(uhx(Keys.get('header_key')))	
 						if	ncztype.header.getgamecard() == 0:	
 							KB1L=ncztype.header.getKB1L()

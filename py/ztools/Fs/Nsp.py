@@ -7184,15 +7184,19 @@ class Nsp(Pfs0):
 	
 					
 		for i in contentlist:
-			if export == 'both' and i[5] != 'BASE':
-				export='nsp'
 			if export == 'nsp':
 				self.cd_spl_nsp(buffer,i[0],ofolder,i[4],fat,fx)
-			if export == 'xci':			
-				self.cd_spl_xci(buffer,i[0],ofolder,i[4],fat,fx)
+			if export == 'xci':		
+				if  i[5] != 'BASE':
+					self.cd_spl_nsp(buffer,i[0],ofolder,i[4],fat,fx)	
+				else:		
+					self.cd_spl_xci(buffer,i[0],ofolder,i[4],fat,fx)
 			if export == 'both':	
-				self.cd_spl_nsp(buffer,i[0],ofolder,i[4],fat,fx)			
-				self.cd_spl_xci(buffer,i[0],ofolder,i[4],fat,fx)				
+				if  i[5] != 'BASE':
+					self.cd_spl_nsp(buffer,i[0],ofolder,i[4],fat,fx)					
+				else:
+					self.cd_spl_nsp(buffer,i[0],ofolder,i[4],fat,fx)			
+					self.cd_spl_xci(buffer,i[0],ofolder,i[4],fat,fx)		
 				
 	def cd_spl_nsp(self,buffer,ofile,ofolder,filelist,fat,fx):
 		buffer=int(buffer)
@@ -7213,7 +7217,7 @@ class Nsp(Pfs0):
 			elif str(file._path).endswith('.ncz'):
 				ncapath=str(file._path)[:-1]+'a'
 				if ncapath in filelist:
-					contentlist.append(file._path)	
+					contentlist.append(ncapath)	
 					
 		hd = self.cd_spl_gen_nsph(contentlist)
 		totSize = len(hd) 
@@ -7223,8 +7227,8 @@ class Nsp(Pfs0):
 			elif str(file._path).endswith('.ncz'):
 				ncapath=str(file._path)[:-1]+'a'		
 				if ncapath in contentlist:		
-					ncztype=Nca(nca)
-					ncztype._path=nca._path		
+					ncztype=Nca(file)
+					ncztype._path=file._path		
 					totSize=totSize+ncztype.header.size			
 
 		indent = 1
@@ -7447,8 +7451,8 @@ class Nsp(Pfs0):
 			elif str(file._path).endswith('.ncz'):
 				ncapath=str(file._path)[:-1]+'a'
 				if ncapath in filelist:
-					ncztype=Nca(nca)
-					ncztype._path=nca._path	
+					ncztype=Nca(file)
+					ncztype._path=file._path	
 					fileSizes.append(ncztype.header.size)		
 
 		fileOffsets = [sum(fileSizes[:n]) for n in range(filesNb)]
@@ -7470,6 +7474,7 @@ class Nsp(Pfs0):
 		return header						
 				
 	def cd_spl_xci(self,buffer,ofile,ofolder,filelist,fat,fx):
+		buffer=int(buffer)
 		self.rewind()		
 		outfile=ofile+'.xci'
 		filepath = os.path.join(ofolder, outfile)	
@@ -7490,7 +7495,7 @@ class Nsp(Pfs0):
 			elif str(file._path).endswith('.ncz'):
 				ncapath=str(file._path)[:-1]+'a'
 				if ncapath in filelist:
-					contentlist.append(file._path)						
+					contentlist.append(ncapath)						
 
 		xci_header,game_info,sig_padding,xci_certificate,root_header,upd_header,norm_header,sec_header,rootSize,upd_multiplier,norm_multiplier,sec_multiplier=self.cd_spl_gen_xcih(contentlist)		
 		totSize=len(xci_header)+len(game_info)+len(sig_padding)+len(xci_certificate)+rootSize		
@@ -7738,7 +7743,7 @@ class Nsp(Pfs0):
 						if not data:
 							break
 				outf.close()	
-			elif str(nca._path).endswith('.ncz'):
+			elif str(nca._path).endswith('.ncz') and (str(nca._path)[:-1]+'a') in contentlist:
 				ncztype=Nca(nca)
 				ncztype._path=nca._path
 				crypto1=ncztype.header.getCryptoType()
@@ -7747,7 +7752,7 @@ class Nsp(Pfs0):
 					masterKeyRev=crypto2
 				if crypto2<=crypto1:	
 					masterKeyRev=crypto1							
-				crypto = aes128.AESECB(Keys.keyAreaKey(Keys.getMasterKeyIndex(masterKeyRev), nca.header.keyIndex))
+				crypto = aes128.AESECB(Keys.keyAreaKey(Keys.getMasterKeyIndex(masterKeyRev), ncztype.header.keyIndex))
 				hcrypto = aes128.AESXTS(uhx(Keys.get('header_key')))	
 				if	ncztype.header.getgamecard() == 0:	
 					KB1L=ncztype.header.getKB1L()
