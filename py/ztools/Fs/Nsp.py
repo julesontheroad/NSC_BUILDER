@@ -8288,6 +8288,7 @@ class Nsp(Pfs0):
 		message='****************';print(message);feed+=message+'\n'									
 		for f in self:			
 			if type(f) == Nca and f.header.contentType != Type.Content.META:
+				hlisthash=False
 				message=(str(f.header.titleId)+' - '+str(f.header.contentType));print(message);feed+=message+'\n'											
 				verify,origheader,ncaname,feed,origkg,tr,tkey,iGC=f.verify(feed)		
 				# headerlist.append([ncaname,origheader,hlisthash])		
@@ -8297,6 +8298,7 @@ class Nsp(Pfs0):
 					verdict=verify
 				message='';print(message);feed+=message+'\n'	
 			if str(f._path).endswith('.ncz'):
+				hlisthash=False
 				ncz=Nca(f)
 				ncz._path=f._path
 				message=(str(ncz.header.titleId)+' - '+str(ncz.header.contentType));print(message);feed+=message+'\n'											
@@ -8308,6 +8310,7 @@ class Nsp(Pfs0):
 					verdict=verify
 				message='';print(message);feed+=message+'\n'				
 		for f in self:	
+			hlisthash=False
 			if type(f) == Nca and f.header.contentType == Type.Content.META:
 				meta_nca=f._path
 				f.rewind();meta_dat=f.read()
@@ -8383,31 +8386,23 @@ class Nsp(Pfs0):
 									t.close()	
 									message=(tabs+'* '+"RSV WAS CHANGED FROM "+str(verNumber)+" TO "+str(minrsv));print(message);feed+=message+'\n'	
 									message=(tabs+'* '+"THE CNMT FILE IS CORRECT");print(message);feed+=message+'\n'										
-									if origheader != False:	
-										hlisthash=True;i=0
-										fp = Fs.Nca(tempfile, 'r+b')
-										for data in iter(lambda: fp.read(int(32768)), ""):											
-											if i==0:
-												sha0=sha256()
-												sha0.update(origheader)	
-												i+=1
-												fp.flush()												
-												fp.seek(0xC00)
-											else:		
-												sha0.update(data)								
-												fp.flush()
-												if not data:
-													fp.close()												
-													cnmtdidverify=True
-													break	
+									hlisthash=True	
+									cnmtdidverify=True
 									break
 						else:break
 				try:
 					t.close()
 				except:pass
 				if hlisthash == True:
-					sha0=sha0.hexdigest()
-					hlisthash=sha0
+					fp = Fs.Nca(tempfile, 'r+b')
+					fp.rewind()
+					data=fp.read()
+					origheader=data
+					sha0=sha256(data)
+					hlisthash=sha0.hexdigest()
+					# print(sha0)
+					fp.flush()		
+					fp.close()						
 				headerlist.append([ncaname,origheader,hlisthash,tr,tkey,iGC])	
 				message='';print(message);feed+=message+'\n'		
 		try:
@@ -8905,7 +8900,8 @@ class Nsp(Pfs0):
 							for k in range(len(headerlist)):
 								entry=headerlist[k]
 								if entry[0]==file and entry[1]!=False:
-									ncahead=entry[1]						
+									ncahead=entry[1]	
+							# Hex.dump(ncahead)		
 							off1=files_list[i][1]
 							off2=files_list[i][2]						
 							t.write('- Appending {}'.format(files_list[i][0]))
