@@ -1064,6 +1064,8 @@ if "%vrepack%" EQU "xci_trimmer" ( %pycommand% "%nut%" -lib_call listmanager fil
 if "%vrepack%" EQU "xci_untrimmer" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=xci","token=False",Print="False" )
 if "%vrepack%" EQU "rebuild" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=nsp nsz","token=False",Print="False" )
 if "%vrepack%" EQU "nodelta" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=nsp nsz","token=False",Print="False" )
+if "%fatype%" EQU "-fat fat32" echo Fat32 selected, removing nsz and xcz from input list
+if "%fatype%" EQU "-fat fat32" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=nsp nsx xci","token=False",Print="False" ) 
 cls
 call :program_logo
 
@@ -1814,16 +1816,19 @@ if /i "%bs%"=="2" goto m_split_merge
 goto m_KeyChange_skip
 
 :m_split_merge
+if "%fatype%" EQU "-fat fat32" echo Fat32 selected, removing nsz and xcz from input list
+if "%fatype%" EQU "-fat fat32" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%mlist.txt","ext=nsp nsx xci","token=False",Print="False" ) 
 cls
 call :program_logo
 %pycommand% "%nut%" -splid "%mlistfol%" -tfile "%prog_dir%mlist.txt"
 goto m_process_jobs2
 :m_process_jobs
+if "%fatype%" EQU "-fat fat32" echo Fat32 selected, removing nsz and xcz from input list
+if "%fatype%" EQU "-fat fat32" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%mlist.txt","ext=nsp nsx xci","token=False",Print="False" ) 
 cls
 :m_process_jobs2
 dir "%mlistfol%\*.txt" /b  > "%prog_dir%mlist.txt"
 rem if "%fatype%" EQU "-fat fat32" goto m_process_jobs_fat32
-
 for /f "tokens=*" %%f in (mlist.txt) do (
 set "listname=%%f"
 if "%vrepack%" EQU "cnsp" call :program_logo
@@ -2372,6 +2377,8 @@ if /i "%bs%"=="1" set "vrepack=nsp"
 if /i "%bs%"=="2" set "vrepack=xci"
 if /i "%bs%"=="3" set "vrepack=both"
 if %vrepack%=="none" goto sp_cl_wrongchoice
+if "%fatype%" EQU "-fat fat32" echo Fat32 selected, removing nsz and xcz from input list
+if "%fatype%" EQU "-fat fat32" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%splist.txt","ext=nsp nsx xci","token=False",Print="False" ) 
 cls
 call :program_logo
 for /f "tokens=*" %%f in (splist.txt) do (
