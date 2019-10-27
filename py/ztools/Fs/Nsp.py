@@ -603,31 +603,113 @@ class Nsp(Pfs0):
 				nca.header.setKeyBlock(encKeyBlock)
 				Hex.dump(encKeyBlock)
 
-#Extract all files
+#Extract all files. If ncz decompress to nca
 	def extract_all(self,ofolder,buffer):
+		buffer=int(buffer)
 		indent = 1
 		tabs = '\t' * indent
 		print("Processing: "+str(self._path))
 		for file in self:
-			file.rewind()
-			filename =  str(file._path)
-			outfolder = str(ofolder)+'/'
-			filepath = os.path.join(outfolder, filename)
-			if not os.path.exists(outfolder):
-				os.makedirs(outfolder)
-			fp = open(filepath, 'w+b')
-			file.rewind()
-			t = tqdm(total=file.size, unit='B', unit_scale=True, leave=False)
-			t.write(tabs+'Copying: ' + str(filename))
-			for data in iter(lambda: file.read(int(buffer)), ""):
-				fp.write(data)
-				t.update(len(data))
-				fp.flush()
-				if not data:
-					fp.close()
-					t.close()	
-					break					
-				
+			if not str(file._path).endswith('.ncz'):
+				file.rewind()
+				filename =  str(file._path)
+				outfolder = str(ofolder)+'/'
+				filepath = os.path.join(outfolder, filename)
+				if not os.path.exists(outfolder):
+					os.makedirs(outfolder)
+				fp = open(filepath, 'w+b')
+				file.rewind()
+				t = tqdm(total=file.size, unit='B', unit_scale=True, leave=False)
+				t.write(tabs+'Copying: ' + str(filename))
+				for data in iter(lambda: file.read(int(buffer)), ""):
+					fp.write(data)
+					t.update(len(data))
+					fp.flush()
+					if not data:
+						fp.close()
+						t.close()	
+						break			
+			else:
+				file.rewind()
+				filename =  str(file._path)[:-1]+'a'
+				outfolder = str(ofolder)+'/'
+				filepath = os.path.join(outfolder, filename)
+				if not os.path.exists(outfolder):
+					os.makedirs(outfolder)
+				file.rewind()
+				ncztype=Nca(file)
+				ncztype._path=file._path
+				t = tqdm(total=ncztype.header.size, unit='B', unit_scale=True, leave=False)
+				t.write(tabs+'Copying: ' + str(filename))			
+				# print(file._path)
+				ncztype.rewind()
+				header = ncztype.read(0x4000)
+				magic = readInt64(ncztype)
+				sectionCount = readInt64(ncztype)
+				sections = []
+				for i in range(sectionCount):
+					sections.append(Section(ncztype))		
+				# print(sections)	
+				dctx = zstandard.ZstdDecompressor()
+				reader = dctx.stream_reader(ncztype)		
+				with open(filepath, 'wb+') as o:
+					o.seek(0, os.SEEK_END)
+					curr_off= o.tell()
+					t.write(tabs+'- Appending decompressed {}'.format(str(ncztype._path)))		
+					t.write(tabs+'  Writing nca header')							
+					o.write(header)
+					t.update(len(header))	
+					timestamp = time.time()
+					t.write(tabs+'  Writing decompressed body in plaintext')				
+					count=0;checkstarter=0
+					dctx = zstandard.ZstdDecompressor()
+					reader = dctx.stream_reader(ncztype)			
+					c=0;spsize=0							
+					for s in sections:
+						end = s.offset + s.size		
+						if s.cryptoType == 1: #plain text
+							t.write(tabs+'    * Section {} is plaintext'.format(str(c)))
+							t.write(tabs+'      %x - %d bytes, Crypto type %d' % ((s.offset), s.size, s.cryptoType))
+							spsize+=s.size	
+							end = s.offset + s.size	
+							i = s.offset									
+							while i < end:
+								chunkSz = buffer if end - i > buffer else end - i									
+								chunk = reader.read(chunkSz)		
+								if not len(chunk):
+									break	
+								o.write(chunk)	
+								t.update(len(chunk))	
+								i += chunkSz
+						elif s.cryptoType not in (3, 4):
+							raise IOError('Unknown crypto type: %d' % s.cryptoType)	
+						else: 	
+							t.write(tabs+'    * Section {} needs decompression'.format(str(c)))	
+							t.write(tabs+'      %x - %d bytes, Crypto type %d' % ((s.offset), s.size, s.cryptoType))		
+							t.write(tabs+'      Key: %s' % (str(hx(s.cryptoKey))))
+							t.write(tabs+'      IV: %s' % (str(hx(s.cryptoCounter))))							
+							crypto = AESCTR(s.cryptoKey, s.cryptoCounter)
+							spsize+=s.size	
+							test=int(spsize/(buffer))
+							i = s.offset									
+							while i < end:
+								crypto.seek(i)
+								chunkSz = buffer if end - i > buffer else end - i
+								chunk = reader.read(chunkSz)	
+								if not len(chunk):
+									break											
+								o.write(crypto.encrypt(chunk))	
+								t.update(len(chunk))									
+								i += chunkSz
+
+					elapsed = time.time() - timestamp
+					minutes = elapsed / 60
+					seconds = elapsed % 60
+					
+					speed = 0 if elapsed == 0 else (spsize / elapsed)
+					t.write('\n    Decompressed in %02d:%02d at speed: %.1f MB/s\n' % (minutes, seconds, speed / 1000000.0))								
+					t.close()
+					
 	def copy_ticket(self,ofolder):
 		for ticket in self:
 			if type(ticket) == Ticket:
@@ -4603,7 +4685,12 @@ class Nsp(Pfs0):
 		nca_id=''
 		self.rewind()
 		tr=''
-		for nca in self:
+		for file in self:
+			if str(file._path).endswith('.nsz'):
+				nca=Nca(file)
+				nca._path=file._path					
+			else:			
+				nca=file
 			if type(nca) == Nca:		
 				if nca.header.getRightsId() != 0:
 					crypto1=nca.header.getCryptoType()

@@ -630,7 +630,7 @@ if __name__ == '__main__':
 				for inpt in args.remlinkacc:
 					filename=inpt
 			try:
-				if filename.endswith('.nsp') or filename.endswith('.nsx'):
+				if filename.endswith('.nsp') or filename.endswith('.nsx') or filename.endswith('.nsz'):
 					f = Fs.Nsp(filename,'r+b')
 					ctrl_list=f.gen_ctrl_list()
 					f.flush()
@@ -665,7 +665,7 @@ if __name__ == '__main__':
 							f.ctrl_upd_hblock_hash(item)
 							f.flush()
 							f.close()
-				elif filename.endswith('.xci'):
+				elif filename.endswith('.xci') or filename.endswith('.xcz'):
 					f = Fs.factory(filename)
 					f.open(filename, 'r+b')
 					ctrl_list=f.gen_ctrl_list()
@@ -779,7 +779,7 @@ if __name__ == '__main__':
 			if not os.path.exists(ofolder):
 				os.makedirs(ofolder)
 			test=filename.lower()
-			if test.endswith('.nsp') or test.endswith('.nsx'):
+			if test.endswith('.nsp') or test.endswith('.nsx') or test.endswith('.nsz'):
 				try:
 					f = Fs.Nsp(filename, 'rb')
 					f.open(filename, 'rb')
@@ -788,7 +788,7 @@ if __name__ == '__main__':
 					f.close()
 				except BaseException as e:
 					Print.error('Exception: ' + str(e))
-			elif test.endswith('.xci'):
+			elif test.endswith('.xci') or test.endswith('.xcz'):
 				try:
 					f = Fs.factory(filename)
 					f.open(filename, 'rb')
@@ -4898,7 +4898,7 @@ if __name__ == '__main__':
 				else:
 					for filename in args.addtodb:
 						filename=filename
-				if (filename.lower()).endswith('.nsp') or (filename.lower()).endswith('.nsx'):
+				if (filename.lower()).endswith('.nsp') or (filename.lower()).endswith('.nsx') or (filename.lower()).endswith('.nsz'):
 					try:
 						infile=r''
 						infile+=filename
@@ -4914,7 +4914,7 @@ if __name__ == '__main__':
 							errfile.write(date+' Error in "ADD TO DATABASE" function:'+'\n')
 							errfile.write("Route "+str(filename)+'\n')
 							errfile.write('- Exception: ' + str(e)+ '\n')
-				if (filename.lower()).endswith('.xci'):
+				if (filename.lower()).endswith('.xci') or (filename.lower()).endswith('.xcz'):
 					try:
 						infile=r''
 						infile+=filename
@@ -4949,13 +4949,13 @@ if __name__ == '__main__':
 				else:
 					for filename in args.addtodb_new:
 						filename=filename
-				if (filename.lower()).endswith('.nsp') or (filename.lower()).endswith('.nsx'):
+				if (filename.lower()).endswith('.nsp') or (filename.lower()).endswith('.nsx') or (filename.lower()).endswith('.nsz'):
 					try:
 						f = Fs.Nsp(filename, 'rb')
 						f.Incorporate_to_permaDB(DBfile,trans)
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
-				if (filename.lower()).endswith('.xci'):
+				if (filename.lower()).endswith('.xci') or (filename.lower()).endswith('.xcz'):
 					try:
 						f = Fs.Xci(filename)
 						f.Incorporate_to_permaDB(DBfile,trans)
@@ -5186,7 +5186,7 @@ if __name__ == '__main__':
 			if not os.path.exists(ofolder):
 				os.makedirs(ofolder)
 			test=filename.lower()
-			if test.endswith('.nsp') or test.endswith('.nsx'):
+			if test.endswith('.nsp') or test.endswith('.nsx') or test.endswith('.nsz'):
 				try:
 					files_list=sq_tools.ret_nsp_offsets(filename)
 					for i in range(len(files_list)):
@@ -5230,7 +5230,7 @@ if __name__ == '__main__':
 									break
 				except BaseException as e:
 					Print.error('Exception: ' + str(e))
-			elif test.endswith('.xci'):
+			elif test.endswith('.xci') or test.endswith('.xcz'):
 				try:
 					files_list=sq_tools.ret_xci_offsets(filename)
 					#print(files_list)

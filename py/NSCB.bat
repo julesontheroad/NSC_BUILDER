@@ -2564,10 +2564,10 @@ if not errorlevel 1 goto DBcheckfolder
 if exist "%bs%\" goto DBcheckfolder
 goto DBcheckfile
 :DBcheckfolder
-%pycommand% "%nut%" -t nsp xci nsx -tfile "%prog_dir%DBL.txt" -ff "%targt%"
+%pycommand% "%nut%" -t nsp xci nsx nsz xcz -tfile "%prog_dir%DBL.txt" -ff "%targt%"
 goto DBcheckagain
 :DBcheckfile
-%pycommand% "%nut%" -t nsp xci nsx -tfile "%prog_dir%DBL.txt" -ff "%targt%"
+%pycommand% "%nut%" -t nsp xci nsx nsz xcz -tfile "%prog_dir%DBL.txt" -ff "%targt%"
 goto DBcheckagain
 echo.
 :DBcheckagain
@@ -2701,10 +2701,14 @@ set "ziptarget=%%f"
 if "%vrepack%" EQU "zip" ( set "zip_restore=true" )
 if "%%~nxf"=="%%~nf.nsp" call :DBnsp_manual
 if "%%~nxf"=="%%~nf.nsx" call :DBnsp_manual
+if "%%~nxf"=="%%~nf.nsz" call :DBnsp_manual
 if "%%~nxf"=="%%~nf.NSP" call :DBnsp_manual
 if "%%~nxf"=="%%~nf.NSX" call :DBnsp_manual
+if "%%~nxf"=="%%~nf.NSZ" call :DBnsp_manual
 if "%%~nxf"=="%%~nf.xci" call :DBnsp_manual
 if "%%~nxf"=="%%~nf.XCI" call :DBnsp_manual
+if "%%~nxf"=="%%~nf.xcz" call :DBnsp_manual
+if "%%~nxf"=="%%~nf.XCZ" call :DBnsp_manual
 %pycommand% "%nut%" --strip_lines "%prog_dir%DBL.txt" "1" "true"
 rem call :DBcontador_NF
 )
