@@ -69,27 +69,47 @@ if os.path.exists(zconfig_dir):
 	DATABASE_folder=os.path.join(zconfig_dir, 'DB')
 	nutdbfile=os.path.join(DATABASE_folder,'nutdb.json')	
 	urlconfig=os.path.join(zconfig_dir,'NUT_DB_URL.txt')
-	urlregions=os.path.join(zconfig_dir,'NUT_DB_REGIONS_URL.txt')	
+	urlregions=os.path.join(zconfig_dir,'NUT_DB_REGIONS_URL.txt')
+	urlconfig_mirror=os.path.join(zconfig_dir,'NUT_DB_URL_mirror.txt')
+	urlregions_mirror=os.path.join(zconfig_dir,'NUT_DB_REGIONS_URL_mirror.txt')		
 	if os.path.exists(urlconfig):
 		json_url = get_titlesurl(urlconfig)	
 	else:
 		urlconfig=os.path.join(squirrel_dir,'NUT_DB_URL.txt')
-		urlregions=os.path.join(squirrel_dir,'NUT_DB_REGIONS_URL.txt')		
+		urlregions=os.path.join(squirrel_dir,'NUT_DB_REGIONS_URL.txt')	
+		urlconfig_mirror=os.path.join(squirrel_dir,'NUT_DB_URL_mirror.txt')
+		urlregions_mirror=os.path.join(squirrel_dir,'NUT_DB_REGIONS_URL_mirror.txt')			
 		DATABASE_folder=squirrel_dir
-		if os.path.exists(urlconfig):	
-			json_url = get_titlesurl(urlconfig)		
-		else:	
-			json_url='https://raw.githubusercontent.com/blawar/titledb/master/titles.US.en.json'
+		try:
+			if os.path.exists(urlconfig):	
+				json_url = get_titlesurl(urlconfig)		
+				json_url_mirror = get_titlesurl(urlconfig_mirror)	
+			else:	
+				json_url='https://raw.githubusercontent.com/blawar/titledb/master/titles.US.en.json'
+				json_url_mirror='https://raw.githubusercontent.com/julesontheroad/titledb/master/titles.US.en.json'				
+		except:
+			if os.path.exists(urlconfig_mirror):	
+				json_url = get_titlesurl(urlconfig_mirror)		
+			else:	
+				json_url='https://raw.githubusercontent.com/julesontheroad/titledb/master/titles.US.en.json'			
 else:
 	nutdbfile='nutdb.json'
 	urlconfig=os.path.join(squirrel_dir,'NUT_DB_URL.txt')
 	urlregions=os.path.join(squirrel_dir,'NUT_DB_REGIONS_URL.txt')
+	urlconfig_mirror=os.path.join(squirrel_dir,'NUT_DB_URL_mirror.txt')
+	urlregions_mirror=os.path.join(squirrel_dir,'NUT_DB_REGIONS_URL_mirror.txt')		
 	DATABASE_folder=squirrel_dir	
-	if os.path.exists(urlconfig):	
-		json_url = get_titlesurl(urlconfig)		
-	else:	
-		json_url='https://raw.githubusercontent.com/blawar/titledb/master/titles.US.en.json'
-
+	try:
+		if os.path.exists(urlconfig):	
+			json_url = get_titlesurl(urlconfig)		
+		else:	
+			json_url='https://raw.githubusercontent.com/blawar/titledb/master/titles.US.en.json'
+	except:
+		if os.path.exists(urlconfig_mirror):	
+			json_url = get_titlesurl(urlconfig_mirror)		
+		else:	
+			json_url='https://raw.githubusercontent.com/julesontheroad/titledb/master/titles.US.en.json'
+			
 if not os.path.exists(DATABASE_folder):
 	os.makedirs(DATABASE_folder)	
 def getnutdb():
@@ -111,9 +131,27 @@ def getnutdb():
 			except:pass	
 		return True				
 	else:
-		print(json_url)
-		print("Response 404. Old Files weren't removed")
-		return False			
+		response = requests.get(json_url_mirror, stream=True)
+		if '<Response [404]>'!=str(response):
+			if os.path.exists(nutdbfile):
+				try:os.remove(nutdbfile)
+				except:pass			
+			try:
+				with open(nutdbfile,'wb') as nutfile:
+					print('Getting NUTDB json')
+					for data in response.iter_content(65536):
+						nutfile.write(data)
+						if not data:
+							break
+			except BaseException as e:
+				Print.error('Exception: ' + str(e))		
+				try:os.remove(nutdbfile)
+				except:pass	
+			return True			
+		else:
+			print(json_url)
+			print("Response 404. Old Files weren't removed")
+			return False			
 
 def regionurl(region):	
 	with open(urlregions,'rt',encoding='utf8') as csvfile:
@@ -130,7 +168,26 @@ def regionurl(region):
 			else:	
 				if str(region).lower()==str(row[reg]).lower():
 					url=str(row[weburl])
-					return url
+					break
+	response = requests.get(url, stream=True)
+	if '<Response [404]>'!=str(response):
+		return url
+	else:
+		with open(urlregions_mirror,'rt',encoding='utf8') as csvfile:
+			readCSV = csv.reader(csvfile, delimiter='|')	
+			i=0	
+			for row in readCSV:
+				if i==0:
+					csvheader=row
+					i=1
+					if 'REGION' and 'URL' in csvheader:
+						reg=csvheader.index('REGION')
+						weburl=csvheader.index('URL')	
+					else:break	
+				else:	
+					if str(region).lower()==str(row[reg]).lower():
+						url=str(row[weburl])
+						return url	
 					
 def region_refresh_time(region):	
 	th=24;tm=0;ts=0
@@ -306,9 +363,30 @@ def get_otherDB(dbfile,dbname,f):
 			except:pass	
 		return True				
 	else:
-		print(json_url)
-		print("Response 404. Old Files weren't removed")	
-		return False			
+		dbfile_mirror=dbfile[:-4]+'_mirror.txt'
+		url=get_otherurl(dbfile_mirror,dbname)
+		_dbfile_=os.path.join(DATABASE_folder,f)	
+		response = requests.get(url, stream=True)
+		if '<Response [404]>'!=str(response):	
+			if os.path.exists(_dbfile_):
+				try:os.remove(_dbfile_)
+				except:pass		
+			try:
+				with open(_dbfile_,'wb') as nutfile:
+					print('Getting NUTDB json "'+dbname+'"')
+					for data in response.iter_content(65536):
+						nutfile.write(data)
+						if not data:
+							break
+			except BaseException as e:
+				Print.error('Exception: ' + str(e))		
+				try:os.remove(_dbfile_)
+				except:pass	
+			return True			
+		else:	
+			print(json_url)
+			print("Response 404. Old Files weren't removed")	
+			return False			
 		
 def get_regionDB(region):
 	url=regionurl(region)
