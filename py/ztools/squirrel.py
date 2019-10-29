@@ -6592,7 +6592,7 @@ if __name__ == '__main__':
 							#print(basename)
 							#print(check)
 							if renmode != "force":
-								if basename2.find(check) is not -1:
+								if basename2.find(check) != -1:
 									print('Filename: '+basename)
 									print(tabs+"> File already has correct id: "+baseid)
 									counter=int(counter)
@@ -6620,7 +6620,7 @@ if __name__ == '__main__':
 							basename2=basename.upper()
 							check=str('['+updid+']').upper()
 							if renmode != "force":
-								if basename2.find(check) is not -1:
+								if basename2.find(check) != -1:
 									basename=os.path.basename(os.path.abspath(filepath))
 									print('Filename: '+basename)
 									print(tabs+"> File already has correct id: "+updid)
@@ -6649,7 +6649,7 @@ if __name__ == '__main__':
 							basename2=basename.upper()
 							check=str('['+dlcid+']').upper()
 							if renmode != "force":
-								if basename2.find(check) is not -1:
+								if basename2.find(check) != -1:
 									print('Filename: '+basename)
 									print(tabs+"> File already has correct id: "+dlcid)
 									counter=int(counter)
