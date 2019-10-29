@@ -7677,7 +7677,7 @@ if __name__ == '__main__':
 			if filename.endswith('.nca'):
 				try:
 					f = Fs.Nca(filename, 'rb')
-					ver_,origheader,ncaname,feed,currkg=f.verify(False)
+					ver_,origheader,ncaname,feed,currkg,tr,tkey,iGC=f.verify(False)
 					f.flush()
 					f.close()
 					if not args.text_file:
