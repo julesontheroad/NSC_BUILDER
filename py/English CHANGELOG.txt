@@ -21,6 +21,42 @@ Luca Fraga's github: https://github.com/LucaFraga
 ---------------
 0. Changelog
 ---------------
+v0.96 - nsz and xcz as input for most funtions:
+	- Added nsz and xcz as input to several functions. Though some were alredy added
+	  i'll recapitulate the current state of all functions regarding nsz\xcz support.
+	  * Mode 1: Individual Mode.
+		- Support to repack as nsp\xci with support for keygeneration and rsv patching.
+		- Support in erase deltas and rebuild functions. Rebuild will give the same 
+		  output as the decompressor but add a xml if needed for nsz files.
+		- Support to rename of nsz\xcz which was already supported
+		- Support for nsz\xcz verification which was also already supported.
+		- xci trimmer\supertrimmer\untrimmer will filter the xcz\nsz from the list since
+		  it currently wouldn't have a different effect than repack\decompress.
+	  * Mode 2: Multi Mode.
+		- Adds support to nsz\xcz as input. Mixed inputs of nsz\xcz\nsp\xci are supported
+		  to all multi options.
+	  * Mode 3: Splitter mode.
+		- Now allows to split in a decompressed state multi nsz\xcz as it does with 
+		  xci\nsp-rebuilder
+	  * Mode 4: Info mode.		
+		- All info functions except nut-info are currently supported.
+	  * Mode 5: Database mode.
+	    - Currently doesn't output the titlekey. It will be corrected in future releases
+	  * Mode 6: Advanced mode.
+	    - File extractor will extract all files in a decompressed state. Nsz get decompressed
+		  during extraction.
+		- Raw extractor will extract the nsz files uncompressed
+		- Plaintext and nca extraction operations aren't addapted yet.
+		- Linked account patcher will support nsz and xcz files.
+	- IMPORTANT: When FAT32 types are selected as output format	the nsz\xcz will be filtered from 
+	  list for modes that output fat32 files, this is due to not have added the fat32 output code
+	  yet. I'll due for next release since it always require more testing.
+	- XCZ and NSZ will be added as output formats too for modes 1,2 and 3 in next releases.
+	- Corrected issue where verification of keygeneration patch cnmts will show as correct and
+      then show a second message as incorrect.
+	- Corrected issue where restoration mode won't restore the cnmt file under some conditions for 
+	  RSV patched cnmts
+	- Added mirror for nutdb database
 v0.95 - xcz format, fixes and other stuff:
 	- Added xcz format supertrimmed to compressor. This means that it won't pack the
 	  update partition (system firmware content), a lossless compressor that will

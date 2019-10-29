@@ -25,3 +25,10 @@ py/*.xci
 py/*.nsz
 py/*.nsx
 py/*.nsz
+py/zconfig/api.txt
+py/lists/a_multi/mlist.txt
+*.xcz
+*.nsz
+*.nsx
+*.xci
+*.nsp

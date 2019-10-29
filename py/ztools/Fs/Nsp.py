@@ -603,31 +603,113 @@ class Nsp(Pfs0):
 				nca.header.setKeyBlock(encKeyBlock)
 				Hex.dump(encKeyBlock)
 
-#Extract all files
+#Extract all files. If ncz decompress to nca
 	def extract_all(self,ofolder,buffer):
+		buffer=int(buffer)
 		indent = 1
 		tabs = '\t' * indent
 		print("Processing: "+str(self._path))
 		for file in self:
-			file.rewind()
-			filename =  str(file._path)
-			outfolder = str(ofolder)+'/'
-			filepath = os.path.join(outfolder, filename)
-			if not os.path.exists(outfolder):
-				os.makedirs(outfolder)
-			fp = open(filepath, 'w+b')
-			file.rewind()
-			t = tqdm(total=file.size, unit='B', unit_scale=True, leave=False)
-			t.write(tabs+'Copying: ' + str(filename))
-			for data in iter(lambda: file.read(int(buffer)), ""):
-				fp.write(data)
-				t.update(len(data))
-				fp.flush()
-				if not data:
-					fp.close()
-					t.close()	
-					break					
-				
+			if not str(file._path).endswith('.ncz'):
+				file.rewind()
+				filename =  str(file._path)
+				outfolder = str(ofolder)+'/'
+				filepath = os.path.join(outfolder, filename)
+				if not os.path.exists(outfolder):
+					os.makedirs(outfolder)
+				fp = open(filepath, 'w+b')
+				file.rewind()
+				t = tqdm(total=file.size, unit='B', unit_scale=True, leave=False)
+				t.write(tabs+'Copying: ' + str(filename))
+				for data in iter(lambda: file.read(int(buffer)), ""):
+					fp.write(data)
+					t.update(len(data))
+					fp.flush()
+					if not data:
+						fp.close()
+						t.close()	
+						break			
+			else:
+				file.rewind()
+				filename =  str(file._path)[:-1]+'a'
+				outfolder = str(ofolder)+'/'
+				filepath = os.path.join(outfolder, filename)
+				if not os.path.exists(outfolder):
+					os.makedirs(outfolder)
+				file.rewind()
+				ncztype=Nca(file)
+				ncztype._path=file._path
+				t = tqdm(total=ncztype.header.size, unit='B', unit_scale=True, leave=False)
+				t.write(tabs+'Copying: ' + str(filename))			
+				# print(file._path)
+				ncztype.rewind()
+				header = ncztype.read(0x4000)
+				magic = readInt64(ncztype)
+				sectionCount = readInt64(ncztype)
+				sections = []
+				for i in range(sectionCount):
+					sections.append(Section(ncztype))		
+				# print(sections)	
+				dctx = zstandard.ZstdDecompressor()
+				reader = dctx.stream_reader(ncztype)		
+				with open(filepath, 'wb+') as o:
+					o.seek(0, os.SEEK_END)
+					curr_off= o.tell()
+					t.write(tabs+'- Appending decompressed {}'.format(str(ncztype._path)))		
+					t.write(tabs+'  Writing nca header')							
+					o.write(header)
+					t.update(len(header))	
+					timestamp = time.time()
+					t.write(tabs+'  Writing decompressed body in plaintext')				
+					count=0;checkstarter=0
+					dctx = zstandard.ZstdDecompressor()
+					reader = dctx.stream_reader(ncztype)			
+					c=0;spsize=0							
+					for s in sections:
+						end = s.offset + s.size		
+						if s.cryptoType == 1: #plain text
+							t.write(tabs+'    * Section {} is plaintext'.format(str(c)))
+							t.write(tabs+'      %x - %d bytes, Crypto type %d' % ((s.offset), s.size, s.cryptoType))
+							spsize+=s.size	
+							end = s.offset + s.size	
+							i = s.offset									
+							while i < end:
+								chunkSz = buffer if end - i > buffer else end - i									
+								chunk = reader.read(chunkSz)		
+								if not len(chunk):
+									break	
+								o.write(chunk)	
+								t.update(len(chunk))	
+								i += chunkSz
+						elif s.cryptoType not in (3, 4):
+							raise IOError('Unknown crypto type: %d' % s.cryptoType)	
+						else: 	
+							t.write(tabs+'    * Section {} needs decompression'.format(str(c)))	
+							t.write(tabs+'      %x - %d bytes, Crypto type %d' % ((s.offset), s.size, s.cryptoType))		
+							t.write(tabs+'      Key: %s' % (str(hx(s.cryptoKey))))
+							t.write(tabs+'      IV: %s' % (str(hx(s.cryptoCounter))))							
+							crypto = AESCTR(s.cryptoKey, s.cryptoCounter)
+							spsize+=s.size	
+							test=int(spsize/(buffer))
+							i = s.offset									
+							while i < end:
+								crypto.seek(i)
+								chunkSz = buffer if end - i > buffer else end - i
+								chunk = reader.read(chunkSz)	
+								if not len(chunk):
+									break											
+								o.write(crypto.encrypt(chunk))	
+								t.update(len(chunk))									
+								i += chunkSz
+
+					elapsed = time.time() - timestamp
+					minutes = elapsed / 60
+					seconds = elapsed % 60
+					
+					speed = 0 if elapsed == 0 else (spsize / elapsed)
+					t.write('\n    Decompressed in %02d:%02d at speed: %.1f MB/s\n' % (minutes, seconds, speed / 1000000.0))								
+					t.close()
+					
 	def copy_ticket(self,ofolder):
 		for ticket in self:
 			if type(ticket) == Ticket:
@@ -3975,7 +4057,7 @@ class Nsp(Pfs0):
 					return(languetag)					
 
 	def gen_nsp_head(self,files,delta,inc_xml,ofolder):
-	
+
 		filesNb = len(files)
 		stringTable = '\x00'.join(str(nca) for nca in files)
 		headerSize = 0x10 + (filesNb)*0x18 + len(stringTable)
@@ -4001,6 +4083,10 @@ class Nsp(Pfs0):
 					xmlpath = os.path.join(ofolder, xmlname)
 					size=os.path.getsize(xmlpath)					
 					fileSizes.append(int(size))
+			elif str(nca._path).endswith('.ncz'):
+				ncztype=Nca(nca)
+				ncztype._path=nca._path
+				fileSizes.append(ncztype.header.size)					
 				
 		fileOffsets = [sum(fileSizes[:n]) for n in range(filesNb)]
 		
@@ -4023,6 +4109,7 @@ class Nsp(Pfs0):
 		return header					
 					
 	def c_nsp_direct(self,buffer,outfile,ofolder,fat,fx,delta,metapatch,RSV_cap,keypatch):
+		buffer=int(buffer)
 	
 		t = tqdm(total=False, unit='B', unit_scale=False, leave=False)	
 		
@@ -4046,6 +4133,13 @@ class Nsp(Pfs0):
 					if nca.header.getCryptoType2() != masterKeyRev:
 						pass
 						raise IOError('Mismatched masterKeyRevs!')
+			elif str(nca._path).endswith('.ncz'):						
+				ncztype=Nca(nca)
+				ncztype._path=nca._path			
+				if ncztype.header.getRightsId() != 0:			
+					if ncztype.header.getCryptoType2() != masterKeyRev:
+						pass
+						raise IOError('Mismatched masterKeyRevs!')									
 		for nca in self:	
 			if type(nca) == Nca:		
 				if nca.header.getRightsId() != 0:
@@ -4054,6 +4148,15 @@ class Nsp(Pfs0):
 							masterKeyRev = 2						
 							titleKeyDec = Keys.decryptTitleKey(ticket.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(masterKeyRev))
 							break		
+			elif str(nca._path).endswith('.ncz'):
+				ncztype=Nca(nca)
+				ncztype._path=nca._path
+				if ncztype.header.getRightsId() != 0:
+					if ncztype.header.getCryptoType2() == 0:
+						if ncztype.header.getCryptoType() == 2:
+							masterKeyRev = 2						
+							titleKeyDec = Keys.decryptTitleKey(ticket.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(masterKeyRev))
+							break						
 
 		for nca in self:	
 			if type(nca) == Nca and str(nca.header.contentType) == 'Content.META':	
@@ -4131,6 +4234,11 @@ class Nsp(Pfs0):
 					xmlname=nca._path
 					xmlname=xmlname[:-3]+'xml'
 					contentlist.append(xmlname)	
+			elif str(nca._path).endswith('.ncz'):
+				ncapath=str(nca._path)[:-1]+'a'
+				contentlist.append(ncapath)							
+					
+					
 		hd = self.gen_nsp_head(contentlist,delta,True,ofolder)
 		
 		totSize = len(hd) 
@@ -4151,6 +4259,11 @@ class Nsp(Pfs0):
 					xmlname=xmlname[:-3]+'xml'
 					xmlpath = os.path.join(ofolder, xmlname)
 					totSize=totSize+os.path.getsize(xmlpath)
+			elif str(nca._path).endswith('.ncz'):
+				ncztype=Nca(nca)
+				ncztype._path=nca._path
+				totSize=totSize+ncztype.header.size
+			
 		if os.path.exists(outfile) and os.path.getsize(outfile) == totSize:
 			Print.info('\t\tRepack %s is already complete!' % outfile)
 			return					
@@ -4189,7 +4302,8 @@ class Nsp(Pfs0):
 		outf.write(hd)	
 		t.update(len(hd))
 		c=c+len(hd)		
-		block=4294901760		
+		block=4294901760	
+		outf.close()			
 		for nca in self:
 			vfragment="false"	
 			if type(nca) == Nca and (str(nca.header.contentType) != 'Content.META'):
@@ -4227,6 +4341,7 @@ class Nsp(Pfs0):
 				t.write(tabs+'- Appending: ' + str(nca._path))
 				nca.rewind()					
 				i=0
+				outf = open(outfile, 'a+b')	
 				for data in iter(lambda: nca.read(int(buffer)), ""):
 					if i==0:
 						newheader=self.get_newheader(nca,encKeyBlock,crypto1,crypto2,hcrypto,gc_flag)		
@@ -4287,14 +4402,16 @@ class Nsp(Pfs0):
 							outf.flush()						
 						if not data:
 							break
-			if type(nca) == Nca and str(nca.header.contentType) == 'Content.META':	
+				outf.close()			
+			elif type(nca) == Nca and str(nca.header.contentType) == 'Content.META':	
 				filename = str(nca._path)			
 				filepath = os.path.join(outfolder, filename)	
 				xml_file=filepath[:-3]+'xml'
 				target = Fs.Nca(filepath, 'r+b')
 				target.rewind()						
 				size=os.path.getsize(filepath)
-				t.write(tabs+'- Appending: ' + str(nca._path))						
+				t.write(tabs+'- Appending: ' + str(nca._path))			
+				outf = open(outfile, 'a+b')		
 				for data in iter(lambda: target.read(int(size)), ""):				
 					if fat=="fat32" and (c+len(data))>block:
 						n2=block-c
@@ -4370,11 +4487,97 @@ class Nsp(Pfs0):
 				try:
 					os.remove(xml_file) 	
 				except:
-					pass					
+					pass	
+				outf.close()					
+			elif str(nca._path).endswith('.ncz'):
+				ncztype=Nca(nca)
+				ncztype._path=nca._path
+				crypto1=ncztype.header.getCryptoType()
+				crypto2=ncztype.header.getCryptoType2()	
+				if crypto2>crypto1:
+					masterKeyRev=crypto2
+				if crypto2<=crypto1:	
+					masterKeyRev=crypto1	
+				crypto = aes128.AESECB(Keys.keyAreaKey(Keys.getMasterKeyIndex(masterKeyRev), ncztype.header.keyIndex))
+				hcrypto = aes128.AESXTS(uhx(Keys.get('header_key')))	
+				gc_flag='00'*0x01		
+				if ncztype.header.getRightsId() != 0:				
+					ncztype.rewind()	
+					encKeyBlock = crypto.encrypt(titleKeyDec * 4)
+					if keypatch != 'false':
+						if keypatch < ncztype.header.getCryptoType2():
+							encKeyBlock,crypto1,crypto2=self.get_new_cryptoblock(ncztype, keypatch,encKeyBlock,t)	
+				if ncztype.header.getRightsId() == 0:
+					ncztype.rewind()				
+					encKeyBlock = ncztype.header.getKeyBlock()	
+					if keypatch != 'false':					
+						if keypatch < ncztype.header.getCryptoType2():
+							encKeyBlock,crypto1,crypto2=self.get_new_cryptoblock(ncztype, keypatch,encKeyBlock,t)								
+				t.write('')							
+				t.write(tabs+'- Appending: ' + str(nca._path)[:-1]+'a')			
+				t.write(tabs+'  Writing nca header')					
+				i=0
+				newheader=self.get_newheader(ncztype,encKeyBlock,crypto1,crypto2,hcrypto,gc_flag)	
+				ncztype.rewind()
+				data=ncztype.read(0x4000)
+				with open(outfile, 'rb+') as o:
+					o.seek(0, os.SEEK_END)	
+					curr_off= o.tell()	
+					o.write(data)	
+					o.seek(curr_off)
+					o.write(newheader)
+				t.update(0x4000)
+				magic = readInt64(ncztype)
+				sectionCount = readInt64(ncztype)
+				sections = []
+				for i in range(sectionCount):
+					sections.append(Section(ncztype))		
+				# print(sections)							
+				with open(outfile, 'rb+') as o:
+					o.seek(0, os.SEEK_END)
+					t.write(tabs+'  Writing decompressed body in plaintext')								
+					count=0;checkstarter=0
+					dctx = zstandard.ZstdDecompressor()
+					reader = dctx.stream_reader(ncztype)			
+					c=0;spsize=0							
+					for s in sections:
+						end = s.offset + s.size		
+						if s.cryptoType == 1: #plain text
+							t.write(tabs+'    * Section {} is plaintext'.format(str(c)))
+							t.write(tabs+'      %x - %d bytes, Crypto type %d' % ((s.offset), s.size, s.cryptoType))
+							spsize+=s.size	
+							end = s.offset + s.size	
+							i = s.offset									
+							while i < end:
+								chunkSz = buffer if end - i > buffer else end - i									
+								chunk = reader.read(chunkSz)		
+								if not len(chunk):
+									break	
+								o.write(chunk)	
+								t.update(len(chunk))	
+								i += chunkSz
+						elif s.cryptoType not in (3, 4):
+							raise IOError('Unknown crypto type: %d' % s.cryptoType)	
+						else: 	
+							t.write(tabs+'    * Section {} needs decompression'.format(str(c)))	
+							t.write(tabs+'      %x - %d bytes, Crypto type %d' % ((s.offset), s.size, s.cryptoType))		
+							t.write(tabs+'      Key: %s' % (str(hx(s.cryptoKey))))	
+							t.write(tabs+'      IV: %s' % (str(hx(s.cryptoCounter))))								
+							crypto = AESCTR(s.cryptoKey, s.cryptoCounter)
+							spsize+=s.size	
+							test=int(spsize/(buffer))
+							i = s.offset									
+							while i < end:
+								crypto.seek(i)
+								chunkSz = buffer if end - i > buffer else end - i
+								chunk = reader.read(chunkSz)	
+								if not len(chunk):
+									break											
+								o.write(crypto.encrypt(chunk))	
+								t.update(len(chunk))									
+								i += chunkSz					
+				ncztype.close()									
 		t.close()		
-		print("")
-		print("Closing file. Please wait")		
-		outf.close()				
 
 #///////////////////////////////////////////////////								
 #ADD TO DATABASE
@@ -4482,7 +4685,12 @@ class Nsp(Pfs0):
 		nca_id=''
 		self.rewind()
 		tr=''
-		for nca in self:
+		for file in self:
+			if str(file._path).endswith('.nsz'):
+				nca=Nca(file)
+				nca._path=file._path					
+			else:			
+				nca=file
 			if type(nca) == Nca:		
 				if nca.header.getRightsId() != 0:
 					crypto1=nca.header.getCryptoType()
@@ -4761,6 +4969,7 @@ class Nsp(Pfs0):
 			dbfile.write('\n')				
 						
 	def c_xci_direct(self,buffer,outfile,ofolder,fat,delta,metapatch,RSV_cap,keypatch):	
+		buffer=int(buffer)
 		if keypatch != 'false':
 			try:
 				keypatch = int(keypatch)
@@ -4789,6 +4998,13 @@ class Nsp(Pfs0):
 					if file.header.getCryptoType2() != masterKeyRev:
 						pass
 						raise IOError('Mismatched masterKeyRevs!')
+			elif str(file._path).endswith('.ncz'):						
+				ncztype=Nca(file)
+				ncztype._path=file._path			
+				if ncztype.header.getRightsId() != 0:			
+					if ncztype.header.getCryptoType2() != masterKeyRev:
+						pass
+						raise IOError('Mismatched masterKeyRevs!')							
 		for file in self:	
 			if type(file) == Nca:	
 				if file.header.getRightsId() != 0:		
@@ -4797,6 +5013,15 @@ class Nsp(Pfs0):
 							masterKeyRev = 2						
 							titleKeyDec = Keys.decryptTitleKey(ticket.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(masterKeyRev))
 							break	
+			elif str(file._path).endswith('.ncz'):
+				ncztype=Nca(file)
+				ncztype._path=file._path
+				if ncztype.header.getRightsId() != 0:
+					if ncztype.header.getCryptoType2() == 0:
+						if ncztype.header.getCryptoType() == 2:
+							masterKeyRev = 2						
+							titleKeyDec = Keys.decryptTitleKey(ticket.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(masterKeyRev))
+							break											
 		contTR=0
 		contGC=0
 		iscartridge=False
@@ -4818,7 +5043,28 @@ class Nsp(Pfs0):
 					else:					
 						contGC+=0
 				else:
-					contGC+=1											
+					contGC+=1		
+			elif str(nca._path).endswith('.ncz'):
+				ncztype=Nca(nca)
+				ncztype._path=nca._path
+				contTR+=1			
+				if	ncztype.header.getgamecard() == 0:	
+					crypto1=ncztype.header.getCryptoType()
+					crypto2=ncztype.header.getCryptoType2()	
+					if crypto2>crypto1:
+						masterKeyRev=crypto2
+					if crypto2<=crypto1:	
+						masterKeyRev=crypto1					
+					crypto = aes128.AESECB(Keys.keyAreaKey(Keys.getMasterKeyIndex(masterKeyRev), ncztype.header.keyIndex))
+					KB1L=ncztype.header.getKB1L()
+					KB1L = crypto.decrypt(KB1L)
+					if sum(KB1L) == 0:					
+						contGC+=1
+					else:					
+						contGC+=0
+				else:
+					contGC+=1	
+					
 		if  contTR == contGC and contTR>0 and contGC>0:
 			iscartridge=True
 						
@@ -4873,7 +5119,7 @@ class Nsp(Pfs0):
 		outf.write(sec_header)
 		t.update(len(sec_header))
 		c=c+len(sec_header)			
-									
+		outf.close()							
 		block=4294934528		
 		
 		for nca in self:	
@@ -4926,6 +5172,7 @@ class Nsp(Pfs0):
 							encKeyBlock,crypto1,crypto2=self.get_new_cryptoblock(nca, keypatch,encKeyBlock,t)								
 				nca.rewind()					
 				i=0
+				outf = open(outfile, 'a+b')
 				for data in iter(lambda: nca.read(int(buffer)), ""):
 					if i==0:
 						newheader=self.get_newheader(nca,encKeyBlock,crypto1,crypto2,hcrypto,gc_flag)					
@@ -4986,7 +5233,8 @@ class Nsp(Pfs0):
 							outf.flush()
 						if not data:
 							break
-			if type(nca) == Nca and str(nca.header.contentType) == 'Content.META':	
+				outf.close()							
+			elif type(nca) == Nca and str(nca.header.contentType) == 'Content.META':	
 				nca.rewind()
 				crypto1=nca.header.getCryptoType()
 				crypto2=nca.header.getCryptoType2()	
@@ -5052,7 +5300,8 @@ class Nsp(Pfs0):
 				target = Fs.Nca(filepath, 'r+b')
 				target.rewind()	
 				size=os.path.getsize(filepath)
-				t.write(tabs+'- Appending: ' + str(nca._path))						
+				t.write(tabs+'- Appending: ' + str(nca._path))	
+				outf = open(outfile, 'a+b')				
 				for data in iter(lambda: target.read(int(size)), ""):				
 					if fat=="fat32" and (c+len(data))>block:
 						n2=block-c
@@ -5088,12 +5337,107 @@ class Nsp(Pfs0):
 					os.remove(filepath) 	
 				except:
 					pass
-		t.close()
-		print("")
-		print("Closing file. Please wait")				
-		outf.close()				
-
-
+				outf.close()				
+			elif str(nca._path).endswith('.ncz'):
+				ncztype=Nca(nca)
+				ncztype._path=nca._path
+				crypto1=ncztype.header.getCryptoType()
+				crypto2=ncztype.header.getCryptoType2()	
+				if crypto2>crypto1:
+					masterKeyRev=crypto2
+				if crypto2<=crypto1:	
+					masterKeyRev=crypto1	
+				crypto = aes128.AESECB(Keys.keyAreaKey(Keys.getMasterKeyIndex(masterKeyRev), ncztype.header.keyIndex))
+				hcrypto = aes128.AESXTS(uhx(Keys.get('header_key')))	
+				if	ncztype.header.getgamecard() == 0:	
+					KB1L=ncztype.header.getKB1L()
+					KB1L = crypto.decrypt(KB1L)
+					if sum(KB1L) == 0 and iscartridge == True:					
+						gc_flag='01'*0x01
+					else:					
+						gc_flag='00'*0x01
+				else:
+					if iscartridge == True:
+						gc_flag='01'*0x01
+					else:					
+						gc_flag='00'*0x01	
+				if ncztype.header.getRightsId() != 0:				
+					ncztype.rewind()	
+					encKeyBlock = crypto.encrypt(titleKeyDec * 4)
+					if keypatch != 'false':
+						if keypatch < ncztype.header.getCryptoType2():
+							encKeyBlock,crypto1,crypto2=self.get_new_cryptoblock(ncztype, keypatch,encKeyBlock,t)	
+				if ncztype.header.getRightsId() == 0:
+					ncztype.rewind()				
+					encKeyBlock = ncztype.header.getKeyBlock()	
+					if keypatch != 'false':					
+						if keypatch < ncztype.header.getCryptoType2():
+							encKeyBlock,crypto1,crypto2=self.get_new_cryptoblock(ncztype, keypatch,encKeyBlock,t)								
+				t.write('')							
+				t.write(tabs+'- Appending: ' + str(nca._path)[:-1]+'a')			
+				t.write(tabs+'  Writing nca header')					
+				i=0
+				newheader=self.get_newheader(ncztype,encKeyBlock,crypto1,crypto2,hcrypto,gc_flag)	
+				ncztype.rewind()
+				data=ncztype.read(0x4000)
+				with open(outfile, 'rb+') as o:
+					o.seek(0, os.SEEK_END)	
+					curr_off= o.tell()	
+					o.write(data)	
+					o.seek(curr_off)
+					o.write(newheader)
+				t.update(0x4000)
+				magic = readInt64(ncztype)
+				sectionCount = readInt64(ncztype)
+				sections = []
+				for i in range(sectionCount):
+					sections.append(Section(ncztype))		
+				# print(sections)							
+				with open(outfile, 'rb+') as o:
+					o.seek(0, os.SEEK_END)
+					t.write(tabs+'  Writing decompressed body in plaintext')								
+					count=0;checkstarter=0
+					dctx = zstandard.ZstdDecompressor()
+					reader = dctx.stream_reader(ncztype)			
+					c=0;spsize=0							
+					for s in sections:
+						end = s.offset + s.size		
+						if s.cryptoType == 1: #plain text
+							t.write(tabs+'    * Section {} is plaintext'.format(str(c)))
+							t.write(tabs+'      %x - %d bytes, Crypto type %d' % ((s.offset), s.size, s.cryptoType))
+							spsize+=s.size	
+							end = s.offset + s.size	
+							i = s.offset									
+							while i < end:
+								chunkSz = buffer if end - i > buffer else end - i									
+								chunk = reader.read(chunkSz)		
+								if not len(chunk):
+									break	
+								o.write(chunk)	
+								t.update(len(chunk))	
+								i += chunkSz
+						elif s.cryptoType not in (3, 4):
+							raise IOError('Unknown crypto type: %d' % s.cryptoType)	
+						else: 	
+							t.write(tabs+'    * Section {} needs decompression'.format(str(c)))	
+							t.write(tabs+'      %x - %d bytes, Crypto type %d' % ((s.offset), s.size, s.cryptoType))		
+							t.write(tabs+'      Key: %s' % (str(hx(s.cryptoKey))))	
+							t.write(tabs+'      IV: %s' % (str(hx(s.cryptoCounter))))								
+							crypto = AESCTR(s.cryptoKey, s.cryptoCounter)
+							spsize+=s.size	
+							test=int(spsize/(buffer))
+							i = s.offset									
+							while i < end:
+								crypto.seek(i)
+								chunkSz = buffer if end - i > buffer else end - i
+								chunk = reader.read(chunkSz)	
+								if not len(chunk):
+									break											
+								o.write(crypto.encrypt(chunk))	
+								t.update(len(chunk))									
+								i += chunkSz					
+				ncztype.close()											
+		t.close()		
 		
 	def patcher_meta(self,filepath,RSV_cap,t):
 		indent = 1
@@ -5237,6 +5581,16 @@ class Nsp(Pfs0):
 				hblock = file.read(0x200)			
 				sha=sha256(hblock).hexdigest()	
 				sec_shalist.append(sha)		
+			elif str(file._path).endswith('.ncz'):						
+				ncztype=Nca(file)
+				ncztype._path=file._path	
+				ncaname=str(file._path)[:-1]+'a'
+				sec_list.append(ncaname)	
+				sec_fileSizes.append(ncztype.header.size)		
+				ncztype.rewind()
+				hblock = ncztype.read(0x200)			
+				sha=sha256(hblock).hexdigest()	
+				sec_shalist.append(sha)					
 																										
 		hfs0 = Fs.Hfs0(None, None)							
 		root_header,upd_header,norm_header,sec_header,rootSize,upd_multiplier,norm_multiplier,sec_multiplier=hfs0.gen_rhfs0_head(upd_list,norm_list,sec_list,sec_fileSizes,sec_shalist)
@@ -5939,7 +6293,8 @@ class Nsp(Pfs0):
 								titleid3 ='['+ titleid2+']'
 								nca_name=str(hx(NcaId))
 								nca_name=nca_name[2:-1]+'.nca'
-								if nca_name in completefilelist:
+								ncz_name=nca_name[:-1]+'z'
+								if nca_name in completefilelist or ncz_name in completefilelist :
 									if delta==False and ncatype==6:	
 										print(tabs+'- Excluding delta fragment '+nca_name)
 										continue	
@@ -5976,6 +6331,7 @@ class Nsp(Pfs0):
 									except:
 										pass								
 							titlerights=titleid2+str('0'*15)+str(crypto2)
+							# print(ncalist)
 							contentlist.append([str(self._path),titleid2,titlerights,keygen,ncalist,CTYPE,version])
 							
 		for file in self:
@@ -6140,6 +6496,8 @@ class Nsp(Pfs0):
 		block=4294934528		
 		indent = 1
 		tabs = '\t' * indent	
+		buffer=int(buffer)
+		targetZ=target[:-1]+'z'
 		for file in self:	
 			if str(file._path) == target:
 				if type(file) == Nca:
@@ -6252,12 +6610,72 @@ class Nsp(Pfs0):
 						if not data:				
 							break	
 					fp.close()
+			elif str(file._path) == targetZ:	
+				ncztype=Nca(file)
+				ncztype._path=file._path	
+				ncztype.rewind()				
+				header = ncztype.read(0x4000)
+				magic = readInt64(ncztype)
+				sectionCount = readInt64(ncztype)
+				sections = []
+				for i in range(sectionCount):
+					sections.append(Section(ncztype))		
+				# print(sections)	
+				with open(outf, 'rb+') as o:
+					o.seek(0, os.SEEK_END)
+					t.write(tabs+'  Writing nca header')	
+					o.write(header)
+					t.update(0x4000)	
+					t.write(tabs+'  Writing decompressed body in plaintext')								
+					count=0;checkstarter=0
+					dctx = zstandard.ZstdDecompressor()
+					reader = dctx.stream_reader(ncztype)			
+					c=0;spsize=0							
+					for s in sections:
+						end = s.offset + s.size		
+						if s.cryptoType == 1: #plain text
+							t.write(tabs+'    * Section {} is plaintext'.format(str(c)))
+							t.write(tabs+'      %x - %d bytes, Crypto type %d' % ((s.offset), s.size, s.cryptoType))
+							spsize+=s.size	
+							end = s.offset + s.size	
+							i = s.offset									
+							while i < end:
+								chunkSz = buffer if end - i > buffer else end - i									
+								chunk = reader.read(chunkSz)		
+								if not len(chunk):
+									break	
+								o.write(chunk)	
+								t.update(len(chunk))	
+								i += chunkSz
+						elif s.cryptoType not in (3, 4):
+							raise IOError('Unknown crypto type: %d' % s.cryptoType)	
+						else: 	
+							t.write(tabs+'    * Section {} needs decompression'.format(str(c)))	
+							t.write(tabs+'      %x - %d bytes, Crypto type %d' % ((s.offset), s.size, s.cryptoType))		
+							t.write(tabs+'      Key: %s' % (str(hx(s.cryptoKey))))	
+							t.write(tabs+'      IV: %s' % (str(hx(s.cryptoCounter))))								
+							crypto = AESCTR(s.cryptoKey, s.cryptoCounter)
+							spsize+=s.size	
+							test=int(spsize/(buffer))
+							i = s.offset									
+							while i < end:
+								crypto.seek(i)
+								chunkSz = buffer if end - i > buffer else end - i
+								chunk = reader.read(chunkSz)	
+								if not len(chunk):
+									break											
+								o.write(crypto.encrypt(chunk))	
+								t.update(len(chunk))									
+								i += chunkSz					
+				ncztype.close()		
 		return outf,index,c								
 						
 	def append_clean_content(self,outf,target,buffer,t,gamecard,keypatch,metapatch,RSV_cap,fat,fx,c,index,block=4294901760):
 		indent = 1
 		tabs = '\t' * indent	
 		ticketlist=list()
+		buffer=int(buffer)		
+		targetZ=target[:-1]+'z'
 		if keypatch != 'false':
 			try:
 				keypatch = int(keypatch)
@@ -6617,9 +7035,125 @@ class Nsp(Pfs0):
 						if not data:				
 							break	
 					fp.close()
-		try:			
-			fp.close()
-		except:pass	
+			elif str(file._path) == targetZ:	
+				ncztype=Nca(file)
+				ncztype._path=file._path
+				gc_flag=ncztype.header.getgamecard()
+				if gc_flag != 0:
+					if gamecard==False:
+						gc_flag='00'*0x01								
+					else:
+						gc_flag='01'*0x01
+				elif gc_flag == 0:
+					if gamecard==True:
+						gc_flag='01'*0x01								
+					else:
+						gc_flag='00'*0x01							
+				else:
+					gc_flag='00'*0x01					
+				ncztype.rewind()			
+				crypto1=ncztype.header.getCryptoType()
+				crypto2=ncztype.header.getCryptoType2()	
+				hcrypto = aes128.AESXTS(uhx(Keys.get('header_key')))					
+				if crypto2>crypto1:
+					masterKeyRev=crypto2
+				if crypto2<=crypto1:	
+					masterKeyRev=crypto1						
+				if ncztype.header.getRightsId() != 0:	
+					for i in range(len(ticketlist)):			
+						#print(str(ncztype.header.rightsId))	
+						#print(ticketlist[i][1])								
+						if  str(ncztype.header.rightsId) == ticketlist[i][1]:
+							encryptedkey=ticketlist[i][2]
+							break	
+					titleKeyDec = Keys.decryptTitleKey(encryptedkey, Keys.getMasterKeyIndex(masterKeyRev))
+					t.write("")
+					t.write(tabs+'rightsId =\t' + str(ncztype.header.rightsId))
+					t.write(tabs+'titleKeyDec =\t' + str(hx(titleKeyDec)))
+					t.write(tabs+'masterKeyRev =\t' + hex(masterKeyRev))									
+					t.write("")
+					crypto = aes128.AESECB(Keys.keyAreaKey(Keys.getMasterKeyIndex(masterKeyRev), ncztype.header.keyIndex))							
+					ncztype.rewind()
+					t.write(tabs+'* Appending: ' + str(ncztype._path))
+					encKeyBlock = crypto.encrypt(titleKeyDec * 4)
+					if keypatch != 'false':					
+						if keypatch < ncztype.header.getCryptoType2():
+							encKeyBlock,crypto1,crypto2=self.get_new_cryptoblock(ncztype, keypatch,encKeyBlock,t)								
+					#t.write(str(hx(encKeyBlock)))
+					newheader=self.get_newheader(ncztype,encKeyBlock,crypto1,crypto2,hcrypto,gc_flag)						
+					#t.write(str(hx(newheader)))
+					if ncztype.header.getRightsId() == 0:
+						ncztype.rewind()						
+						crypto = aes128.AESECB(Keys.keyAreaKey(Keys.getMasterKeyIndex(masterKeyRev), ncztype.header.keyIndex))					
+						encKeyBlock = ncztype.header.getKeyBlock()	
+						if keypatch != 'false':					
+							if keypatch < ncztype.header.getCryptoType2():
+								encKeyBlock,crypto1,crypto2=self.get_new_cryptoblock(ncztype, keypatch,encKeyBlock,t)								
+						newheader=self.get_newheader(ncztype,encKeyBlock,crypto1,crypto2,hcrypto,gc_flag)	
+					if 	str(ncztype.header.contentType) != 'Content.META':				
+						i=0					
+						sha=sha256()
+						t.write('- Appending decompressed {}'.format(str(ncztype._path)))		
+						t.write('  Writing nca header')	
+						ncztype.rewind()
+						data=ncztype.read(0x4000)
+						with open(outf, 'rb+') as o:
+							o.seek(0, os.SEEK_END)	
+							curr_off= o.tell()	
+							o.write(data)	
+							o.seek(curr_off)
+							o.write(newheader)
+						t.update(0x4000)
+						magic = readInt64(ncztype)
+						sectionCount = readInt64(ncztype)
+						sections = []
+						for i in range(sectionCount):
+							sections.append(Section(ncztype))		
+						# print(sections)	
+						with open(outf, 'rb+') as o:
+							o.seek(0, os.SEEK_END)
+							t.write(tabs+'  Writing decompressed body in plaintext')								
+							count=0;checkstarter=0
+							dctx = zstandard.ZstdDecompressor()
+							reader = dctx.stream_reader(ncztype)			
+							c=0;spsize=0							
+							for s in sections:
+								end = s.offset + s.size		
+								if s.cryptoType == 1: #plain text
+									t.write(tabs+'    * Section {} is plaintext'.format(str(c)))
+									t.write(tabs+'      %x - %d bytes, Crypto type %d' % ((s.offset), s.size, s.cryptoType))
+									spsize+=s.size	
+									end = s.offset + s.size	
+									i = s.offset									
+									while i < end:
+										chunkSz = buffer if end - i > buffer else end - i									
+										chunk = reader.read(chunkSz)		
+										if not len(chunk):
+											break	
+										o.write(chunk)	
+										t.update(len(chunk))	
+										i += chunkSz
+								elif s.cryptoType not in (3, 4):
+									raise IOError('Unknown crypto type: %d' % s.cryptoType)	
+								else: 	
+									t.write(tabs+'    * Section {} needs decompression'.format(str(c)))	
+									t.write(tabs+'      %x - %d bytes, Crypto type %d' % ((s.offset), s.size, s.cryptoType))		
+									t.write(tabs+'      Key: %s' % (str(hx(s.cryptoKey))))	
+									t.write(tabs+'      IV: %s' % (str(hx(s.cryptoCounter))))									
+									crypto = AESCTR(s.cryptoKey, s.cryptoCounter)
+									spsize+=s.size	
+									test=int(spsize/(buffer))
+									i = s.offset									
+									while i < end:
+										crypto.seek(i)
+										chunkSz = buffer if end - i > buffer else end - i
+										chunk = reader.read(chunkSz)	
+										if not len(chunk):
+											break											
+										o.write(crypto.encrypt(chunk))	
+										t.update(len(chunk))									
+										i += chunkSz						
+						ncztype.close()
 		return outf,index,c									
 	
 	def sp_groupncabyid(self,buffer,ofolder,fat,fx,export):
@@ -6692,7 +7226,8 @@ class Nsp(Pfs0):
 								titleid3 ='['+ titleid2+']'
 								nca_name=str(hx(NcaId))
 								nca_name=nca_name[2:-1]+'.nca'
-								if nca_name in completefilelist:
+								ncz_name=nca_name[:-1]+'z'
+								if nca_name in completefilelist or ncz_name in completefilelist:
 									ncalist.append(nca_name)			
 							nca_meta=str(nca._path)
 							if nca_meta in completefilelist:	
@@ -6736,17 +7271,22 @@ class Nsp(Pfs0):
 	
 					
 		for i in contentlist:
-			if export == 'both' and i[5] != 'BASE':
-				export='nsp'
 			if export == 'nsp':
 				self.cd_spl_nsp(buffer,i[0],ofolder,i[4],fat,fx)
-			if export == 'xci':			
-				self.cd_spl_xci(buffer,i[0],ofolder,i[4],fat,fx)
+			if export == 'xci':		
+				if  i[5] != 'BASE':
+					self.cd_spl_nsp(buffer,i[0],ofolder,i[4],fat,fx)	
+				else:		
+					self.cd_spl_xci(buffer,i[0],ofolder,i[4],fat,fx)
 			if export == 'both':	
-				self.cd_spl_nsp(buffer,i[0],ofolder,i[4],fat,fx)			
-				self.cd_spl_xci(buffer,i[0],ofolder,i[4],fat,fx)				
+				if  i[5] != 'BASE':
+					self.cd_spl_nsp(buffer,i[0],ofolder,i[4],fat,fx)					
+				else:
+					self.cd_spl_nsp(buffer,i[0],ofolder,i[4],fat,fx)			
+					self.cd_spl_xci(buffer,i[0],ofolder,i[4],fat,fx)		
 				
 	def cd_spl_nsp(self,buffer,ofile,ofolder,filelist,fat,fx):
+		buffer=int(buffer)
 		self.rewind()		
 		outfile=ofile+'.nsp'	
 		filepath = os.path.join(ofolder, outfile)	
@@ -6761,12 +7301,22 @@ class Nsp(Pfs0):
 		for file in self:		
 			if file._path in filelist:
 				contentlist.append(file._path)		
-
+			elif str(file._path).endswith('.ncz'):
+				ncapath=str(file._path)[:-1]+'a'
+				if ncapath in filelist:
+					contentlist.append(ncapath)	
+					
 		hd = self.cd_spl_gen_nsph(contentlist)
 		totSize = len(hd) 
 		for file in self:		
 			if file._path in contentlist:
-				totSize=totSize+file.size	
+				totSize=totSize+file.size
+			elif str(file._path).endswith('.ncz'):
+				ncapath=str(file._path)[:-1]+'a'		
+				if ncapath in contentlist:		
+					ncztype=Nca(file)
+					ncztype._path=file._path		
+					totSize=totSize+ncztype.header.size			
 
 		indent = 1
 		rightsId = 0
@@ -6794,7 +7344,8 @@ class Nsp(Pfs0):
 		t.write(tabs+'- Writing header...')	
 		outf = open(str(filepath), 'w+b')	
 		outfile=str(filepath)
-		outf.write(hd)			
+		outf.write(hd)	
+		outf.close()		
 		t.update(len(hd))
 		c=c+len(hd)		
 		block=4294901760	
@@ -6814,6 +7365,7 @@ class Nsp(Pfs0):
 				t.write(tabs+'- Appending: ' + str(file._path))
 				file.rewind()					
 				i=0
+				outf = open(str(filepath), 'a+b')	
 				for data in iter(lambda: file.read(int(buffer)), ""):
 					if i==0:
 						newheader=self.get_newheader(file,encKeyBlock,crypto1,crypto2,hcrypto,gc_flag)		
@@ -6874,10 +7426,12 @@ class Nsp(Pfs0):
 							c=c+len(data)									
 							outf.flush()							
 						if not data:
-							break				
-			if type(file) != Nca and file._path in contentlist:
+							break	
+				outf.close()							
+			elif type(file) != Nca and file._path in contentlist:
 				file.rewind()			
-				t.write(tabs+'- Appending: ' + str(file._path))					
+				t.write(tabs+'- Appending: ' + str(file._path))		
+				outf = open(str(filepath), 'a+b')					
 				for data in iter(lambda: file.read(int(buffer)), ""):				
 					if fat=="fat32" and (c+len(data))>block:
 						n2=block-c
@@ -6907,10 +7461,67 @@ class Nsp(Pfs0):
 						c=c+len(data)									
 						outf.flush()							
 					if not data:
-						break							
-		t.close()		
-		print("Closing file. Please wait")		
-		outf.close()
+						break		
+				outf.close()	
+			elif str(file._path).endswith('.ncz') and (str(file._path)[:-1]+'a') in contentlist:
+				ncztype=Nca(file)
+				ncztype._path=file._path	
+				ncztype.rewind()				
+				header = ncztype.read(0x4000)
+				magic = readInt64(ncztype)
+				sectionCount = readInt64(ncztype)
+				sections = []
+				for i in range(sectionCount):
+					sections.append(Section(ncztype))		
+				# print(sections)	
+				with open(str(filepath), 'rb+') as o:
+					o.seek(0, os.SEEK_END)
+					t.write(tabs+'  Writing nca header')	
+					o.write(header)
+					t.update(0x4000)	
+					t.write(tabs+'  Writing decompressed body in plaintext')								
+					count=0;checkstarter=0
+					dctx = zstandard.ZstdDecompressor()
+					reader = dctx.stream_reader(ncztype)			
+					c=0;spsize=0							
+					for s in sections:
+						end = s.offset + s.size		
+						if s.cryptoType == 1: #plain text
+							t.write(tabs+'    * Section {} is plaintext'.format(str(c)))
+							t.write(tabs+'      %x - %d bytes, Crypto type %d' % ((s.offset), s.size, s.cryptoType))
+							spsize+=s.size	
+							end = s.offset + s.size	
+							i = s.offset									
+							while i < end:
+								chunkSz = buffer if end - i > buffer else end - i									
+								chunk = reader.read(chunkSz)		
+								if not len(chunk):
+									break	
+								o.write(chunk)	
+								t.update(len(chunk))	
+								i += chunkSz
+						elif s.cryptoType not in (3, 4):
+							raise IOError('Unknown crypto type: %d' % s.cryptoType)	
+						else: 	
+							t.write(tabs+'    * Section {} needs decompression'.format(str(c)))	
+							t.write(tabs+'      %x - %d bytes, Crypto type %d' % ((s.offset), s.size, s.cryptoType))		
+							t.write(tabs+'      Key: %s' % (str(hx(s.cryptoKey))))	
+							t.write(tabs+'      IV: %s' % (str(hx(s.cryptoCounter))))								
+							crypto = AESCTR(s.cryptoKey, s.cryptoCounter)
+							spsize+=s.size	
+							test=int(spsize/(buffer))
+							i = s.offset									
+							while i < end:
+								crypto.seek(i)
+								chunkSz = buffer if end - i > buffer else end - i
+								chunk = reader.read(chunkSz)	
+								if not len(chunk):
+									break											
+								o.write(crypto.encrypt(chunk))	
+								t.update(len(chunk))									
+								i += chunkSz	
+					ncztype.close()						
+		t.close()
 
 	def cd_spl_gen_nsph(self,filelist):			
 		filesNb = len(filelist)
@@ -6924,6 +7535,12 @@ class Nsp(Pfs0):
 		for file in self:		
 			if file._path in filelist:
 				fileSizes.append(file.size)		
+			elif str(file._path).endswith('.ncz'):
+				ncapath=str(file._path)[:-1]+'a'
+				if ncapath in filelist:
+					ncztype=Nca(file)
+					ncztype._path=file._path	
+					fileSizes.append(ncztype.header.size)		
 
 		fileOffsets = [sum(fileSizes[:n]) for n in range(filesNb)]
 		fileNamesLengths = [len(str(file))+1 for file in filelist] # +1 for the \x00
@@ -6944,6 +7561,7 @@ class Nsp(Pfs0):
 		return header						
 				
 	def cd_spl_xci(self,buffer,ofile,ofolder,filelist,fat,fx):
+		buffer=int(buffer)
 		self.rewind()		
 		outfile=ofile+'.xci'
 		filepath = os.path.join(ofolder, outfile)	
@@ -6961,6 +7579,10 @@ class Nsp(Pfs0):
 			if type(file) == Nca: 
 				if file._path in filelist:
 					contentlist.append(file._path)	
+			elif str(file._path).endswith('.ncz'):
+				ncapath=str(file._path)[:-1]+'a'
+				if ncapath in filelist:
+					contentlist.append(ncapath)						
 
 		xci_header,game_info,sig_padding,xci_certificate,root_header,upd_header,norm_header,sec_header,rootSize,upd_multiplier,norm_multiplier,sec_multiplier=self.cd_spl_gen_xcih(contentlist)		
 		totSize=len(xci_header)+len(game_info)+len(sig_padding)+len(xci_certificate)+rootSize		
@@ -6976,6 +7598,16 @@ class Nsp(Pfs0):
 					if file.header.getCryptoType2() != masterKeyRev:
 						pass
 						raise IOError('Mismatched masterKeyRevs!')
+			elif str(file._path).endswith('.ncz'):	
+				ncapath=str(file._path)[:-1]+'a'	
+				if ncapath in filelist:				
+					ncztype=Nca(file)
+					ncztype._path=file._path			
+					if ncztype.header.getRightsId() != 0:
+						if ncztype.header.getCryptoType2() != masterKeyRev:
+							pass
+							raise IOError('Mismatched masterKeyRevs!')					
+											
 		for file in self:	
 			if type(file) == Nca and file._path in filelist:	
 				if file.header.getRightsId() != 0:		
@@ -6984,6 +7616,17 @@ class Nsp(Pfs0):
 							masterKeyRev = 2						
 							titleKeyDec = Keys.decryptTitleKey(ticket.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(masterKeyRev))
 							break		
+			elif str(file._path).endswith('.ncz'):	
+				ncapath=str(file._path)[:-1]+'a'	
+				if ncapath in filelist:		
+					ncztype=Nca(file)
+					ncztype._path=file._path	
+					if ncztype.header.getRightsId() != 0:		
+						if ncztype.header.getCryptoType2() == 0:
+							if ncztype.header.getCryptoType() == 2:
+								masterKeyRev = 2						
+								titleKeyDec = Keys.decryptTitleKey(ticket.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(masterKeyRev))
+								break						
 		contTR=0
 		contGC=0
 		iscartridge=False
@@ -7005,7 +7648,30 @@ class Nsp(Pfs0):
 					else:					
 						contGC+=0
 				else:
-					contGC+=1											
+					contGC+=1			
+			elif str(nca._path).endswith('.ncz'):
+				ncapath=str(file._path)[:-1]+'a'	
+				if ncapath in filelist:				
+					ncztype=Nca(nca)
+					ncztype._path=nca._path
+					contTR+=1			
+					if	ncztype.header.getgamecard() == 0:	
+						crypto1=ncztype.header.getCryptoType()
+						crypto2=ncztype.header.getCryptoType2()	
+						if crypto2>crypto1:
+							masterKeyRev=crypto2
+						if crypto2<=crypto1:	
+							masterKeyRev=crypto1					
+						crypto = aes128.AESECB(Keys.keyAreaKey(Keys.getMasterKeyIndex(masterKeyRev), ncztype.header.keyIndex))
+						KB1L=ncztype.header.getKB1L()
+						KB1L = crypto.decrypt(KB1L)
+						if sum(KB1L) == 0:					
+							contGC+=1
+						else:					
+							contGC+=0
+					else:
+						contGC+=1	
+		
 		if  contTR == contGC and contTR>0 and contGC>0:
 			iscartridge=True													
 		
@@ -7065,7 +7731,7 @@ class Nsp(Pfs0):
 		outf.write(sec_header)
 		t.update(len(sec_header))
 		c=c+len(sec_header)			
-									
+		outf.close()										
 		block=4294934528		
 		for nca in self:	
 			if type(nca) == Nca and nca._path in contentlist:
@@ -7101,6 +7767,7 @@ class Nsp(Pfs0):
 					encKeyBlock = nca.header.getKeyBlock()	
 				nca.rewind()					
 				i=0
+				outf = open(outfile, 'a+b')					
 				for data in iter(lambda: nca.read(int(buffer)), ""):
 					if i==0:
 						newheader=self.get_newheader(nca,encKeyBlock,crypto1,crypto2,hcrypto,gc_flag)					
@@ -7162,6 +7829,100 @@ class Nsp(Pfs0):
 							outf.flush()								
 						if not data:
 							break
+				outf.close()	
+			elif str(nca._path).endswith('.ncz') and (str(nca._path)[:-1]+'a') in contentlist:
+				ncztype=Nca(nca)
+				ncztype._path=nca._path
+				crypto1=ncztype.header.getCryptoType()
+				crypto2=ncztype.header.getCryptoType2()	
+				if crypto2>crypto1:
+					masterKeyRev=crypto2
+				if crypto2<=crypto1:	
+					masterKeyRev=crypto1							
+				crypto = aes128.AESECB(Keys.keyAreaKey(Keys.getMasterKeyIndex(masterKeyRev), ncztype.header.keyIndex))
+				hcrypto = aes128.AESXTS(uhx(Keys.get('header_key')))	
+				if	ncztype.header.getgamecard() == 0:	
+					KB1L=ncztype.header.getKB1L()
+					KB1L = crypto.decrypt(KB1L)
+					if sum(KB1L) == 0 and iscartridge == True:					
+						gc_flag='01'*0x01
+					else:					
+						gc_flag='00'*0x01
+				else:
+					if iscartridge == True:
+						gc_flag='01'*0x01	
+					else:					
+						gc_flag='00'*0x01						
+				if ncztype.header.getRightsId() != 0:				
+					ncztype.rewind()					
+					encKeyBlock = crypto.encrypt(titleKeyDec * 4)
+				if ncztype.header.getRightsId() == 0:
+					ncztype.rewind()
+					encKeyBlock = ncztype.header.getKeyBlock()	
+				t.write('')							
+				t.write(tabs+'- Appending: ' + str(nca._path)[:-1]+'a')			
+				t.write(tabs+'  Writing nca header')					
+				i=0
+				newheader=self.get_newheader(ncztype,encKeyBlock,crypto1,crypto2,hcrypto,gc_flag)	
+				ncztype.rewind()
+				data=ncztype.read(0x4000)
+				with open(outfile, 'rb+') as o:
+					o.seek(0, os.SEEK_END)	
+					curr_off= o.tell()	
+					o.write(data)	
+					o.seek(curr_off)
+					o.write(newheader)
+				t.update(0x4000)
+				magic = readInt64(ncztype)
+				sectionCount = readInt64(ncztype)
+				sections = []
+				for i in range(sectionCount):
+					sections.append(Section(ncztype))		
+				# print(sections)							
+				with open(outfile, 'rb+') as o:
+					o.seek(0, os.SEEK_END)
+					t.write(tabs+'  Writing decompressed body in plaintext')								
+					count=0;checkstarter=0
+					dctx = zstandard.ZstdDecompressor()
+					reader = dctx.stream_reader(ncztype)			
+					c=0;spsize=0							
+					for s in sections:
+						end = s.offset + s.size		
+						if s.cryptoType == 1: #plain text
+							t.write(tabs+'    * Section {} is plaintext'.format(str(c)))
+							t.write(tabs+'      %x - %d bytes, Crypto type %d' % ((s.offset), s.size, s.cryptoType))
+							spsize+=s.size	
+							end = s.offset + s.size	
+							i = s.offset									
+							while i < end:
+								chunkSz = buffer if end - i > buffer else end - i									
+								chunk = reader.read(chunkSz)		
+								if not len(chunk):
+									break	
+								o.write(chunk)	
+								t.update(len(chunk))	
+								i += chunkSz
+						elif s.cryptoType not in (3, 4):
+							raise IOError('Unknown crypto type: %d' % s.cryptoType)	
+						else: 	
+							t.write(tabs+'    * Section {} needs decompression'.format(str(c)))	
+							t.write(tabs+'      %x - %d bytes, Crypto type %d' % ((s.offset), s.size, s.cryptoType))		
+							t.write(tabs+'      Key: %s' % (str(hx(s.cryptoKey))))	
+							t.write(tabs+'      IV: %s' % (str(hx(s.cryptoCounter))))								
+							crypto = AESCTR(s.cryptoKey, s.cryptoCounter)
+							spsize+=s.size	
+							test=int(spsize/(buffer))
+							i = s.offset									
+							while i < end:
+								crypto.seek(i)
+								chunkSz = buffer if end - i > buffer else end - i
+								chunk = reader.read(chunkSz)	
+								if not len(chunk):
+									break											
+								o.write(crypto.encrypt(chunk))	
+								t.update(len(chunk))									
+								i += chunkSz					
+				ncztype.close()	
 		t.close()
 		print("")
 		print("Closing file. Please wait")				
@@ -7182,7 +7943,18 @@ class Nsp(Pfs0):
 				file.rewind()
 				hblock = file.read(0x200)			
 				sha=sha256(hblock).hexdigest()	
-				sec_shalist.append(sha)															
+				sec_shalist.append(sha)		
+			elif str(file._path).endswith('.ncz'):
+				ncapath=str(file._path)[:-1]+'a'
+				if ncapath in filelist:
+					sec_list.append(ncapath)	
+					ncztype=Nca(file)
+					ncztype._path=file._path		
+					sec_fileSizes.append(ncztype.header.size)		
+					ncztype.rewind()
+					hblock = ncztype.read(0x200)			
+					sha=sha256(hblock).hexdigest()	
+					sec_shalist.append(sha)					
 																										
 		hfs0 = Fs.Hfs0(None, None)							
 		root_header,upd_header,norm_header,sec_header,rootSize,upd_multiplier,norm_multiplier,sec_multiplier=hfs0.gen_rhfs0_head(upd_list,norm_list,sec_list,sec_fileSizes,sec_shalist)
@@ -7311,24 +8083,28 @@ class Nsp(Pfs0):
 		fake_CERT='FF'*0x8000
 		fake_CERT=bytes.fromhex(fake_CERT)				
 		#print (hx(fake_CERT))
-
-
 		return header,enc_info,sig_padding,fake_CERT,root_header,upd_header,norm_header,sec_header,rootSize,upd_multiplier,norm_multiplier,sec_multiplier
-			
-				
+						
 	def file_hash(self,target):	
 		target2=target[:-1]+'z'	
 		indent = 1
 		gamecard = False
 		tabs = '\t' * indent	
 		sha=False;sizef=False
+		# print(target)
 		for file in self:
 			docheck = False		
 			if str(file._path) == target or str(file._path) == target2:
 				file.rewind()
 				hblock = file.read(0x200)			
 				sha=sha256(hblock).hexdigest()	
-				sizef=file.size
+				if str(file._path).endswith('.ncz'):
+					ncztype=Nca(file)
+					ncztype._path=file._path
+					sizef=ncztype.header.size
+					ncztype.close()
+				else:
+					sizef=file.size
 				#print(str(sizef))
 				#return sha,sizef				
 			if type(file) == Nca and gamecard==False:			
@@ -7355,8 +8131,8 @@ class Nsp(Pfs0):
 						if sum(KB1L) == 0:					
 							gamecard=True
 			elif str(file._path).endswith('.ncz'):
-				ncztype=Nca(f)
-				ncztype._path=f._path
+				ncztype=Nca(file)
+				ncztype._path=file._path
 				if	ncztype.header.getgamecard() == 1:	
 					gamecard=True
 				else:
@@ -7599,6 +8375,7 @@ class Nsp(Pfs0):
 		message='****************';print(message);feed+=message+'\n'									
 		for f in self:			
 			if type(f) == Nca and f.header.contentType != Type.Content.META:
+				hlisthash=False
 				message=(str(f.header.titleId)+' - '+str(f.header.contentType));print(message);feed+=message+'\n'											
 				verify,origheader,ncaname,feed,origkg,tr,tkey,iGC=f.verify(feed)		
 				# headerlist.append([ncaname,origheader,hlisthash])		
@@ -7608,6 +8385,7 @@ class Nsp(Pfs0):
 					verdict=verify
 				message='';print(message);feed+=message+'\n'	
 			if str(f._path).endswith('.ncz'):
+				hlisthash=False
 				ncz=Nca(f)
 				ncz._path=f._path
 				message=(str(ncz.header.titleId)+' - '+str(ncz.header.contentType));print(message);feed+=message+'\n'											
@@ -7619,6 +8397,7 @@ class Nsp(Pfs0):
 					verdict=verify
 				message='';print(message);feed+=message+'\n'				
 		for f in self:	
+			hlisthash=False
 			if type(f) == Nca and f.header.contentType == Type.Content.META:
 				meta_nca=f._path
 				f.rewind();meta_dat=f.read()
@@ -7694,31 +8473,23 @@ class Nsp(Pfs0):
 									t.close()	
 									message=(tabs+'* '+"RSV WAS CHANGED FROM "+str(verNumber)+" TO "+str(minrsv));print(message);feed+=message+'\n'	
 									message=(tabs+'* '+"THE CNMT FILE IS CORRECT");print(message);feed+=message+'\n'										
-									if origheader != False:	
-										hlisthash=True;i=0
-										fp = Fs.Nca(tempfile, 'r+b')
-										for data in iter(lambda: fp.read(int(32768)), ""):											
-											if i==0:
-												sha0=sha256()
-												sha0.update(origheader)	
-												i+=1
-												fp.flush()												
-												fp.seek(0xC00)
-											else:		
-												sha0.update(data)								
-												fp.flush()
-												if not data:
-													fp.close()												
-													cnmtdidverify=True
-													break	
+									hlisthash=True	
+									cnmtdidverify=True
 									break
 						else:break
 				try:
 					t.close()
 				except:pass
 				if hlisthash == True:
-					sha0=sha0.hexdigest()
-					hlisthash=sha0
+					fp = Fs.Nca(tempfile, 'r+b')
+					fp.rewind()
+					data=fp.read()
+					origheader=data
+					sha0=sha256(data)
+					hlisthash=sha0.hexdigest()
+					# print(sha0)
+					fp.flush()		
+					fp.close()						
 				headerlist.append([ncaname,origheader,hlisthash,tr,tkey,iGC])	
 				message='';print(message);feed+=message+'\n'		
 		try:
@@ -8216,7 +8987,8 @@ class Nsp(Pfs0):
 							for k in range(len(headerlist)):
 								entry=headerlist[k]
 								if entry[0]==file and entry[1]!=False:
-									ncahead=entry[1]						
+									ncahead=entry[1]	
+							# Hex.dump(ncahead)		
 							off1=files_list[i][1]
 							off2=files_list[i][2]						
 							t.write('- Appending {}'.format(files_list[i][0]))
@@ -8858,8 +9630,9 @@ class Nsp(Pfs0):
 		# img = Image.open(dat)
 		# img.show()
 		return a
-
-	def decompress(self,output,buffer = 65536):	
+							
+	def decompress_direct(self,output,buffer = 65536,delta=False,xml_gen=False):
+		buffer=int(buffer)
 		print('Decompressing {}'.format(self._path))
 		files_list=sq_tools.ret_nsp_offsets(self._path)
 		files=list();filesizes=list()
@@ -8884,170 +9657,45 @@ class Nsp(Pfs0):
 					else:
 						# print(str(row['NcaId'])+'.cnmt.nca')
 						files.append(str(row['NcaId'])+'.cnmt.nca')
-						filesizes.append(int(row['Size']))					
-				for k in range(len(files_list)):
-					entry=files_list[k]
-					fp=entry[0];sz=int(entry[3])
-					if fp.endswith('xml'):
-						files.append(fp)
-						filesizes.append(sz)					
-				for k in range(len(files_list)):
-					entry=files_list[k]
-					fp=entry[0];sz=int(entry[3])
-					if fp.endswith('.tik'):
-						files.append(fp)	
-						filesizes.append(sz)					
-				for k in range(len(files_list)):
-					entry=files_list[k]
-					fp=entry[0];sz=int(entry[3])
-					if fp.endswith('.cert'):
-						files.append(fp)	
-						filesizes.append(sz)
-		nspheader=sq_tools.gen_nsp_header(files,filesizes)
-		totsize=0
-		for s in filesizes:
-			totsize+=s
-		for i in range(len(files_list)):
-			entry=files_list[i]
-			fp=entry[0]	
-			if fp.endswith('.ncz'):
-				for j in range(len(files)):
-					fp2=files[j]
-					if str(fp2[:-1])==str(fp[:-1]):
-						totsize+=filesizes[j]
-		t = tqdm(total=totsize, unit='B', unit_scale=True, leave=False)					
-		# Hex.dump(nspheader)
-		with open(output, 'wb') as o:
-			o.write(nspheader)	
-			t.update(len(nspheader))
-		for file in files:	
-			if file.endswith('cnmt.nca'):		
-				for nca in self:
-					if str(nca._path)==file:
-						t.write('- Appending {}'.format(str(nca._path)))
-						nca.rewind()
-						data=nca.read()
-						with open(output, 'ab') as o:
-							o.write(data)
-							t.update(len(data))							
-			elif file.endswith('nca'):		
-				for nca in self:
-					if str(nca._path)[:-1]==file[:-1] and not str(nca._path).endswith('.ncz'):	
-						t.write('- Appending {}'.format(str(nca._path)))					
-						o = open(output, 'ab+')
-						nca.rewind()
-						for data in iter(lambda: nca.read(int(buffer)), ""):
-							o.write(data)
-							t.update(len(data))
-							o.flush()
-							if not data:
-								o.close()
-								break				
-					elif str(nca._path)[:-1]==file[:-1] and str(nca._path).endswith('ncz'):
-						# print(nca._path)
-						nca.rewind()
-						header = nca.read(0x4000)
-						magic = readInt64(nca)
-						sectionCount = readInt64(nca)
-						sections = []
-						for i in range(sectionCount):
-							sections.append(Section(nca))		
-						# print(sections)	
-						dctx = zstandard.ZstdDecompressor()
-						reader = dctx.stream_reader(nca)							
-						with open(output, 'rb+') as o:
-							o.seek(0, os.SEEK_END)
-							curr_off= o.tell()
-							t.write('- Appending decompressed {}'.format(str(nca._path)))		
-							t.write('  Writing nca header')							
-							o.write(header)
-							t.update(len(header))	
-							timestamp = time.time()
-							t.write('  Writing decompressed body in plaintext')								
-							while True:							
-								chunk = reader.read(16384)								
-								if not chunk:
-									break									
-								o.write(chunk)	
-								t.update(len(chunk))	
-							c=0;spsize=0	
-							t.write('  + Restoring crypto in sections')								
-							for s in sections:
-								c+=1
-								if s.cryptoType == 1: #plain text
-									t.write('    * Section {} is plaintext'.format(str(c)))
-									t.write('      %x - %d bytes, Crypto type %d' % ((s.offset), s.size, s.cryptoType))
-									t.update(s.size);spsize+=s.size	
-									continue									
-								if s.cryptoType not in (3, 4):
-									raise IOError('Unknown crypto type: %d' % s.cryptoType)	
-								t.write('    * Section {} needs decompression'.format(str(c)))	
-								t.write('      %x - %d bytes, Crypto type %d' % ((s.offset), s.size, s.cryptoType))		
-								t.write('      Key: %s, IV: %s' % (str(hx(s.cryptoKey)), str(hx(s.cryptoCounter))))																
-								i = s.offset								
-								crypto = AESCTR(s.cryptoKey, s.cryptoCounter)
-								end = s.offset + s.size		
-								spsize+=s.size									
-								while i < end:
-									o.seek(i+curr_off)
-									crypto.seek(i)
-									chunkSz = 0x10000 if end - i > 0x10000 else end - i
-									buf = o.read(chunkSz)									
-									if not len(buf):
-										break									
-									o.seek(i+curr_off)
-									o.write(crypto.encrypt(buf))		
-									t.update(len(buf))										
-									i += chunkSz
-							elapsed = time.time() - timestamp
-							minutes = elapsed / 60
-							seconds = elapsed % 60
-							
-							speed = 0 if elapsed == 0 else (spsize / elapsed)
-							t.write('\n    Decompressed in %02d:%02d at speed: %.1f MB/s\n' % (minutes, seconds, speed / 1000000.0))				
-								
-			else:
-				for ot in self:
-					if str(ot._path)==file:
-						t.write('- Appending {}'.format(str(ot._path)))						
-						ot.rewind()
-						data=ot.read()
-						with open(output, 'ab') as o:
-							o.write(data)
-							t.update(len(data))		
-							
-	def decompress_direct(self,output,buffer = 65536):	
-		print('Decompressing {}'.format(self._path))
-		files_list=sq_tools.ret_nsp_offsets(self._path)
-		files=list();filesizes=list()
-		fplist=list()
-		for k in range(len(files_list)):
-			entry=files_list[k]
-			fplist.append(entry[0])
-		for i in range(len(files_list)):
-			entry=files_list[i]
-			filepath=entry[0]
-			if filepath.endswith('.cnmt.nca'):
-				titleid,titleversion,base_ID,keygeneration,rightsId,RSV,RGV,ctype,metasdkversion,exesdkversion,hasHtmlManual,Installedsize,DeltaSize,ncadata=self.get_data_from_cnmt(filepath)
-				for j in range(len(ncadata)):
-					row=ncadata[j]
-					# print(row)
-					if row['NCAtype']!='Meta':
-						test1=str(row['NcaId'])+'.nca';test2=str(row['NcaId'])+'.ncz'
-						if test1 in fplist or test2 in fplist:
-							# print(str(row['NcaId'])+'.nca')
-							files.append(str(row['NcaId'])+'.nca')
-							filesizes.append(int(row['Size']))					
-					else:
-						# print(str(row['NcaId'])+'.cnmt.nca')
-						files.append(str(row['NcaId'])+'.cnmt.nca')
-						filesizes.append(int(row['Size']))					
-				for k in range(len(files_list)):
-					entry=files_list[k]
-					fp=entry[0];sz=int(entry[3])
-					if fp.endswith('xml'):
-						files.append(fp)
-						filesizes.append(sz)					
+						filesizes.append(int(row['Size']))	
+						if xml_gen == True:
+							tg=str(row['NcaId'])+'.cnmt.nca'
+							for nca in self:
+								if nca._path==tg:
+									target = Fs.Nca(nca, 'r+b')
+									target.rewind()		
+									dir=os.path.dirname(os.path.abspath(output))
+									outf= os.path.join(dir, str(nca._path))									
+									fp = open(outf, 'w+b')		
+									for data in iter(lambda: target.read(int(32768)), ""):	
+										fp.write(data)						
+										fp.flush()				
+										if not data:
+											fp.close()									
+											break	
+									target.close()
+									target = Fs.Nca(outf, 'r+b')										
+									block = target.read()			
+									nsha=sha256(block).hexdigest()	
+									target.rewind()	
+									xml=target.xml_gen(dir,nsha)									
+									xmlname=tg[:-3]+'xml'
+									xmlsize=os.path.getsize(xml)
+									files.append(xmlname)
+									filesizes.append(int(xmlsize))										
+									target.close()
+									try:
+										os.remove(outf) 	
+									except:
+										pass
+									break					
+				if xml_gen == True:						
+					for k in range(len(files_list)):
+						entry=files_list[k]
+						fp=entry[0];sz=int(entry[3])
+						if fp.endswith('xml') and fp not in files:
+							files.append(fp)
+							filesizes.append(sz)					
 				for k in range(len(files_list)):
 					entry=files_list[k]
 					fp=entry[0];sz=int(entry[3])
@@ -9160,6 +9808,29 @@ class Nsp(Pfs0):
 							speed = 0 if elapsed == 0 else (spsize / elapsed)
 							t.write('\n    Decompressed in %02d:%02d at speed: %.1f MB/s\n' % (minutes, seconds, speed / 1000000.0))				
 								
+			elif file.endswith('.cnmt.xml'):
+				dir=os.path.dirname(os.path.abspath(output))
+				input=os.path.join(dir, file)		
+				if os.path.exists(input):
+					t.write('- Appending {}'.format(file))		
+					with open(input, 'rb') as xml:
+						data=xml.read()
+						with open(output, 'ab') as o:
+							o.write(data)
+							t.update(len(data))
+					try:
+						os.remove(input) 	
+					except:
+						pass			
+				else:
+					for ot in self:
+						if str(ot._path)==file:
+							t.write('- Appending {}'.format(str(ot._path)))						
+							ot.rewind()
+							data=ot.read()
+							with open(output, 'ab') as o:
+								o.write(data)
+								t.update(len(data))				
 			else:
 				for ot in self:
 					if str(ot._path)==file:

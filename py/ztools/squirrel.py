@@ -630,7 +630,7 @@ if __name__ == '__main__':
 				for inpt in args.remlinkacc:
 					filename=inpt
 			try:
-				if filename.endswith('.nsp') or filename.endswith('.nsx'):
+				if filename.endswith('.nsp') or filename.endswith('.nsx') or filename.endswith('.nsz'):
 					f = Fs.Nsp(filename,'r+b')
 					ctrl_list=f.gen_ctrl_list()
 					f.flush()
@@ -665,7 +665,7 @@ if __name__ == '__main__':
 							f.ctrl_upd_hblock_hash(item)
 							f.flush()
 							f.close()
-				elif filename.endswith('.xci'):
+				elif filename.endswith('.xci') or filename.endswith('.xcz'):
 					f = Fs.factory(filename)
 					f.open(filename, 'r+b')
 					ctrl_list=f.gen_ctrl_list()
@@ -779,7 +779,7 @@ if __name__ == '__main__':
 			if not os.path.exists(ofolder):
 				os.makedirs(ofolder)
 			test=filename.lower()
-			if test.endswith('.nsp') or test.endswith('.nsx'):
+			if test.endswith('.nsp') or test.endswith('.nsx') or test.endswith('.nsz'):
 				try:
 					f = Fs.Nsp(filename, 'rb')
 					f.open(filename, 'rb')
@@ -788,7 +788,7 @@ if __name__ == '__main__':
 					f.close()
 				except BaseException as e:
 					Print.error('Exception: ' + str(e))
-			elif test.endswith('.xci'):
+			elif test.endswith('.xci') or test.endswith('.xcz'):
 				try:
 					f = Fs.factory(filename)
 					f.open(filename, 'rb')
@@ -2691,13 +2691,18 @@ if __name__ == '__main__':
 			else:
 				for filepath in args.decompress:
 					dir=os.path.dirname(os.path.abspath(filepath))
-					ofolder =os.path.join(dir, 'output')		
+					ofolder =os.path.join(dir, 'output')
+					break
 			if args.decompress:
 				if args.text_file:
 					tfile=args.text_file
 					with open(tfile,"r+", encoding='utf8') as filelist: 	
 						filepath = filelist.readline()
 						filepath=os.path.abspath(filepath.rstrip('\n'))	
+				else:
+					for inpt in args.decompress:
+						filepath=inpt
+						break
 				if filepath.endswith(".nsz"):	
 					import decompressor	
 					basename=os.path.basename(os.path.abspath(filepath))
@@ -2709,7 +2714,7 @@ if __name__ == '__main__':
 					basename=os.path.basename(os.path.abspath(filepath))
 					endname=basename[:-3]+'xci'
 					endname =os.path.join(ofolder,endname)
-					decompressor.decompress_xcz(filepath,endname)					
+					decompressor.decompress_xcz(filepath,endname)								
 		# ...................................................
 		# Repack NCA files to partition hfs0
 		# ...................................................
@@ -3151,11 +3156,23 @@ if __name__ == '__main__':
 						Print.error('Exception: ' + str(e))
 			else:
 				buffer = 65536
+			if args.type:
+				for input in args.type:
+					if input == "nsp":
+						export='nsp'
+					elif input == "nsz":
+						export='nsz'
+					else:
+						export='nsp'
+			else:
+				export='nsp'				
 			if args.text_file:
 				tfile=args.text_file
 				with open(tfile,"r+", encoding='utf8') as filelist:
 					filepath = filelist.readline()
 					filepath=os.path.abspath(filepath.rstrip('\n'))
+			elif args.ifolder:
+				filepath=args.ifolder
 			else:
 				for filepath in args.rebuild_nsp:
 					filepath=filepath
@@ -3239,16 +3256,30 @@ if __name__ == '__main__':
 						if os.path.exists(endfile):
 							skipper=True
 							print("Content exists in final destination. Skipping...")
-			if args.rebuild_nsp and skipper==False:
-				if filepath.endswith(".nsp"):
-					try:
-						print('Processing: '+filepath)
-						f = Fs.Nsp(filepath)
-						f.rebuild(buffer,endfile,delta,False,xml_gen)
-						f.flush()
-						f.close()
-					except BaseException as e:
-						Print.error('Exception: ' + str(e))
+			if not args.ifolder:
+				if args.rebuild_nsp and skipper==False:
+					if filepath.endswith(".nsp"):
+						try:
+							print('Processing: '+filepath)
+							f = Fs.Nsp(filepath)
+							f.rebuild(buffer,endfile,delta,False,xml_gen)
+							f.flush()
+							f.close()
+						except BaseException as e:
+							Print.error('Exception: ' + str(e))				
+					elif filepath.endswith(".nsz"):
+						if export == 'nsp':
+							try:
+								import decompressor	
+								basename=os.path.basename(os.path.abspath(filepath))
+								endname=basename[:-1]+'p'
+								endname =os.path.join(ofolder,endname)
+								decompressor.decompress_nsz(filepath,endname,buffer,delta,xml_gen)	
+							except BaseException as e:
+								Print.error('Exception: ' + str(e))	
+			else:
+				import batchprocess
+				batchprocess.rebuild_nsp(filepath,ofolder,buffer,delta,xml_gen,export)	
 			Status.close()
 		# ...................................................
 		# Direct NSP OR XCI
@@ -3353,9 +3384,9 @@ if __name__ == '__main__':
 						else:
 							print ("Wrong Type!!!")
 				else:
-					if filepath.endswith('.nsp'):
+					if filepath.endswith('.nsp') or filepath.endswith('.nsz'):
 						export='nsp'
-					elif filepath.endswith('.xci'):
+					elif filepath.endswith('.xci') or filepath.endswith('.xcz'):
 						export='xci'
 					else:
 						print ("Wrong Type!!!")
@@ -3370,7 +3401,7 @@ if __name__ == '__main__':
 				else:
 					cskip=True
 
-				if filepath.endswith(".nsp"):
+				if filepath.endswith(".nsp") or filepath.endswith('.nsz'):
 					f = Fs.Nsp(filepath)
 					TYPE=f.nsptype()
 					f.flush()
@@ -3435,7 +3466,7 @@ if __name__ == '__main__':
 						except BaseException as e:
 							Print.error('Exception: ' + str(e))
 
-				if filepath.endswith(".xci"):
+				if filepath.endswith(".xci") or filepath.endswith('.xcz'):
 					if export=='nsp':
 						try:
 							print("Processing: " + filepath)
@@ -3619,7 +3650,7 @@ if __name__ == '__main__':
 					prlist=list()
 					print ('Calculating final content:')
 					for filepath in filelist:
-						if filepath.endswith('.nsp'):
+						if filepath.endswith('.nsp') or filepath.endswith('.nsz'):
 							#print(filepath)
 							try:
 								c=list()
@@ -3670,7 +3701,7 @@ if __name__ == '__main__':
 							except BaseException as e:
 								Print.error('Exception: ' + str(e))
 
-						if filepath.endswith('.xci'):
+						if filepath.endswith('.xci') or filepath.endswith('.xcz'):
 							#print(filepath)
 							try:
 								c=list()
@@ -3771,9 +3802,9 @@ if __name__ == '__main__':
 								ccount='('+bctag+updtag+dctag+')'
 							if baseid != "":
 								try:
-									if basefile.endswith('.xci'):
+									if basefile.endswith('.xci') or basefile.endswith('.xcz') :
 										f = Fs.Xci(basefile)
-									elif basefile.endswith('.nsp'):
+									elif basefile.endswith('.nsp') or basefile.endswith('.nsz') :
 										f = Fs.Nsp(basefile)
 									ctitl=f.get_title(baseid,roman)
 									f.flush()
@@ -3826,9 +3857,9 @@ if __name__ == '__main__':
 										ctitl=ctitl[1:]
 							elif updid !="":
 								try:
-									if updfile.endswith('.xci'):
+									if updfile.endswith('.xci') or updfile.endswith('.xcz') :
 										f = Fs.Xci(updfile)
-									elif updfile.endswith('.nsp'):
+									elif updfile.endswith('.nsp') or updfile.endswith('.nsz') :
 										f = Fs.Nsp(updfile)
 									ctitl=f.get_title(updid,roman)
 									f.flush()
@@ -3923,9 +3954,9 @@ if __name__ == '__main__':
 									if ctitl.startswith(' '):
 										ctitl=ctitl[1:]
 								except:
-									if dlcfile.endswith('.xci'):
+									if dlcfile.endswith('.xci') or dlcfile.endswith('.xcz'):
 										f = Fs.Xci(dlcfile)
-									elif dlcfile.endswith('.nsp'):
+									elif dlcfile.endswith('.nsp') or dlcfile.endswith('.nsz') :
 										f = Fs.Nsp(dlcfile)
 									ctitl=f.get_title(dlcid,roman)
 									f.flush()
@@ -4036,7 +4067,7 @@ if __name__ == '__main__':
 					c=c+len(nspheader)
 					outf.close()
 					for filepath in filelist:
-						if filepath.endswith('.nsp'):
+						if filepath.endswith('.nsp') or filepath.endswith('.nsz'):
 							try:
 								f = Fs.Nsp(filepath)
 								for file in oflist:
@@ -4066,8 +4097,9 @@ if __name__ == '__main__':
 							ototlist.append(j[0])
 					sec_hashlist=list()
 					GClist=list()
+					# print(filelist)
 					for filepath in filelist:
-						if filepath.endswith('.nsp'):
+						if filepath.endswith('.nsp') or filepath.endswith('.nsz'):
 							try:
 								f = Fs.Nsp(filepath)
 								for file in oflist:
@@ -4080,7 +4112,7 @@ if __name__ == '__main__':
 								f.close()
 							except BaseException as e:
 								Print.error('Exception: ' + str(e))
-						if filepath.endswith('.xci'):
+						if filepath.endswith('.xci') or filepath.endswith('.xcz'):
 							try:
 								f = Fs.Xci(filepath)
 								for file in oflist:
@@ -4093,9 +4125,9 @@ if __name__ == '__main__':
 								f.close()
 							except BaseException as e:
 								Print.error('Exception: ' + str(e))
-					#print(oflist)
-					#print(osizelist)
-					#print(sec_hashlist)
+					# print(oflist)
+					# print(osizelist)
+					# print(sec_hashlist)
 					if totSize <= 4294934528:
 						fat="exfat"
 					if fat=="fat32":
@@ -4148,7 +4180,7 @@ if __name__ == '__main__':
 					outf.close()
 
 					for filepath in filelist:
-						if filepath.endswith('.nsp'):
+						if filepath.endswith('.nsp') or filepath.endswith('.nsz'):
 							try:
 								GC=False
 								f = Fs.Nsp(filepath)
@@ -4162,7 +4194,7 @@ if __name__ == '__main__':
 								f.close()
 							except BaseException as e:
 								Print.error('Exception: ' + str(e))
-						if filepath.endswith('.xci'):
+						if filepath.endswith('.xci') or filepath.endswith('.xcz'):
 							try:
 								GC=False
 								f = Fs.Xci(filepath)
@@ -4228,7 +4260,7 @@ if __name__ == '__main__':
 					c=c+len(nspheader)
 					outf.close()
 					for filepath in filelist:
-						if filepath.endswith('.nsp'):
+						if filepath.endswith('.nsp') or filepath.endswith('.nsz'):
 							try:
 								f = Fs.Nsp(filepath)
 								for file in oflist:
@@ -4238,7 +4270,7 @@ if __name__ == '__main__':
 								f.close()
 							except BaseException as e:
 								Print.error('Exception: ' + str(e))
-						if filepath.endswith('.xci'):
+						if filepath.endswith('.xci') or filepath.endswith('.xcz'):
 							try:
 								f = Fs.Xci(filepath)
 								for file in oflist:
@@ -4318,9 +4350,9 @@ if __name__ == '__main__':
 						else:
 							print ("Wrong Type!!!")
 				else:
-					if filepath.endswith('.nsp'):
+					if filepath.endswith('.nsp') or filepath.endswith('.nsz'):
 						export='nsp'
-					elif filepath.endswith('.xci'):
+					elif filepath.endswith('.xci') or filepath.endswith('.xcz'):
 						export='xci'
 					else:
 						print ("Wrong Type!!!")
@@ -4335,7 +4367,7 @@ if __name__ == '__main__':
 				else:
 					cskip=True
 
-				if filepath.endswith(".nsp"):
+				if filepath.endswith(".nsp") or filepath.endswith('.nsz'):
 					try:
 						f = Fs.Nsp(filepath)
 						f.sp_groupncabyid(buffer,ofolder,fat,fx,export)
@@ -4343,7 +4375,7 @@ if __name__ == '__main__':
 						f.close()
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
-				if filepath.endswith(".xci"):
+				if filepath.endswith(".xci") or filepath.endswith('.xcz'):
 					try:
 						f = Fs.Xci(filepath)
 						f.sp_groupncabyid(buffer,ofolder,fat,fx,export)
@@ -4866,7 +4898,7 @@ if __name__ == '__main__':
 				else:
 					for filename in args.addtodb:
 						filename=filename
-				if (filename.lower()).endswith('.nsp') or (filename.lower()).endswith('.nsx'):
+				if (filename.lower()).endswith('.nsp') or (filename.lower()).endswith('.nsx') or (filename.lower()).endswith('.nsz'):
 					try:
 						infile=r''
 						infile+=filename
@@ -4882,7 +4914,7 @@ if __name__ == '__main__':
 							errfile.write(date+' Error in "ADD TO DATABASE" function:'+'\n')
 							errfile.write("Route "+str(filename)+'\n')
 							errfile.write('- Exception: ' + str(e)+ '\n')
-				if (filename.lower()).endswith('.xci'):
+				if (filename.lower()).endswith('.xci') or (filename.lower()).endswith('.xcz'):
 					try:
 						infile=r''
 						infile+=filename
@@ -4917,13 +4949,13 @@ if __name__ == '__main__':
 				else:
 					for filename in args.addtodb_new:
 						filename=filename
-				if (filename.lower()).endswith('.nsp') or (filename.lower()).endswith('.nsx'):
+				if (filename.lower()).endswith('.nsp') or (filename.lower()).endswith('.nsx') or (filename.lower()).endswith('.nsz'):
 					try:
 						f = Fs.Nsp(filename, 'rb')
 						f.Incorporate_to_permaDB(DBfile,trans)
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
-				if (filename.lower()).endswith('.xci'):
+				if (filename.lower()).endswith('.xci') or (filename.lower()).endswith('.xcz'):
 					try:
 						f = Fs.Xci(filename)
 						f.Incorporate_to_permaDB(DBfile,trans)
@@ -5154,7 +5186,7 @@ if __name__ == '__main__':
 			if not os.path.exists(ofolder):
 				os.makedirs(ofolder)
 			test=filename.lower()
-			if test.endswith('.nsp') or test.endswith('.nsx'):
+			if test.endswith('.nsp') or test.endswith('.nsx') or test.endswith('.nsz'):
 				try:
 					files_list=sq_tools.ret_nsp_offsets(filename)
 					for i in range(len(files_list)):
@@ -5198,7 +5230,7 @@ if __name__ == '__main__':
 									break
 				except BaseException as e:
 					Print.error('Exception: ' + str(e))
-			elif test.endswith('.xci'):
+			elif test.endswith('.xci') or test.endswith('.xcz'):
 				try:
 					files_list=sq_tools.ret_xci_offsets(filename)
 					#print(files_list)
@@ -6001,6 +6033,7 @@ if __name__ == '__main__':
 		#parser.add_argument('-bid', '--baseid', nargs='+', help='Filter with base titleid')
 
 		if args.findfile:
+			raised_error=False
 			if args.findfile  == 'uinput':
 				ruta=input("PLEASE DRAG A FILE OR FOLDER OVER THE WINDOW AND PRESS ENTER: ")
 				if '&' in ruta:
@@ -6019,35 +6052,50 @@ if __name__ == '__main__':
 					userinput.write(varout)
 			else:
 				ruta=args.findfile
-			if ruta[-1]=='"':
-				ruta=ruta[:-1]
-			if ruta[0]=='"':
-				ruta=ruta[1:]
-
-			extlist=list()
-			if args.type:
-				for t in args.type:
-					x='.'+t
-					extlist.append(x)
-					if x[-1]=='*':
-						x=x[:-1]
+			try:	
+				if ruta[-1]=='"':
+					ruta=ruta[:-1]
+				if ruta[0]=='"':
+					ruta=ruta[1:]
+			except:
+				raised_error=True
+			if raised_error==False:
+				extlist=list()
+				if args.type:
+					for t in args.type:
+						x='.'+t
 						extlist.append(x)
-					elif x==".00":
-						extlist.append('00')
-			#print(extlist)
-			if args.filter:
-				for f in args.filter:
-					filter=f
+						if x[-1]=='*':
+							x=x[:-1]
+							extlist.append(x)
+						elif x==".00":
+							extlist.append('00')
+				#print(extlist)
+				if args.filter:
+					for f in args.filter:
+						filter=f
 
-			filelist=list()
-			try:
-				fname=""
-				binbin='RECYCLE.BIN'
-				for ext in extlist:
-					#print (ext)
-					if os.path.isdir(ruta):
-						for dirpath, dirnames, filenames in os.walk(ruta):
-							for filename in [f for f in filenames if f.endswith(ext.lower()) or f.endswith(ext.upper()) or f[:-1].endswith(ext.lower()) or f[:-1].endswith(ext.lower())]:
+				filelist=list()
+				try:
+					fname=""
+					binbin='RECYCLE.BIN'
+					for ext in extlist:
+						#print (ext)
+						if os.path.isdir(ruta):
+							for dirpath, dirnames, filenames in os.walk(ruta):
+								for filename in [f for f in filenames if f.endswith(ext.lower()) or f.endswith(ext.upper()) or f[:-1].endswith(ext.lower()) or f[:-1].endswith(ext.lower())]:
+									fname=""
+									if args.filter:
+										if filter.lower() in filename.lower():
+											fname=filename
+									else:
+										fname=filename
+									if fname != "":
+										if binbin.lower() not in filename.lower():
+											filelist.append(os.path.join(dirpath, filename))
+						else:
+							if ruta.endswith(ext.lower()) or ruta.endswith(ext.upper()) or ruta[:-1].endswith(ext.lower()) or ruta[:-1].endswith(ext.upper()):
+								filename = ruta
 								fname=""
 								if args.filter:
 									if filter.lower() in filename.lower():
@@ -6056,36 +6104,24 @@ if __name__ == '__main__':
 									fname=filename
 								if fname != "":
 									if binbin.lower() not in filename.lower():
-										filelist.append(os.path.join(dirpath, filename))
-					else:
-						if ruta.endswith(ext.lower()) or ruta.endswith(ext.upper()) or ruta[:-1].endswith(ext.lower()) or ruta[:-1].endswith(ext.upper()):
-							filename = ruta
-							fname=""
-							if args.filter:
-								if filter.lower() in filename.lower():
-									fname=filename
-							else:
-								fname=filename
-							if fname != "":
-								if binbin.lower() not in filename.lower():
-									filelist.append(filename)
+										filelist.append(filename)
 
-				if args.text_file:
-					tfile=args.text_file
-					with open(tfile,"a", encoding='utf8') as tfile:
+					if args.text_file:
+						tfile=args.text_file
+						with open(tfile,"a", encoding='utf8') as tfile:
+							for line in filelist:
+								try:
+									tfile.write(line+"\n")
+								except:
+									continue
+					else:
 						for line in filelist:
 							try:
-								tfile.write(line+"\n")
+								print (line)
 							except:
 								continue
-				else:
-					for line in filelist:
-						try:
-							print (line)
-						except:
-							continue
-			except BaseException as e:
-				Print.error('Exception: ' + str(e))
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))
 
 		if args.nint_keys:
 			try:

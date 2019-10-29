@@ -1821,11 +1821,15 @@ class Nca(File):
 		if crypto2<=crypto1:
 			masterKeyRev=crypto1		
 		currkg=masterKeyRev		
+		if os.path.exists(self._path):
+			printname=str(os.path.basename(os.path.abspath(self._path)))
+		else:
+			printname=str(self._path)			
 		if verification == True:
 			try:
 				bar.close()
-			except:pass
-			message=(indent+self._path+arrow+'is PROPER');print(message);feed+=message+'\n'			
+			except:pass			
+			message=(indent+printname+arrow+'is PROPER');print(message);feed+=message+'\n'			
 			#print(hx(headdata))		
 			return True,False,self._path,feed,currkg,False,False,self.header.getgamecard()
 		else:
@@ -1842,7 +1846,7 @@ class Nca(File):
 				else:
 					orig_header = False						
 				if checkrights == True:
-					message=(indent+self._path+arrow+'is PROPER');print(message);feed+=message+'\n'				
+					message=(indent+printname+arrow+'is PROPER');print(message);feed+=message+'\n'				
 					message=(tabs+'* '+"TITLERIGHTS WERE REMOVED");print(message);feed+=message+'\n'			
 					if kgchg == False:
 						message=(tabs+'* '+"Original titlerights id is : "+(str(hx(tr)).upper())[2:-1]);print(message);feed+=message+'\n'						
@@ -1878,7 +1882,7 @@ class Nca(File):
 					OGGC=self.header.getgamecard()
 					chkkg=currkg
 					if targetkg == False:
-						message=(indent+self._path+arrow+'is PROPER');print(message);feed+=message+'\n'	
+						message=(indent+printname+arrow+'is PROPER');print(message);feed+=message+'\n'	
 					else:
 						if progress != False:
 							message=(tabs+'* '+"ORIGIN OF CNMT FILE IS PROPER");bar.write(message);feed+=message+'\n'	
@@ -1906,15 +1910,11 @@ class Nca(File):
 					return True,orig_header,self._path,feed,chkkg,False,False,OGGC		
 				else:
 					if self.header.contentType == Type.Content.META:
-						if targetkg == False:
-							if os.path.exists(self._path):
-								printname=str(os.path.basename(os.path.abspath(self._path)))
-							else:
-								printname=str(self._path)											
+						if targetkg == False:										
 							if progress != False:					
 								pass
 							else:	
-								message=(indent+self._path+arrow+'needs RSV check');print(message);feed+=message+'\n'	
+								message=(indent+printname+arrow+'needs RSV check');print(message);feed+=message+'\n'	
 								message=(tabs+'* '+"CHECKING INTERNAL HASHES");print(message);feed+=message+'\n'	
 							if progress == False:							
 								feed,correct=self.check_cnmt_hashes(feed)						
@@ -1934,16 +1934,12 @@ class Nca(File):
 						else:	
 							if endcheck == False:
 								pass
-							elif endcheck == True:
-								if os.path.exists(self._path):
-									printname=str(os.path.basename(os.path.abspath(self._path)))
-								else:
-									printname=str(self._path)									
+							elif endcheck == True:							
 								if progress != False:							
 									message=(indent+printname+arrow+'was MODIFIED');bar.write(message);feed+=message+'\n'	
 									message=(tabs+'* '+"NOT VERIFIABLE!!!");bar.write(message);feed+=message+'\n'
 								else:									
-									message=(indent+self._path+arrow+'was MODIFIED');print(message);feed+=message+'\n'		
+									message=(indent+printname+arrow+'was MODIFIED');print(message);feed+=message+'\n'		
 									message=(tabs+'* '+"NOT VERIFIABLE!!!");print(message);feed+=message+'\n'							
 						return False,False,self._path,feed,False,False,False,self.header.getgamecard()				
 					else:
@@ -1955,14 +1951,14 @@ class Nca(File):
 							message=(indent+printname+arrow+'was MODIFIED');bar.write(message);feed+=message+'\n'	
 							message=(tabs+'* '+"NOT VERIFIABLE!!!");bar.write(message);feed+=message+'\n'
 						else:									
-							message=(indent+self._path+arrow+'was MODIFIED');print(message);feed+=message+'\n'		
+							message=(indent+printname+arrow+'was MODIFIED');print(message);feed+=message+'\n'		
 							message=(tabs+'* '+"NOT VERIFIABLE!!!");print(message);feed+=message+'\n'							
 						return False,False,self._path,feed,False,False,False,self.header.getgamecard()						
 			if progress != False:
-				message=(indent+self._path+arrow+'was MODIFIED');bar.write(message);feed+=message+'\n'			
+				message=(indent+printname+arrow+'was MODIFIED');bar.write(message);feed+=message+'\n'			
 				message=(tabs+'* '+"NOT VERIFIABLE!!!");bar.write(message);feed+=message+'\n'							
 			else:	
-				message=(indent+self._path+arrow+'was MODIFIED');print(message);feed+=message+'\n'			
+				message=(indent+printname+arrow+'was MODIFIED');print(message);feed+=message+'\n'			
 				message=(tabs+'* '+"NOT VERIFIABLE!!!");print(message);feed+=message+'\n'				
 			return False,False,self._path,feed,False,False,False,self.header.getgamecard()		
 			

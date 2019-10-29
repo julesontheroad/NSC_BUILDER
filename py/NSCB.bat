@@ -4,7 +4,7 @@ set "prog_dir=%~dp0"
 set "bat_name=%~n0"
 set "ofile_name=%bat_name%_options.cmd"
 set "opt_interface=Interface_options.cmd"
-Title NSC_Builder v0.95 -- Profile: %ofile_name% -- by JulesOnTheRoad
+Title NSC_Builder v0.96 -- Profile: %ofile_name% -- by JulesOnTheRoad
 set "list_folder=%prog_dir%lists"
 ::-----------------------------------------------------
 ::EDIT THIS VARIABLE TO LINK OTHER OPTION FILE
@@ -1062,11 +1062,10 @@ if "%vrepack%" EQU "xci_supertrimmer" ( %pycommand% "%nut%" -lib_call listmanage
 if "%vrepack%" EQU "xci_supertrimmer_keep_upd" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=xci","token=False",Print="False" )
 if "%vrepack%" EQU "xci_trimmer" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=xci","token=False",Print="False" )
 if "%vrepack%" EQU "xci_untrimmer" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=xci","token=False",Print="False" )
-if "%vrepack%" EQU "nsp" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=nsp xci","token=False",Print="False" )
-if "%vrepack%" EQU "xci" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=nsp xci","token=False",Print="False" )
-if "%vrepack%" EQU "both" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=nsp xci","token=False",Print="False" )
-if "%vrepack%" EQU "rebuild" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=nsp","token=False",Print="False" )
-if "%vrepack%" EQU "nodelta" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=nsp","token=False",Print="False" )
+if "%vrepack%" EQU "rebuild" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=nsp nsz","token=False",Print="False" )
+if "%vrepack%" EQU "nodelta" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=nsp nsz","token=False",Print="False" )
+if "%fatype%" EQU "-fat fat32" echo Fat32 selected, removing nsz and xcz from input list
+if "%fatype%" EQU "-fat fat32" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=nsp nsx xci","token=False",Print="False" ) 
 cls
 call :program_logo
 
@@ -1079,6 +1078,7 @@ set "ziptarget=%%f"
 if "%%~nxf"=="%%~nf.nsp" call :nsp_manual
 if "%%~nxf"=="%%~nf.nsz" call :nsp_manual
 if "%%~nxf"=="%%~nf.xci" call :xci_manual
+if "%%~nxf"=="%%~nf.xcz" call :xci_manual
 %pycommand% "%nut%" --strip_lines "%prog_dir%list.txt" "1" "true"
 rem call :contador_NF
 )
@@ -1508,7 +1508,7 @@ echo Input "3" to add another file to list via selector
 echo Input "0" to return to the MODE SELECTION MENU
 ECHO ***********************************************
 echo.
-%pycommand% "%nut%" -t nsp xci -tfile "%prog_dir%mlist.txt" -uin "%uinput%" -ff "uinput"
+%pycommand% "%nut%" -t nsp xci nsz xcz -tfile "%prog_dir%mlist.txt" -uin "%uinput%" -ff "uinput"
 set /p eval=<"%uinput%"
 set eval=%eval:"=%
 setlocal enabledelayedexpansion
@@ -1517,8 +1517,8 @@ endlocal
 if /i "%eval%"=="0" goto manual_Reentry
 if /i "%eval%"=="1" set skip_list_split="true"
 if /i "%eval%"=="1" goto multi_start_cleaning
-if /i "%eval%"=="2" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%mlist.txt",mode=folder,ext=nsp xci ) 2>&1>NUL
-if /i "%eval%"=="3" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%mlist.txt",mode=file,ext=nsp xci )  2>&1>NUL
+if /i "%eval%"=="2" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%mlist.txt",mode=folder,ext=nsp xci nsz xcz ) 2>&1>NUL
+if /i "%eval%"=="3" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%mlist.txt",mode=file,ext=nsp xci nsz xcz )  2>&1>NUL
 goto multi_checkagain
 echo.
 :multi_checkagain
@@ -1555,8 +1555,8 @@ if /i "%eval%"=="2" set "mlistfol=%list_folder%\m_multi"
 if /i "%eval%"=="2" goto multi_start_cleaning
 if /i "%eval%"=="3" set "mlistfol=%list_folder%\m_multi"
 if /i "%eval%"=="3" goto multi_saved_for_later
-if /i "%eval%"=="4" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%mlist.txt",mode=folder,ext=nsp xci ) 2>&1>NUL
-if /i "%eval%"=="5" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%mlist.txt",mode=file,ext=nsp xci )  2>&1>NUL
+if /i "%eval%"=="4" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%mlist.txt",mode=folder,ext=nsp xci nsz xcz ) 2>&1>NUL
+if /i "%eval%"=="5" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%mlist.txt",mode=file,ext=nsp xci nsz xcz )  2>&1>NUL
 REM if /i "%eval%"=="2" goto multi_set_clogo
 if /i "%eval%"=="e" goto salida
 if /i "%eval%"=="i" goto multi_showlist
@@ -1816,16 +1816,19 @@ if /i "%bs%"=="2" goto m_split_merge
 goto m_KeyChange_skip
 
 :m_split_merge
+if "%fatype%" EQU "-fat fat32" echo Fat32 selected, removing nsz and xcz from input list
+if "%fatype%" EQU "-fat fat32" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%mlist.txt","ext=nsp nsx xci","token=False",Print="False" ) 
 cls
 call :program_logo
 %pycommand% "%nut%" -splid "%mlistfol%" -tfile "%prog_dir%mlist.txt"
 goto m_process_jobs2
 :m_process_jobs
+if "%fatype%" EQU "-fat fat32" echo Fat32 selected, removing nsz and xcz from input list
+if "%fatype%" EQU "-fat fat32" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%mlist.txt","ext=nsp nsx xci","token=False",Print="False" ) 
 cls
 :m_process_jobs2
 dir "%mlistfol%\*.txt" /b  > "%prog_dir%mlist.txt"
 rem if "%fatype%" EQU "-fat fat32" goto m_process_jobs_fat32
-
 for /f "tokens=*" %%f in (mlist.txt) do (
 set "listname=%%f"
 if "%vrepack%" EQU "cnsp" call :program_logo
@@ -2250,7 +2253,7 @@ echo Input "2" to add file to list via selector
 echo Input "0" to return to the MODE SELECTION MENU
 ECHO ***********************************************
 echo.
-%pycommand% "%nut%" -t nsp xci -tfile "%prog_dir%splist.txt" -uin "%uinput%" -ff "uinput"
+%pycommand% "%nut%" -t nsp xci nsz xcz -tfile "%prog_dir%splist.txt" -uin "%uinput%" -ff "uinput"
 set /p eval=<"%uinput%"
 set eval=%eval:"=%
 setlocal enabledelayedexpansion
@@ -2258,8 +2261,8 @@ echo+ >"%uinput%"
 endlocal
 
 if /i "%eval%"=="0" goto manual_Reentry
-if /i "%eval%"=="1" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%splist.txt",mode=folder,ext=nsp xci ) 2>&1>NUL
-if /i "%eval%"=="2" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%splist.txt",mode=file,ext=nsp xci )  2>&1>NUL
+if /i "%eval%"=="1" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%splist.txt",mode=folder,ext=nsp xci nsz xcz ) 2>&1>NUL
+if /i "%eval%"=="2" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%splist.txt",mode=file,ext=nsp xci nsz xcz )  2>&1>NUL
 
 echo.
 :sp_checkagain
@@ -2279,7 +2282,7 @@ ECHO *************************************************
 echo Or Input "0" to return to the MODE SELECTION MENU
 ECHO *************************************************
 echo.
-%pycommand% "%nut%" -t nsp xci -tfile "%prog_dir%splist.txt" -uin "%uinput%" -ff "uinput"
+%pycommand% "%nut%" -t nsp xci nsz xcz -tfile "%prog_dir%splist.txt" -uin "%uinput%" -ff "uinput"
 set /p eval=<"%uinput%"
 set eval=%eval:"=%
 setlocal enabledelayedexpansion
@@ -2288,8 +2291,8 @@ endlocal
 
 if /i "%eval%"=="0" goto manual_Reentry
 if /i "%eval%"=="1" goto sp_start_cleaning
-if /i "%eval%"=="2" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%splist.txt",mode=folder,ext=nsp xci ) 2>&1>NUL
-if /i "%eval%"=="3" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%splist.txt",mode=file,ext=nsp xci )  2>&1>NUL
+if /i "%eval%"=="2" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%splist.txt",mode=folder,ext=nsp xci nsz xcz ) 2>&1>NUL
+if /i "%eval%"=="3" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%splist.txt",mode=file,ext=nsp xci nsz xcz )  2>&1>NUL
 if /i "%eval%"=="e" goto salida
 if /i "%eval%"=="i" goto sp_showlist
 if /i "%eval%"=="r" goto sp_r_files
@@ -2374,6 +2377,8 @@ if /i "%bs%"=="1" set "vrepack=nsp"
 if /i "%bs%"=="2" set "vrepack=xci"
 if /i "%bs%"=="3" set "vrepack=both"
 if %vrepack%=="none" goto sp_cl_wrongchoice
+if "%fatype%" EQU "-fat fat32" echo Fat32 selected, removing nsz and xcz from input list
+if "%fatype%" EQU "-fat fat32" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%splist.txt","ext=nsp nsx xci","token=False",Print="False" ) 
 cls
 call :program_logo
 for /f "tokens=*" %%f in (splist.txt) do (
@@ -2383,8 +2388,12 @@ set "end_folder=%%~nf"
 set "orinput=%%f"
 if "%%~nxf"=="%%~nf.nsp" call :split_content
 if "%%~nxf"=="%%~nf.NSP" call :split_content
+if "%%~nxf"=="%%~nf.nsz" call :split_content
+if "%%~nxf"=="%%~nf.NSZ" call :split_content
 if "%%~nxf"=="%%~nf.xci" call :split_content
 if "%%~nxf"=="%%~nf.XCI" call :split_content
+if "%%~nxf"=="%%~nf.xcz" call :split_content
+if "%%~nxf"=="%%~nf.XCZ" call :split_content
 %pycommand% "%nut%" --strip_lines "%prog_dir%splist.txt" "1" "true"
 setlocal enabledelayedexpansion
 if exist "%fold_output%\!end_folder!" RD /S /Q "%fold_output%\!end_folder!" >NUL 2>&1
@@ -2562,10 +2571,10 @@ if not errorlevel 1 goto DBcheckfolder
 if exist "%bs%\" goto DBcheckfolder
 goto DBcheckfile
 :DBcheckfolder
-%pycommand% "%nut%" -t nsp xci nsx -tfile "%prog_dir%DBL.txt" -ff "%targt%"
+%pycommand% "%nut%" -t nsp xci nsx nsz xcz -tfile "%prog_dir%DBL.txt" -ff "%targt%"
 goto DBcheckagain
 :DBcheckfile
-%pycommand% "%nut%" -t nsp xci nsx -tfile "%prog_dir%DBL.txt" -ff "%targt%"
+%pycommand% "%nut%" -t nsp xci nsx nsz xcz -tfile "%prog_dir%DBL.txt" -ff "%targt%"
 goto DBcheckagain
 echo.
 :DBcheckagain
@@ -2699,10 +2708,14 @@ set "ziptarget=%%f"
 if "%vrepack%" EQU "zip" ( set "zip_restore=true" )
 if "%%~nxf"=="%%~nf.nsp" call :DBnsp_manual
 if "%%~nxf"=="%%~nf.nsx" call :DBnsp_manual
+if "%%~nxf"=="%%~nf.nsz" call :DBnsp_manual
 if "%%~nxf"=="%%~nf.NSP" call :DBnsp_manual
 if "%%~nxf"=="%%~nf.NSX" call :DBnsp_manual
+if "%%~nxf"=="%%~nf.NSZ" call :DBnsp_manual
 if "%%~nxf"=="%%~nf.xci" call :DBnsp_manual
 if "%%~nxf"=="%%~nf.XCI" call :DBnsp_manual
+if "%%~nxf"=="%%~nf.xcz" call :DBnsp_manual
+if "%%~nxf"=="%%~nf.XCZ" call :DBnsp_manual
 %pycommand% "%nut%" --strip_lines "%prog_dir%DBL.txt" "1" "true"
 rem call :DBcontador_NF
 )
@@ -2852,7 +2865,7 @@ ECHO =============================     BY JULESONTHEROAD     ===================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                                POWERED BY SQUIRREL                                "
 ECHO "                    BASED ON THE WORK OF BLAWAR AND LUCA FRAGA                     "
-ECHO                                   VERSION 0.95 (NEW)
+ECHO                                   VERSION 0.96 (NEW)
 ECHO -------------------------------------------------------------------------------------                   
 ECHO Program's github: https://github.com/julesontheroad/NSC_BUILDER
 ECHO Blawar's github:  https://github.com/blawar
