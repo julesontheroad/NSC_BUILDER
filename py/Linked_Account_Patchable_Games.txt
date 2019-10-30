@@ -20,7 +20,6 @@ Arena of Valor BETA [DEMO][0100944009646000][v0][US].nsp - YES
 Arena of Valor BETA [DEMO][UPD][0100944009646800][v65536][WORLD].nsp - YES
 Arena of Valor [BASE][01008D8006A6A000][v0][US].nsp - YES
 Arena of Valor [UPD][01008D8006A6A800][v458752][WORLD].nsp - YES
-Asphalt 9 Legends [01007B000C834000][v0].nsp - NO
 Awkward [BASE][010073900A7A0000][v0][US].nsp - YES
 Bloodstained Ritual of the Night [BASE][0100BF500207C000][v0][US].nsp - YES
 Bloodstained Ritual of the Night [UPD][0100BF500207C800][v131072][WORLD].nsp - YES
@@ -35,7 +34,6 @@ DOOM II Classic [BASE][0100D4F00DD02000][v0][US].nsp - YES (NEEDS SAVE IMPORT WI
 DOOM II Classic [UPD][0100D4F00DD02800][v65536][WORLD].nsp - YES (NEEDS SAVE IMPORT WITH BNET ACCOUNT LINKED)
 Elemental Knights R [BASE][01005FA009370000][v0][US].nsp - YES
 Elemental Knights R [UPD][01005FA009370800][v262144][US].nsp - YES
-Eternal Card Game [0100F0B00A214000][v0].nsp - NO
 Fallout Shelter [BASE][010043500A17A000][v0][US].nsp - YES
 Fallout Shelter [UPD][010043500A17A800][v131072][WORLD].nsp - YES
 Fortnite [BASE][010025400AECE000][v0][US].nsp - YES
@@ -49,6 +47,7 @@ Lightseekers [UPD][01009EA00C792800][v196608][US].nsp - YES
 Magic Nations [BASE][0100F6600AC00000][v0][US].nsp - YES
 Mercury Race [BASE][0100C9A00B60A000][v0][US].nsp - YES
 Mercury Race [UPD][0100C9A00B60A800][v196608][US].nsp - YES
+MilkChoco [010056D00B0F4800][v65536].nsp - YES
 Modern Combat Blackout [BASE][0100D8700B712000][v0][US].nsp - YES
 Modern Combat Blackout [UPD][0100D8700B712800][v196608][US].nsp - YES
 Next Up Hero [BASE][0100271004570000][v0][US].nsp - YES
@@ -89,11 +88,14 @@ Warhammer Age of Sigmar Champions [UPD][010089A00C7B0800][v262144][US].nsp - YES
 -------------------------------------------------------------------------------------
 NOT PATCHABLE IN NSCB_V0.92
 -------------------------------------------------------------------------------------
+Asphalt 9 Legends [01007B000C834000][v0].nsp - NO
+Asphalt 9 Legends [01007B000C834800][v65536].nsp - NO
 BIOHAZARD 7 resident evil cloud version [BASE][01006EA00A294000][v0][JP].nsp - NO
 Danger Mouse The Danger Games [BASE][01003ED0099B0000][v0][US].nsp - NO
 Dead by Daylight [01004C400CF96000][v0].nsp - NO
 Dead by Daylight [UPD][01004C400CF96800][v65536][WORLD].nsp - NO
 Eiyudensetu AkatukinoKiseki Mobile [0100D4900DEF4000][v0].nsp
+Eternal Card Game [0100F0B00A214000][v0].nsp - NO
 Eternal Card Game [0100F0B00A214800][v196608].nsp - NO
 GALAK-Z Variant S [BASE][0100C9800A454000][v0][US].nsp - NO
 GALAK-Z Variant S [UPD][0100C9800A454800][v131072][US].nsp - NO
@@ -103,6 +105,7 @@ GetAmped Mobile [BASE][0100AA4008210000][v0][US].nsp - NO
 GetAmped Mobile [UPD][0100AA4008210800][v589824][US].nsp - NO
 Growtopia [BASE][010065F00BE6C000][v0][US].nsp - NO
 Growtopia [UPD][010065F00BE6C800][v131072][US].nsp - NO
+MilkChoco [BASE][010056D00B0F4000][v0][US].nsp - NO (requires patch)
 Mordheim Warband Skirmish [BASE][010071B009FB6000][v0][US].nsp - NO
 Mordheim Warband Skirmish [UPD][010071B009FB6800][v131072][WORLD].nsp - NO
 Nintendo Entertainment System - Nintendo Switch Online [BASE][0100D870045B6000][v0][US].nsp - NO
@@ -145,7 +148,7 @@ Doragonkuesuto Ⅹ onrain be-ta han [DEMO][UPD][0100459000302800][v327680][JAP].
 血咒之城：暗夜儀式 [BASE][010025A00DF2A000][v0][HK].nsx - UNTESTED
 Rally Rock 'N Racing [0100AFA00F048000][v0].nsx - UNTESTED
 Overwatch Legendary Edition [0100F8600E21E800][v65536].nsp - UNTESTED
-MilkChoco [010056D00B0F4800][v65536].nsp - UNTESTED
+
 
 -------------------------------------------------------------------------------------
 Thanks to my good friend "the tester"
