@@ -171,8 +171,86 @@ echo DONE
 call :thumbup
 )
 
+::*************
+::FOR NSZ FILES
+::*************
+for /r "%~1" %%f in (*.nsz) do (
+set "target=%%f"
+if exist "%w_folder%" RD /s /q "%w_folder%" >NUL 2>&1
+
+set "filename=%%~nf"
+set "orinput=%%f"
+set "showname=%orinput%"
+
+MD "%w_folder%"
+REM echo %safe_var%>safe.txt
+call :squirrell
+
+if "%zip_restore%" EQU "true" ( set "ziptarget=%%f" )
+if "%zip_restore%" EQU "true" ( call :makezip )
+call :getname
+REM setlocal enabledelayedexpansion
+REM set vpack=!vrepack!
+REM endlocal & ( set "vpack=!vrepack!" )
+
+REM if "%trn_skip%" EQU "true" ( call :check_titlerights )
+if "%vrename%" EQU "true" ( call :addtags_from_nsp )
+
+if "%vrepack%" EQU "nsp" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "nsp" -dc "%%f" )
+if "%vrepack%" EQU "xci" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "xci" -dc "%%f" )
+if "%vrepack%" EQU "both" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "both" -dc "%%f" )
+
+if not exist "%fold_output%" MD "%fold_output%" >NUL 2>&1
+
+move "%w_folder%\*.xci" "%fold_output%" >NUL 2>&1
+move  "%w_folder%\*.xc*" "%fold_output%" >NUL 2>&1
+move "%w_folder%\*.nsp" "%fold_output%" >NUL 2>&1
+move "%w_folder%\*.ns*" "%fold_output%" >NUL 2>&1
+if exist "%w_folder%\*.zip" ( MD "%zip_fold%" ) >NUL 2>&1
+move "%w_folder%\*.zip" "%zip_fold%" >NUL 2>&1
+if exist "%w_folder%\archfolder" ( %pycommand% "%nut%" -ifo "%w_folder%\archfolder" -archive "%fold_output%\%filename%.nsp" )
+
+RD /S /Q "%w_folder%" >NUL 2>&1
+echo DONE
+call :thumbup
+)
+
 ::FOR XCI FILES
 for /r "%~1" %%f in (*.xci) do (
+if exist "%w_folder%" rmdir /s /q "%w_folder%" >NUL 2>&1
+set "filename=%%~nf"
+set "orinput=%%f"
+set "showname=%orinput%"
+
+MD "%w_folder%"
+call :getname
+if "%vrename%" EQU "true" ( call :addtags_from_xci )
+
+if "%vrepack%" EQU "nsp" (  %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "nsp" -dc "%%f" )
+if "%vrepack%" EQU "xci" (  %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "xci" -dc "%%f" )
+if "%vrepack%" EQU "both" (  %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "both" -dc "%%f" )
+
+if not exist "%fold_output%" MD "%fold_output%" >NUL 2>&1
+
+move "%w_folder%\*.xci" "%fold_output%" >NUL 2>&1
+move  "%w_folder%\*.xc*" "%fold_output%" >NUL 2>&1
+move "%w_folder%\*.nsp" "%fold_output%" >NUL 2>&1
+move "%w_folder%\*.ns*" "%fold_output%" >NUL 2>&1
+if exist "%w_folder%\*.zip" ( MD "%zip_fold%" ) >NUL 2>&1
+move "%w_folder%\*.zip" "%zip_fold%" >NUL 2>&1
+if exist "%w_folder%\archfolder" ( %pycommand% "%nut%" -ifo "%w_folder%\archfolder" -archive "%fold_output%\%filename%.nsp" )
+
+RD /S /Q "%w_folder%" >NUL 2>&1
+echo DONE
+call :thumbup
+)
+ECHO ---------------------------------------------------
+ECHO *********** ALL FILES WERE PROCESSED! ************* 
+ECHO ---------------------------------------------------
+goto aut_exit_choice
+
+::FOR XCZ FILES
+for /r "%~1" %%f in (*.xcz) do (
 if exist "%w_folder%" rmdir /s /q "%w_folder%" >NUL 2>&1
 set "filename=%%~nf"
 set "orinput=%%f"
@@ -310,7 +388,7 @@ MD "%w_folder%"
 if exist "%prog_dir%mlist.txt" del "%prog_dir%mlist.txt" >NUL 2>&1
 
 echo - Generating filelist
-%pycommand% "%nut%" -t nsp xci -tfile "%prog_dir%mlist.txt" -ff "%~1"
+%pycommand% "%nut%" -t nsp xci nsz xcz -tfile "%prog_dir%mlist.txt" -ff "%~1"
 echo   DONE
 
 if "%vrepack%" EQU "nsp" echo ......................................
@@ -466,6 +544,8 @@ goto s_KeyChange_skip
 call :program_logo
 if "%~x1"==".nsp" ( goto nsp )
 if "%~x1"==".xci" ( goto xci )
+if "%~x1"==".nsz" ( goto nsp )
+if "%~x1"==".xcz" ( goto xci )
 if "%~x1"==".*" ( goto other )
 :other
 echo No valid file was dragged. The program only accepts xci or nsp files.
@@ -1541,7 +1621,7 @@ ECHO *************************************************
 echo Or Input "0" to return to the MODE SELECTION MENU
 ECHO *************************************************
 echo.
-%pycommand% "%nut%" -t nsp xci -tfile "%prog_dir%mlist.txt" -uin "%uinput%" -ff "uinput"
+%pycommand% "%nut%" -t nsp xci nsz xcz -tfile "%prog_dir%mlist.txt" -uin "%uinput%" -ff "uinput"
 set /p eval=<"%uinput%"
 set eval=%eval:"=%
 setlocal enabledelayedexpansion
