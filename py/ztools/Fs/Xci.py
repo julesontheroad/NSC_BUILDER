@@ -8217,33 +8217,33 @@ class Xci(File):
 	def verify_hash_nca(self,buffer,headerlist,didverify,feed):	
 		verdict=True		
 		if feed == False:
-			feed=''			
+			feed=''				
 		message='\n***************';print(message);feed+=message+'\n'
 		message=('HASH TEST');print(message);feed+=message+'\n'
-		message='***************';print(message);feed+=message+'\n'												
+		message='***************';print(message);feed+=message+'\n'														
 		for nspF in self.hfs0:
 			if str(nspF._path)=="secure":
 				for f in nspF:						
-					if type(f) == Nca:	
+					if type(f) == Nca:
 						origheader=False
 						for i in range(len(headerlist)):
 							if str(f._path)==headerlist[i][0]:
 								origheader=headerlist[i][1]
-								break
-						#print(origheader)		
+								listedhash=headerlist[i][2]
+								break		
 						message=(str(f.header.titleId)+' - '+str(f.header.contentType));print(message);feed+=message+'\n'
 						ncasize=f.header.size						
-						t = tqdm(total=ncasize, unit='B', unit_scale=True, leave=False)
+						t = tqdm(total=ncasize, unit='B', unit_scale=True, leave=False)	
 						i=0		
 						f.rewind();
 						rawheader=f.read(0xC00)
-						f.rewind()
-						for data in iter(lambda: f.read(int(buffer)), ""):	
+						f.rewind()												
+						for data in iter(lambda: f.read(int(buffer)), ""):				
 							if i==0:	
 								sha=sha256()
 								f.seek(0xC00)
 								sha.update(rawheader)
-								if origheader != False:
+								if origheader != False and listedhash == False:
 									sha0=sha256()
 									sha0.update(origheader)	
 								i+=1
@@ -8251,15 +8251,17 @@ class Xci(File):
 								f.flush()
 							else:		
 								sha.update(data)
-								if origheader != False:
+								if origheader != False and listedhash == False:
 									sha0.update(data)								
 								t.update(len(data))
 								f.flush()
 								if not data:				
-									break							
+									break						
 						t.close()	
 						sha=sha.hexdigest()	
-						if origheader != False:
+						if listedhash != False:
+							sha0=listedhash
+						elif origheader != False:
 							sha0=sha0.hexdigest()						
 						message=('  - File name: '+f._path);print(message);feed+=message+'\n'
 						message=('  - SHA256: '+sha);print(message);feed+=message+'\n'
@@ -8280,11 +8282,17 @@ class Xci(File):
 						else:
 							message=('   > FILE IS CORRUPT');print(message);feed+=message+'\n'
 							verdict = False
-						message=('');print(message);feed+=message+'\n'			
+						message=('');print(message);feed+=message+'\n'	
+		if str(self.path).endswith('.xcz'):
+			token='XCZ'
+		elif str(self.path).endswith('.xci'):
+			token='XCI'			
+		else:
+			token='XCI'					
 		if verdict == False:
-			message=("VERDICT: XCI FILE IS CORRUPT");print(message);feed+=message+'\n'
+			message=("VERDICT: {} FILE IS CORRUPT").format(token);print(message);feed+=message+'\n'
 		if verdict == True:	
-			message=('VERDICT: XCI FILE IS CORRECT');print(message);feed+=message+'\n'
+			message=('VERDICT: {} FILE IS CORRECT').format(token);print(message);feed+=message+'\n'
 		return 	verdict,feed						
 		
 	def verify_enforcer(self,nca):
