@@ -546,6 +546,7 @@ class Nsp(Pfs0):
 						nca.header.setCryptoType2(0)
 
 	def nsptype(self):
+		T_='UNKNOWN';
 		for nca in self:
 			if type(nca) == Nca:	
 				if 	str(nca.header.contentType) == 'Content.META':
@@ -553,12 +554,14 @@ class Nsp(Pfs0):
 						for cnmt in f:
 							content_type_cnmt=str(cnmt._path)
 							content_type_cnmt=content_type_cnmt[:-22]
-							if content_type_cnmt == 'Patch':
-								return 'UPDATE'
-							if content_type_cnmt == 'AddOnContent':
-								return 'DLC'
+							if content_type_cnmt == 'Patch' and T_=='UNKNOWN':
+								T_='UPDATE'
+							if content_type_cnmt == 'AddOnContent' and T_=='UNKNOWN':
+								T_='DLC'
 							if content_type_cnmt == 'Application':	
-								return 'BASE'							
+								T_='BASE'	
+								return T_	
+		return T_								
 
 	def removeTitleRights(self):
 		if not Titles.contains(self.titleId):

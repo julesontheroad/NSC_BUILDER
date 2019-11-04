@@ -3424,7 +3424,7 @@ if __name__ == '__main__':
 							f.close()
 						except BaseException as e:
 							Print.error('Exception: ' + str(e))
-					if export=='xci':
+					elif export=='xci':
 						try:
 							print("Processing: " + filepath)
 							f = Fs.factory(filepath)
@@ -3438,7 +3438,7 @@ if __name__ == '__main__':
 							f.close()
 						except BaseException as e:
 							Print.error('Exception: ' + str(e))
-					if export=='both':
+					elif export=='both':
 						try:
 							print("Processing: " + filepath)
 							f = Fs.factory(filepath)
@@ -3481,7 +3481,7 @@ if __name__ == '__main__':
 							f.close()
 						except BaseException as e:
 							Print.error('Exception: ' + str(e))
-					if export=='xci':
+					elif export=='xci':
 						try:
 							print("Processing: " + filepath)
 							f = Fs.factory(filepath)
@@ -3495,7 +3495,7 @@ if __name__ == '__main__':
 							f.close()
 						except BaseException as e:
 							Print.error('Exception: ' + str(e))
-					if export=='both':
+					elif export=='both':
 						try:
 							print("Processing: " + filepath)
 							f = Fs.factory(filepath)
