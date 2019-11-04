@@ -1331,38 +1331,7 @@ class Nsp(Pfs0):
 						if not data:
 							fp.close()
 							break		
-
-	def test(self):
-		for nca in self:
-			if type(nca) == Nca:
-				if 	str(nca.header.contentType) == 'Content.PROGRAM':
-					masterKeyRev = nca.header.getCryptoType2()	
-					encKeyBlock = nca.header.getKeyBlock()
-					key = Keys.keyAreaKey(Keys.getMasterKeyIndex(masterKeyRev), nca.header.keyIndex)
-					crypto = aes128.AESECB(key)
-					decKeyBlock = crypto.decrypt(encKeyBlock[:16])							
-					print ("- Encrypted titlekey: "+str(hx(decKeyBlock)))
-					titleKeyEnc = Keys.encryptTitleKey(decKeyBlock, Keys.getMasterKeyIndex(masterKeyRev))
-					print ("- Restored titlekey: "+str(hx(titleKeyEnc)))
-					'''nca.rewind()
-					sig1=nca.read(0x100)
-					sig2=nca.read(0x100)					
-					val=nca.read(0x200)
-					pub = 0x10001
-					mod='BFBE406CF4A780E9F07D0C99611D772F96BC4B9E58381B03ABB175499F2B4D5834B005A37522BE1A3F0373AC7068D116B904465EB707912F078B26DEF60007B2B451F80D0A5E58ADEBBC9AD649B964EFA782B5CF6D7013B00F85F6A908AA4D676687FA89FF7590181E6B3DE98A68C92604D980CE3F5E92CE01FF063BF2C1A90CCE026F16BC92420A4164CD52B6344DAEC02EDEA4DF27683CC1A060AD43F3FC86C13E6C46F77C299FFAFDF0E3CE64E735F2F656566F6DF1E242B08340A5C3202BCC9AAECAED4D7030A8701C70FD1363290279EAD2A7AF3528321C7BE62F1AAA407E328C2742FE8278EC0DEBE6834B6D8104401A9E9A67F67229FA04F09DE4F403'
-					mod= bytes.fromhex(mod)
-					mod = int(hx(mod), 16)		
-					crypto = pss.new(RSA.construct([mod, pub]))
-					print (crypto)
-					sha = newsha.new(val)
-					print (sha)
-					crypto.sign(sha)
-					print(sig1)
-					print(crypto)'''
-
-
-					
-				
+	
 	def copy_nca_data(self,ofolder,buffer):
 		for nca in self:
 			if type(nca) == Nca:
@@ -8243,7 +8212,7 @@ class Nsp(Pfs0):
 					for f in self:	
 						if str(f._path).endswith('.nca'):									
 							if checktik == False and f.header.getRightsId() != 0:
-								checktik = self.verify_key(str(f._path),tikfile)	
+								checktik = self.verify_key(str(f._path),tikfile)	 
 								if 	checktik == True:
 									break		
 					if checktik==False and str(self._path).endswith('.nsz'):
@@ -8695,9 +8664,19 @@ class Nsp(Pfs0):
 				check=self.verify_key(nca,str(file._path))
 				if check==True:
 					break
-		return check,titleKey								
+		return check,titleKey		
+
+	def verify_input_key(self,userkey):
+		check=False;
+		for nca in self:	
+			if type(nca) == Nca:
+				if nca.header.getRightsId() != 0:
+					check=self.verify_key(nca._path,False,userkey)
+					if check==True:
+						break
+		return check		
 							
-	def verify_key(self,nca,ticket):
+	def verify_key(self,nca,ticket,userkey=False):
 		verticket=ticket
 		for file in self:
 			if type(file) == Nca:
@@ -8712,21 +8691,28 @@ class Nsp(Pfs0):
 					masterKeyRev=file.header.getCryptoType2()	
 				if str(file._path) == nca:						
 					break			
-
-		for file in self:
-			if type(file) == Ticket:
-				if ticket != False:
-					if str(file._path) == ticket:
+		if userkey==False:
+			for file in self:
+				if type(file) == Ticket:
+					if ticket != False:
+						if str(file._path) == ticket:
+							titleKeyDec = Keys.decryptTitleKey(file.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(masterKeyRev))
+							rightsId = file.getRightsId()
+							break
+					else:
+						ticket = str(file._path)
 						titleKeyDec = Keys.decryptTitleKey(file.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(masterKeyRev))
-						rightsId = file.getRightsId()
-						break
-				else:
-					ticket = str(file._path)
-					titleKeyDec = Keys.decryptTitleKey(file.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(masterKeyRev))
-					rightsId = file.getRightsId()									
-									
-		decKey = titleKeyDec
-		
+						rightsId = file.getRightsId()									
+		else:
+			encKey=bytes.fromhex(userkey)
+			titleKeyDec = Keys.decryptTitleKey(encKey, Keys.getMasterKeyIndex(masterKeyRev))
+			verticket=True
+			print('\nTesting {} with:'.format(nca))
+			print('- Keygeneration {}'.format(masterKeyRev))			
+			print('- Encrypted key {}'.format(str(hx(encKey))[2:-1]))
+			print('- Decrypted key {}'.format(str(hx(titleKeyDec))[2:-1]))
+			
+		decKey = titleKeyDec		
 		for f in self:
 			if str(f._path) == nca:
 				if type(f) == Fs.Nca and f.header.getRightsId() != 0:
