@@ -7024,7 +7024,7 @@ class ChromeXci(File):
 		verdict = True		
 		checktik=False		
 		
-		feed=self.html_feed(feed,2,message=('DECRIPTION TEST:'))	
+		feed=self.html_feed(feed,2,message=('DECRYPTION TEST:'))	
 		
 		for nspF in self.hfs0:
 			if str(nspF._path)=="secure":

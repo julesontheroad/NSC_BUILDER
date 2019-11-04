@@ -8136,7 +8136,7 @@ class Nsp(Pfs0):
 		verdict = True		
 		checktik=False		
 		message='***************';print(message);feed+=message+'\n'
-		message='DECRIPTION TEST';print(message);feed+=message+'\n'
+		message='DECRYPTION TEST';print(message);feed+=message+'\n'
 		message='***************';print(message);feed+=message+'\n'	
 		for file in self:
 			if str(file._path).endswith('.nca'):		
