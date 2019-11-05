@@ -105,7 +105,7 @@ if __name__ == '__main__':
 		parser.add_argument('-nscdb', '--addtodb', nargs='+', help='Adds content to database')
 		parser.add_argument('-nscdb_new', '--addtodb_new', nargs='+', help='Adds content to database')
 		parser.add_argument('-v', '--verify', nargs='+', help='Verify nsp or xci file')
-
+		parser.add_argument('-vk', '--verify_key', nargs='+', help='Verify a key against a preorder nsp\nsx')
 		# CNMT Flag funtions
 		parser.add_argument('--set_cnmt_titleid', nargs='+', help='Changes cnmt.nca titleid')
 		parser.add_argument('--set_cnmt_version', nargs='+', help='Changes cnmt.nca version number')
@@ -3424,7 +3424,7 @@ if __name__ == '__main__':
 							f.close()
 						except BaseException as e:
 							Print.error('Exception: ' + str(e))
-					if export=='xci':
+					elif export=='xci':
 						try:
 							print("Processing: " + filepath)
 							f = Fs.factory(filepath)
@@ -3438,7 +3438,7 @@ if __name__ == '__main__':
 							f.close()
 						except BaseException as e:
 							Print.error('Exception: ' + str(e))
-					if export=='both':
+					elif export=='both':
 						try:
 							print("Processing: " + filepath)
 							f = Fs.factory(filepath)
@@ -3481,7 +3481,7 @@ if __name__ == '__main__':
 							f.close()
 						except BaseException as e:
 							Print.error('Exception: ' + str(e))
-					if export=='xci':
+					elif export=='xci':
 						try:
 							print("Processing: " + filepath)
 							f = Fs.factory(filepath)
@@ -3495,7 +3495,7 @@ if __name__ == '__main__':
 							f.close()
 						except BaseException as e:
 							Print.error('Exception: ' + str(e))
-					if export=='both':
+					elif export=='both':
 						try:
 							print("Processing: " + filepath)
 							f = Fs.factory(filepath)
@@ -3995,6 +3995,7 @@ if __name__ == '__main__':
 				endname = re.sub(r'[Ⅺ]', 'XI', endname);endname = re.sub(r'[Ⅻ]', 'XII', endname)
 				endname = re.sub(r'[Ⅼ]', 'L', endname);endname = re.sub(r'[Ⅽ]', 'C', endname)
 				endname = re.sub(r'[Ⅾ]', 'D', endname);endname = re.sub(r'[Ⅿ]', 'M', endname)
+				endname = re.sub(r'[—]', '-', endname);
 				endname = re.sub(r'[àâá@äå]', 'a', endname);endname = re.sub(r'[ÀÂÁÄÅ]', 'A', endname)
 				endname = re.sub(r'[èêéë]', 'e', endname);endname = re.sub(r'[ÈÊÉË]', 'E', endname)
 				endname = re.sub(r'[ìîíï]', 'i', endname);endname = re.sub(r'[ÌÎÍÏ]', 'I', endname)
@@ -6789,6 +6790,7 @@ if __name__ == '__main__':
 					endname = re.sub(r'[Ⅺ]', 'XI', endname);endname = re.sub(r'[Ⅻ]', 'XII', endname)
 					endname = re.sub(r'[Ⅼ]', 'L', endname);endname = re.sub(r'[Ⅽ]', 'C', endname)
 					endname = re.sub(r'[Ⅾ]', 'D', endname);endname = re.sub(r'[Ⅿ]', 'M', endname)
+					endname = re.sub(r'[—]', '-', endname);
 					endname = re.sub(r'[àâá@äå]', 'a', endname);endname = re.sub(r'[ÀÂÁÄÅ]', 'A', endname)
 					endname = re.sub(r'[èêéë]', 'e', endname);endname = re.sub(r'[ÈÊÉË]', 'E', endname)
 					endname = re.sub(r'[ìîíï]', 'i', endname);endname = re.sub(r'[ÌÎÍÏ]', 'I', endname)
@@ -7072,6 +7074,7 @@ if __name__ == '__main__':
 			endname = re.sub(r'[Ⅺ]', 'XI', endname);endname = re.sub(r'[Ⅻ]', 'XII', endname)
 			endname = re.sub(r'[Ⅼ]', 'L', endname);endname = re.sub(r'[Ⅽ]', 'C', endname)
 			endname = re.sub(r'[Ⅾ]', 'D', endname);endname = re.sub(r'[Ⅿ]', 'M', endname)
+			endname = re.sub(r'[—]', '-', endname);
 			endname = re.sub(r'[àâá@äå]', 'a', endname);endname = re.sub(r'[ÀÂÁÄÅ]', 'A', endname)
 			endname = re.sub(r'[èêéë]', 'e', endname);endname = re.sub(r'[ÈÊÉË]', 'E', endname)
 			endname = re.sub(r'[ìîíï]', 'i', endname);endname = re.sub(r'[ÌÎÍÏ]', 'I', endname)
@@ -7199,6 +7202,7 @@ if __name__ == '__main__':
 							endname = re.sub(r'[Ⅺ]', 'XI', endname);endname = re.sub(r'[Ⅻ]', 'XII', endname)
 							endname = re.sub(r'[Ⅼ]', 'L', endname);endname = re.sub(r'[Ⅽ]', 'C', endname)
 							endname = re.sub(r'[Ⅾ]', 'D', endname);endname = re.sub(r'[Ⅿ]', 'M', endname)
+							endname = re.sub(r'[—]', '-', endname);
 							endname = re.sub(r'[àâá@äå]', 'a', endname);endname = re.sub(r'[ÀÂÁÄÅ]', 'A', endname)
 							endname = re.sub(r'[èêéë]', 'e', endname);endname = re.sub(r'[ÈÊÉË]', 'E', endname)
 							endname = re.sub(r'[ìîíï]', 'i', endname);endname = re.sub(r'[ÌÎÍÏ]', 'I', endname)
@@ -7235,7 +7239,30 @@ if __name__ == '__main__':
 			Status.close()
 		# ...................................................
 		# Verify. File verification
-		# ...................................................
+		# ...................................................	
+		if args.verify_key:		
+			if isinstance(args.verify_key, list):
+				filepath=args.verify_key[0]
+				userkey=args.verify_key[1]
+				userkey=str(userkey).upper()
+				if filepath.endswith('.nsp') or filepath.endswith('.nsx'):
+					basename=str(os.path.basename(os.path.abspath(filepath)))
+					try:
+						f = Fs.Nsp(filepath, 'rb')
+						check=f.verify_input_key(userkey)
+						f.flush()
+						f.close()
+						if check==True:
+							print(('\nTitlekey {} is correct for '.format(userkey)).upper()+('"{}"').format(basename))
+							print("-- YOU CAN UNLOCK AND ENJOY THE GAME --")	
+						else:
+							print(('\nTitlekey {} is incorrect for '.format(userkey)).upper()+('"{}"').format(basename))
+							print("-- BETTER LUCK NEXT TIME --")	
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))
+			else:
+				print('Missing arguments')
+	
 		if args.verify:
 			feed=''
 			if args.vertype:

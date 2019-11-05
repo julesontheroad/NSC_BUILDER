@@ -21,6 +21,13 @@ Luca Fraga's github: https://github.com/LucaFraga
 ---------------
 0. Changelog
 ---------------
+v0.96c - bugfixes:
+	- Fix bug where rsv changed cnmt.nca files won't get it's has verified properly.
+	- Fix bug where individual mode will only output multi-nsp files as nsp when the user choose
+	  xci as output.
+v0.96b - bugfixes:
+	- Added xcz and nsz extension in the multi mode. In the latest release due to an overlook it was added only in the first input shown when the user enters in the multimode.
+	- Added extensions to the current auto functions.
 v0.96 - nsz and xcz as input for most funtions:
 	- Added nsz and xcz as input to several functions. Though some were alredy added
 	  i'll recapitulate the current state of all functions regarding nsz\xcz support.

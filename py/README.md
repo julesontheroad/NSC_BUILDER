@@ -210,7 +210,7 @@ Pack xci or nsp in fat32 compatible formats or exfat format.
   * Basically same as before ignoring pywin32 that NSCB uses to set the archive bit in folders	
   * Replace the eel files for the ones in the master like explained above.	
   * Run squirrel with:
-	squirrel.py -lib_call Interface starting
+	squirrel.py -lib_call Interface start
   * Or wait a few days for a build if you don't like python
 
 ## 8. File_Info Gui examples:

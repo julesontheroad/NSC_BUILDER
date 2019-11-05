@@ -7344,7 +7344,7 @@ class ChromeNsp(Pfs0):
 		delta = False
 		verdict = True		
 		checktik=False		
-		feed=self.html_feed(feed,2,message=('DECRIPTION TEST:'))	
+		feed=self.html_feed(feed,2,message=('DECRYPTION TEST:'))	
 		for file in self:
 			if str(file._path).endswith('.nca'):		
 				listed_files.append(str(file._path))

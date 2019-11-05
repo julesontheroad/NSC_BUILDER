@@ -7803,7 +7803,7 @@ class Xci(File):
 		checktik=False		
 		
 		message='***************';print(message);feed+=message+'\n'
-		message='DECRIPTION TEST';print(message);feed+=message+'\n'
+		message='DECRYPTION TEST';print(message);feed+=message+'\n'
 		message='***************';print(message);feed+=message+'\n'	
 		
 		for nspF in self.hfs0:
@@ -8017,23 +8017,24 @@ class Xci(File):
 		return verdict,feed	
 			
 	def verify_sig(self,feed,tmpfolder):	
-		hlisthash=False	
+		hlisthash=False
 		if feed == False:
 			feed=''	
 		verdict=True	
 		headerlist=list()
-		keygenerationlist=list()		
-		message='***************';print(message);feed+='\n'+message+'\n'
+		keygenerationlist=list()
+		message='****************';print(message);feed+='\n'+message+'\n'
 		message='SIGNATURE 1 TEST';print(message);feed+=message+'\n'
-		message='***************';print(message);feed+=message+'\n'		
+		message='****************';print(message);feed+=message+'\n'	
 		for nspF in self.hfs0:
 			if str(nspF._path)=="secure":
 				for f in nspF:					
 					if type(f) == Nca and f.header.contentType != Type.Content.META:
 						hlisthash=False
 						message=(str(f.header.titleId)+' - '+str(f.header.contentType));print(message);feed+=message+'\n'											
-						verify,origheader,ncaname,feed,origkg,tr,tkey,iGC=f.verify(feed)				
-						headerlist.append([ncaname,origheader,hlisthash,tr,tkey,iGC])
+						verify,origheader,ncaname,feed,origkg,tr,tkey,iGC=f.verify(feed)		
+						# headerlist.append([ncaname,origheader,hlisthash])		
+						headerlist.append([ncaname,origheader,hlisthash,tr,tkey,iGC])					
 						keygenerationlist.append([ncaname,origkg])
 						if verdict == True:
 							verdict=verify
@@ -8053,14 +8054,13 @@ class Xci(File):
 		for nspF in self.hfs0:
 			if str(nspF._path)=="secure":
 				for f in nspF:
-					hlisthash=False
 					if type(f) == Nca and f.header.contentType == Type.Content.META:
+						hlisthash=False
 						meta_nca=f._path
 						f.rewind();meta_dat=f.read()
 						message=(str(f.header.titleId)+' - '+str(f.header.contentType));print(message);feed+=message+'\n'	
 						targetkg,minrsv=self.find_addecuatekg(meta_nca,keygenerationlist)
-						verify,origheader,ncaname,feed,origkg,tr,tkey,iGC=f.verify(feed)
-						#print(targetkg)				
+						verify,origheader,ncaname,feed,origkg,tr,tkey,iGC=f.verify(feed)			
 						if verify == False:
 							tempfile=os.path.join(tmpfolder,meta_nca)
 							if not os.path.exists(tmpfolder):
@@ -8124,34 +8124,35 @@ class Xci(File):
 										fp = Fs.Nca(tempfile, 'r+b')
 										progress=True
 										verify,origheader,ncapath,feed,origkg,tr,tkey,iGC=fp.verify(feed,targetkg,rsv_endcheck,progress,t)	
-										fp.close()		
+										fp.close()
 										t.update(1)	
 										if verify == True:
 											t.close()	
 											message=(tabs+'* '+"RSV WAS CHANGED FROM "+str(verNumber)+" TO "+str(minrsv));print(message);feed+=message+'\n'	
 											message=(tabs+'* '+"THE CNMT FILE IS CORRECT");print(message);feed+=message+'\n'										
 											hlisthash=True	
-											cnmtdidverify=True
+											cnmtdidverify=True										
 											break
-								else:break							
-						try:
-							t.close()
-						except:pass
-						if hlisthash == True:
-							fp = Fs.Nca(tempfile, 'r+b')
-							fp.rewind()
-							data=fp.read()
-							origheader=data
-							sha0=sha256(data)
-							hlisthash=sha0.hexdigest()
-							# print(sha0)
-							fp.flush()		
-							fp.close()						
-						headerlist.append([ncaname,origheader,hlisthash,tr,tkey,iGC])	
-						message='';print(message);feed+=message+'\n'
+								else:break
+						else:		
+							try:
+								t.close()
+							except:pass
+							if hlisthash == True:
+								fp = Fs.Nca(tempfile, 'r+b')
+								fp.rewind()
+								data=fp.read()
+								origheader=data
+								sha0=sha256(data)
+								hlisthash=sha0.hexdigest()
+								# print(sha0)
+								fp.flush()		
+								fp.close()						
+							headerlist.append([ncaname,origheader,hlisthash,tr,tkey,iGC])	
+							message='';print(message);feed+=message+'\n'		
 		try:
 			shutil.rmtree(tmpfolder)
-		except:pass								
+		except:pass				
 		if str(self.path).endswith('.xcz'):
 			token='XCZ'
 		elif str(self.path).endswith('.xci'):
@@ -8256,7 +8257,7 @@ class Xci(File):
 								t.update(len(data))
 								f.flush()
 								if not data:				
-									break						
+									break											
 						t.close()	
 						sha=sha.hexdigest()	
 						if listedhash != False:
@@ -8276,10 +8277,13 @@ class Xci(File):
 								message=('   > FILE IS CORRUPT');print(message);feed+=message+'\n'
 								verdict = False	
 						elif  f.header.contentType == Type.Content.META and didverify == True:		
-							message=('   > RSV WAS CHANGED');print(message);feed+=message+'\n'
+							if listedhash != False:
+								message=('  - ORIG_SHA256: '+sha0);print(message);feed+=message+'\n'	
 							#print('   > CHECKING INTERNAL HASHES')								
-							message=('     * FILE IS CORRECT');print(message);feed+=message+'\n'							
+							message=('   > FILE IS CORRECT');print(message);feed+=message+'\n'							
 						else:
+							if listedhash != False:
+								message=('  - ORIG_SHA256: '+sha0);print(message);feed+=message+'\n'							
 							message=('   > FILE IS CORRUPT');print(message);feed+=message+'\n'
 							verdict = False
 						message=('');print(message);feed+=message+'\n'	
