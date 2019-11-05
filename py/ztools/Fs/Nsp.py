@@ -8449,21 +8449,22 @@ class Nsp(Pfs0):
 									cnmtdidverify=True
 									break
 						else:break
-				try:
-					t.close()
-				except:pass
-				if hlisthash == True:
-					fp = Fs.Nca(tempfile, 'r+b')
-					fp.rewind()
-					data=fp.read()
-					origheader=data
-					sha0=sha256(data)
-					hlisthash=sha0.hexdigest()
-					# print(sha0)
-					fp.flush()		
-					fp.close()						
-				headerlist.append([ncaname,origheader,hlisthash,tr,tkey,iGC])	
-				message='';print(message);feed+=message+'\n'		
+				else:		
+					try:
+						t.close()
+					except:pass
+					if hlisthash == True:
+						fp = Fs.Nca(tempfile, 'r+b')
+						fp.rewind()
+						data=fp.read()
+						origheader=data
+						sha0=sha256(data)
+						hlisthash=sha0.hexdigest()
+						# print(sha0)
+						fp.flush()		
+						fp.close()						
+					headerlist.append([ncaname,origheader,hlisthash,tr,tkey,iGC])	
+					message='';print(message);feed+=message+'\n'			
 		try:
 			shutil.rmtree(tmpfolder)
 		except:pass					
@@ -8587,11 +8588,14 @@ class Nsp(Pfs0):
 					else:
 						message=('   > FILE IS CORRUPT');print(message);feed+=message+'\n'
 						verdict = False	
-				elif  f.header.contentType == Type.Content.META and didverify == True:		
-					message=('   > RSV WAS CHANGED');print(message);feed+=message+'\n'
+				elif  f.header.contentType == Type.Content.META and didverify == True:
+					if listedhash != False:
+						message=('  - ORIG_SHA256: '+sha0);print(message);feed+=message+'\n'					
 					#print('   > CHECKING INTERNAL HASHES')								
-					message=('     * FILE IS CORRECT');print(message);feed+=message+'\n'							
+					message=('   > FILE IS CORRECT');print(message);feed+=message+'\n'							
 				else:
+					if listedhash != False:
+						message=('  - ORIG_SHA256: '+sha0);print(message);feed+=message+'\n'				
 					message=('   > FILE IS CORRUPT');print(message);feed+=message+'\n'
 					verdict = False
 				message=('');print(message);feed+=message+'\n'	
