@@ -300,19 +300,28 @@ def check_region_file(region):
 	f='nutdb_'+region+'.json'
 	regionfile=os.path.join(DATABASE_folder,f)		
 	if not os.path.exists(regionfile):
-		get_regionDB(region)
-		return True			
+		try:
+			get_regionDB(region)
+			return True		
+		except:
+			return False
 	elif (time.time() - os.path.getmtime(regionfile)) > (th*60*60+tm*60+ts):
-		get_regionDB(region)	
-		return True			
+		try:
+			get_regionDB(region)	
+			return True	
+		except:
+			return False
 	else:
 		try:
 			with open(regionfile) as json_file:
 				pass
 				return 'Refresh time limit not reached'
 		except:
-			get_regionDB(region)	
-			return True
+			try:
+				get_regionDB(region)	
+				return True
+			except:
+				return False
 	return	False							
 			
 def check_other_file(dbfile,dbname):	
@@ -329,19 +338,28 @@ def check_other_file(dbfile,dbname):
 	f='nutdb_'+enderf+ext
 	_dbfile_=os.path.join(DATABASE_folder,f)		
 	if not os.path.exists(_dbfile_):
-		get_otherDB(dbfile,dbname,f)
-		return True
+		try:
+			get_otherDB(dbfile,dbname,f)
+			return True
+		except:
+			return False
 	elif (time.time() - os.path.getmtime(_dbfile_)) > (th*60*60+tm*60+ts):
-		get_otherDB(dbfile,dbname,f)	
-		return True		
+		try:
+			get_otherDB(dbfile,dbname,f)	
+			return True	
+		except:
+			return False
 	else:
 		try:
 			with open(_dbfile_) as json_file:
 				pass
 				return 'Refresh time limit not reached'
 		except:
-			get_otherDB(dbfile,dbname,f)
-			return True
+			try:
+				get_otherDB(dbfile,dbname,f)
+				return True
+			except:
+				return False
 	return	False
 
 def get_otherDB(dbfile,dbname,f):
@@ -417,14 +435,17 @@ def get_regionDB(region):
 		return False		
 		
 def force_refresh():
-	getnutdb()
-	get_regionDB('America')	
-	get_regionDB('Europe')	
-	get_regionDB('Japan')	
-	get_regionDB('Asia')		
-	get_otherDB(urlconfig,'versions_txt','nutdb_versions.txt')
-	get_otherDB(urlconfig,'cheats','nutdb_cheats.json')		
-	return True
+	try:
+		getnutdb()
+		get_regionDB('America')	
+		get_regionDB('Europe')	
+		get_regionDB('Japan')	
+		get_regionDB('Asia')		
+		get_otherDB(urlconfig,'versions_txt','nutdb_versions.txt')
+		get_otherDB(urlconfig,'cheats','nutdb_cheats.json')		
+		return True
+	except:
+		return False
 					
 def check_current():	
 	try:
@@ -435,21 +456,30 @@ def check_current():
 		getnutdb()
 		return True			
 	elif (time.time() - os.path.getmtime(nutdbfile)) > (th*60*60+tm*60+ts):
-		getnutdb()		
-		return True			
+		try:
+			getnutdb()		
+			return True		
+		except:
+			return False
 	else:
 		try:
 			with open(nutdbfile) as json_file:
 				pass
 				return 'Refresh time limit not reached'
 		except:
-			getnutdb()	
-			return True
+			try:
+				getnutdb()	
+				return True
+			except:
+				return False
 	return	False	
 	
-def force_update():			
-	getnutdb()
-	return
+def force_update():	
+	try:
+		getnutdb()
+		return True
+	except:
+		return False
 try:	
 	check_current()
 except:pass	
