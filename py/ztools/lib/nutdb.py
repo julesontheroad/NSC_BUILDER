@@ -15,6 +15,8 @@ import csv
 import chardet
 from googletrans import Translator
 import ast
+from difflib import SequenceMatcher
+import re
 
 # SET ENVIRONMENT
 squirrel_dir=os.path.abspath(os.curdir)
@@ -1271,4 +1273,656 @@ def kakashi_conv():
 	converter = kakasi.getConverter()	
 	return converter
 		
-		
+def gen_extjson():
+	import ninshop
+	output=os.path.join(DATABASE_folder,'ninshop.json')
+	dump={}
+	rglist=['America']
+	for region in rglist:	
+		f='nutdb_'+region+'.json'
+		regionfile=os.path.join(DATABASE_folder,f)	
+		check_region_file(region)
+		c=0
+		with open(regionfile) as json_file:	
+			data = json.load(json_file)		
+			for i in data:	
+				dict=data[i]			
+				if 'id' in dict:
+					try:
+						titleid=(dict['id']).upper()
+						if titleid.endswith('000'):			
+							dump[titleid]={}
+							c+=1
+					except:pass	
+		if os.path.exists(output):					
+			with open(output) as json_file:	
+				data = json.load(json_file)		
+				for i in data:	
+					dict=data[i]
+					if len(dict.items())>0:
+						dump[i]=dict
+						c-=1
+		counter=c
+		with open(regionfile) as json_file:	
+			data = json.load(json_file)		
+			for i in data:
+				dict=data[i]			
+				if 'id' in dict:
+					titleid=(dict['id']).upper()
+					if titleid.endswith('000'):
+						if dump[titleid]!={}:
+							continue
+						else:
+							print(titleid)
+							Nindict=ninshop.route(titleid,'US')
+							if Nindict['publisher'] != None:
+								dict.update(Nindict)
+							print(Nindict)
+							dump[titleid]=dict
+							counter-=1
+							print('Still {} titles to retrieve'.format(str(counter)))
+							if counter ==0:
+								break
+							app_json = json.dumps(dump, indent=4)	
+							with open(output, 'w') as json_file:
+							  json_file.write(app_json)
+							  
+def arrange_metacritic():
+	import DBmodule as dbmodule
+	if os.path.exists('File01.dshlv'):
+		try:os.remove('File01.dshlv')
+		except:pass									  
+	output=os.path.join(DATABASE_folder,'metacritic_id.json')
+	dump = dbmodule.Dict('File01.dshlv');
+	ids=list()
+	with open(output) as json_file:	
+		data = json.load(json_file)		
+		for i in data:	
+			dict=data[i]
+			if len(dict.items())>0:
+				try:
+					dump[dict['id']]=dict
+					ids.append(dict['id'])
+				except:pass	
+			else: return False	
+	ids.sort(key=str)
+	newdict={}
+	with open(output) as json_file:	
+		for i in ids:	
+			newdict[i]=dump[i]
+	app_json = json.dumps(newdict, indent=4)	
+	with open(output, 'w') as json_file:
+	  json_file.write(app_json)			
+	dump.close()
+	try:os.remove('File01.dshlv')
+	except:pass			
+	
+def add_tid_to_metacritic(rerun=False,rg=False):
+	if os.path.exists('File01.dshlv'):
+		try:os.remove('File01.dshlv')
+		except:pass		
+	if os.path.exists('File02.dshlv'):
+		try:os.remove('File02.dshlv')
+		except:pass			
+	import DBmodule as dbmodule
+	output=os.path.join(DATABASE_folder,'metacritic_switch.json')	
+	output2=os.path.join(DATABASE_folder,'metacritic_id.json')		
+	if not os.path.exists(output):
+		return False
+	dump = dbmodule.Dict('File01.dshlv');	
+	with open(output) as json_file:	
+		data = json.load(json_file)		
+		for i in data:	
+			dict=data[i]
+			if len(dict.items())>0:
+				dump[i]=dict
+			else: return False	
+	nutdb = dbmodule.Dict('File02.dshlv');	
+	rglist=[str(rg)]	
+	for region in rglist:	
+		if region != 'False':
+			f='nutdb_'+region+'.json'
+		else:
+			f='nutdb.json'
+		regionfile=os.path.join(DATABASE_folder,f)	
+		if region != 'False':
+			check_region_file(region)	
+		with open(regionfile) as json_file:	
+			data = json.load(json_file)		
+			for i in data:
+				nutdb[i]=data[i]
+	newdict={}
+	deletes=list()	
+	deletes2=list()
+	if os.path.exists(output2):	
+		with open(output2) as json_file:	
+			data = json.load(json_file)		
+			for i in data:
+				newdict[i]=data[i]	
+				current=data[i]
+				try:
+					if current['id']!=None:
+						deletes.append(current['name'])
+						deletes2.append(current['id'])	
+				except:pass		
+	for i in deletes:
+		try:
+			del dump[i]					
+		except:pass
+	deletes3=list()	
+	for i in nutdb.keys():
+		data=nutdb[i]
+		if data['id'] in deletes2:
+			deletes3.append(i)
+	for i in deletes3:
+		try:
+			del nutdb[i]		
+		except:pass		
+	del deletes3			
+	del deletes2			
+	deletes=list();deletes2=list()
+	if len(dump.keys())>0 and len(nutdb.keys())>0:	
+		for i in dump.keys():
+			print(i)
+			tid,accuracy=search_name(i,0.8,nutdb)
+			dict={}
+			if tid!=False:	
+				print("{} - accuracy {}".format(str(tid),str(accuracy)))			
+				dict['id']=str(tid).upper()	
+				deletes2.append(str(tid).upper())	
+				dict.update(dump[i])
+				deletes.append(dict['name'])				
+				newdict[str(tid).upper()]=dict
+				app_json = json.dumps(newdict, indent=4)	
+				with open(output2, 'w') as json_file:
+				  json_file.write(app_json)						
+			else:
+				print("False")
+	for i in deletes:
+		try:
+			del dump[i]					
+		except:pass				
+	deletes3=list()	
+	for i in nutdb.keys():
+		data=nutdb[i]
+		if data['id'] in deletes2:
+			deletes3.append(i)
+	for i in deletes3:
+		try:
+			del nutdb[i]		
+		except:pass	
+	del deletes3			
+	del deletes2			
+	deletes2=list()
+	if len(dump.keys())>0 and len(nutdb.keys())>0:
+		for i in dump.keys():
+			print(i)
+			tid,accuracy=search_name(i,0.8,nutdb,'dlc')
+			dict={}
+			if tid!=False:
+				print("{} - accuracy {}".format(str(tid),str(accuracy)))	
+				dict['id']=str(tid).upper()	
+				deletes2.append(str(tid).upper())
+				dict.update(dump[i])				
+				newdict[str(tid).upper()]=dict
+				app_json = json.dumps(newdict, indent=4)	
+				with open(output2, 'w') as json_file:
+				  json_file.write(app_json)	
+			else:
+				print("False")	
+	deletes3=list()	
+	for i in nutdb.keys():
+		data=nutdb[i]
+		if data['id'] in deletes2:
+			deletes3.append(i)
+	for i in deletes3:
+		try:
+			del nutdb[i]		
+		except:pass	
+	del deletes3			
+	del deletes2			
+	deletes2=list()				
+	dump.close()	
+	try:os.remove('File01.dshlv')
+	except:pass		
+	dump = dbmodule.Dict('File01.dshlv');	
+	with open(output) as json_file:	
+		data = json.load(json_file)		
+		for i in data:	
+			dict=data[i]
+			if len(dict.items())>0:
+				dump[i]=dict
+			else: return False	
+	deletes2=list()
+	if len(dump.keys())>0 and len(nutdb.keys())>0 and rerun==True:	
+		for i in dump.keys():
+			print(i)
+			tid,accuracy=search_name(i,0.8,nutdb)
+			dict={}
+			if tid!=False:	
+				print("{} - accuracy {}".format(str(tid),str(accuracy)))			
+				dict['id']=str(tid).upper()	
+				deletes2.append(str(tid).upper())	
+				dict.update(dump[i])
+				newdict[str(tid).upper()]=dict
+				app_json = json.dumps(newdict, indent=4)	
+				with open(output2, 'w') as json_file:
+				  json_file.write(app_json)						
+			else:
+				print("False")
+		deletes3=list()	
+		for i in nutdb.keys():
+			data=nutdb[i]
+			if data['id'] in deletes2:
+				deletes3.append(i)
+		for i in deletes3:
+			try:
+				del nutdb[i]		
+			except:pass	
+		del deletes3			
+		del deletes2
+	deletes2=list()
+	if len(dump.keys())>0 and len(nutdb.keys())>0 and rerun==True:
+		for i in dump.keys():
+			print(i)
+			tid,accuracy=search_name(i,0.8,nutdb,'dlc')
+			dict={}
+			if tid!=False:
+				print("{} - accuracy {}".format(str(tid),str(accuracy)))	
+				dict['id']=str(tid).upper()	
+				deletes2.append(str(tid).upper())
+				dict.update(dump[i])				
+				newdict[str(tid).upper()]=dict
+				app_json = json.dumps(newdict, indent=4)	
+				with open(output2, 'w') as json_file:
+				  json_file.write(app_json)	
+			else:
+				print("False")		
+		deletes3=list()	
+		for i in nutdb.keys():
+			data=nutdb[i]
+			if data['id'] in deletes2:
+				deletes3.append(i)
+		for i in deletes3:
+			try:
+				del nutdb[i]		
+			except:pass	
+		del deletes3			
+		del deletes2				
+	c=0
+	for i in nutdb.keys():
+		try:
+			data=nutdb[i]
+			if data['id'].endswith('000'):
+				# print(data['id'])
+				c+=1
+		except:pass		
+	print('Still {} tid in db'.format(c))	
+	nutdb.close()
+	try:os.remove('File02.dshlv')
+	except:pass		
+	
+def add_extra_data(rg=False):
+	if os.path.exists('File01.dshlv'):
+		try:os.remove('File01.dshlv')
+		except:pass		
+	if os.path.exists('File02.dshlv'):
+		try:os.remove('File02.dshlv')
+		except:pass			
+	import DBmodule as dbmodule
+	output=os.path.join(DATABASE_folder,'metacritic_id.json')		
+	if not os.path.exists(output):
+		return False
+	metacritic = dbmodule.Dict('File01.dshlv');	
+	with open(output) as json_file:	
+		data = json.load(json_file)		
+		for i in data:	
+			dict=data[i]
+			if len(dict.items())>0:
+				metacritic[i]=dict
+			else: return False	
+	nutdb = dbmodule.Dict('File02.dshlv');	
+	rglist=[str(rg)]	
+	for region in rglist:	
+		if region != 'False':
+			f='nutdb_'+region+'.json'
+		else:
+			f='nutdb.json'
+		regionfile=os.path.join(DATABASE_folder,f)	
+		if region != 'False':
+			check_region_file(region)	
+		with open(regionfile) as json_file:	
+			data = json.load(json_file)		
+			for i in data:
+				nutdb[i]=data[i]
+	newdict={}
+	for i in nutdb.keys():	
+		dict={}
+		data=nutdb[i]
+		try:
+			tid=data['id']
+		except:pass
+		if tid in metacritic.keys():
+			data2=metacritic[tid]
+			dict['id']=tid
+			dict['nsuId']=data['nsuId']
+			dict['name']=data2['name']
+			dict['eshop_name']=data['name']
+			dict['metacritic_platform']=data2['metacritic_platform']
+			dict['metascore']=data2['metascore']			
+			dict['userscore']=data2['userscore']				
+			dict['release']=data2['release']	
+			dict['description']=data2['description']	
+			dict['AgeRating']=data['rating']	
+			dict['category']=data['category']
+			dict['ratingContent']=data['ratingContent']			
+			dict['metacritic_url']=data2['metacritic_url']
+			newdict[tid]=dict	
+	app_json = json.dumps(newdict, indent=4)	
+	with open(output, 'w') as json_file:
+	  json_file.write(app_json)				
+	metacritic.close()	
+	try:os.remove('File01.dshlv')
+	except:pass		
+	nutdb.close()
+	try:os.remove('File02.dshlv')
+	except:pass		
+	
+def expand_metacritic_dupid():	
+	if os.path.exists('File01.dshlv'):
+		try:os.remove('File01.dshlv')
+		except:pass		
+	if os.path.exists('File02.dshlv'):
+		try:os.remove('File02.dshlv')
+		except:pass			
+	import DBmodule as dbmodule
+	output=os.path.join(DATABASE_folder,'metacritic_id.json')		
+	if not os.path.exists(output):	
+		print("Target json doesn't exists")
+		return
+	dump = dbmodule.Dict('File01.dshlv');	
+	with open(output) as json_file:	
+		data = json.load(json_file)		
+		for i in data:	
+			dict=data[i]
+			if len(dict.items())>0:
+				dump[i]=dict
+			else: return False			
+	nutdb = dbmodule.Dict('File02.dshlv');	
+	rglist=['America']	
+	for region in rglist:	
+		f='nutdb_'+region+'.json'
+		regionfile=os.path.join(DATABASE_folder,f)	
+		check_region_file(region)	
+		with open(regionfile) as json_file:	
+			data = json.load(json_file)		
+			for i in data:
+				nutdb[i]=data[i]
+	newdict={}				
+	deletes2=list()
+	if os.path.exists(output):	
+		with open(output) as json_file:	
+			data = json.load(json_file)		
+			for i in data:
+				newdict[i]=data[i]				
+				current=data[i]
+				try:
+					if current['id']!=None:
+						deletes2.append(current['id'])		
+				except:pass		
+	deletes3=list()	
+	for i in nutdb.keys():
+		data=nutdb[i]
+		try:
+			if data['id'] in deletes2:
+				deletes3.append(i)
+		except:pass			
+	for i in deletes3:
+		try:
+			del nutdb[i]		
+		except:pass		
+	del deletes3			
+	del deletes2	
+	deletes2=list()	
+	if len(dump.keys())>0 and len(nutdb.keys())>0:
+		for i in dump.keys():
+			print(i)
+			tid,accuracy=search_name(i,0.8,nutdb)
+			dict={}
+			if tid!=False:	
+				print("{} - accuracy {}".format(str(tid),str(accuracy)))			
+				dict['id']=str(tid).upper()	
+				deletes2.append(str(tid).upper())	
+				dict.update(dump[i])
+				ID=str(tid).upper()
+				newdict[ID]=dict
+				app_json = json.dumps(newdict, indent=4)	
+				with open(output, 'w') as json_file:
+				  json_file.write(app_json)		
+	deletes3=list()	
+	for i in nutdb.keys():
+		data=nutdb[i]
+		try:	
+			if data['id'] in deletes2:
+				deletes3.append(i)
+		except:pass			
+	for i in deletes3:
+		try:
+			del nutdb[i]		
+		except:pass	
+	del deletes3			
+	del deletes2		
+	dump.close()
+	try:os.remove('File01.dshlv')
+	except:pass		
+	c=0
+	for i in nutdb.keys():
+		try:
+			data=nutdb[i]
+			if data['id'].endswith('000'):
+				# print(data['id'])
+				c+=1
+		except:pass		
+	print('Still {} tid in db'.format(c))	
+	nutdb.close()
+	try:os.remove('File02.dshlv')
+	except:pass			
+	
+	
+def expand_metacritic(type='ps4'):
+	if os.path.exists('File01.dshlv'):
+		try:os.remove('File01.dshlv')
+		except:pass		
+	if os.path.exists('File02.dshlv'):
+		try:os.remove('File02.dshlv')
+		except:pass			
+	import DBmodule as dbmodule
+	target='metacritic_{}.json'.format(type)
+	output=os.path.join(DATABASE_folder,target)	
+	if not os.path.exists(output):	
+		print("Target json doesn't exists")
+		return
+	output2=os.path.join(DATABASE_folder,'metacritic_id.json')		
+	if not os.path.exists(output):
+		return False
+	dump = dbmodule.Dict('File01.dshlv');	
+	with open(output) as json_file:	
+		data = json.load(json_file)		
+		for i in data:	
+			dict=data[i]
+			if len(dict.items())>0:
+				dump[i]=dict
+			else: return False	
+	nutdb = dbmodule.Dict('File02.dshlv');	
+	rglist=['America']	
+	for region in rglist:	
+		f='nutdb_'+region+'.json'
+		regionfile=os.path.join(DATABASE_folder,f)	
+		check_region_file(region)	
+		with open(regionfile) as json_file:	
+			data = json.load(json_file)		
+			for i in data:
+				nutdb[i]=data[i]
+	newdict={}
+	deletes=list()	
+	deletes2=list()
+	if os.path.exists(output2):	
+		with open(output2) as json_file:	
+			data = json.load(json_file)		
+			for i in data:
+				newdict[i]=data[i]	
+				current=data[i]
+				if current['id']!=None:
+					deletes.append(current['name'])
+					deletes2.append(current['id'])				
+	for i in deletes:
+		try:
+			del dump[i]					
+		except:pass
+	deletes3=list()	
+	for i in nutdb.keys():
+		data=nutdb[i]
+		if data['id'] in deletes2:
+			deletes3.append(i)
+	for i in deletes3:
+		try:
+			del nutdb[i]		
+		except:pass		
+	del deletes3			
+	del deletes2		
+	deletes2=list()
+	if len(dump.keys())>0 and len(nutdb.keys())>0:	
+		for i in dump.keys():
+			print(i)
+			tid,accuracy=search_name(i,0.8,nutdb)
+			dict={}
+			if tid!=False:	
+				print("{} - accuracy {}".format(str(tid),str(accuracy)))			
+				deletes2.append(tid)
+				dict['id']=str(tid).upper()	
+				dict.update(dump[i])
+				newdict[i]=dict
+				app_json = json.dumps(newdict, indent=4)	
+				with open(output2, 'w') as json_file:
+				  json_file.write(app_json)	
+			else:
+				print("False")							
+	deletes3=list()	
+	for i in nutdb.keys():
+		data=nutdb[i]
+		if data['id'] in deletes2:
+			deletes3.append(i)
+	for i in deletes3:
+		try:
+			del nutdb[i]		
+		except:pass		
+	del deletes3			
+	del deletes2				
+	dump.close()				  
+	try:os.remove('File01.dshlv')
+	except:pass		
+	c=0
+	for i in nutdb.keys():
+		try:
+			data=nutdb[i]
+			if data['id'].endswith('000'):
+				# print(data['id'])
+				c+=1
+		except:pass		
+	print('Still {} tid in db'.format(c))	
+	nutdb.close()
+	try:os.remove('File02.dshlv')
+	except:pass			
+	
+def search_name(metaname,accuracy=0.8,shlv=False,type='base'):	
+	matches={}
+	metaname=metaname.lower()	
+	metaname = list([val for val in metaname if val.isalnum()]) 
+	metaname = "".join(metaname) 	
+	if shlv==False:
+		rglist=['America']
+		for region in rglist:	
+			f='nutdb_'+region+'.json'
+			regionfile=os.path.join(DATABASE_folder,f)	
+			check_region_file(region)	
+			with open(regionfile) as json_file:	
+				data = json.load(json_file)		
+				for i in data:
+					dict=data[i]			
+					if 'id' in dict:
+						try:
+							titleid=(dict['id']).upper()
+							if type=='base':
+								if titleid.endswith('000'):
+									dbname=dict['name'].lower()
+									dbname = list([val for val in dbname if val.isalnum()]) 
+									dbname = "".join(dbname) 									
+									ratio=SequenceMatcher(None, dbname, metaname).ratio()
+									if ratio>=1.0:
+										return titleid,ratio
+									elif ratio>=accuracy:
+										matches[titleid]=ratio
+										# return titleid
+							if type=='dlc':
+								if not titleid.endswith('000') and not titleid.endswith('800'):
+									dbname=dict['name'].lower()
+									dbname = list([val for val in dbname if val.isalnum()]) 
+									dbname = "".join(dbname) 	
+									ratio=SequenceMatcher(None, dbname, metaname).ratio()
+									if ratio>=1.0:
+										return titleid,ratio
+									elif ratio>=accuracy:
+										matches[titleid]=ratio
+										# return titleid						
+						except:pass			
+	else:
+		matches={}
+		for i in shlv.keys():
+			dict=shlv[i]			
+			if 'id' in dict:
+				try:
+					titleid=(dict['id']).upper()
+					if type=='base':					
+						if titleid.endswith('000'):
+							dbname=dict['name'].lower()
+							dbname = list([val for val in dbname if val.isalnum()]) 
+							dbname = "".join(dbname) 	
+							ratio=SequenceMatcher(None, dbname, metaname).ratio()
+							if ratio>=1.0:
+								return titleid,ratio
+							elif ratio>=accuracy:
+								matches[titleid]=ratio
+								# return titleid
+					if type=='dlc':					
+						if not titleid.endswith('000') and not titleid.endswith('800'):
+							dbname=dict['name'].lower()
+							dbname = list([val for val in dbname if val.isalnum()]) 
+							dbname = "".join(dbname)
+							ratio=SequenceMatcher(None, dbname, metaname).ratio()
+							if ratio>=1.0:
+								return titleid,ratio
+							elif ratio>=accuracy:
+								matches[titleid]=ratio
+								# return titleid						
+				except:pass	
+	if len(matches)==0:
+		return False,0.0
+	elif len(matches)==1:	
+		for i in matches:
+			return i,matches[i]
+	else:	
+		titleid=False;c=0;ratio=0
+		for i in matches:
+			if c==0:
+				titleid=i;ratio=matches[i]
+				c+=1
+			else:
+				if matches[i]>ratio:
+					titleid=i;ratio=matches[i]
+		return 	titleid,ratio	
+	return False		
+	
+def check_ratios(item1,item2):
+	ratio=SequenceMatcher(None, item1, item2).ratio()
+	print(ratio)
+	
