@@ -58,8 +58,7 @@ class Ticket(File):
 		self.deviceId = hx(self.read(0x8)).decode('utf-8')
 		self.rightsId = hx(self.read(0x10)).decode('utf-8')
 		self.accountId = hx(self.read(0x4)).decode('utf-8')
-		self.seek(0x286)
-		self.masterKeyRevision = self.readInt8()
+		self.masterKeyRevision = self.getMasterKeyRevision()
 
 	def seekStart(self, offset):
 		self.seek(0x4 + self.signatureSizes[self.signatureType] + self.signaturePadding + offset)
@@ -136,11 +135,11 @@ class Ticket(File):
 
 
 	def getMasterKeyRevision(self):
-		self.seekStart(0x145)
+		self.seekStart(0x144)
 		self.masterKeyRevision = self.readInt8() | self.readInt8()
 		if self.masterKeyRevision == 0:
 			self.rewind()
-			self.seekStart(0x144)
+			self.seekStart(0x145)
 			self.masterKeyRevision = self.readInt8() | self.readInt8()
 			if self.masterKeyRevision == 0:
 				filename = str(self._path)
