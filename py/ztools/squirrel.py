@@ -115,7 +115,7 @@ if __name__ == '__main__':
 
 		# REPACK
 		parser.add_argument('-c', '--create', help='create / pack a NSP')
-		parser.add_argument('-cpr', '--compress', help='Compress a nsp or xci')
+		parser.add_argument('-cpr', '--compress', nargs='+', help='Compress a nsp or xci')
 		parser.add_argument('-dcpr', '--decompress', help='deCompress a nsz, xcz or ncz')
 		parser.add_argument('--create_hfs0', help='create / pack a hfs0')
 		parser.add_argument('--create_rhfs0', help='create / pack a root hfs0')
