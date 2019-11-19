@@ -36,3 +36,4 @@ py/test.py
 py/zconfig/metacritic_id.json
 py/ztools/lib/metacritic.py
 py/ztools/lib/ninshop.py
+py/ztools/cmd/__init__.py
