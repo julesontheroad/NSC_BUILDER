@@ -1317,5 +1317,4 @@ def kakashi_conv():
 	kakasi.setMode("C", False)
 	converter = kakasi.getConverter()	
 	return converter
-		
-
+	
