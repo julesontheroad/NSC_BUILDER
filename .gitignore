@@ -32,3 +32,5 @@ py/lists/a_multi/mlist.txt
 *.nsx
 *.xci
 *.nsp
+py/test.py
+py/zconfig/metacritic_id.json
