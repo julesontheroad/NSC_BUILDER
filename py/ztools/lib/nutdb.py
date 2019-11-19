@@ -117,37 +117,47 @@ if not os.path.exists(DATABASE_folder):
 def getnutdb():
 	response = requests.get(json_url, stream=True)
 	if '<Response [404]>'!=str(response):
-		if os.path.exists(nutdbfile):
-			try:os.remove(nutdbfile)
-			except:pass			
+		tempfile=nutdbfile[:-4]+'2.json'		
 		try:
-			with open(nutdbfile,'wb') as nutfile:
+			with open(tempfile,'wb') as nutfile:
 				print('Getting NUTDB json')
 				for data in response.iter_content(65536):
 					nutfile.write(data)
 					if not data:
 						break
+			with open(tempfile) as json_file:					
+				data = json.load(json_file)	
+			app_json = json.dumps(data, indent=4)		
+			with open(nutdbfile, 'w') as json_file:
+			  json_file.write(app_json)			
+			try:os.remove(tempfile)
+			except:pass	
 		except BaseException as e:
 			Print.error('Exception: ' + str(e))		
-			try:os.remove(nutdbfile)
-			except:pass	
+			try:os.remove(tempfile)
+			except:pass		
 		return True				
 	else:
 		response = requests.get(json_url_mirror, stream=True)
 		if '<Response [404]>'!=str(response):
-			if os.path.exists(nutdbfile):
-				try:os.remove(nutdbfile)
-				except:pass			
+			tempfile=nutdbfile[:-4]+'2.json'			
 			try:
-				with open(nutdbfile,'wb') as nutfile:
+				with open(tempfile,'wb') as nutfile:
 					print('Getting NUTDB json')
 					for data in response.iter_content(65536):
 						nutfile.write(data)
 						if not data:
 							break
+				with open(tempfile) as json_file:					
+					data = json.load(json_file)				
+				app_json = json.dumps(data, indent=4)		
+				with open(nutdbfile, 'w') as json_file:
+				  json_file.write(app_json)			
+				try:os.remove(tempfile)
+				except:pass
 			except BaseException as e:
 				Print.error('Exception: ' + str(e))		
-				try:os.remove(nutdbfile)
+				try:os.remove(tempfile)
 				except:pass	
 			return True			
 		else:
@@ -414,19 +424,24 @@ def get_regionDB(region):
 	regionfile=os.path.join(DATABASE_folder,f)	
 	response = requests.get(url, stream=True)	
 	if '<Response [404]>'!=str(response):	
-		if os.path.exists(regionfile):
-			try:os.remove(regionfile)
-			except:pass	
+		tempfile=regionfile[:-4]+'2.json'			
 		try:
-			with open(regionfile,'wb') as nutfile:
+			with open(tempfile,'wb') as nutfile:
 				print('Getting NUTDB json "'+region+'"')
 				for data in response.iter_content(65536):
 					nutfile.write(data)
 					if not data:
 						break
+			with open(tempfile) as json_file:					
+				data = json.load(json_file)					
+			app_json = json.dumps(data, indent=4)		
+			with open(regionfile, 'w') as json_file:
+			  json_file.write(app_json)				  
+			try:os.remove(tempfile)
+			except:pass							
 		except BaseException as e:
 			Print.error('Exception: ' + str(e))		
-			try:os.remove(regionfile)
+			try:os.remove(tempfile)
 			except:pass	
 		return True	
 	else:
@@ -1304,4 +1319,3 @@ def kakashi_conv():
 	return converter
 		
 
-	
