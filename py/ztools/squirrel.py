@@ -281,6 +281,7 @@ if __name__ == '__main__':
 		parser.add_argument('-threads','--threads', help="Number threads to use for certain functions")
 		parser.add_argument('-pararell','--pararell', help="Number threads to use for certain functions")		
 		parser.add_argument('-lib_call','--library_call', nargs='+',  help="Call a library function within squirrel")
+		parser.add_argument('-loop','--loop', nargs='+', help="Loop the text file using secondary module")		
 		args = parser.parse_args()
 
 		Status.start()
@@ -288,7 +289,9 @@ if __name__ == '__main__':
 		indent = 1
 		tabs = '\t' * indent
 		trans=False
-
+		if args.file==list():
+			args.file=None
+			
 		if args.library_call:
 			import secondary
 			vret=secondary.call_library(args.library_call)
@@ -316,6 +319,41 @@ if __name__ == '__main__':
 				except:	
 					instances=2
 				secondary.route(args,instances)
+				
+		if args.loop and args.ifolder:							
+			if args.loop[0]!='true' and args.loop[0]!='false' and args.text_file!='false':
+				if os.path.exists(args.text_file):
+					try:
+						os.remove(args.text_file)
+					except:
+						pass				
+				import secondary
+				args0=args
+				args0.type=args0.loop
+				args0.loop=None
+				args0.findfile=args0.ifolder
+				args0.ifolder=None
+				secondary.pass_command(args0)
+				args.ifolder=None
+				args.findfile=None
+				loop=list()
+				loop.append('true')
+				args.loop=loop
+				
+		if args.loop and args.text_file:		
+			if str(args.loop[0]).lower()=='true':	
+				import secondary
+				args.loop=None
+				items=secondary.pass_command(args)
+				if items==0:
+					# try:
+						# os.remove(args.text_file)
+					# except:
+						# pass					
+					for attr in vars(args):
+						setattr(args,attr,None)				
+			else:
+				args.loop=None
 						
 # NCA/NSP IDENTIFICATION
 		# ..................................................

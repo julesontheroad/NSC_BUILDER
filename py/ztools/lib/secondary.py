@@ -215,32 +215,84 @@ def route(args,workers):
 		listmanager.striplines(tfile,number=workers,counter=True)							
 
 	
-def getargs(args):
+def getargs(args,separate_list=True):
 	tfile=False
-	args=str(args)
-	args=args.split(', ')
+	# args=str(args)
+	# args=args.split(', ')
 	arguments=list()
 	if not isExe==True:
 		arguments.append("python")
 	arguments.append(squirrel)
-	for a in args:
-		if not 'None' in a and a != 'file=[]' and not 'threads' in a and not 'pararell' in a:
-			a=a.split('=')
+	for a in vars(args):
+		if not 'None' in str(a) and str(a) != 'file=[]' and not 'threads' in str(a) and not 'pararell' in str(a):
+			# a=a.split('=')
 			# print(a)
-			try:
-				b=a[1]
-				b=b[1:-1]
-			except:
-				b=None
-				pass
-			if a[0]=='text_file':
+			# try:
+				# b=a[1]
+				# b=b[1:-1]
+			# except:
+				# b=None
+				# pass
+			b=getattr(args, a)
+			if isinstance(b, list):
+				c=0
+				for x in b:
+					if x=="" and c==0:
+						b=""
+						c+=1
+						break
+			# print(a)
+			# if a == 'type':
+				# print(b)
+			if a=='text_file' and separate_list==True:
 				tfile=b
 			else:
 				if b!=None:			
-					a='--'+a[0]
+					a='--'+a
 					arguments.append(a)
-					arguments.append(b)
-				else:
-					a=a[0]
-					arguments.append(a)					
+					if isinstance(b, list):
+						for x in b:
+							if x!='':
+								arguments.append(x)	
+						# narg=narg[:-1]
+						# arguments.append(narg)	
+						# print(narg)
+					else:
+						arguments.append(b)
 	return arguments,tfile		
+	
+def pass_command(args):	
+	c=0
+	if not args.findfile:
+		items=listmanager.counter(args.text_file)
+		while items!=0:
+			if c==0:
+				c+=1
+			else:
+				print("")			
+			listmanager.printcurrent(args.text_file)
+			arguments,nonevar=getargs(args,separate_list=False)
+			# print(arguments)
+			process=list()
+			process.append(subprocess.Popen(arguments))
+			for p in process: 	
+				p.wait()
+				# print(str(p.poll()))
+				while p.poll()==None:
+					if p.poll()!=None:
+						p.terminate();		
+			listmanager.striplines(args.text_file,number=1,counter=True)	
+			items-=1	
+		return items
+	else:
+		arguments,nonevar=getargs(args,separate_list=False)
+		# print(arguments)
+		process=list()
+		process.append(subprocess.Popen(arguments))
+		for p in process: 	
+			p.wait()
+			# print(str(p.poll()))
+			while p.poll()==None:
+				if p.poll()!=None:
+					p.terminate();				
+		return 0	
