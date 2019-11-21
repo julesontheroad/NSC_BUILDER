@@ -44,11 +44,14 @@ def counter(textfile,doprint=False):
 
 def printcurrent(textfile,number=1,counter=False):
 	currentline=''
+	number=int(number)
 	with open(textfile,'r', encoding='utf8') as f:
 		i=0
 		for line in f:
-			print(line)
-			break
+			i+=1
+			print(line.strip())
+			if i==number:
+				break
 			
 def read_lines_to_list(textfile,number=1,all=False):
 	#print(textfile)

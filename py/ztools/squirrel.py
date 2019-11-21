@@ -6041,8 +6041,12 @@ if __name__ == '__main__':
 		if args.show_current_line:
 			if args.show_current_line[0]:
 				textfile=args.show_current_line[0]
+				try:
+					number=args.show_current_line[1]
+				except:
+					number=1
 			try:
-				listmanager.printcurrent(textfile)
+				listmanager.printcurrent(textfile,number)
 			except BaseException as e:
 				Print.error('Exception: ' + str(e))
 
