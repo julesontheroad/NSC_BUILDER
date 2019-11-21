@@ -31,11 +31,15 @@ def striplines(textfile,number=1,counter=False):
 		print('STILL '+str(c)+' FILES TO PROCESS')
 		print('...................................................')
 			
-def counter(textfile):
+def counter(textfile,doprint=False):	
 	counter=0
 	with open(textfile,'r', encoding='utf8') as f:
 		for line in f:
-			counter+=1	
+			counter+=1
+	if doprint!=False:			
+		print('...................................................')
+		print('STILL '+str(counter)+' FILES TO PROCESS')
+		print('...................................................') 		
 	return counter
 
 def printcurrent(textfile,number=1,counter=False):

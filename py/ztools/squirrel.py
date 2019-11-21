@@ -237,6 +237,8 @@ if __name__ == '__main__':
 		parser.add_argument('-uin', '--userinput', help='Reads a user input')
 		parser.add_argument('-incxml', '--includexml', nargs='+', help='Include xml by default true')
 		parser.add_argument('-trans', '--translate', nargs='+', help='Google translation support for nutdb descriptions')
+		#parser.add_argument('-exparg', '--explicit_arguments', nargs='+', help='Explicit arguments for lib_call')		
+		
 		# LISTMANAGER
 		parser.add_argument('-cl', '--change_line', help='Change line in text file')
 		parser.add_argument('-rl', '--read_line', help='Read line in text file')
@@ -281,7 +283,8 @@ if __name__ == '__main__':
 		parser.add_argument('-threads','--threads', help="Number threads to use for certain functions")
 		parser.add_argument('-pararell','--pararell', help="Number threads to use for certain functions")		
 		parser.add_argument('-lib_call','--library_call', nargs='+',  help="Call a library function within squirrel")
-		parser.add_argument('-loop','--loop', nargs='+', help="Loop the text file using secondary module")		
+		parser.add_argument('-loop','--loop', nargs='+', help="Loop the text file using secondary module")
+		parser.add_argument('-pos','--position', help="tqdm position")					
 		args = parser.parse_args()
 
 		Status.start()
@@ -314,12 +317,21 @@ if __name__ == '__main__':
 			import secondary
 			instances=2
 			if args.pararell=='true':
+				args.pararell=None
 				try:
 					instances=int(args.threads)
 				except:	
 					instances=2
-				secondary.route(args,instances)
-				
+				args.threads=0	
+				items=secondary.pararell(args,instances)
+				if items==0:
+					try:
+						os.remove(args.text_file)
+					except:
+						pass						
+					for attr in vars(args):
+						setattr(args,attr,None)	
+						
 		if args.loop and args.ifolder:							
 			if args.loop[0]!='true' and args.loop[0]!='false' and args.text_file!='false':
 				if os.path.exists(args.text_file):
@@ -346,14 +358,14 @@ if __name__ == '__main__':
 				args.loop=None
 				items=secondary.pass_command(args)
 				if items==0:
-					# try:
-						# os.remove(args.text_file)
-					# except:
-						# pass					
+					try:
+						os.remove(args.text_file)
+					except:
+						pass					
 					for attr in vars(args):
 						setattr(args,attr,None)				
 			else:
-				args.loop=None
+				args.loop=None 
 						
 # NCA/NSP IDENTIFICATION
 		# ..................................................
@@ -2609,6 +2621,13 @@ if __name__ == '__main__':
 
 		# parser.add_argument('-cpr', '--compress', help='Compress a nsp or xci')
 		if args.compress:
+			if args.position:
+				try:
+					position=int(args.position)
+				except:
+					position=False
+			else:
+				position=False
 			if args.nodelta:
 				for input in args.nodelta:
 					try:
@@ -2619,7 +2638,9 @@ if __name__ == '__main__':
 						else:
 							delta=False
 					except BaseException as e:
-						Print.error('Exception: ' + str(e))		
+						Print.error('Exception: ' + str(e))	
+			else:
+				delta=False
 			if args.fexport:
 				for input in args.fexport:
 					try:
@@ -2700,13 +2721,13 @@ if __name__ == '__main__':
 					except:
 						level=17
 					if filepath.endswith(".nsp"): 	
-						compressor.compress(filepath,ofolder,level,workers,delta)
+						compressor.compress(filepath,ofolder,level,workers,delta,pos=position)
 					elif filepath.endswith(".xci"):	
 						basename=os.path.basename(os.path.abspath(filepath))
 						if xci_exp=='nsz':
 							outfile=basename[:-3]+'nsz'
 							outfile =os.path.join(ofolder,outfile)	
-							nszPath=compressor.xci_to_nsz(filepath,buffer=65536,outfile=outfile,keepupd=False,level = level, threads = workers)												
+							nszPath=compressor.xci_to_nsz(filepath,buffer=65536,outfile=outfile,keepupd=False,level = level, threads = workers,pos=position)												
 							try:
 								f=Fs.Nsp(nszPath,'rb+')
 								f.seteshop()
@@ -2716,7 +2737,7 @@ if __name__ == '__main__':
 						else:	
 							outfile=basename[:-3]+'xcz'
 							outfile =os.path.join(ofolder,outfile)							
-							compressor.supertrim_xci(filepath,buffer=65536,outfile=outfile,keepupd=False,level = level, threads = workers)						
+							compressor.supertrim_xci(filepath,buffer=65536,outfile=outfile,keepupd=False,level = level, threads = workers,pos=position)						
 
 		# parser.add_argument('-dcpr', '--decompress', help='deCompress a nsz, xcz or ncz')
 		if args.decompress:
