@@ -120,24 +120,24 @@ def supertrim_xci(filepath,buffer=65536,outfile=None,keepupd=False, level = 17, 
 					# print(str(row['NcaId'])+'.cnmt.nca')
 					files.append(str(row['NcaId'])+'.cnmt.nca')
 					filesizes.append(int(row['Size']))					
-			for k in range(len(files_list)):
-				entry=files_list[k]
-				fp=entry[0];sz=int(entry[3])
-				if fp.endswith('xml'):
-					files.append(fp)
-					filesizes.append(sz)					
-			for k in range(len(files_list)):
-				entry=files_list[k]
-				fp=entry[0];sz=int(entry[3])
-				if fp.endswith('.tik'):
-					files.append(fp)	
-					filesizes.append(sz)					
-			for k in range(len(files_list)):
-				entry=files_list[k]
-				fp=entry[0];sz=int(entry[3])
-				if fp.endswith('.cert'):
-					files.append(fp)	
-					filesizes.append(sz)
+	for k in range(len(files_list)):
+		entry=files_list[k]
+		fp=entry[0];sz=int(entry[3])
+		if fp.endswith('xml'):
+			files.append(fp)
+			filesizes.append(sz)					
+	for k in range(len(files_list)):
+		entry=files_list[k]
+		fp=entry[0];sz=int(entry[3])
+		if fp.endswith('.tik'):
+			files.append(fp)	
+			filesizes.append(sz)					
+	for k in range(len(files_list)):
+		entry=files_list[k]
+		fp=entry[0];sz=int(entry[3])
+		if fp.endswith('.cert'):
+			files.append(fp)	
+			filesizes.append(sz)
 	sec_hashlist=list()
 	f=squirrelXCI(filepath)
 	try:
@@ -372,24 +372,24 @@ def xci_to_nsz(filepath,buffer=65536,outfile=None,keepupd=False, level = 17,  th
 					# print(str(row['NcaId'])+'.cnmt.nca')
 					files.append(str(row['NcaId'])+'.cnmt.nca')
 					filesizes.append(int(row['Size']))					
-			for k in range(len(files_list)):
-				entry=files_list[k]
-				fp=entry[0];sz=int(entry[3])
-				if fp.endswith('xml'):
-					files.append(fp)
-					filesizes.append(sz)					
-			for k in range(len(files_list)):
-				entry=files_list[k]
-				fp=entry[0];sz=int(entry[3])
-				if fp.endswith('.tik'):
-					files.append(fp)	
-					filesizes.append(sz)					
-			for k in range(len(files_list)):
-				entry=files_list[k]
-				fp=entry[0];sz=int(entry[3])
-				if fp.endswith('.cert'):
-					files.append(fp)	
-					filesizes.append(sz)
+	for k in range(len(files_list)):
+		entry=files_list[k]
+		fp=entry[0];sz=int(entry[3])
+		if fp.endswith('xml'):
+			files.append(fp)
+			filesizes.append(sz)					
+	for k in range(len(files_list)):
+		entry=files_list[k]
+		fp=entry[0];sz=int(entry[3])
+		if fp.endswith('.tik'):
+			files.append(fp)	
+			filesizes.append(sz)					
+	for k in range(len(files_list)):
+		entry=files_list[k]
+		fp=entry[0];sz=int(entry[3])
+		if fp.endswith('.cert'):
+			files.append(fp)	
+			filesizes.append(sz)
 	nspheader=sq_tools.gen_nsp_header(files,filesizes)
 	properheadsize=len(nspheader)
 
@@ -557,24 +557,24 @@ def compress(filePath,ofolder = None, level = 17,  threads = 0, delta=False, ofi
 					# print(str(row['NcaId'])+'.cnmt.nca')
 					files.append(str(row['NcaId'])+'.cnmt.nca')
 					filesizes.append(int(row['Size']))					
-			for k in range(len(files_list)):
-				entry=files_list[k]
-				fp=entry[0];sz=int(entry[3])
-				if fp.endswith('xml'):
-					files.append(fp)
-					filesizes.append(sz)					
-			for k in range(len(files_list)):
-				entry=files_list[k]
-				fp=entry[0];sz=int(entry[3])
-				if fp.endswith('.tik'):
-					files.append(fp)	
-					filesizes.append(sz)					
-			for k in range(len(files_list)):
-				entry=files_list[k]
-				fp=entry[0];sz=int(entry[3])
-				if fp.endswith('.cert'):
-					files.append(fp)	
-					filesizes.append(sz)
+	for k in range(len(files_list)):
+		entry=files_list[k]
+		fp=entry[0];sz=int(entry[3])
+		if fp.endswith('xml'):
+			files.append(fp)
+			filesizes.append(sz)					
+	for k in range(len(files_list)):
+		entry=files_list[k]
+		fp=entry[0];sz=int(entry[3])
+		if fp.endswith('.tik'):
+			files.append(fp)	
+			filesizes.append(sz)					
+	for k in range(len(files_list)):
+		entry=files_list[k]
+		fp=entry[0];sz=int(entry[3])
+		if fp.endswith('.cert'):
+			files.append(fp)	
+			filesizes.append(sz)
 	nspheader=sq_tools.gen_nsp_header(files,filesizes)
 	properheadsize=len(nspheader)
 	
