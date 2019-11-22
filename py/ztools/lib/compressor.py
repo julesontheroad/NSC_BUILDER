@@ -75,10 +75,11 @@ def supertrim_xci(filepath,buffer=65536,outfile=None,keepupd=False, level = 17, 
 		isthreaded=True		
 	else:
 		pos=0
-	pos=int(pos)    
-	try:
-		exchangefile.deletefile()
-	except:pass	
+	pos=int(pos) 
+	if isthreaded==False:
+		try:
+			exchangefile.deletefile()
+		except:pass	
 	f=squirrelXCI(filepath)
 	for nspF in f.hfs0:
 		if str(nspF._path)=="secure":
