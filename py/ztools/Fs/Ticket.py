@@ -145,6 +145,7 @@ class Ticket(File):
 				filename = str(self._path)
 				filename = filename[:-4] 
 				filename = filename[-2:-1] 
+				filename=bytearray.fromhex(filename)
 				self.masterKeyRevision = int(filename,16) 
 		return self.masterKeyRevision
 
@@ -214,7 +215,7 @@ class Ticket(File):
 		Print.info(tabs + 'rightsId = ' + hex(self.getRightsId()))
 		Print.info(tabs + 'accountId = ' + str(self.accountId))
 		Print.info(tabs + 'titleKey = ' + hex(self.getTitleKeyBlock()))
-		Print.info(tabs + 'titleKeyDec = ' + str(hx(Keys.decryptTitleKey((self.getTitleKey()), self.masterKeyRevision))))
+		Print.info(tabs + 'titleKeyDec = ' + str(hx(Keys.decryptTitleKey((self.getTitleKey()), (Keys.getMasterKeyIndex(self.masterKeyRevision))))))
 
 
 class PublicTik():
