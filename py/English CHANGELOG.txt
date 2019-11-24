@@ -21,6 +21,29 @@ Luca Fraga's github: https://github.com/LucaFraga
 ---------------
 0. Changelog
 ---------------
+v0.96d - bugfixes:
+	- Fix keygeneration missmatch in nxdumptool tickets with elicense flag
+	- Fix xci compressor for xci with tickets and titlekey starting by 0
+	- Fix bug where ticket gets appended more than once in a multi-file with tickets
+	- Added json integrity check when updating nutdb. The update will take a little longer
+	  but the current json will be protected if the one in the repository is corrupted.
+	- Added pararell compression as alternative to threads. Pararell compression compresses
+	  several files at the same time with a smaller cpu footprint.
+	  In tests i managed to compress 20 files at the same time while keeping a 2-3Mb\s speed 
+	  ratio per file with level 22 compression.
+	  Note: Current implementation has this issues:
+	  1.- It compresses in batches so when one instance finishes it's place isn't taken by
+	  another file.
+	  2.- It uses subprocesses. tqdm prints become a little wonky with subprocesses and ghost
+	  bars can appear out of position, specially with a high number of processes. To handle this
+	  the screen gets cleaned in 3second intervals and bar positions get preallocated. This
+	  reduces the wonkyness.
+	  3- The wonkyness is just visual, it doesn't affect the correct processing of the files
+	  Possible improvements to study:
+	  I.-  Separate filelist equally between instances so when one instance finishes processing
+	       a file another takes it's place.
+	  II.- Let one thread update the progress bars exchanging the progress information between
+               threads
 v0.96c - bugfixes:
 	- Fix bug where rsv changed cnmt.nca files won't get it's has verified properly.
 	- Fix bug where individual mode will only output multi-nsp files as nsp when the user choose
