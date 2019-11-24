@@ -271,7 +271,7 @@ echo Or Input "b" to return to the previous option
 echo Or Input "x" to return to the list options
 ECHO ******************************************
 echo.
-set /p bs="Input level number: "
+set /p bs="Input level number [1-22]: "
 set bs=%bs:"=%
 set choice=none
 if /i "%bs%"=="x" goto checkagain
@@ -302,7 +302,7 @@ echo Or Input "b" to return to the previous option
 echo Or Input "x" to return to the list options
 ECHO *********************************************
 echo.
-set /p bs="Input number of threads: "
+set /p bs="Input number of threads [-1;0-4]: "
 set bs=%bs:"=%
 set choice=none
 if /i "%bs%"=="x" goto checkagain
@@ -359,7 +359,7 @@ echo Or Input "b" to return to the previous option
 echo Or Input "x" to return to the list options
 ECHO *********************************************
 echo.
-set /p bs="Input number of threads: "
+set /p bs="Input number of instances [>1]: "
 set bs=%bs:"=%
 set choice=none
 if /i "%bs%"=="x" goto checkagain
@@ -387,7 +387,7 @@ echo Or Input "b" to return to the previous option
 echo Or Input "x" to return to the list options
 ECHO ******************************************
 echo.
-set /p bs="Input level number: "
+set /p bs="Input level number [1-22]: "
 set bs=%bs:"=%
 set choice=none
 if /i "%bs%"=="x" goto checkagain
@@ -400,7 +400,7 @@ goto pcompress
 cls
 call :program_logo
 echo *******************************
-echo COMPRESS A NSP\XCI
+echo NSP\XCI PARARELL COMPRESSION 
 echo *******************************
 CD /d "%prog_dir%"
 %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%zzlist.txt","ext=nsp xci","token=False",Print="False"
