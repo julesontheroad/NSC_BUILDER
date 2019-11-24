@@ -217,7 +217,7 @@ def route(args,workers):
 		listmanager.striplines(tfile,number=workers,counter=True)							
 
 	
-def getargs(args,separate_list=True,current=False,pos=0):
+def getargs(args,separate_list=True,current=False,pos=0,tothreads=1):
 
 	tfile=False
 	# args=str(args)
@@ -236,6 +236,11 @@ def getargs(args,separate_list=True,current=False,pos=0):
 		nargs.append(args.compress[-1])	
 		args.compress=nargs
 		args.position=str(pos)
+		try:
+			tothreads=int(tothreads)
+			if tothreads>1:
+				args.n_instances=str(tothreads)
+		except:pass
 			
 	for a in vars(args):
 		if not 'None' in str(a) and str(a) != 'file=[]' and not 'threads' in str(a) and not 'pararell' in str(a):
@@ -351,7 +356,10 @@ def pararell(args,workers):
 					tq = tqdm(total=1, unit='|', leave=True,position=0,bar_format="{l_bar}%s{bar}%s{r_bar}" % (color, Fore.RESET))
 					tq.update(1)
 					tq.close()  
-					arguments,nonevar=getargs(args,separate_list=False,current=f,pos=p)	
+					opworkers=workers
+					if items<workers:
+						opworkers=items
+					arguments,nonevar=getargs(args,separate_list=False,current=f,pos=p,tothreads=opworkers)	
 					#print(arguments)				
 					f=False
 					args=args0
@@ -372,6 +380,7 @@ def pararell(args,workers):
 						try:
 							call('cls')#macos
 						except:
+							print ("\n" * 100)
 							os.system('cls')#windows
 					listmanager.counter(tfile,doprint=True)	
 					p=0;index2=index-workers
@@ -391,7 +400,7 @@ def pararell(args,workers):
 								f=filelist[index2]
 							except:break
 							tq = tqdm(leave=False,position=0)
-							#tq = tqdm(leave=False,position=0,bar_format="{l_bar}%s{bar}%s{r_bar}" % (color, color))
+							# tq = tqdm(leave=False,position=0,bar_format="{l_bar}%s{bar}%s{r_bar}" % (color, color))
 							tq.write('Opening thread for '+f)
 							tq.close() 	
 							tq = tqdm(total=1, unit='|', leave=True,position=0,bar_format="{l_bar}%s{bar}%s{r_bar}" % (color, Fore.RESET))
@@ -400,7 +409,13 @@ def pararell(args,workers):
 							index2+=1;p+=1
 					if pr.poll()!=None:
 						pr.terminate();	
-			call('clear' if os.name =='posix' else 'cls')			
+			if os.name =='posix':
+				call('clear')#linux
+			else:
+				try:
+					call('cls')#macos
+				except:
+					os.system('cls')#windows	
 			listmanager.striplines(tfile,number=workers,counter=False)					
 			items-=workers	
 			if items<0:

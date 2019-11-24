@@ -67,7 +67,7 @@ def foldercompress(ifolder, ofolder = None, level = 17, threads = 0, t=['nsp']):
 		
 		
 		
-def supertrim_xci(filepath,buffer=65536,outfile=None,keepupd=False, level = 17,  threads = 0, pos=False):
+def supertrim_xci(filepath,buffer=65536,outfile=None,keepupd=False, level = 17,  threads = 0, pos=False, nthreads=False):
 	isthreaded=False
 	if pos!=False:
 		isthreaded=True
@@ -101,6 +101,11 @@ def supertrim_xci(filepath,buffer=65536,outfile=None,keepupd=False, level = 17, 
 	t.close()
 	files_list=sq_tools.ret_xci_offsets(filepath)
 	files=list();filesizes=list()
+	if isthreaded==True and nthreads!=False:
+		tqlist=list()
+		for i in range(nthreads):
+			tq = tqdm(total=0, unit='B', unit_scale=True, leave=False,position=i)
+			tqlist.append(tq)	
 	fplist=list()
 	for k in range(len(files_list)):
 		entry=files_list[k]
@@ -221,7 +226,7 @@ def supertrim_xci(filepath,buffer=65536,outfile=None,keepupd=False, level = 17, 
 
 								newFileName = nca._path[0:-1] + 'z'
 
-								f = newNsp.add(newFileName, nca.size)
+								f = newNsp.add(newFileName, nca.size,t,isthreaded)
 								
 								start = f.tell()
 
@@ -294,7 +299,7 @@ def supertrim_xci(filepath,buffer=65536,outfile=None,keepupd=False, level = 17, 
 								if isthreaded==False:
 									t.write('not packed!')
 
-						f = newNsp.add(nca._path, nca.size)
+						f = newNsp.add(nca._path, nca.size,t,isthreaded)
 						files2.append(nca._path)
 						filesizes2.append(nca.size)
 						nca.seek(0)			
@@ -322,11 +327,14 @@ def supertrim_xci(filepath,buffer=65536,outfile=None,keepupd=False, level = 17, 
 	try:
 		exchangefile.deletefile()
 	except:pass			
+	if isthreaded==True and nthreads!=False:	
+		for i in range(nthreads):
+			tqlist[i].close()
 	return nszPath	
 	
 		
 		
-def xci_to_nsz(filepath,buffer=65536,outfile=None,keepupd=False, level = 17,  threads = 0, pos=False):
+def xci_to_nsz(filepath,buffer=65536,outfile=None,keepupd=False, level = 17,  threads = 0, pos=False, nthreads=False):
 	isthreaded=False
 	if pos!=False:
 		isthreaded=True
@@ -353,6 +361,11 @@ def xci_to_nsz(filepath,buffer=65536,outfile=None,keepupd=False, level = 17,  th
 	f.close()	
 	files_list=sq_tools.ret_xci_offsets(filepath)
 	files=list();filesizes=list()
+	if isthreaded==True and nthreads!=False:
+		tqlist=list()
+		for i in range(nthreads):
+			tq = tqdm(total=0, unit='B', unit_scale=True, leave=False,position=i)
+			tqlist.append(tq)
 	fplist=list()
 	for k in range(len(files_list)):
 		entry=files_list[k]
@@ -443,7 +456,7 @@ def xci_to_nsz(filepath,buffer=65536,outfile=None,keepupd=False, level = 17,  th
 
 						newFileName = nca._path[0:-1] + 'z'
 
-						f = newNsp.add(newFileName, nca.size)
+						f = newNsp.add(newFileName, nca.size,t,isthreaded)
 						
 						start = f.tell()
 
@@ -513,7 +526,7 @@ def xci_to_nsz(filepath,buffer=65536,outfile=None,keepupd=False, level = 17,  th
 						if isthreaded==False:	
 							t.write('not packed!')
 
-				f = newNsp.add(nca._path, nca.size)
+				f = newNsp.add(nca._path, nca.size,t,isthreaded)
 
 				nca.seek(0)			
 				while not nca.eof():
@@ -525,9 +538,12 @@ def xci_to_nsz(filepath,buffer=65536,outfile=None,keepupd=False, level = 17,  th
 	try:
 		exchangefile.deletefile()
 	except:pass		
+	if isthreaded==True and nthreads!=False:	
+		for i in range(nthreads):
+			tqlist[i].close()	
 	return nszPath
 
-def compress(filePath,ofolder = None, level = 17,  threads = 0, delta=False, ofile= None, buffer=65536,pos=False):
+def compress(filePath,ofolder = None, level = 17,  threads = 0, delta=False, ofile= None, buffer=65536,pos=False, nthreads=False):
 	isthreaded=False
 	if pos!=False:
 		isthreaded=True
@@ -538,7 +554,12 @@ def compress(filePath,ofolder = None, level = 17,  threads = 0, delta=False, ofi
 	pos=int(pos)
 	files_list=sq_tools.ret_nsp_offsets(filePath)
 	files=list();filesizes=list()
-	fplist=list()
+	if isthreaded==True and nthreads!=False:
+		tqlist=list()
+		for i in range(nthreads):
+			tq = tqdm(total=0, unit='B', unit_scale=True, leave=False,position=i)
+			tqlist.append(tq)
+	fplist=list()			
 	for k in range(len(files_list)):
 		entry=files_list[k]
 		fplist.append(entry[0])
@@ -709,5 +730,7 @@ def compress(filePath,ofolder = None, level = 17,  threads = 0, delta=False, ofi
 					t.update(len(buffer))
 					f.write(buffer)
 	t.close()	
-
-	newNsp.close()
+	newNsp.close()	
+	if isthreaded==True and nthreads!=False:	
+		for i in range(nthreads):
+			tqlist[i].close()
