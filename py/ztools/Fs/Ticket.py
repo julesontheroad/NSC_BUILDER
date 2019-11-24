@@ -202,6 +202,14 @@ class Ticket(File):
 		self.accountId = value
 		self.writeInt32(value, 'big')
 		return self.accountId
+		
+	def titleId(self):
+		rightsId = format(self.getRightsId(), 'X').zfill(32)
+		return rightsId[0:16]
+
+	def titleKey(self):
+		return format(self.getTitleKeyBlock(), 'X').zfill(32)		
+	
 
 	def printInfo(self, indent = 0):
 		tabs = '\t' * indent

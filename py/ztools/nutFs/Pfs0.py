@@ -30,7 +30,9 @@ class Pfs0Stream():
 	def add(self, name, size,bar=False,isthreaded=False):
 		try:
 			if bar==False:
-				Print.info('- Appending: %s (%s)' % (name,str(sq_tools.getSize(int(size)))))
+				t = tqdm(total=0, unit='B', unit_scale=True, leave=False,position=0)	
+				t.write('- Appending: %s (%s)' % (name,str(sq_tools.getSize(int(size)))))
+				t.close()
 		except:
 			try:
 				if isthreaded==False:

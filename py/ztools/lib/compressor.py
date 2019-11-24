@@ -81,18 +81,24 @@ def supertrim_xci(filepath,buffer=65536,outfile=None,keepupd=False, level = 17, 
 			exchangefile.deletefile()
 		except:pass	
 	f=squirrelXCI(filepath)
+	t = tqdm(total=0, unit='B', unit_scale=True, leave=False,position=0)	
 	for nspF in f.hfs0:
 		if str(nspF._path)=="secure":
 			for ticket in nspF:						
 				if str(ticket._path).endswith('.tik'):
 					if isthreaded==False: 
-						print('- Titlerights: '+ticket.rightsId)
+						t.write('- Titlerights: '+ticket.rightsId)
 					tk=(str(hex(ticket.getTitleKeyBlock()))[2:]).upper()
 					if isthreaded==False:
-						print('- Titlekey: '+tk)
+						if len(tk)==30:
+							tk='00'+str(tk).upper()
+						if len(tk)==31:
+							tk='0'+str(tk).upper()									
+						t.write('- Titlekey: '+tk)
 					exchangefile.add(ticket.rightsId,tk)
 	f.flush()
 	f.close()
+	t.close()
 	files_list=sq_tools.ret_xci_offsets(filepath)
 	files=list();filesizes=list()
 	fplist=list()
