@@ -284,8 +284,8 @@ if __name__ == '__main__':
 		parser.add_argument('-pararell','--pararell', help="Number threads to use for certain functions")		
 		parser.add_argument('-lib_call','--library_call', nargs='+',  help="Call a library function within squirrel")
 		parser.add_argument('-loop','--loop', nargs='+', help="Loop the text file using secondary module")
-		parser.add_argument('-pos','--position', help="tqdm position")		
-		parser.add_argument('-ninst','--n_instances', help="number of instances")			
+		parser.add_argument('-pos','--position', help=argparse.SUPPRESS)#tqdm position, aux argument for pararell	
+		parser.add_argument('-ninst','--n_instances', help=argparse.SUPPRESS)#number of instances, aux argument for pararell			
 		args = parser.parse_args()
 
 		Status.start()
