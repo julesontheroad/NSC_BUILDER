@@ -366,7 +366,13 @@ def pararell(args,workers):
 				# print(str(p.poll()))
 				while pr.poll()==None:
 					sleep(3)
-					call('clear' if os.name =='posix' else 'cls')
+					if os.name =='posix':
+						call('clear')#linux
+					else:
+						try:
+							call('cls')#macos
+						except:
+							os.system('cls')#windows
 					listmanager.counter(tfile,doprint=True)	
 					p=0;index2=index-workers
 					for r in range(workers):

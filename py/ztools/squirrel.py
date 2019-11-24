@@ -320,6 +320,8 @@ if __name__ == '__main__':
 				args.pararell=None
 				try:
 					instances=int(args.threads)
+					if instances<= 0:
+						instances=1
 				except:	
 					instances=2
 				args.threads=0	
