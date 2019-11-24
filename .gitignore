@@ -32,3 +32,10 @@ py/lists/a_multi/mlist.txt
 *.nsx
 *.xci
 *.nsp
+py/test.py
+py/zconfig/metacritic_id.json
+py/ztools/lib/metacritic.py
+py/ztools/lib/ninshop.py
+py/ztools/cmd/__init__.py
+py/ztools/chromedriver.exe
+py/ztools/hactool.exe

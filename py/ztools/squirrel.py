@@ -115,7 +115,7 @@ if __name__ == '__main__':
 
 		# REPACK
 		parser.add_argument('-c', '--create', help='create / pack a NSP')
-		parser.add_argument('-cpr', '--compress', help='Compress a nsp or xci')
+		parser.add_argument('-cpr', '--compress', nargs='+', help='Compress a nsp or xci')
 		parser.add_argument('-dcpr', '--decompress', help='deCompress a nsz, xcz or ncz')
 		parser.add_argument('--create_hfs0', help='create / pack a hfs0')
 		parser.add_argument('--create_rhfs0', help='create / pack a root hfs0')
@@ -237,6 +237,8 @@ if __name__ == '__main__':
 		parser.add_argument('-uin', '--userinput', help='Reads a user input')
 		parser.add_argument('-incxml', '--includexml', nargs='+', help='Include xml by default true')
 		parser.add_argument('-trans', '--translate', nargs='+', help='Google translation support for nutdb descriptions')
+		#parser.add_argument('-exparg', '--explicit_arguments', nargs='+', help='Explicit arguments for lib_call')		
+		
 		# LISTMANAGER
 		parser.add_argument('-cl', '--change_line', help='Change line in text file')
 		parser.add_argument('-rl', '--read_line', help='Read line in text file')
@@ -281,6 +283,9 @@ if __name__ == '__main__':
 		parser.add_argument('-threads','--threads', help="Number threads to use for certain functions")
 		parser.add_argument('-pararell','--pararell', help="Number threads to use for certain functions")		
 		parser.add_argument('-lib_call','--library_call', nargs='+',  help="Call a library function within squirrel")
+		parser.add_argument('-loop','--loop', nargs='+', help="Loop the text file using secondary module")
+		parser.add_argument('-pos','--position', help=argparse.SUPPRESS)#tqdm position, aux argument for pararell	
+		parser.add_argument('-ninst','--n_instances', help=argparse.SUPPRESS)#number of instances, aux argument for pararell			
 		args = parser.parse_args()
 
 		Status.start()
@@ -288,7 +293,9 @@ if __name__ == '__main__':
 		indent = 1
 		tabs = '\t' * indent
 		trans=False
-
+		if args.file==list():
+			args.file=None
+			
 		if args.library_call:
 			import secondary
 			vret=secondary.call_library(args.library_call)
@@ -311,11 +318,57 @@ if __name__ == '__main__':
 			import secondary
 			instances=2
 			if args.pararell=='true':
+				args.pararell=None
 				try:
 					instances=int(args.threads)
+					if instances<= 0:
+						instances=1
 				except:	
 					instances=2
-				secondary.route(args,instances)
+				args.threads=0	
+				items=secondary.pararell(args,instances)
+				if items==0:
+					try:
+						os.remove(args.text_file)
+					except:
+						pass						
+					for attr in vars(args):
+						setattr(args,attr,None)	
+						
+		if args.loop and args.ifolder:							
+			if args.loop[0]!='true' and args.loop[0]!='false' and args.text_file!='false':
+				if os.path.exists(args.text_file):
+					try:
+						os.remove(args.text_file)
+					except:
+						pass				
+				import secondary
+				args0=args
+				args0.type=args0.loop
+				args0.loop=None
+				args0.findfile=args0.ifolder
+				args0.ifolder=None
+				secondary.pass_command(args0)
+				args.ifolder=None
+				args.findfile=None
+				loop=list()
+				loop.append('true')
+				args.loop=loop
+				
+		if args.loop and args.text_file:		
+			if str(args.loop[0]).lower()=='true':	
+				import secondary
+				args.loop=None
+				items=secondary.pass_command(args)
+				if items==0:
+					try:
+						os.remove(args.text_file)
+					except:
+						pass					
+					for attr in vars(args):
+						setattr(args,attr,None)				
+			else:
+				args.loop=None 
 						
 # NCA/NSP IDENTIFICATION
 		# ..................................................
@@ -2571,6 +2624,20 @@ if __name__ == '__main__':
 
 		# parser.add_argument('-cpr', '--compress', help='Compress a nsp or xci')
 		if args.compress:
+			if args.position:
+				try:
+					position=int(args.position)
+				except:
+					position=False
+			else:
+				position=False				
+			if args.n_instances:
+				try:
+					n_instances=int(args.n_instances)
+				except:
+					n_instances=False
+			else:
+				n_instances=False								
 			if args.nodelta:
 				for input in args.nodelta:
 					try:
@@ -2581,7 +2648,9 @@ if __name__ == '__main__':
 						else:
 							delta=False
 					except BaseException as e:
-						Print.error('Exception: ' + str(e))		
+						Print.error('Exception: ' + str(e))	
+			else:
+				delta=False
 			if args.fexport:
 				for input in args.fexport:
 					try:
@@ -2662,13 +2731,13 @@ if __name__ == '__main__':
 					except:
 						level=17
 					if filepath.endswith(".nsp"): 	
-						compressor.compress(filepath,ofolder,level,workers,delta)
+						compressor.compress(filepath,ofolder,level,workers,delta,pos=position,nthreads=n_instances)
 					elif filepath.endswith(".xci"):	
 						basename=os.path.basename(os.path.abspath(filepath))
 						if xci_exp=='nsz':
 							outfile=basename[:-3]+'nsz'
 							outfile =os.path.join(ofolder,outfile)	
-							nszPath=compressor.xci_to_nsz(filepath,buffer=65536,outfile=outfile,keepupd=False,level = level, threads = workers)												
+							nszPath=compressor.xci_to_nsz(filepath,buffer=65536,outfile=outfile,keepupd=False,level = level, threads = workers,pos=position,nthreads=n_instances)												
 							try:
 								f=Fs.Nsp(nszPath,'rb+')
 								f.seteshop()
@@ -2678,7 +2747,7 @@ if __name__ == '__main__':
 						else:	
 							outfile=basename[:-3]+'xcz'
 							outfile =os.path.join(ofolder,outfile)							
-							compressor.supertrim_xci(filepath,buffer=65536,outfile=outfile,keepupd=False,level = level, threads = workers)						
+							compressor.supertrim_xci(filepath,buffer=65536,outfile=outfile,keepupd=False,level = level, threads = workers,pos=position,nthreads=n_instances)						
 
 		# parser.add_argument('-dcpr', '--decompress', help='deCompress a nsz, xcz or ncz')
 		if args.decompress:
@@ -5982,8 +6051,12 @@ if __name__ == '__main__':
 		if args.show_current_line:
 			if args.show_current_line[0]:
 				textfile=args.show_current_line[0]
+				try:
+					number=args.show_current_line[1]
+				except:
+					number=1
 			try:
-				listmanager.printcurrent(textfile)
+				listmanager.printcurrent(textfile,number)
 			except BaseException as e:
 				Print.error('Exception: ' + str(e))
 

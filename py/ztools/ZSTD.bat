@@ -179,7 +179,8 @@ echo *******************************************************
 echo CHOOSE HOW TO PROCESS THE FILES
 echo *******************************************************
 echo Input "1" to compress nsp\xci to nsz\xcz
-echo Input "2" for decompress nsz\xcz
+echo Input "2" for  pararell compression
+echo Input "3" for decompress nsz\xcz
 echo.
 ECHO ******************************************
 echo Or Input "b" to return to the list options
@@ -190,7 +191,8 @@ set bs=%bs:"=%
 set choice=none
 if /i "%bs%"=="b" goto checkagain
 if /i "%bs%"=="1" goto compression_presets_menu
-if /i "%bs%"=="2" goto decompress
+if /i "%bs%"=="2" goto pararell_compress
+if /i "%bs%"=="3" goto decompress
 if %choice%=="none" goto s_cl_wrongchoice
 
 
@@ -269,7 +271,7 @@ echo Or Input "b" to return to the previous option
 echo Or Input "x" to return to the list options
 ECHO ******************************************
 echo.
-set /p bs="Input level number: "
+set /p bs="Input level number [1-22]: "
 set bs=%bs:"=%
 set choice=none
 if /i "%bs%"=="x" goto checkagain
@@ -300,7 +302,7 @@ echo Or Input "b" to return to the previous option
 echo Or Input "x" to return to the list options
 ECHO *********************************************
 echo.
-set /p bs="Input number of threads: "
+set /p bs="Input number of threads [-1;0-4]: "
 set bs=%bs:"=%
 set choice=none
 if /i "%bs%"=="x" goto checkagain
@@ -325,6 +327,86 @@ REM %pycommand% "%nut%" %buffer% -o "%fold_output%" -tfile "%prog_dir%zzlist.txt
 %pycommand% "%nut%" --strip_lines "%prog_dir%zzlist.txt"
 call :contador_NF
 )
+ECHO ---------------------------------------------------
+ECHO *********** ALL FILES WERE PROCESSED! *************
+ECHO ---------------------------------------------------
+goto s_exit_choice
+
+:pararell_compress_wrongchoice
+echo wrong choice
+echo ............
+:pararell_compress
+echo *******************************************************
+echo INPUT NUMBER OF INSTANCES TO USE
+echo *******************************************************
+echo Input a number of instances to use bigger than 0
+echo Wrong values are converted to 2. 0 is converted to 1
+echo Notes:
+echo  + You'll create a number of compressed file equal to
+echo    the number of instances
+echo  + If you have enough disk space instances are more 
+echo    efective than threads and have a lower compute power 
+echo    fingerprint 
+echo  + If you have enough disk space and compute power 
+echo    don't be afraid to try using 10-20 instances
+echo  + tqdm is a little wonky when printing pararell bars
+echo    with threads some so the screen will refresh 
+echo    each 3s in pararell mode to clear bad prints.
+echo.
+ECHO *********************************************
+echo Input "d" for default (4 instances)
+echo Or Input "b" to return to the previous option
+echo Or Input "x" to return to the list options
+ECHO *********************************************
+echo.
+set /p bs="Input number of instances [>1]: "
+set bs=%bs:"=%
+set choice=none
+if /i "%bs%"=="x" goto checkagain
+if /i "%bs%"=="b" goto start
+if /i "%bs%"=="d" set "bs=4"
+set "workers=%bs%"
+if %choice%=="none" goto pararell_compress_wrongchoice
+
+:pararell_levels_wrongchoice
+echo wrong choice
+echo ............
+:pararell_levels
+echo *******************************************************
+echo INPUT COMPRESSION LEVEL
+echo *******************************************************
+echo Input a compression level between 1 and 22
+echo Notes:
+echo  + Level 1 - Fast and smaller compression ratio
+echo  + Level 22 - Slow but better compression ratio
+echo  Levels 10-17 are recommended in the spec
+echo.
+ECHO ******************************************
+echo Input "d" for default (level 17)
+echo Or Input "b" to return to the previous option
+echo Or Input "x" to return to the list options
+ECHO ******************************************
+echo.
+set /p bs="Input level number [1-22]: "
+set bs=%bs:"=%
+set choice=none
+if /i "%bs%"=="x" goto checkagain
+if /i "%bs%"=="b" goto pararell_compress
+if /i "%bs%"=="d" set "bs=17"
+set "level=%bs%"
+if %choice%=="none" goto pararell_levels_wrongchoice
+goto pcompress
+:pcompress
+cls
+call :program_logo
+echo *******************************
+echo NSP\XCI PARARELL COMPRESSION 
+echo *******************************
+CD /d "%prog_dir%"
+%pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%zzlist.txt","ext=nsp xci","token=False",Print="False"
+
+%pycommand% "%nut%" %buffer% -o "%fold_output%" -tfile "%prog_dir%zzlist.txt" --compress "%level%" --threads "%workers%" --nodelta "%skdelta%" --fexport "%xci_export%" --pararell "true"
+
 ECHO ---------------------------------------------------
 ECHO *********** ALL FILES WERE PROCESSED! *************
 ECHO ---------------------------------------------------
@@ -412,7 +494,7 @@ ECHO =============================     BY JULESONTHEROAD     ===================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                                POWERED BY SQUIRREL                                "
 ECHO "                    BASED ON THE WORK OF BLAWAR AND LUCA FRAGA                     "
-ECHO                                     VERSION 0.96
+ECHO                                    VERSION 0.96d
 ECHO -------------------------------------------------------------------------------------                   
 ECHO Program's github: https://github.com/julesontheroad/NSC_BUILDER
 ECHO Blawar's github:  https://github.com/blawar

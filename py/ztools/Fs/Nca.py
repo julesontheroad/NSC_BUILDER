@@ -1771,10 +1771,14 @@ class Nca(File):
 								kakasi.setMode("a", None)
 								kakasi.setMode("C", False)
 								converter = kakasi.getConverter()
+								ogname=title
+								ogeditor=editor
 								title=converter.do(title)	
 								title=title[0].upper()+title[1:]
 								editor=converter.do(editor)		
 								editor=editor[0].upper()+editor[1:]	
+								title=self.choose_name(title,ogname)
+								editor=self.choose_name(editor,ogeditor)								
 							else:pass							
 						title=re.sub(' +', ' ',title)
 						editor=re.sub(' +', ' ',editor)
@@ -1783,7 +1787,33 @@ class Nca(File):
 					pass
 		regionstr="0|0|0|0|0|0|0|0|0|0|0|0|0|0"		
 		ediver='-'		
-		return(title,"",ediver,"",regionstr,"")			
+		return(title,"",ediver,"",regionstr,"")		
+
+	def choose_name(self,name,ogname):
+		from difflib import SequenceMatcher
+		_name=name;_ogname=ogname
+		name = re.sub(r'[àâá@äå]', 'a', name);name = re.sub(r'[ÀÂÁÄÅ]', 'A', name)
+		name = re.sub(r'[èêéë]', 'e', name);name = re.sub(r'[ÈÊÉË]', 'E', name)
+		name = re.sub(r'[ìîíï]', 'i', name);name = re.sub(r'[ÌÎÍÏ]', 'I', name)
+		name = re.sub(r'[òôóöø]', 'o', name);name = re.sub(r'[ÒÔÓÖØ]', 'O', name)
+		name = re.sub(r'[ùûúü]', 'u', name);name = re.sub(r'[ÙÛÚÜ]', 'U', name)
+		name=name.lower()	
+		name = list([val for val in name if val.isalnum()]) 
+		name = "".join(name) 	
+		
+		ogname = re.sub(r'[àâá@äå]', 'a', ogname);ogname = re.sub(r'[ÀÂÁÄÅ]', 'A', ogname)
+		ogname = re.sub(r'[èêéë]', 'e', ogname);ogname = re.sub(r'[ÈÊÉË]', 'E', ogname)
+		ogname = re.sub(r'[ìîíï]', 'i', ogname);ogname = re.sub(r'[ÌÎÍÏ]', 'I', ogname)
+		ogname = re.sub(r'[òôóöø]', 'o', ogname);ogname = re.sub(r'[ÒÔÓÖØ]', 'O', ogname)
+		ogname = re.sub(r'[ùûúü]', 'u', ogname);ogname = re.sub(r'[ÙÛÚÜ]', 'U', ogname)			
+		ogname=ogname.lower()	
+		ogname = list([val for val in ogname if val.isalnum()]) 
+		ogname = "".join(ogname) 
+		
+		ratio=SequenceMatcher(None, name, ogname).ratio()
+		if ratio==1.0:
+			return _ogname
+		return _name
 
 	def get_sdkversion(self):		
 		sdkversion=str(self.header.sdkVersion4)+'.'+str(self.header.sdkVersion3)+'.'+str(self.header.sdkVersion2)+'.'+str(self.header.sdkVersion1)	

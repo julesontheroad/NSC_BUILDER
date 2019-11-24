@@ -31,20 +31,27 @@ def striplines(textfile,number=1,counter=False):
 		print('STILL '+str(c)+' FILES TO PROCESS')
 		print('...................................................')
 			
-def counter(textfile):
+def counter(textfile,doprint=False):	
 	counter=0
 	with open(textfile,'r', encoding='utf8') as f:
 		for line in f:
-			counter+=1	
+			counter+=1
+	if doprint!=False:			
+		print('...................................................')
+		print('STILL '+str(counter)+' FILES TO PROCESS')
+		print('...................................................') 		
 	return counter
 
 def printcurrent(textfile,number=1,counter=False):
 	currentline=''
+	number=int(number)
 	with open(textfile,'r', encoding='utf8') as f:
 		i=0
 		for line in f:
-			print(line)
-			break
+			i+=1
+			print(line.strip())
+			if i==number:
+				break
 			
 def read_lines_to_list(textfile,number=1,all=False):
 	#print(textfile)

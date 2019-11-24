@@ -76,6 +76,10 @@ class Exchange():
 	def add(titlerights,titlekey):
 		dbstr=str()
 		dbstr+=str(titlerights).upper()+'|'
+		if len(titlekey)==30:
+			titlekey='00'+str(titlekey).upper()
+		if len(titlekey)==31:
+			titlekey='0'+str(titlekey).upper()
 		dbstr+=str(titlekey).upper()
 		with open(exchangefile, 'a') as dbfile:			
 			dbfile.write(dbstr+ '\n')		
@@ -85,7 +89,9 @@ class Exchange():
 			readCSV = csv.reader(csvfile, delimiter='|')		
 			for row in readCSV:
 				if row[0]==titlerights.upper():
-					return row[1]
+					tk=row[1]
+					tk.strip()
+					return tk
 		return None			
 		
 	def deletefile():

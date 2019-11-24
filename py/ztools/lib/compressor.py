@@ -67,23 +67,45 @@ def foldercompress(ifolder, ofolder = None, level = 17, threads = 0, t=['nsp']):
 		
 		
 		
-def supertrim_xci(filepath,buffer=65536,outfile=None,keepupd=False, level = 17,  threads = 0):
-	try:
-		exchangefile.deletefile()
-	except:pass	
+def supertrim_xci(filepath,buffer=65536,outfile=None,keepupd=False, level = 17,  threads = 0, pos=False, nthreads=False):
+	isthreaded=False
+	if pos!=False:
+		isthreaded=True
+	elif str(pos)=='0':
+		isthreaded=True		
+	else:
+		pos=0
+	pos=int(pos) 
+	if isthreaded==False:
+		try:
+			exchangefile.deletefile()
+		except:pass	
 	f=squirrelXCI(filepath)
+	t = tqdm(total=0, unit='B', unit_scale=True, leave=False,position=0)	
 	for nspF in f.hfs0:
 		if str(nspF._path)=="secure":
 			for ticket in nspF:						
 				if str(ticket._path).endswith('.tik'):
-					print('- Titlerights: '+ticket.rightsId)
+					if isthreaded==False: 
+						t.write('- Titlerights: '+ticket.rightsId)
 					tk=(str(hex(ticket.getTitleKeyBlock()))[2:]).upper()
-					print('- Titlekey: '+tk)
+					if isthreaded==False:
+						if len(tk)==30:
+							tk='00'+str(tk).upper()
+						if len(tk)==31:
+							tk='0'+str(tk).upper()									
+						t.write('- Titlekey: '+tk)
 					exchangefile.add(ticket.rightsId,tk)
 	f.flush()
 	f.close()
+	t.close()
 	files_list=sq_tools.ret_xci_offsets(filepath)
 	files=list();filesizes=list()
+	if isthreaded==True and nthreads!=False:
+		tqlist=list()
+		for i in range(nthreads):
+			tq = tqdm(total=0, unit='B', unit_scale=True, leave=False,position=i)
+			tqlist.append(tq)	
 	fplist=list()
 	for k in range(len(files_list)):
 		entry=files_list[k]
@@ -109,24 +131,24 @@ def supertrim_xci(filepath,buffer=65536,outfile=None,keepupd=False, level = 17, 
 					# print(str(row['NcaId'])+'.cnmt.nca')
 					files.append(str(row['NcaId'])+'.cnmt.nca')
 					filesizes.append(int(row['Size']))					
-			for k in range(len(files_list)):
-				entry=files_list[k]
-				fp=entry[0];sz=int(entry[3])
-				if fp.endswith('xml'):
-					files.append(fp)
-					filesizes.append(sz)					
-			for k in range(len(files_list)):
-				entry=files_list[k]
-				fp=entry[0];sz=int(entry[3])
-				if fp.endswith('.tik'):
-					files.append(fp)	
-					filesizes.append(sz)					
-			for k in range(len(files_list)):
-				entry=files_list[k]
-				fp=entry[0];sz=int(entry[3])
-				if fp.endswith('.cert'):
-					files.append(fp)	
-					filesizes.append(sz)
+	for k in range(len(files_list)):
+		entry=files_list[k]
+		fp=entry[0];sz=int(entry[3])
+		if fp.endswith('xml'):
+			files.append(fp)
+			filesizes.append(sz)					
+	for k in range(len(files_list)):
+		entry=files_list[k]
+		fp=entry[0];sz=int(entry[3])
+		if fp.endswith('.tik'):
+			files.append(fp)	
+			filesizes.append(sz)					
+	for k in range(len(files_list)):
+		entry=files_list[k]
+		fp=entry[0];sz=int(entry[3])
+		if fp.endswith('.cert'):
+			files.append(fp)	
+			filesizes.append(sz)
 	sec_hashlist=list()
 	f=squirrelXCI(filepath)
 	try:
@@ -165,8 +187,28 @@ def supertrim_xci(filepath,buffer=65536,outfile=None,keepupd=False, level = 17, 
 		nszPath=outfile
 	nszPath = os.path.abspath(nszPath)
 	
-	Print.info('Compressing with level %d and %d threads' % (compressionLevel, threads))	
-	Print.info('\n  %s -> %s \n' % (filepath, nszPath))	
+	tsize=properheadsize
+	for sz in filesizes:
+		tsize+=sz
+	if isthreaded==True:		
+		from colorama import Fore	
+		colors=Fore.__dict__
+		k=0;l=pos
+		for col in colors:
+			if l>len(colors):
+				l=l-len(colors)			
+			color=colors[col]
+			if k==(l+1):
+				break
+			else:
+				k+=1
+		t = tqdm(total=tsize, unit='B', unit_scale=True, leave=False,position=pos,bar_format="{l_bar}%s{bar}%s{r_bar}" % (color, Fore.RESET))	
+	else:
+		t = tqdm(total=tsize, unit='B', unit_scale=True, leave=False,position=0)		
+	
+	if isthreaded==False:
+		t.write('Compressing with level %d and %d threads' % (compressionLevel, threads))	
+		t.write('\n  %s -> %s \n' % (filepath, nszPath))	
 
 	newNsp = nutFs.Pfs0.Pfs0Stream(nszPath,headsize=properheadsize,mode='wb+')
 	
@@ -184,7 +226,7 @@ def supertrim_xci(filepath,buffer=65536,outfile=None,keepupd=False, level = 17, 
 
 								newFileName = nca._path[0:-1] + 'z'
 
-								f = newNsp.add(newFileName, nca.size)
+								f = newNsp.add(newFileName, nca.size,t,isthreaded)
 								
 								start = f.tell()
 
@@ -215,13 +257,13 @@ def supertrim_xci(filepath,buffer=65536,outfile=None,keepupd=False, level = 17, 
 									header += fs.cryptoCounter
 									
 								f.write(header)
+								t.update(len(header))
 								written += len(header)
 								timestamp = time.time()
 								decompressedBytes = ncaHeaderSize
 								totsize=0
 								for fs in sortedFs(nca):
 									totsize+=fs.size
-								t = tqdm(total=totsize, unit='B', unit_scale=True, leave=False)
 
 								for section in sections:
 									#print('offset: %x\t\tsize: %x\t\ttype: %d\t\tiv%s' % (section.offset, section.size, section.cryptoType, str(hx(section.cryptoCounter))))
@@ -236,7 +278,7 @@ def supertrim_xci(filepath,buffer=65536,outfile=None,keepupd=False, level = 17, 
 										written += compressor.write(buffer)
 										
 										decompressedBytes += len(buffer)
-								t.close()							
+															
 								compressor.flush(zstandard.FLUSH_FRAME)
 
 								elapsed = time.time() - timestamp
@@ -246,25 +288,28 @@ def supertrim_xci(filepath,buffer=65536,outfile=None,keepupd=False, level = 17, 
 								speed = 0 if elapsed == 0 else (nca.size / elapsed)				
 
 								written = f.tell() - start
-								print('\n  * Compressed at %d%% from %s to %s  - %s' % (int(written * 100 / nca.size), str(sq_tools.getSize(decompressedBytes)), str(sq_tools.getSize(written)), nca._path))
-								print('  * Compressed in %02d:%02d at speed: %.1f MB/s\n' % (minutes, seconds, speed / 1000000.0))				
+								if isthreaded==False:
+									t.write('\n  * Compressed at %d%% from %s to %s  - %s' % (int(written * 100 / nca.size), str(sq_tools.getSize(decompressedBytes)), str(sq_tools.getSize(written)), nca._path))
+									t.write('  * Compressed in %02d:%02d at speed: %.1f MB/s\n' % (minutes, seconds, speed / 1000000.0))				
 								newNsp.resize(newFileName, written)
 								files2.append(newFileName)
 								filesizes2.append(written)
 								continue
 							else:
-								print('not packed!')
+								if isthreaded==False:
+									t.write('not packed!')
 
-						f = newNsp.add(nca._path, nca.size)
+						f = newNsp.add(nca._path, nca.size,t,isthreaded)
 						files2.append(nca._path)
 						filesizes2.append(nca.size)
 						nca.seek(0)			
-						t = tqdm(total=nca.size, unit='B', unit_scale=True, leave=False)
+
 						while not nca.eof():
 							buffer = nca.read(CHUNK_SZ)
 							t.update(len(buffer))
 							f.write(buffer)
-						t.close()	
+						
+	t.close()					
 	newNsp.close()		
 
 	xci_header,game_info,sig_padding,xci_certificate,root_header,upd_header,norm_header,sec_header,rootSize,upd_multiplier,norm_multiplier,sec_multiplier=sq_tools.get_xciheader(files2,filesizes2,sec_hashlist)						
@@ -282,11 +327,22 @@ def supertrim_xci(filepath,buffer=65536,outfile=None,keepupd=False, level = 17, 
 	try:
 		exchangefile.deletefile()
 	except:pass			
+	if isthreaded==True and nthreads!=False:	
+		for i in range(nthreads):
+			tqlist[i].close()
 	return nszPath	
 	
 		
 		
-def xci_to_nsz(filepath,buffer=65536,outfile=None,keepupd=False, level = 17,  threads = 0):
+def xci_to_nsz(filepath,buffer=65536,outfile=None,keepupd=False, level = 17,  threads = 0, pos=False, nthreads=False):
+	isthreaded=False
+	if pos!=False:
+		isthreaded=True
+	elif str(pos)=='0':
+		isthreaded=True		
+	else:
+		pos=0
+	pos=int(pos)    
 	try:
 		exchangefile.deletefile()
 	except:pass	
@@ -295,14 +351,21 @@ def xci_to_nsz(filepath,buffer=65536,outfile=None,keepupd=False, level = 17,  th
 		if str(nspF._path)=="secure":
 			for ticket in nspF:						
 				if str(ticket._path).endswith('.tik'):
-					print('- Titlerights: '+ticket.rightsId)
+					if isthreaded==False: 
+						print('- Titlerights: '+ticket.rightsId)
 					tk=(str(hex(ticket.getTitleKeyBlock()))[2:]).upper()
-					print('- Titlekey: '+tk)
+					if isthreaded==False: 
+						print('- Titlekey: '+tk)
 					exchangefile.add(ticket.rightsId,tk)
 	f.flush()
 	f.close()	
 	files_list=sq_tools.ret_xci_offsets(filepath)
 	files=list();filesizes=list()
+	if isthreaded==True and nthreads!=False:
+		tqlist=list()
+		for i in range(nthreads):
+			tq = tqdm(total=0, unit='B', unit_scale=True, leave=False,position=i)
+			tqlist.append(tq)
 	fplist=list()
 	for k in range(len(files_list)):
 		entry=files_list[k]
@@ -328,24 +391,24 @@ def xci_to_nsz(filepath,buffer=65536,outfile=None,keepupd=False, level = 17,  th
 					# print(str(row['NcaId'])+'.cnmt.nca')
 					files.append(str(row['NcaId'])+'.cnmt.nca')
 					filesizes.append(int(row['Size']))					
-			for k in range(len(files_list)):
-				entry=files_list[k]
-				fp=entry[0];sz=int(entry[3])
-				if fp.endswith('xml'):
-					files.append(fp)
-					filesizes.append(sz)					
-			for k in range(len(files_list)):
-				entry=files_list[k]
-				fp=entry[0];sz=int(entry[3])
-				if fp.endswith('.tik'):
-					files.append(fp)	
-					filesizes.append(sz)					
-			for k in range(len(files_list)):
-				entry=files_list[k]
-				fp=entry[0];sz=int(entry[3])
-				if fp.endswith('.cert'):
-					files.append(fp)	
-					filesizes.append(sz)
+	for k in range(len(files_list)):
+		entry=files_list[k]
+		fp=entry[0];sz=int(entry[3])
+		if fp.endswith('xml'):
+			files.append(fp)
+			filesizes.append(sz)					
+	for k in range(len(files_list)):
+		entry=files_list[k]
+		fp=entry[0];sz=int(entry[3])
+		if fp.endswith('.tik'):
+			files.append(fp)	
+			filesizes.append(sz)					
+	for k in range(len(files_list)):
+		entry=files_list[k]
+		fp=entry[0];sz=int(entry[3])
+		if fp.endswith('.cert'):
+			files.append(fp)	
+			filesizes.append(sz)
 	nspheader=sq_tools.gen_nsp_header(files,filesizes)
 	properheadsize=len(nspheader)
 
@@ -357,8 +420,28 @@ def xci_to_nsz(filepath,buffer=65536,outfile=None,keepupd=False, level = 17,  th
 		nszPath=outfile
 	nszPath = os.path.abspath(nszPath)
 	
-	Print.info('Compressing with level %d and %d threads' % (compressionLevel, threads))	
-	Print.info('\n  %s -> %s \n' % (filepath, nszPath))	
+	tsize=properheadsize
+	for sz in filesizes:
+		tsize+=sz
+	if isthreaded==True:		
+		from colorama import Fore	
+		colors=Fore.__dict__
+		k=0;l=pos
+		for col in colors:
+			if l>len(colors):
+				l=l-len(colors)			
+			color=colors[col]
+			if k==(l+1):
+				break
+			else:
+				k+=1
+		t = tqdm(total=tsize, unit='B', unit_scale=True, leave=False,position=pos,bar_format="{l_bar}%s{bar}%s{r_bar}" % (color, Fore.RESET))	
+	else:
+		t = tqdm(total=tsize, unit='B', unit_scale=True, leave=False,position=0)		
+	
+	if isthreaded==False:	
+		t.write('Compressing with level %d and %d threads' % (compressionLevel, threads))	
+		t.write('\n  %s -> %s \n' % (filepath, nszPath))	
 
 	newNsp = nutFs.Pfs0.Pfs0Stream(nszPath,headsize=properheadsize,mode='wb+')
 	
@@ -373,7 +456,7 @@ def xci_to_nsz(filepath,buffer=65536,outfile=None,keepupd=False, level = 17,  th
 
 						newFileName = nca._path[0:-1] + 'z'
 
-						f = newNsp.add(newFileName, nca.size)
+						f = newNsp.add(newFileName, nca.size,t,isthreaded)
 						
 						start = f.tell()
 
@@ -410,7 +493,6 @@ def xci_to_nsz(filepath,buffer=65536,outfile=None,keepupd=False, level = 17,  th
 						totsize=0
 						for fs in sortedFs(nca):
 							totsize+=fs.size
-						t = tqdm(total=totsize, unit='B', unit_scale=True, leave=False)
 
 						for section in sections:
 							#print('offset: %x\t\tsize: %x\t\ttype: %d\t\tiv%s' % (section.offset, section.size, section.cryptoType, str(hx(section.cryptoCounter))))
@@ -425,7 +507,7 @@ def xci_to_nsz(filepath,buffer=65536,outfile=None,keepupd=False, level = 17,  th
 								written += compressor.write(buffer)
 								
 								decompressedBytes += len(buffer)
-						t.close()							
+													
 						compressor.flush(zstandard.FLUSH_FRAME)
 
 						elapsed = time.time() - timestamp
@@ -435,33 +517,49 @@ def xci_to_nsz(filepath,buffer=65536,outfile=None,keepupd=False, level = 17,  th
 						speed = 0 if elapsed == 0 else (nca.size / elapsed)				
 						
 						written = f.tell() - start
-						print('\n  * Compressed at %d%% from %s to %s  - %s' % (int(written * 100 / nca.size), str(sq_tools.getSize(decompressedBytes)), str(sq_tools.getSize(written)), nca._path))
-						print('  * Compressed in %02d:%02d at speed: %.1f MB/s\n' % (minutes, seconds, speed / 1000000.0))				
+						if isthreaded==False:	
+							t.write('\n  * Compressed at %d%% from %s to %s  - %s' % (int(written * 100 / nca.size), str(sq_tools.getSize(decompressedBytes)), str(sq_tools.getSize(written)), nca._path))
+							t.write('  * Compressed in %02d:%02d at speed: %.1f MB/s\n' % (minutes, seconds, speed / 1000000.0))				
 						newNsp.resize(newFileName, written)
 						continue
 					else:
-						print('not packed!')
+						if isthreaded==False:	
+							t.write('not packed!')
 
-				f = newNsp.add(nca._path, nca.size)
-
+				f = newNsp.add(nca._path, nca.size,t,isthreaded)
 
 				nca.seek(0)			
-				t = tqdm(total=nca.size, unit='B', unit_scale=True, leave=False)
 				while not nca.eof():
 					buffer = nca.read(CHUNK_SZ)
 					t.update(len(buffer))
 					f.write(buffer)
-				t.close()	
+	t.close()				
 	newNsp.close()		
 	try:
 		exchangefile.deletefile()
 	except:pass		
+	if isthreaded==True and nthreads!=False:	
+		for i in range(nthreads):
+			tqlist[i].close()	
 	return nszPath
 
-def compress(filePath,ofolder = None, level = 17,  threads = 0, delta=False, ofile= None, buffer=65536):
+def compress(filePath,ofolder = None, level = 17,  threads = 0, delta=False, ofile= None, buffer=65536,pos=False, nthreads=False):
+	isthreaded=False
+	if pos!=False:
+		isthreaded=True
+	elif str(pos)=='0':
+		isthreaded=True		
+	else:
+		pos=0
+	pos=int(pos)
 	files_list=sq_tools.ret_nsp_offsets(filePath)
 	files=list();filesizes=list()
-	fplist=list()
+	if isthreaded==True and nthreads!=False:
+		tqlist=list()
+		for i in range(nthreads):
+			tq = tqdm(total=0, unit='B', unit_scale=True, leave=False,position=i)
+			tqlist.append(tq)
+	fplist=list()			
 	for k in range(len(files_list)):
 		entry=files_list[k]
 		fplist.append(entry[0])
@@ -486,24 +584,24 @@ def compress(filePath,ofolder = None, level = 17,  threads = 0, delta=False, ofi
 					# print(str(row['NcaId'])+'.cnmt.nca')
 					files.append(str(row['NcaId'])+'.cnmt.nca')
 					filesizes.append(int(row['Size']))					
-			for k in range(len(files_list)):
-				entry=files_list[k]
-				fp=entry[0];sz=int(entry[3])
-				if fp.endswith('xml'):
-					files.append(fp)
-					filesizes.append(sz)					
-			for k in range(len(files_list)):
-				entry=files_list[k]
-				fp=entry[0];sz=int(entry[3])
-				if fp.endswith('.tik'):
-					files.append(fp)	
-					filesizes.append(sz)					
-			for k in range(len(files_list)):
-				entry=files_list[k]
-				fp=entry[0];sz=int(entry[3])
-				if fp.endswith('.cert'):
-					files.append(fp)	
-					filesizes.append(sz)
+	for k in range(len(files_list)):
+		entry=files_list[k]
+		fp=entry[0];sz=int(entry[3])
+		if fp.endswith('xml'):
+			files.append(fp)
+			filesizes.append(sz)					
+	for k in range(len(files_list)):
+		entry=files_list[k]
+		fp=entry[0];sz=int(entry[3])
+		if fp.endswith('.tik'):
+			files.append(fp)	
+			filesizes.append(sz)					
+	for k in range(len(files_list)):
+		entry=files_list[k]
+		fp=entry[0];sz=int(entry[3])
+		if fp.endswith('.cert'):
+			files.append(fp)	
+			filesizes.append(sz)
 	nspheader=sq_tools.gen_nsp_header(files,filesizes)
 	properheadsize=len(nspheader)
 	
@@ -520,19 +618,37 @@ def compress(filePath,ofolder = None, level = 17,  threads = 0, delta=False, ofi
 		nszPath = os.path.join(ofolder, os.path.basename(filePath[0:-1] + 'z'))
 	elif ofile is not None:
 		nszPath = ofile	
-		
-	nszPath = os.path.abspath(nszPath)
 	
-	Print.info('Compressing with level %d and %d threads' % (compressionLevel, threads))	
-	Print.info('\n  %s -> %s \n' % (filePath, nszPath))	
-
+	tsize=properheadsize
+	for sz in filesizes:
+		tsize+=sz
+	if isthreaded==True:		
+		from colorama import Fore	
+		colors=Fore.__dict__
+		k=0;l=pos
+		for col in colors:
+			if l>len(colors):
+				l=l-len(colors)			
+			color=colors[col]
+			if k==(l+1):
+				break
+			else:
+				k+=1
+		t = tqdm(total=tsize, unit='B', unit_scale=True, leave=False,position=pos,bar_format="{l_bar}%s{bar}%s{r_bar}" % (color, Fore.RESET))	
+	else:
+		t = tqdm(total=tsize, unit='B', unit_scale=True, leave=False,position=0)
+	nszPath = os.path.abspath(nszPath)
+	if isthreaded==False:
+		t.write('\n Compressing with level %d and %d threads' % (compressionLevel, threads))	
+		t.write('%s -> %s \n' % (filePath, nszPath))	
 	newNsp = nutFs.Pfs0.Pfs0Stream(nszPath,headsize=properheadsize)
 	
 	for file in files:
 		for nspf in container:
 			if nspf._path==file:
 				if isinstance(nspf, nutFs.Nca.Nca) and nspf.header.contentType == nutFs.Type.Content.DATA and delta==False:
-					Print.info('-> Skipping delta fragment')
+					if isthreaded==False: 
+						t.write('-> Skipping delta fragment')
 					continue
 					
 				if isinstance(nspf, nutFs.Nca.Nca) and (nspf.header.contentType == nutFs.Type.Content.PROGRAM or nspf.header.contentType == nutFs.Type.Content.PUBLIC_DATA):
@@ -541,7 +657,7 @@ def compress(filePath,ofolder = None, level = 17,  threads = 0, delta=False, ofi
 
 						newFileName = nspf._path[0:-1] + 'z'
 
-						f = newNsp.add(newFileName, nspf.size)
+						f = newNsp.add(newFileName, nspf.size,t,isthreaded)
 						
 						start = f.tell()
 
@@ -575,7 +691,6 @@ def compress(filePath,ofolder = None, level = 17,  threads = 0, delta=False, ofi
 						totsize=0
 						for fs in sortedFs(nspf):
 							totsize+=fs.size
-						t = tqdm(total=totsize, unit='B', unit_scale=True, leave=False)
 
 						for section in sections:
 							#print('offset: %x\t\tsize: %x\t\ttype: %d\t\tiv%s' % (section.offset, section.size, section.cryptoType, str(hx(section.cryptoCounter))))
@@ -590,7 +705,7 @@ def compress(filePath,ofolder = None, level = 17,  threads = 0, delta=False, ofi
 								written += compressor.write(buffer)
 								
 								decompressedBytes += len(buffer)
-						t.close()							
+							
 						compressor.flush(zstandard.FLUSH_FRAME)
 
 						elapsed = time.time() - timestamp
@@ -600,20 +715,22 @@ def compress(filePath,ofolder = None, level = 17,  threads = 0, delta=False, ofi
 						speed = 0 if elapsed == 0 else (nspf.size / elapsed)	
 									
 						written = f.tell() - start
-						print('\n  * Compressed at %d%% from %s to %s  - %s' % (int(written * 100 / nspf.size), str(sq_tools.getSize(decompressedBytes)), str(sq_tools.getSize(written)), nspf._path))						
-						print('  * Compressed in %02d:%02d at speed: %.1f MB/s\n' % (minutes, seconds, speed / 1000000.0))				
+						if isthreaded==False: 
+							t.write('\n  * Compressed at %d%% from %s to %s  - %s' % (int(written * 100 / nspf.size), str(sq_tools.getSize(decompressedBytes)), str(sq_tools.getSize(written)), nspf._path))						
+							t.write('  * Compressed in %02d:%02d at speed: %.1f MB/s\n' % (minutes, seconds, speed / 1000000.0))				
 						newNsp.resize(newFileName, written)
 						continue
 					else:
 						print('not packed!')
 
-				f = newNsp.add(nspf._path, nspf.size)
+				f = newNsp.add(nspf._path, nspf.size,t,isthreaded)
 				nspf.seek(0)
-				t = tqdm(total=nspf.size, unit='B', unit_scale=True, leave=False)
 				while not nspf.eof():
 					buffer = nspf.read(CHUNK_SZ)
 					t.update(len(buffer))
 					f.write(buffer)
-				t.close()	
-
-	newNsp.close()
+	t.close()	
+	newNsp.close()	
+	if isthreaded==True and nthreads!=False:	
+		for i in range(nthreads):
+			tqlist[i].close()

@@ -58,8 +58,7 @@ class Ticket(File):
 		self.deviceId = hx(self.read(0x8)).decode('utf-8')
 		self.rightsId = hx(self.read(0x10)).decode('utf-8')
 		self.accountId = hx(self.read(0x4)).decode('utf-8')
-		self.seek(0x286)
-		self.masterKeyRevision = self.readInt8()
+		self.masterKeyRevision = self.getMasterKeyRevision()
 
 	def seekStart(self, offset):
 		self.seek(0x4 + self.signatureSizes[self.signatureType] + self.signaturePadding + offset)
@@ -136,16 +135,17 @@ class Ticket(File):
 
 
 	def getMasterKeyRevision(self):
-		self.seekStart(0x145)
+		self.seekStart(0x144)
 		self.masterKeyRevision = self.readInt8() | self.readInt8()
 		if self.masterKeyRevision == 0:
 			self.rewind()
-			self.seekStart(0x144)
+			self.seekStart(0x145)
 			self.masterKeyRevision = self.readInt8() | self.readInt8()
 			if self.masterKeyRevision == 0:
 				filename = str(self._path)
 				filename = filename[:-4] 
 				filename = filename[-2:-1] 
+				filename=bytearray.fromhex(filename)
 				self.masterKeyRevision = int(filename,16) 
 		return self.masterKeyRevision
 
@@ -202,6 +202,14 @@ class Ticket(File):
 		self.accountId = value
 		self.writeInt32(value, 'big')
 		return self.accountId
+		
+	def titleId(self):
+		rightsId = format(self.getRightsId(), 'X').zfill(32)
+		return rightsId[0:16]
+
+	def titleKey(self):
+		return format(self.getTitleKeyBlock(), 'X').zfill(32)		
+	
 
 	def printInfo(self, indent = 0):
 		tabs = '\t' * indent
@@ -215,7 +223,7 @@ class Ticket(File):
 		Print.info(tabs + 'rightsId = ' + hex(self.getRightsId()))
 		Print.info(tabs + 'accountId = ' + str(self.accountId))
 		Print.info(tabs + 'titleKey = ' + hex(self.getTitleKeyBlock()))
-		Print.info(tabs + 'titleKeyDec = ' + str(hx(Keys.decryptTitleKey((self.getTitleKey()), self.masterKeyRevision))))
+		Print.info(tabs + 'titleKeyDec = ' + str(hx(Keys.decryptTitleKey((self.getTitleKey()), (Keys.getMasterKeyIndex(self.masterKeyRevision))))))
 
 
 class PublicTik():
