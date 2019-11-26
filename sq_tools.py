@@ -1358,7 +1358,7 @@ def check_if_foot_signed(filepath,realsize,cryptokey=None):
 		else:
 			return False
 		
-def add_signed_footer(filepath,message=None,encrypted=None,cryptokey=None):
+def add_signed_footer(filepath,message=None,encrypted=None,cryptokey=None):	
 	result,realsize=check_if_trimmed(filepath)	
 	if result==False:
 		result2=check_if_foot_signed(filepath,realsize)

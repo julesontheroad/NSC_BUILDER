@@ -237,7 +237,7 @@ if __name__ == '__main__':
 		parser.add_argument('-uin', '--userinput', help='Reads a user input')
 		parser.add_argument('-incxml', '--includexml', nargs='+', help='Include xml by default true')
 		parser.add_argument('-trans', '--translate', nargs='+', help='Google translation support for nutdb descriptions')
-		#parser.add_argument('-exparg', '--explicit_arguments', nargs='+', help='Explicit arguments for lib_call')		
+		parser.add_argument('-nodcr', '--nodecompress', help="Don't decompress nsz_xcz in several modes")	
 		
 		# LISTMANAGER
 		parser.add_argument('-cl', '--change_line', help='Change line in text file')
@@ -284,8 +284,11 @@ if __name__ == '__main__':
 		parser.add_argument('-pararell','--pararell', help="Number threads to use for certain functions")		
 		parser.add_argument('-lib_call','--library_call', nargs='+',  help="Call a library function within squirrel")
 		parser.add_argument('-loop','--loop', nargs='+', help="Loop the text file using secondary module")
+		
+		# Hidden
 		parser.add_argument('-pos','--position', help=argparse.SUPPRESS)#tqdm position, aux argument for pararell	
 		parser.add_argument('-ninst','--n_instances', help=argparse.SUPPRESS)#number of instances, aux argument for pararell			
+		parser.add_argument('-xarg','--explicit_argument', nargs='+', help=argparse.SUPPRESS)#Explicit	arguments for lib_call for files with ","			
 		args = parser.parse_args()
 
 		Status.start()
@@ -298,7 +301,10 @@ if __name__ == '__main__':
 			
 		if args.library_call:
 			import secondary
-			vret=secondary.call_library(args.library_call)
+			if args.explicit_argument:
+				vret=secondary.call_library(args.library_call,args.explicit_argument)
+			else:
+				vret=secondary.call_library(args.library_call)
 			Status.close()
 
 		if args.threads and not args.compress and not args.decompress:
@@ -2985,6 +2991,13 @@ if __name__ == '__main__':
 					keepupd=False
 			except:
 				keepupd=False
+			try:
+				if str(args.nodecompress).lower() == "true":
+					nodecompress=True
+				else:
+					nodecompress=False
+			except:
+				nodecompress=True				
 			if args.buffer:
 				for input in args.buffer:
 					try:
@@ -2993,6 +3006,14 @@ if __name__ == '__main__':
 						Print.error('Exception: ' + str(e))
 			else:
 				buffer = 65536
+			if args.text_file:
+				tfile=args.text_file
+				with open(tfile,"r+", encoding='utf8') as filelist:
+					filepath = filelist.readline()
+					filepath=os.path.abspath(filepath.rstrip('\n'))
+			else:
+				if args.xci_super_trim[0] !="":
+					filepath=args.xci_super_trim[0]
 			if args.ofolder:
 				for input in args.ofolder:
 					try:
@@ -3000,18 +3021,8 @@ if __name__ == '__main__':
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			else:
-				if args.text_file:
-					tfile=args.text_file
-					with open(tfile,"r+", encoding='utf8') as filelist:
-						filename = filelist.readline()
-						filename=os.path.abspath(filename.rstrip('\n'))
-						dir=os.path.dirname(os.path.abspath(filename))
-						ofolder =os.path.join(dir, 'output')
-				else:
-					if args.xci_super_trim[0] !="":
-						filename=args.xci_super_trim[0]
-						dir=os.path.dirname(os.path.abspath(filename))
-						ofolder =os.path.join(dir, 'output')
+				dir=os.path.dirname(os.path.abspath(filepath))
+				ofolder =os.path.join(dir, 'output')		
 			if args.fat:
 				for input in args.fat:
 					try:
@@ -3023,20 +3034,26 @@ if __name__ == '__main__':
 						Print.error('Exception: ' + str(e))
 			else:
 				fat="exfat"
-			for filepath in args.xci_super_trim:
-				if filepath.endswith('.xci'):
-					try:
-						f = Fs.factory(filepath)
-						filename=os.path.basename(os.path.abspath(filepath))
-						#print(filename)
-						outfile = os.path.join(ofolder, filename)
-						#print(f.path)
-						f.open(filepath, 'rb')
-						f.supertrim(buffer,outfile,ofolder,fat,keepupd)
-						f.flush()
-						f.close()
-					except BaseException as e:
-						Print.error('Exception: ' + str(e))
+			if filepath.endswith('.xci'):
+				try:
+					f = Fs.factory(filepath)
+					filename=os.path.basename(os.path.abspath(filepath))
+					#print(filename)
+					outfile = os.path.join(ofolder, filename)
+					#print(f.path)
+					f.open(filepath, 'rb')
+					f.supertrim(buffer,outfile,ofolder,fat,keepupd)
+					f.flush()
+					f.close()
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))
+			elif filepath.endswith('.xcz'):
+				f = Fs.Xci(filepath)
+				filename=os.path.basename(os.path.abspath(filepath))
+				outfile = os.path.join(ofolder, filename)
+				f.supertrim(buffer,outfile,ofolder,keepupd,nodecompress=True)
+				f.flush()
+				f.close()					
 			Status.close()
 		# ...................................................
 		# Normal trimming for xci files

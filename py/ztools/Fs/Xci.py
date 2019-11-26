@@ -3351,7 +3351,9 @@ class Xci(File):
 		#print (hx(encrypted_info))	
 		#print (hx(dec_info))
 	
-	def supertrim(self,buffer,outfile,ofolder,fat,keepupd=False):
+	def supertrim(self,buffer,outfile,ofolder,fat,keepupd=False,nodecompress=True):
+		if self._path.endswith('.xcz') and nodecompress==True:
+			fat="exfat"
 		indent = 1
 		rightsId = 0
 		tabs = '\t' * indent	
@@ -3397,13 +3399,16 @@ class Xci(File):
 									#**************************************************************	
 										nca_name=str(hx(NcaId))
 										nca_name=nca_name[2:-1]+'.nca'
+										ncz_name=nca_name[:-1]+'z'
 										if nca_name in completefilelist:
-											updlist.append(nca_name)			
+											updlist.append(nca_name)
+										elif ncz_name in completefilelist:
+											updlist.append(ncz_name)
 									nca_meta=str(nca._path)
 									if nca_meta in completefilelist:	
 										updlist.append(nca_meta)						
 
-		xci_header,game_info,sig_padding,xci_certificate,root_header,upd_header,norm_header,sec_header,rootSize,upd_multiplier,norm_multiplier,sec_multiplier	=self.get_header_supertrimmer(updlist)	 			
+		xci_header,game_info,sig_padding,xci_certificate,root_header,upd_header,norm_header,sec_header,rootSize,upd_multiplier,norm_multiplier,sec_multiplier	=self.get_header_supertrimmer(updlist,nodecompress)	 			
 		
 		totSize=len(xci_header)+len(game_info)+len(sig_padding)+len(xci_certificate)+rootSize
 	
@@ -3493,7 +3498,7 @@ class Xci(File):
 		outf.write(sec_header)
 		t.update(len(sec_header))
 		c=c+len(sec_header)			
-
+		# print(updlist)
 		for nspF in self.hfs0:
 			if str(nspF._path)=="secure":
 				block=4294934528			
@@ -3611,7 +3616,18 @@ class Xci(File):
 									c=c+len(data)
 									outf.flush()										
 								if not data:
-									break									
+									break	
+					elif str(nca._path).endswith('.ncz') and nodecompress==True:
+						nca.rewind()
+						#fp.seek(pos)
+						t.write(tabs+'- Appending: ' + str(nca._path))
+						for data in iter(lambda: nca.read(int(buffer)), ""):
+							outf.write(data)
+							t.update(len(data))
+							c=c+len(data)
+							outf.flush()										
+							if not data:
+								break										
 		t.close()
 		print("")
 		print("Closing file. Please wait")
@@ -3904,7 +3920,7 @@ class Xci(File):
 
 		return header,gamecard_info,sig_padding,CERT,root_header,upd_header,norm_header,sec_header,rootSize,upd_multiplier,norm_multiplier,sec_multiplier
 		
-	def get_header_supertrimmer(self,excludelist):
+	def get_header_supertrimmer(self,excludelist,nodecompress=True):
 		upd_list=list()
 		upd_fileSizes = list()		
 		norm_list=list()
@@ -3918,16 +3934,24 @@ class Xci(File):
 					if str(file._path) in excludelist:					
 						continue				
 					#if type(file) == Nca or type(file) == Ticket or file._path.endswith('.cert'):
-					if type(file) == Nca:					
+					if str(file._path).endswith('.nca'):
+						if type(file) == Nca:					
+							sec_list.append(file._path)	
+							if type(file) == Nca:
+								sec_fileSizes.append(file.header.size)
+							#if  type(file) == Ticket or file._path.endswith('.cert'):
+							#	sec_fileSizes.append(file.size)
+							file.rewind()
+							hblock = file.read(0x200)
+							sha=sha256(hblock).hexdigest()	
+							sec_shalist.append(sha)		
+					if str(file._path).endswith('.ncz') and nodecompress==True:		
 						sec_list.append(file._path)	
-						if type(file) == Nca:
-							sec_fileSizes.append(file.header.size)
-						#if  type(file) == Ticket or file._path.endswith('.cert'):
-						#	sec_fileSizes.append(file.size)
+						sec_fileSizes.append(file.size)		
 						file.rewind()
 						hblock = file.read(0x200)
 						sha=sha256(hblock).hexdigest()	
-						sec_shalist.append(sha)		
+						sec_shalist.append(sha)							
 						
 		hfs0 = Fs.Hfs0(None, None)							
 		root_header,upd_header,norm_header,sec_header,rootSize,upd_multiplier,norm_multiplier,sec_multiplier=hfs0.gen_rhfs0_head(upd_list,norm_list,sec_list,sec_fileSizes,sec_shalist)
