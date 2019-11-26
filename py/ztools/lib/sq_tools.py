@@ -1358,12 +1358,12 @@ def check_if_foot_signed(filepath,realsize,cryptokey=None):
 		else:
 			return False
 		
-def add_signed_footer(filepath,message=None,encrypted=None,cryptokey=None):
+def add_signed_footer(filepath,message=None,rewrite=False,encrypted=None,cryptokey=None):
 	result,realsize=check_if_trimmed(filepath)	
-	if result==False:
+	if result==False and rewrite==False:
 		result2=check_if_foot_signed(filepath,realsize)
 		if result2==True:
-			print(filepath+' was signed')
+			print(filepath+' is already signed')
 			return True
 	if message==None:
 		message='Made with NSCB'
@@ -1378,7 +1378,7 @@ def add_signed_footer(filepath,message=None,encrypted=None,cryptokey=None):
 	footer += (len(mss)).to_bytes(4, byteorder='little')
 	footer += mss
 	with open(filepath, 'rb+') as o:
-		o.seek(0, os.SEEK_END)	
+		o.seek(realsize)	
 		o.write(footer)
 		size=os.path.getsize(filepath)
 		remainder=size%0x10
@@ -1387,12 +1387,12 @@ def add_signed_footer(filepath,message=None,encrypted=None,cryptokey=None):
 			padd = b''
 			padd += (0x00).to_bytes(remainder, byteorder='little')
 			o.write(padd)
-		print('Added message: "{}"'.format(message))			
+		print('Added message: "{}" to {}'.format(message,filepath))			
 		
 def read_footer(filepath,cryptokey=None):
 	result,realsize=check_if_trimmed(filepath)	
 	if result==True:
-		print("File doesn't have a footer")
+		print(filepath+" doesn't have a footer")
 	else:
 		with open(filepath, 'rb') as o:
 			o.seek(realsize)
@@ -1401,18 +1401,18 @@ def read_footer(filepath,cryptokey=None):
 				footsize=int.from_bytes(o.read(0x4), byteorder='little', signed=False)
 				print((o.read(footsize)).decode(encoding='UTF-8'))
 			else:
-				print("File doesn't have a footer")	
+				print(filepath+" doesn't have a footer")	
 
 def delete_footer(filepath,cryptokey=None):
 	result,realsize=check_if_trimmed(filepath)	
 	if result==True:
-		print("File doesn't have a footer")
+		print(filepath+" doesn't have a footer")
 	else:
 		with open(filepath, 'rb+') as o:
 			o.seek(realsize)
 			if o.read(0x6)==b'FOOTER':
 				o.seek(realsize)
 				o.truncate()
-				print("Footer has been deleted from file")	
+				print("Footer has been deleted from "+filepath)	
 			else:
-				print("File doesn't have a footer")					
+				print(filepath+" doesn't have a footer")					

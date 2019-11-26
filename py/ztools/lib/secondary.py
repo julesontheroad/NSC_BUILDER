@@ -53,17 +53,21 @@ def call_library(args,xarg=None):
 					try:
 						var=var.split(',')	
 						for i in range(len(var)):
-							if var[i]=='True':
+							if str(var[i]).lower()=='true':
 								var[i]=True
-							elif var[i]=='False':
-								var[i]=False					
+							elif str(var[i]).lower()=='false':
+								var[i]=False
+							elif str(var[i]).lower()=='none':
+								var[i]=None									
 							elif '=' in var[i]:
 								try:
 									asignation=var[i].split("=")
-									if asignation[1]=='True':
+									if str(asignation[1]).lower()=='true':
 										var[i]=True
-									elif asignation[1]=='False':	
+									elif str(asignation[1]).lower()=='false':	
 										var[i]=False
+									elif str(asignation[1]).lower()=='none':
+										var[i]=None												
 									else:
 										var[i]=asignation[1]
 								except:pass
@@ -75,17 +79,21 @@ def call_library(args,xarg=None):
 			var=xarg
 			for i in range(len(var)):
 				try:
-					if var[i]=='True':
+					if str(var[i]).lower()=='true':
 						var[i]=True
-					elif var[i]=='False':
-						var[i]=False					
+					elif str(var[i]).lower()=='false':
+						var[i]=False
+					elif str(var[i]).lower()=='none':
+						var[i]=None									
 					elif '=' in var[i]:
 						try:
 							asignation=var[i].split("=")
-							if asignation[1]=='True':
+							if str(asignation[1]).lower()=='true':
 								var[i]=True
-							elif asignation[1]=='False':	
+							elif str(asignation[1]).lower()=='false':	
 								var[i]=False
+							elif str(asignation[1]).lower()=='none':
+								var[i]=None			
 							else:
 								var[i]=asignation[1]
 						except:pass
