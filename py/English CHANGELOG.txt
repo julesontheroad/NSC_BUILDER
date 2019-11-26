@@ -27,6 +27,7 @@ v0.96d - bugfixes:
 	- Fix bug where ticket gets appended more than once in a multi-file with tickets
 	- Added json integrity check when updating nutdb. The update will take a little longer
 	  but the current json will be protected if the one in the repository is corrupted.
+	- Fix issue where pykashi adds spaces when processing accented characters.
 	- Added pararell compression as alternative to threads. Pararell compression compresses
 	  several files at the same time with a smaller cpu footprint.
 	  In tests i managed to compress 20 files at the same time while keeping a 2-3Mb\s speed 
