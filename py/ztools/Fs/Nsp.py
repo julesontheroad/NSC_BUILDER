@@ -7128,7 +7128,7 @@ class Nsp(Pfs0):
 						ncztype.close()
 		return outf,index,c									
 	
-	def sp_groupncabyid(self,buffer,ofolder,fat,fx,export):
+	def sp_groupncabyid(self,buffer,ofolder,fat,fx,export,nodecompress=False):
 		contentlist=list()
 		ncalist=list()
 		completefilelist=list()
@@ -7244,51 +7244,62 @@ class Nsp(Pfs0):
 					
 		for i in contentlist:
 			if export == 'nsp':
-				self.cd_spl_nsp(buffer,i[0],ofolder,i[4],fat,fx)
+				self.cd_spl_nsp(buffer,i[0],ofolder,i[4],fat,fx,nodecompress)
 			if export == 'xci':		
 				if  i[5] != 'BASE':
-					self.cd_spl_nsp(buffer,i[0],ofolder,i[4],fat,fx)	
+					self.cd_spl_nsp(buffer,i[0],ofolder,i[4],fat,fx,nodecompress)	
 				else:		
-					self.cd_spl_xci(buffer,i[0],ofolder,i[4],fat,fx)
+					self.cd_spl_xci(buffer,i[0],ofolder,i[4],fat,fx,nodecompress)
 			if export == 'both':	
 				if  i[5] != 'BASE':
-					self.cd_spl_nsp(buffer,i[0],ofolder,i[4],fat,fx)					
+					self.cd_spl_nsp(buffer,i[0],ofolder,i[4],fat,fx,nodecompress)					
 				else:
-					self.cd_spl_nsp(buffer,i[0],ofolder,i[4],fat,fx)			
-					self.cd_spl_xci(buffer,i[0],ofolder,i[4],fat,fx)		
+					self.cd_spl_nsp(buffer,i[0],ofolder,i[4],fat,fx,nodecompress)			
+					self.cd_spl_xci(buffer,i[0],ofolder,i[4],fat,fx,nodecompress)		
 				
-	def cd_spl_nsp(self,buffer,ofile,ofolder,filelist,fat,fx):
+	def cd_spl_nsp(self,buffer,ofile,ofolder,filelist,fat,fx,nodecompress=False):
 		buffer=int(buffer)
 		self.rewind()		
 		outfile=ofile+'.nsp'	
+		if nodecompress==True:
+			outfile=outfile[:-1]+'z'		
 		filepath = os.path.join(ofolder, outfile)	
-		if os.path.exists(filepath) and os.path.getsize(filepath) == totSize:
-			Print.info('\t\tRepack %s is already complete!' % outfile)
-			return			
-		if not os.path.exists(ofolder):
-			os.makedirs(ofolder)		
-		self.rewind()	
 		
+		self.rewind()	
 		contentlist=list()
 		for file in self:		
 			if file._path in filelist:
 				contentlist.append(file._path)		
 			elif str(file._path).endswith('.ncz'):
 				ncapath=str(file._path)[:-1]+'a'
-				if ncapath in filelist:
-					contentlist.append(ncapath)	
+				nczpath=str(file._path)[:-1]+'z'				
+				if ncapath in filelist or nczpath in filelist:
+					if nodecompress==False:
+						contentlist.append(ncapath)	
+					else:
+						contentlist.append(nczpath)	
 					
-		hd = self.cd_spl_gen_nsph(contentlist)
+		hd = self.cd_spl_gen_nsph(contentlist,nodecompress)
 		totSize = len(hd) 
 		for file in self:		
 			if file._path in contentlist:
 				totSize=totSize+file.size
 			elif str(file._path).endswith('.ncz'):
-				ncapath=str(file._path)[:-1]+'a'		
-				if ncapath in contentlist:		
-					ncztype=Nca(file)
-					ncztype._path=file._path		
-					totSize=totSize+ncztype.header.size			
+				ncapath=str(file._path)[:-1]+'a'
+				nczpath=str(file._path)[:-1]+'z'	
+				if ncapath in contentlist or nczpath in contentlist:	
+					if nodecompress==False:				
+						ncztype=Nca(file)
+						ncztype._path=file._path		
+						totSize=totSize+ncztype.header.size
+					else:
+						totSize=totSize+file.size							
+
+		if os.path.exists(filepath) and os.path.getsize(filepath) == totSize:
+			Print.info('\t\tRepack %s is already complete!' % outfile)
+			return			
+		if not os.path.exists(ofolder):
+			os.makedirs(ofolder)							
 
 		indent = 1
 		rightsId = 0
@@ -7435,7 +7446,7 @@ class Nsp(Pfs0):
 					if not data:
 						break		
 				outf.close()	
-			elif str(file._path).endswith('.ncz') and (str(file._path)[:-1]+'a') in contentlist:
+			elif str(file._path).endswith('.ncz') and (str(file._path)[:-1]+'a') in contentlist and nodecompress==False:
 				ncztype=Nca(file)
 				ncztype._path=file._path	
 				ncztype.rewind()				
@@ -7492,10 +7503,22 @@ class Nsp(Pfs0):
 								o.write(crypto.encrypt(chunk))	
 								t.update(len(chunk))									
 								i += chunkSz	
-					ncztype.close()						
+					ncztype.close()		
+			elif str(file._path).endswith('.ncz') and (str(file._path)[:-1]+'z') in contentlist and nodecompress==True:
+				file.rewind()			
+				t.write(tabs+'- Appending: ' + str(file._path))		
+				outf = open(str(filepath), 'a+b')					
+				for data in iter(lambda: file.read(int(buffer)), ""):	
+					outf.write(data)				
+					t.update(len(data))
+					c=c+len(data)									
+					outf.flush()							
+				if not data:
+					break		
+			outf.close()					
 		t.close()
 
-	def cd_spl_gen_nsph(self,filelist):			
+	def cd_spl_gen_nsph(self,filelist,nodecompress=False):			
 		filesNb = len(filelist)
 		stringTable = '\x00'.join(str(file) for file in filelist)
 		headerSize = 0x10 + (filesNb)*0x18 + len(stringTable)
@@ -7509,10 +7532,14 @@ class Nsp(Pfs0):
 				fileSizes.append(file.size)		
 			elif str(file._path).endswith('.ncz'):
 				ncapath=str(file._path)[:-1]+'a'
-				if ncapath in filelist:
-					ncztype=Nca(file)
-					ncztype._path=file._path	
-					fileSizes.append(ncztype.header.size)		
+				nczpath=str(file._path)[:-1]+'z'
+				if ncapath in filelist or nczpath in filelist:
+					if nodecompress==False:		
+						ncztype=Nca(file)
+						ncztype._path=file._path	
+						fileSizes.append(ncztype.header.size)		
+					else:
+						totSize=totSize+file.size						
 
 		fileOffsets = [sum(fileSizes[:n]) for n in range(filesNb)]
 		fileNamesLengths = [len(str(file))+1 for file in filelist] # +1 for the \x00
@@ -7532,16 +7559,14 @@ class Nsp(Pfs0):
 		header += remainder * b'\x00'
 		return header						
 				
-	def cd_spl_xci(self,buffer,ofile,ofolder,filelist,fat,fx):
+	def cd_spl_xci(self,buffer,ofile,ofolder,filelist,fat,fx,nodecompress=False):
 		buffer=int(buffer)
 		self.rewind()		
 		outfile=ofile+'.xci'
+		if nodecompress==True:
+			outfile=outfile[:-1]+'z'			
 		filepath = os.path.join(ofolder, outfile)	
-		if os.path.exists(filepath) and os.path.getsize(filepath) == totSize:
-			Print.info('\t\tRepack %s is already complete!' % outfile)
-			return	
-		if not os.path.exists(ofolder):
-			os.makedirs(ofolder)			
+		
 		indent = 1
 		rightsId = 0
 		tabs = '\t' * indent	
@@ -7553,12 +7578,22 @@ class Nsp(Pfs0):
 					contentlist.append(file._path)	
 			elif str(file._path).endswith('.ncz'):
 				ncapath=str(file._path)[:-1]+'a'
-				if ncapath in filelist:
-					contentlist.append(ncapath)						
+				nczpath=str(file._path)[:-1]+'z'
+				if ncapath in filelist or nczpath in filelist:
+					if nodecompress==False:
+						contentlist.append(ncapath)	
+					else:
+						contentlist.append(nczpath)						
 
-		xci_header,game_info,sig_padding,xci_certificate,root_header,upd_header,norm_header,sec_header,rootSize,upd_multiplier,norm_multiplier,sec_multiplier=self.cd_spl_gen_xcih(contentlist)		
+		xci_header,game_info,sig_padding,xci_certificate,root_header,upd_header,norm_header,sec_header,rootSize,upd_multiplier,norm_multiplier,sec_multiplier=self.cd_spl_gen_xcih(contentlist,nodecompress)		
 		totSize=len(xci_header)+len(game_info)+len(sig_padding)+len(xci_certificate)+rootSize		
 
+		if os.path.exists(filepath) and os.path.getsize(filepath) == totSize:
+			Print.info('\t\tRepack %s is already complete!' % outfile)
+			return	
+		if not os.path.exists(ofolder):
+			os.makedirs(ofolder)			
+		
 		for file in self:
 			if type(file) == Ticket and file._path in filelist:
 				masterKeyRev = file.getMasterKeyRevision()
@@ -7590,7 +7625,8 @@ class Nsp(Pfs0):
 							break		
 			elif str(file._path).endswith('.ncz'):	
 				ncapath=str(file._path)[:-1]+'a'	
-				if ncapath in filelist:		
+				nczpath=str(file._path)[:-1]+'z'	
+				if ncapath in filelist or nczpath in filelist:	
 					ncztype=Nca(file)
 					ncztype._path=file._path	
 					if ncztype.header.getRightsId() != 0:		
@@ -7622,8 +7658,9 @@ class Nsp(Pfs0):
 				else:
 					contGC+=1			
 			elif str(nca._path).endswith('.ncz'):
-				ncapath=str(file._path)[:-1]+'a'	
-				if ncapath in filelist:				
+				ncapath=str(file._path)[:-1]+'a'
+				nczpath=str(file._path)[:-1]+'z'	
+				if ncapath in filelist or nczpath in filelist:				
 					ncztype=Nca(nca)
 					ncztype._path=nca._path
 					contTR+=1			
@@ -7802,7 +7839,7 @@ class Nsp(Pfs0):
 						if not data:
 							break
 				outf.close()	
-			elif str(nca._path).endswith('.ncz') and (str(nca._path)[:-1]+'a') in contentlist:
+			elif str(nca._path).endswith('.ncz') and (str(nca._path)[:-1]+'a') in contentlist and nodecompress==False:
 				ncztype=Nca(nca)
 				ncztype._path=nca._path
 				crypto1=ncztype.header.getCryptoType()
@@ -7895,12 +7932,68 @@ class Nsp(Pfs0):
 								t.update(len(chunk))									
 								i += chunkSz					
 				ncztype.close()	
+			elif str(nca._path).endswith('.ncz') and (str(nca._path)[:-1]+'z') in contentlist and nodecompress==True:
+				ncztype=Nca(nca)
+				ncztype._path=nca._path
+				crypto1=ncztype.header.getCryptoType()
+				crypto2=ncztype.header.getCryptoType2()	
+				if crypto2>crypto1:
+					masterKeyRev=crypto2
+				if crypto2<=crypto1:	
+					masterKeyRev=crypto1							
+				crypto = aes128.AESECB(Keys.keyAreaKey(Keys.getMasterKeyIndex(masterKeyRev), ncztype.header.keyIndex))
+				hcrypto = aes128.AESXTS(uhx(Keys.get('header_key')))	
+				if	ncztype.header.getgamecard() == 0:	
+					KB1L=ncztype.header.getKB1L()
+					KB1L = crypto.decrypt(KB1L)
+					if sum(KB1L) == 0 and iscartridge == True:					
+						gc_flag='01'*0x01
+					else:					
+						gc_flag='00'*0x01
+				else:
+					if iscartridge == True:
+						gc_flag='01'*0x01	
+					else:					
+						gc_flag='00'*0x01						
+				if ncztype.header.getRightsId() != 0:				
+					ncztype.rewind()					
+					encKeyBlock = crypto.encrypt(titleKeyDec * 4)
+				if ncztype.header.getRightsId() == 0:
+					ncztype.rewind()
+					encKeyBlock = ncztype.header.getKeyBlock()	
+				t.write('')							
+				t.write(tabs+'- Appending: ' + str(nca._path)[:-1]+'a')			
+				t.write(tabs+'  Writing nca header')					
+				i=0
+				newheader=self.get_newheader(ncztype,encKeyBlock,crypto1,crypto2,hcrypto,gc_flag)	
+				ncztype.rewind()
+				data=ncztype.read(0x4000)
+				with open(outfile, 'rb+') as o:
+					o.seek(0, os.SEEK_END)	
+					curr_off= o.tell()	
+					o.write(data)	
+					o.seek(curr_off)
+					o.write(newheader)
+				t.update(0x4000)
+				nca.rewind()			
+				t.write(tabs+'- Appending: ' + str(nca._path))			
+				outf = open(str(filepath), 'r+b')	
+				c=0
+				for data in iter(lambda: nca.read(int(buffer)), ""):
+					if c==0:
+						o.seek(0, os.SEEK_END)
+						nca.seek(0x4000)
+						c+=1
+					else:
+						outf.write(data)
+						t.update(len(data))
+						outf.flush()							
+						if not data:
+							break	
+				outf.close()						
 		t.close()
-		print("")
-		print("Closing file. Please wait")				
-		outf.close()
 		
-	def cd_spl_gen_xcih(self,filelist):	
+	def cd_spl_gen_xcih(self,filelist,nodecompress=False):	
 		upd_list=list()
 		upd_fileSizes = list()		
 		norm_list=list()
@@ -7918,13 +8011,20 @@ class Nsp(Pfs0):
 				sec_shalist.append(sha)		
 			elif str(file._path).endswith('.ncz'):
 				ncapath=str(file._path)[:-1]+'a'
-				if ncapath in filelist:
-					sec_list.append(ncapath)	
-					ncztype=Nca(file)
-					ncztype._path=file._path		
-					sec_fileSizes.append(ncztype.header.size)		
-					ncztype.rewind()
-					hblock = ncztype.read(0x200)			
+				nczpath=str(file._path)[:-1]+'z'
+				if ncapath in filelist or nczpath in filelist:	
+					if nodecompress==False:				
+						sec_list.append(ncapath)	
+						ncztype=Nca(file)
+						ncztype._path=file._path		
+						sec_fileSizes.append(ncztype.header.size)		
+						ncztype.rewind()
+						hblock = ncztype.read(0x200)	
+					else:	
+						sec_list.append(nczpath)							
+						sec_fileSizes.append(file.size)	
+						file.rewind()
+						hblock = file.read(0x200)						
 					sha=sha256(hblock).hexdigest()	
 					sec_shalist.append(sha)					
 																										

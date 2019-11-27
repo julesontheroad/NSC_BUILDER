@@ -1286,7 +1286,7 @@ def ret_xci_offsets(filepath):
 def count_content(filepath):
 	counter=0
 	if filepath.endswith('.nsp')or filepath.endswith('.nsx') or filepath.endswith('.nsz'):
-		files_listz=ret_nsp_offsets(filepath)
+		files_list=ret_nsp_offsets(filepath)
 	elif filepath.endswith('.xci') or filepath.endswith('.xcz'):	
 		files_list=ret_xci_offsets(filepath)
 	for i in range(len(files_list)):
@@ -1332,3 +1332,93 @@ def cnmt_type(type_n):
 	if str(hx(type_n)) == "b'83'":
 		ctype='Delta'
 	return ctype		
+	
+def file_real_size(filepath):
+	if filepath.endswith('.nsp')or filepath.endswith('.nsx') or filepath.endswith('.nsz'):
+		files_list=ret_nsp_offsets(filepath)
+	elif filepath.endswith('.xci') or filepath.endswith('.xcz'):	
+		files_list=ret_xci_offsets(filepath)
+	last_file=files_list[-1]
+	realsize=last_file[2]
+	return realsize	
+
+def check_if_trimmed(filepath):	
+	realsize=file_real_size(filepath)
+	size=os.path.getsize(filepath)
+	if size==realsize:
+		return True,realsize
+	else:
+		return False,realsize
+		
+def check_if_foot_signed(filepath,realsize,cryptokey=None):
+	with open(filepath, 'rb') as o:
+		o.seek(realsize)
+		if o.read(6)==b'FOOTER':
+			return True
+		else:
+			return False
+		
+def add_signed_footer(filepath,message=None,rewrite=False,encrypted=None,cryptokey=None):
+	result,realsize=check_if_trimmed(filepath)	
+	if result==False and rewrite==False:
+		result2=check_if_foot_signed(filepath,realsize)
+		if result2==True:
+			print(filepath+' is already signed')
+			return True
+	if message==None:
+		message='Made with NSCB'
+	if encrypted==None:
+		crypto=(0x0).to_bytes(4, byteorder='little')
+	else:
+		crypto=(0x1).to_bytes(4, byteorder='little')
+	mss=message.encode(encoding='UTF-8')
+	footer =  b''		
+	footer += b'FOOTER'
+	footer += crypto
+	footer += (len(mss)).to_bytes(4, byteorder='little')
+	footer += mss
+	with open(filepath, 'rb+') as o:
+		o.seek(realsize)	
+		o.write(footer)
+		o.seek(0, os.SEEK_END)
+		curr_off= o.tell()
+		remainder=curr_off%0x10
+		if remainder!=0:
+			while remainder!=0:
+				padd = b''
+				padd += (0x00).to_bytes(1, byteorder='little')
+				o.write(padd)
+				o.seek(0, os.SEEK_END)
+				curr_off= o.tell()
+				remainder=curr_off%0x10				
+		print('Added message: "{}" to {}'.format(message,filepath))			
+		
+def read_footer(filepath,cryptokey=None):
+	result,realsize=check_if_trimmed(filepath)	
+	if result==True:
+		print(filepath+" doesn't have a footer")
+	else:
+		with open(filepath, 'rb') as o:
+			o.seek(realsize)
+			if o.read(0x6)==b'FOOTER':
+				crypto=o.read(0x4)
+				footsize=int.from_bytes(o.read(0x4), byteorder='little', signed=False)
+				print(filepath)
+				print(' -> '+((o.read(footsize)).decode(encoding='UTF-8')))
+			else:
+				print(filepath)	
+				print(" -> doesn't have a footer")	
+
+def delete_footer(filepath,cryptokey=None):
+	result,realsize=check_if_trimmed(filepath)	
+	if result==True:
+		print(filepath+" doesn't have a footer")
+	else:
+		with open(filepath, 'rb+') as o:
+			o.seek(realsize)
+			if o.read(0x6)==b'FOOTER':
+				o.seek(realsize)
+				o.truncate()
+				print("Footer has been deleted from "+filepath)	
+			else:
+				print(filepath+" doesn't have a footer")					

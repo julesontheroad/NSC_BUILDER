@@ -35,3 +35,72 @@ def rebuild_nsp(ifolder,ofolder,buffer = 65536,delta=False,xml_gen=False,export=
 		print("**********************************************************")
 		print(('Still {} files to process').format(str(total)))
 		print("**********************************************************")
+		
+def add_signed_footer(message=None,ifolder=None,tfile=None,ext='all',rewrite=False):
+	from sq_tools import add_signed_footer as sign
+	from ast import literal_eval  as eval
+	if ext=='all':
+		ext=['nsp','nsx','nsz','xci','xcz']
+	else:
+		if isinstance(ext, list):
+			ext=ext
+		else:
+			try:
+				ext=eval(ext)
+			except:pass
+			ext=ext.split(',')	
+	if ifolder!=None:
+		files=listmanager.folder_to_list(ifolder,ext)
+	elif tfile!=None:
+		files=read_lines_to_list(tfile,all=True)
+	else:
+		return False
+	for filepath in files:
+		try:
+			sign(filepath,message,rewrite)
+		except:
+			print('Error in '+filepath)
+		
+def delete_footer(ifolder=None,tfile=None,ext='all'):
+	from sq_tools import delete_footer
+	from ast import literal_eval  as eval
+	if ext=='all':
+		ext=['nsp','nsx','nsz','xci','xcz']
+	else:
+		if isinstance(ext, list):
+			ext=ext
+		else:
+			try:
+				ext=eval(ext)
+			except:pass
+			ext=ext.split(',')	
+	if ifolder!=None:
+		files=listmanager.folder_to_list(ifolder,ext)
+	elif tfile!=None:
+		files=read_lines_to_list(tfile,all=True)
+	else:
+		return False
+	for filepath in files:	
+		delete_footer(filepath)	
+		
+def read_footer(ifolder=None,tfile=None,ext='all'):
+	from sq_tools import read_footer
+	from ast import literal_eval  as eval
+	if ext=='all':
+		ext=['nsp','nsx','nsz','xci','xcz']
+	else:
+		if isinstance(ext, list):
+			ext=ext
+		else:
+			try:
+				ext=eval(ext)
+			except:pass
+			ext=ext.split(',')	
+	if ifolder!=None:
+		files=listmanager.folder_to_list(ifolder,ext)
+	elif tfile!=None:
+		files=read_lines_to_list(tfile,all=True)
+	else:
+		return False
+	for filepath in files:	
+		read_footer(filepath)	
