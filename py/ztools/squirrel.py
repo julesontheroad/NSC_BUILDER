@@ -4426,6 +4426,15 @@ if __name__ == '__main__':
 				else:
 					for filepath in args.direct_splitter:
 						filepath=filepath
+				try:
+					if str(args.nodecompress).lower() == "true":
+						nodecompress=True
+					else:
+						nodecompress=False
+				except:
+					nodecompress=False
+				if nodecompress==True:
+					fat="exfat"
 				if args.type:
 					for input in args.type:
 						if input == "xci" or input == "XCI":
@@ -4457,7 +4466,7 @@ if __name__ == '__main__':
 				if filepath.endswith(".nsp") or filepath.endswith('.nsz'):
 					try:
 						f = Fs.Nsp(filepath)
-						f.sp_groupncabyid(buffer,ofolder,fat,fx,export)
+						f.sp_groupncabyid(buffer,ofolder,fat,fx,export,nodecompress)
 						f.flush()
 						f.close()
 					except BaseException as e:
@@ -4465,7 +4474,7 @@ if __name__ == '__main__':
 				if filepath.endswith(".xci") or filepath.endswith('.xcz'):
 					try:
 						f = Fs.Xci(filepath)
-						f.sp_groupncabyid(buffer,ofolder,fat,fx,export)
+						f.sp_groupncabyid(buffer,ofolder,fat,fx,export,nodecompress)
 						f.flush()
 						f.close()
 					except BaseException as e:

@@ -39,3 +39,4 @@ py/ztools/lib/ninshop.py
 py/ztools/cmd/__init__.py
 py/ztools/chromedriver.exe
 py/ztools/hactool.exe
+*.bak
