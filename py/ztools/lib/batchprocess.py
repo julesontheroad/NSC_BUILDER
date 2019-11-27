@@ -55,8 +55,11 @@ def add_signed_footer(message=None,ifolder=None,tfile=None,ext='all',rewrite=Fal
 		files=read_lines_to_list(tfile,all=True)
 	else:
 		return False
-	for filepath in files:	
-		sign(filepath,message,rewrite)
+	for filepath in files:
+		try:
+			sign(filepath,message,rewrite)
+		except:
+			print('Error in '+filepath)
 		
 def delete_footer(ifolder=None,tfile=None,ext='all'):
 	from sq_tools import delete_footer

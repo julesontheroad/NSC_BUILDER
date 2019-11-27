@@ -1380,13 +1380,17 @@ def add_signed_footer(filepath,message=None,rewrite=False,encrypted=None,cryptok
 	with open(filepath, 'rb+') as o:
 		o.seek(realsize)	
 		o.write(footer)
-		size=os.path.getsize(filepath)
-		remainder=size%0x10
+		o.seek(0, os.SEEK_END)
+		curr_off= o.tell()
+		remainder=curr_off%0x10
 		if remainder!=0:
-			remainder=int((remainder*0x10)/16)
-			padd = b''
-			padd += (0x00).to_bytes(remainder, byteorder='little')
-			o.write(padd)
+			while remainder!=0:
+				padd = b''
+				padd += (0x00).to_bytes(1, byteorder='little')
+				o.write(padd)
+				o.seek(0, os.SEEK_END)
+				curr_off= o.tell()
+				remainder=curr_off%0x10				
 		print('Added message: "{}" to {}'.format(message,filepath))			
 		
 def read_footer(filepath,cryptokey=None):
