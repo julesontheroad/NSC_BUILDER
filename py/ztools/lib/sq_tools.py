@@ -1403,9 +1403,11 @@ def read_footer(filepath,cryptokey=None):
 			if o.read(0x6)==b'FOOTER':
 				crypto=o.read(0x4)
 				footsize=int.from_bytes(o.read(0x4), byteorder='little', signed=False)
-				print((o.read(footsize)).decode(encoding='UTF-8'))
+				print(filepath)
+				print(' -> '+((o.read(footsize)).decode(encoding='UTF-8')))
 			else:
-				print(filepath+" doesn't have a footer")	
+				print(filepath)	
+				print(" -> doesn't have a footer")	
 
 def delete_footer(filepath,cryptokey=None):
 	result,realsize=check_if_trimmed(filepath)	

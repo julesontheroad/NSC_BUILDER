@@ -82,3 +82,25 @@ def delete_footer(ifolder=None,tfile=None,ext='all'):
 		return False
 	for filepath in files:	
 		delete_footer(filepath)	
+		
+def read_footer(ifolder=None,tfile=None,ext='all'):
+	from sq_tools import read_footer
+	from ast import literal_eval  as eval
+	if ext=='all':
+		ext=['nsp','nsx','nsz','xci','xcz']
+	else:
+		if isinstance(ext, list):
+			ext=ext
+		else:
+			try:
+				ext=eval(ext)
+			except:pass
+			ext=ext.split(',')	
+	if ifolder!=None:
+		files=listmanager.folder_to_list(ifolder,ext)
+	elif tfile!=None:
+		files=read_lines_to_list(tfile,all=True)
+	else:
+		return False
+	for filepath in files:	
+		read_footer(filepath)	
