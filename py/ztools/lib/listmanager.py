@@ -426,3 +426,53 @@ def selector2list(textfile,mode='folder',ext=False,filter=False,Print=False):
 	except BaseException as e:
 		nutPrint.error('Exception: ' + str(e))													
 	return filelist
+
+def size_sorted_from_json(jsonfile,tfile):
+	dump={}
+	try:
+		import ujson as json
+	except:
+		import json
+	with open(jsonfile,'rt',encoding='utf8') as json_file:	
+		data = json.load(json_file)		
+		for dict in data:	
+			if 'Name' in dict and 'Size' in dict:
+				try:
+					dump[dict['Name']]=dict['Size']
+				except:pass		
+	sortedlist = sorted(dump.items(), key=lambda x: x[1],reverse=False)
+	with open(tfile,'wt',encoding='utf8') as tfile:	
+		for i in sortedlist:
+			tfile.write(i[0]+"\n")
+	print('- List was ordered by size')
+		
+def size_sorted_from_folder(ifolder,tfile,extlist=['nsp']):	
+	filelist=folder_to_list(ifolder,extlist)
+	dump={}
+	for file in filelist:
+		size=os.path.getsize(file)
+		dump[file]=size
+	sortedlist = sorted(dump.items(), key=lambda x: x[1],reverse=False)		
+	with open(tfile,'wt',encoding='utf8') as tfile:	
+		for i in sortedlist:
+			tfile.write(i[0]+"\n")
+	print('- List ordered by size was created')
+	
+def size_sorted_from_tfile(itfile,otfile=None):	
+	filelist=read_lines_to_list(itfile,all=True)
+	dump={}
+	for file in filelist:
+		size=os.path.getsize(file)
+		dump[file]=size
+	sortedlist = sorted(dump.items(), key=lambda x: x[1],reverse=False)	
+	if otfile == None:
+		tfile=itfile
+	else:
+		tfile=otfile
+		ofolder=os.path.dirname(os.path.abspath(tfile))
+		if not os.path.exists(ofolder):
+			os.makedirs(ofolder)
+	with open(tfile,'wt',encoding='utf8') as tfile:	
+		for i in sortedlist:
+			tfile.write(i[0]+"\n")
+	print('- List was ordered by size')
