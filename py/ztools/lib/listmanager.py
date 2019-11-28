@@ -427,7 +427,7 @@ def selector2list(textfile,mode='folder',ext=False,filter=False,Print=False):
 		nutPrint.error('Exception: ' + str(e))													
 	return filelist
 
-def size_sorted_from_json(jsonfile,tfile):
+def size_sorted_from_json(jsonfile,tfile,first='small'):
 	dump={}
 	try:
 		import ujson as json
@@ -440,31 +440,40 @@ def size_sorted_from_json(jsonfile,tfile):
 				try:
 					dump[dict['Name']]=dict['Size']
 				except:pass		
-	sortedlist = sorted(dump.items(), key=lambda x: x[1],reverse=False)
+	if first=='big':
+		sortedlist = sorted(dump.items(), key=lambda x: x[1],reverse=True)
+	else:
+		sortedlist = sorted(dump.items(), key=lambda x: x[1],reverse=False)
 	with open(tfile,'wt',encoding='utf8') as tfile:	
 		for i in sortedlist:
 			tfile.write(i[0]+"\n")
 	print('- List was ordered by size')
 		
-def size_sorted_from_folder(ifolder,tfile,extlist=['nsp']):	
+def size_sorted_from_folder(ifolder,tfile,extlist=['nsp'],first='small'):	
 	filelist=folder_to_list(ifolder,extlist)
 	dump={}
 	for file in filelist:
 		size=os.path.getsize(file)
 		dump[file]=size
-	sortedlist = sorted(dump.items(), key=lambda x: x[1],reverse=False)		
+	if first=='big':
+		sortedlist = sorted(dump.items(), key=lambda x: x[1],reverse=True)
+	else:
+		sortedlist = sorted(dump.items(), key=lambda x: x[1],reverse=False)	
 	with open(tfile,'wt',encoding='utf8') as tfile:	
 		for i in sortedlist:
 			tfile.write(i[0]+"\n")
 	print('- List ordered by size was created')
 	
-def size_sorted_from_tfile(itfile,otfile=None):	
+def size_sorted_from_tfile(itfile,otfile=None,first='small'):	
 	filelist=read_lines_to_list(itfile,all=True)
 	dump={}
 	for file in filelist:
 		size=os.path.getsize(file)
 		dump[file]=size
-	sortedlist = sorted(dump.items(), key=lambda x: x[1],reverse=False)	
+	if first=='big':
+		sortedlist = sorted(dump.items(), key=lambda x: x[1],reverse=True)
+	else:
+		sortedlist = sorted(dump.items(), key=lambda x: x[1],reverse=False)
 	if otfile == None:
 		tfile=itfile
 	else:
