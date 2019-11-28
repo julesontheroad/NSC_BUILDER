@@ -50,8 +50,14 @@ def add_signed_footer(message=None,ifolder=None,tfile=None,ext='all',rewrite=Fal
 			except:pass
 			ext=ext.split(',')	
 	if ifolder!=None:
+		try:
+			ifolder=eval(ifolder)
+		except:pass
 		files=listmanager.folder_to_list(ifolder,ext)
 	elif tfile!=None:
+		try:
+			tfile=eval(tfile)
+		except:pass	
 		files=read_lines_to_list(tfile,all=True)
 	else:
 		return False
