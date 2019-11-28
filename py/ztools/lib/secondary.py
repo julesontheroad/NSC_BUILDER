@@ -116,6 +116,88 @@ def call_library(args,xarg=None):
 				print(str(vret))		
 		except:	
 			return 	vret
+			
+def call_class(args,xarg=None):			
+	vret=None
+	try:
+		if args[0]:
+			components = args[0].split('.')
+			library=components[0]
+			lib = __import__(library)
+			importedclass = getattr(lib, components[1])		
+	except:pass	
+
+	if len(args)>1:	
+		if xarg==None:
+			try:	
+				if args[2]:		
+					var=args[2]
+					try:
+						var=var.split(',')	
+						for i in range(len(var)):
+							if str(var[i]).lower()=='true':
+								var[i]=True
+							elif str(var[i]).lower()=='false':
+								var[i]=False
+							elif str(var[i]).lower()=='none':
+								var[i]=None									
+							elif '=' in var[i]:
+								try:
+									asignation=var[i].split("=")
+									if str(asignation[1]).lower()=='true':
+										var[i]=True
+									elif str(asignation[1]).lower()=='false':	
+										var[i]=False
+									elif str(asignation[1]).lower()=='none':
+										var[i]=None												
+									else:
+										var[i]=asignation[1]
+								except:pass
+							else:pass
+					except:pass
+			except:	
+				var=None
+		else:
+			var=xarg
+			for i in range(len(var)):
+				try:
+					if str(var[i]).lower()=='true':
+						var[i]=True
+					elif str(var[i]).lower()=='false':
+						var[i]=False
+					elif str(var[i]).lower()=='none':
+						var[i]=None									
+					elif '=' in var[i]:
+						try:
+							asignation=var[i].split("=")
+							if str(asignation[1]).lower()=='true':
+								var[i]=True
+							elif str(asignation[1]).lower()=='false':	
+								var[i]=False
+							elif str(asignation[1]).lower()=='none':
+								var[i]=None			
+							else:
+								var[i]=asignation[1]
+						except:pass
+					else:pass
+				except:pass	
+		try:	
+			if args[1]:
+				fimport=args[1]
+				function = getattr(importedclass, fimport)
+				if var==None:
+					vret=function()
+				else:
+					vret=function(*var)					
+		except BaseException as e:
+			Print.error('Exception: ' + str(e))	
+		try:
+			if str(args[2]).lower() == 'print' or str(args[3]).lower() == 'print':
+				print(str(vret))
+			else:
+				print(str(vret))		
+		except:	
+			return 	vret
 	
 def route(args,workers):
 	arguments,tfile=getargs(args)
