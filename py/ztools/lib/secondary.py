@@ -41,8 +41,19 @@ def call_library(args,xarg=None):
 	vret=None
 	try:
 		if args[0]:
-			library=args[0]
-			lib=__import__(library)
+			components = args[0].split('.')
+			if len(components)>1:
+				vret=call_class(args,xarg)
+				try:
+					if str(args[2]).lower() == 'print' or str(args[3]).lower() == 'print':
+						print(str(vret))
+					else:
+						print(str(vret))		
+				except:	
+					return 	vret				
+			else:
+				library=args[0]
+				lib=__import__(library)
 	except:pass	
 	
 	if len(args)>1:	

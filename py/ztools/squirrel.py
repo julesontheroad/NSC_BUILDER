@@ -283,7 +283,6 @@ if __name__ == '__main__':
 		parser.add_argument('-threads','--threads', help="Number threads to use for certain functions")
 		parser.add_argument('-pararell','--pararell', help="Number threads to use for certain functions")		
 		parser.add_argument('-lib_call','--library_call', nargs='+',  help="Call a library function within squirrel")
-		parser.add_argument('-class_call','--class_call', nargs='+',  help="Call a class function within squirrel")
 		parser.add_argument('-loop','--loop', nargs='+', help="Loop the text file using secondary module")
 		
 		# Hidden
@@ -307,14 +306,6 @@ if __name__ == '__main__':
 			else:
 				vret=secondary.call_library(args.library_call)
 			Status.close()
-			
-		if args.class_call:
-			import secondary
-			if args.explicit_argument:
-				vret=secondary.call_class(args.class_call,args.explicit_argument)
-			else:
-				vret=secondary.call_class(args.class_call)
-			Status.close()			
 
 		if args.threads and not args.compress and not args.decompress:
 			import secondary
