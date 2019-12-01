@@ -78,8 +78,8 @@ setlocal enabledelayedexpansion
 echo+ >"%uinput%"
 endlocal
 if /i "%eval%"=="0" exit /B
-if /i "%eval%"=="1" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%advlist.txt",mode=folder,ext=nsp xci nsx nsz xcz ) 2>&1>NUL
-if /i "%eval%"=="2" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%advlist.txt",mode=file,ext=nsp xci nsx nsz xcz )  2>&1>NUL
+if /i "%eval%"=="1" ( %pycommand% "%nut%" -lib_call listmanager selector2list -xarg "%prog_dir%advlist.txt" mode=folder ext="nsp xci nsx nsz xcz" ) 2>&1>NUL
+if /i "%eval%"=="2" ( %pycommand% "%nut%" -lib_call listmanager selector2list -xarg "%prog_dir%advlist.txt" mode=file ext="nsp xci nsx nsz xcz" )  2>&1>NUL
 goto checkagain
 echo.
 :checkagain
@@ -108,8 +108,8 @@ endlocal
 
 if /i "%eval%"=="0" exit /B
 if /i "%eval%"=="1" goto start
-if /i "%eval%"=="2" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%advlist.txt",mode=folder,ext=nsp xci nsx nsz xcz ) 2>&1>NUL
-if /i "%eval%"=="3" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%advlist.txt",mode=file,ext=nsp xci nsx nsz xcz )  2>&1>NUL
+if /i "%eval%"=="2" ( %pycommand% "%nut%" -lib_call listmanager selector2list -xarg "%prog_dir%advlist.txt" mode=folder ext="nsp xci nsx nsz xcz" ) 2>&1>NUL
+if /i "%eval%"=="3" ( %pycommand% "%nut%" -lib_call listmanager selector2list -xarg "%prog_dir%advlist.txt" mode=file ext="nsp xci nsx nsz xcz" ) 2>&1>NUL
 if /i "%eval%"=="e" goto salida
 if /i "%eval%"=="i" goto showlist
 if /i "%eval%"=="r" goto r_files

@@ -346,21 +346,27 @@ def selector2list(textfile,mode='folder',ext=False,filter=False,Print=False):
 	if mode=='file':
 		filepath = filedialog.askopenfilename()		
 	else:
-		filepath = filedialog.askdirectory()	
+		filepath = filedialog.askdirectory()
 	extlist=list()
 	if ext!=False:
 		if isinstance(ext, list):	
 			extlist=ext
 		else:
 			try:
+				if not ',' in ext:
+					ext=ext.split(' ')
+				else:
+					ext=ext.split(',')			
 				ext=ast.literal_eval(str(ext))
 				if isinstance(ext, list):	
 					extlist=ext
 				else:
-					extlist.append(ext)
+					extlist=ext.split(' ')
 			except:		
 				extlist.append(ext)	
-				
+	else:
+		extlist=['nsp','xci','nsx','xcz','nsz']
+		
 	ruta=filepath
 	filelist=list()
 	try:
@@ -368,6 +374,7 @@ def selector2list(textfile,mode='folder',ext=False,filter=False,Print=False):
 		binbin='RECYCLE.BIN'
 		if ext!=False:
 			for ext in extlist:
+				ext=ext.strip()
 				# print (ext)
 				if os.path.isdir(ruta):
 					for dirpath, dirnames, filenames in os.walk(ruta):
