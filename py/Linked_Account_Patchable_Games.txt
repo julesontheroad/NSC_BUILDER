@@ -110,7 +110,9 @@ Mordheim Warband Skirmish [BASE][010071B009FB6000][v0][US].nsp - NO
 Mordheim Warband Skirmish [UPD][010071B009FB6800][v131072][WORLD].nsp - NO
 Nintendo Entertainment System - Nintendo Switch Online [BASE][0100D870045B6000][v0][US].nsp - NO
 Nintendo Entertainment System - Nintendo Switch Online [UPD][0100D870045B6800][v720896][US].nsp - NO
+Overwatch Legendary Edition [0100F8600E21E800][v65536].nsp - NO
 Super Nintendo Entertainment System - Nintendo Switch Online [01008D300C50C000][v0].nsp - NO
+The Lord of the Rings Adventure Card Game [BASE][010085A00C5E8000][v0][WORLD].nsp - NO
 Trivial Pursuit LIVE - DEMO [DEMO][01005BA00BEE6000][v0][US].nsp - NO
 Trivial Pursuit LIVE - DEMO [DEMO][UPD][01005BA00BEE6800][v65536][WORLD].nsp - NO
 Use Your Words [BASE][01007C0003AEC000][v0][US].nsp - NO
@@ -149,8 +151,8 @@ Doragonkuesuto Ⅹ onrain be-ta han [DEMO][UPD][0100459000302800][v327680][JAP].
 血咒之城：暗夜儀式 [UPD][010025A00DF2A800][v65536][].nsp - UNTESTED
 血咒之城：暗夜儀式 [BASE][010025A00DF2A000][v0][HK].nsx - UNTESTED
 Rally Rock 'N Racing [0100AFA00F048000][v0].nsx - UNTESTED
-Overwatch Legendary Edition [0100F8600E21E800][v65536].nsp - UNTESTED
-
+Dauntless [0100B9500D1B0800][v65536].nsp - UNTESTED
+Nyan Cat Lost in Space [010049F00EC30000][v0].nsp
 
 -------------------------------------------------------------------------------------
 Thanks to my good friend "the tester"
