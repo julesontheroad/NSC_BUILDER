@@ -1172,11 +1172,12 @@ def get_xciheader(oflist,osizelist,sec_hashlist):
 
 	return header,enc_info,sig_padding,fake_CERT,root_header,upd_header,norm_header,sec_header,rootSize,upd_multiplier,norm_multiplier,sec_multiplier
 
-def ret_nsp_offsets(filepath):
+def ret_nsp_offsets(filepath,kbsize=8):
+	kbsize=int(kbsize)
 	files_list=list()
 	try:
 		with open(filepath, 'r+b') as f:			
-			data=f.read(int(8*1024))						
+			data=f.read(int(kbsize*1024))						
 		try:
 			head=data[0:4]
 			n_files=(data[4:8])
@@ -1219,7 +1220,8 @@ def ret_nsp_offsets(filepath):
 		Print.error('Exception: ' + str(e))
 	return	files_list
 
-def ret_xci_offsets(filepath):
+def ret_xci_offsets(filepath,kbsize=8):
+	kbsize=int(kbsize)
 	files_list=list()
 	try:		
 		with open(filepath, 'r+b') as f:
@@ -1235,7 +1237,7 @@ def ret_xci_offsets(filepath):
 				secureOffset=secureOffset*0x200
 				with open(filepath, 'r+b') as f:	
 					f.seek(secureOffset)
-					data=f.read(int(8*1024))
+					data=f.read(int(kbsize*1024))
 					rawhead = io.BytesIO(data)
 				rmagic=rawhead.read(0x4)
 				if rmagic==b'HFS0':
@@ -1283,7 +1285,8 @@ def ret_xci_offsets(filepath):
 		Print.error('Exception: ' + str(e))
 	return files_list
 
-def ret_xci_offsets_fw(filepath,partition='update'):
+def ret_xci_offsets_fw(filepath,partition='update',kbsize=32):
+	kbsize=int(kbsize)
 	files_list=list()
 	try:		
 		with open(filepath, 'r+b') as f:
@@ -1349,7 +1352,7 @@ def ret_xci_offsets_fw(filepath,partition='update'):
 					if updoffset!=False:	
 						with open(filepath, 'r+b') as f:	
 							f.seek(updoffset)
-							data=f.read(int(32*1024))
+							data=f.read(int(kbsize*1024))
 							rawhead = io.BytesIO(data)
 						a=rawhead.read()
 						# Hex.dump(a)

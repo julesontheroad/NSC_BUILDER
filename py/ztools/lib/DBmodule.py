@@ -72,6 +72,8 @@ else:
 if not os.path.exists(DATABASE_folder):
 	os.makedirs(DATABASE_folder)		
 	
+fwdb=os.path.join(DATABASE_folder,'fw.json')	
+
 class Exchange():	
 	def add(titlerights,titlekey):
 		dbstr=str()
@@ -98,6 +100,102 @@ class Exchange():
 		try:os.remove(exchangefile)
 		except:pass		
 
+class FWDB():
+	def add(FW,filepath):
+		import sq_tools	
+		dump={};newdict={};fwfiles=list()
+		if os.path.exists(fwdb):
+			with open(fwdb) as json_file:	
+				data = json.load(json_file)		
+				for i in data:	
+					dict=data[i]
+					if len(dict.items())>0:
+						dump[i]=dict
+					else: return False		
+		if not FW in dump.items():				
+			if filepath.endswith('nsp'):
+				files_list=sq_tools.ret_nsp_offsets(filepath,32)
+				# print(files_list)
+				# print(len(files_list))
+				for i in range(len(files_list)):
+					f=files_list[i]
+					file=f[0]
+					# print(file)
+					fwfiles.append(file)
+			newdict['files']=fwfiles
+			dump[FW]=newdict
+			app_json = json.dumps(dump, indent=4)
+			with open(fwdb, 'w') as json_file:
+			  json_file.write(app_json)	
+			print('Added firmware {}'.format(FW))	
+		else:
+			print('Firmware {} is already in json'.format(FW))			
+
+	def add_specific():	
+		dump={};files=list()
+		if os.path.exists(fwdb):
+			with open(fwdb) as json_file:	
+				data = json.load(json_file)		
+				for i in data:	
+					dict=data[i]
+					if len(dict.items())>0:
+						dump[i]=dict
+					else: return False	
+		else: return False			
+		for i in dump:
+			entry=dump[i]
+			files=entry['files']
+			for j in dump:
+				if j==i:
+					pass
+				else:
+					entry2=dump[j]
+					files2=entry2['files']
+					aux=list()
+					for k in files:
+						if k not in files2:
+							aux.append(k)
+					files=aux
+			entry['specific']=files
+			dump[i]=entry
+		app_json = json.dumps(dump, indent=4)
+		with open(fwdb, 'w') as json_file:
+		  json_file.write(app_json)	
+		print('Updated firmware json')	
+		
+	def detect_xci_fw(filepath,doprint=True):
+		import sq_tools	
+		FW=None;dump={}
+		xcifw=sq_tools.ret_xci_offsets_fw(filepath)
+		# print(xcifw)
+		fwfiles=list()
+		if len(xcifw)>0:
+			for i in xcifw:
+				entry=i
+				fwfiles.append(entry[0])
+		else: 
+			if doprint==True:
+				print('- Firmware was deleted from file')		
+			return 'Deleted'
+		# print(fwfiles)
+		if os.path.exists(fwdb):
+			with open(fwdb) as json_file:	
+				data = json.load(json_file)	
+				for i in data:	
+					dict=data[i]
+					if len(dict.items())>0:
+						dump[i]=dict
+					else: return False	
+		for i in fwfiles:
+			for j in dump:
+				entry=dump[j]
+				files=entry['specific']
+				if i in files:
+					FW=j
+					if doprint==True:
+						print('- Xci includes firmware: '+FW)
+					return FW
+			
 class Dict(dict):
 	START_FLAG = b'# FILE-DICT v1\n'
 
