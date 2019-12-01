@@ -403,8 +403,11 @@ echo *******************************
 echo NSP\XCI PARARELL COMPRESSION 
 echo *******************************
 CD /d "%prog_dir%"
+echo Filter extensions from list
 %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%zzlist.txt","ext=nsp xci","token=False",Print="False"
-
+echo Arrange list by filesizes
+%pycommand% "%nut%" -lib_call listmanager size_sorted_from_tfile -xarg "%prog_dir%zzlist.txt"
+echo Start compression by batches of "%workers%"
 %pycommand% "%nut%" %buffer% -o "%fold_output%" -tfile "%prog_dir%zzlist.txt" --compress "%level%" --threads "%workers%" --nodelta "%skdelta%" --fexport "%xci_export%" --pararell "true"
 
 ECHO ---------------------------------------------------
