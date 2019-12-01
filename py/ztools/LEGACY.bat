@@ -1575,8 +1575,9 @@ ECHO.
 set /p eval=<"%uinput%"
 set eval=%eval:"=%
 if /i "%eval%"=="0" goto manual_Reentry
-if /i "%eval%"=="1" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%UPDlist.txt",mode=folder,ext=nsp xci ) 2>&1>NUL
-if /i "%eval%"=="2" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%UPDlist.txt",mode=file,ext=nsp xci  )  2>&1>NUL
+if /i "%eval%"=="1" ( %pycommand% "%nut%" -lib_call listmanager selector2list -xarg "%prog_dir%UPDlist.txt" mode=folder ext="nsp xci" ) 2>&1>NUL
+if /i "%eval%"=="2" ( %pycommand% "%nut%" -lib_call listmanager selector2list -xarg "%prog_dir%UPDlist.txt" mode=file ext="nsp xci" )  2>&1>NUL
+
 goto upd_checkagain
 
 echo.
@@ -1609,8 +1610,8 @@ endlocal
 
 if /i "%eval%"=="0" goto manual_Reentry
 if /i "%eval%"=="1" goto upd_starts
-if /i "%eval%"=="2" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%UPDlist.txt",mode=folder,ext=nsp xci ) 2>&1>NUL
-if /i "%eval%"=="3" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%UPDlist.txt",mode=file,ext=nsp xci )  2>&1>NUL
+if /i "%eval%"=="2" ( %pycommand% "%nut%" -lib_call listmanager selector2list -xarg "%prog_dir%UPDlist.txt" mode=folder ext="nsp xci" ) 2>&1>NUL
+if /i "%eval%"=="3" ( %pycommand% "%nut%" -lib_call listmanager selector2list -xarg "%prog_dir%UPDlist.txt" mode=file ext="nsp xci" )  2>&1>NUL
 if /i "%eval%"=="4" goto upd_ADD_BASE
 if /i "%eval%"=="e" goto salida
 if /i "%eval%"=="i" goto upd_showlist

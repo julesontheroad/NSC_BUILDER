@@ -848,8 +848,8 @@ setlocal enabledelayedexpansion
 echo+ >"%uinput%"
 endlocal
 if /i "%eval%"=="0" goto manual_Reentry
-if /i "%eval%"=="1" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%list.txt",mode=folder,ext=nsp xci nsz nsx xcz ) 2>&1>NUL
-if /i "%eval%"=="2" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%list.txt",mode=file,ext=nsp xci nsz nsx xcz )  2>&1>NUL
+if /i "%eval%"=="1" ( %pycommand% "%nut%" -lib_call listmanager selector2list -xarg "%prog_dir%list.txt" mode=folder ext="nsp xci nsz nsx xcz" ) 2>&1>NUL
+if /i "%eval%"=="2" ( %pycommand% "%nut%" -lib_call listmanager selector2list -xarg "%prog_dir%list.txt" mode=file ext="nsp xci nsz nsx xcz" ) 2>&1>NUL  
 goto checkagain
 echo.
 :checkagain
@@ -878,8 +878,8 @@ endlocal
 
 if /i "%eval%"=="0" goto manual_Reentry
 if /i "%eval%"=="1" goto start_cleaning
-if /i "%eval%"=="2" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%list.txt",mode=folder,ext=nsp xci nsz nsx xcz ) 2>&1>NUL
-if /i "%eval%"=="3" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%list.txt",mode=file,ext=nsp xci nsz nsx xcz )  2>&1>NUL
+if /i "%eval%"=="2" ( %pycommand% "%nut%" -lib_call listmanager selector2list -xarg  "%prog_dir%list.txt" mode=folder ext="nsp xci nsz nsx xcz" ) 2>&1>NUL
+if /i "%eval%"=="3" ( %pycommand% "%nut%" -lib_call listmanager selector2list -xarg  "%prog_dir%list.txt" mode=file ext="nsp xci nsz nsx xcz" )  2>&1>NUL
 if /i "%eval%"=="e" goto salida
 if /i "%eval%"=="i" goto showlist
 if /i "%eval%"=="r" goto r_files
@@ -1597,8 +1597,9 @@ endlocal
 if /i "%eval%"=="0" goto manual_Reentry
 if /i "%eval%"=="1" set skip_list_split="true"
 if /i "%eval%"=="1" goto multi_start_cleaning
-if /i "%eval%"=="2" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%mlist.txt",mode=folder,ext=nsp xci nsz xcz ) 2>&1>NUL
-if /i "%eval%"=="3" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%mlist.txt",mode=file,ext=nsp xci nsz xcz )  2>&1>NUL
+if /i "%eval%"=="2" ( %pycommand% "%nut%" -lib_call listmanager selector2list -xarg "%prog_dir%mlist.txt" mode=folder ext="nsp xci nsz xcz" ) 2>&1>NUL
+if /i "%eval%"=="3" ( %pycommand% "%nut%" -lib_call listmanager selector2list -xarg "%prog_dir%mlist.txt" mode=file ext="nsp xci nsz xcz" ) 2>&1>NUL
+
 goto multi_checkagain
 echo.
 :multi_checkagain
@@ -1610,6 +1611,8 @@ echo.
 echo Input "1" to start processing current list
 echo Input "2" to add to saved lists and process them
 echo Input "3" to save list for later
+echo Input "4" to add another folder to list via selector
+echo Input "5" to add another file to list via selector
 REM echo Input "2" to set a custom logo from a nsp/nca
 echo.
 echo Input "e" to exit
@@ -1635,8 +1638,8 @@ if /i "%eval%"=="2" set "mlistfol=%list_folder%\m_multi"
 if /i "%eval%"=="2" goto multi_start_cleaning
 if /i "%eval%"=="3" set "mlistfol=%list_folder%\m_multi"
 if /i "%eval%"=="3" goto multi_saved_for_later
-if /i "%eval%"=="4" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%mlist.txt",mode=folder,ext=nsp xci nsz xcz ) 2>&1>NUL
-if /i "%eval%"=="5" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%mlist.txt",mode=file,ext=nsp xci nsz xcz )  2>&1>NUL
+if /i "%eval%"=="4" ( %pycommand% "%nut%" -lib_call listmanager selector2list -xarg "%prog_dir%mlist.txt" mode=folder ext="nsp xci nsz xcz" ) 2>&1>NUL
+if /i "%eval%"=="5" ( %pycommand% "%nut%" -lib_call listmanager selector2list -xarg "%prog_dir%mlist.txt" mode=file ext="nsp xci nsz xcz" ) 2>&1>NUL
 REM if /i "%eval%"=="2" goto multi_set_clogo
 if /i "%eval%"=="e" goto salida
 if /i "%eval%"=="i" goto multi_showlist
@@ -2341,8 +2344,8 @@ echo+ >"%uinput%"
 endlocal
 
 if /i "%eval%"=="0" goto manual_Reentry
-if /i "%eval%"=="1" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%splist.txt",mode=folder,ext=nsp xci nsz xcz ) 2>&1>NUL
-if /i "%eval%"=="2" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%splist.txt",mode=file,ext=nsp xci nsz xcz )  2>&1>NUL
+if /i "%eval%"=="1" ( %pycommand% "%nut%" -lib_call listmanager selector2list -xarg "%prog_dir%splist.txt" mode=folder ext="nsp xci nsz xcz" ) 2>&1>NUL
+if /i "%eval%"=="2" ( %pycommand% "%nut%" -lib_call listmanager selector2list -xarg "%prog_dir%splist.txt" mode=file ext="nsp xci nsz xcz" )  2>&1>NUL
 
 echo.
 :sp_checkagain
@@ -2371,8 +2374,9 @@ endlocal
 
 if /i "%eval%"=="0" goto manual_Reentry
 if /i "%eval%"=="1" goto sp_start_cleaning
-if /i "%eval%"=="2" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%splist.txt",mode=folder,ext=nsp xci nsz xcz ) 2>&1>NUL
-if /i "%eval%"=="3" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%splist.txt",mode=file,ext=nsp xci nsz xcz )  2>&1>NUL
+if /i "%eval%"=="2" ( %pycommand% "%nut%" -lib_call listmanager selector2list -xarg "%prog_dir%splist.txt" mode=folder ext="nsp xci nsz xcz" ) 2>&1>NUL
+if /i "%eval%"=="3" ( %pycommand% "%nut%" -lib_call listmanager selector2list -xarg "%prog_dir%splist.txt" mode=file ext="nsp xci nsz xcz" )  2>&1>NUL
+
 if /i "%eval%"=="e" goto salida
 if /i "%eval%"=="i" goto sp_showlist
 if /i "%eval%"=="r" goto sp_r_files

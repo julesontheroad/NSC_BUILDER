@@ -80,8 +80,9 @@ setlocal enabledelayedexpansion
 echo+ >"%uinput%"
 endlocal
 if /i "%eval%"=="0" exit /B
-if /i "%eval%"=="1" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%zzlist.txt",mode=folder,ext=nsp xci nsz xcz ) 2>&1>NUL
-if /i "%eval%"=="2" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%zzlist.txt",mode=file,ext=nsp xci nsz xcz )  2>&1>NUL
+if /i "%eval%"=="1" ( %pycommand% "%nut%" -lib_call listmanager selector2list -xarg "%prog_dir%zzlist.txt" mode=folder ext="nsp xci nsz xcz" ) 2>&1>NUL
+if /i "%eval%"=="2" ( %pycommand% "%nut%" -lib_call listmanager selector2list -xarg "%prog_dir%zzlist.txt" mode=file ext="nsp xci nsz xcz" )  2>&1>NUL
+
 goto checkagain
 echo.
 :checkagain
@@ -110,8 +111,8 @@ endlocal
 
 if /i "%eval%"=="0" exit /B
 if /i "%eval%"=="1" goto start
-if /i "%eval%"=="2" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%zzlist.txt",mode=folder,ext=nsp xci nsz xcz ) 2>&1>NUL
-if /i "%eval%"=="3" ( %pycommand% "%nut%" -lib_call listmanager selector2list "%prog_dir%zzlist.txt",mode=file,ext=nsp xci nsz xcz )  2>&1>NUL
+if /i "%eval%"=="2" ( %pycommand% "%nut%" -lib_call listmanager selector2list -xarg "%prog_dir%zzlist.txt" mode=folder ext="nsp xci nsz xcz" ) 2>&1>NUL
+if /i "%eval%"=="3" ( %pycommand% "%nut%" -lib_call listmanager selector2list -xarg "%prog_dir%zzlist.txt" mode=file ext="nsp xci nsz xcz" )  2>&1>NUL
 if /i "%eval%"=="e" goto salida
 if /i "%eval%"=="i" goto showlist
 if /i "%eval%"=="r" goto r_files
@@ -403,8 +404,11 @@ echo *******************************
 echo NSP\XCI PARARELL COMPRESSION 
 echo *******************************
 CD /d "%prog_dir%"
+echo Filter extensions from list
 %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%zzlist.txt","ext=nsp xci","token=False",Print="False"
-
+echo Arrange list by filesizes
+%pycommand% "%nut%" -lib_call listmanager size_sorted_from_tfile -xarg "%prog_dir%zzlist.txt"
+echo Start compression by batches of "%workers%"
 %pycommand% "%nut%" %buffer% -o "%fold_output%" -tfile "%prog_dir%zzlist.txt" --compress "%level%" --threads "%workers%" --nodelta "%skdelta%" --fexport "%xci_export%" --pararell "true"
 
 ECHO ---------------------------------------------------
