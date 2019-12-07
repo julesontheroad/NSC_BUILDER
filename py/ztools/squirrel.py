@@ -5284,7 +5284,7 @@ if __name__ == '__main__':
 			test=filename.lower()
 			if test.endswith('.nsp') or test.endswith('.nsx') or test.endswith('.nsz'):
 				try:
-					files_list=sq_tools.ret_nsp_offsets(filename)
+					files_list=sq_tools.ret_nsp_offsets(filename,32)
 					for i in range(len(files_list)):
 						#print(files_list[i][0])
 						#print(files_list[i][1])
@@ -5328,7 +5328,7 @@ if __name__ == '__main__':
 					Print.error('Exception: ' + str(e))
 			elif test.endswith('.xci') or test.endswith('.xcz'):
 				try:
-					files_list=sq_tools.ret_xci_offsets(filename)
+					files_list=sq_tools.ret_xci_offsets(filename,32)
 					#print(files_list)
 					for i in range(len(files_list)):
 						#print(files_list[i][0])
