@@ -98,8 +98,8 @@ def load(fileName):
 		if 'master_key_16' in keys.keys() and not 'master_key_10' in keys.keys() and not 'master_key_11' in keys.keys() and not 'master_key_12' in keys.keys() and not 'master_key_13' in keys.keys() and not 'master_key_14' in keys.keys() and not 'master_key_15' in keys.keys():
 			keys['master_key_10'] = keys['master_key_16']
 			del keys['master_key_16']
-		for k in keys.keys():
-			print(k)
+		# for k in keys.keys():
+			# print(k)
 	
 	#crypto = aes128.AESCTR(uhx(key), uhx('00000000000000000000000000000010'))
 	aes_kek_generation_source = uhx(keys['aes_kek_generation_source'])

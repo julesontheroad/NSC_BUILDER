@@ -474,8 +474,8 @@ def verify_nkeys(fileName):
 		print("master_key_09 is Missing")
 	else:
 		counter+=1		
-	if 'master_key_10' not in checkkeys:
-		print("master_key_10 is Missing")
+	if 'master_key_10' not in checkkeys or 'master_key_0a' not in checkkeys:
+		print("master_key_10|master_key_0a is Missing")
 	else:
 		counter+=1				
 		
@@ -677,9 +677,9 @@ def verify_nkeys(fileName):
 				print(tabs+'> Key is invalid!!! -> PLEASE CHECK YOUR KEYS.TXT!!!')			
 			print('')	
 
-		if i == 'master_key_10':
+		if i == 'master_key_10' or i == 'master_key_0a':
 			master_key_10=checkkeys[i][:]
-			print('master_key_10: '+master_key_10)
+			print('master_key_10|master_key_0a: '+master_key_10)
 			sha=sha256(uhx(master_key_10)).hexdigest()
 			print('  > HEX SHA256: '+sha)	
 			if sha == '4ec5a237a75a083a9c5f6cf615601522a7f822d06bd4ba32612c9cebbb29bd45':
@@ -817,8 +817,8 @@ def verify_nkeys_startup(fileName):
 		startup=True		
 	else:
 		counter+=1
-	if 'master_key_10' not in checkkeys:
-		print("master_key_10 is Missing!!!")
+	if 'master_key_10' not in checkkeys or 'master_key_0a' not in checkkeys:
+		print("master_key_10|master_key_0a is Missing!!!")
 		print("The program won't be able to decrypt games content that uses this key")
 		print("This key represents FW 9.1 requirement")
 		startup=True		
@@ -993,7 +993,7 @@ def verify_nkeys_startup(fileName):
 			master_key_08=checkkeys[i][:]
 			sha=sha256(uhx(master_key_08)).hexdigest()
 			if sha != '2998e2e23609bc2675ff062a2d64af5b1b78dff463b24119d64a1b64f01b2d51':
-				print('master_key_07: '+aes_kek_generation_source )	
+				print('master_key_08: '+aes_kek_generation_source )	
 				print('  > HEX SHA256: '+sha)
 				print(tabs+'> Key is invalid!!! -> PLEASE CHECK YOUR KEYS.TXT!!!')		
 				startup=True				
@@ -1003,17 +1003,17 @@ def verify_nkeys_startup(fileName):
 			master_key_09=checkkeys[i][:]
 			sha=sha256(uhx(master_key_09)).hexdigest()
 			if sha != '9d486a98067c44b37cf173d3bf577891eb6081ff6b4a166347d9dbbf7025076b':
-				print('master_key_07: '+aes_kek_generation_source )	
+				print('master_key_09: '+aes_kek_generation_source )	
 				print('  > HEX SHA256: '+sha)
 				print(tabs+'> Key is invalid!!! -> PLEASE CHECK YOUR KEYS.TXT!!!')		
 				startup=True				
 			print('')	
 
-		if i == 'master_key_10':
+		if (i == 'master_key_10' or i=='master_key_0a'):
 			master_key_10=checkkeys[i][:]
 			sha=sha256(uhx(master_key_10)).hexdigest()
 			if sha != '4ec5a237a75a083a9c5f6cf615601522a7f822d06bd4ba32612c9cebbb29bd45':
-				print('master_key_07: '+aes_kek_generation_source )	
+				print('master_key_10|master_key_0a: '+aes_kek_generation_source )	
 				print('  > HEX SHA256: '+sha)
 				print(tabs+'> Key is invalid!!! -> PLEASE CHECK YOUR KEYS.TXT!!!')		
 				startup=True				
