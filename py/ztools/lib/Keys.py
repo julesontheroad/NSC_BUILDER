@@ -15,8 +15,8 @@ def getMasterKeyIndex(i):
 		return 0
 
 def keyAreaKey(cryptoType, i):
-	print(cryptoType)
-	print(i)
+	# print(cryptoType)
+	# print(i)
 	return keyAreaKeys[cryptoType][i]
 
 def get(key):
@@ -87,7 +87,10 @@ def load(fileName):
 						num=keyname[-2:]
 					else:	
 						num=keyname[-1]
-					num=int(int(num,16))	
+					try:	
+						num=int(int(num,16))
+					except:
+						num=int(num,10)
 					if len(str(num))<2:
 						num='0'+str(num)
 					keyname='master_key_'+str(num)
