@@ -15,6 +15,8 @@ def getMasterKeyIndex(i):
 		return 0
 
 def keyAreaKey(cryptoType, i):
+	print(cryptoType)
+	print(i)
 	return keyAreaKeys[cryptoType][i]
 
 def get(key):
@@ -79,19 +81,32 @@ def load(fileName):
 		for line in f.readlines():
 			r = re.match('\s*([a-z0-9_]+)\s*=\s*([A-F0-9]+)\s*', line, re.I)
 			if r:
-				keys[r.group(1)] = r.group(2)
+				keyname=r.group(1)
+				if keyname.startswith('master_key_'):
+					if keyname[-2]!='0':
+						num=keyname[-2:]
+					else:	
+						num=keyname[-1]
+					num=int(int(num,16))	
+					if len(str(num))<2:
+						num='0'+str(num)
+					keyname='master_key_'+str(num)
+				keys[keyname] = r.group(2)
 	
 	#crypto = aes128.AESCTR(uhx(key), uhx('00000000000000000000000000000010'))
 	aes_kek_generation_source = uhx(keys['aes_kek_generation_source'])
 	aes_key_generation_source = uhx(keys['aes_key_generation_source'])
 
 	keyAreaKeys = []
-	for i in range(10):
+	for i in range(20):
 		keyAreaKeys.append([None, None, None])
 
 	
-	for i in range(10):
-		masterKeyName = 'master_key_0' + str(i)
+	for i in range(20):
+		if i<10:
+			masterKeyName = 'master_key_0' + str(i)
+		else:
+			masterKeyName = 'master_key_' + str(i)			
 		if masterKeyName in keys.keys():
 			# aes_decrypt(master_ctx, &keyset->titlekeks[i], keyset->titlekek_source, 0x10);
 			masterKey = uhx(keys[masterKeyName])
