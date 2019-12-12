@@ -300,6 +300,9 @@ if __name__ == '__main__':
 			args.file=None
 			
 		if args.library_call:
+			if (args.library_call[0]).startswith('Drive.'):
+				sys.path.insert(0, 'Drive')
+				args.library_call[0]=str(args.library_call[0]).replace("Drive.", "")
 			import secondary
 			if args.explicit_argument:
 				vret=secondary.call_library(args.library_call,args.explicit_argument)
@@ -8054,6 +8057,7 @@ if __name__ == '__main__':
 					ruta=ruta[1:]
 				extlist=list()
 				extlist.append('.nsp')
+				extlist.append('.nsz')				
 				if args.filter:
 					for f in args.filter:
 						filter=f
@@ -8245,6 +8249,7 @@ if __name__ == '__main__':
 					ruta=ruta[1:]
 				extlist=list()
 				extlist.append('.nsp')
+				extlist.append('.nsz')				
 				if args.filter:
 					for f in args.filter:
 						filter=f
@@ -8460,7 +8465,9 @@ if __name__ == '__main__':
 					ruta=ruta[1:]
 				extlist=list()
 				extlist.append('.nsp')
+				extlist.append('.nsz')				
 				extlist.append('.xci')
+				extlist.append('.xcz')				
 				if args.filter:
 					for f in args.filter:
 						filter=f
@@ -8743,7 +8750,9 @@ if __name__ == '__main__':
 					ruta=ruta[1:]
 				extlist=list()
 				extlist.append('.nsp')
+				extlist.append('.nsz')				
 				extlist.append('.xci')
+				extlist.append('.xcz')				
 				if args.filter:
 					for f in args.filter:
 						filter=f
@@ -9023,7 +9032,9 @@ if __name__ == '__main__':
 					ruta=ruta[1:]
 				extlist=list()
 				extlist.append('.nsp')
+				extlist.append('.nsz')				
 				extlist.append('.xci')
+				extlist.append('.xcz')				
 				if args.filter:
 					for f in args.filter:
 						filter=f
@@ -9321,7 +9332,9 @@ if __name__ == '__main__':
 					ruta=ruta[1:]
 				extlist=list()
 				extlist.append('.nsp')
+				extlist.append('.nsz')				
 				extlist.append('.xci')
+				extlist.append('.xcz')				
 				if args.filter:
 					for f in args.filter:
 						filter=f
@@ -9612,7 +9625,9 @@ if __name__ == '__main__':
 						ruta=ruta[1:]
 					extlist=list()
 					extlist.append('.nsp')
+					extlist.append('.nsz')					
 					extlist.append('.xci')
+					extlist.append('.xcz')					
 					if args.filter:
 						for f in args.filter:
 							filter=f
@@ -9750,7 +9765,9 @@ if __name__ == '__main__':
 						ruta=ruta[1:]
 					extlist=list()
 					extlist.append('.nsp')
+					extlist.append('.nsz')					
 					extlist.append('.xci')
+					extlist.append('.xcz')					
 					if args.filter:
 						for f in args.filter:
 							filter=f
