@@ -501,10 +501,37 @@ def About():
 	print("Program's github: https://github.com/julesontheroad/NSC_BUILDER                       ")
 	print('Cheats and Eshop information from nutdb and http://tinfoil.io                         ')
 	print('------------------------------------------------------------------------------------- ')
-slimpath
-def start():
+
+def start(browserpath='auto'):
 	try:
-		if os.path.exists(chromiumpath):
+		if browserpath == 'default':
+			print("Launched using default system browser")
+			eel.start('main.html', mode='default', size=(800, 750))				
+		elif browserpath != 'auto' and os.path.exists(browserpath) and not browserpath.endswith('.ink'):
+			eel.browsers.set_path('chrome', browserpath)
+			About()
+			print("Launched using: "+browserpath)
+			eel.start('main.html', mode='chrome', size=(800, 750))
+		elif browserpath != 'auto' and browserpath.endswith('.lnk') and sys.platform in ['win32', 'win64']:
+			chrpath=os.path.join(ztools_dir,'chromium')
+			chrpath_alt=os.path.join(squirrel_dir,'chromium')
+			if not os.path.exists(browserpath) and os.path.exists(chrpath):
+				browserpath=os.path.join(chrpath,browserpath)
+			elif not os.path.exists(browserpath) and os.path.exists(chrpath_alt):
+				browserpath=os.path.join(chrpath_alt,browserpath)
+			elif not os.path.exists(browserpath):
+				print(".lnk file doesn't exist")
+				return False
+			import sys
+			import win32com.client 
+			shell = win32com.client.Dispatch("WScript.Shell")
+			browserpath = shell.CreateShortCut(browserpath)
+			browserpath=browserpath.Targetpath	
+			eel.browsers.set_path('chrome', browserpath)
+			About()
+			print("Launched using: "+browserpath)
+			eel.start('main.html', mode='chrome', size=(800, 750))			
+		elif os.path.exists(chromiumpath):
 			eel.browsers.set_path('chrome', chromiumpath)
 			About()
 			print("Launched using: "+chromiumpath)
@@ -514,7 +541,7 @@ def start():
 			About()
 			print("Launched using: "+chromiumpath_alt)
 			eel.start('main.html', mode='chrome', size=(800, 750))		
-		if os.path.exists(slimpath):
+		elif os.path.exists(slimpath):
 			eel.browsers.set_path('chrome', slimpath)
 			About()
 			print("Launched using: "+slimpath)
