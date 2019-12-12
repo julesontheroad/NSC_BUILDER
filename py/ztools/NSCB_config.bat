@@ -223,7 +223,9 @@ echo Input "4" to change top keygeneration to 4 (FW 4.0.0-4.1.0)
 echo Input "5" to change top keygeneration to 5 (FW 5.0.0-5.1.0)
 echo Input "6" to change top keygeneration to 6 (FW 6.0.0-6.1.0)
 echo Input "7" to change top keygeneration to 7 (FW 6.2.0)
-echo Input "8" to change top keygeneration to 8 (FW 7.0.0-7.0.1)
+echo Input "8" to change top keygeneration to 8 (FW 7.0.0-8.0.1)
+echo Input "9" to change top keygeneration to 9 (FW 8.1.0)
+echo Input "10" to change top keygeneration to 10 (FW 9.0.0)
 echo.
 echo Input "b" to return to AUTO-MODE - CONFIGURATION
 echo Input "c" to return to CONFIG MENU
@@ -232,16 +234,30 @@ echo ...........................................................................
 echo.
 set /p bs="Enter your choice: "
 set "v_KGEN=none"
+set "v_CAPRSV=0"
 if /i "%bs%"=="f" set "v_KGEN=-kp false"
 if /i "%bs%"=="0" set "v_KGEN=-kp 0"
+if /i "%bs%"=="0" set "v_CAPRSV=--RSVcap 0"
 if /i "%bs%"=="1" set "v_KGEN=-kp 1"
+if /i "%bs%"=="1" set "v_CAPRSV=--RSVcap 65796"
 if /i "%bs%"=="2" set "v_KGEN=-kp 2"
+if /i "%bs%"=="2" set "v_CAPRSV=--RSVcap 201327002"
 if /i "%bs%"=="3" set "v_KGEN=-kp 3"
+if /i "%bs%"=="3" set "v_CAPRSV=--RSVcap 201392178"
 if /i "%bs%"=="4" set "v_KGEN=-kp 4"
+if /i "%bs%"=="4" set "v_CAPRSV=--RSVcap 268435656"
 if /i "%bs%"=="5" set "v_KGEN=-kp 5"
+if /i "%bs%"=="5" set "v_CAPRSV=--RSVcap 335544750"
 if /i "%bs%"=="6" set "v_KGEN=-kp 6"
+if /i "%bs%"=="6" set "v_CAPRSV=--RSVcap 402653494"
 if /i "%bs%"=="7" set "v_KGEN=-kp 7"
-if /i "%bs%"=="7" set "v_KGEN=-kp 8"
+if /i "%bs%"=="7" set "v_CAPRSV=--RSVcap 404750336"
+if /i "%bs%"=="8" set "v_KGEN=-kp 8"
+if /i "%bs%"=="8" set "v_CAPRSV=--RSVcap 469762048"
+if /i "%bs%"=="9" set "v_KGEN=-kp 9"
+if /i "%bs%"=="9" set "v_CAPRSV=--RSVcap 537919488"
+if /i "%bs%"=="10" set "v_KGEN=-kp 10"
+if /i "%bs%"=="10" set "v_CAPRSV=--RSVcap 603979776"
 
 if /i "%bs%"=="b" goto sc2
 if /i "%bs%"=="c" goto sc1
@@ -253,9 +269,13 @@ if "%v_RSV%"=="none" goto op_RSV
 
 set v_KGEN="vkey=%v_KGEN%"
 set v_KGEN="%v_KGEN%"
+set v_CAPRSV="capRSV=%v_CAPRSV%"
+set v_CAPRSV="%v_CAPRSV%"
 %pycommand% "%listmanager%" -cl "%op_file%" -ln "95" -nl "set %v_KGEN%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "42" -nl "set %v_CAPRSV%" 
 echo.
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "95" -nl "Line in config was changed to: "
+%pycommand% "%listmanager%" -rl "%op_file%" -ln "42" -nl "Line in config was changed to: "
 echo.
 pause
 goto sc2
