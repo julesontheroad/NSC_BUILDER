@@ -501,10 +501,22 @@ def About():
 	print("Program's github: https://github.com/julesontheroad/NSC_BUILDER                       ")
 	print('Cheats and Eshop information from nutdb and http://tinfoil.io                         ')
 	print('------------------------------------------------------------------------------------- ')
-slimpath
-def start():
+
+def start(browserpath='auto'):
 	try:
-		if os.path.exists(chromiumpath):
+		if browserpath == 'default':
+			print("Launched using default system browser")
+			eel.start('main.html', mode='default', size=(800, 700))				
+		elif browserpath != 'auto' and os.path.exists(browserpath):
+			eel.browsers.set_path('chrome', browserpath)
+			About()
+			print("Launched using: "+browserpath)
+			eel.start('main.html', mode='chrome', size=(800, 700))	
+		elif browserpath != 'auto':
+			About()
+			print("Launched using: "+browserpath)
+			eel.start('main.html', mode='ask', size=(800, 700))				
+		elif os.path.exists(chromiumpath):
 			eel.browsers.set_path('chrome', chromiumpath)
 			About()
 			print("Launched using: "+chromiumpath)
@@ -514,7 +526,7 @@ def start():
 			About()
 			print("Launched using: "+chromiumpath_alt)
 			eel.start('main.html', mode='chrome', size=(800, 700))		
-		if os.path.exists(slimpath):
+		elif os.path.exists(slimpath):
 			eel.browsers.set_path('chrome', slimpath)
 			About()
 			print("Launched using: "+slimpath)
