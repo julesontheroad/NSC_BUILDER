@@ -41,3 +41,4 @@ py/ztools/chromedriver.exe
 py/ztools/hactool.exe
 *.bak
 py/RetrieverPy.zip
+*.pyc
