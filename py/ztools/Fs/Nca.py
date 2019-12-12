@@ -2176,7 +2176,7 @@ class Nca(File):
 				return True,False,titleKeyEnc,tr2,headdata2,masterKeyRev			
 			else:
 				nlist=list()
-				for i in range(11):
+				for i in range(12):
 					nlist.append(i)
 				nlist=sorted(nlist, key=int, reverse=True)		
 				for i in nlist:
@@ -2271,7 +2271,7 @@ class Nca(File):
 		encKeyBlock = self.header.getKeyBlock()
 		decKeyBlock = crypto.decrypt(encKeyBlock)	
 		nlist=list()
-		for i in range(11):
+		for i in range(12):
 			nlist.append(i)
 		nlist=sorted(nlist, key=int, reverse=True)		
 		for i in nlist:

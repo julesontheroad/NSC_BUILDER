@@ -28,6 +28,7 @@ v0.96d - bugfixes:
 	- Added json integrity check when updating nutdb. The update will take a little longer
 	  but the current json will be protected if the one in the repository is corrupted.
 	- Fix issue where pykashi adds spaces when processing accented characters.
+	- Improved selector to list function.
 	- Added pararell compression as alternative to threads. Pararell compression compresses
 	  several files at the same time with a smaller cpu footprint.
 	  In tests i managed to compress 20 files at the same time while keeping a 2-3Mb\s speed 
@@ -45,6 +46,8 @@ v0.96d - bugfixes:
 	       a file another takes it's place.
 	  II.- Let one thread update the progress bars exchanging the progress information between
                threads
+	  4- For performance a function that arranges files by size has been added. That ensures
+	  files with similar sizes will be group on the same batch when possible
 v0.96c - bugfixes:
 	- Fix bug where rsv changed cnmt.nca files won't get it's has verified properly.
 	- Fix bug where individual mode will only output multi-nsp files as nsp when the user choose

@@ -300,6 +300,9 @@ if __name__ == '__main__':
 			args.file=None
 			
 		if args.library_call:
+			if (args.library_call[0]).startswith('Drive.'):
+				sys.path.insert(0, 'Drive')
+				args.library_call[0]=str(args.library_call[0]).replace("Drive.", "")
 			import secondary
 			if args.explicit_argument:
 				vret=secondary.call_library(args.library_call,args.explicit_argument)
@@ -4072,7 +4075,7 @@ if __name__ == '__main__':
 						else:
 							endname=str(f)
 				endname = (re.sub(r'[\/\\\:\*\?]+', '', endname))
-				endname = re.sub(r'[™©®`~^´ªº¢£€¥$ƒ±¬½¼«»±•²‰œæÆ³☆<<>>|]', '', endname)
+				endname = re.sub(r'[™©®`~^´ªº¢#£€¥$ƒ±¬½¼«»±•²‰œæÆ³☆<<>>|]', '', endname)
 				endname = re.sub(r'[Ⅰ]', 'I', endname);endname = re.sub(r'[Ⅱ]', 'II', endname)
 				endname = re.sub(r'[Ⅲ]', 'III', endname);endname = re.sub(r'[Ⅳ]', 'IV', endname)
 				endname = re.sub(r'[Ⅴ]', 'V', endname);endname = re.sub(r'[Ⅵ]', 'VI', endname)
@@ -4081,7 +4084,7 @@ if __name__ == '__main__':
 				endname = re.sub(r'[Ⅺ]', 'XI', endname);endname = re.sub(r'[Ⅻ]', 'XII', endname)
 				endname = re.sub(r'[Ⅼ]', 'L', endname);endname = re.sub(r'[Ⅽ]', 'C', endname)
 				endname = re.sub(r'[Ⅾ]', 'D', endname);endname = re.sub(r'[Ⅿ]', 'M', endname)
-				endname = re.sub(r'[—]', '-', endname);
+				endname = re.sub(r'[—]', '-', endname);endname = re.sub(r'[√]', 'Root', endname)
 				endname = re.sub(r'[àâá@äå]', 'a', endname);endname = re.sub(r'[ÀÂÁÄÅ]', 'A', endname)
 				endname = re.sub(r'[èêéë]', 'e', endname);endname = re.sub(r'[ÈÊÉË]', 'E', endname)
 				endname = re.sub(r'[ìîíï]', 'i', endname);endname = re.sub(r'[ÌÎÍÏ]', 'I', endname)
@@ -5284,7 +5287,7 @@ if __name__ == '__main__':
 			test=filename.lower()
 			if test.endswith('.nsp') or test.endswith('.nsx') or test.endswith('.nsz'):
 				try:
-					files_list=sq_tools.ret_nsp_offsets(filename)
+					files_list=sq_tools.ret_nsp_offsets(filename,32)
 					for i in range(len(files_list)):
 						#print(files_list[i][0])
 						#print(files_list[i][1])
@@ -5328,7 +5331,7 @@ if __name__ == '__main__':
 					Print.error('Exception: ' + str(e))
 			elif test.endswith('.xci') or test.endswith('.xcz'):
 				try:
-					files_list=sq_tools.ret_xci_offsets(filename)
+					files_list=sq_tools.ret_xci_offsets(filename,32)
 					#print(files_list)
 					for i in range(len(files_list)):
 						#print(files_list[i][0])
@@ -6880,7 +6883,7 @@ if __name__ == '__main__':
 						endname=endname[:-1]
 					#endname = re.sub(r'[\/\\\:\*\?\"\<\>\|\.\s™©®()\~]+', ' ', endname)
 					endname = (re.sub(r'[\/\\\:\*\?]+', '', endname))
-					endname = re.sub(r'[™©®`~^´ªº¢£€¥$ƒ±¬½¼«»±•²‰œæÆ³☆<<>>|]', '', endname)
+					endname = re.sub(r'[™©®`~^´ªº¢#£€¥$ƒ±¬½¼«»±•²‰œæÆ³☆<<>>|]', '', endname)
 					endname = re.sub(r'[Ⅰ]', 'I', endname);endname = re.sub(r'[Ⅱ]', 'II', endname)
 					endname = re.sub(r'[Ⅲ]', 'III', endname);endname = re.sub(r'[Ⅳ]', 'IV', endname)
 					endname = re.sub(r'[Ⅴ]', 'V', endname);endname = re.sub(r'[Ⅵ]', 'VI', endname)
@@ -6889,7 +6892,7 @@ if __name__ == '__main__':
 					endname = re.sub(r'[Ⅺ]', 'XI', endname);endname = re.sub(r'[Ⅻ]', 'XII', endname)
 					endname = re.sub(r'[Ⅼ]', 'L', endname);endname = re.sub(r'[Ⅽ]', 'C', endname)
 					endname = re.sub(r'[Ⅾ]', 'D', endname);endname = re.sub(r'[Ⅿ]', 'M', endname)
-					endname = re.sub(r'[—]', '-', endname);
+					endname = re.sub(r'[—]', '-', endname);endname = re.sub(r'[√]', 'Root', endname)
 					endname = re.sub(r'[àâá@äå]', 'a', endname);endname = re.sub(r'[ÀÂÁÄÅ]', 'A', endname)
 					endname = re.sub(r'[èêéë]', 'e', endname);endname = re.sub(r'[ÈÊÉË]', 'E', endname)
 					endname = re.sub(r'[ìîíï]', 'i', endname);endname = re.sub(r'[ÌÎÍÏ]', 'I', endname)
@@ -7164,7 +7167,7 @@ if __name__ == '__main__':
 				endname=converter.do(endname)
 				endname=endname[0].upper()+endname[1:]
 			endname = (re.sub(r'[\/\\\:\*\?]+', '', endname))
-			endname = re.sub(r'[™©®`~^´ªº¢£€¥$ƒ±¬½¼«»±•²‰œæÆ³☆<<>>|]', '', endname)
+			endname = re.sub(r'[™©®`~^´ªº¢#£€¥$ƒ±¬½¼«»±•²‰œæÆ³☆<<>>|]', '', endname)
 			endname = re.sub(r'[Ⅰ]', 'I', endname);endname = re.sub(r'[Ⅱ]', 'II', endname)
 			endname = re.sub(r'[Ⅲ]', 'III', endname);endname = re.sub(r'[Ⅳ]', 'IV', endname)
 			endname = re.sub(r'[Ⅴ]', 'V', endname);endname = re.sub(r'[Ⅵ]', 'VI', endname)
@@ -7173,7 +7176,7 @@ if __name__ == '__main__':
 			endname = re.sub(r'[Ⅺ]', 'XI', endname);endname = re.sub(r'[Ⅻ]', 'XII', endname)
 			endname = re.sub(r'[Ⅼ]', 'L', endname);endname = re.sub(r'[Ⅽ]', 'C', endname)
 			endname = re.sub(r'[Ⅾ]', 'D', endname);endname = re.sub(r'[Ⅿ]', 'M', endname)
-			endname = re.sub(r'[—]', '-', endname);
+			endname = re.sub(r'[—]', '-', endname);endname = re.sub(r'[√]', 'Root', endname)
 			endname = re.sub(r'[àâá@äå]', 'a', endname);endname = re.sub(r'[ÀÂÁÄÅ]', 'A', endname)
 			endname = re.sub(r'[èêéë]', 'e', endname);endname = re.sub(r'[ÈÊÉË]', 'E', endname)
 			endname = re.sub(r'[ìîíï]', 'i', endname);endname = re.sub(r'[ÌÎÍÏ]', 'I', endname)
@@ -7214,10 +7217,10 @@ if __name__ == '__main__':
 		if not args.direct_multi and not args.fw_req and not args.renameftxt and not args.renamef and not args.Read_nacp and not args.addtodb and (args.sanitize or args.romanize):
 			if args.sanitize:
 				san=True; rom=False
-				route=args.sanitize
+				route=args.sanitize[0]
 			elif args.romanize:
 				san=True; rom=True
-				route=args.romanize
+				route=args.romanize[0]
 			else:
 				route=False
 			if route != False:
@@ -7292,7 +7295,7 @@ if __name__ == '__main__':
 							endname=endname[0].upper()+endname[1:]
 						if san == True:
 							endname = (re.sub(r'[\/\\\:\*\?]+', '', endname))
-							endname = re.sub(r'[™©®`~^´ªº¢£€¥$ƒ±¬½¼«»±•²‰œæÆ³☆<<>>|]', '', endname)
+							endname = re.sub(r'[™©®`~^´ªº¢#£€¥$ƒ±¬½¼«»±•²‰œæÆ³☆<<>>|]', '', endname)
 							endname = re.sub(r'[Ⅰ]', 'I', endname);endname = re.sub(r'[Ⅱ]', 'II', endname)
 							endname = re.sub(r'[Ⅲ]', 'III', endname);endname = re.sub(r'[Ⅳ]', 'IV', endname)
 							endname = re.sub(r'[Ⅴ]', 'V', endname);endname = re.sub(r'[Ⅵ]', 'VI', endname)
@@ -7301,7 +7304,7 @@ if __name__ == '__main__':
 							endname = re.sub(r'[Ⅺ]', 'XI', endname);endname = re.sub(r'[Ⅻ]', 'XII', endname)
 							endname = re.sub(r'[Ⅼ]', 'L', endname);endname = re.sub(r'[Ⅽ]', 'C', endname)
 							endname = re.sub(r'[Ⅾ]', 'D', endname);endname = re.sub(r'[Ⅿ]', 'M', endname)
-							endname = re.sub(r'[—]', '-', endname);
+							endname = re.sub(r'[—]', '-', endname);endname = re.sub(r'[√]', 'Root', endname)
 							endname = re.sub(r'[àâá@äå]', 'a', endname);endname = re.sub(r'[ÀÂÁÄÅ]', 'A', endname)
 							endname = re.sub(r'[èêéë]', 'e', endname);endname = re.sub(r'[ÈÊÉË]', 'E', endname)
 							endname = re.sub(r'[ìîíï]', 'i', endname);endname = re.sub(r'[ÌÎÍÏ]', 'I', endname)
@@ -7322,6 +7325,8 @@ if __name__ == '__main__':
 							endname = endname.replace("[ (", "[(");endname = endname.replace(") ]", ")]")
 							endname = endname.replace("  ", " ")
 						except:pass
+						if endname[-5]==" ":
+							endname=endname[:-5]+endname[-4:]
 						newpath=os.path.join(dir,endname)
 						print('Old Filename: '+basename)
 						print('Filename: '+endname)
@@ -8054,6 +8059,7 @@ if __name__ == '__main__':
 					ruta=ruta[1:]
 				extlist=list()
 				extlist.append('.nsp')
+				extlist.append('.nsz')				
 				if args.filter:
 					for f in args.filter:
 						filter=f
@@ -8245,6 +8251,7 @@ if __name__ == '__main__':
 					ruta=ruta[1:]
 				extlist=list()
 				extlist.append('.nsp')
+				extlist.append('.nsz')				
 				if args.filter:
 					for f in args.filter:
 						filter=f
@@ -8460,7 +8467,9 @@ if __name__ == '__main__':
 					ruta=ruta[1:]
 				extlist=list()
 				extlist.append('.nsp')
+				extlist.append('.nsz')				
 				extlist.append('.xci')
+				extlist.append('.xcz')				
 				if args.filter:
 					for f in args.filter:
 						filter=f
@@ -8743,7 +8752,9 @@ if __name__ == '__main__':
 					ruta=ruta[1:]
 				extlist=list()
 				extlist.append('.nsp')
+				extlist.append('.nsz')				
 				extlist.append('.xci')
+				extlist.append('.xcz')				
 				if args.filter:
 					for f in args.filter:
 						filter=f
@@ -9023,7 +9034,9 @@ if __name__ == '__main__':
 					ruta=ruta[1:]
 				extlist=list()
 				extlist.append('.nsp')
+				extlist.append('.nsz')				
 				extlist.append('.xci')
+				extlist.append('.xcz')				
 				if args.filter:
 					for f in args.filter:
 						filter=f
@@ -9321,7 +9334,9 @@ if __name__ == '__main__':
 					ruta=ruta[1:]
 				extlist=list()
 				extlist.append('.nsp')
+				extlist.append('.nsz')				
 				extlist.append('.xci')
+				extlist.append('.xcz')				
 				if args.filter:
 					for f in args.filter:
 						filter=f
@@ -9612,7 +9627,9 @@ if __name__ == '__main__':
 						ruta=ruta[1:]
 					extlist=list()
 					extlist.append('.nsp')
+					extlist.append('.nsz')					
 					extlist.append('.xci')
+					extlist.append('.xcz')					
 					if args.filter:
 						for f in args.filter:
 							filter=f
@@ -9750,7 +9767,9 @@ if __name__ == '__main__':
 						ruta=ruta[1:]
 					extlist=list()
 					extlist.append('.nsp')
+					extlist.append('.nsz')					
 					extlist.append('.xci')
+					extlist.append('.xcz')					
 					if args.filter:
 						for f in args.filter:
 							filter=f
