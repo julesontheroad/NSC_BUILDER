@@ -19,7 +19,7 @@ endlocal & (
 REM environment
 set "pycommand=%pycommand%"
 set "start_minimized=%start_minimized%"
-
+set "browserpath=%browserpath%"
 REM PROGRAMS
 set "squirrel=%nut%"
 REM FILES
@@ -42,7 +42,7 @@ goto start
 :minimize
 if not "%1" == "min" start /MIN cmd /c %0 min & exit/b >nul 2>&1 
 :start
-%pycommand% "%squirrel%" -lib_call Interface start
+%pycommand% "%squirrel%" -lib_call Interface start -xarg "%browserpath%"
 goto salida
 
 :missing_things
