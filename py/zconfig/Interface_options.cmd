@@ -13,7 +13,7 @@ set "nut=ztools\squirrel.py"
 set "pycommand=py -3"
 ::START console minimized with GUI yes\no
 set "start_minimized=no"
-::Path to browser. Use auto, default or add a path
+::Path to browser. Use auto, default, add a path
 ::Auto preference order
 ::1. Chromium portable
 ::2. Slimjet portable
@@ -21,4 +21,7 @@ set "start_minimized=no"
 ::4. Microsoft Edge
 ::Default: USes default system brwoser (low compatibility)
 ::Path: Replace auto to the path to your browser, ending by exe
+::Path: Replace auto to the path to an .lnk file(shortcut)
+::Path: Add name to .lnk file in ztools\chromium.
+::For example "brave.lnk" will redirect to the exe path of brave browser
 set "browserpath=auto"
