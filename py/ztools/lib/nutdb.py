@@ -982,7 +982,7 @@ def get_content_data(titleid,trans=True):
 			f='nutdb_'+region+'.json'
 		regionfile=os.path.join(DATABASE_folder,f)	
 		if region=='ninshop':
-			check_region_file(region,nutdb=False)
+			check_other_file(urlconfig,region,nutdb=False)
 		else:	
 			check_region_file(region,nutdb=True)
 		with open(regionfile) as json_file:	

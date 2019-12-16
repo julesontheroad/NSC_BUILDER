@@ -4,5 +4,5 @@ VERSIONS|https://raw.githubusercontent.com/julesontheroad/titledb/master/version
 VERSIONS_TXT|https://raw.githubusercontent.com/julesontheroad/titledb/master/versions.txt|24|0|0
 CHEATS|https://raw.githubusercontent.com/julesontheroad/titledb/master/cheats.json|24|0|0
 NINSHOP|https://raw.githubusercontent.com/julesontheroad/titledb/master/ninshop.json|24|0|0
-METACRITIC|https://raw.githubusercontent.com/julesontheroad/titledb/master/metacritic_id.json|24|0|0
+METACRITIC_ID|https://raw.githubusercontent.com/julesontheroad/titledb/master/metacritic_id.json|24|0|0
 FW|https://raw.githubusercontent.com/julesontheroad/titledb/master/fw.json|24|0|0
