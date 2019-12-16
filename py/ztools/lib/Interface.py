@@ -409,11 +409,14 @@ def getinfo(filename):
 		FWoncard=str(FWoncard).strip("'")
 		send_.append(FWoncard)	
 	except:send_.append('-')
-	try:#data[40]	
-		video=dict['video']	
-		video=ast.literal_eval(str(video))
-		video=video[0]
-		send_.append(str(video))	
+	try:#data[40]		
+		if str(enablevideoplayback).lower() == 'true':
+			video=dict['video']	
+			video=ast.literal_eval(str(video))
+			video=video[0]
+			send_.append(str(video))	
+		else:
+			send_.append('-')
 	except:send_.append('-')	
 	f.flush()
 	f.close()			
@@ -548,7 +551,9 @@ def About():
 	print('Cheats and Eshop information from nutdb and http://tinfoil.io                         ')
 	print('------------------------------------------------------------------------------------- ')
 
-def start(browserpath='auto'):
+def start(browserpath='auto',videoplayback=True):
+	global enablevideoplayback
+	enablevideoplayback=videoplayback
 	try:
 		if browserpath == 'default':
 			print("Launched using default system browser")
