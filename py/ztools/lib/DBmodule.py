@@ -65,9 +65,11 @@ else:
 if os.path.exists(zconfig_dir):
 	DATABASE_folder=os.path.join(zconfig_dir, 'DB')
 	exchangefile=os.path.join(DATABASE_folder,'exchange.txt')
+	urlconfig=os.path.join(zconfig_dir,'NUT_DB_URL.txt')
 else:
 	DATABASE_folder=squirrel_dir	
 	exchangefile=os.path.join(DATABASE_folder,'titlekeys.txt')
+	urlconfig=os.path.join(squirrel_dir,'NUT_DB_URL.txt')
 
 if not os.path.exists(DATABASE_folder):
 	os.makedirs(DATABASE_folder)		
@@ -165,6 +167,8 @@ class FWDB():
 		
 	def detect_xci_fw(filepath,doprint=True):
 		import sq_tools	
+		import nutdb
+		nutdb.check_other_file(urlconfig,'fw',nutdb=False)
 		FW=None;dump={}
 		xcifw=sq_tools.ret_xci_offsets_fw(filepath)
 		# print(xcifw)
