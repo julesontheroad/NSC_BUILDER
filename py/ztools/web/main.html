@@ -126,11 +126,11 @@
 					<li style="margin-bottom: 2px;margin-top: 3px"><strong>Online Play: </strong><span  id="onlineplay">-</span></li>	
 					<li style="margin-bottom: 2px;margin-top: 3px"><strong>Cloud Saves: </strong><span  id="savedatacloud">-</span></li>						
 					<li style="margin-bottom: 2px;margin-top: 3px"><strong>Multi Content: </strong><span  id="multicontent">-</span></li>						
-					<li style="margin-bottom: 2px;margin-top: 3px"><strong>Titlekey: </strong><span  id="titlekey">-</span></li>					
+					<li style="margin-bottom: 2px;margin-top: 3px;visibility:visible;" id="titlekey_holder"><strong>Titlekey: </strong><span  id="titlekey">-</span></li>					
 					</ul>
 					<p style="margin-bottom: 2px;margin-top: 5px;font-size: 2vh"><strong>Required Firmware: </strong></p>	
 					<ul style="margin-bottom: 2px;margin-top: 3px">
-					<li style="margin-bottom: 2px;margin-top: 3px"><strong>Included Firmware: </strong><span  id="firm">-</span></li>					
+					<li style="margin-bottom: 2px;margin-top: 3px;visibility:hidden;display:none;" id="firm_holder"><strong>Included Firmware: </strong><span  id="firm">-</span></li>					
 					<li style="margin-bottom: 2px;margin-top: 3px"><strong>RequiredSystemVersion: </strong><span  id="rsv">-</span></li>
 					<li style="margin-bottom: 2px;margin-top: 3px;visibility:hidden;display:none;" id="rgv_holder"><strong>RequiredGameVersion: </strong><span  id="rgv">-</span></li>					
 					<li style="margin-bottom: 2px;margin-top: 3px"><strong>Encryption (keygeneration): </strong><span  id="keygeneration">-</span></li>
@@ -322,8 +322,12 @@ function setInfo(data) {
 	document.getElementById("AgeRatings").innerHTML = data[16];		
 	document.getElementById("InstalledSize").innerHTML = data[17];	
 	document.getElementById("buildid8").innerHTML = data[18];		
-	document.getElementById("buildid").innerHTML = data[19];			
-	document.getElementById("titlekey").innerHTML = data[20];		
+	document.getElementById("buildid").innerHTML = data[19];	
+	document.getElementById("titlekey").innerHTML = data[20];
+	if (data[20] == "-"){	
+	document.getElementById("titlekey_holder").style.visibility = 'hidden';
+	document.getElementById("titlekey_holder").style.display = "none";	
+	}	
 	document.getElementById("patchable").innerHTML = data[21];		
 	document.getElementById("regions").innerHTML = data[22];	
 	document.getElementById("introduction").innerHTML = data[23];		
@@ -339,7 +343,6 @@ function setInfo(data) {
 	document.getElementById("gamemodes").innerHTML = data[36];
 	document.getElementById("metascore").innerHTML = data[37];
 	document.getElementById("userscore").innerHTML = data[38];	
-	document.getElementById("firm").innerHTML = data[39];
 	
 	document.getElementById("GamecardSize").innerHTML = data[29];	
 	if (data[29]!== "-"){
@@ -364,6 +367,11 @@ function setInfo(data) {
 	document.getElementById("rgv").innerHTML = data[31];
 	document.getElementById("rgv_holder").style.visibility = 'visible';
 	document.getElementById("rgv_holder").style.display = "list-item";			
+	}
+	if (data[39] !== "-"){
+	document.getElementById("firm").innerHTML = data[39];
+	document.getElementById("firm_holder").style.visibility = 'visible';
+	document.getElementById("firm_holder").style.display = "list-item";			
 	}
 	eel.getfiletree(data[2])(set_filetree)
 	eel.getcheats(data[2])(set_cheats)	
@@ -442,12 +450,24 @@ function resetInfo() {
 	document.getElementById("htmlmanual").innerHTML = '-';
 	document.getElementById("linkedacc").innerHTML ='-';
 	document.getElementById("multicontent").innerHTML ='-';		
-	document.getElementById("distributiontype").innerHTML ='-';		
+	document.getElementById("distributiontype").innerHTML ='-';	
+	document.getElementById("gamemodes").innerHTML = '-';	
+	document.getElementById("productcode").innerHTML = '-';		
+	document.getElementById("metascore").innerHTML = '-';
+	document.getElementById("userscore").innerHTML = '-';		
+	document.getElementById("developer").innerHTML = '-';
+	document.getElementById("onlineplay").innerHTML = '-';	
+	document.getElementById("savedatacloud").innerHTML = '-';	
+	document.getElementById("firm").innerHTML = '-';			
 	document.getElementById("GamecardSize").innerHTML = '-';	
+	document.getElementById("titlekey_holder").style.visibility = 'visible';
+	document.getElementById("titlekey_holder").style.display = "list-item";	
 	document.getElementById("GamecardSize_holder").style.visibility = 'hidden';
 	document.getElementById("GamecardSize_holder").style.display = "none";	
 	document.getElementById("rgv_holder").style.visibility = 'hidden';
-	document.getElementById("rgv_holder").style.display = "none"	
+	document.getElementById("rgv_holder").style.display = "none";
+	document.getElementById("firm_holder").style.visibility = 'hidden';
+	document.getElementById("firm_holder").style.display = "none";	
 	document.getElementById("_desc_bar_but").setAttribute("class", "disabled");
 	document.getElementById("_desc_bar_but1").setAttribute("class", "mif-leanpub fg-steel");	
 	document.getElementById("_desc_bar_but2").setAttribute("class", "caption fg-steel");	

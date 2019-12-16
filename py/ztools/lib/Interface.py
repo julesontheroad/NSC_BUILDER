@@ -381,13 +381,13 @@ def getinfo(filename):
 			send_.append("Yes")	
 		else:
 			send_.append("No")						
-	except:send_.append('-')
+	except:send_.append('No')
 	try:#data[35]			
 		if str(dict['SaveDataCloud']).lower()=="true":
 			send_.append("Yes")	
 		else:
 			send_.append("No")						
-	except:send_.append('-')
+	except:send_.append('No')
 	try:#data[36]			
 		playmodes=str((', '.join(dict['playmodes'])))
 		send_.append(playmodes)	
