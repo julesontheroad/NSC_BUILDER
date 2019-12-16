@@ -117,13 +117,17 @@ class FWDB():
 		if not FW in dump.items():				
 			if filepath.endswith('nsp'):
 				files_list=sq_tools.ret_nsp_offsets(filepath,32)
-				# print(files_list)
-				# print(len(files_list))
-				for i in range(len(files_list)):
-					f=files_list[i]
-					file=f[0]
-					# print(file)
-					fwfiles.append(file)
+			elif filepath.endswith('xci'):
+				files_list=sq_tools.ret_xci_offsets_fw(filepath)
+			else:
+				return False
+			# print(files_list)
+			# print(len(files_list))
+			for i in range(len(files_list)):
+				f=files_list[i]
+				file=f[0]
+				# print(file)
+				fwfiles.append(file)
 			newdict['files']=fwfiles
 			dump[FW]=newdict
 			app_json = json.dumps(dump, indent=4)
@@ -199,7 +203,38 @@ class FWDB():
 					if doprint==True:
 						print('- Xci includes firmware: '+FW)
 					return FW
-			return 'UNKNOWN'	
+		fwfiles.sort()
+		for j in dump:
+			entry=dump[j]
+			files=entry['files']
+			files.sort()
+			if fwfiles==files:
+				FW=j
+				if doprint==True:
+					print('- Xci includes firmware: '+FW)
+				return FW
+		try:
+			FW=read_fw(filepath,add=True,doprint=False)		
+			if doprint==True:
+				print('- Xci includes firmware: '+FW)
+			return FWnumber
+		except:pass
+		if doprint==True:
+			print('- Unknown firmware')
+		return 'UNKNOWN'	
+			
+	def read_fw(filepath,add=False,doprint=True):
+		from Fs import uXci as fwFS
+		f=fwFS(filepath)
+		FWnumber,fwver=f.get_FW_number()
+		f.close()
+		if doprint==True:
+			print(str(fwver)+" ({})".format(FWnumber))
+		if add==True:
+			FWDB.add(FWnumber,filepath)
+			FWDB.add_specific()
+		return FWnumber
+	
 class Dict(dict):
 	START_FLAG = b'# FILE-DICT v1\n'
 
