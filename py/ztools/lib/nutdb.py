@@ -302,12 +302,14 @@ def titles_refresh_time():
 				break
 	return th,tm,ts			
 					
-def check_region_file(region):	
+def check_region_file(region,nutdb=True):	
 	try:
 		th,tm,ts=region_refresh_time(region)
 	except:
 		th=24;tm=0;ts=0
 	f='nutdb_'+region+'.json'
+	if nutdb==False:
+		f=region+'.json'		
 	regionfile=os.path.join(DATABASE_folder,f)		
 	if not os.path.exists(regionfile):
 		try:
@@ -334,7 +336,7 @@ def check_region_file(region):
 				return False
 	return	False							
 			
-def check_other_file(dbfile,dbname):	
+def check_other_file(dbfile,dbname,nutdb=True):	
 	if str(dbname.lower()).endswith('_txt'):
 		ext='.txt'
 		enderf=dbname[:-4]
@@ -346,6 +348,8 @@ def check_other_file(dbfile,dbname):
 	except:
 		th=24;tm=0;ts=0
 	f='nutdb_'+enderf+ext
+	if nutdb==False:
+		f=enderf+ext
 	_dbfile_=os.path.join(DATABASE_folder,f)		
 	if not os.path.exists(_dbfile_):
 		try:
@@ -457,7 +461,10 @@ def force_refresh():
 		get_regionDB('Japan')	
 		get_regionDB('Asia')		
 		get_otherDB(urlconfig,'versions_txt','nutdb_versions.txt')
-		get_otherDB(urlconfig,'cheats','nutdb_cheats.json')		
+		get_otherDB(urlconfig,'cheats','nutdb_cheats.json')	
+		get_otherDB(urlconfig,'ninshop','ninshop.json')
+		get_otherDB(urlconfig,'metacritic_id','metacritic_id.json')	
+		get_otherDB(urlconfig,'fw','fw.json')			
 		return True
 	except:
 		return False
@@ -523,8 +530,44 @@ def get_contentname(titleid,roman=True,format='tabs'):
 		else:pass						
 		if cname==False:
 			return False
-	return 	cname			
+	return 	cname		
 
+def get_metascores(titleid):
+	titleid=titleid.lower()	
+	if str(titleid).endswith('000'):
+		baseid=titleid[:-3]+'000'
+	elif str(titleid).endswith('800'):	
+		baseid=titleid[:-3]+'000'
+	else:
+		titleid=titleid.lower()
+		baseid=get_dlc_baseid(titleid);baseid=baseid.lower()
+	check_other_file(urlconfig,'metacritic_id',nutdb=False)
+	f='metacritic_id.json'
+	metacritic_json=os.path.join(DATABASE_folder,f)	
+	metascore=False;userscore=False	
+	try:
+		with open(metacritic_json) as json_file:	
+			data = json.load(json_file)		
+			for i in data:
+				try:
+					if str(i).lower()==str(baseid).lower() or str(i).lower()==str(titleid).lower():			
+						for j,k in data[i].items():
+							if str(j) == 'metascore':
+								metascore=k
+							if str(j) == 'userscore':
+								userscore=k						
+						break
+				except:pass			
+	except:pass				
+	if metascore==None:
+		metascore=False
+	else:
+		metascore=str(metascore)
+	if userscore==None:
+		userscore=False
+	else:
+		userscore=str(userscore)		
+	return 	metascore,userscore			
 
 def get_contenregions(titleid):
 	baseid=get_baseid(titleid);baseid=baseid.lower()	
@@ -920,8 +963,10 @@ def get_baseid(titleid):
 def get_content_data(titleid,trans=True):	
 	releaseDate=False;nsuId=False;category=False;ratingContent=False;
 	numberOfPlayers=False;iconUrl=False;screenshots=False;bannerUrl=False
-	intro=False;description=False;rating=False
-	rglist=['America','Europe','Japan','Asia']
+	intro=False;description=False;rating=False;developer=False;
+	productCode=False;OnlinePlay=False;SaveDataCloud=False;playmodes=False;
+	video=False;url=False;
+	rglist=['ninshop','America','Europe','Japan','Asia']
 	titleid=titleid.lower()	
 	if str(titleid).endswith('000'):
 		baseid=titleid
@@ -931,9 +976,15 @@ def get_content_data(titleid,trans=True):
 		titleid=titleid.lower()
 		baseid=get_dlc_baseid(titleid);baseid=baseid.lower()	
 	for region in rglist:
-		f='nutdb_'+region+'.json'
+		if region=='ninshop':
+			f=region+'.json'
+		else:
+			f='nutdb_'+region+'.json'
 		regionfile=os.path.join(DATABASE_folder,f)	
-		check_region_file(region)
+		if region=='ninshop':
+			check_region_file(region,nutdb=False)
+		else:	
+			check_region_file(region,nutdb=True)
 		with open(regionfile) as json_file:	
 			data = json.load(json_file)		
 			for i in data:
@@ -951,6 +1002,37 @@ def get_content_data(titleid,trans=True):
 							nsuId=str(dict['nsuId'])
 							if nsuId=='None' or nsuId=='':
 								nsuId=False
+						if 'developer' in dict:
+							developer=str(dict['developer'])
+							if developer=='None' or developer=='':
+								developer=False	
+						else:developer=False		
+						if 'productCode' in dict:
+							productCode=str(dict['productCode'])
+							if productCode=='None' or productCode=='':
+								productCode=False
+						else:
+							productCode=False
+						if 'OnlinePlay' in dict:
+							OnlinePlay=str(dict['OnlinePlay'])
+							if OnlinePlay==True:
+								OnlinePlay='Yes'
+							elif OnlinePlay==False:
+								OnlinePlay='No'							
+							if OnlinePlay=='None' or OnlinePlay=='':
+								OnlinePlay=False
+						else:
+							OnlinePlay=False							
+						if 'SaveDataCloud' in dict:
+							SaveDataCloud=str(dict['SaveDataCloud'])
+							if SaveDataCloud==True:
+								SaveDataCloud='Yes'
+							elif SaveDataCloud==False:
+								SaveDataCloud='No'							
+							if SaveDataCloud=='None' or SaveDataCloud=='':
+								SaveDataCloud=False
+						else:
+							SaveDataCloud=False								
 						if 'category' in dict:
 							category=str(dict['category'])
 							try:	
@@ -982,7 +1064,16 @@ def get_content_data(titleid,trans=True):
 									item=converter.do(item)	
 									item=item[0].upper()+item[1:]
 									romalist.append(item)
-								ratingContent=romalist									
+								ratingContent=romalist	
+						if 'playmodes' in dict:
+							playmodes=str(dict['playmodes'])
+							try:	
+								x = [x.strip() for x in eval(playmodes)]							
+								playmodes=x
+							except:pass	
+							if playmodes=='None' or str((', '.join(playmodes)))=='':
+								playmodes=False		
+						else:playmodes=False	
 						if 'numberOfPlayers' in dict:
 							numberOfPlayers=str(dict['numberOfPlayers'])
 							if numberOfPlayers=='None' or numberOfPlayers=='':
@@ -995,14 +1086,24 @@ def get_content_data(titleid,trans=True):
 							iconUrl=str(dict['iconUrl'])	
 							if iconUrl=='None' or iconUrl=='':
 								iconUrl=False									
+						if 'video' in dict:
+							video=str(dict['video'])	
+							if video=='None' or video=='':
+								video=False	
+						else:video=False		
 						if 'screenshots' in dict:
 							screenshots=str(dict['screenshots'])	
 							if screenshots=='None' or screenshots=='':
-								screenshots=False								
+								screenshots=False									
+						if 'url' in dict:
+							url=str(dict['url'])
+							if url=='None' or url=='':
+								url=False
+						else:url=False		
 						if 'bannerUrl' in dict:
 							bannerUrl=str(dict['bannerUrl'])
 							if bannerUrl=='None' or bannerUrl=='':
-								bannerUrl=False								
+								bannerUrl=False									
 						if 'intro' in dict:
 							intro=str(dict['intro'])
 							if intro=='None' or intro=='':
@@ -1046,7 +1147,7 @@ def get_content_data(titleid,trans=True):
 			break
 		if 	nsuId == False and releaseDate == False and category == False:
 			region=False
-	return nsuId,releaseDate,category,ratingContent,numberOfPlayers,intro,description,iconUrl,screenshots,bannerUrl,region,rating
+	return nsuId,releaseDate,category,ratingContent,numberOfPlayers,intro,description,iconUrl,screenshots,bannerUrl,region,rating,developer,productCode,OnlinePlay,SaveDataCloud,playmodes,video,url
 			
 def get_dlcnsuId(titleid):
 	nsuId=False

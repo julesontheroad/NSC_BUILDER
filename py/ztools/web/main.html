@@ -19,21 +19,21 @@
 </head>
 <body  class="bg-lightGray fg-white h-vh-100 m4-cloak">
 <div class="head-bar pos-absolute bg-cobalt fg-white">
-    <span class="app-title">NSC Builder 0.96 - File Info</span>
+    <span class="app-title">NSC Builder 0.96e - File Info</span>
     <div style="margin-left:auto;margin-right:0;"><button class="expand-button light" id="collapse_toggle_2"><span></span></button></div>
 	<div class="pos-absolute z-dropdown" style="margin-top:131px;left:auto;right:0;position:absolute">
 		<div class="bg-lightCobalt fg-white" data-role="collapse"
 			 data-toggle-element="#collapse_toggle_2" data-collapsed="true">
 			 <ul data-role="listview" class="bg-lightCobalt fg-white">
 				<!-- <li class="bg-cobalt-hover" onclick="close_topmenu()"><strong>1: Individual Processing Mode</strong></li> -->
-				<li class="bg-cobalt-hover" onclick="sideviewclicks()"><strong>1: Individual Processing Mode</strong></li>				
-				<li class="bg-cobalt-hover" onclick="sideviewclicks()"><strong>2: Multicontent Generation Mode</strong></li>	
-				<li class="bg-cobalt-hover" onclick="sideviewclicks()"><strong>3: Multicontent Splitter Mode</strong></li>	
-				<li class="bg-cobalt-hover" onclick="sideviewclicks()"><strong>4: File Info Mode</strong></li>	
-				<li class="bg-cobalt-hover" onclick="sideviewclicks()"><strong>5: Database Mode</strong></li>		
-				<li class="bg-cobalt-hover" onclick="sideviewclicks()"><strong>6: Advanced Mode</strong></li>		
-				<li class="bg-cobalt-hover" onclick="sideviewclicks()"><strong>7: File Joiner Mode</strong></li>	
-				<li class="bg-cobalt-hover" onclick="sideviewclicks()"><strong>0: Configuration Mode</strong></li>				
+				<li class="bg-cobalt-hover" onclick="sideviewclicks()"><strong>1: Mockup</strong></li>				
+				<li class="bg-cobalt-hover" onclick="sideviewclicks()"><strong>2: Mockup</strong></li>	
+				<li class="bg-cobalt-hover" onclick="sideviewclicks()"><strong>3: Mockup</strong></li>	
+				<li class="bg-cobalt-hover" onclick="sideviewclicks()"><strong>4: Mockup</strong></li>	
+				<li class="bg-cobalt-hover" onclick="sideviewclicks()"><strong>5: Mockup</strong></li>		
+				<li class="bg-cobalt-hover" onclick="sideviewclicks()"><strong>6: Mockup</strong></li>		
+				<li class="bg-cobalt-hover" onclick="sideviewclicks()"><strong>7: Mockup</strong></li>	
+				<li class="bg-cobalt-hover" onclick="sideviewclicks()"><strong>0: Mockup</strong></li>				
 		</div>
 	</div>	
 </div>
@@ -81,7 +81,13 @@
 					<span class="icon"><span class="mif-images fg-steel" id="_pict_bar_but1"></span></span>
 					<span class="caption fg-steel"  id="_pict_bar_but2">Pictures</span>
 				</a>
-			</li>					
+			</li>		
+			<li>
+				<a href="#_Information_" onclick="show_video()" class="disabled" id="_video_bar_but">
+					<span class="icon"><span class="mif-video-camera fg-steel" id="_video_bar_but1"></span></span>
+					<span class="caption fg-steel" id="_video_bar_but2">Trailer</span>
+				</a>
+			</li>				
 			<li>
 				<a href="#_Information_" onclick="show_gametree()" class="disabled" id="_gtree_bar_but">
 					<span class="icon"><span class="mif-tree fg-steel" id="_gtree_bar_but1"></span></span>
@@ -93,7 +99,7 @@
 					<span class="icon"><span class="mif-bug fg-steel" id="_cheats_bar_but1"></span></span>
 					<span class="caption fg-steel" id="_cheats_bar_but2">Cheats</span>
 				</a>
-			</li>					
+			</li>			
 		</ul>
 	</nav>
 	<div class="navview-content pl-4-md pr-4-md bg-lightGray" id="_Info_">	
@@ -101,26 +107,30 @@
 		<p class="mif-menu fg-light" height='100px'></p>		
 		<div class="grid" style="margin-top:75px">
 			<div class="row" style="height: 80vh;margin-bottom: 1px;overflow:auto;" id="_viewspace_">
-				<div class="cell" style="font-size: 1.86vh;overflow-z:auto;" id="_GameInfo_"><div><div style="width: 55vw">
+				<div class="cell" style="font-size: 1.68vh;overflow-z:auto;" id="_GameInfo_"><div><div style="width: 55vw">
 					<p style="margin-bottom: 2px;margin-top: 2px;font-size: 2vh"><strong>Titleinfo: </strong></p>		
 					<ul style="margin-bottom: 2px;margin-top: 3px">
 					<li style="margin-bottom: 2px;margin-top: 3px"><strong>Name: </strong><span  id="tname">-</span></li>
-					<li style="margin-bottom: 2px;margin-top: 3px"><strong>Editor: </strong><span  id="editor">-</span></li>
+					<li style="margin-bottom: 2px;margin-top: 3px"><strong>Publisher: </strong><span  id="editor">-</span></li>
+					<li style="margin-bottom: 2px;margin-top: 3px"><strong>Developer: </strong><span  id="developer">-</span></li>					
 					<li style="margin-bottom: 2px;margin-top: 3px"><strong>Content type: </strong><span  id="ctype">-</span></li>					
 					<li style="margin-bottom: 2px;margin-top: 3px"><strong>TitleID: </strong><span  id="tid">-</span></li>	
 					<li style="margin-bottom: 2px;margin-top: 3px"><strong>Version: </strong><span  id="version">-</span></li>			
 					<li style="margin-bottom: 2px;margin-top: 3px"><strong>Display Version: </strong><span  id="dispver">-</span></li>	
 					<li style="margin-bottom: 2px;margin-top: 3px"><strong>Meta SDK version: </strong><span  id="metasdk">-</span></li>		
 					<li style="margin-bottom: 2px;margin-top: 3px"><strong>Program SDK version: </strong><span  id="exesdk">-</span></li>		
-					<li style="margin-bottom: 2px;margin-top: 3px"><strong>Languages: </strong><span  id="langue">-</span></li>		
+					<li style="margin-bottom: 2px;margin-top: 3px"><strong>Languages: </strong><span  id="langue">-</span></li>						
 					<!-- <li style="margin-bottom: 2px;margin-top: 3px"><strong>Distribution Type: </strong><span  id="disttype">-</span></li>		 -->
 					<li style="margin-bottom: 2px;margin-top: 3px"><strong>Html Manual: </strong><span  id="htmlmanual">-</span></li>
-					<li style="margin-bottom: 2px;margin-top: 3px"><strong>Linked Account: </strong><span  id="linkedacc">-</span></li>		
+					<li style="margin-bottom: 2px;margin-top: 3px"><strong>Linked Account: </strong><span  id="linkedacc">-</span></li>	
+					<li style="margin-bottom: 2px;margin-top: 3px"><strong>Online Play: </strong><span  id="onlineplay">-</span></li>	
+					<li style="margin-bottom: 2px;margin-top: 3px"><strong>Cloud Saves: </strong><span  id="savedatacloud">-</span></li>						
 					<li style="margin-bottom: 2px;margin-top: 3px"><strong>Multi Content: </strong><span  id="multicontent">-</span></li>						
 					<li style="margin-bottom: 2px;margin-top: 3px"><strong>Titlekey: </strong><span  id="titlekey">-</span></li>					
 					</ul>
 					<p style="margin-bottom: 2px;margin-top: 5px;font-size: 2vh"><strong>Required Firmware: </strong></p>	
 					<ul style="margin-bottom: 2px;margin-top: 3px">
+					<li style="margin-bottom: 2px;margin-top: 3px"><strong>Included Firmware: </strong><span  id="firm">-</span></li>					
 					<li style="margin-bottom: 2px;margin-top: 3px"><strong>RequiredSystemVersion: </strong><span  id="rsv">-</span></li>
 					<li style="margin-bottom: 2px;margin-top: 3px;visibility:hidden;display:none;" id="rgv_holder"><strong>RequiredGameVersion: </strong><span  id="rgv">-</span></li>					
 					<li style="margin-bottom: 2px;margin-top: 3px"><strong>Encryption (keygeneration): </strong><span  id="keygeneration">-</span></li>
@@ -141,6 +151,14 @@
 				<div class="cell" id="_Pictures_" style="font-size: 1.86vh;display:none;overflow-z:auto;"><div><div style="width: 55vw;margin-left:0;margin-right:auto;">
 					<p style="margin-bottom: 2px;margin-top: 2px;font-size: 2vh"><strong>Pictures: </strong></p>				
 			</div></div></div>		
+
+				<div class="cell" id="_Video_" style="font-size: 1.86vh;display:none;overflow-z:auto;"><div><div style="width: 55vw;margin-left:0;margin-right:auto;">
+					<!-- <p style="margin-bottom: 2px;margin-top: 2px;font-size: 2vh"><strong>Trailer: </strong></p>-->
+					<center>
+						<!-- <h1>Hls.js demo - basic usage</h1> -->
+						<video height="480" id="video_container" controls></video>
+					</center>
+			</div></div></div>				
 			
 				<div class="cell" id="_Gametree_" style="font-size: 1.86vh;display:none;overflow-z:auto;"><div><div style="width: 55vw;margin-left:0;margin-right:auto;">
 					<p style="font-size: 2vh;text-align: justify;text-justify: inter-word;white-space: pre-line;" id="gametree"></p>		
@@ -175,16 +193,20 @@
 				<div style="position:relative;border:0;"><img src="img/placeholder.gif" style="position:relative;width:30vw;height:30vw;max-width:45vh;max-height:45vh;border:0;" class="img-container drop-shadow" id="gamepicture">
 				<h6 id="ctag_overlay" class="fg-light bg-red" style="position:absolute;  bottom: 0px;margin-bottom:0px; left:0px;  width:30vw;max-width:45vh;height:4vh; 
 					opacity:0.80;text-align: center;visibility:hidden;font-size:3vh;"><span width="37vh";>CONTENT</span></h6></div>			
-				<p style="margin-bottom: 2px;margin-top: 10px;font-size: 1.86vh"><strong>nsuID: </strong><span  id="nsuid">-</span></p>	
-				<p style="margin-bottom: 2px;margin-top: 2px;font-size: 1.86vh"><strong>Distribution: </strong><span  id="distributiontype">-</span></p>				
-				<p style="margin-bottom: 2px;margin-top: 2px;font-size: 1.86vh"><strong>Regions: </strong><span  id="regions">-</span></p>	
-				<p style="margin-bottom: 2px;margin-top: 2px;font-size: 1.86vh"><strong>Release Date: </strong><span  id="worldreleasedate">-</span></p>	
-				<p style="margin-bottom: 2px;margin-top: 2px;font-size: 1.86vh;visibility:hidden;display:none;" id="GamecardSize_holder"><strong>GamecardSize: </strong><span  id="GamecardSize">-</span></p>						
-				<p style="margin-bottom: 2px;margin-top: 2px;font-size: 1.86vh"><strong>InstalledSize: </strong><span  id="InstalledSize">-</span></p>				
-				<p style="margin-bottom: 2px;margin-top: 2px;font-size: 1.86vh"><strong>AgeRating: </strong><span  id="AgeRatings">-</span></p>		
-				<p style="margin-bottom: 2px;margin-top: 2px;font-size: 1.86vh"><strong>Number of players: </strong><span  id="numberOfPlayers">-</span></p>				
-				<p style="margin-bottom: 2px;margin-top: 2px;font-size: 1.86vh"><strong>Genres: </strong><span  id="genretags">-</span></p>
-				<p style="margin-bottom: 2px;margin-top: 2px;font-size: 1.86vh"><strong>RatingTags: </strong><span  id="ratingtags">-</span></p>			
+				<p style="margin-bottom: 2px;margin-top: 10px;font-size: 1.68vh"><strong>nsuID: </strong><span  id="nsuid">-</span></p>	
+				<p style="margin-bottom: 2px;margin-top: 2px;font-size: 1.68vh"><strong>productCode: </strong><span  id="productcode">-</span></p>					
+				<p style="margin-bottom: 2px;margin-top: 2px;font-size: 1.68vh"><strong>Distribution: </strong><span  id="distributiontype">-</span></p>				
+				<p style="margin-bottom: 2px;margin-top: 2px;font-size: 1.68vh"><strong>Regions: </strong><span  id="regions">-</span></p>	
+				<p style="margin-bottom: 2px;margin-top: 2px;font-size: 1.68vh"><strong>Metascore: </strong><span  id="metascore">-</span></p>
+				<p style="margin-bottom: 2px;margin-top: 2px;font-size: 1.68vh"><strong>Userscore: </strong><span  id="userscore">-</span></p>					
+				<p style="margin-bottom: 2px;margin-top: 2px;font-size: 1.68vh"><strong>Release Date: </strong><span  id="worldreleasedate">-</span></p>	
+				<p style="margin-bottom: 2px;margin-top: 2px;font-size: 1.68vh;visibility:hidden;display:none;" id="GamecardSize_holder"><strong>GamecardSize: </strong><span  id="GamecardSize">-</span></p>						
+				<p style="margin-bottom: 2px;margin-top: 2px;font-size: 1.68vh"><strong>InstalledSize: </strong><span  id="InstalledSize">-</span></p>				
+				<p style="margin-bottom: 2px;margin-top: 2px;font-size: 1.68vh"><strong>AgeRating: </strong><span  id="AgeRatings">-</span></p>		
+				<p style="margin-bottom: 2px;margin-top: 2px;font-size: 1.68vh"><strong>Number of players: </strong><span  id="numberOfPlayers">-</span></p>	
+				<p style="margin-bottom: 2px;margin-top: 2px;font-size: 1.68vh"><strong>Game Modes: </strong><span  id="gamemodes">-</span></p>					
+				<p style="margin-bottom: 2px;margin-top: 2px;font-size: 1.68vh"><strong>Genres: </strong><span  id="genretags">-</span></p>
+				<p style="margin-bottom: 2px;margin-top: 2px;font-size: 1.68vh"><strong>RatingTags: </strong><span  id="ratingtags">-</span></p>			
 			</div></div></div>	
 			<div class="row" style="margin-bottom: 2px;margin-top: 1px;height: 3vh;bottom:4vh; position:absolute;">
 				<div class="cell" style='width:55vw;'></div>		
@@ -197,6 +219,7 @@
 
 <script src="js/jquery-3.4.1.min.js"></script>
 <script src="js/metro.min.js"></script>
+<script src="js/hls.js"></script>
 <script>
 navclicks=0;
 sideclicks=0;
@@ -308,7 +331,16 @@ function setInfo(data) {
 	document.getElementById("htmlmanual").innerHTML = data[25];
 	document.getElementById("linkedacc").innerHTML = data[26];
 	document.getElementById("multicontent").innerHTML = data[27];		
-	document.getElementById("distributiontype").innerHTML = data[28];	
+	document.getElementById("distributiontype").innerHTML = data[28];
+	document.getElementById("developer").innerHTML = data[32];
+	document.getElementById("productcode").innerHTML = data[33];
+	document.getElementById("onlineplay").innerHTML = data[34];
+	document.getElementById("savedatacloud").innerHTML = data[35];	
+	document.getElementById("gamemodes").innerHTML = data[36];
+	document.getElementById("metascore").innerHTML = data[37];
+	document.getElementById("userscore").innerHTML = data[38];	
+	document.getElementById("firm").innerHTML = data[39];
+	
 	document.getElementById("GamecardSize").innerHTML = data[29];	
 	if (data[29]!== "-"){
 	document.getElementById("GamecardSize_holder").style.visibility = 'visible';
@@ -320,7 +352,7 @@ function setInfo(data) {
 	document.getElementById("_desc_bar_but2").setAttribute("class", "caption fg-black");	
 	document.getElementById("_pict_bar_but").setAttribute("class", "enabled");	
 	document.getElementById("_pict_bar_but1").setAttribute("class", "mif-images fg-black");	
-	document.getElementById("_pict_bar_but2").setAttribute("class", "caption fg-black");	
+	document.getElementById("_pict_bar_but2").setAttribute("class", "caption fg-black");
 	document.getElementById("ctag_overlay").innerHTML = data[4];
 	if (data[4]!== "GAME" && data[4]!== undefined){
 	document.getElementById("ctag_overlay").style.visibility = 'visible';
@@ -335,6 +367,9 @@ function setInfo(data) {
 	}
 	eel.getfiletree(data[2])(set_filetree)
 	eel.getcheats(data[2])(set_cheats)	
+	if (data[40]!== "-"){	
+	set_video(data[40])()
+	}
 }
 
 function set_filetree(data) {
@@ -351,11 +386,29 @@ function set_cheats(data) {
 	document.getElementById("_cheats_bar_but2").setAttribute("class", "caption fg-black");		
 }
 
+function set_video(data) {
+	if(Hls.isSupported()) {
+	  var video = document.getElementById('video_container');
+	  var hls = new Hls();
+  	  hls.loadSource(data);
+	  hls.attachMedia(video);
+   }
+   // hls.js is not supported on platforms that do not have Media Source Extensions (MSE) enabled.
+   // When the browser has built-in HLS support (check using `canPlayType`), we can provide an HLS manifest (i.e. .m3u8 URL) directly to the video element throught the `src` property.
+   // This is using the built-in support of the plain video element, without using hls.js.
+	else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+	  video.src = data
+	}
+	document.getElementById("_video_bar_but").setAttribute("class", "enabled");	
+	document.getElementById("_video_bar_but1").setAttribute("class", "mif-video-camera fg-black");	
+	document.getElementById("_video_bar_but2").setAttribute("class", "caption fg-black");	
+}
 
 function resetInfo() {
 	eel.clear()
 	document.getElementById("_Description_").style.display = "none";
 	document.getElementById("_Pictures_").style.display = "none";
+	document.getElementById("_Video_").style.display = "none";	
 	document.getElementById("_Gametree_").style.display = "none";
 	document.getElementById("_Cheats_").style.display = "none";	
 	document.getElementById("_GameInfo_").style.display = "block";	
@@ -370,6 +423,7 @@ function resetInfo() {
 	document.getElementById("exesdk").innerHTML = '-';	
 	document.getElementById("langue").innerHTML = '-';
 	document.getElementById("rsv").innerHTML = '-';	
+	document.getElementById("firm").innerHTML = '-';		
 	document.getElementById("keygeneration").innerHTML = '-';	
 	document.getElementById("nsuid").innerHTML = '-';
 	document.getElementById("genretags").innerHTML ='-';
@@ -428,6 +482,7 @@ document.getElementById("_inf_bar_but").click();
 window.scrollTo(0,0);
 document.getElementById("_Description_").style.display = "none";
 document.getElementById("_Pictures_").style.display = "none";
+document.getElementById("_Video_").style.display = "none";	
 document.getElementById("_Gametree_").style.display = "none";
 document.getElementById("_Cheats_").style.display = "none";
 document.getElementById("_Files_").style.display = "none";
@@ -447,6 +502,7 @@ document.getElementById("info_tab").click();
 window.scrollTo(0,0);
 document.getElementById("_GameInfo_").style.display = "none";
 document.getElementById("_Pictures_").style.display = "none";
+document.getElementById("_Video_").style.display = "none";	
 document.getElementById("_Gametree_").style.display = "none";
 document.getElementById("_Cheats_").style.display = "none";
 document.getElementById("_Files_").style.display = "none";
@@ -478,6 +534,27 @@ document.getElementById("_Pictures_").style.display = "block";
 document.getElementById("_viewspace_").style.height = "80vh";
 }
 
+function show_video(){
+if (navclicks>0){
+document.getElementById("nav_view_but").click();
+}
+document.getElementById("info_tab").click();
+window.scrollTo(0,0);
+document.getElementById("_GameInfo_").style.display = "none";
+document.getElementById("_Pictures_").style.display = "none";
+document.getElementById("_imagebox_").style.display = "none";
+document.getElementById("_Gametree_").style.display = "none";
+document.getElementById("_Cheats_").style.display = "none";
+document.getElementById("_Description_").style.display = "none";
+document.getElementById("_Files_").style.display = "none";
+document.getElementById("_Nacp_").style.display = "none";
+document.getElementById("_Npdm_").style.display = "none";
+document.getElementById("_Cnmt_").style.display = "none";
+document.getElementById("_Verification_").style.display = "none";
+document.getElementById("_Video_").style.display = "block";
+document.getElementById("_viewspace_").style.height = "80vh";
+}
+
 function show_gametree(){
 if (navclicks>0){
 document.getElementById("nav_view_but").click();
@@ -486,6 +563,7 @@ document.getElementById("info_tab").click();
 window.scrollTo(0,0);
 document.getElementById("_GameInfo_").style.display = "none";
 document.getElementById("_Pictures_").style.display = "none";
+document.getElementById("_Video_").style.display = "none";	
 document.getElementById("_Description_").style.display = "none";
 document.getElementById("_Cheats_").style.display = "none";
 document.getElementById("_Files_").style.display = "none";
@@ -506,6 +584,7 @@ document.getElementById("info_tab").click();
 window.scrollTo(0,0);
 document.getElementById("_GameInfo_").style.display = "none";
 document.getElementById("_Pictures_").style.display = "none";
+document.getElementById("_Video_").style.display = "none";	
 document.getElementById("_Gametree_").style.display = "none";
 document.getElementById("_Description_").style.display = "none";
 document.getElementById("_Files_").style.display = "none";
@@ -530,6 +609,7 @@ document.getElementById("_Description_").style.display = "none";
 document.getElementById("_Gametree_").style.display = "none";
 document.getElementById("_Cheats_").style.display = "none";
 document.getElementById("_Pictures_").style.display = "none";
+document.getElementById("_Video_").style.display = "none";	
 document.getElementById("_Nacp_").style.display = "none";
 document.getElementById("_Npdm_").style.display = "none";
 document.getElementById("_Cnmt_").style.display = "none";
@@ -549,6 +629,7 @@ document.getElementById("_Description_").style.display = "none";
 document.getElementById("_Gametree_").style.display = "none";
 document.getElementById("_Cheats_").style.display = "none";
 document.getElementById("_Pictures_").style.display = "none";
+document.getElementById("_Video_").style.display = "none";	
 document.getElementById("_Files_").style.display = "none";
 document.getElementById("_Npdm_").style.display = "none";
 document.getElementById("_Cnmt_").style.display = "none";
@@ -568,6 +649,7 @@ document.getElementById("_Description_").style.display = "none";
 document.getElementById("_Gametree_").style.display = "none";
 document.getElementById("_Cheats_").style.display = "none";
 document.getElementById("_Pictures_").style.display = "none";
+document.getElementById("_Video_").style.display = "none";	
 document.getElementById("_Files_").style.display = "none";
 document.getElementById("_Nacp_").style.display = "none";
 document.getElementById("_Cnmt_").style.display = "none";
@@ -587,6 +669,7 @@ document.getElementById("_Description_").style.display = "none";
 document.getElementById("_Gametree_").style.display = "none";
 document.getElementById("_Cheats_").style.display = "none";
 document.getElementById("_Pictures_").style.display = "none";
+document.getElementById("_Video_").style.display = "none";	
 document.getElementById("_Files_").style.display = "none";
 document.getElementById("_Nacp_").style.display = "none";
 document.getElementById("_Npdm_").style.display = "none";
@@ -606,6 +689,7 @@ document.getElementById("_Description_").style.display = "none";
 document.getElementById("_Gametree_").style.display = "none";
 document.getElementById("_Cheats_").style.display = "none";
 document.getElementById("_Pictures_").style.display = "none";
+document.getElementById("_Video_").style.display = "none";	
 document.getElementById("_Files_").style.display = "none";
 document.getElementById("_Nacp_").style.display = "none";
 document.getElementById("_Npdm_").style.display = "none";

@@ -42,3 +42,5 @@ py/ztools/hactool.exe
 *.bak
 py/RetrieverPy.zip
 *.pyc
+py/zconfig/credentials
+py/testurl.txt

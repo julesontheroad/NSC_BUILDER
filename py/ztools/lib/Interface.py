@@ -356,11 +356,11 @@ def getinfo(filename):
 	try:
 		send_.append(sq_tools.getSize(dict['GCSize']))	
 	except:send_.append('-')	
-	try:
+	try:#data[30]
 		x=get_screen_gallery(dict["bannerUrl"],dict["screenshots"])
 		send_.append(x)			
 	except:send_.append("Not available")
-	try:
+	try:#data[31]
 		RQversion=0
 		if str(dict['Type']).upper()=='DLC':
 			if int(RGV)>0:
@@ -368,7 +368,53 @@ def getinfo(filename):
 			else:
 				RQversion=str(RGV)+" -> Application ({})".format(str(RS_number))
 		send_.append(RQversion)		
-	except:send_.append('-')		
+	except:send_.append('-')
+	###NEW JSON STUFF###
+	try:#data[32]			
+		send_.append(dict['developer'])	
+	except:send_.append('-')
+	try:#data[33]			
+		send_.append(dict['productCode'])	
+	except:send_.append('-')
+	try:#data[34]
+		if str(dict['OnlinePlay']).lower()=="true":
+			send_.append("Yes")	
+		else:
+			send_.append("No")						
+	except:send_.append('-')
+	try:#data[35]			
+		if str(dict['SaveDataCloud']).lower()=="true":
+			send_.append("Yes")	
+		else:
+			send_.append("No")						
+	except:send_.append('-')
+	try:#data[36]			
+		playmodes=str((', '.join(dict['playmodes'])))
+		send_.append(playmodes)	
+	except:send_.append('-')
+	try:#data[37]	
+		if str(dict['metascore']).lower()=='false':
+			send_.append('-')
+		else:	
+			send_.append(dict['metascore'])	
+	except:send_.append('-')
+	try:#data[38]			
+		if str(dict['userscore']).lower()=='false':
+			send_.append('-')
+		else:		
+			send_.append(dict['userscore'])	
+	except:send_.append('-')
+	try:#data[39]
+		FWoncard=dict['FWoncard']
+		FWoncard=str(FWoncard).strip("'")
+		send_.append(FWoncard)	
+	except:send_.append('-')
+	try:#data[40]	
+		video=dict['video']	
+		video=ast.literal_eval(str(video))
+		video=video[0]
+		send_.append(str(video))	
+	except:send_.append('-')	
 	f.flush()
 	f.close()			
 	return send_
