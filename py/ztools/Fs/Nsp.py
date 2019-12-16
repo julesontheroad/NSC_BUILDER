@@ -3344,7 +3344,7 @@ class Nsp(Pfs0):
 								if isdemo == 2:
 									content_type='RetailInteractiveDisplay'	
 							programSDKversion,dataSDKversion=self.getsdkvertit(titleid2)
-							nsuId,releaseDate,category,ratingContent,numberOfPlayers,intro,description,iconUrl,screenshots,bannerUrl,region,rating=nutdb.get_content_data(titleid2,trans)
+							nsuId,releaseDate,category,ratingContent,numberOfPlayers,intro,description,iconUrl,screenshots,bannerUrl,region,rating,developer,productCode,OnlinePlay,SaveDataCloud,playmodes,video,shopurl=nutdb.get_content_data(titleid2,trans)
 							sdkversion=nca.get_sdkversion()						
 							message=('-----------------------------');print(message);feed+=message+'\n'								
 							message=('CONTENT ID: ' + str(titleid2));print(message);feed+=message+'\n'	
@@ -9391,10 +9391,10 @@ class Nsp(Pfs0):
 		DBdict['intro']='-'			
 		DBdict['description']='-'			
 		if ctype=='GAME' or ctype=='DLC' or ctype=='DEMO':	
-			nsuId,worldreleasedate,genretags,ratingtags,numberOfPlayers,intro,description,iconUrl,screenshots,bannerUrl,region,rating=nutdb.get_content_data(titleid,trans)
+			nsuId,worldreleasedate,genretags,ratingtags,numberOfPlayers,intro,description,iconUrl,screenshots,bannerUrl,region,rating,developer,productCode,OnlinePlay,SaveDataCloud,playmodes,video,shopurl=nutdb.get_content_data(titleid,trans)
 			regions=nutdb.get_contenregions(titleid)
 		else:
-			nsuId,worldreleasedate,genretags,ratingtags,numberOfPlayers,intro,description,iconUrl,screenshots,bannerUrl,region,rating=nutdb.get_content_data(base_ID,trans)
+			nsuId,worldreleasedate,genretags,ratingtags,numberOfPlayers,intro,description,iconUrl,screenshots,bannerUrl,region,rating,developer,productCode,OnlinePlay,SaveDataCloud,playmodes,video,shopurl=nutdb.get_content_data(base_ID,trans)
 			regions=nutdb.get_contenregions(base_ID)		
 		if 	nsuId!=False:
 			DBdict['nsuId']=nsuId
@@ -9418,8 +9418,29 @@ class Nsp(Pfs0):
 			DBdict['description']=description		
 		if 	rating!=False:	
 			DBdict['eshoprating']=rating	
+		if 	developer!=False:	
+			DBdict['developer']=developer	
+		if 	productCode!=False:	
+			DBdict['productCode']=productCode	
+		if 	OnlinePlay!=False:	
+			DBdict['OnlinePlay']=OnlinePlay	
+		if 	SaveDataCloud!=False:	
+			DBdict['SaveDataCloud']=SaveDataCloud
+		if 	playmodes!=False:	
+			DBdict['playmodes']=playmodes
+		if 	video!=False:	
+			DBdict['video']=video
+		if 	shopurl!=False:	
+			DBdict['shopurl']=shopurl				
 		if 	len(regions)>0:	
-			DBdict['regions']=regions					
+			DBdict['regions']=regions		
+		metascore,userscore=nutdb.get_metascores(titleid)	
+		DBdict['metascore']='-'				
+		DBdict['userscore']='-'	
+		if 	metascore!=False:	
+			DBdict['metascore']=metascore			
+		if 	userscore!=False:	
+			DBdict['userscore']=userscore			
 		return DBdict
 
 	def DB_get_names_from_nutdb(self,titleid):
