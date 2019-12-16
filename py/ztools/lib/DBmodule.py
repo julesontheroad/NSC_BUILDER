@@ -195,7 +195,7 @@ class FWDB():
 					if doprint==True:
 						print('- Xci includes firmware: '+FW)
 					return FW
-			
+			return 'UNKNOWN'	
 class Dict(dict):
 	START_FLAG = b'# FILE-DICT v1\n'
 
