@@ -474,7 +474,7 @@ def verify_nkeys(fileName):
 		print("master_key_09 is Missing")
 	else:
 		counter+=1		
-	if 'master_key_10' not in checkkeys or 'master_key_0a' not in checkkeys:
+	if 'master_key_10' not in checkkeys and 'master_key_0a' not in checkkeys:
 		print("master_key_10|master_key_0a is Missing")
 	else:
 		counter+=1				
@@ -817,7 +817,7 @@ def verify_nkeys_startup(fileName):
 		startup=True		
 	else:
 		counter+=1
-	if 'master_key_10' not in checkkeys or 'master_key_0a' not in checkkeys:
+	if 'master_key_10' not in checkkeys and 'master_key_0a' not in checkkeys:
 		print("master_key_10|master_key_0a is Missing!!!")
 		print("The program won't be able to decrypt games content that uses this key")
 		print("This key represents FW 9.1 requirement")
