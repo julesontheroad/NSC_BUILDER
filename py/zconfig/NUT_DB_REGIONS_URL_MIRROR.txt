@@ -3,6 +3,7 @@ AMERICA|https://raw.githubusercontent.com/julesontheroad/titledb/master/US.en.js
 EUROPE|https://raw.githubusercontent.com/julesontheroad/titledb/master/GB.en.json|24|0|0
 JAPAN|https://raw.githubusercontent.com/julesontheroad/titledb/master/JP.ja.json|24|0|0
 ASIA|https://raw.githubusercontent.com/julesontheroad/titledb/master/HK.zh.json|24|0|0
+CHINA|https://raw.githubusercontent.com/julesontheroad/titledb/master/CN.zh.json|24|0|0
 AR_EN|https://raw.githubusercontent.com/julesontheroad/titledb/master/AR.en.json|24|0|0
 AR_ES|https://raw.githubusercontent.com/julesontheroad/titledb/master/AR.es.json|24|0|0
 AT_DE|https://raw.githubusercontent.com/julesontheroad/titledb/master/AT.de.json|24|0|0
