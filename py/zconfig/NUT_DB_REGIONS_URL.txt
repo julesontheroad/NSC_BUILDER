@@ -3,6 +3,7 @@ AMERICA|https://raw.githubusercontent.com/blawar/titledb/master/US.en.json|24|0|
 EUROPE|https://raw.githubusercontent.com/blawar/titledb/master/GB.en.json|24|0|0
 JAPAN|https://raw.githubusercontent.com/blawar/titledb/master/JP.ja.json|24|0|0
 ASIA|https://raw.githubusercontent.com/blawar/titledb/master/HK.zh.json|24|0|0
+CHINA|https://raw.githubusercontent.com/blawar/titledb/master/CN.zh.json|24|0|0
 AR_EN|https://raw.githubusercontent.com/blawar/titledb/master/AR.en.json|24|0|0
 AR_ES|https://raw.githubusercontent.com/blawar/titledb/master/AR.es.json|24|0|0
 AT_DE|https://raw.githubusercontent.com/blawar/titledb/master/AT.de.json|24|0|0
@@ -15,6 +16,7 @@ CL_EN|https://raw.githubusercontent.com/blawar/titledb/master/CL.en.json|24|0|0
 CL_FR|https://raw.githubusercontent.com/blawar/titledb/master/CL.es.json|24|0|0
 CO_EN|https://raw.githubusercontent.com/blawar/titledb/master/CO.en.json|24|0|0
 CO_ES|https://raw.githubusercontent.com/blawar/titledb/master/CO.es.json|24|0|0
+CN_ZH|https://raw.githubusercontent.com/blawar/titledb/master/CN.zh.json|24|0|0
 CZ_EN|https://raw.githubusercontent.com/blawar/titledb/master/CZ.en.json|24|0|0
 DE_DE|https://raw.githubusercontent.com/blawar/titledb/master/DE.de.json|24|0|0
 DK_EN|https://raw.githubusercontent.com/blawar/titledb/master/DK.en.json|24|0|0
