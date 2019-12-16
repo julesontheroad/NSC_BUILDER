@@ -210,7 +210,7 @@ class uXci(File):
 		indent = 0
 		tabs = '\t' * indent
 		Print.info('\n%sXCI Archive\n' % (tabs))
-		super(Xci, self).printInfo(maxDepth, indent)
+		super(uXci, self).printInfo(maxDepth, indent)
 		
 		Print.info(tabs + 'magic = ' + str(self.magic))
 		Print.info(tabs + 'titleKekIndex = ' + str(self.titleKekIndex))
@@ -218,7 +218,32 @@ class uXci(File):
 		Print.info(tabs + 'gamecardCert = ' + str(hx(self.gamecardCert.magic + self.gamecardCert.unknown1 + self.gamecardCert.unknown2 + self.gamecardCert.data)))
 		self.hfs0.printInfo( indent)
 
-
+	def get_FW_number(self):
+		import sq_tools
+		fwver=0
+		for nspF in self.hfs0:
+			if str(nspF._path)=="update":
+				for nca in nspF:				
+					if type(nca) == Nca:	
+						if 	str(nca.header.contentType) == 'Content.META':
+							for f in nca:
+								for cnmt in f:			
+									nca.rewind()
+									f.rewind()
+									cnmt.rewind()						
+									titleid=cnmt.readInt64()
+									titleid2 = str(hx(titleid.to_bytes(8, byteorder='big'))) 	
+									titleid2 = titleid2[2:-1]							
+									titleversion = cnmt.read(0x4)	
+									version=int.from_bytes(titleversion, byteorder='little')
+									if fwver<version:
+										# FWnumber=sq_tools.getFWRangeRSV(version)
+										fwver=version
+										# print(FWnumber)
+		FWnumber=sq_tools.getFWRangeRSV(fwver)		
+		FWnumber=FWnumber[1:-1]
+		return 	FWnumber,fwver							
+									
 class nXci(File):
 	def __init__(self, file = None):
 		super(nXci, self).__init__()
