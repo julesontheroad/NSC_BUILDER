@@ -1,6 +1,7 @@
 from Fs.Xci import Xci
 from Fs.pXci import uXci
 from Fs.pXci import nXci
+from Fs.pXci import lXci
 from Fs.Nca import Nca
 from Fs.Nsp import Nsp
 from Fs.Rom import Rom
