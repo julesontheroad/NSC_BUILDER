@@ -4075,7 +4075,7 @@ if __name__ == '__main__':
 						else:
 							endname=str(f)
 				endname = (re.sub(r'[\/\\\:\*\?]+', '', endname))
-				endname = re.sub(r'[™©®`~^´ªº¢#£€¥$ƒ±¬½¼«»±•²‰œæÆ³☆<<>>|]', '', endname)
+				endname = re.sub(r'[™©®`~^´ªº¢#£€¥$ƒ±¬½¼♡«»±•²‰œæÆ³☆<<>>|]', '', endname)
 				endname = re.sub(r'[Ⅰ]', 'I', endname);endname = re.sub(r'[Ⅱ]', 'II', endname)
 				endname = re.sub(r'[Ⅲ]', 'III', endname);endname = re.sub(r'[Ⅳ]', 'IV', endname)
 				endname = re.sub(r'[Ⅴ]', 'V', endname);endname = re.sub(r'[Ⅵ]', 'VI', endname)
@@ -6883,7 +6883,7 @@ if __name__ == '__main__':
 						endname=endname[:-1]
 					#endname = re.sub(r'[\/\\\:\*\?\"\<\>\|\.\s™©®()\~]+', ' ', endname)
 					endname = (re.sub(r'[\/\\\:\*\?]+', '', endname))
-					endname = re.sub(r'[™©®`~^´ªº¢#£€¥$ƒ±¬½¼«»±•²‰œæÆ³☆<<>>|]', '', endname)
+					endname = re.sub(r'[™©®`~^´ªº¢#£€¥$ƒ±¬½¼♡«»±•²‰œæÆ³☆<<>>|]', '', endname)
 					endname = re.sub(r'[Ⅰ]', 'I', endname);endname = re.sub(r'[Ⅱ]', 'II', endname)
 					endname = re.sub(r'[Ⅲ]', 'III', endname);endname = re.sub(r'[Ⅳ]', 'IV', endname)
 					endname = re.sub(r'[Ⅴ]', 'V', endname);endname = re.sub(r'[Ⅵ]', 'VI', endname)
@@ -7167,7 +7167,7 @@ if __name__ == '__main__':
 				endname=converter.do(endname)
 				endname=endname[0].upper()+endname[1:]
 			endname = (re.sub(r'[\/\\\:\*\?]+', '', endname))
-			endname = re.sub(r'[™©®`~^´ªº¢#£€¥$ƒ±¬½¼«»±•²‰œæÆ³☆<<>>|]', '', endname)
+			endname = re.sub(r'[™©®`~^´ªº¢#£€¥$ƒ±¬½¼♡«»±•²‰œæÆ³☆<<>>|]', '', endname)
 			endname = re.sub(r'[Ⅰ]', 'I', endname);endname = re.sub(r'[Ⅱ]', 'II', endname)
 			endname = re.sub(r'[Ⅲ]', 'III', endname);endname = re.sub(r'[Ⅳ]', 'IV', endname)
 			endname = re.sub(r'[Ⅴ]', 'V', endname);endname = re.sub(r'[Ⅵ]', 'VI', endname)
@@ -7295,7 +7295,7 @@ if __name__ == '__main__':
 							endname=endname[0].upper()+endname[1:]
 						if san == True:
 							endname = (re.sub(r'[\/\\\:\*\?]+', '', endname))
-							endname = re.sub(r'[™©®`~^´ªº¢#£€¥$ƒ±¬½¼«»±•²‰œæÆ³☆<<>>|]', '', endname)
+							endname = re.sub(r'[™©®`~^´ªº¢#£€¥$ƒ±¬½¼♡«»±•²‰œæÆ³☆<<>>|]', '', endname)
 							endname = re.sub(r'[Ⅰ]', 'I', endname);endname = re.sub(r'[Ⅱ]', 'II', endname)
 							endname = re.sub(r'[Ⅲ]', 'III', endname);endname = re.sub(r'[Ⅳ]', 'IV', endname)
 							endname = re.sub(r'[Ⅴ]', 'V', endname);endname = re.sub(r'[Ⅵ]', 'VI', endname)
