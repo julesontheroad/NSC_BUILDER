@@ -76,6 +76,7 @@ if os.path.exists(zconfig_dir):
 	urlregions_mirror=os.path.join(zconfig_dir,'NUT_DB_REGIONS_URL_mirror.txt')		
 	if os.path.exists(urlconfig):
 		json_url = get_titlesurl(urlconfig)	
+		json_url_mirror = get_titlesurl(urlconfig_mirror)	
 	else:
 		urlconfig=os.path.join(squirrel_dir,'NUT_DB_URL.txt')
 		urlregions=os.path.join(squirrel_dir,'NUT_DB_REGIONS_URL.txt')	
@@ -115,7 +116,10 @@ else:
 if not os.path.exists(DATABASE_folder):
 	os.makedirs(DATABASE_folder)	
 def getnutdb():
-	response = requests.get(json_url, stream=True)
+	try:
+		response = requests.get(json_url, stream=True)
+	except BaseException as e:
+		Print.error('Exception: ' + str(e))	
 	if '<Response [404]>'!=str(response):
 		tempfile=nutdbfile[:-4]+'2.json'		
 		try:
@@ -132,18 +136,51 @@ def getnutdb():
 			  json_file.write(app_json)			
 			try:os.remove(tempfile)
 			except:pass	
-		except BaseException as e:
-			Print.error('Exception: ' + str(e))		
-			try:os.remove(tempfile)
-			except:pass		
-		return True				
+		except:
+			try:
+				response = requests.get(json_url_mirror, stream=True)
+			except BaseException as e:
+				Print.error('Exception: ' + str(e))					
+			if '<Response [404]>'!=str(response):
+				tempfile=nutdbfile[:-4]+'2.json'
+				try:
+					with open(tempfile,'wb') as nutfile:
+						print('Error in nutdb origin -> Getting NUTDB json using mirror')
+						for data in response.iter_content(65536):
+							nutfile.write(data)
+							if not data:
+								break
+					with open(tempfile) as json_file:					
+						data = json.load(json_file)				
+					app_json = json.dumps(data, indent=4)		
+					with open(nutdbfile, 'w') as json_file:
+					  json_file.write(app_json)			
+					try:os.remove(tempfile)
+					except:pass
+					return True	
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))		
+					try:os.remove(tempfile)
+					except:pass	
+					os.utime(nutdbfile,(time.time(),time.time()))	
+					print('DB origin is corrupt. Old Files were preserved.')
+					print('The program will retry in the next refresh cicle')
+					return False
+			else:
+				print(json_url)
+				print("Response 404. Old Files weren't removed")
+				os.utime(nutdbfile,(time.time(),time.time()))			
+				return False	
 	else:
-		response = requests.get(json_url_mirror, stream=True)
+		try:
+			response = requests.get(json_url_mirror, stream=True)
+		except BaseException as e:
+			Print.error('Exception: ' + str(e))	
 		if '<Response [404]>'!=str(response):
 			tempfile=nutdbfile[:-4]+'2.json'			
 			try:
 				with open(tempfile,'wb') as nutfile:
-					print('Getting NUTDB json')
+					print('Error in nutdb origin -> Getting NUTDB json using mirror')
 					for data in response.iter_content(65536):
 						nutfile.write(data)
 						if not data:
@@ -155,14 +192,19 @@ def getnutdb():
 				  json_file.write(app_json)			
 				try:os.remove(tempfile)
 				except:pass
+				return False
 			except BaseException as e:
 				Print.error('Exception: ' + str(e))		
 				try:os.remove(tempfile)
 				except:pass	
-			return True			
+				os.utime(nutdbfile,(time.time(),time.time()))	
+				print('DB origin is corrupt. Old Files were preserved.')
+				print('The program will retry in the next refresh cicle')
+				return True			
 		else:
 			print(json_url)
 			print("Response 404. Old Files weren't removed")
+			os.utime(nutdbfile,(time.time(),time.time()))			
 			return False			
 
 def regionurl(region):	
@@ -181,7 +223,10 @@ def regionurl(region):
 				if str(region).lower()==str(row[reg]).lower():
 					url=str(row[weburl])
 					break
-	response = requests.get(url, stream=True)
+	try:
+		response = requests.get(url, stream=True)
+	except BaseException as e:
+		Print.error('Exception: ' + str(e))
 	if '<Response [404]>'!=str(response):
 		return url
 	else:
@@ -378,8 +423,11 @@ def check_other_file(dbfile,dbname,nutdb=True):
 
 def get_otherDB(dbfile,dbname,f):
 	url=get_otherurl(dbfile,dbname)
-	_dbfile_=os.path.join(DATABASE_folder,f)	
-	response = requests.get(url, stream=True)
+	_dbfile_=os.path.join(DATABASE_folder,f)
+	try:
+		response = requests.get(url, stream=True)
+	except BaseException as e:
+		Print.error('Exception: ' + str(e))
 	if '<Response [404]>'!=str(response):	
 		if os.path.exists(_dbfile_):
 			try:os.remove(_dbfile_)
@@ -399,8 +447,11 @@ def get_otherDB(dbfile,dbname,f):
 	else:
 		dbfile_mirror=dbfile[:-4]+'_mirror.txt'
 		url=get_otherurl(dbfile_mirror,dbname)
-		_dbfile_=os.path.join(DATABASE_folder,f)	
-		response = requests.get(url, stream=True)
+		_dbfile_=os.path.join(DATABASE_folder,f)
+		try:
+			response = requests.get(url, stream=True)
+		except BaseException as e:
+			Print.error('Exception: ' + str(e))
 		if '<Response [404]>'!=str(response):	
 			if os.path.exists(_dbfile_):
 				try:os.remove(_dbfile_)
@@ -425,8 +476,11 @@ def get_otherDB(dbfile,dbname,f):
 def get_regionDB(region):
 	url=regionurl(region)
 	f='nutdb_'+region+'.json'
-	regionfile=os.path.join(DATABASE_folder,f)	
-	response = requests.get(url, stream=True)	
+	regionfile=os.path.join(DATABASE_folder,f)
+	try:
+		response = requests.get(url, stream=True)
+	except BaseException as e:
+		Print.error('Exception: ' + str(e))			
 	if '<Response [404]>'!=str(response):	
 		tempfile=regionfile[:-4]+'2.json'			
 		try:
@@ -443,14 +497,40 @@ def get_regionDB(region):
 			  json_file.write(app_json)				  
 			try:os.remove(tempfile)
 			except:pass							
-		except BaseException as e:
-			Print.error('Exception: ' + str(e))		
-			try:os.remove(tempfile)
-			except:pass	
-		return True	
+		except:
+			url.replace("blawar","julesontheroad")
+			try:
+				response = requests.get(url, stream=True)
+			except BaseException as e:
+				Print.error('Exception: ' + str(e))	
+			if '<Response [404]>'!=str(response):	
+				tempfile=regionfile[:-4]+'2.json'			
+				try:
+					with open(tempfile,'wb') as nutfile:
+						print('Getting NUTDB json "'+region+'"')
+						for data in response.iter_content(65536):
+							nutfile.write(data)
+							if not data:
+								break
+					with open(tempfile) as json_file:					
+						data = json.load(json_file)					
+					app_json = json.dumps(data, indent=4)		
+					with open(regionfile, 'w') as json_file:
+					  json_file.write(app_json)				  
+					try:os.remove(tempfile)
+					except:pass							
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))		
+					try:os.remove(tempfile)
+					except:pass	
+					os.utime(regionfile,(time.time(),time.time()))
+					print('DB origin is corrupt. Old Files were preserved.')
+					print('The program will retry in the next refresh cicle')			
+				return True	
 	else:
 		print(json_url)
 		print("Response 404. Old Files weren't removed")
+		os.utime(regionfile,(time.time(),time.time()))
 		return False		
 		
 def force_refresh():

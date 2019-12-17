@@ -1,4 +1,4 @@
-                                       __          _ __    __         
+                                      __          _ __    __         
                  ____  _____ ____     / /_  __  __(_) /___/ /__  _____
                 / __ \/ ___/ ___/    / __ \/ / / / / / __  / _ \/ ___/
                / / / (__  ) /__     / /_/ / /_/ / / / /_/ /  __/ /    
@@ -44,6 +44,11 @@ v0.97  - Added support for keygeneration11\masterkey10\masterkey0a and inteface 
 	  	    may hang when the HLS javascript video player loads the videos.
 	- Fixed Raw extraction for nsp files with big entry tables like the ones present in 
 	  Firmware nsps.
+	- Small improvement to database retrival.
+	  If a json database is retrieved and it tests as corrupt the modification time will 
+	  be updated to match the current time on the system. This will prevent the program
+	  from trying to retrieve the database before the next refresh cycle, stopping the 
+	  nagging every time nutdb is called.
 v0.96d - bugfixes:
 	- Fix keygeneration missmatch in nxdumptool tickets with elicense flag
 	- Fix xci compressor for xci with tickets and titlekey starting by 0

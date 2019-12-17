@@ -2910,7 +2910,9 @@ class Xci(File):
 											message=("- Supported Languages: "+suplangue);
 											par = textwrap.dedent(message).strip()	
 											message=(textwrap.fill(par,width=80,initial_indent='', subsequent_indent='  ',replace_whitespace=True,fix_sentence_endings=True));print(message);feed+=message+'\n'										
-									message=("\nRequired Firmware:");print(message);feed+=message+'\n'								
+									message=("\nRequired Firmware:");print(message);feed+=message+'\n'	
+									incl_Firm=DBmodule.FWDB.detect_xci_fw(self._path,False)
+									message=('- Included Firmware: ' + str(incl_Firm));print(message);feed+=message+'\n'									
 									if content_type_cnmt == 'AddOnContent':
 										if v_number == 0:
 											message=("- Required game version: " + str(RSversion)+' -> '+"Application"+' ('+str(RS_number)+')');print(message);feed+=message+'\n'																	

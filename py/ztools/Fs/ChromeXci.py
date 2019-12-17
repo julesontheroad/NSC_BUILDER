@@ -2292,7 +2292,9 @@ class ChromeXci(File):
 											message=["Supported Languages:",suplangue];feed=self.html_feed(feed,3,message)
 									feed+='</ul>'	
 									feed=self.html_feed(feed,2,message=str("- Required Firmware:"))	
-									feed+='<ul style="margin-bottom: 2px;margin-top: 3px">'								
+									incl_Firm=DBmodule.FWDB.detect_xci_fw(self._path,False)									
+									feed+='<ul style="margin-bottom: 2px;margin-top: 3px">'	
+									message=["Included Firmware:",str(str(incl_Firm))];feed=self.html_feed(feed,3,message)									
 									if content_type_cnmt == 'AddOnContent':
 										if v_number == 0:
 											message=["Required game version:",str(str(min_sversion)+' -> '+"Application"+' ('+str(RS_number)+')')];feed=self.html_feed(feed,3,message)									
