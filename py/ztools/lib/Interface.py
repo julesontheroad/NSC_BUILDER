@@ -2,7 +2,9 @@ import io
 import eel
 import sq_tools
 import Fs
-import sys;import platform
+import sys
+import platform
+import win32com.client 
 from base64 import b64encode
 import tkinter as tk
 from tkinter import filedialog
@@ -573,8 +575,6 @@ def start(browserpath='auto',videoplayback=True):
 			elif not os.path.exists(browserpath):
 				print(".lnk file doesn't exist")
 				return False
-			import sys
-			import win32com.client 
 			shell = win32com.client.Dispatch("WScript.Shell")
 			browserpath = shell.CreateShortCut(browserpath)
 			browserpath=browserpath.Targetpath	
