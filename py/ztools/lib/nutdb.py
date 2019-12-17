@@ -135,7 +135,8 @@ def getnutdb():
 		except BaseException as e:
 			Print.error('Exception: ' + str(e))		
 			try:os.remove(tempfile)
-			except:pass		
+			except:pass	
+			os.utime(nutdbfile,(time.time(),time.time()))
 		return True				
 	else:
 		response = requests.get(json_url_mirror, stream=True)
@@ -159,10 +160,12 @@ def getnutdb():
 				Print.error('Exception: ' + str(e))		
 				try:os.remove(tempfile)
 				except:pass	
+				os.utime(nutdbfile,(time.time(),time.time()))				
 			return True			
 		else:
 			print(json_url)
 			print("Response 404. Old Files weren't removed")
+			os.utime(nutdbfile,(time.time(),time.time()))			
 			return False			
 
 def regionurl(region):	
@@ -447,10 +450,12 @@ def get_regionDB(region):
 			Print.error('Exception: ' + str(e))		
 			try:os.remove(tempfile)
 			except:pass	
+			os.utime(regionfile,(time.time(),time.time()))
 		return True	
 	else:
 		print(json_url)
 		print("Response 404. Old Files weren't removed")
+		os.utime(regionfile,(time.time(),time.time()))
 		return False		
 		
 def force_refresh():
