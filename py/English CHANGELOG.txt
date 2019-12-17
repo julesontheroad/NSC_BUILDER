@@ -21,6 +21,29 @@ Luca Fraga's github: https://github.com/LucaFraga
 ---------------
 0. Changelog
 ---------------
+v0.97  - Added support for keygeneration11\masterkey10\masterkey0a and inteface updates
+	- As some of you may have realized masterkey10 brings a split into people reading the
+	  numbers as int and people reading them as hex. NSCB has been updated to support both
+	  formats (mater_key_10 and master_key_0a), you can call it both ways in the keys.txt 
+	  file. In adition this update is required for when games start using that key, 
+	  since previous versions won't load it properly unless you replace lib\Keys.py
+	- Several updates have been added to the information given by the interface.
+	  1.- It can detect the Firmware present in XCI files. To speed the parsing this is done
+	      via fw.json though in case a firmware is not added to the json the it will be read
+	      from the xci and added to the json to speed up the parsing in games including the 
+	      same firmware. The json will be updated once a new firmware is detected but you can
+	      turn off autoupdates and it'll update using xcis.
+	  2.- New eshop data like product codes, game modes, cloud saves and online support has 
+	      been added
+	  3.- Metacritic scores have been added
+	  4.- Videos from Nintendo.com have been added
+	- Added 2 new options to the interface:
+	  Option 2: Ability to choose the browser to launch the interface setting the path to
+	            executable files or .lnk files
+	  Option 3: Ability to dissable the video player. This is meant for old computers that
+	  	    may hang when the HLS javascript video player loads the videos.
+	- Fixed Raw extraction for nsp files with big entry tables like the ones present in 
+	  Firmware nsps.
 v0.96d - bugfixes:
 	- Fix keygeneration missmatch in nxdumptool tickets with elicense flag
 	- Fix xci compressor for xci with tickets and titlekey starting by 0
