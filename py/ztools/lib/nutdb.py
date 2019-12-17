@@ -137,6 +137,8 @@ def getnutdb():
 			try:os.remove(tempfile)
 			except:pass	
 			os.utime(nutdbfile,(time.time(),time.time()))
+			print('DB origin is corrupt. Old Files were preserved.')
+			print('The program will retry in the next refresh cicle')			
 		return True				
 	else:
 		response = requests.get(json_url_mirror, stream=True)
@@ -160,7 +162,9 @@ def getnutdb():
 				Print.error('Exception: ' + str(e))		
 				try:os.remove(tempfile)
 				except:pass	
-				os.utime(nutdbfile,(time.time(),time.time()))				
+				os.utime(nutdbfile,(time.time(),time.time()))	
+				print('DB origin is corrupt. Old Files were preserved.')
+				print('The program will retry in the next refresh cicle')
 			return True			
 		else:
 			print(json_url)
@@ -451,6 +455,8 @@ def get_regionDB(region):
 			try:os.remove(tempfile)
 			except:pass	
 			os.utime(regionfile,(time.time(),time.time()))
+			print('DB origin is corrupt. Old Files were preserved.')
+			print('The program will retry in the next refresh cicle')			
 		return True	
 	else:
 		print(json_url)
