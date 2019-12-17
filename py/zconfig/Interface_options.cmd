@@ -27,7 +27,7 @@ set "start_minimized=no"
 ::Path: Replace auto to the path to your browser, ending by exe
 ::Path: Replace auto to the path to an .lnk file(shortcut)
 ::Path: Add name to .lnk file in ztools\chromium.
-::For example "brave.lnk" will redirect to the exe path of brave browser
+::For example "brave.lnk" will redirect to the exe path launching brave browser
 set "browserpath=auto"
 ::**************************************************************
 ::ENABLE VIDEO PLAYBACK
