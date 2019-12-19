@@ -553,18 +553,18 @@ def About():
 	print('Cheats and Eshop information from nutdb and http://tinfoil.io                         ')
 	print('------------------------------------------------------------------------------------- ')
 
-def start(browserpath='auto',videoplayback=True):
+def start(browserpath='auto',videoplayback=True,height=800,width=740):
 	global enablevideoplayback
 	enablevideoplayback=videoplayback
 	try:
 		if browserpath == 'default':
 			print("Launched using default system browser")
-			eel.start('main.html', mode='default', size=(800, 720))				
+			eel.start('main.html', mode='default', size=(height, width))				
 		elif browserpath != 'auto' and os.path.exists(browserpath) and not browserpath.endswith('.ink'):
 			eel.browsers.set_path('chrome', browserpath)
 			About()
 			print("Launched using: "+browserpath)
-			eel.start('main.html', mode='chrome', size=(800, 720))
+			eel.start('main.html', mode='chrome', size=(height, width))
 		elif browserpath != 'auto' and browserpath.endswith('.lnk') and sys.platform in ['win32', 'win64']:
 			chrpath=os.path.join(ztools_dir,'chromium')
 			chrpath_alt=os.path.join(squirrel_dir,'chromium')
@@ -581,37 +581,37 @@ def start(browserpath='auto',videoplayback=True):
 			eel.browsers.set_path('chrome', browserpath)
 			About()
 			print("Launched using: "+browserpath)
-			eel.start('main.html', mode='chrome', size=(800, 720))			
+			eel.start('main.html', mode='chrome', size=(height, width))			
 		elif os.path.exists(chromiumpath):
 			eel.browsers.set_path('chrome', chromiumpath)
 			About()
 			print("Launched using: "+chromiumpath)
-			eel.start('main.html', mode='chrome', size=(800, 720))		
+			eel.start('main.html', mode='chrome', size=(height, width))		
 		elif os.path.exists(chromiumpath_alt):	
 			eel.browsers.set_path('chrome', chromiumpath_alt)
 			About()
 			print("Launched using: "+chromiumpath_alt)
-			eel.start('main.html', mode='chrome', size=(800, 720))		
+			eel.start('main.html', mode='chrome', size=(height, width))		
 		elif os.path.exists(slimpath):
 			eel.browsers.set_path('chrome', slimpath)
 			About()
 			print("Launched using: "+slimpath)
-			eel.start('main.html', mode='chrome', size=(800, 720))		
+			eel.start('main.html', mode='chrome', size=(height, width))		
 		elif os.path.exists(slimpath_alt):	
 			eel.browsers.set_path('chrome', slimpath_alt)
 			About()
 			print("Launched using: "+slimpath_alt)
-			eel.start('main.html', mode='chrome', size=(800, 720))						
+			eel.start('main.html', mode='chrome', size=(height, width))						
 		else:
 			try:
 				About()
 				print("Launched using Chrome Installation")
-				eel.start('main.html', mode='chrome', size=(800, 720))
+				eel.start('main.html', mode='chrome', size=(height, width))
 			except EnvironmentError:
 				print("Chrome wasn't detected. Launched using Windows Edge with limited compatibility")	
 				if sys.platform in ['win32', 'win64'] and int(platform.release()) >= 10:
 					# print(platform.release())
-					eel.start('main.html', mode='edge', size=(800, 720))
+					eel.start('main.html', mode='edge', size=(height, width))
 				else:
 					raise				
 	except (SystemExit, MemoryError, KeyboardInterrupt):	
