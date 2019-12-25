@@ -70,5 +70,4 @@ def test_ifnsx(fp):
 		else:
 			print(' - File is standard crypto. Skipping...')
 	else:		
-		print(" - File isn't nsp or nsx. Skipping...")		
-	
+		print(" - File isn't nsp or nsx. Skipping...")
