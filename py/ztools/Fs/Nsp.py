@@ -9434,13 +9434,16 @@ class Nsp(Pfs0):
 			DBdict['shopurl']=shopurl				
 		if 	len(regions)>0:	
 			DBdict['regions']=regions		
-		metascore,userscore=nutdb.get_metascores(titleid)	
+		metascore,userscore,openscore=nutdb.get_metascores(titleid)	
 		DBdict['metascore']='-'				
 		DBdict['userscore']='-'	
+		DBdict['openscore']='-'			
 		if 	metascore!=False:	
 			DBdict['metascore']=metascore			
 		if 	userscore!=False:	
-			DBdict['userscore']=userscore			
+			DBdict['userscore']=userscore	
+		if 	openscore!=False:	
+			DBdict['openscore']=openscore			
 		return DBdict
 
 	def DB_get_names_from_nutdb(self,titleid):

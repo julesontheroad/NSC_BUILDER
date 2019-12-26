@@ -197,8 +197,9 @@
 				<p style="margin-bottom: 2px;margin-top: 2px;font-size: 1.68vh"><strong>productCode: </strong><span  id="productcode">-</span></p>					
 				<p style="margin-bottom: 2px;margin-top: 2px;font-size: 1.68vh"><strong>Distribution: </strong><span  id="distributiontype">-</span></p>				
 				<p style="margin-bottom: 2px;margin-top: 2px;font-size: 1.68vh"><strong>Regions: </strong><span  id="regions">-</span></p>	
-				<p style="margin-bottom: 2px;margin-top: 2px;font-size: 1.68vh"><strong>Metascore: </strong><span  id="metascore">-</span></p>
-				<p style="margin-bottom: 2px;margin-top: 2px;font-size: 1.68vh"><strong>Userscore: </strong><span  id="userscore">-</span></p>					
+				<p style="margin-bottom: 2px;margin-top: 2px;font-size: 1.68vh;visibility:visible;visibility:block;" id="metascore_holder"><strong>Metascore: </strong><span  id="metascore">-</span></p>
+				<p style="margin-bottom: 2px;margin-top: 2px;font-size: 1.68vh;visibility:visible;visibility:block;" id="openscore_holder"><strong>Openscore: </strong><span  id="openscore">-</span></p>				
+				<p style="margin-bottom: 2px;margin-top: 2px;font-size: 1.68vh;visibility:visible;visibility:block;" id="userscore_holder"><strong>Userscore: </strong><span  id="userscore">-</span></p>							
 				<p style="margin-bottom: 2px;margin-top: 2px;font-size: 1.68vh"><strong>Release Date: </strong><span  id="worldreleasedate">-</span></p>	
 				<p style="margin-bottom: 2px;margin-top: 2px;font-size: 1.68vh;visibility:hidden;display:none;" id="GamecardSize_holder"><strong>GamecardSize: </strong><span  id="GamecardSize">-</span></p>						
 				<p style="margin-bottom: 2px;margin-top: 2px;font-size: 1.68vh"><strong>InstalledSize: </strong><span  id="InstalledSize">-</span></p>				
@@ -327,7 +328,7 @@ function setInfo(data) {
 	if (data[20] == "-"){	
 	document.getElementById("titlekey_holder").style.visibility = 'hidden';
 	document.getElementById("titlekey_holder").style.display = "none";	
-	}	
+	}		
 	document.getElementById("patchable").innerHTML = data[21];		
 	document.getElementById("regions").innerHTML = data[22];	
 	document.getElementById("introduction").innerHTML = data[23];		
@@ -343,6 +344,16 @@ function setInfo(data) {
 	document.getElementById("gamemodes").innerHTML = data[36];
 	document.getElementById("metascore").innerHTML = data[37];
 	document.getElementById("userscore").innerHTML = data[38];	
+	document.getElementById("openscore").innerHTML = data[41];	
+	if (data[37] == "-"){	
+	document.getElementById("metascore_holder").style.display = "none";	
+	}	
+	if (data[38] == "-"){	
+	document.getElementById("userscore_holder").style.display = "none";	
+	}	
+	if (data[41] == "-"){	
+	document.getElementById("openscore_holder").style.display = "none";	
+	}		
 	
 	document.getElementById("GamecardSize").innerHTML = data[29];	
 	if (data[29]!== "-"){
@@ -455,6 +466,7 @@ function resetInfo() {
 	document.getElementById("productcode").innerHTML = '-';		
 	document.getElementById("metascore").innerHTML = '-';
 	document.getElementById("userscore").innerHTML = '-';		
+	document.getElementById("openscore").innerHTML = '-';	
 	document.getElementById("developer").innerHTML = '-';
 	document.getElementById("onlineplay").innerHTML = '-';	
 	document.getElementById("savedatacloud").innerHTML = '-';	
@@ -462,6 +474,11 @@ function resetInfo() {
 	document.getElementById("GamecardSize").innerHTML = '-';	
 	document.getElementById("titlekey_holder").style.visibility = 'visible';
 	document.getElementById("titlekey_holder").style.display = "list-item";	
+	
+	document.getElementById("metascore_holder").style.display = "block";	
+	document.getElementById("userscore_holder").style.display = "block";	
+	document.getElementById("openscore_holder").style.display = "block";		
+	
 	document.getElementById("GamecardSize_holder").style.visibility = 'hidden';
 	document.getElementById("GamecardSize_holder").style.display = "none";	
 	document.getElementById("rgv_holder").style.visibility = 'hidden';

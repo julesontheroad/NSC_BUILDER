@@ -420,6 +420,15 @@ def getinfo(filename):
 		else:
 			send_.append('-')
 	except:send_.append('-')	
+	try:#data[41]			
+		if str(dict['openscore']).lower()=='false':
+			send_.append('-')
+		else:
+			if dict['openscore'] != dict['metascore']:
+				send_.append(dict['openscore'])	
+			else:
+				send_.append('-')
+	except:send_.append('-')	
 	f.flush()
 	f.close()			
 	return send_

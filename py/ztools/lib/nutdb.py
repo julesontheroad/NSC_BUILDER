@@ -635,7 +635,9 @@ def get_metascores(titleid):
 							if str(j) == 'metascore':
 								metascore=k
 							if str(j) == 'userscore':
-								userscore=k						
+								userscore=k			
+							if str(j) == 'openscore':
+								openscore=k											
 						break
 				except:pass			
 	except:pass				
@@ -646,8 +648,12 @@ def get_metascores(titleid):
 	if userscore==None:
 		userscore=False
 	else:
-		userscore=str(userscore)		
-	return 	metascore,userscore			
+		userscore=str(userscore)	
+	if openscore==None:
+		openscore=False
+	else:
+		openscore=str(openscore)		
+	return 	metascore,userscore,openscore			
 
 def get_contenregions(titleid):
 	baseid=get_baseid(titleid);baseid=baseid.lower()	
