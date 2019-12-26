@@ -624,7 +624,7 @@ def get_metascores(titleid):
 	check_other_file(urlconfig,'metacritic_id',nutdb=False)
 	f='metacritic_id.json'
 	metacritic_json=os.path.join(DATABASE_folder,f)	
-	metascore=False;userscore=False	
+	metascore=False;userscore=False;openscore=False	
 	try:
 		with open(metacritic_json) as json_file:	
 			data = json.load(json_file)		
