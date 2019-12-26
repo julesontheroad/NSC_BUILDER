@@ -45,3 +45,5 @@ py/RetrieverPy.zip
 py/zconfig/credentials
 py/testurl.txt
 py/ztools/Drive
+*.dshlv
+py/ztools/lib/opencritic.py

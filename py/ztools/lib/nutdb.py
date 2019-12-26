@@ -88,7 +88,7 @@ if os.path.exists(zconfig_dir):
 				json_url = get_titlesurl(urlconfig)		
 				json_url_mirror = get_titlesurl(urlconfig_mirror)	
 			else:	
-				json_url='https://raw.githubusercontent.com/blawar/titledb/master/titles.US.en.json'
+				json_url='http://tinfoil.media/repo/db/titles.US.en.json'
 				json_url_mirror='https://raw.githubusercontent.com/julesontheroad/titledb/master/titles.US.en.json'				
 		except:
 			if os.path.exists(urlconfig_mirror):	
@@ -106,7 +106,7 @@ else:
 		if os.path.exists(urlconfig):	
 			json_url = get_titlesurl(urlconfig)		
 		else:	
-			json_url='https://raw.githubusercontent.com/blawar/titledb/master/titles.US.en.json'
+			json_url='http://tinfoil.media/repo/db/titles.US.en.json'
 	except:
 		if os.path.exists(urlconfig_mirror):	
 			json_url = get_titlesurl(urlconfig_mirror)		
