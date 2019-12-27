@@ -1105,7 +1105,18 @@ class ChromeNsp(Pfs0):
 									break			
 						break	
 		if iscorrect==False:
-			ModuleId='';BuildID8='';BuildID16='';
+			try:
+				from nutFS.Nca import Nca as nca3type
+				for nca in self:								
+					if type(nca) == Fs.Nca:
+						if 	str(nca.header.contentType) == 'Content.PROGRAM':
+							nca3type=Nca(nca)
+							nca3type._path=nca._path							
+							ModuleId=str(nca3type.buildId)
+							BuildID8=ModuleId[:8]
+							BuildID16=ModuleId[:16]
+			except:
+				ModuleId='';BuildID8='';BuildID16='';
 		return ModuleId,BuildID8,BuildID16				
 		
 
