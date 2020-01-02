@@ -236,7 +236,11 @@ async function start(){
 	show_gameinfo()
 	var fname=await eel.getfname()();
 	<!-- console.log("Hello from"); -->
-	resetInfo()		
+	resetInfo()	
+	start2(fname)
+}
+
+function start2(fname){	
 	showicon(fname)	
 	getinfo(fname)
 	get_adv_filelist(fname)

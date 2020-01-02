@@ -219,7 +219,7 @@ class uXci(File):
 		Print.info(tabs + 'gamecardCert = ' + str(hx(self.gamecardCert.magic + self.gamecardCert.unknown1 + self.gamecardCert.unknown2 + self.gamecardCert.data)))
 		self.hfs0.printInfo( indent)
 
-	def get_FW_number(self):
+	def get_FW_number(self,printdata=False):
 		import sq_tools
 		fwver=0
 		for nspF in self.hfs0:
@@ -238,9 +238,10 @@ class uXci(File):
 									titleversion = cnmt.read(0x4)	
 									version=int.from_bytes(titleversion, byteorder='little')
 									if fwver<version:
-										# FWnumber=sq_tools.getFWRangeRSV(version)
 										fwver=version
-										# print(FWnumber)
+									if printdata!=False:	
+										FWnumber=sq_tools.getFWRangeRSV(version)
+										print('- {}: {}'.format(str(nca._path),str(FWnumber)))
 		FWnumber=sq_tools.getFWRangeRSV(fwver)		
 		FWnumber=FWnumber[1:-1]
 		return 	FWnumber,fwver							

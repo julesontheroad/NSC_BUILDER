@@ -445,23 +445,27 @@ def getfiletree(ID):
 def getcheats(ID):
 	print('* Seeking cheats from DB')
 	feed=''
-	cheatID_list=nutdb.get_content_cheats(ID)	
-	feed=html_feed(feed,1,message=str('LIST OF CHEATS: '))	
-	if len(cheatID_list)==0:
-		feed=html_feed(feed,2,message=str('- Cheats not found'))			
-	for i in range(len(cheatID_list)):
-		data=cheatID_list[i]
-		titleid=data[0];version=data[1];buildid=data[2]
-		message=[str(titleid+' v'+version+'. '+'BuildID: '+buildid),''];feed=html_feed(feed,3,message)		
-		cheats=data[3]
-		feed+='<div style="margin-left:2.6vh">'
-		for j in range(len(cheats)):
-			entry=cheats[j]
-			cheat_title=entry[0]
-			cheat_source=entry[1]
-			message=[cheat_title,""];feed=html_feed(feed,9,message)
-			feed=html_feed(feed,8,message=(cheat_source))
-		feed+='</div>'	
+	try:
+		cheatID_list=nutdb.get_content_cheats(ID)	
+		feed=html_feed(feed,1,message=str('LIST OF CHEATS: '))	
+		if len(cheatID_list)==0:
+			feed=html_feed(feed,2,message=str('- Cheats not found'))			
+		for i in range(len(cheatID_list)):
+			data=cheatID_list[i]
+			titleid=data[0];version=data[1];buildid=data[2]
+			message=[str(titleid+' v'+version+'. '+'BuildID: '+buildid),''];feed=html_feed(feed,3,message)		
+			cheats=data[3]
+			feed+='<div style="margin-left:2.6vh">'
+			for j in range(len(cheats)):
+				entry=cheats[j]
+				cheat_title=entry[0]
+				cheat_source=entry[1]
+				message=[cheat_title,""];feed=html_feed(feed,9,message)
+				feed=html_feed(feed,8,message=(cheat_source))
+			feed+='</div>'
+	except:
+			feed=html_feed(feed,1,message=str('LIST OF CHEATS: '))		
+			feed=html_feed(feed,2,message=str('- Cheats not found'))			
 	print('  DONE')		
 	return feed
 

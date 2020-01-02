@@ -305,6 +305,20 @@ def parsetags(filepath):
 def folder_to_list(ifolder,extlist=['nsp'],filter=False):	
 	ruta=ifolder
 	filelist=list()
+	if str(extlist)=='all' and os.path.isdir(ruta):
+		fname=""
+		binbin='RECYCLE.BIN'
+		for dirpath, dirnames, filenames in os.walk(ruta):
+			for filename in [f for f in filenames]:
+				fname=""
+				if filter != False:
+					if filter.lower() in filename.lower():
+						fname=filename
+				else:
+					fname=filename
+				if fname != "":
+					if binbin.lower() not in filename.lower():
+						filelist.append(os.path.join(dirpath, filename))		
 	try:
 		fname=""
 		binbin='RECYCLE.BIN'
