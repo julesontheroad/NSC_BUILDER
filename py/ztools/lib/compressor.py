@@ -52,7 +52,7 @@ def get_sections(nca):
 		(sections[0]).cryptoKey=(sections[1]).cryptoKey	
 		(sections[0]).cryptoCounter=(sections[1]).cryptoCounter			
 	else:	
-		sections=sections		
+		sections=sections0		
 	return sections
 
 def isNcaPacked(nca):
