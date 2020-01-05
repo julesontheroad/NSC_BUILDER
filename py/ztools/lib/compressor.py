@@ -90,9 +90,7 @@ def foldercompress(ifolder, ofolder = None, level = 17, threads = 0, t=['nsp']):
 def check_sections(filepath):
 	if filepath.endswith(".xci"):
 		xcicontainer = Xci(filepath)
-		# f.compressed_supertrim(buffer,outfile,keepupd,level,threads)
 		files2=list();filesizes2=list()
-		# print(b'01'.ljust(16, b'0'))
 		for nspF in xcicontainer.hfs0:
 			if str(nspF._path)=="secure":
 				for nca in nspF:
