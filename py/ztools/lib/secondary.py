@@ -546,3 +546,16 @@ def pararell(args,workers):
 			if items<0:
 				items=0	
 		return items		 		
+
+
+def clear_Screen():
+	from subprocess import call
+	from time import sleep
+	if os.name =='posix':
+		call('clear')#linux
+	else:
+		try:
+			call('cls')#macos
+		except:
+			print ("\n" * 100)
+			os.system('cls')#windows

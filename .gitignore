@@ -44,6 +44,12 @@ py/RetrieverPy.zip
 *.pyc
 py/zconfig/credentials
 py/testurl.txt
-py/ztools/Drive
 *.dshlv
 py/ztools/lib/opencritic.py
+py/ztools/Drive/Retriever.py
+py/ztools/Drive/Verify.py
+py/zconfig/download_libraries.txt
+py/zconfig/config_urls.txt
+py/zconfig/remote_libraries.txt
+py/ztools/lib/iggg.py
+py/ztools/lib/ninshop2.py
