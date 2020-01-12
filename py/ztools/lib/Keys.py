@@ -124,7 +124,7 @@ def load(fileName):
 			keyAreaKeys[i][1] = generateKek(uhx(keys['key_area_key_ocean_source']), masterKey, aes_kek_generation_source, aes_key_generation_source)
 			keyAreaKeys[i][2] = generateKek(uhx(keys['key_area_key_system_source']), masterKey, aes_kek_generation_source, aes_key_generation_source)
 		else:
-			titleKeks.append('0' * 32) 
+			pass
 
 my_file = Path('keys.txt')
 my_file2 = Path('ztools\\keys.txt')			
