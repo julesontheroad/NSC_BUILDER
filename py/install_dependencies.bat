@@ -11,7 +11,7 @@ set "pycommand=%pycommand%"
 ECHO.
 ECHO Installing dependencies 
 ECHO.
-%pycommand% -m pip install urllib3 unidecode tqdm bs4 tqdm requests image pywin32 pycryptodome pykakasi googletrans chardet eel bottle zstandard colorama
+%pycommand% -m pip install urllib3 unidecode tqdm bs4 tqdm requests image pywin32 pycryptodome pykakasi googletrans chardet eel bottle zstandard colorama google-auth-httplib2 google-auth-oauthlib
 ECHO.
 ECHO **********************************************************************************
 ECHO ---IMPORTANT: Check if dependencies were installed correctly before continuing---
