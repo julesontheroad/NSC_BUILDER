@@ -1,0 +1,6 @@
+library_name|path|TD_name
+BASE|drive:/base|TD_Name
+UPD|drive:/updates|None
+DLC|drive:/dlc|TD_Name
+XCI|drive:/XCI|TD_Name
+CXCI|drive:/Custom xci|None

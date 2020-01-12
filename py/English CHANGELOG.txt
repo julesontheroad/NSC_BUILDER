@@ -21,6 +21,63 @@ Luca Fraga's github: https://github.com/LucaFraga
 ---------------
 0. Changelog
 ---------------
+v0.98  - Initial Google Drive Support for some stuff
+	- Updated the locations of nutdb data(though the db method is bound to be changed
+	  on next release)
+	- Added Opencritic Data to the gui interface
+	- Metascores, Userscores and Opencritic scores are shown only if available. If the 
+	  openscore matches the metascore the openscore is hidden.
+	- Fixed the "Not packed" issue on ncz compression, thanks to blawar for the solution.
+	- Added initial Google Drive Support. Initial release covers:
+	  * Support for Public and Private google drive	
+	  * Search on drives and TeamDrives
+	  * Ability to add several accounts
+	  * Easy to use graphical console interface
+	  * Ability to download xci files trimmed or supertrimmed and nsz\xcz files compressed or
+		uncompressed directly from google drive.
+	  * Ability to show several file information from google drive (verification still missing)
+	  * Ability to add several google drive accounts.
+	  * Ability to make several google drive libraries and add several download locations for quick
+		access.
+	- To use google drive you need to:
+	  1.- Log in https://developers.google.com/drive/api/v3/quickstart/python 	
+		  using your account, then press "Enable the Google Drive API" and download credentials.json
+	  2.- Add the credentials.json to zconfig\credentials
+		  Note: You can use this file to add any google drive account but it will show a
+				warning if you add a different one that the one used to download it. 
+				The credentials.json only need to be used once so you can download it again to add a 
+				second account. Alternatively you can rename it as token_name.json
+				token_name is the name of your account in NSCB.
+	  3.- To use google drive with NSCB go to the CONFIGURATION mode and the Input "6" to enter into 
+	      GOOGLE DRIVE OPTIONS			
+	  4.- Add the token_name you wish and the browser will be launched for you to select your account
+		  Note: Headless systems can use:
+				squirrel.py -lib_call Drive.private create_token "token_name"
+		  Note2: A token name represents the drive account and is use for locations, for example a token
+				 called drive is used for drive:/xcifolder/xcifile.xci
+				 Any location has all Teamdrives available which can be chosen via a graphical interface
+				 or by setting up libraries.
+	  5.- Optionally setup libraries:
+		  a) Remote libraries:
+			 Go to zconfig and use "remote_libraries_example.txt" to create a "remote_libraries.txt"
+			 Parameters are Library_Name, Route\Path (starting by token_name) and Team Drive Name.
+			 If the location
+			 isn't in a TD put None in the last parameter.
+		  b) Download libraries:
+			 Go to zconfig and use "download_libraries_example.txt" to create a "download_libraries.txt"
+			 Parameters are Library_Name, System Path to folder
+	  6.- Enter in NSCB and press "D" to enter in google drive mode.
+		  1.) Option 1 is the download option, it allows public links, direct file location paths, 
+		      direct folder locations paths, selection of a folder via folder walker or selection of 
+			  several libraries.
+			  * Folders and libraries allow for filter search and when needed the program will allow you 
+			    to select the TD for the account.
+			  * Folders and libraries allow for search using a name.
+			  * When a xci\xcz\nsz file is detected you will be prompt to select the options to handle it:
+				(uncompress\trimm\supertrimm ...)
+		  2.) Option 2 is the file info option. It can show several info of a file without downloading it.
+			  It still misses nut info, npdm info and verification. They will be added at a later time.
+	Hope you enjoy this update. It marks the beginning of some interesting stuff that will come later.	  
 v0.97  - Added support for keygeneration11\masterkey10\masterkey0a and inteface updates
 	- As some of you may have realized masterkey10 brings a split into people reading the
 	  numbers as int and people reading them as hex. NSCB has been updated to support both
