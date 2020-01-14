@@ -21,6 +21,8 @@ Arena of Valor BETA [DEMO][UPD][0100944009646800][v65536][WORLD].nsp - YES
 Arena of Valor [BASE][01008D8006A6A000][v0][US].nsp - YES
 Arena of Valor [UPD][01008D8006A6A800][v458752][WORLD].nsp - YES
 Awkward [BASE][010073900A7A0000][v0][US].nsp - YES
+Blackmoor 2 [0100A0A00E660000][v0].nsp - YES
+Blackmoor 2 [0100A0A00E660800][v131072].nsp - YES
 Bloodstained Ritual of the Night [BASE][0100BF500207C000][v0][US].nsp - YES
 Bloodstained Ritual of the Night [UPD][0100BF500207C800][v131072][WORLD].nsp - YES
 Darts Up [BASE][0100BA500B660000][v0][US].nsp - YES
