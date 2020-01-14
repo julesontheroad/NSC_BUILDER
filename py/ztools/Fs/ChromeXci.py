@@ -1211,7 +1211,20 @@ class ChromeXci(File):
 											break
 								break	
 		if iscorrect==False:
-			ModuleId='';BuildID8='';BuildID16='';
+			try:
+				from nutFS.Nca import Nca as nca3type
+				for nspF in self.hfs0:
+					if str(nspF._path)=="secure":
+						for nca in nspF:										
+							if type(nca) == Fs.Nca:
+								if 	str(nca.header.contentType) == 'Content.PROGRAM':
+									nca3type=Nca(nca)
+									nca3type._path=nca._path							
+									ModuleId=str(nca3type.buildId)
+									BuildID8=ModuleId[:8]
+									BuildID16=ModuleId[:16]
+			except:
+				ModuleId='';BuildID8='';BuildID16='';
 		return ModuleId,BuildID8,BuildID16									
 																		
 	def copy_as_plaintext(self,ofolder,files_list,buffer=32768):
@@ -8218,13 +8231,16 @@ class ChromeXci(File):
 			DBdict['shopurl']=shopurl				
 		if 	len(regions)>0:	
 			DBdict['regions']=regions	
-		metascore,userscore=nutdb.get_metascores(titleid)	
+		metascore,userscore,openscore=nutdb.get_metascores(titleid)	
 		DBdict['metascore']='-'				
 		DBdict['userscore']='-'	
+		DBdict['openscore']='-'			
 		if 	metascore!=False:	
 			DBdict['metascore']=metascore			
 		if 	userscore!=False:	
-			DBdict['userscore']=userscore				
+			DBdict['userscore']=userscore	
+		if 	openscore!=False:	
+			DBdict['openscore']=openscore				
 		return DBdict
 
 	def DB_get_names_from_nutdb(self,titleid):

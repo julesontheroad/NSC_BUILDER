@@ -4,7 +4,7 @@ set "prog_dir=%~dp0"
 set "bat_name=%~n0"
 set "ofile_name=%bat_name%_options.cmd"
 set "opt_interface=Interface_options.cmd"
-Title NSC_Builder v0.97 -- Profile: %ofile_name% -- by JulesOnTheRoad
+Title NSC_Builder v0.98 -- Profile: %ofile_name% -- by JulesOnTheRoad
 set "list_folder=%prog_dir%lists"
 ::-----------------------------------------------------
 ::EDIT THIS VARIABLE TO LINK OTHER OPTION FILE
@@ -736,6 +736,7 @@ echo Input "9"  to enter into FILE-RESTORATION mode
 REM echo Input "10" to enter into FILE-MANAGEMENT mode
 echo Input "0"  to enter into CONFIGURATION mode
 echo.
+echo Input "D" to enter GOOGLE DRIVE MODES
 echo Input "L" to enter LEGACY MODES
 echo .......................................................
 echo.
@@ -751,6 +752,7 @@ if /i "%bs%"=="7" goto JOINmode
 if /i "%bs%"=="8" goto ZSTDmode
 if /i "%bs%"=="9" goto RSTmode
 REM if /i "%bs%"=="10" goto MNGmode
+if /i "%bs%"=="D" goto DriveMode
 if /i "%bs%"=="L" goto LegacyMode
 if /i "%bs%"=="0" goto OPT_CONFIG
 goto manual_Reentry
@@ -772,6 +774,9 @@ call "%prog_dir%ztools\MNG.bat"
 goto manual_Reentry
 :LegacyMode
 call "%prog_dir%ztools\LEGACY.bat"
+goto manual_Reentry
+:DriveMode
+call "%prog_dir%ztools\DriveMode.bat"
 goto manual_Reentry
 REM //////////////////////////////////////////////////
 REM /////////////////////////////////////////////////
@@ -2955,7 +2960,7 @@ ECHO =============================     BY JULESONTHEROAD     ===================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                                POWERED BY SQUIRREL                                "
 ECHO "                    BASED ON THE WORK OF BLAWAR AND LUCA FRAGA                     "
-ECHO                                  VERSION 0.97 (NEW)
+ECHO                                  VERSION 0.98 (NEW)
 ECHO -------------------------------------------------------------------------------------                   
 ECHO Program's github: https://github.com/julesontheroad/NSC_BUILDER
 ECHO Blawar's github:  https://github.com/blawar

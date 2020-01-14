@@ -12,6 +12,7 @@ echo Input "2" for GLOBAL AND MANUAL OPTIONS
 echo Input "3" to VERIFY KEYS.TXT 
 echo Input "4" to UPDATE NUTDB
 echo Input "5" to INTERFACE OPTIONS
+echo Input "6" to GOOGLE DRIVE OPTIONS
 echo.
 echo Input "c" to read CURRENT PROFILE
 echo Input "d" to set DEFAULT SETTINGS
@@ -24,6 +25,7 @@ if /i "%bs%"=="2" goto sc3
 if /i "%bs%"=="3" goto verify_keys
 if /i "%bs%"=="4" goto update_nutdb
 if /i "%bs%"=="5" goto interface
+if /i "%bs%"=="6" goto google_drive
 
 if /i "%bs%"=="c" call :curr_set1
 if /i "%bs%"=="c" call :curr_set2
@@ -1417,11 +1419,57 @@ set bs=%bs:"=%
 if /i "%bs%"=="0" goto sc1
 if /i "%bs%"=="e" goto salida
 
+:google_drive
+cls
+call :logo
+echo ********************************************************
+echo GOOGLE-DRIVE - CONFIGURATION
+echo ********************************************************
+echo Input "1" to register account
+echo.
+echo Input "0" to return to CONFIG MENU
+echo Input "e" to go back to the MAIN PROGRAM
+echo .......................................................
+echo.
+set /p bs="Enter your choice: "
+if /i "%bs%"=="1" goto op_google_drive_account
+
+if /i "%bs%"=="0" goto sc1
+if /i "%bs%"=="e" goto salida
+echo WRONG CHOICE
+echo.
+goto google_drive
+
+:op_google_drive_account
+cls
+call :logo
+echo ***************************************************************************
+echo Register a google drive account
+echo ***************************************************************************
+echo You need a credentials.json, this can be called credentials.json or name of
+echo token you'll generate.json. A credentials.json can be used with many accounts
+echo to generate tokens but if it's used with a different account than the one that
+echo generated it you'll get a warning.
+echo A system is implemented to have many credentials json in the credentials folder
+echo read the document distributed with NSCB to learn how to get the file.
+echo.
+echo Note. The name you input in this step will be used to save the token and for
+echo paths.
+echo.
+echo Example: A token named "drive" will use paths like drive:/folder/file.nsp
+echo.
+set /p bs="Enter the drive name: "
+set "token=%bs%"
+echo.
+%pycommand% "%nut%" -lib_call Drive.Private create_token -xarg "%token%" headless="False"
+pause
+goto google_drive
+
 :interface
 cls
 call :logo
 echo ********************************************************
-echo AUTO-MODE - CONFIGURATION
+echo INTERFACE - CONFIGURATION
 echo ********************************************************
 echo Input "1" to change STARTUP VISIBILITY configuration
 echo Input "2" to choose a BROWSER for the interface 

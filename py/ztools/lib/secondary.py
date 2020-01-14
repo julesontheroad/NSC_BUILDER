@@ -80,7 +80,10 @@ def call_library(args,xarg=None):
 									elif str(asignation[1]).lower()=='none':
 										var[i]=None												
 									else:
-										var[i]=asignation[1]
+										toks=list()
+										toks=[pos for pos, char in enumerate(var[i]) if char == '=']
+										indx=toks[0]+1
+										var[i]=(var[i])[indx:]
 								except:pass
 							else:pass
 					except:pass
@@ -106,7 +109,10 @@ def call_library(args,xarg=None):
 							elif str(asignation[1]).lower()=='none':
 								var[i]=None			
 							else:
-								var[i]=asignation[1]
+								toks=list()
+								toks=[pos for pos, char in enumerate(var[i]) if char == '=']
+								indx=toks[0]+1
+								var[i]=(var[i])[indx:]
 						except:pass
 					else:pass
 				except:pass	
@@ -540,3 +546,16 @@ def pararell(args,workers):
 			if items<0:
 				items=0	
 		return items		 		
+
+
+def clear_Screen():
+	from subprocess import call
+	from time import sleep
+	if os.name =='posix':
+		call('clear')#linux
+	else:
+		try:
+			call('cls')#macos
+		except:
+			print ("\n" * 100)
+			os.system('cls')#windows

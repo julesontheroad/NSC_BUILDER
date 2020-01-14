@@ -88,7 +88,7 @@ if os.path.exists(zconfig_dir):
 				json_url = get_titlesurl(urlconfig)		
 				json_url_mirror = get_titlesurl(urlconfig_mirror)	
 			else:	
-				json_url='https://raw.githubusercontent.com/blawar/titledb/master/titles.US.en.json'
+				json_url='http://tinfoil.media/repo/db/titles.US.en.json'
 				json_url_mirror='https://raw.githubusercontent.com/julesontheroad/titledb/master/titles.US.en.json'				
 		except:
 			if os.path.exists(urlconfig_mirror):	
@@ -106,7 +106,7 @@ else:
 		if os.path.exists(urlconfig):	
 			json_url = get_titlesurl(urlconfig)		
 		else:	
-			json_url='https://raw.githubusercontent.com/blawar/titledb/master/titles.US.en.json'
+			json_url='http://tinfoil.media/repo/db/titles.US.en.json'
 	except:
 		if os.path.exists(urlconfig_mirror):	
 			json_url = get_titlesurl(urlconfig_mirror)		
@@ -590,7 +590,7 @@ def get_contentname(titleid,roman=True,format='tabs'):
 	cname=False
 	with open(nutdbfile) as json_file:	
 		data = json.load(json_file)		
-		titleid=titleid.lower()
+		titleid=str(titleid).lower()
 		for i in data:
 			check=False
 			for j,k in data[i].items():
@@ -613,18 +613,18 @@ def get_contentname(titleid,roman=True,format='tabs'):
 	return 	cname		
 
 def get_metascores(titleid):
-	titleid=titleid.lower()	
+	titleid=str(titleid).lower()	
 	if str(titleid).endswith('000'):
 		baseid=titleid[:-3]+'000'
 	elif str(titleid).endswith('800'):	
 		baseid=titleid[:-3]+'000'
 	else:
-		titleid=titleid.lower()
+		titleid=str(titleid).lower()
 		baseid=get_dlc_baseid(titleid);baseid=baseid.lower()
 	check_other_file(urlconfig,'metacritic_id',nutdb=False)
 	f='metacritic_id.json'
 	metacritic_json=os.path.join(DATABASE_folder,f)	
-	metascore=False;userscore=False	
+	metascore=False;userscore=False;openscore=False	
 	try:
 		with open(metacritic_json) as json_file:	
 			data = json.load(json_file)		
@@ -635,7 +635,9 @@ def get_metascores(titleid):
 							if str(j) == 'metascore':
 								metascore=k
 							if str(j) == 'userscore':
-								userscore=k						
+								userscore=k			
+							if str(j) == 'openscore':
+								openscore=k											
 						break
 				except:pass			
 	except:pass				
@@ -646,21 +648,25 @@ def get_metascores(titleid):
 	if userscore==None:
 		userscore=False
 	else:
-		userscore=str(userscore)		
-	return 	metascore,userscore			
+		userscore=str(userscore)	
+	if openscore==None:
+		openscore=False
+	else:
+		openscore=str(openscore)		
+	return 	metascore,userscore,openscore			
 
 def get_contenregions(titleid):
 	baseid=get_baseid(titleid);baseid=baseid.lower()	
 	langue=False
 	rglist=['America','Europe','Japan','Asia']
 	regions=list()
-	titleid=titleid.lower()	
+	titleid=str(titleid).lower()	
 	if str(titleid).endswith('000'):
 		baseid=titleid
 	elif str(titleid).endswith('800'):	
 		baseid=titleid[:-3]+'000'
 	else:
-		titleid=titleid.lower()
+		titleid=str(titleid).lower()
 		baseid=get_dlc_baseid(titleid);baseid=baseid.lower()	
 	for region in rglist:
 		f='nutdb_'+region+'.json'
@@ -681,13 +687,13 @@ def get_icon(titleid):
 	iconUrl=False
 	rglist=['America','Europe','Japan','Asia']
 	regions=list()
-	titleid=titleid.lower()	
+	titleid=str(titleid).lower()	
 	if str(titleid).endswith('000'):
 		baseid=titleid
 	elif str(titleid).endswith('800'):	
 		baseid=titleid[:-3]+'000'
 	else:
-		titleid=titleid.lower()
+		titleid=str(titleid).lower()
 		baseid=get_dlc_baseid(titleid);baseid=baseid.lower()	
 	for region in rglist:
 		f='nutdb_'+region+'.json'
@@ -728,7 +734,7 @@ def get_dlcname(titleid,roman=True,format='tabs'):
 	cname=False;basename=False;name=False
 	with open(nutdbfile) as json_file:			
 		data = json.load(json_file)	
-		titleid=titleid.lower()
+		titleid=str(titleid).lower()
 		baseid=get_dlc_baseid(titleid);baseid=baseid.lower()
 		for i in data:
 			check=False
@@ -791,7 +797,7 @@ def get_dlcData(titleid,roman=True,format='tabs'):
 	cname=False;basename=False;name=False;editor=False		
 	with open(nutdbfile) as json_file:			
 		data = json.load(json_file)		
-		titleid=titleid.lower()
+		titleid=str(titleid).lower()
 		baseid=get_dlc_baseid(titleid);baseid=baseid.lower()
 		for i in data:
 			dict=data[i]
@@ -854,13 +860,13 @@ def get_dlcData(titleid,roman=True,format='tabs'):
 def get_content_langue(titleid):	
 	langue=False
 	rglist=['America','Europe','Japan','Asia']
-	titleid=titleid.lower()	
+	titleid=str(titleid).lower()	
 	if str(titleid).endswith('000'):
 		baseid=titleid
 	elif str(titleid).endswith('800'):	
 		baseid=titleid[:-3]+'000'
 	else:
-		titleid=titleid.lower()
+		titleid=str(titleid).lower()
 		baseid=get_dlc_baseid(titleid);baseid=baseid.lower()	
 	for region in rglist:
 		f='nutdb_'+region+'.json'
@@ -1036,7 +1042,7 @@ def get_baseid(titleid):
 	elif str(titleid).endswith('800'):	
 		baseid=titleid[:-3]+'000'
 	else:
-		titleid=titleid.lower()
+		titleid=str(titleid).lower()
 		baseid=get_dlc_baseid(titleid)
 	return baseid.upper()	
 		
@@ -1047,13 +1053,13 @@ def get_content_data(titleid,trans=True):
 	productCode=False;OnlinePlay=False;SaveDataCloud=False;playmodes=False;
 	video=False;url=False;
 	rglist=['ninshop','America','Europe','Japan','Asia']
-	titleid=titleid.lower()	
+	titleid=str(titleid).lower()	
 	if str(titleid).endswith('000'):
 		baseid=titleid
 	elif str(titleid).endswith('800'):	
 		baseid=titleid[:-3]+'000'
 	else:
-		titleid=titleid.lower()
+		titleid=str(titleid).lower()
 		baseid=get_dlc_baseid(titleid);baseid=baseid.lower()	
 	for region in rglist:
 		if region=='ninshop':
@@ -1232,7 +1238,7 @@ def get_content_data(titleid,trans=True):
 def get_dlcnsuId(titleid):
 	nsuId=False
 	rglist=['America','Europe','Japan','Asia']
-	titleid=titleid.lower()	
+	titleid=str(titleid).lower()	
 	for region in rglist:	
 		f='nutdb_'+region+'.json'
 		regionfile=os.path.join(DATABASE_folder,f)	
@@ -1297,13 +1303,13 @@ def get_dlc_baseid(titleid):
 
 def get_content_cheats(titleid,version=False,buildId=False):	
 	cheatID_list=list();
-	titleid=titleid.lower()	
+	titleid=str(titleid).lower()	
 	if str(titleid).endswith('000'):
 		baseid=titleid
 	elif str(titleid).endswith('800'):	
 		baseid=titleid[:-3]+'000'
 	else:
-		titleid=titleid.lower()
+		titleid=str(titleid).lower()
 		baseid=get_dlc_baseid(titleid);baseid=baseid.lower()	
 	f='nutdb_'+'cheats'+'.json'
 	_dbfile_=os.path.join(DATABASE_folder,f)	
@@ -1341,13 +1347,13 @@ def get_content_cheats(titleid,version=False,buildId=False):
 	
 def BaseID_tree(titleid,printinfo=True):	
 	feed=''
-	titleid=titleid.lower()	
+	titleid=str(titleid).lower()	
 	if str(titleid).endswith('000'):
 		baseid=titleid
 	elif str(titleid).endswith('800'):	
 		baseid=titleid[:-3]+'000'
 	else:
-		titleid=titleid.lower()
+		titleid=str(titleid).lower()
 		baseid=get_dlc_baseid(titleid);baseid=baseid.lower()		
 	f='nutdb_'+'versions'+'.txt'
 	_dbfile_=os.path.join(DATABASE_folder,f)	
@@ -1393,13 +1399,13 @@ def BaseID_tree(titleid,printinfo=True):
 	return feed,baselist,updlist,dlclist			
 
 def latest_upd(titleid):	
-	titleid=titleid.lower()	
+	titleid=str(titleid).lower()	
 	if str(titleid).endswith('000'):
 		baseid=titleid[:-3]+'000'
 	elif str(titleid).endswith('800'):	
 		baseid=titleid[:-3]+'000'
 	else:
-		titleid=titleid.lower()
+		titleid=str(titleid).lower()
 		baseid=get_dlc_baseid(titleid);baseid=baseid.lower()
 	updid=baseid[:-3]+'800'
 	f='nutdb_'+'versions'+'.txt'
@@ -1424,7 +1430,7 @@ def latest_upd(titleid):
 					return ('v'+str(v_))
 
 def latest_ver(titleid):	
-	titleid=titleid.lower()	
+	titleid=str(titleid).lower()	
 	f='nutdb_'+'versions'+'.txt'
 	_dbfile_=os.path.join(DATABASE_folder,f)	
 	check_other_file(urlconfig,'versions_txt')

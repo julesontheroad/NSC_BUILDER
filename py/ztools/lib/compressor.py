@@ -24,6 +24,7 @@ from Fs import Type as FsType
 import Keys
 from binascii import hexlify as hx, unhexlify as uhx
 from DBmodule import Exchange as exchangefile
+import copy 
 
 ncaHeaderSize = 0x4000
 
@@ -33,14 +34,35 @@ def sortedFs(nca):
 		fs.append(i)
 	fs.sort(key=lambda x: x.offset)
 	return fs
+	
+def get_sections(nca):
+	sections0 = []
+	for fs in sortedFs(nca):
+		sections0 += fs.getEncryptionSections()	
+	check_padding=(((sortedFs(nca))[0]).offset)-ncaHeaderSize	
+	if check_padding>0:
+		sections = []
+		fs=copy.deepcopy(sections0[0])
+		sections.append(fs)
+		for fs in sections0:
+			sections.append(fs)
+		(sections[0]).offset=int(ncaHeaderSize)	
+		(sections[0]).size=(sections[1]).offset-int(ncaHeaderSize)		
+		(sections[0]).cryptoType=nutFs.Type.Crypto.NONE
+		(sections[0]).cryptoKey=(sections[1]).cryptoKey	
+		(sections[0]).cryptoCounter=(sections[1]).cryptoCounter			
+	else:	
+		sections=sections0		
+	return sections
 
 def isNcaPacked(nca):
-	fs = sortedFs(nca)
+	fs = get_sections(nca)
 
 	if len(fs) == 0:
 		return True
 
 	next = ncaHeaderSize
+		
 	for i in range(len(fs)):
 		if fs[i].offset != next:
 			return False
@@ -65,7 +87,37 @@ def foldercompress(ifolder, ofolder = None, level = 17, threads = 0, t=['nsp']):
 		counter-=1
 		print('\nStill %d files to compress\n'%(counter))
 		
-		
+def check_sections(filepath):
+	if filepath.endswith(".xci"):
+		xcicontainer = Xci(filepath)
+		files2=list();filesizes2=list()
+		for nspF in xcicontainer.hfs0:
+			if str(nspF._path)=="secure":
+				for nca in nspF:
+					if isinstance(nca, nutFs.Nca.Nca) and (nca.header.contentType == nutFs.Type.Content.PROGRAM or nca.header.contentType == nutFs.Type.Content.PUBLIC_DATA):
+						sections=get_sections(nca)							
+						for fs in sections:
+							print(hx(fs.offset.to_bytes(8, 'little')))
+							print(hx(fs.size.to_bytes(8, 'little')))						
+							print(hx(fs.cryptoType.to_bytes(8, 'little')))
+							print(hx(b'\x00' * 8))
+							print(hx(fs.cryptoKey))
+							print(hx(fs.cryptoCounter))		
+							print("")
+	elif filepath.endswith(".nsp"):
+		nspcontainer = Nsp(filepath,'rb')	
+		for nca in nspcontainer:
+			if isinstance(nca, nutFs.Nca.Nca) and (nca.header.contentType == nutFs.Type.Content.PROGRAM or nca.header.contentType == nutFs.Type.Content.PUBLIC_DATA):		
+				sections = []
+				sections=get_sections(nca)												
+				for fs in sections:
+					print(hx(fs.offset.to_bytes(8, 'little')))
+					print(hx(fs.size.to_bytes(8, 'little')))						
+					print(hx(fs.cryptoType.to_bytes(8, 'little')))
+					print(hx(b'\x00' * 8))
+					print(hx(fs.cryptoKey))
+					print(hx(fs.cryptoCounter))		
+					print("")		
 		
 def supertrim_xci(filepath,buffer=65536,outfile=None,keepupd=False, level = 17,  threads = 0, pos=False, nthreads=False):
 	isthreaded=False
@@ -239,9 +291,7 @@ def supertrim_xci(filepath,buffer=65536,outfile=None,keepupd=False, level = 17, 
 
 								compressor = cctx.stream_writer(f)
 								
-								sections = []
-								for fs in sortedFs(nca):
-									sections += fs.getEncryptionSections()							
+								sections = get_sections(nca)				
 								
 								header = b'NCZSECTN'
 								header += len(sections).to_bytes(8, 'little')
@@ -262,7 +312,7 @@ def supertrim_xci(filepath,buffer=65536,outfile=None,keepupd=False, level = 17, 
 								timestamp = time.time()
 								decompressedBytes = ncaHeaderSize
 								totsize=0
-								for fs in sortedFs(nca):
+								for fs in sections:
 									totsize+=fs.size
 
 								for section in sections:
@@ -469,9 +519,7 @@ def xci_to_nsz(filepath,buffer=65536,outfile=None,keepupd=False, level = 17,  th
 
 						compressor = cctx.stream_writer(f)
 						
-						sections = []
-						for fs in sortedFs(nca):
-							sections += fs.getEncryptionSections()							
+						sections = get_sections(nca)					
 						
 						header = b'NCZSECTN'
 						header += len(sections).to_bytes(8, 'little')
@@ -491,7 +539,7 @@ def xci_to_nsz(filepath,buffer=65536,outfile=None,keepupd=False, level = 17,  th
 						timestamp = time.time()
 						decompressedBytes = ncaHeaderSize
 						totsize=0
-						for fs in sortedFs(nca):
+						for fs in sections:
 							totsize+=fs.size
 
 						for section in sections:
@@ -667,9 +715,7 @@ def compress(filePath,ofolder = None, level = 17,  threads = 0, delta=False, ofi
 
 						compressor = cctx.stream_writer(f)
 						
-						sections = []
-						for fs in sortedFs(nspf):
-							sections += fs.getEncryptionSections()							
+						sections = get_sections(nspf)				
 						
 						header = b'NCZSECTN'
 						header += len(sections).to_bytes(8, 'little')
@@ -689,7 +735,7 @@ def compress(filePath,ofolder = None, level = 17,  threads = 0, delta=False, ofi
 						timestamp = time.time()
 						decompressedBytes = ncaHeaderSize
 						totsize=0
-						for fs in sortedFs(nspf):
+						for fs in sections:
 							totsize+=fs.size
 
 						for section in sections:

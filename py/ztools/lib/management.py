@@ -70,5 +70,22 @@ def test_ifnsx(fp):
 		else:
 			print(' - File is standard crypto. Skipping...')
 	else:		
-		print(" - File isn't nsp or nsx. Skipping...")		
-	
+		print(" - File isn't nsp or nsx. Skipping...")
+		
+def verify_ticket(fp):		
+	if fp.endswith('.nsp') or fp.endswith('.nsz'):
+		files_list=sq_tools.ret_nsp_offsets(fp)	
+		for i in range(len(files_list)):
+			entry=files_list[i]
+			filepath=entry[0]
+			if filepath.endswith('.tick'):		
+				pass
+		# f=Nsp(fp,'rb')
+		# f.flush()
+		# f.close()	
+	elif fp.endswith('.xci') or fp.endswith('.xcz'):
+		files_list=sq_tools.ret_xci_offsets(fp)		
+		pass	
+		# f=Xci(fp)
+		# f.flush()
+		# f.close()		

@@ -1338,6 +1338,19 @@ class Nca(File):
 		nca_meta=str(self._path)	
 		ncalist.append(nca_meta)
 		return ncalist
+		
+	def return_cnmt(self,file = None, mode = 'rb'):
+		for f in self:
+			cryptoType=f.get_cryptoType()
+			cryptoKey=f.get_cryptoKey()	
+			cryptoCounter=f.get_cryptoCounter()		
+		pfs0_offset=0xC00+self.header.get_htable_offset()+self.header.get_pfs0_offset()
+		super(Nca, self).open(file, mode, cryptoType, cryptoKey, cryptoCounter)
+		self.seek(pfs0_offset+0x8)
+		pfs0_table_size=self.readInt32()
+		cmt_offset=pfs0_offset+0x28+pfs0_table_size
+		self.seek(cmt_offset)		
+		return self.read()
 
 	def copy_files(self,buffer,ofolder=False,filepath=False,io=0,eo=False):
 		i=0
@@ -2313,6 +2326,13 @@ class Nca(File):
 					else:				
 						return True,True,True,headdata2,newMasterKeyRev	       
 		return False,False,False,False,masterKeyRev	
+		
+	def ret_nacp(self):
+		if 	str(self.header.contentType) == 'Content.CONTROL':
+			offset=self.get_nacp_offset()
+			for f in self:
+				f.seek(offset)
+				return f.read()
 
 #READ NACP FILE WITHOUT EXTRACTION	
 	def read_nacp(self,feed=''):

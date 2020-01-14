@@ -3,7 +3,7 @@
 set "prog_dir=%~dp0"
 set "bat_name=%~n0"
 set "ofile_name=%bat_name%_options.cmd"
-Title NSC_Builder v0.96 -- Profile: %ofile_name% -- by JulesOnTheRoad
+Title NSC_Builder v0.98 -- Profile: %ofile_name% -- by JulesOnTheRoad
 set "list_folder=%prog_dir%lists"
 ::-----------------------------------------------------
 ::EDIT THIS VARIABLE TO LINK OTHER OPTION FILE
@@ -21,6 +21,8 @@ set "pycommand=%pycommand%"
 set "start_minimized=%start_minimized%"
 set "browserpath=%browserpath%"
 set "videoplayback=%videoplayback%"
+set "height=%height%"
+set "width=%width%"
 REM PROGRAMS
 set "squirrel=%nut%"
 REM FILES
@@ -43,7 +45,7 @@ goto start
 :minimize
 if not "%1" == "min" start /MIN cmd /c %0 min & exit/b >nul 2>&1 
 :start
-%pycommand% "%squirrel%" -lib_call Interface start -xarg "%browserpath%" "%videoplayback%"
+%pycommand% "%squirrel%" -lib_call Interface start -xarg "%browserpath%" "%videoplayback%" "%height%" "%width%"
 goto salida
 
 :missing_things

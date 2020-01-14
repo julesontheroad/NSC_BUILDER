@@ -420,6 +420,15 @@ def getinfo(filename):
 		else:
 			send_.append('-')
 	except:send_.append('-')	
+	try:#data[41]			
+		if str(dict['openscore']).lower()=='false':
+			send_.append('-')
+		else:
+			if dict['openscore'] != dict['metascore']:
+				send_.append(dict['openscore'])	
+			else:
+				send_.append('-')
+	except:send_.append('-')	
 	f.flush()
 	f.close()			
 	return send_
@@ -436,23 +445,27 @@ def getfiletree(ID):
 def getcheats(ID):
 	print('* Seeking cheats from DB')
 	feed=''
-	cheatID_list=nutdb.get_content_cheats(ID)	
-	feed=html_feed(feed,1,message=str('LIST OF CHEATS: '))	
-	if len(cheatID_list)==0:
-		feed=html_feed(feed,2,message=str('- Cheats not found'))			
-	for i in range(len(cheatID_list)):
-		data=cheatID_list[i]
-		titleid=data[0];version=data[1];buildid=data[2]
-		message=[str(titleid+' v'+version+'. '+'BuildID: '+buildid),''];feed=html_feed(feed,3,message)		
-		cheats=data[3]
-		feed+='<div style="margin-left:2.6vh">'
-		for j in range(len(cheats)):
-			entry=cheats[j]
-			cheat_title=entry[0]
-			cheat_source=entry[1]
-			message=[cheat_title,""];feed=html_feed(feed,9,message)
-			feed=html_feed(feed,8,message=(cheat_source))
-		feed+='</div>'	
+	try:
+		cheatID_list=nutdb.get_content_cheats(ID)	
+		feed=html_feed(feed,1,message=str('LIST OF CHEATS: '))	
+		if len(cheatID_list)==0:
+			feed=html_feed(feed,2,message=str('- Cheats not found'))			
+		for i in range(len(cheatID_list)):
+			data=cheatID_list[i]
+			titleid=data[0];version=data[1];buildid=data[2]
+			message=[str(titleid+' v'+version+'. '+'BuildID: '+buildid),''];feed=html_feed(feed,3,message)		
+			cheats=data[3]
+			feed+='<div style="margin-left:2.6vh">'
+			for j in range(len(cheats)):
+				entry=cheats[j]
+				cheat_title=entry[0]
+				cheat_source=entry[1]
+				message=[cheat_title,""];feed=html_feed(feed,9,message)
+				feed=html_feed(feed,8,message=(cheat_source))
+			feed+='</div>'
+	except:
+			feed=html_feed(feed,1,message=str('LIST OF CHEATS: '))		
+			feed=html_feed(feed,2,message=str('- Cheats not found'))			
 	print('  DONE')		
 	return feed
 
@@ -542,7 +555,6 @@ def About():
 	print('                             /_____/                                                  ')
 	print('------------------------------------------------------------------------------------- ')
 	print('                        NINTENDO SWITCH CLEANER AND BUILDER                           ')
-	print('                               FILE_INFO ALPHA GUI                                    ')
 	print('------------------------------------------------------------------------------------- ')
 	print('=============================     BY JULESONTHEROAD     ============================= ')
 	print('------------------------------------------------------------------------------------- ')
@@ -553,18 +565,18 @@ def About():
 	print('Cheats and Eshop information from nutdb and http://tinfoil.io                         ')
 	print('------------------------------------------------------------------------------------- ')
 
-def start(browserpath='auto',videoplayback=True):
+def start(browserpath='auto',videoplayback=True,height=800,width=740):
 	global enablevideoplayback
 	enablevideoplayback=videoplayback
 	try:
 		if browserpath == 'default':
 			print("Launched using default system browser")
-			eel.start('main.html', mode='default', size=(800, 720))				
+			eel.start('main.html', mode='default', size=(height, width))				
 		elif browserpath != 'auto' and os.path.exists(browserpath) and not browserpath.endswith('.ink'):
 			eel.browsers.set_path('chrome', browserpath)
 			About()
 			print("Launched using: "+browserpath)
-			eel.start('main.html', mode='chrome', size=(800, 720))
+			eel.start('main.html', mode='chrome', size=(height, width))
 		elif browserpath != 'auto' and browserpath.endswith('.lnk') and sys.platform in ['win32', 'win64']:
 			chrpath=os.path.join(ztools_dir,'chromium')
 			chrpath_alt=os.path.join(squirrel_dir,'chromium')
@@ -581,37 +593,37 @@ def start(browserpath='auto',videoplayback=True):
 			eel.browsers.set_path('chrome', browserpath)
 			About()
 			print("Launched using: "+browserpath)
-			eel.start('main.html', mode='chrome', size=(800, 720))			
+			eel.start('main.html', mode='chrome', size=(height, width))			
 		elif os.path.exists(chromiumpath):
 			eel.browsers.set_path('chrome', chromiumpath)
 			About()
 			print("Launched using: "+chromiumpath)
-			eel.start('main.html', mode='chrome', size=(800, 720))		
+			eel.start('main.html', mode='chrome', size=(height, width))		
 		elif os.path.exists(chromiumpath_alt):	
 			eel.browsers.set_path('chrome', chromiumpath_alt)
 			About()
 			print("Launched using: "+chromiumpath_alt)
-			eel.start('main.html', mode='chrome', size=(800, 720))		
+			eel.start('main.html', mode='chrome', size=(height, width))		
 		elif os.path.exists(slimpath):
 			eel.browsers.set_path('chrome', slimpath)
 			About()
 			print("Launched using: "+slimpath)
-			eel.start('main.html', mode='chrome', size=(800, 720))		
+			eel.start('main.html', mode='chrome', size=(height, width))		
 		elif os.path.exists(slimpath_alt):	
 			eel.browsers.set_path('chrome', slimpath_alt)
 			About()
 			print("Launched using: "+slimpath_alt)
-			eel.start('main.html', mode='chrome', size=(800, 720))						
+			eel.start('main.html', mode='chrome', size=(height, width))						
 		else:
 			try:
 				About()
 				print("Launched using Chrome Installation")
-				eel.start('main.html', mode='chrome', size=(800, 720))
+				eel.start('main.html', mode='chrome', size=(height, width))
 			except EnvironmentError:
 				print("Chrome wasn't detected. Launched using Windows Edge with limited compatibility")	
 				if sys.platform in ['win32', 'win64'] and int(platform.release()) >= 10:
 					# print(platform.release())
-					eel.start('main.html', mode='edge', size=(800, 720))
+					eel.start('main.html', mode='edge', size=(height, width))
 				else:
 					raise				
 	except (SystemExit, MemoryError, KeyboardInterrupt):	
