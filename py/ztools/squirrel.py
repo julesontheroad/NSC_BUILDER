@@ -7907,9 +7907,9 @@ if __name__ == '__main__':
 			print('- Calculating base-ids for:')
 			for filepath in filelist:
 				try:
-					if filepath.endswith('.nsp'):
+					if filepath.endswith('.nsp') or filepath.endswith('.nsz')  or filepath.endswith('.nsx') :
 						f = Fs.Nsp(filepath)
-					elif filepath.endswith('.xci'):
+					elif filepath.endswith('.xci') or filepath.endswith('.xcz') :
 						f = Fs.factory(filepath)
 						f.open(filepath, 'rb')
 					print(tabs+filepath)
