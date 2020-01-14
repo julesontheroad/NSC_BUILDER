@@ -7499,6 +7499,8 @@ if __name__ == '__main__':
 						info='INFO'
 						subf='MASSVERIFY'
 						ofolder =os.path.join(dir,info)
+						if not os.path.exists(ofolder):
+							os.makedirs(ofolder)
 						ofolder =os.path.join(ofolder,subf)
 						if not os.path.exists(ofolder):
 							os.makedirs(ofolder)
@@ -7600,6 +7602,8 @@ if __name__ == '__main__':
 						info='INFO'
 						subf='MASSVERIFY'
 						ofolder =os.path.join(dir,info)
+						if not os.path.exists(ofolder):
+							os.makedirs(ofolder)
 						ofolder =os.path.join(ofolder,subf)
 						if not os.path.exists(ofolder):
 							os.makedirs(ofolder)
@@ -7695,6 +7699,8 @@ if __name__ == '__main__':
 						info='INFO'
 						subf='MASSVERIFY'
 						ofolder =os.path.join(dir,info)
+						if not os.path.exists(ofolder):
+							os.makedirs(ofolder)
 						ofolder =os.path.join(ofolder,subf)
 						if not os.path.exists(ofolder):
 							os.makedirs(ofolder)
@@ -7790,6 +7796,8 @@ if __name__ == '__main__':
 						info='INFO'
 						subf='MASSVERIFY'
 						ofolder =os.path.join(dir,info)
+						if not os.path.exists(ofolder):
+							os.makedirs(ofolder)
 						ofolder =os.path.join(ofolder,subf)
 						if not os.path.exists(ofolder):
 							os.makedirs(ofolder)
@@ -7865,6 +7873,8 @@ if __name__ == '__main__':
 						info='INFO'
 						subf='MASSVERIFY'
 						ofolder =os.path.join(dir,info)
+						if not os.path.exists(ofolder):
+							os.makedirs(ofolder)
 						ofolder =os.path.join(ofolder,subf)
 						if not os.path.exists(ofolder):
 							os.makedirs(ofolder)
