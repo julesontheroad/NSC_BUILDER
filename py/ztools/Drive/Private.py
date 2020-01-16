@@ -439,14 +439,20 @@ def token_picker():
 	# print(files)	
 	tokens=list();names=list()
 	for file in files:
-		test=file.split(".")
+		bname=os.path.basename(os.path.abspath(file))
+		test=bname.split(".")
 		if len(test)==1 and file not in tokens:
 			tokens.append(file)
 			names.append(str(os.path.basename(os.path.abspath(file))))
-	title = 'Pick an account (press SPACE\RIGHT to mark\\unmark, ENTER to continue): '
-	options = names	
-	selected = pick(options, title, min_selection_count=1)
-	tok=names[selected[1]]
+	if len(names)>1:
+		title = 'Pick an account (press SPACE\RIGHT to mark\\unmark, ENTER to continue): '
+		options = names	
+		selected = pick(options, title, min_selection_count=1)
+		tok=names[selected[1]]
+	elif len(names)==1:
+		tok=names[0]
+	else:
+		tok=False
 	return tok
 
 def folder_walker(showfiles=False,Print=False):
@@ -710,11 +716,14 @@ def download(path,ofolder,TD=None,filter=None,trimm=True):
 def TD_picker(path):		
 	remote=location(route=path)
 	names,ids=get_TeamDrives(remote.token_name)
-	title = 'Select Teamdrive (press SPACE\RIGHT to mark\\unmark, ENTER to continue): \n"None" will return the My-Drive section of the account'
-	options = names	
-	selected = pick(options, title, min_selection_count=1)
-	TD=selected[0]
-	if TD=='None':
+	if names:
+		title = 'Select Teamdrive (press SPACE\RIGHT to mark\\unmark, ENTER to continue): \n"None" will return the My-Drive section of the account'
+		options = names	
+		selected = pick(options, title, min_selection_count=1)
+		TD=selected[0]
+		if TD=='None':
+			TD=None
+	else:
 		TD=None
 	return TD
 
