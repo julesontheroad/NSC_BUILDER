@@ -17,6 +17,9 @@ from googletrans import Translator
 import ast
 from difflib import SequenceMatcher
 import re
+import listmanager
+import DBmodule as dbmodule
+from datetime import date
 
 # SET ENVIRONMENT
 squirrel_dir=os.path.abspath(os.curdir)
@@ -1397,6 +1400,286 @@ def BaseID_tree(titleid,printinfo=True):
 							message=('DLC:    '+tid.upper()+' v'+str(v_));print(message);feed+=message+'\n'
 				else:pass
 	return feed,baselist,updlist,dlclist			
+
+def checkfolder(ofolder,roman=True,printinfo=True):	
+	today = date.today()
+	today=int(today.strftime("%Y%m%d"))
+	# print(str(today))
+	feed=''
+	rglist=['America','Europe','Japan','Asia']
+	
+	filelist=listmanager.folder_to_list(ofolder,extlist=['nsp,nsz,xci,xcz'])
+	# for f in filelist:
+		# print(f)
+	test2="";test=""
+	Datashelve = dbmodule.Dict('File01.dshlv');c=0		
+	for filepath in filelist:
+		try:
+			fileid,fileversion,cctag,nG,nU,nD,baseid=listmanager.parsetags(filepath)
+			# print('[{}] [v{}] [{}]'.format(fileid,fileversion,cctag))
+			if c==0:
+				c+=1
+				try:
+					Datashelve[str(fileid)]=[filepath,fileid,fileversion,cctag,nG,nU,nD,baseid]				
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))							
+			else:
+				try:
+					if str(fileid) in Datashelve:
+						shelvedfile=Datashelve[str(fileid)]
+						#print(shelvedfile[2])
+						if shelvedfile[1]==fileid:
+							if int(shelvedfile[2])>int(fileversion):							
+								Datashelve[str(fileid)]=shelvedfile								
+							elif int(shelvedfile[2])== int(fileversion):								
+								Datashelve[str(fileid)]=shelvedfile	
+							else:										
+								Datashelve[str(fileid)]=[filepath,fileid,fileversion,cctag,nG,nU,nD,baseid]									
+						else:		
+							pass	
+					else:
+						Datashelve[str(fileid)]=[filepath,fileid,fileversion,cctag,nG,nU,nD,baseid]						
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))		
+		except:pass			
+	del filelist	
+
+	f='nutdb_'+'versions'+'.txt'
+	_dbfile_=os.path.join(DATABASE_folder,f)	
+	check_other_file(urlconfig,'versions_txt')
+	missID=list()
+	with open(_dbfile_,'rt',encoding='utf8') as csvfile:
+		readCSV = csv.reader(csvfile, delimiter='|')	
+		i=0	
+		for row in readCSV:
+			if i==0:
+				csvheader=row
+				i=1
+				if 'id' and 'version' in csvheader:
+					id=csvheader.index('id')
+					ver=csvheader.index('version')	
+				else:break	
+			else:	
+				tid=str(row[id]).upper() 
+				if not tid in Datashelve.keys() and tid.endswith('000'):
+					# print(tid)
+					missID.append(tid)
+				# if updid==tid:
+					# v_=str(row[ver])				
+					# return ('v'+str(v_))						
+	counter=len(missID);c=0
+	namedfiles=list();excludefiles=list()
+	with open(nutdbfile) as json_file:	
+		data = json.load(json_file)		
+		for i in data:
+			if c >= counter:
+				break
+			try:	
+				check=False
+				for j,k in data[i].items():
+					if str(j) == 'id':
+						if str(k).upper() in missID and not str(k).upper() in namedfiles:
+							id=str(k).upper()
+							check=True	
+					if str(j) == 'name' and check==True:
+						cname=str(k)
+						if roman == True:
+							converter = kakashi_conv()
+							cname=converter.do(cname)	
+							if cname[0] == ' ':
+								basename=basename[1:]			
+							cname=cname[0].upper()+cname[1:]
+							cname=set_roma_uppercases(cname)		
+							if cname=='None':
+								cname=''
+					if str(j) == 'releaseDate' and check==True:
+						rdate=int(k)
+						if rdate<today:
+							print('{}[{}][v{}]'.format(cname,id,'0'))
+							c+=1	
+							namedfiles.append(id)
+							break
+						else:
+							excludefiles.append(id)
+							c+=1						
+							break				
+			except:
+				c+=1
+				pass
+	for x in missID:
+		if x not in namedfiles and x not in excludefiles:
+			print('[{}][v{}]'.format(x,'0'))
+
+	Datashelve.close()		
+	try:os.remove('File01.dshlv')
+	except:pass			
+	
+def checkfolder_updates(ofolder,roman=True,printinfo=True):	
+	today = date.today()
+	today=int(today.strftime("%Y%m%d"))
+	# print(str(today))
+	feed=''
+	rglist=['America','Europe','Japan','Asia']
+	
+	filelist=listmanager.create_list_from_folder(ofolder)
+	# for f in filelist:
+		# print(f)
+	test2="";test=""
+	Datashelve = dbmodule.Dict('File01.dshlv');c=0		
+	for filepath in filelist:
+		try:
+			fileid,fileversion,cctag,nG,nU,nD,baseid=listmanager.parsetags(filepath)
+			# print('[{}] [v{}] [{}]'.format(fileid,fileversion,cctag))
+			if c==0:
+				c+=1
+				try:
+					Datashelve[str(fileid)]=[filepath,fileid,fileversion,cctag,nG,nU,nD,baseid]				
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))							
+			else:
+				try:
+					if str(fileid) in Datashelve:
+						shelvedfile=Datashelve[str(fileid)]
+						#print(shelvedfile[2])
+						if shelvedfile[1]==fileid:
+							if int(shelvedfile[2])>int(fileversion):							
+								Datashelve[str(fileid)]=shelvedfile								
+							elif int(shelvedfile[2])== int(fileversion):								
+								Datashelve[str(fileid)]=shelvedfile	
+							else:										
+								Datashelve[str(fileid)]=[filepath,fileid,fileversion,cctag,nG,nU,nD,baseid]									
+						else:		
+							pass	
+					else:
+						Datashelve[str(fileid)]=[filepath,fileid,fileversion,cctag,nG,nU,nD,baseid]						
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))		
+		except:pass			
+	del filelist	
+
+	f='nutdb_'+'versions'+'.txt'
+	_dbfile_=os.path.join(DATABASE_folder,f)	
+	check_other_file(urlconfig,'versions_txt')
+	missID=list()
+	with open(_dbfile_,'rt',encoding='utf8') as csvfile:
+		readCSV = csv.reader(csvfile, delimiter='|')	
+		i=0	
+		for row in readCSV:
+			if i==0:
+				csvheader=row
+				i=1
+				if 'id' and 'version' in csvheader:
+					id=csvheader.index('id')
+					ver=csvheader.index('version')	
+				else:break	
+			else:	
+				try:
+					tid=str(row[id]).upper() 
+					if tid.endswith('800'):
+						btid=tid[:-3]+'000'
+					else:
+						btid=tid
+					if (tid in Datashelve.keys() or btid in Datashelve.keys()) and tid.endswith('800'):
+						# print(tid)
+						try:
+							data=Datashelve[tid]
+						except:
+							data=Datashelve[btid]
+						v_=str(row[ver])
+						# print(v_)
+						# print(data[2])
+						# print('..')
+						if int(v_)>int(data[2]):		
+							missID.append(tid,v_)				
+				except:pass
+	# print(missID)
+	for t,v in missID:
+		print('[{}][v{}]'.format(t,v))
+	# counter=len(missID);c=0
+	# namedfiles=list();excludefiles=list()
+	# with open(nutdbfile) as json_file:	
+		# data = json.load(json_file)		
+		# for i in data:
+			# if c >= counter:
+				# break
+			# try:	
+				# check=False
+				# for j,k in data[i].items():
+					# if str(j) == 'id':
+						# if str(k).upper() in missID and not str(k).upper() in namedfiles:
+							# id=str(k).upper()
+							# check=True	
+					# if str(j) == 'name' and check==True:
+						# cname=str(k)
+						# if roman == True:
+							# converter = kakashi_conv()
+							# cname=converter.do(cname)	
+							# if cname[0] == ' ':
+								# basename=basename[1:]			
+							# cname=cname[0].upper()+cname[1:]
+							# cname=set_roma_uppercases(cname)		
+							# if cname=='None':
+								# cname=''
+					# if str(j) == 'releaseDate' and check==True:
+						# rdate=int(k)
+						# if rdate<today:
+							# print('{}[{}][v{}]'.format(cname,id,'0'))
+							# c+=1	
+							# namedfiles.append(id)
+							# break
+						# else:
+							# excludefiles.append(id)
+							# c+=1						
+							# break				
+			# except:
+				# c+=1
+				# pass
+	# for x in missID:
+		# if x not in namedfiles and x not in excludefiles:
+			# print('[{}][v{}]'.format(x,'0'))
+
+	Datashelve.close()		
+	try:os.remove('File01.dshlv')
+	except:pass			
+
+def getupcoming(roman=True,printinfo=True):	
+	today = date.today()
+	today=int(today.strftime("%Y%m%d"))
+	# print(str(today))
+	namedfiles=list();
+	with open(nutdbfile) as json_file:	
+		data = json.load(json_file)		
+		for i in data:
+			try:	
+				check=False
+				for j,k in data[i].items():
+					if str(j) == 'id':
+						if str(k).upper() not in namedfiles:
+							id=str(k).upper()
+							check=True	
+					if str(j) == 'name' and check==True:
+						cname=str(k)
+						if roman == True:
+							converter = kakashi_conv()
+							cname=converter.do(cname)	
+							if cname[0] == ' ':
+								basename=basename[1:]			
+							cname=cname[0].upper()+cname[1:]
+							cname=set_roma_uppercases(cname)		
+							if cname=='None':
+								cname=''
+					if str(j) == 'releaseDate' and check==True:
+						rdate=int(k)
+						if rdate>today:
+							b=str(rdate)
+							releaseDate=b[6:]+'/'+b[4:6]+'/'+b[:4]
+							print('{}: {}[{}][v{}]'.format(releaseDate,cname,id,'0'))
+							namedfiles.append(id)
+							break
+						else:				
+							break				
+			except:
+				pass
 
 def latest_upd(titleid):	
 	titleid=str(titleid).lower()	
