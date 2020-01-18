@@ -327,6 +327,21 @@ def folder_to_list(ifolder,extlist=['nsp'],filter=False):
 			if os.path.isdir(ruta):
 				for dirpath, dirnames, filenames in os.walk(ruta):
 					for filename in [f for f in filenames if f.endswith(ext.lower()) or f.endswith(ext.upper()) or f[:-1].endswith(ext.lower()) or f[:-1].endswith(ext.lower())]:
+						try:
+							fname=""
+							if filter != False:
+								if filter.lower() in filename.lower():
+									fname=filename
+							else:
+								fname=filename
+							if fname != "":
+								if binbin.lower() not in filename.lower():
+									filelist.append(os.path.join(dirpath, filename))
+						except:pass			
+			else:
+				try:
+					if ruta.endswith(ext.lower()) or ruta.endswith(ext.upper()) or ruta[:-1].endswith(ext.lower()) or ruta[:-1].endswith(ext.upper()):
+						filename = ruta
 						fname=""
 						if filter != False:
 							if filter.lower() in filename.lower():
@@ -335,19 +350,8 @@ def folder_to_list(ifolder,extlist=['nsp'],filter=False):
 							fname=filename
 						if fname != "":
 							if binbin.lower() not in filename.lower():
-								filelist.append(os.path.join(dirpath, filename))
-			else:
-				if ruta.endswith(ext.lower()) or ruta.endswith(ext.upper()) or ruta[:-1].endswith(ext.lower()) or ruta[:-1].endswith(ext.upper()):
-					filename = ruta
-					fname=""
-					if filter != False:
-						if filter.lower() in filename.lower():
-							fname=filename
-					else:
-						fname=filename
-					if fname != "":
-						if binbin.lower() not in filename.lower():
-							filelist.append(filename)
+								filelist.append(filename)
+				except:pass			
 	except BaseException as e:
 		nutPrint.error('Exception: ' + str(e))													
 	return filelist
