@@ -1408,7 +1408,8 @@ def checkfolder(ofolder,roman=True,printinfo=True):
 	feed=''
 	rglist=['America','Europe','Japan','Asia']
 	
-	filelist=listmanager.folder_to_list(ofolder,extlist=['nsp,nsz,xci,xcz'])
+	filelist=listmanager.folder_to_list(ofolder,extlist=['nsp','nsz','xci','xcz'])
+  
 	# for f in filelist:
 		# print(f)
 	test2="";test=""
@@ -1521,7 +1522,9 @@ def checkfolder_updates(ofolder,roman=True,printinfo=True):
 	feed=''
 	rglist=['America','Europe','Japan','Asia']
 	
-	filelist=listmanager.create_list_from_folder(ofolder)
+
+	filelist=listmanager.folder_to_list(ofolder,extlist=['nsp','nsz','xci','xcz'])
+
 	# for f in filelist:
 		# print(f)
 	test2="";test=""
@@ -1557,6 +1560,8 @@ def checkfolder_updates(ofolder,roman=True,printinfo=True):
 		except:pass			
 	del filelist	
 
+	# print(Datashelve.keys())
+
 	f='nutdb_'+'versions'+'.txt'
 	_dbfile_=os.path.join(DATABASE_folder,f)	
 	check_other_file(urlconfig,'versions_txt')
@@ -1590,7 +1595,9 @@ def checkfolder_updates(ofolder,roman=True,printinfo=True):
 						# print(data[2])
 						# print('..')
 						if int(v_)>int(data[2]):		
-							missID.append(tid,v_)				
+
+							missID.append([tid,v_])				
+
 				except:pass
 	# print(missID)
 	for t,v in missID:
