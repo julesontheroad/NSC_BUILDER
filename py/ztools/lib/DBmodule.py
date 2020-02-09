@@ -117,7 +117,7 @@ class FWDB():
 		if not FW in dump.items():				
 			if filepath.endswith('nsp'):
 				files_list=sq_tools.ret_nsp_offsets(filepath,32)
-			elif filepath.endswith('xci'):
+			elif filepath.endswith('xci') or filepath.endswith('xc0'):
 				files_list=sq_tools.ret_xci_offsets_fw(filepath)
 			else:
 				return False

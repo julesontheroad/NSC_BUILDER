@@ -14,7 +14,7 @@ import ast
 import Print
 import nutdb
 from subprocess import call 
-
+import File_chunk2 as file_chunk
 eel.init('web')
 
 squirrel_dir=os.path.abspath(os.curdir)
@@ -154,7 +154,16 @@ def getfname():
 	root = tk.Tk()
 	root.withdraw()
 	root.wm_attributes('-topmost', 1)
-	filename = filedialog.askopenfilename()	
+	filename = filedialog.askopenfilename(
+	filetypes=[
+				("All Filetypes","*.xci"),("All Filetypes","*.xcz"),("All Filetypes","*.xc0"),("All Filetypes","*.nsp"),("All Filetypes","*.nsz"),("All Filetypes","*.ns0"),("All Filetypes","*.nsx"),("All Filetypes","00"),	
+				("xci","*.xci"),("xci","*.xcz"),("xci","*.xc0"),
+				("nsp","*.nsp"),("nsp","*.nsz"),("nsp","*.ns0"),("nsp","*.nsx"),
+				("Compressed files","*.nsz"),("Compressed files","*.xcz"),
+				("Uncompressed files","*.nsp"),("Uncompressed files","*.nsx"),("Uncompressed files","*.xci"),("Uncompressed files","*.xc0"),("Uncompressed files","*.ns0"),("Uncompressed files","00"),		
+				("Split Files","*.ns0"),("Split Files","*.xc0"),("Split Files","00")	
+			]
+	)	
 	print('\nLoaded: '+filename)
 	return str(filename)
 
@@ -168,6 +177,10 @@ def showicon(filename):
 		elif filename.endswith('.xci') or filename.endswith('.xcz'):	
 			files_list=sq_tools.ret_xci_offsets(filename)		
 			f = Fs.Xci(filename)	
+		elif filename.endswith('.xc0'): 
+			a=file_chunk.icon_info(filename)	
+			encoded = b64encode(a).decode("ascii")
+			return "data:image/png;base64, " + encoded				
 		else: return ""
 		a=f.icon_info(files_list)
 		f.flush()
@@ -199,9 +212,15 @@ def getinfo(filename):
 	if filename.endswith('.nsp')or filename.endswith('.nsx') or filename.endswith('.nsz'):
 		f = Fs.ChromeNsp(filename, 'rb')
 	elif filename.endswith('.xci') or filename.endswith('.xcz'):	
-		f = Fs.ChromeXci(filename)		
+		f = Fs.ChromeXci(filename)	
+	elif filename.endswith('.xc0') or filename.endswith('.ns0') or filename.endswith('00'):
+		f=file_chunk.chunk(filename)
 	else: return []		
-	dict=f.return_DBdict()
+	if not filename.endswith('0'):
+		dict=f.return_DBdict()
+	else:
+		dict=f.getDBdict()		
+		# print(dict)
 	try:
 		ModuleId,BuildID8,BuildID16=f.read_buildid()	
 		ModuleId=sq_tools.trimm_module_id(ModuleId)
@@ -429,16 +448,20 @@ def getinfo(filename):
 			else:
 				send_.append('-')
 	except:send_.append('-')	
-	f.flush()
-	f.close()			
+	try:
+		f.flush()
+		f.close()			
+	except:pass	
 	return send_
 	
 @eel.expose	
 def getfiletree(ID):
 	print('* Generating BaseID FileTree from DB')
 	feed=''
-	message,baselist,updlist,dlclist=nutdb.BaseID_tree(ID,printinfo=False)	
-	feed=format_file_tree(baselist,updlist,dlclist,ID)
+	try:
+		message,baselist,updlist,dlclist=nutdb.BaseID_tree(ID,printinfo=False)	
+		feed=format_file_tree(baselist,updlist,dlclist,ID)
+	except:pass	
 	return	feed	
 	
 @eel.expose	
