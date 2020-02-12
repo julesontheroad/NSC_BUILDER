@@ -22,11 +22,13 @@ from tqdm import tqdm
 from Fs.Pfs0 import Pfs0
 from Fs.Ticket import Ticket
 from Fs.Nca import Nca
+from Fs.ChromeNca import Nca as ChromeNca
 from Fs.Nacp import Nacp
 from Fs.Nca import NcaHeader
 from Fs.pyNCA3 import NCA3
 from Fs.pyNPDM import NPDM
 from Fs.BaseFs import BaseFs
+from Fs.ChromeNacp import ChromeNacp
 import math  
 import sys
 import shutil
@@ -60,6 +62,29 @@ def readInt64(f, byteorder='little', signed = False):
 
 def readInt128(f, byteorder='little', signed = False):
 	return int.from_bytes(f.read(16), byteorder=byteorder, signed=signed)
+
+def html_feed(feed='',style=1,message=''):	
+	if style==1:
+		feed+='<p style="font-size: 14px; justify;text-justify: inter-word;"><strong>{}</strong></p>'.format(message)	
+		return feed
+	if style==2:			
+		feed+='<p style="margin-bottom: 2px;margin-top: 2px;font-size: 2vh"><strong>{}</strong></p>'.format(message)	
+		return feed
+	if style==3:				
+		feed+='<li style="margin-bottom: 2px;margin-top: 3px"><strong>{} </strong><span>{}</span></li>'.format(message[0],message[1])				
+		return feed				
+	if style==4:				
+		feed+='<li style="margin-bottom: 2px;margin-top: 3px"><strong>{} </strong><span>{}. </span><strong>{} </strong><strong>{}</strong></li>'.format(message[0],message[1],message[2],message[3])				
+		return feed	
+	if style==5:			
+		feed+='<p style="margin-bottom: 2px;margin-top: 2px;font-size: 2vh;text-indent:5vh";><strong style="text-indent:5vh;">{}</strong></p>'.format(message)	
+		return feed	
+	if style==6:			
+		feed+='<p style="margin-bottom: 2px;margin-top: 2px;font-size: 1.8vh;";><strong>{}</strong></p>'.format(message)	
+		return feed		
+	if style==7:			
+		feed+='<p style="margin-bottom: 2px;margin-top: 2px;font-size: 1.8vh;";><strong>{}</strong>{}</p>'.format(message[0],message[1])
+		return feed		
 
 def file_location(filepath,t='all',name=None,Printdata=False):		
 	filenames=retchunks(filepath)
@@ -404,6 +429,25 @@ class chunk():
 		d['hasHtmlManual']=hasHtmlManual;d['Installedsize']=Installedsize;d['DeltaSize']=DeltaSize;d['ncadata']=ncadata;
 		# print(d)
 		self.cnmtdata=d
+		
+	def read_cnmt(self):
+		feed=''
+		for entry in self.cnmtfiles:
+			nca=Nca()
+			nca.open(MemoryFile(self.memoryload(entry).read()))
+			nca._path=entry[0]
+			feed+=nca.read_cnmt()
+		return feed				
+
+	def send_html_cnmt_data(self):
+		feed=''
+		for entry in self.cnmtfiles:
+			nca=ChromeNca()
+			nca.open(MemoryFile(self.memoryload(entry).read()))
+			nca._path=entry[0]
+			feed+=nca.read_cnmt()	
+		return feed	
+			
 
 	def get_main_control_nca(self):
 		ncadata=self.cnmtdata['ncadata']
@@ -692,6 +736,476 @@ class chunk():
 		if 	openscore!=False:	
 			DBdict['openscore']=openscore				
 		return DBdict				
+
+	def send_html_nacp_data(self,gui=True):
+		feed=''
+		ncadata=self.cnmtdata['ncadata']
+		for entry in ncadata:
+			if str(entry['NCAtype']).lower()=='control':
+				ncaname=entry['NcaId']+'.nca'
+				results=file_location(self.firstchunk,name=ncaname,Printdata=False)			
+				control=results[0]
+				nca=Nca()				
+				nca.open(MemoryFile(self.memoryload(control).read()))
+				nca.rewind()	
+				titleid2=nca.header.titleId
+				feed=html_feed(feed,1,message=str('TITLEID: ' + str(titleid2).upper()))									
+				offset=nca.get_nacp_offset()
+				for f in nca:
+					f.seek(offset)
+					nacp = ChromeNacp()	
+					feed=nacp.par_getNameandPub(f.read(0x300*15),feed,gui)
+					feed=html_feed(feed,2,message=str("Nacp Flags:"))	
+					feed+='<ul style="margin-bottom: 2px;margin-top: 3px">'						
+					f.seek(offset+0x3000)							
+					feed=nacp.par_Isbn(f.read(0x24),feed)		
+					f.seek(offset+0x3025)							
+					feed=nacp.par_getStartupUserAccount(f.readInt8('little'),feed)	
+					feed=nacp.par_getUserAccountSwitchLock(f.readInt8('little'),feed)		
+					feed=nacp.par_getAddOnContentRegistrationType(f.readInt8('little'),feed)						
+					feed=nacp.par_getContentType(f.readInt8('little'),feed)	
+					feed=nacp.par_getParentalControl(f.readInt8('little'),feed)
+					feed=nacp.par_getScreenshot(f.readInt8('little'),feed)
+					feed=nacp.par_getVideoCapture(f.readInt8('little'),feed)
+					feed=nacp.par_dataLossConfirmation(f.readInt8('little'),feed)
+					feed=nacp.par_getPlayLogPolicy(f.readInt8('little'),feed)
+					feed=nacp.par_getPresenceGroupId(f.readInt64('little'),feed)
+					feed+='</ul>'						
+					f.seek(offset+0x3040)
+					listages=list()
+					feed=html_feed(feed,2,message=str("Age Ratings:"))							
+					feed+='<ul style="margin-bottom: 2px;margin-top: 3px">'	
+					for i in range(12):
+						feed=nacp.par_getRatingAge(f.readInt8('little'),i,feed)
+					feed+='</ul>'								
+					f.seek(offset+0x3060)							
+					try:
+						feed=html_feed(feed,2,message=str("Nacp Atributes:"))							
+						feed+='<ul style="margin-bottom: 2px;margin-top: 3px">'							
+						feed=nacp.par_getDisplayVersion(f.read(0xF),feed)		
+						f.seek(offset+0x3070)							
+						feed=nacp.par_getAddOnContentBaseId(f.readInt64('little'),feed)
+						f.seek(offset+0x3078)							
+						feed=nacp.par_getSaveDataOwnerId(f.readInt64('little'),feed)
+						f.seek(offset+0x3080)							
+						feed=nacp.par_getUserAccountSaveDataSize(f.readInt64('little'),feed)	
+						f.seek(offset+0x3088)								
+						feed=nacp.par_getUserAccountSaveDataJournalSize(f.readInt64('little'),feed)	
+						f.seek(offset+0x3090)	
+						feed=nacp.par_getDeviceSaveDataSize(f.readInt64('little'),feed)	
+						f.seek(offset+0x3098)	
+						feed=nacp.par_getDeviceSaveDataJournalSize(f.readInt64('little'),feed)	
+						f.seek(offset+0x30A0)	
+						feed=nacp.par_getBcatDeliveryCacheStorageSize(f.readInt64('little'),feed)		
+						f.seek(offset+0x30A8)	
+						feed=nacp.par_getApplicationErrorCodeCategory(f.read(0x07),feed)	
+						f.seek(offset+0x30B0)
+						feed=nacp.par_getLocalCommunicationId(f.readInt64('little'),feed)	
+						f.seek(offset+0x30F0)
+						feed=nacp.par_getLogoType(f.readInt8('little'),feed)							
+						feed=nacp.par_getLogoHandling(f.readInt8('little'),feed)		
+						feed=nacp.par_getRuntimeAddOnContentInstall(f.readInt8('little'),feed)	
+						feed=nacp.par_getCrashReport(f.readInt8('little'),feed)	
+						feed=nacp.par_getHdcp(f.readInt8('little'),feed)		
+						feed=nacp.par_getSeedForPseudoDeviceId(f.readInt64('little'),feed)	
+						f.seek(offset+0x3100)			
+						feed=nacp.par_getBcatPassphrase(f.read(0x40),feed)	
+						f.seek(offset+0x3148)			
+						feed=nacp.par_UserAccountSaveDataSizeMax(f.readInt64('little'),feed)						
+						f.seek(offset+0x3150)			
+						feed=nacp.par_UserAccountSaveDataJournalSizeMax(f.readInt64('little'),feed)
+						f.seek(offset+0x3158)			
+						feed=nacp.par_getDeviceSaveDataSizeMax(f.readInt64('little'),feed)
+						f.seek(offset+0x3160)			
+						feed=nacp.par_getDeviceSaveDataJournalSizeMax(f.readInt64('little'),feed)							
+						f.seek(offset+0x3168)			
+						feed=nacp.par_getTemporaryStorageSize(f.readInt64('little'),feed)		
+						feed=nacp.par_getCacheStorageSize(f.readInt64('little'),feed)			
+						f.seek(offset+0x3178)		
+						feed=nacp.par_getCacheStorageJournalSize(f.readInt64('little'),feed)							
+						feed=nacp.par_getCacheStorageDataAndJournalSizeMax(f.readInt64('little'),feed)		
+						f.seek(offset+0x3188)	
+						feed=nacp.par_getCacheStorageIndexMax(f.readInt64('little'),feed)		
+						feed=nacp.par_getPlayLogQueryableApplicationId(f.readInt64('little'),feed)		
+						f.seek(offset+0x3210)	
+						feed=nacp.par_getPlayLogQueryCapability(f.readInt8('little'),feed)	
+						feed=nacp.par_getRepair(f.readInt8('little'),feed)	
+						feed=nacp.par_getProgramIndex(f.readInt8('little'),feed)	
+						feed=nacp.par_getRequiredNetworkServiceLicenseOnLaunch(f.readInt8('little'),feed)	
+						feed+='</ul>'								
+					except:
+						feed+='</ul>'
+						continue	
+		return feed
+
+	def send_html_adv_file_list(self):				
+		contentlist=list()	
+		feed=''
+		for entry in self.cnmtfiles:
+			nca=Nca()
+			nca.open(MemoryFile(self.memoryload(entry).read()))
+			nca._path=entry[0]
+			nca.rewind()	
+			cnmt=io.BytesIO(nca.return_cnmt())
+			nca.rewind()
+			cnmt.seek(0)
+			titleid=readInt64(cnmt)
+			titleversion = cnmt.read(0x4)
+			cnmt.seek(0xE)
+			offset=readInt16(cnmt)
+			content_entries=readInt16(cnmt)
+			meta_entries=readInt16(cnmt)
+			cnmt.seek(0x20)
+			original_ID=readInt64(cnmt)								
+			min_sversion=readInt32(cnmt)
+			length_of_emeta=readInt32(cnmt)	
+			target=str(nca._path)
+			content_type_cnmt=str(cnmt._path)
+			content_type_cnmt=content_type_cnmt[:-22]		
+			if content_type_cnmt == 'Patch':
+				content_type='Update'
+				reqtag='RequiredSystemVersion: '
+				tit_name,editor,ediver,SupLg,regionstr,isdemo = self.inf_get_title(target,offset,content_entries,original_ID)							
+				if tit_name=='DLC':
+					tit_name='-'
+					editor='-'									
+				if isdemo == 1:
+					content_type='Demo Update'
+				if isdemo == 2:
+					content_type='RetailInteractiveDisplay Update'									
+			if content_type_cnmt == 'AddOnContent':
+				content_type='DLC'
+				reqtag='RequiredUpdateNumber: '
+				tit_name,editor,ediver,SupLg,regionstr,isdemo = self.inf_get_title(target,offset,content_entries,original_ID)	
+			if content_type_cnmt == 'Application':
+				content_type='Game or Application'
+				reqtag='RequiredSystemVersion: '	
+				tit_name,editor,ediver,SupLg,regionstr,isdemo = self.inf_get_title(target,offset,content_entries,original_ID)	
+				if tit_name=='DLC':
+					tit_name='-'
+					editor='-'									
+				if isdemo == 1:
+					content_type='Demo'
+				if isdemo == 2:
+					content_type='RetailInteractiveDisplay'														
+			cnmt.seek(0x20+offset)
+			titleid2 = str(hx(titleid.to_bytes(8, byteorder='big'))) 	
+			titleid2 = titleid2[2:-1]
+			version=str(int.from_bytes(titleversion, byteorder='little'))
+			v_number=int(int(version)/65536)
+			RS_number=int(min_sversion/65536)
+			crypto1=nca.header.getCryptoType()
+			crypto2=nca.header.getCryptoType2()	
+			if crypto1 == 2:
+				if crypto1 > crypto2:								
+					keygen=nca.header.getCryptoType()
+				else:			
+					keygen=nca.header.getCryptoType2()	
+			else:			
+				keygen=nca.header.getCryptoType2()		
+			programSDKversion,dataSDKversion=self.getsdkvertit(titleid2)									
+			sdkversion=nca.get_sdkversion()								
+			MinRSV=sq_tools.getMinRSV(keygen,min_sversion)
+			FW_rq=sq_tools.getFWRangeKG(keygen)
+			RSV_rq=sq_tools.getFWRangeRSV(min_sversion)									
+			RSV_rq_min=sq_tools.getFWRangeRSV(MinRSV)	
+			feed=html_feed(feed,1,message=str('TITLEID: ' + str(titleid2).upper()))
+			feed=html_feed(feed,2,message=str("- Titleinfo:"))									
+			feed+='<ul style="margin-bottom: 2px;margin-top: 3px">'							
+			if content_type_cnmt != 'AddOnContent':	
+				message=["Name:",tit_name];feed=html_feed(feed,3,message)
+				message=["Editor:",editor];feed=html_feed(feed,3,message)								
+				message=["Display Version:",str(ediver)];feed=html_feed(feed,3,message)								
+				message=["Meta SDK version:",sdkversion];feed=html_feed(feed,3,message)	
+				message=["Program SDK version:",programSDKversion];feed=html_feed(feed,3,message)
+				suplangue=str((', '.join(SupLg)))
+				message=["Supported Languages:",suplangue];feed=html_feed(feed,3,message)								
+				message=["Content type:",content_type];feed=html_feed(feed,3,message)
+				v_number=str(v_number)
+				data='{} -> {} ({})'.format(version,content_type_cnmt,v_number)
+				message=["Version:",data];feed=html_feed(feed,3,message=message);
+			if content_type_cnmt == 'AddOnContent':
+				if tit_name != "DLC":
+					message=["Name:",tit_name];feed=html_feed(feed,3,message)
+					message=["Editor:",editor];feed=html_feed(feed,3,message)		
+				message=["Content type:","DLC"];feed=html_feed(feed,3,message)										
+				DLCnumb=str(titleid2)
+				DLCnumb="0000000000000"+DLCnumb[-3:]									
+				DLCnumb=bytes.fromhex(DLCnumb)
+				DLCnumb=str(int.from_bytes(DLCnumb, byteorder='big'))									
+				DLCnumb=int(DLCnumb)
+				message=["DLC number:",str(str(DLCnumb)+' -> '+"AddOnContent"+' ('+str(DLCnumb)+')')];feed=html_feed(feed,3,message)								
+				message=["DLC version Number:",str( version+' -> '+"Version"+' ('+str(v_number)+')')];feed=html_feed(feed,3,message)	
+				message=["Meta SDK version:",sdkversion];feed=html_feed(feed,3,message)	
+				message=["Data SDK version:",dataSDKversion];feed=html_feed(feed,3,message)									
+				if SupLg !='':
+					suplangue=str((', '.join(SupLg)))
+					message=["Supported Languages:",suplangue];feed=html_feed(feed,3,message)
+			feed+='</ul>'	
+			feed=html_feed(feed,2,message=str("- Required Firmware:"))	
+			incl_Firm=DBmodule.FWDB.detect_xci_fw(self._path,False)									
+			feed+='<ul style="margin-bottom: 2px;margin-top: 3px">'	
+			message=["Included Firmware:",str(str(incl_Firm))];feed=html_feed(feed,3,message)									
+			if content_type_cnmt == 'AddOnContent':
+				if v_number == 0:
+					message=["Required game version:",str(str(min_sversion)+' -> '+"Application"+' ('+str(RS_number)+')')];feed=html_feed(feed,3,message)									
+					message=["Required game version:",str(str(min_sversion)+' -> '+"Application"+' ('+str(RS_number)+')')];feed=html_feed(feed,3,message)															
+				if v_number > 0:
+					message=["Required game version:",str(str(min_sversion)+' -> '+"Patch"+' ('+str(RS_number)+')')];feed=html_feed(feed,3,message)													
+																													
+			else:
+				message=[reqtag,(str(min_sversion)+" -> " +RSV_rq)];feed=html_feed(feed,3,message)
+			message=['Encryption (keygeneration):',(str(keygen)+" -> " +FW_rq)];feed=html_feed(feed,3,message)
+			if content_type_cnmt != 'AddOnContent':	
+				message=['Patchable to:',(str(MinRSV)+" -> " + RSV_rq_min)];feed=html_feed(feed,3,message)
+											
+			else:
+				message=['Patchable to:',('DLC -> no RSV to patch')];feed=html_feed(feed,3,message)							
+			feed+='</ul>'																							
+			ncalist = list()
+			ncasize = 0		
+			feed=html_feed(feed,2,message=str("- Nca files (Non Deltas):"))	
+			feed+='<ul style="margin-bottom: 2px;margin-top: 3px">'								
+			for i in range(content_entries):
+				vhash = cnmt.read(0x20)
+				NcaId = cnmt.read(0x10)
+				size = cnmt.read(0x6)
+				ncatype = cnmt.read(0x1)
+				ncatype = int.from_bytes(ncatype, byteorder='little')	
+				unknown = cnmt.read(0x1)
+				#Print.info(str(ncatype))
+				if ncatype != 6:									
+					nca_name=str(hx(NcaId))
+					nca_name=nca_name[2:-1]+'.nca'
+					s1=0;s1,feed=self.print_nca_by_title(nca_name,ncatype,feed)
+					ncasize=ncasize+s1
+					ncalist.append(nca_name[:-4])
+					contentlist.append(nca_name)									
+				if ncatype == 6:
+					nca_name=str(hx(NcaId))
+					nca_name=nca_name[2:-1]+'.nca'
+					ncalist.append(nca_name[:-4])
+					contentlist.append(nca_name)										
+			nca_meta=str(nca._path)
+			ncalist.append(nca_meta[:-4])	
+			contentlist.append(nca_meta)
+			s1=0;s1,feed=self.print_nca_by_title(nca_meta,0,feed)							
+			ncasize=ncasize+s1
+			size1=ncasize
+			size_pr=sq_tools.getSize(ncasize)		
+			feed+='</ul>'	
+			feed=html_feed(feed,5,message=('TOTAL SIZE: '+size_pr))								
+			if self.actually_has_deltas(ncalist)=="true":
+				cnmt.seek(0x20+offset)
+				for i in range(content_entries):
+					vhash = cnmt.read(0x20)
+					NcaId = cnmt.read(0x10)
+					size = cnmt.read(0x6)
+					ncatype = cnmt.read(0x1)
+					ncatype = int.from_bytes(ncatype, byteorder='little')		
+					unknown = cnmt.read(0x1)								
+					if ncatype == 6:	
+						feed=html_feed(feed,2,message=('- Nca files (Deltas):'))	
+						feed+='<ul style="margin-bottom: 2px;margin-top: 3px">'											
+						break
+				cnmt.seek(0x20+offset)
+				ncasize = 0								
+				for i in range(content_entries):
+					vhash = cnmt.read(0x20)
+					NcaId = cnmt.read(0x10)
+					size = cnmt.read(0x6)
+					ncatype = cnmt.read(0x1)
+					ncatype = int.from_bytes(ncatype, byteorder='little')	
+					unknown = cnmt.read(0x1)	
+					if ncatype == 6:
+						nca_name=str(hx(NcaId))
+						nca_name=nca_name[2:-1]+'.nca'
+						s1=0;s1,feed=self.print_nca_by_title(nca_name,ncatype,feed)
+						ncasize=ncasize+s1
+				size2=ncasize
+				size_pr=sq_tools.getSize(ncasize)		
+				feed+='</ul>'
+				feed=html_feed(feed,5,message=('TOTAL SIZE: '+size_pr))
+			if self.actually_has_other(titleid2,ncalist)=="true":	
+				feed=html_feed(feed,2,message=('- Other types of files:'))	
+				feed+='<ul style="margin-bottom: 2px;margin-top: 3px">'	
+				othersize=0;os1=0;os2=0;os3=0
+				os1,feed=self.print_xml_by_title(ncalist,contentlist,feed)
+				os2,feed=self.print_tac_by_title(titleid2,contentlist,feed)
+				os3,feed=self.print_jpg_by_title(ncalist,contentlist,feed)
+				othersize=othersize+os1+os2+os3	
+				size3=othersize								
+				size_pr=sq_tools.getSize(othersize)							
+				feed+='</ul>'
+				feed=html_feed(feed,5,message=('TOTAL SIZE: '+size_pr))										
+		finalsize=size1+size2+size3	
+		size_pr=sq_tools.getSize(finalsize)	
+		feed=html_feed(feed,2,message=('FULL CONTENT TOTAL SIZE: '+size_pr))	
+		self.printnonlisted(contentlist,feed)
+		return feed			
+																				
+	def html_print_nca_by_title(self,nca_name,ncatype,feed):	
+		tab="\t"
+		size=0
+		ncz_name=nca_name[:-1]+'z'			
+		for nspF in self.hfs0:
+			if str(nspF._path)=="secure":
+				for nca in nspF:
+					filename = str(nca._path)				
+					if type(nca) == Nca:
+						if filename == nca_name:
+							size=nca.header.size
+							size_pr=sq_tools.getSize(size)
+							content=str(nca.header.contentType)
+							content=content[8:]+": "
+							ncatype=sq_tools.getTypeFromCNMT(ncatype)	
+							if ncatype != "Meta: ":
+								message=[ncatype,str(filename),'Size:',size_pr];feed=html_feed(feed,4,message)						
+							else:
+								message=[ncatype,str(filename),'Size:',size_pr];feed=html_feed(feed,4,message)					
+							return size,feed		
+					elif filename == ncz_name:
+						ncztype=Nca(nca)
+						ncztype._path=nca._path							
+						size=ncztype.header.size
+						size_pr=sq_tools.getSize(size)
+						content=str(ncztype.header.contentType)
+						content=content[8:]+": "
+						ncatype=sq_tools.getTypeFromCNMT(ncatype)	
+						if ncatype != "Meta: ":
+							message=[ncatype,str(filename),'Size:',size_pr];feed=html_feed(feed,4,message)						
+						else:
+							message=[ncatype,str(filename),'Size:',size_pr];feed=html_feed(feed,4,message)					
+						return size,feed		
+		return size,feed							
+	def html_print_xml_by_title(self,ncalist,contentlist,feed):	
+		tab="\t"
+		size2return=0
+		for nspF in self.hfs0:
+			if str(nspF._path)=="secure":
+				for file in nspF:		
+					if file._path.endswith('.xml'):
+						size=file.size
+						size_pr=sq_tools.getSize(size)			
+						filename =  str(file._path)	
+						xml=filename[:-4]
+						if xml in ncalist:
+							message=['XML:',str(filename),'Size:',size_pr];feed=html_feed(feed,4,message)
+							contentlist.append(filename)	
+							size2return=size+size2return			
+		return size2return,feed									
+	def html_print_tac_by_title(self,titleid,contentlist,feed):		
+		tab="\t"	
+		size2return=0	
+		for nspF in self.hfs0:
+			if str(nspF._path)=="secure":
+				for ticket in nspF:			
+					if type(ticket) == Ticket:
+						size=ticket.size			
+						size_pr=sq_tools.getSize(size)			
+						filename =  str(ticket._path)
+						tik=filename[:-20]
+						if tik == titleid:
+							message=['Ticket:',str(filename),'Size:',size_pr];feed=html_feed(feed,4,message)
+							contentlist.append(filename)					
+							size2return=size+size2return													
+				for cert in nspF:						
+					if cert._path.endswith('.cert'):
+						size=cert.size		
+						size_pr=sq_tools.getSize(size)
+						filename = str(cert._path)
+						cert_id =filename[:-21]
+						if cert_id == titleid:
+							message=['Cert:',str(filename),'Size:',size_pr];feed=html_feed(feed,4,message)						
+							contentlist.append(filename)					
+							size2return=size+size2return
+		return size2return,feed						
+	def html_print_jpg_by_title(self,ncalist,contentlist,feed):	
+		size2return=0
+		tab="\t"
+		for nspF in self.hfs0:
+			if str(nspF._path)=="secure":		
+				for file in nspF:
+					if file._path.endswith('.jpg'):
+						size=file.size
+						size_pr=sq_tools.getSize(size)			
+						filename =  str(file._path)	
+						jpg=filename[:32]
+						if jpg in ncalist:
+							message=['JPG:',str(filename),'Size:',size_pr];feed=html_feed(feed,4,message)
+							contentlist.append(filename)					
+							size2return=size+size2return
+		return size2return,feed		
+	def html_actually_has_deltas(self,ncalist):	
+		vfragment="false"	
+		for nspF in self.hfs0:
+			if str(nspF._path)=="secure":
+				for nca in nspF:
+					if type(nca) == Nca:
+						if 	str(nca.header.contentType) == 'Content.DATA':
+							for f in nca:
+									for file in f:
+										filename = str(file._path)
+										if filename=="fragment":
+											if 	nca._path[:-4] in ncalist:	
+												vfragment="true"
+												break
+		return vfragment
+	def html_actually_has_other(self,titleid,ncalist):
+		vother="false"	
+		for nspF in self.hfs0:
+			if str(nspF._path)=="secure":		
+				for file in nspF:
+					if file._path.endswith('.xml'):
+						filename =  str(file._path)	
+						xml=filename[:-4]
+						if xml in ncalist:
+							vother="true"	
+							break		
+					if type(file) == Ticket:		
+						filename =  str(file._path)
+						tik=filename[:-20]
+						if tik == titleid:
+							vother="true"	
+							break																
+					if file._path.endswith('.cert'):
+						filename = str(file._path)
+						cert_id =filename[:-21]
+						if cert_id == titleid:
+							vother="true"	
+							break		
+					if file._path.endswith('.jpg'):
+						filename =  str(file._path)	
+						jpg=filename[:32]
+						if jpg in ncalist:
+							vother="true"	
+							break	
+		return vother					
+	def html_printnonlisted(self,contentlist,feed=''):
+		tab="\t"	
+		list_nonlisted="false"
+		for nspF in self.hfs0:
+			if str(nspF._path)=="secure":		
+				for file in nspF:		
+					filename =  str(file._path)
+					if not filename in contentlist:
+						list_nonlisted="true"
+		if list_nonlisted == "true":
+			feed=html_feed(feed,2,'Files not linked to content in xci:')
+			totsnl=0
+			for nspF in self.hfs0:
+				if str(nspF._path)=="secure":		
+					for file in nspF:				
+						filename =  str(file._path)
+						nczname= str(file._path)[:-1]+'z'
+						if not filename in contentlist and not nczname in contentlist:
+							totsnl=totsnl+file.size
+							size_pr=sq_tools.getSize(file.size)						
+							message=['OTHER:',str(filename),'Size:',size_pr];feed=html_feed(feed,4,message)
+			bigtab="\t"*7
+			size_pr=sq_tools.getSize(totsnl)					
+			feed=html_feed(feed,5,message=('TOTAL SIZE: '+size_pr))	
+		return feed		
 		
 def get_cnmt_files(path):
 	ck=chunk(path)

@@ -2170,7 +2170,7 @@ class ChromeXci(File):
 						filename =  str(file._path)
 						Print.info(str(filename))									
 
-	def  html_feed(self,feed='',style=1,message=''):	
+	def html_feed(self,feed='',style=1,message=''):	
 		if style==1:
 			feed+='<p style="font-size: 14px; justify;text-justify: inter-word;"><strong>{}</strong></p>'.format(message)	
 			return feed
