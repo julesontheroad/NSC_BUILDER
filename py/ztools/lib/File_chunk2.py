@@ -846,198 +846,204 @@ class chunk():
 			nca.open(MemoryFile(self.memoryload(entry).read()))
 			nca._path=entry[0]
 			nca.rewind()	
-			cnmt=io.BytesIO(nca.return_cnmt())
-			nca.rewind()
-			cnmt.seek(0)
-			titleid=readInt64(cnmt)
-			titleversion = cnmt.read(0x4)
-			cnmt.seek(0xE)
-			offset=readInt16(cnmt)
-			content_entries=readInt16(cnmt)
-			meta_entries=readInt16(cnmt)
-			cnmt.seek(0x20)
-			original_ID=readInt64(cnmt)								
-			min_sversion=readInt32(cnmt)
-			length_of_emeta=readInt32(cnmt)	
-			target=str(nca._path)
-			content_type_cnmt=str(cnmt._path)
-			content_type_cnmt=content_type_cnmt[:-22]		
-			if content_type_cnmt == 'Patch':
-				content_type='Update'
-				reqtag='RequiredSystemVersion: '
-				tit_name,editor,ediver,SupLg,regionstr,isdemo = self.inf_get_title(target,offset,content_entries,original_ID)							
-				if tit_name=='DLC':
-					tit_name='-'
-					editor='-'									
-				if isdemo == 1:
-					content_type='Demo Update'
-				if isdemo == 2:
-					content_type='RetailInteractiveDisplay Update'									
-			if content_type_cnmt == 'AddOnContent':
-				content_type='DLC'
-				reqtag='RequiredUpdateNumber: '
-				tit_name,editor,ediver,SupLg,regionstr,isdemo = self.inf_get_title(target,offset,content_entries,original_ID)	
-			if content_type_cnmt == 'Application':
-				content_type='Game or Application'
-				reqtag='RequiredSystemVersion: '	
-				tit_name,editor,ediver,SupLg,regionstr,isdemo = self.inf_get_title(target,offset,content_entries,original_ID)	
-				if tit_name=='DLC':
-					tit_name='-'
-					editor='-'									
-				if isdemo == 1:
-					content_type='Demo'
-				if isdemo == 2:
-					content_type='RetailInteractiveDisplay'														
-			cnmt.seek(0x20+offset)
-			titleid2 = str(hx(titleid.to_bytes(8, byteorder='big'))) 	
-			titleid2 = titleid2[2:-1]
-			version=str(int.from_bytes(titleversion, byteorder='little'))
-			v_number=int(int(version)/65536)
-			RS_number=int(min_sversion/65536)
-			crypto1=nca.header.getCryptoType()
-			crypto2=nca.header.getCryptoType2()	
-			if crypto1 == 2:
-				if crypto1 > crypto2:								
-					keygen=nca.header.getCryptoType()
-				else:			
-					keygen=nca.header.getCryptoType2()	
-			else:			
-				keygen=nca.header.getCryptoType2()		
-			programSDKversion,dataSDKversion=self.getsdkvertit(titleid2)									
-			sdkversion=nca.get_sdkversion()								
-			MinRSV=sq_tools.getMinRSV(keygen,min_sversion)
-			FW_rq=sq_tools.getFWRangeKG(keygen)
-			RSV_rq=sq_tools.getFWRangeRSV(min_sversion)									
-			RSV_rq_min=sq_tools.getFWRangeRSV(MinRSV)	
-			feed=html_feed(feed,1,message=str('TITLEID: ' + str(titleid2).upper()))
-			feed=html_feed(feed,2,message=str("- Titleinfo:"))									
-			feed+='<ul style="margin-bottom: 2px;margin-top: 3px">'							
-			if content_type_cnmt != 'AddOnContent':	
-				message=["Name:",tit_name];feed=html_feed(feed,3,message)
-				message=["Editor:",editor];feed=html_feed(feed,3,message)								
-				message=["Display Version:",str(ediver)];feed=html_feed(feed,3,message)								
-				message=["Meta SDK version:",sdkversion];feed=html_feed(feed,3,message)	
-				message=["Program SDK version:",programSDKversion];feed=html_feed(feed,3,message)
-				suplangue=str((', '.join(SupLg)))
-				message=["Supported Languages:",suplangue];feed=html_feed(feed,3,message)								
-				message=["Content type:",content_type];feed=html_feed(feed,3,message)
-				v_number=str(v_number)
-				data='{} -> {} ({})'.format(version,content_type_cnmt,v_number)
-				message=["Version:",data];feed=html_feed(feed,3,message=message);
-			if content_type_cnmt == 'AddOnContent':
-				if tit_name != "DLC":
-					message=["Name:",tit_name];feed=html_feed(feed,3,message)
-					message=["Editor:",editor];feed=html_feed(feed,3,message)		
-				message=["Content type:","DLC"];feed=html_feed(feed,3,message)										
-				DLCnumb=str(titleid2)
-				DLCnumb="0000000000000"+DLCnumb[-3:]									
-				DLCnumb=bytes.fromhex(DLCnumb)
-				DLCnumb=str(int.from_bytes(DLCnumb, byteorder='big'))									
-				DLCnumb=int(DLCnumb)
-				message=["DLC number:",str(str(DLCnumb)+' -> '+"AddOnContent"+' ('+str(DLCnumb)+')')];feed=html_feed(feed,3,message)								
-				message=["DLC version Number:",str( version+' -> '+"Version"+' ('+str(v_number)+')')];feed=html_feed(feed,3,message)	
-				message=["Meta SDK version:",sdkversion];feed=html_feed(feed,3,message)	
-				message=["Data SDK version:",dataSDKversion];feed=html_feed(feed,3,message)									
-				if SupLg !='':
-					suplangue=str((', '.join(SupLg)))
-					message=["Supported Languages:",suplangue];feed=html_feed(feed,3,message)
-			feed+='</ul>'	
-			feed=html_feed(feed,2,message=str("- Required Firmware:"))	
-			incl_Firm=DBmodule.FWDB.detect_xci_fw(self._path,False)									
-			feed+='<ul style="margin-bottom: 2px;margin-top: 3px">'	
-			message=["Included Firmware:",str(str(incl_Firm))];feed=html_feed(feed,3,message)									
-			if content_type_cnmt == 'AddOnContent':
-				if v_number == 0:
-					message=["Required game version:",str(str(min_sversion)+' -> '+"Application"+' ('+str(RS_number)+')')];feed=html_feed(feed,3,message)									
-					message=["Required game version:",str(str(min_sversion)+' -> '+"Application"+' ('+str(RS_number)+')')];feed=html_feed(feed,3,message)															
-				if v_number > 0:
-					message=["Required game version:",str(str(min_sversion)+' -> '+"Patch"+' ('+str(RS_number)+')')];feed=html_feed(feed,3,message)													
-																													
-			else:
-				message=[reqtag,(str(min_sversion)+" -> " +RSV_rq)];feed=html_feed(feed,3,message)
-			message=['Encryption (keygeneration):',(str(keygen)+" -> " +FW_rq)];feed=html_feed(feed,3,message)
-			if content_type_cnmt != 'AddOnContent':	
-				message=['Patchable to:',(str(MinRSV)+" -> " + RSV_rq_min)];feed=html_feed(feed,3,message)
-											
-			else:
-				message=['Patchable to:',('DLC -> no RSV to patch')];feed=html_feed(feed,3,message)							
-			feed+='</ul>'																							
-			ncalist = list()
-			ncasize = 0		
-			feed=html_feed(feed,2,message=str("- Nca files (Non Deltas):"))	
-			feed+='<ul style="margin-bottom: 2px;margin-top: 3px">'								
-			for i in range(content_entries):
-				vhash = cnmt.read(0x20)
-				NcaId = cnmt.read(0x10)
-				size = cnmt.read(0x6)
-				ncatype = cnmt.read(0x1)
-				ncatype = int.from_bytes(ncatype, byteorder='little')	
-				unknown = cnmt.read(0x1)
-				#Print.info(str(ncatype))
-				if ncatype != 6:									
-					nca_name=str(hx(NcaId))
-					nca_name=nca_name[2:-1]+'.nca'
-					s1=0;s1,feed=self.print_nca_by_title(nca_name,ncatype,feed)
+			for f in nca:
+				for cnmt in f:
+					nca.rewind()
+					f.rewind()					
+					cnmt.rewind()
+					titleid=readInt64(cnmt)
+					titleversion = cnmt.read(0x4)
+					cnmt.seek(0xE)
+					offset=readInt16(cnmt)
+					content_entries=readInt16(cnmt)
+					meta_entries=readInt16(cnmt)
+					cnmt.seek(0x20)
+					original_ID=readInt64(cnmt)								
+					min_sversion=readInt32(cnmt)
+					length_of_emeta=readInt32(cnmt)	
+					target=str(nca._path)
+					content_type_cnmt=str(cnmt._path)
+					content_type_cnmt=content_type_cnmt[:-22]		
+					if content_type_cnmt == 'Patch':
+						reqtag='RequiredSystemVersion: '
+						dict=self.getDBdict()
+						tit_name = dict['baseName'] 
+						editor = dict['editor'] 
+						ediver = dict['dispversion'] 
+						SupLg = dict['languages'] 
+						content_type = dict['ctype'] 			
+						if tit_name=='DLC':
+							tit_name='-'
+							editor='-'																	
+					if content_type_cnmt == 'AddOnContent':
+						content_type='DLC'
+						reqtag='RequiredUpdateNumber: '
+						dict=self.getDBdict()
+						tit_name = dict['contentname'] 
+						editor = dict['editor'] 
+						ediver = dict['dispversion'] 
+						SupLg = dict['languages'] 
+						content_type = dict['ctype'] 							
+					if content_type_cnmt == 'Application':
+						content_type='Game or Application'
+						reqtag='RequiredSystemVersion: '	
+						reqtag='RequiredSystemVersion: '
+						dict=self.getDBdict()
+						tit_name = dict['baseName'] 
+						editor = dict['editor'] 
+						ediver = dict['dispversion'] 
+						SupLg = dict['languages'] 
+						content_type = dict['ctype'] 														
+					cnmt.seek(0x20+offset)
+					titleid2 = str(hx(titleid.to_bytes(8, byteorder='big'))) 	
+					titleid2 = titleid2[2:-1]
+					version=str(int.from_bytes(titleversion, byteorder='little'))
+					v_number=int(int(version)/65536)
+					RS_number=int(min_sversion/65536)
+					crypto1=nca.header.getCryptoType()
+					crypto2=nca.header.getCryptoType2()	
+					if crypto1 == 2:
+						if crypto1 > crypto2:								
+							keygen=nca.header.getCryptoType()
+						else:			
+							keygen=nca.header.getCryptoType2()	
+					else:			
+						keygen=nca.header.getCryptoType2()		
+					# programSDKversion,dataSDKversion=self.getsdkvertit(titleid2)									
+					sdkversion=nca.get_sdkversion()								
+					MinRSV=sq_tools.getMinRSV(keygen,min_sversion)
+					FW_rq=sq_tools.getFWRangeKG(keygen)
+					RSV_rq=sq_tools.getFWRangeRSV(min_sversion)									
+					RSV_rq_min=sq_tools.getFWRangeRSV(MinRSV)	
+					feed=html_feed(feed,1,message=str('TITLEID: ' + str(titleid2).upper()))
+					feed=html_feed(feed,2,message=str("- Titleinfo:"))									
+					feed+='<ul style="margin-bottom: 2px;margin-top: 3px">'							
+					if content_type_cnmt != 'AddOnContent':	
+						message=["Name:",tit_name];feed=html_feed(feed,3,message)
+						message=["Editor:",editor];feed=html_feed(feed,3,message)								
+						message=["Display Version:",str(ediver)];feed=html_feed(feed,3,message)								
+						message=["Meta SDK version:",sdkversion];feed=html_feed(feed,3,message)	
+						# message=["Program SDK version:",programSDKversion];feed=html_feed(feed,3,message)
+						suplangue=str((', '.join(SupLg)))
+						message=["Supported Languages:",suplangue];feed=html_feed(feed,3,message)								
+						message=["Content type:",content_type];feed=html_feed(feed,3,message)
+						v_number=str(v_number)
+						data='{} -> {} ({})'.format(version,content_type_cnmt,v_number)
+						message=["Version:",data];feed=html_feed(feed,3,message=message);
+					if content_type_cnmt == 'AddOnContent':
+						if tit_name != "DLC":
+							message=["Name:",tit_name];feed=html_feed(feed,3,message)
+							message=["Editor:",editor];feed=html_feed(feed,3,message)		
+						message=["Content type:","DLC"];feed=html_feed(feed,3,message)										
+						DLCnumb=str(titleid2)
+						DLCnumb="0000000000000"+DLCnumb[-3:]									
+						DLCnumb=bytes.fromhex(DLCnumb)
+						DLCnumb=str(int.from_bytes(DLCnumb, byteorder='big'))									
+						DLCnumb=int(DLCnumb)
+						message=["DLC number:",str(str(DLCnumb)+' -> '+"AddOnContent"+' ('+str(DLCnumb)+')')];feed=html_feed(feed,3,message)								
+						message=["DLC version Number:",str( version+' -> '+"Version"+' ('+str(v_number)+')')];feed=html_feed(feed,3,message)	
+						message=["Meta SDK version:",sdkversion];feed=html_feed(feed,3,message)	
+						# message=["Data SDK version:",dataSDKversion];feed=html_feed(feed,3,message)									
+						if SupLg !='':
+							suplangue=str((', '.join(SupLg)))
+							message=["Supported Languages:",suplangue];feed=html_feed(feed,3,message)
+					feed+='</ul>'	
+					feed=html_feed(feed,2,message=str("- Required Firmware:"))	
+					incl_Firm=DBmodule.FWDB.detect_xci_fw(self.firstchunk,False)									
+					feed+='<ul style="margin-bottom: 2px;margin-top: 3px">'	
+					message=["Included Firmware:",str(str(incl_Firm))];feed=html_feed(feed,3,message)									
+					if content_type_cnmt == 'AddOnContent':
+						if v_number == 0:
+							message=["Required game version:",str(str(min_sversion)+' -> '+"Application"+' ('+str(RS_number)+')')];feed=html_feed(feed,3,message)									
+							message=["Required game version:",str(str(min_sversion)+' -> '+"Application"+' ('+str(RS_number)+')')];feed=html_feed(feed,3,message)															
+						if v_number > 0:
+							message=["Required game version:",str(str(min_sversion)+' -> '+"Patch"+' ('+str(RS_number)+')')];feed=html_feed(feed,3,message)													
+																															
+					else:
+						message=[reqtag,(str(min_sversion)+" -> " +RSV_rq)];feed=html_feed(feed,3,message)
+					message=['Encryption (keygeneration):',(str(keygen)+" -> " +FW_rq)];feed=html_feed(feed,3,message)
+					if content_type_cnmt != 'AddOnContent':	
+						message=['Patchable to:',(str(MinRSV)+" -> " + RSV_rq_min)];feed=html_feed(feed,3,message)
+													
+					else:
+						message=['Patchable to:',('DLC -> no RSV to patch')];feed=html_feed(feed,3,message)							
+					feed+='</ul>'																							
+					ncalist = list()
+					ncasize = 0		
+					feed=html_feed(feed,2,message=str("- Nca files (Non Deltas):"))	
+					feed+='<ul style="margin-bottom: 2px;margin-top: 3px">'								
+					for i in range(content_entries):
+						vhash = cnmt.read(0x20)
+						NcaId = cnmt.read(0x10)
+						size = cnmt.read(0x6)
+						ncatype = cnmt.read(0x1)
+						ncatype = int.from_bytes(ncatype, byteorder='little')	
+						unknown = cnmt.read(0x1)
+						#Print.info(str(ncatype))
+						if ncatype != 6:									
+							nca_name=str(hx(NcaId))
+							nca_name=nca_name[2:-1]+'.nca'
+							s1=0;s1,feed=self.html_print_nca_by_title(nca_name,ncatype,feed)
+							ncasize=ncasize+s1
+							ncalist.append(nca_name[:-4])
+							contentlist.append(nca_name)									
+						if ncatype == 6:
+							nca_name=str(hx(NcaId))
+							nca_name=nca_name[2:-1]+'.nca'
+							ncalist.append(nca_name[:-4])
+							contentlist.append(nca_name)										
+					nca_meta=str(nca._path)
+					ncalist.append(nca_meta[:-4])	
+					contentlist.append(nca_meta)
+					s1=0;s1,feed=self.html_print_nca_by_title(nca_meta,0,feed)							
 					ncasize=ncasize+s1
-					ncalist.append(nca_name[:-4])
-					contentlist.append(nca_name)									
-				if ncatype == 6:
-					nca_name=str(hx(NcaId))
-					nca_name=nca_name[2:-1]+'.nca'
-					ncalist.append(nca_name[:-4])
-					contentlist.append(nca_name)										
-			nca_meta=str(nca._path)
-			ncalist.append(nca_meta[:-4])	
-			contentlist.append(nca_meta)
-			s1=0;s1,feed=self.print_nca_by_title(nca_meta,0,feed)							
-			ncasize=ncasize+s1
-			size1=ncasize
-			size_pr=sq_tools.getSize(ncasize)		
-			feed+='</ul>'	
-			feed=html_feed(feed,5,message=('TOTAL SIZE: '+size_pr))								
-			if self.actually_has_deltas(ncalist)=="true":
-				cnmt.seek(0x20+offset)
-				for i in range(content_entries):
-					vhash = cnmt.read(0x20)
-					NcaId = cnmt.read(0x10)
-					size = cnmt.read(0x6)
-					ncatype = cnmt.read(0x1)
-					ncatype = int.from_bytes(ncatype, byteorder='little')		
-					unknown = cnmt.read(0x1)								
-					if ncatype == 6:	
-						feed=html_feed(feed,2,message=('- Nca files (Deltas):'))	
-						feed+='<ul style="margin-bottom: 2px;margin-top: 3px">'											
-						break
-				cnmt.seek(0x20+offset)
-				ncasize = 0								
-				for i in range(content_entries):
-					vhash = cnmt.read(0x20)
-					NcaId = cnmt.read(0x10)
-					size = cnmt.read(0x6)
-					ncatype = cnmt.read(0x1)
-					ncatype = int.from_bytes(ncatype, byteorder='little')	
-					unknown = cnmt.read(0x1)	
-					if ncatype == 6:
-						nca_name=str(hx(NcaId))
-						nca_name=nca_name[2:-1]+'.nca'
-						s1=0;s1,feed=self.print_nca_by_title(nca_name,ncatype,feed)
-						ncasize=ncasize+s1
-				size2=ncasize
-				size_pr=sq_tools.getSize(ncasize)		
-				feed+='</ul>'
-				feed=html_feed(feed,5,message=('TOTAL SIZE: '+size_pr))
-			if self.actually_has_other(titleid2,ncalist)=="true":	
-				feed=html_feed(feed,2,message=('- Other types of files:'))	
-				feed+='<ul style="margin-bottom: 2px;margin-top: 3px">'	
-				othersize=0;os1=0;os2=0;os3=0
-				os1,feed=self.print_xml_by_title(ncalist,contentlist,feed)
-				os2,feed=self.print_tac_by_title(titleid2,contentlist,feed)
-				os3,feed=self.print_jpg_by_title(ncalist,contentlist,feed)
-				othersize=othersize+os1+os2+os3	
-				size3=othersize								
-				size_pr=sq_tools.getSize(othersize)							
-				feed+='</ul>'
-				feed=html_feed(feed,5,message=('TOTAL SIZE: '+size_pr))										
+					size1=ncasize
+					size_pr=sq_tools.getSize(ncasize)		
+					feed+='</ul>'	
+					feed=html_feed(feed,5,message=('TOTAL SIZE: '+size_pr))								
+					if self.actually_has_deltas(ncalist)=="true":
+						cnmt.seek(0x20+offset)
+						for i in range(content_entries):
+							vhash = cnmt.read(0x20)
+							NcaId = cnmt.read(0x10)
+							size = cnmt.read(0x6)
+							ncatype = cnmt.read(0x1)
+							ncatype = int.from_bytes(ncatype, byteorder='little')		
+							unknown = cnmt.read(0x1)								
+							if ncatype == 6:	
+								feed=html_feed(feed,2,message=('- Nca files (Deltas):'))	
+								feed+='<ul style="margin-bottom: 2px;margin-top: 3px">'											
+								break
+						cnmt.seek(0x20+offset)
+						ncasize = 0								
+						for i in range(content_entries):
+							vhash = cnmt.read(0x20)
+							NcaId = cnmt.read(0x10)
+							size = cnmt.read(0x6)
+							ncatype = cnmt.read(0x1)
+							ncatype = int.from_bytes(ncatype, byteorder='little')	
+							unknown = cnmt.read(0x1)	
+							if ncatype == 6:
+								nca_name=str(hx(NcaId))
+								nca_name=nca_name[2:-1]+'.nca'
+								s1=0;s1,feed=self.html_print_nca_by_title(nca_name,ncatype,feed)
+								ncasize=ncasize+s1
+						size2=ncasize
+						size_pr=sq_tools.getSize(ncasize)		
+						feed+='</ul>'
+						feed=html_feed(feed,5,message=('TOTAL SIZE: '+size_pr))
+					if self.actually_has_other(titleid2,ncalist)=="true":	
+						feed=html_feed(feed,2,message=('- Other types of files:'))	
+						feed+='<ul style="margin-bottom: 2px;margin-top: 3px">'	
+						othersize=0;os1=0;os2=0;os3=0
+						os1,feed=self.html_print_xml_by_title(ncalist,contentlist,feed)
+						os2,feed=self.html_print_tac_by_title(titleid2,contentlist,feed)
+						os3,feed=self.html_print_jpg_by_title(ncalist,contentlist,feed)
+						othersize=othersize+os1+os2+os3	
+						size3=othersize								
+						size_pr=sq_tools.getSize(othersize)							
+						feed+='</ul>'
+						feed=html_feed(feed,5,message=('TOTAL SIZE: '+size_pr))										
 		finalsize=size1+size2+size3	
 		size_pr=sq_tools.getSize(finalsize)	
 		feed=html_feed(feed,2,message=('FULL CONTENT TOTAL SIZE: '+size_pr))	
@@ -1205,7 +1211,8 @@ class chunk():
 			bigtab="\t"*7
 			size_pr=sq_tools.getSize(totsnl)					
 			feed=html_feed(feed,5,message=('TOTAL SIZE: '+size_pr))	
-		return feed		
+		return feed				
+		
 		
 def get_cnmt_files(path):
 	ck=chunk(path)
