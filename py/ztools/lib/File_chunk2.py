@@ -145,103 +145,7 @@ def get_file_and_offset(filelist,targetoffset):
 			partialoffset=targetoffset-startoffset
 			return filepath,partialoffset
 	return False,False		
-	
-def cnmt_data(cnmt,nca,nca_name):
-	crypto1=nca.header.getCryptoType()
-	crypto2=nca.header.getCryptoType2()			
-	if crypto2>crypto1:
-		keygeneration=crypto2
-	if crypto2<=crypto1:	
-		keygeneration=crypto1		
-	cnmt.seek(0)
-	titleid=readInt64(cnmt)
-	titleid2 = str(hx(titleid.to_bytes(8, byteorder='big'))) 	
-	titleid2 = titleid2[2:-1]							
-	titleid=(str(hx(titleid.to_bytes(8, byteorder='big')))[2:-1]).upper()
-	titleversion = cnmt.read(0x4)
-	titleversion=str(int.from_bytes(titleversion, byteorder='little'))
-	type_n = cnmt.read(0x1)								
-	cnmt.seek(0xE)
-	offset=readInt16(cnmt)
-	content_entries=readInt16(cnmt)
-	meta_entries=readInt16(cnmt)
-	cnmt.seek(0x20)
-	base_ID=readInt64(cnmt)
-	base_ID=(str(hx(base_ID.to_bytes(8, byteorder='big')))[2:-1]).upper()
-	cnmt.seek(0x28)					
-	min_sversion=readInt32(cnmt)
-	length_of_emeta=readInt32(cnmt)
-	content_type_cnmt=None			
-	if content_type_cnmt != 'AddOnContent':
-		RSV=str(min_sversion)
-		RSV=sq_tools.getFWRangeRSV(int(RSV))
-		RGV=0
-	if content_type_cnmt == 'AddOnContent':
-		RSV_rq_min=sq_tools.getMinRSV(keygeneration, 0)
-		RSV=sq_tools.getFWRangeRSV(int(RSV_rq_min))							
-		RGV=str(min_sversion)
-	if str(hx(type_n)) == "b'1'":
-		ctype='SystemProgram'		
-	if str(hx(type_n)) == "b'2'":
-		ctype='SystemData'
-	if str(hx(type_n)) == "b'3'":
-		ctype='SystemUpdate'
-	if str(hx(type_n)) == "b'4'":
-		ctype='BootImagePackage'		
-	if str(hx(type_n)) == "b'5'":
-		ctype='BootImagePackageSafe'		
-	if str(hx(type_n)) == "b'80'":
-		ctype='GAME'			
-	if str(hx(type_n)) == "b'81'":
-		ctype='UPDATE'
-	if str(hx(type_n)) == "b'82'":
-		ctype='DLC'
-	if str(hx(type_n)) == "b'83'":
-		ctype='Delta'									
-	metasdkversion=nca.get_sdkversion()
-	programSDKversion=None
-	dataSDKversion=None
-	if content_type_cnmt == 'AddOnContent':
-		exesdkversion=dataSDKversion
-	if content_type_cnmt != 'AddOnContent':	
-		exesdkversion=programSDKversion	
-	ncadata=list()	
-	hasHtmlManual=False	
-	Installedsize=int(nca.header.size);DeltaSize=0
-	cnmt.seek(0x20+offset)								
-	for i in range(content_entries):	
-		data={}
-		vhash = cnmt.read(0x20)
-		vhash=str(hx(vhash))					
-		NcaId = cnmt.read(0x10)
-		NcaId=str(hx(NcaId))									
-		size = cnmt.read(0x6)
-		size=str(int.from_bytes(size, byteorder='little', signed=True))						
-		ncatype = cnmt.read(0x1)
-		ncatype=str(int.from_bytes(ncatype, byteorder='little', signed=True))								
-		ncatype=sq_tools.getmetacontenttype(ncatype)
-		unknown = cnmt.read(0x1)										
-		data['NcaId']=NcaId[2:-1]
-		data['NCAtype']=ncatype
-		data['Size']=size
-		data['Hash']=vhash[2:-1]
-		if ncatype != "DeltaFragment":
-			Installedsize=Installedsize+int(size)
-		else:
-			DeltaSize=DeltaSize+int(size)
-		if ncatype == "HtmlDocument":
-			hasHtmlManual=True
-		ncadata.append(data)	
-	cnmtdata={}
-	metaname=str(nca_name);metaname =  metaname[:-9]
-	nca.rewind();block = nca.read();nsha=sha256(block).hexdigest()								
-	cnmtdata['NcaId']=metaname
-	cnmtdata['NCAtype']='Meta'
-	cnmtdata['Size']=str(nca.header.size)	
-	cnmtdata['Hash']=str(nsha)
-	ncadata.append(cnmtdata)
-	rightsId=titleid+'000000000000000'+str(crypto2)	
-	return 	titleid,titleversion,base_ID,keygeneration,rightsId,RSV,RGV,ctype,metasdkversion,exesdkversion,hasHtmlManual,Installedsize,DeltaSize,ncadata						
+		
 
 def nacp_data(nca):
 	dict={}
@@ -432,7 +336,7 @@ class chunk():
 		nca.rewind()	
 		cnmt=io.BytesIO(nca.return_cnmt())
 		nca_name=self.maincnmt[0]
-		titleid,titleversion,base_ID,keygeneration,rightsId,RSV,RGV,ctype,metasdkversion,exesdkversion,hasHtmlManual,Installedsize,DeltaSize,ncadata=cnmt_data(cnmt,nca,nca_name)
+		titleid,titleversion,base_ID,keygeneration,rightsId,RSV,RGV,ctype,metasdkversion,exesdkversion,hasHtmlManual,Installedsize,DeltaSize,ncadata=self.cnmt_data(cnmt,nca,nca_name)
 		d={}
 		d['titleid']=titleid;d['version']=titleversion;d['baseid']=base_ID;d['keygeneration']=keygeneration;d['rightsId']=rightsId;
 		d['rsv']=RSV;d['rgv']=RGV;d['ctype']=ctype;d['metasdkversion']=metasdkversion;d['exesdkversion']=exesdkversion;
@@ -1068,6 +972,14 @@ class chunk():
 		self.html_printnonlisted(contentlist,feed)
 		return feed		
 
+	def get_sdkversion(self,nca_name):
+		ncadata=(file_location(self.firstchunk,name=nca_name,Printdata=False))[0]
+		ncaHeader = NcaHeader()
+		ncaHeader.open(MemoryFile(self.read_at(ncadata,0x0,0x400), Type.Crypto.XTS, uhx(Keys.get('header_key'))))	
+		ncaHeader.rewind()
+		sdkversion=str(ncaHeader.sdkVersion4)+'.'+str(ncaHeader.sdkVersion3)+'.'+str(ncaHeader.sdkVersion2)+'.'+str(ncaHeader.sdkVersion1)	
+		return sdkversion
+
 	def html_print_nca_by_title(self,nca_name,ncatype,feed=''):	
 		tab="\t";
 		size=0
@@ -1209,8 +1121,109 @@ class chunk():
 			size_pr=sq_tools.getSize(totsnl)					
 			feed=html_feed(feed,5,message=('TOTAL SIZE: '+size_pr))	
 		return feed				
-		
-		
+
+	def cnmt_data(self,cnmt,nca,nca_name):
+		crypto1=nca.header.getCryptoType()
+		crypto2=nca.header.getCryptoType2()			
+		if crypto2>crypto1:
+			keygeneration=crypto2
+		if crypto2<=crypto1:	
+			keygeneration=crypto1		
+		cnmt.seek(0)
+		titleid=readInt64(cnmt)
+		titleid2 = str(hx(titleid.to_bytes(8, byteorder='big'))) 	
+		titleid2 = titleid2[2:-1]							
+		titleid=(str(hx(titleid.to_bytes(8, byteorder='big')))[2:-1]).upper()
+		titleversion = cnmt.read(0x4)
+		titleversion=str(int.from_bytes(titleversion, byteorder='little'))
+		type_n = cnmt.read(0x1)								
+		cnmt.seek(0xE)
+		offset=readInt16(cnmt)
+		content_entries=readInt16(cnmt)
+		meta_entries=readInt16(cnmt)
+		cnmt.seek(0x20)
+		base_ID=readInt64(cnmt)
+		base_ID=(str(hx(base_ID.to_bytes(8, byteorder='big')))[2:-1]).upper()
+		cnmt.seek(0x28)					
+		min_sversion=readInt32(cnmt)
+		length_of_emeta=readInt32(cnmt)
+		content_type_cnmt=None			
+		if content_type_cnmt != 'AddOnContent':
+			RSV=str(min_sversion)
+			RSV=sq_tools.getFWRangeRSV(int(RSV))
+			RGV=0
+		if content_type_cnmt == 'AddOnContent':
+			RSV_rq_min=sq_tools.getMinRSV(keygeneration, 0)
+			RSV=sq_tools.getFWRangeRSV(int(RSV_rq_min))							
+			RGV=str(min_sversion)
+		if str(hx(type_n)) == "b'1'":
+			ctype='SystemProgram'		
+		if str(hx(type_n)) == "b'2'":
+			ctype='SystemData'
+		if str(hx(type_n)) == "b'3'":
+			ctype='SystemUpdate'
+		if str(hx(type_n)) == "b'4'":
+			ctype='BootImagePackage'		
+		if str(hx(type_n)) == "b'5'":
+			ctype='BootImagePackageSafe'		
+		if str(hx(type_n)) == "b'80'":
+			ctype='GAME'			
+		if str(hx(type_n)) == "b'81'":
+			ctype='UPDATE'
+		if str(hx(type_n)) == "b'82'":
+			ctype='DLC'
+		if str(hx(type_n)) == "b'83'":
+			ctype='Delta'									
+		metasdkversion=nca.get_sdkversion()
+		programSDKversion=None
+		dataSDKversion=None
+		ncadata=list()	
+		hasHtmlManual=False	
+		Installedsize=int(nca.header.size);DeltaSize=0
+		cnmt.seek(0x20+offset)								
+		for i in range(content_entries):	
+			data={}
+			vhash = cnmt.read(0x20)
+			vhash=str(hx(vhash))					
+			NcaId = cnmt.read(0x10)
+			NcaId=str(hx(NcaId))									
+			size = cnmt.read(0x6)
+			size=str(int.from_bytes(size, byteorder='little', signed=True))						
+			ncatype = cnmt.read(0x1)
+			ncatype=str(int.from_bytes(ncatype, byteorder='little', signed=True))								
+			ncatype=sq_tools.getmetacontenttype(ncatype)
+			unknown = cnmt.read(0x1)										
+			data['NcaId']=NcaId[2:-1]
+			data['NCAtype']=ncatype
+			data['Size']=size
+			data['Hash']=vhash[2:-1]
+			targetname=str(NcaId[2:-1]+'.nca').lower()
+			if ncatype != "DeltaFragment":
+				Installedsize=Installedsize+int(size)
+			else:
+				DeltaSize=DeltaSize+int(size)
+			if ncatype == "HtmlDocument":
+				hasHtmlManual=True
+			if ncatype == "Program" and programSDKversion==None:			
+				programSDKversion=self.get_sdkversion(targetname)
+			if ncatype == "Data" and dataSDKversion==None:	
+				dataSDKversion=self.get_sdkversion(targetname)		
+			ncadata.append(data)	
+		cnmtdata={}
+		metaname=str(nca_name);metaname =  metaname[:-9]
+		nca.rewind();block = nca.read();nsha=sha256(block).hexdigest()								
+		cnmtdata['NcaId']=metaname
+		cnmtdata['NCAtype']='Meta'
+		cnmtdata['Size']=str(nca.header.size)	
+		cnmtdata['Hash']=str(nsha)
+		ncadata.append(cnmtdata)
+		rightsId=titleid+'000000000000000'+str(crypto2)	
+		if content_type_cnmt == 'AddOnContent':
+			exesdkversion=dataSDKversion
+		if content_type_cnmt != 'AddOnContent':	
+			exesdkversion=programSDKversion			
+		return 	titleid,titleversion,base_ID,keygeneration,rightsId,RSV,RGV,ctype,metasdkversion,exesdkversion,hasHtmlManual,Installedsize,DeltaSize,ncadata						
+
 def get_cnmt_files(path):
 	ck=chunk(path)
 	# print(ck.cnmtdata)
