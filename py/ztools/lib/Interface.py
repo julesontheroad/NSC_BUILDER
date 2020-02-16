@@ -499,10 +499,10 @@ def getfiledata(filename):
 		f = Fs.ChromeNsp(filename, 'rb')
 	elif filename.endswith('.xci') or filename.endswith('.xcz'):	
 		f = Fs.ChromeXci(filename)	
-	# elif filename.endswith('.xc0'): 
-		# ck=file_chunk.chunk(filename)	
-		# feed=ck.send_html_adv_file_list()
-		# return feed	
+	elif filename.endswith('.xc0'): 
+		ck=file_chunk.chunk(filename)	
+		feed=ck.send_html_adv_file_list()
+		return feed	
 	else: return ""		
 	feed=f.adv_file_list()
 	f.flush()

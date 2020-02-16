@@ -368,7 +368,8 @@ class chunk():
 	def __init__(self,filepath,type='all',locations=None,files=None,fileopen=None):
 		self.maincontrol=None;self.nacpdata=None;self.cmtdata=None;self.maintitleKey=False;self.maindeckey=False
 		self.firstchunk=filepath
-		self.chunklist=retchunks(filepath)		
+		self.chunklist=retchunks(filepath)	
+		self.filelist,self.nca_list=self.get_filelist()				
 		self.cnmtfiles=file_location(filepath,t='.cnmt.nca',Printdata=False)	
 		self.maincnmt=self.choosecnmt()
 		self.get_cnmt_data()
@@ -378,6 +379,15 @@ class chunk():
 		if self.ctype != 'DLC':
 			self.get_main_control_nca()
 			self.get_nacp_data()
+
+	def get_filelist(self):		
+		filedata=file_location(self.firstchunk)	
+		filelist=list();ncalist=list()
+		for entry in filedata:
+			filelist.append(entry[0])
+			if entry[0].endswith('.nca'):
+				ncalist.append(entry[0])
+		return filelist,ncalist
 		
 	def choosecnmt(self):		
 		file=False;titleid=False;nG=0;nU=0;nD=0;mcstring="";mGame=False
@@ -477,6 +487,13 @@ class chunk():
 				f.seek(int(filedata[3]))
 				inmemoryfile = io.BytesIO(f.read(int(filedata[5])-int(filedata[3])))
 				return inmemoryfile
+
+	#Function unfinished#
+	def read_at(self,filedata,start,length):
+		with open(filedata[2], 'rb') as f:	
+			f.seek(int(filedata[3])+int(start))
+			data = f.read(int(length))
+			return data					
 				
 	def DB_get_names(self,nca):	
 		ctype=self.ctype
@@ -841,6 +858,7 @@ class chunk():
 	def send_html_adv_file_list(self):				
 		contentlist=list()	
 		feed=''
+		size1=0;size2=0;size3=0;		
 		for entry in self.cnmtfiles:
 			nca=Nca()
 			nca.open(MemoryFile(self.memoryload(entry).read()))
@@ -1001,7 +1019,7 @@ class chunk():
 					size_pr=sq_tools.getSize(ncasize)		
 					feed+='</ul>'	
 					feed=html_feed(feed,5,message=('TOTAL SIZE: '+size_pr))								
-					if self.actually_has_deltas(ncalist)=="true":
+					if self.actually_has_deltas()=="true":
 						cnmt.seek(0x20+offset)
 						for i in range(content_entries):
 							vhash = cnmt.read(0x20)
@@ -1032,13 +1050,13 @@ class chunk():
 						size_pr=sq_tools.getSize(ncasize)		
 						feed+='</ul>'
 						feed=html_feed(feed,5,message=('TOTAL SIZE: '+size_pr))
-					if self.actually_has_other(titleid2,ncalist)=="true":	
+					if self.actually_has_other(titleid2)=="true":	
 						feed=html_feed(feed,2,message=('- Other types of files:'))	
 						feed+='<ul style="margin-bottom: 2px;margin-top: 3px">'	
 						othersize=0;os1=0;os2=0;os3=0
-						os1,feed=self.html_print_xml_by_title(ncalist,contentlist,feed)
+						os1,feed=self.html_print_xml_by_title(contentlist,feed)
 						os2,feed=self.html_print_tac_by_title(titleid2,contentlist,feed)
-						os3,feed=self.html_print_jpg_by_title(ncalist,contentlist,feed)
+						os3,feed=self.html_print_jpg_by_title(contentlist,feed)
 						othersize=othersize+os1+os2+os3	
 						size3=othersize								
 						size_pr=sq_tools.getSize(othersize)							
@@ -1047,167 +1065,146 @@ class chunk():
 		finalsize=size1+size2+size3	
 		size_pr=sq_tools.getSize(finalsize)	
 		feed=html_feed(feed,2,message=('FULL CONTENT TOTAL SIZE: '+size_pr))	
-		self.printnonlisted(contentlist,feed)
-		return feed			
-																				
-	def html_print_nca_by_title(self,nca_name,ncatype,feed):	
-		tab="\t"
+		self.html_printnonlisted(contentlist,feed)
+		return feed		
+
+	def html_print_nca_by_title(self,nca_name,ncatype,feed=''):	
+		tab="\t";
 		size=0
-		ncz_name=nca_name[:-1]+'z'			
-		for nspF in self.hfs0:
-			if str(nspF._path)=="secure":
-				for nca in nspF:
-					filename = str(nca._path)				
-					if type(nca) == Nca:
-						if filename == nca_name:
-							size=nca.header.size
-							size_pr=sq_tools.getSize(size)
-							content=str(nca.header.contentType)
-							content=content[8:]+": "
-							ncatype=sq_tools.getTypeFromCNMT(ncatype)	
-							if ncatype != "Meta: ":
-								message=[ncatype,str(filename),'Size:',size_pr];feed=html_feed(feed,4,message)						
-							else:
-								message=[ncatype,str(filename),'Size:',size_pr];feed=html_feed(feed,4,message)					
-							return size,feed		
-					elif filename == ncz_name:
-						ncztype=Nca(nca)
-						ncztype._path=nca._path							
-						size=ncztype.header.size
-						size_pr=sq_tools.getSize(size)
-						content=str(ncztype.header.contentType)
-						content=content[8:]+": "
-						ncatype=sq_tools.getTypeFromCNMT(ncatype)	
-						if ncatype != "Meta: ":
-							message=[ncatype,str(filename),'Size:',size_pr];feed=html_feed(feed,4,message)						
-						else:
-							message=[ncatype,str(filename),'Size:',size_pr];feed=html_feed(feed,4,message)					
-						return size,feed		
-		return size,feed							
-	def html_print_xml_by_title(self,ncalist,contentlist,feed):	
-		tab="\t"
+		ncadata=(file_location(self.firstchunk,name=nca_name,Printdata=False))[0]
+		filename=ncadata[0]
+		ncaHeader = NcaHeader()
+		ncaHeader.open(MemoryFile(self.read_at(ncadata,0x0,0x400), Type.Crypto.XTS, uhx(Keys.get('header_key'))))	
+		ncaHeader.rewind()
+		size=ncaHeader.size
+		size_pr=sq_tools.getSize(size)
+		content=str(ncaHeader.contentType)
+		content=content[8:]+": "
+		ncatype=sq_tools.getTypeFromCNMT(ncatype)	
+		if ncatype != "Meta: ":
+			message=[ncatype,str(filename),'Size:',size_pr];feed=html_feed(feed,4,message)						
+		else:
+			message=[ncatype,str(filename),'Size:',size_pr];feed=html_feed(feed,4,message)					
+		return size,feed	
+
+	def html_print_xml_by_title(self,contentlist,feed=''):	
+		tab="\t";
 		size2return=0
-		for nspF in self.hfs0:
-			if str(nspF._path)=="secure":
-				for file in nspF:		
-					if file._path.endswith('.xml'):
-						size=file.size
-						size_pr=sq_tools.getSize(size)			
-						filename =  str(file._path)	
-						xml=filename[:-4]
-						if xml in ncalist:
-							message=['XML:',str(filename),'Size:',size_pr];feed=html_feed(feed,4,message)
-							contentlist.append(filename)	
-							size2return=size+size2return			
-		return size2return,feed									
-	def html_print_tac_by_title(self,titleid,contentlist,feed):		
-		tab="\t"	
-		size2return=0	
-		for nspF in self.hfs0:
-			if str(nspF._path)=="secure":
-				for ticket in nspF:			
-					if type(ticket) == Ticket:
-						size=ticket.size			
-						size_pr=sq_tools.getSize(size)			
-						filename =  str(ticket._path)
-						tik=filename[:-20]
-						if tik == titleid:
-							message=['Ticket:',str(filename),'Size:',size_pr];feed=html_feed(feed,4,message)
-							contentlist.append(filename)					
-							size2return=size+size2return													
-				for cert in nspF:						
-					if cert._path.endswith('.cert'):
-						size=cert.size		
-						size_pr=sq_tools.getSize(size)
-						filename = str(cert._path)
-						cert_id =filename[:-21]
-						if cert_id == titleid:
-							message=['Cert:',str(filename),'Size:',size_pr];feed=html_feed(feed,4,message)						
-							contentlist.append(filename)					
-							size2return=size+size2return
-		return size2return,feed						
-	def html_print_jpg_by_title(self,ncalist,contentlist,feed):	
+		ncalist=self.nca_list
+		xml_list=file_location(self.firstchunk,t='.xml',Printdata=False)
+		for entry in xml_list:	
+			sz=entry[1]
+			filename=entry[0]
+			size=sz
+			size_pr=sq_tools.getSize(size)			
+			xml=filename[:-4]
+			if xml in ncalist:
+				message=['XML:',str(filename),'Size:',size_pr];feed=html_feed(feed,4,message)
+				contentlist.append(filename)	
+				size2return=size+size2return				
+		return size2return,feed				
+
+	def html_print_tac_by_title(titleid,contentlist,feed=''):		
+		tab="\t";
+		size2return=0		
+		ticket_list=file_location(self.firstchunk,t='.tick',Printdata=False)
+		cert_list=file_location(self.firstchunk,t='.cert',Printdata=False)		
+		for entry in ticket_list:	
+			filename=ticket_list[0]
+			sz=ticket_list[1]		
+			size=sz		
+			size_pr=sq_tools.getSize(size)			
+			tik=filename[:-20]
+			if tik == titleid:
+				message=['Ticket:',str(filename),'Size:',size_pr];feed=html_feed(feed,4,message)
+				contentlist.append(filename)					
+				size2return=size+size2return											
+		for entry in cert_list:	
+			filename=cert_list[0]
+			sz=cert_list[1]						
+			size=sz	
+			size_pr=sq_tools.getSize(size)
+			cert_id =filename[:-21]
+			if cert_id == titleid:
+				message=['Cert:',str(filename),'Size:',size_pr];feed=html_feed(feed,4,message)						
+				contentlist.append(filename)					
+				size2return=size+size2return
+		return size2return,feed	
+				
+	def html_print_jpg_by_title(self,contentlist,feed):	
 		size2return=0
 		tab="\t"
-		for nspF in self.hfs0:
-			if str(nspF._path)=="secure":		
-				for file in nspF:
-					if file._path.endswith('.jpg'):
-						size=file.size
-						size_pr=sq_tools.getSize(size)			
-						filename =  str(file._path)	
-						jpg=filename[:32]
-						if jpg in ncalist:
-							message=['JPG:',str(filename),'Size:',size_pr];feed=html_feed(feed,4,message)
-							contentlist.append(filename)					
-							size2return=size+size2return
+		jpg_list=file_location(self.firstchunk,t='.jpg',Printdata=False)	
+		size=jpg_list[1]
+		size_pr=sq_tools.getSize(size)			
+		filename =jpg_list[0]
+		jpg=filename[:32]
+		if jpg in self.ncalist:
+			message=['JPG:',str(filename),'Size:',size_pr];feed=html_feed(feed,4,message)
+			contentlist.append(filename)					
+			size2return=size+size2return
 		return size2return,feed		
-	def html_actually_has_deltas(self,ncalist):	
-		vfragment="false"	
-		for nspF in self.hfs0:
-			if str(nspF._path)=="secure":
-				for nca in nspF:
-					if type(nca) == Nca:
-						if 	str(nca.header.contentType) == 'Content.DATA':
-							for f in nca:
-									for file in f:
-										filename = str(file._path)
-										if filename=="fragment":
-											if 	nca._path[:-4] in ncalist:	
-												vfragment="true"
-												break
-		return vfragment
-	def html_actually_has_other(self,titleid,ncalist):
+		
+	def actually_has_deltas(self,feed=''):	
+		tab="\t";
+		size=0
+		vfragment="false"			
+		ncadata=file_location(self.firstchunk,t='.nca',Printdata=False)
+		for entry in ncadata:
+			ncaHeader = NcaHeader()
+			ncaHeader.open(MemoryFile(self.read_at(entry,0x0,0x400), Type.Crypto.XTS, uhx(Keys.get('header_key'))))	
+			ncaHeader.rewind()
+			if 	str(ncaHeader.contentType) == 'Content.DATA':
+				if 	filename in ncalist:	
+					vfragment="true"
+					break					
+		return vfragment		
+		
+	def actually_has_other(self,titleid):
 		vother="false"	
-		for nspF in self.hfs0:
-			if str(nspF._path)=="secure":		
-				for file in nspF:
-					if file._path.endswith('.xml'):
-						filename =  str(file._path)	
-						xml=filename[:-4]
-						if xml in ncalist:
-							vother="true"	
-							break		
-					if type(file) == Ticket:		
-						filename =  str(file._path)
-						tik=filename[:-20]
-						if tik == titleid:
-							vother="true"	
-							break																
-					if file._path.endswith('.cert'):
-						filename = str(file._path)
-						cert_id =filename[:-21]
-						if cert_id == titleid:
-							vother="true"	
-							break		
-					if file._path.endswith('.jpg'):
-						filename =  str(file._path)	
-						jpg=filename[:32]
-						if jpg in ncalist:
-							vother="true"	
-							break	
-		return vother					
-	def html_printnonlisted(self,contentlist,feed=''):
+		files_list=self.filelist
+		ncalist=self.nca_list
+		for i in range(len(files_list)):	
+			filename=files_list[i][0]	
+			if filename.endswith('.xml'):
+				xml=filename[:-4]
+				if xml in ncalist:
+					vother="true"	
+					break		
+			if filename.endswith('.tik'):	
+				tik=filename[:-20]
+				if tik == titleid:
+					vother="true"	
+					break																
+			if filename.endswith('.cert'):
+				cert_id =filename[:-21]
+				if cert_id == titleid:
+					vother="true"	
+					break		
+			if filename.endswith('.jpg'):
+				jpg=filename[:32]
+				if jpg in ncalist:
+					vother="true"	
+					break	
+		return vother				
+					
+	def html_printnonlisted(self,contentlist,feed=''): 
 		tab="\t"	
 		list_nonlisted="false"
-		for nspF in self.hfs0:
-			if str(nspF._path)=="secure":		
-				for file in nspF:		
-					filename =  str(file._path)
-					if not filename in contentlist:
-						list_nonlisted="true"
+		for filename in self.filelist: 
+			if not filename in contentlist:
+				list_nonlisted="true"
+				
+		filedata=file_location(self.firstchunk)					
 		if list_nonlisted == "true":
 			feed=html_feed(feed,2,'Files not linked to content in xci:')
 			totsnl=0
-			for nspF in self.hfs0:
-				if str(nspF._path)=="secure":		
-					for file in nspF:				
-						filename =  str(file._path)
-						nczname= str(file._path)[:-1]+'z'
-						if not filename in contentlist and not nczname in contentlist:
-							totsnl=totsnl+file.size
-							size_pr=sq_tools.getSize(file.size)						
-							message=['OTHER:',str(filename),'Size:',size_pr];feed=html_feed(feed,4,message)
+			for entry in filedata:
+				filename =  entry[0]
+				if not filename in contentlist:
+					totsnl=totsnl+entry[1]
+					size_pr=sq_tools.getSize(entry[1])						
+					message=['OTHER:',str(filename),'Size:',size_pr];feed=html_feed(feed,4,message)
 			bigtab="\t"*7
 			size_pr=sq_tools.getSize(totsnl)					
 			feed=html_feed(feed,5,message=('TOTAL SIZE: '+size_pr))	
