@@ -27,7 +27,9 @@ from Fs.Nacp import Nacp
 from Fs.Nca import NcaHeader
 from Fs.pyNCA3 import NCA3
 from Fs.pyNPDM import NPDM
-from Fs.BaseFs import BaseFs
+from Fs.Pfs0 import Pfs0
+import nutFs
+from nutFs.BaseFs import BaseFs
 from Fs.ChromeNacp import ChromeNacp
 import math  
 import sys
@@ -42,6 +44,7 @@ import nutdb
 import textwrap
 from PIL import Image
 from Utils import bytes2human
+from nutFs.Rom import Rom
 
 MEDIA_SIZE = 0x200
 buffer = 65536
@@ -62,6 +65,16 @@ def readInt64(f, byteorder='little', signed = False):
 
 def readInt128(f, byteorder='little', signed = False):
 	return int.from_bytes(f.read(16), byteorder=byteorder, signed=signed)
+	
+def GetSectionFilesystem(buffer, cryptoKey):
+	fsType = buffer[0x3]
+	if fsType == nutFs.Type.nutFs.PFS0:
+		return Pfs0(buffer, cryptoKey = cryptoKey)
+		
+	if fsType == nutFs.Type.nutFs.ROMFS:
+		return Rom(buffer, cryptoKey = cryptoKey)
+		
+	return BaseFs(buffer, cryptoKey = cryptoKey)
 
 def html_feed(feed='',style=1,message=''):	
 	if style==1:
@@ -94,6 +107,18 @@ def file_location(filepath,t='all',name=None,Printdata=False):
 		files_list=sq_tools.ret_xci_offsets(filepath)	
 	elif filepath.endswith('.ns0'):
 		files_list=sq_tools.ret_nsp_offsets(filepath)		
+	elif filepath.endswith('00'):
+		with open(filepath, 'rb') as f:	
+			magic1=f.read(4)
+			f.seek(0x100)
+			magic2=f.read(4)			
+		if magic1 == b'PFS0':
+			files_list=sq_tools.ret_nsp_offsets(filepath)	
+		elif magic2 == b'HEAD':
+			files_list=sq_tools.ret_xci_offsets(filepath)		
+		else:
+			print("Error. File isn't xci or nsp type")
+			return None				
 	for file in files_list:
 		if name!=None:
 			if (str(file[0]).lower())==str(name).lower():		
@@ -127,7 +152,13 @@ def file_location(filepath,t='all',name=None,Printdata=False):
 				print('- Starts in file {} at offset {}'.format(location1[-4:],tgoffset1))
 				print('- Ends in file {} at offset {}'.format(location2[-4:],tgoffset2))
 				print('')
-	return locations				
+	return locations		
+#locations[0] -> Name
+#locations[1] -> Size
+#locations[2] -> First chunk
+#locations[3] -> Start offset
+#locations[4] -> Final chunk
+#locations[5] -> End_offset
 
 def get_file_and_offset(filelist,targetoffset):
 	startoffset=0;endoffset=0
@@ -270,7 +301,8 @@ def retchunks(filepath):
 
 class chunk():
 	def __init__(self,filepath,type='all',locations=None,files=None,fileopen=None):
-		self.maincontrol=None;self.nacpdata=None;self.cmtdata=None;self.maintitleKey=False;self.maindeckey=False
+		self.maincontrol=None;self.nacpdata=None;self.cmtdata=None;self.maintitleKey=False;self.maindeckey=False;
+		self.main_program_nca=None
 		self.firstchunk=filepath
 		self.chunklist=retchunks(filepath)	
 		self.filelist,self.nca_list=self.get_filelist()				
@@ -283,6 +315,7 @@ class chunk():
 		if self.ctype != 'DLC':
 			self.get_main_control_nca()
 			self.get_nacp_data()
+			self.get_main_program_nca()
 
 	def get_filelist(self):		
 		filedata=file_location(self.firstchunk)	
@@ -392,10 +425,31 @@ class chunk():
 				inmemoryfile = io.BytesIO(f.read(int(filedata[5])-int(filedata[3])))
 				return inmemoryfile
 
+#locations[0] -> Name
+#locations[1] -> Size
+#locations[2] -> First chunk
+#locations[3] -> Start offset
+#locations[4] -> Final chunk
+#locations[5] -> End_offset
+
+
 	#Function unfinished#
 	def read_at(self,filedata,start,length):
-		with open(filedata[2], 'rb') as f:	
-			f.seek(int(filedata[3])+int(start))
+		ck_size=int(os.path.getsize(filedata[2]))
+		initial_offset=int(filedata[3])
+		current=filedata[2]
+		while True:
+			if (int(initial_offset)+int(start))>ck_size:
+				initial_offset=0x0
+				start=start-ck_size
+				current=str(filedata[2])[:-1]+str(int(str(filedata[2])[-1])+1)
+				ck_size=os.path.getsize(current)
+			else:
+				break
+		with open(current, 'rb') as f:	
+			# print(current)
+			# print(int(initial_offset)+int(start))
+			f.seek(int(initial_offset)+int(start))
 			data = f.read(int(length))
 			return data					
 				
@@ -1224,12 +1278,219 @@ class chunk():
 			exesdkversion=programSDKversion			
 		return 	titleid,titleversion,base_ID,keygeneration,rightsId,RSV,RGV,ctype,metasdkversion,exesdkversion,hasHtmlManual,Installedsize,DeltaSize,ncadata						
 
+	def get_main_program_nca(self):
+		ncadata=self.cnmtdata['ncadata']
+		for entry in ncadata:
+			if str(entry['NCAtype']).lower()=='program':
+				ncaname=entry['NcaId']+'.nca'
+				break		
+		results=file_location(self.firstchunk,name=ncaname,Printdata=False)		
+		try:
+			self.mainprogram=results[0]	
+		except:pass
+
+	# def read_buildid(self):
+		# ModuleId='';BuildID8='';BuildID16=''
+		# sectionFilesystems=[]
+		# if self.mainprogram!=None:
+			# ncadata=file_location(self.firstchunk,name=self.mainprogram[0],Printdata=False)[0]
+			# ncaHeader = NcaHeader()
+			# ncaHeader.open(MemoryFile(self.read_at(ncadata,0x0,0xC00), Type.Crypto.XTS, uhx(Keys.get('header_key'))))	
+			# ncaHeader.rewind()
+			# if ncaHeader.getRightsId() == 0:	
+				# decKey=ncaHeader.titleKeyDec
+				# ncaHeader.seek(0x400)
+				# for i in range(4):
+					# hdr = ncaHeader.read(0x200)
+					# section = BaseFs(hdr, cryptoKey = ncaHeader.titleKeyDec)
+					# fs = GetSectionFilesystem(hdr, cryptoKey = -1)
+					# if fs.fsType:
+						# fs.offset=ncaHeader.sectionTables[i].offset
+						# sectionFilesystems.append(fs)
+						# Print.info('fs type = ' + hex(fs.fsType))
+						# Print.info('fs crypto = ' + hex(fs.cryptoType))
+						# # Print.info('fs cryptocounter = ' + str(fs.cryptoCounter))
+						# Print.info('st end offset = ' + str(ncaHeader.sectionTables[i].endOffset - ncaHeader.sectionTables[i].offset))
+						# Print.info('fs offset = ' + hex(ncaHeader.sectionTables[i].offset))
+						# Print.info('fs section start = ' + hex(fs.sectionStart))
+						# Print.info('titleKey = ' + str(hx(ncaHeader.titleKeyDec)))							
+				# for fs in sectionFilesystems:	
+					# if fs.fsType == Type.Fs.PFS0 and fs.cryptoType == Type.Crypto.CTR:
+						# print(fs.fsType)
+						# print(fs.cryptoType)
+						# # print(fs.buffer)
+						# pfs0=fs
+						# sectionHeaderBlock = fs.buffer
+						# pfs0Offset=fs.offset
+						# # print(str(fs.cryptoCounter))
+						# pfs0Header = self.read_at(ncadata,fs.offset,0x10*14)
+						# # print(hex(pfs0Offset))
+						# # print(hex(fs.sectionStart))						
+						# # Hex.dump(pfs0Header)	
+						# mem = MemoryFile(pfs0Header, Type.Crypto.CTR, decKey, pfs0.cryptoCounter, offset = fs.offset)
+						# data = mem.read();
+						# Hex.dump(data)	
+						# head=data[0:4]
+						# n_files=(data[4:8])
+						# n_files=int.from_bytes(n_files, byteorder='little')		
+						# st_size=(data[8:12])
+						# st_size=int.from_bytes(st_size, byteorder='little')		
+						# junk=(data[12:16])
+						# offset=(0x10 + n_files * 0x18)
+						# stringTable=(data[offset:offset+st_size])
+						# stringEndOffset = st_size
+						# headerSize = 0x10 + 0x18 * n_files + st_size
+						# print(head)
+						# print(str(n_files))
+						# print(str(st_size))	
+						# print(str((stringTable)))							
+						
+						
+						# pfs0Offset=fs.sectionStart
+						# sectionHeaderBlock = fs.buffer
+						# mem=MemoryFile(self.read_at(ncadata,pfs0Offset,0x10), Type.Crypto.CTR,ncaHeader.titleKeyDec, pfs0.cryptoCounter, offset = fs.offset)
+						# print(Hex.dump(mem.read()))
+						# print("here")
+				# for fs in sectionFilesystems:
+					# print(fs.fsType)
+					# print(fs.cryptoType)							
+				# if fs.fsType == Type.Fs.PFS0 and fs.cryptoType == Type.Crypto.CTR:		
+					# mem=(MemoryFile(self.read_at(ncadata,fs.sectionStart,(ncaHeader.sectionTables[i].endOffset - ncaHeader.sectionTables[i].offset)), Type.Crypto.CTR, ncaHeader.titleKeyDec,fs.cryptoCounter, offset = ncaHeader.sectionTables[i].offset))	
+					# mem.rewind()
+					# print(Hex.dump(mem.read(0x1000)))
+					# Print.info('fs type = ' + hex(fs.fsType))
+					# Print.info('fs crypto = ' + hex(fs.cryptoType))
+					# Print.info('st end offset = ' + str(ncaHeader.sectionTables[i].endOffset - ncaHeader.sectionTables[i].offset))
+					# Print.info('fs offset = ' + hex(ncaHeader.sectionTables[i].offset))
+					# Print.info('fs section start = ' + hex(fs.sectionStart))
+					# Print.info('titleKey = ' + str(ncaHeader.titleKeyDec))				
+
+			# if nca.header.getRightsId() != 0:
+				# correct, tkey = self.verify_nca_key(str(nca._path))		
+				# if correct == True:			
+					# crypto1=nca.header.getCryptoType()
+					# crypto2=nca.header.getCryptoType2()	
+					# if crypto2>crypto1:
+						# masterKeyRev=crypto2
+					# if crypto2<=crypto1:	
+						# masterKeyRev=crypto1	
+				# decKey = Keys.decryptTitleKey(tkey, Keys.getMasterKeyIndex(int(masterKeyRev)))		
+		# else:pass
+		# files_list=sq_tools.ret_xci_offsets(self._path)
+		# # print(files_list)
+		# for nspF in self.hfs0:
+			# if str(nspF._path)=="secure":
+				# for nca in nspF:							
+					# if type(nca) == Fs.Nca:
+						# if 	str(nca.header.contentType) == 'Content.PROGRAM':
+							# if nca.header.getRightsId() == 0:						
+								# decKey=nca.header.titleKeyDec
+							# if nca.header.getRightsId() != 0:
+								# correct, tkey = self.verify_nca_key(str(nca._path))		
+								# if correct == True:
+									# crypto1=nca.header.getCryptoType()
+									# crypto2=nca.header.getCryptoType2()	
+									# if crypto2>crypto1:
+										# masterKeyRev=crypto2
+									# if crypto2<=crypto1:	
+										# masterKeyRev=crypto1	
+									# decKey = Keys.decryptTitleKey(tkey, Keys.getMasterKeyIndex(int(masterKeyRev)))
+							# for i in range(len(files_list)):	
+								# if str(nca._path) == files_list[i][0]:
+									# offset=files_list[i][1]
+									# # print(offset)
+									# break						
+							# nca.rewind()
+							# for fs in nca.sectionFilesystems:
+								# #print(fs.fsType)
+								# #print(fs.cryptoType)						
+								# if fs.fsType == Type.Fs.PFS0 and fs.cryptoType == Type.Crypto.CTR:
+									# nca.seek(0)
+									# ncaHeader = NcaHeader()
+									# ncaHeader.open(MemoryFile(nca.read(0x400), Type.Crypto.XTS, uhx(Keys.get('header_key'))))	
+									# ncaHeader.seek(0)
+									# fs.rewind()
+									# pfs0=fs
+									# sectionHeaderBlock = fs.buffer
+									# nca.seek(fs.offset)	
+									# pfs0Offset=fs.offset
+									# pfs0Header = nca.read(0x10*14)
+									# mem = MemoryFile(pfs0Header, Type.Crypto.CTR, decKey, pfs0.cryptoCounter, offset = pfs0Offset)
+									# data = mem.read();
+									# #Hex.dump(data)	
+									# head=data[0:4]
+									# n_files=(data[4:8])
+									# n_files=int.from_bytes(n_files, byteorder='little')		
+									# st_size=(data[8:12])
+									# st_size=int.from_bytes(st_size, byteorder='little')		
+									# junk=(data[12:16])
+									# offset=(0x10 + n_files * 0x18)
+									# stringTable=(data[offset:offset+st_size])
+									# stringEndOffset = st_size
+									# headerSize = 0x10 + 0x18 * n_files + st_size
+									# #print(head)
+									# #print(str(n_files))
+									# #print(str(st_size))	
+									# #print(str((stringTable)))		
+									# files_list=list()
+									# for i in range(n_files):
+										# i = n_files - i - 1
+										# pos=0x10 + i * 0x18
+										# offset = data[pos:pos+8]
+										# offset=int.from_bytes(offset, byteorder='little')			
+										# size = data[pos+8:pos+16]
+										# size=int.from_bytes(size, byteorder='little')			
+										# nameOffset = data[pos+16:pos+20] # just the offset
+										# nameOffset=int.from_bytes(nameOffset, byteorder='little')			
+										# name = stringTable[nameOffset:stringEndOffset].decode('utf-8').rstrip(' \t\r\n\0')
+										# stringEndOffset = nameOffset
+										# junk2 = data[pos+20:pos+24] # junk data
+										# #print(name)
+										# #print(offset)	
+										# #print(size)	
+										# files_list.append([name,offset,size])	
+									# files_list.reverse()	
+									# #print(files_list)								
+									# for i in range(len(files_list)):
+										# if files_list[i][0] == 'main':
+											# off1=files_list[i][1]+pfs0Offset+headerSize
+											# nca.seek(off1)
+											# np=nca.read(0x60)
+											# mem = MemoryFile(np, Type.Crypto.CTR, decKey, pfs0.cryptoCounter, offset = off1)
+											# magic=mem.read(0x4)
+											# if magic==b'NSO0':
+												# mem.seek(0x40)
+												# data = mem.read(0x20);
+												# ModuleId=(str(hx(data)).upper())[2:-1]
+												# BuildID8=(str(hx(data[:8])).upper())[2:-1]
+												# BuildID16=(str(hx(data[:16])).upper())[2:-1]
+												# iscorrect=True;
+											# break
+								# break	
+		# if iscorrect==False:
+			# try:
+				# from nutFS.Nca import Nca as nca3type
+				# for nspF in self.hfs0:
+					# if str(nspF._path)=="secure":
+						# for nca in nspF:										
+							# if type(nca) == Fs.Nca:
+								# if 	str(nca.header.contentType) == 'Content.PROGRAM':
+									# nca3type=Nca(nca)
+									# nca3type._path=nca._path							
+									# ModuleId=str(nca3type.buildId)
+									# BuildID8=ModuleId[:8]
+									# BuildID16=ModuleId[:16]
+			# except:
+				# ModuleId='';BuildID8='';BuildID16='';
+		# return ModuleId,BuildID8,BuildID16		
+		
 def get_cnmt_files(path):
 	ck=chunk(path)
 	# print(ck.cnmtdata)
 	# print(ck.nacpdata)	
-	print(ck.maintitleKey)
-	print(ck.maindeckey)	
+	# print(ck.maintitleKey)
+	# print(ck.maindeckey)
+	ck.read_buildid()
 	
 def open_all_dat(nca):
 	# Iterators that yields all the icon file handles inside an NCA

@@ -177,10 +177,10 @@ def showicon(filename):
 		elif filename.endswith('.xci') or filename.endswith('.xcz'):	
 			files_list=sq_tools.ret_xci_offsets(filename)		
 			f = Fs.Xci(filename)	
-		elif filename.endswith('.xc0'): 
+		elif filename.endswith('.xc0') or filename.endswith('.ns0') or filename.endswith('00'): 
 			a=file_chunk.icon_info(filename)	
 			encoded = b64encode(a).decode("ascii")
-			return "data:image/png;base64, " + encoded				
+			return "data:image/png;base64, " + encoded							
 		else: return ""
 		a=f.icon_info(files_list)
 		f.flush()
@@ -499,10 +499,10 @@ def getfiledata(filename):
 		f = Fs.ChromeNsp(filename, 'rb')
 	elif filename.endswith('.xci') or filename.endswith('.xcz'):	
 		f = Fs.ChromeXci(filename)	
-	elif filename.endswith('.xc0'): 
+	elif filename.endswith('.xc0') or filename.endswith('.ns0') or filename.endswith('00'): 
 		ck=file_chunk.chunk(filename)	
 		feed=ck.send_html_adv_file_list()
-		return feed	
+		return feed		
 	else: return ""		
 	feed=f.adv_file_list()
 	f.flush()
@@ -516,10 +516,10 @@ def getnacpdata(filename):
 		f = Fs.ChromeNsp(filename, 'rb')
 	elif filename.endswith('.xci') or filename.endswith('.xcz'):	
 		f = Fs.ChromeXci(filename)	
-	elif filename.endswith('.xc0'): 
+	elif filename.endswith('.xc0') or filename.endswith('.ns0') or filename.endswith('00'): 
 		ck=file_chunk.chunk(filename)	
 		feed=ck.send_html_nacp_data()
-		return feed			
+		return feed					
 	else: return ""		
 	feed=f.read_nacp(gui=True)
 	f.flush()
@@ -552,10 +552,10 @@ def getcnmtdata(filename):
 		f = Fs.ChromeNsp(filename, 'rb')
 	elif filename.endswith('.xci') or filename.endswith('.xcz'):	
 		f = Fs.ChromeXci(filename)	
-	elif filename.endswith('.xc0'): 
+	elif filename.endswith('.xc0') or filename.endswith('.ns0') or filename.endswith('00'): 
 		ck=file_chunk.chunk(filename)	
 		feed=ck.send_html_cnmt_data()
-		return feed				
+		return feed		
 	else: return ""			
 	feed=f.read_cnmt()
 	f.flush()
