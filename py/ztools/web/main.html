@@ -99,7 +99,26 @@
 					<span class="icon"><span class="mif-bug fg-steel" id="_cheats_bar_but1"></span></span>
 					<span class="caption fg-steel" id="_cheats_bar_but2">Cheats</span>
 				</a>
-			</li>			
+			</li>	
+			<li class="item-header" style="margin-top: 2vh">Library</li>			
+			<li>
+				<a href="#_Information_" onclick="start_from_link()" class="enabled" id="_link" style="margin-top: 2vh">
+					<span class="icon"><span class="mif-link fg-black" id="_ link_bar_but1"></span></span>
+					<span class="caption fg-black" id="_ link_bar_but2">Direct Link</span>
+				</a>
+			</li>					
+			<li>
+				<a href="#_Information_" onclick="" class="disabled" id="_library">
+					<span class="icon"><span class="mif-drive2 fg-steel" id="_library_bar_but1"></span></span>
+					<span class="caption fg-steel" id="_library_bar_but2">Libraries</span>
+				</a>
+			</li>
+			<li>
+				<a href="#_Information_" onclick="" class="disabled" id="_cloudlibrary">
+					<span class="icon"><span class="mif-cloud-download fg-steel" id="_cloudlibrary_bar_but1"></span></span>
+					<span class="caption fg-steel" id="_cloudlibrary_bar_but2">Cloud Libraries</span>
+				</a>
+			</li>					
 		</ul>
 	</nav>
 	<div class="navview-content pl-4-md pr-4-md bg-lightGray" id="_Info_">	
@@ -232,10 +251,19 @@ else{navclicks = navclicks+1;}
 function sideviewclicks(){
 document.getElementById("collapse_toggle_2").click();
 }
+
 async function start(){
 	show_gameinfo()
 	var fname=await eel.getfname()();
 	<!-- console.log("Hello from"); -->
+	resetInfo()	
+	start2(fname)
+}
+
+async function start_from_link(){
+	show_gameinfo()
+	var fname = prompt("Enter local path, gdrive path or public link", 
+					""); 	
 	resetInfo()	
 	start2(fname)
 }
