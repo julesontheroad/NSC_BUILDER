@@ -142,13 +142,7 @@ if __name__ == '__main__':
 		parser.add_argument('--remove-title-rights', nargs='+', help='Removes title rights encryption from all NCA\'s in the NSP.')
 		parser.add_argument('--RTRNCA_h_nsp', nargs='+', help='Removes title rights encryption from a single nca reading from original nsp')
 		parser.add_argument('--RTRNCA_h_tick', nargs='+', help='Removes title rights encryption from a single nca reading from extracted ticket')
-		parser.add_argument('--set-masterkey1', help='Changes the master key encryption for NSP.')
-		parser.add_argument('--set-masterkey2', help='Changes the master key encryption for NSP.')
-		parser.add_argument('--set-masterkey3', help='Changes the master key encryption for NSP.')
-		parser.add_argument('--set-masterkey4', help='Changes the master key encryption for NSP.')
-		parser.add_argument('--set-masterkey5', help='Changes the master key encryption for NSP.')
-		parser.add_argument('--set-masterkey6', help='Changes the master key encryption for NSP.')
-		parser.add_argument('--set-masterkey7', help='Changes the master key encryption for NSP.')
+		parser.add_argument('--set_masterkey', nargs='+', help='Changes the master key encryption for NSP.')
 
 		# Gamecard flag functions
 		parser.add_argument('--seteshop', nargs='+', help='Set all nca in an nsp as eshop')
@@ -212,6 +206,7 @@ if __name__ == '__main__':
 
 		# Auxiliary
 		parser.add_argument('-o', '--ofolder', nargs='+', help='Set output folder for copy instructions')
+			
 		parser.add_argument('-ifo', '--ifolder', help='Input folder')
 		parser.add_argument('-ifo_s', '--ifolder_secure', help='Input secure folder')
 		parser.add_argument('-ifo_n', '--ifolder_normal', help='Input normal folder')
@@ -289,6 +284,9 @@ if __name__ == '__main__':
 		parser.add_argument('-pos','--position', help=argparse.SUPPRESS)#tqdm position, aux argument for pararell	
 		parser.add_argument('-ninst','--n_instances', help=argparse.SUPPRESS)#number of instances, aux argument for pararell			
 		parser.add_argument('-xarg','--explicit_argument', nargs='+', help=argparse.SUPPRESS)#Explicit	arguments for lib_call for files with ","			
+		# -> parser.add_argument('-act', '--action', nargs='+', help=argparse.SUPPRESS)		
+		# -> parser.add_argument('-preverify', '--preverification', nargs='+', help=argparse.SUPPRESS)			
+		# -> parser.add_argument('-verDB', '--verificationDB', nargs='+', help=argparse.SUPPRESS) #verificationDB
 		args = parser.parse_args()
 
 		Status.start()
@@ -517,55 +515,24 @@ if __name__ == '__main__':
 		# Change Master keys
 		# ..................................................
 
-		if args.set_masterkey1:
-			f = Fs.Nsp(args.set_masterkey1, 'r+b')
-			f.setMasterKeyRev(0)
-			f.flush()
-			f.close()
-			pass
-			Status.close()
-		if args.set_masterkey2:
-			f = Fs.Nsp(args.set_masterkey2, 'r+b')
-			f.setMasterKeyRev(2)
-			f.flush()
-			f.close()
-			pass
-			Status.close()
-		if args.set_masterkey3:
-			f = Fs.Nsp(args.set_masterkey3, 'r+b')
-			f.setMasterKeyRev(3)
-			f.flush()
-			f.close()
-			pass
-			Status.close()
-		if args.set_masterkey4:
-			f = Fs.Nsp(args.set_masterkey4, 'r+b')
-			f.setMasterKeyRev(4)
-			f.flush()
-			f.close()
-			pass
-			Status.close()
-		if args.set_masterkey5:
-			f = Fs.Nsp(args.set_masterkey5, 'r+b')
-			f.setMasterKeyRev(5)
-			f.flush()
-			f.close()
-			pass
-			Status.close()
-		if args.set_masterkey6:
-			f = Fs.Nsp(args.set_masterkey6, 'r+b')
-			f.setMasterKeyRev(6)
-			f.flush()
-			f.close()
-			pass
-			Status.close()
-		if args.set_masterkey7:
-			f = Fs.Nsp(args.set_masterkey7, 'r+b')
-			f.setMasterKeyRev(7)
-			f.flush()
-			f.close()
-			pass
-			Status.close()
+		if args.set_masterkey:
+			file=args.set_masterkey[0]
+			if args.set_masterkey[1]:
+				try:
+					mkey=int(args.set_masterkey[1])
+					if mkey==1:
+						mkey=0
+					f = Fs.Nsp(file, 'r+b')
+					f.setMasterKeyRev(mkey)
+					f.flush()
+					f.close()
+					pass
+					Status.close()					
+				except:
+					print("Invalid masterkey number")					
+			else:
+				print("Missing masterkey number")
+
 		# ..................................................................
 		# Remove titlerights from an NSP using information from original NSP
 		# ..................................................................
