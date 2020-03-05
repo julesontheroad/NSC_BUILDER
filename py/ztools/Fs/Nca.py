@@ -496,7 +496,6 @@ class Nca(File):
 		tabs = '\t' * indent
 		check = False
 		for f in self:
-			#print(type(f))
 			cryptoType=f.get_cryptoType()
 			cryptoKey=f.get_cryptoKey()				
 			cryptoCounter=f.get_cryptoCounter()			
@@ -506,8 +505,13 @@ class Nca(File):
 					if (str(g._path)) == 'main.npdm':
 						check = True
 						break
+			if check==False:
+				for f in self:
+					if f.fsType == Type.Fs.ROMFS and f.cryptoType == Type.Crypto.CTR:
+						if f.magic==b'IVFC':
+							check=True
 		return check	
-		
+
 	def pr_noenc_check_dlc(self, file = None, mode = 'rb'):	
 		crypto1=self.header.getCryptoType()	
 		crypto2=self.header.getCryptoType2()		

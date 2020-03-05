@@ -7945,7 +7945,7 @@ class ChromeNsp(Pfs0):
 								magic = mem.read()[0:4]
 								#print(magic)
 								if magic != b'PFS0':
-									return False
+									pass
 								else:	
 									return True			
 						
@@ -7982,11 +7982,11 @@ class ChromeNsp(Pfs0):
 								magic = mem.read()[0:4]
 								#print(magic)
 								if magic != b'PFS0':
-									pass
+									return False
 								else:	
 									return True	
 
-						if fs.fsType == Type.Fs.ROMFS and fs.cryptoType == Type.Crypto.BKTR and str(f.header.contentType) == 'Content.PROGRAM' and verticket==False:
+						if fs.fsType == Type.Fs.ROMFS and fs.cryptoType == Type.Crypto.BKTR and str(f.header.contentType) == 'Content.PROGRAM':
 							f.seek(0)
 							ncaHeader = NcaHeader()
 							ncaHeader.open(MemoryFile(f.read(0x400), Type.Crypto.XTS, uhx(Keys.get('header_key'))))	
