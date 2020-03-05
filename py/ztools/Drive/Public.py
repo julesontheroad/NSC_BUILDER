@@ -105,6 +105,7 @@ def get_url_from_gdrive_confirmation(contents):
             return url	
 			
 def is_readable(url,file_id,is_download_link,sess):
+	url_origin=url
 	readable=False
 	while True:
 		res = sess.get(url, stream=True)
@@ -123,13 +124,16 @@ def is_readable(url,file_id,is_download_link,sess):
 			readable=True
 			
 	if readable==True:		
-		if file_id and is_download_link:
-			m = re.search('filename="(.*)"',res.headers['Content-Disposition'])
-			#print(m)
-			output = m.groups()[0]
-		else:
-			output = osp.basename(url)
-		print('FILENAME:         '+output)		
+		try:
+			if file_id and is_download_link:
+				m = re.search('filename="(.*)"',res.headers['Content-Disposition'])
+				#print(m)
+				output = m.groups()[0]
+			else:
+				output = osp.basename(url)
+			print('FILENAME:         '+output)		
+		except:
+			print("File download quota reached or temporarly restricted")
 	return readable,output,url,res,sess	
 	
 def untag(output):

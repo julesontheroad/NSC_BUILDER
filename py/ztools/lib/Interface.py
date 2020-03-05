@@ -166,10 +166,11 @@ def getfname():
 	)	
 	print('\nLoaded: '+filename)
 	return str(filename)
-
+	
 @eel.expose
 def showicon(filename):
 	print('* Seeking icon')
+	print(filename)
 	try:
 		if filename.endswith('.nsp')or filename.endswith('.nsx') or filename.endswith('.nsz'):
 			files_list=sq_tools.ret_nsp_offsets(filename)	
@@ -180,7 +181,12 @@ def showicon(filename):
 		elif filename.endswith('.xc0') or filename.endswith('.ns0') or filename.endswith('00'): 
 			a=file_chunk.icon_info(filename)	
 			encoded = b64encode(a).decode("ascii")
-			return "data:image/png;base64, " + encoded							
+			return "data:image/png;base64, " + encoded		
+		elif filename.startswith('http'):
+			from Drive import DriveHtmlInfo
+			a=DriveHtmlInfo.icon_info(filename)
+			encoded = b64encode(a).decode("ascii")
+			return "data:image/png;base64, " + encoded				
 		else: return ""
 		a=f.icon_info(files_list)
 		f.flush()
@@ -188,7 +194,7 @@ def showicon(filename):
 		encoded = b64encode(a).decode("ascii")
 		return "data:image/png;base64, " + encoded	
 	except BaseException as e:
-		# Print.error('Exception: ' + str(e))
+		Print.error('Exception: ' + str(e))
 		iconurl=retrieve_icon_from_server(filename)
 		if iconurl!=False:
 			return iconurl
