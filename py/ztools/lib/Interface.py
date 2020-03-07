@@ -15,6 +15,9 @@ import Print
 import nutdb
 from subprocess import call 
 import File_chunk2 as file_chunk
+import csv
+from listmanager import folder_to_list
+
 eel.init('web')
 
 squirrel_dir=os.path.abspath(os.curdir)
@@ -42,6 +45,32 @@ slimpath_alt=os.path.join(chromiumpath_alt,slimjet)
 chrom='chrlauncher.exe'
 chromiumpath=os.path.join(chromiumpath,chrom)
 chromiumpath_alt=os.path.join(chromiumpath_alt,chrom)
+
+local_lib_file = os.path.join(zconfig_dir, 'local_libraries.txt')
+remote_lib_file = os.path.join(zconfig_dir, 'remote_libraries.txt')
+download_lib_file = os.path.join(zconfig_dir, 'download_libraries.txt')
+
+def libraries(tfile):
+	db={}
+	try:
+		with open(tfile,'rt',encoding='utf8') as csvfile:
+			readCSV = csv.reader(csvfile, delimiter='|')	
+			i=0	
+			for row in readCSV:
+				if i==0:
+					csvheader=row
+					i=1
+				else:
+					dict={}
+					for j in range(len(csvheader)):
+						try:
+							dict[csvheader[j]]=row[j]
+						except:
+							dict[csvheader[j]]=None
+					db[row[0]]=dict
+		# print(db)			
+		return db
+	except: return False
 
 def  html_feed(feed='',style=1,message=''):	
 	if style==1:
@@ -147,7 +176,120 @@ def clear():
 		try:
 			call('clear') 
 		except:pass
+
+@eel.expose
+def get_libraries(): 
+	try:	
+		htmlcode='<select class="bg-cobalt fg-white" data-role="select" style="width:25vw" id="_local_lib_select_">'
+		htmlcode+='<option value="All" selected="selected">All</option>'
+		db=libraries(local_lib_file)	
+		if db==False:
+			return False			
+		for item in db:
+			htmlcode+='<option value="{}">{}</option>'.format(item,item)
+			# print(db[item])
+		htmlcode+='</select>'		
+		return htmlcode
+	except BaseException as e:
+		Print.error('Exception: ' + str(e))
 		
+@eel.expose
+def search_local_lib(value,library): 
+	try:	
+		db=libraries(local_lib_file)	
+		if db==False:
+			return False
+		if not library.lower()=='all':
+			path=db[library]['path']
+			print("* Searching library {}".format(library))
+			results=folder_to_list(path,'all',value)	
+			results.sort()	
+			html='<ul style="margin-bottom: 2px;margin-top: 3px">'
+			i=0
+			for item in results:
+				i+=1
+				var='local_res_'+str(i)
+				html+='<li style="margin-bottom: 2px;margin-top: 3px" onclick="start_from_library({})"><strong id="{}">{}</strong></li>'.format(var,var,item)
+			html+='</ul>'
+		else:
+			results=[]	
+			for entry in db:
+				path=db[entry]['path']
+				print("* Searching library {}".format(entry))
+				results+=folder_to_list(path,'all',value)
+			results.sort()	
+			html='<ul style="margin-bottom: 2px;margin-top: 3px">'
+			i=0					
+			for item in results:
+				i+=1
+				var='local_res_'+str(i)
+				html+='<li style="margin-bottom: 2px;margin-top: 3px" onclick="start_from_library({})"><strong id="{}">{}</strong></li>'.format(var,var,item)
+				# print(item)	
+			html+='</ul>'				
+		return html	
+	except BaseException as e:
+		Print.error('Exception: ' + str(e))			
+		
+@eel.expose
+def get_drive_libraries(): 
+	try:	
+		htmlcode='<select class="bg-cobalt fg-white" data-role="select" style="width:25vw" id="_remote_lib_select_">'
+		htmlcode+='<option value="All" selected="selected">All</option>'
+		db=libraries(remote_lib_file)	
+		if db==False:
+			return False			
+		for item in db:
+			htmlcode+='<option value="{}">{}</option>'.format(item,item)
+			# print(db[item])
+		htmlcode+='</select>'		
+		return htmlcode
+	except BaseException as e:
+		Print.error('Exception: ' + str(e))		
+		
+@eel.expose
+def search_remote_lib(value,library): 
+	from Drive import Private as DrivePrivate
+	try:	
+		db=libraries(remote_lib_file)	
+		if db==False:
+			return False
+		if not library.lower()=='all':
+			path=db[library]['path']
+			TD=db[library]['TD_name']
+			print("* Searching library {}".format(library))
+			results=DrivePrivate.search_folder(path,TD=TD,filter=value,Pick=False)
+			send_results=[]
+			for entry in results:
+				send_results.append('{}/{}'.format(entry[2],entry[0]))
+			send_results.sort()	
+			html='<ul style="margin-bottom: 2px;margin-top: 3px">'
+			i=0
+			for item in send_results:
+				i+=1
+				var='local_res_'+str(i)
+				html+='<li style="margin-bottom: 2px;margin-top: 3px" onclick="start_from_library({})"><strong id="{}">{}</strong></li>'.format(var,var,item)
+			html+='</ul>'
+		else:
+			results=[]	
+			for entry in db:
+				path=db[entry]['path']
+				TD=db[library]['TD_name']
+				print("* Searching library {}".format(entry))
+				results+=DrivePrivate.search_folder(path,TD=TD,filter=value,Pick=False)
+			send_results=[]
+			for entry in results:
+				send_results.append('{}/{}'.format(entry[2],entry[0]))
+			send_results.sort()	
+			html='<ul style="margin-bottom: 2px;margin-top: 3px">'
+			i=0
+			for item in send_results:
+				i+=1
+				var='local_res_'+str(i)
+				html+='<li style="margin-bottom: 2px;margin-top: 3px" onclick="start_from_library({})"><strong id="{}">{}</strong></li>'.format(var,var,item)
+			html+='</ul>'			
+		return html	
+	except BaseException as e:
+		Print.error('Exception: ' + str(e))					
 
 @eel.expose
 def getfname():
