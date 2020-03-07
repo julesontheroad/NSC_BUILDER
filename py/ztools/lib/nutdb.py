@@ -1795,3 +1795,15 @@ def kakashi_conv():
 	converter = kakasi.getConverter()	
 	return converter
 	
+def check_files():
+	# check_current()	
+	rglist=['ninshop','America','Europe','Japan','Asia']
+	for region in rglist:
+		if region=='ninshop':
+			check_other_file(urlconfig,region,nutdb=False)
+		else:	
+			check_region_file(region,nutdb=True)	
+	check_other_file(urlconfig,'metacritic_id',nutdb=False)
+	check_other_file(urlconfig,'fw',nutdb=False)	
+	check_other_file(urlconfig,'versions_txt')
+	check_other_file(urlconfig,'cheats')	

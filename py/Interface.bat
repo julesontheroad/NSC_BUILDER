@@ -45,6 +45,7 @@ goto start
 :minimize
 if not "%1" == "min" start /MIN cmd /c %0 min & exit/b >nul 2>&1 
 :start
+%pycommand% "%squirrel%" -lib_call nutdb  check_files
 %pycommand% "%squirrel%" -lib_call Interface start -xarg "%browserpath%" "%videoplayback%" "%height%" "%width%"
 goto salida
 

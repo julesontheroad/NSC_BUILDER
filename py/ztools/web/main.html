@@ -102,19 +102,19 @@
 			</li>	
 			<li class="item-header" style="margin-top: 2vh">Library</li>			
 			<li>
-				<a href="#_Information_" onclick="start_from_link()" class="enabled" id="_link" style="margin-top: 2vh">
-					<span class="icon"><span class="mif-link fg-black" id="_ link_bar_but1"></span></span>
-					<span class="caption fg-black" id="_ link_bar_but2">Direct Link</span>
+				<a href="#_Information_" onclick="start_from_link()" class="disabled" id="_link" style="margin-top: 2vh">
+					<span class="icon"><span class="mif-link fg-steel" id="_ link_bar_but1"></span></span>
+					<span class="caption fg-steel" id="_ link_bar_but2">Direct Link</span>
 				</a>
 			</li>					
 			<li>
-				<a href="#_Information_" onclick="" class="disabled" id="_library">
-					<span class="icon"><span class="mif-drive2 fg-steel" id="_library_bar_but1"></span></span>
-					<span class="caption fg-steel" id="_library_bar_but2">Libraries</span>
+				<a href="#_Information_" onclick="get_local_libraries()" class="enabled" id="_library">
+					<span class="icon"><span class="mif-drive2 fg-black" id="_library_bar_but1"></span></span>
+					<span class="caption fg-black" id="_library_bar_but2">Libraries</span>
 				</a>
 			</li>
 			<li>
-				<a href="#_Information_" onclick="" class="disabled" id="_cloudlibrary">
+				<a href="#_Information_" onclick="get_remote_libraries()" class="disabled" id="_cloudlibrary">
 					<span class="icon"><span class="mif-cloud-download fg-steel" id="_cloudlibrary_bar_but1"></span></span>
 					<span class="caption fg-steel" id="_cloudlibrary_bar_but2">Cloud Libraries</span>
 				</a>
@@ -186,7 +186,36 @@
 				<div class="cell" id="_Cheats_" style="font-size: 1.86vh;display:none;overflow-z:auto;"><div><div style="width: 55vw;margin-left:0;margin-right:auto;">
 					<p style="font-size: 2vh;text-align: justify;text-justify: inter-word;white-space: pre-line;" id="cheat_data"></p>
 			</div></div></div>					
+
+				<div class="cell" id="_LocalLibrary_" style="font-size: 2vh;display:none;overflow-z:auto;"><div><div style="width: 55vw;margin-left:0;margin-right:auto;">
+					<p style="margin-bottom: 2px;margin-top: 2px;font-size: 2.4vh"><strong>Local Libraries: </strong></p>	
+					<div class="row" style="width:130vw">
+						<div class="cell"  style="width: 70vw">
+							<input type="text" data-role="input" data-search-button="true" data-search-button-click="custom" data-on-search-button-click="search_local_lib">	
+						</div>	
+						<div class="cell" style="width:25vw" id="_local_lib_tags_">			
+							<select class="bg-cobalt fg-white" data-role="select" style="width:25vw" id="_local_lib_select_">
+							<option value="all" selected="selected">All</option>
+							</select>
+						</div></div>
+					<div class="row" style="width:130vw" id="_search_results_">
+					</div>	
+			</div></div></div>	
 			
+				<div class="cell" id="_RemoteLibrary_" style="font-size: 2vh;display:none;overflow-z:auto;"><div><div style="width: 55vw;margin-left:0;margin-right:auto;">
+					<p style="margin-bottom: 2px;margin-top: 2px;font-size: 2.4vh"><strong>Cloud Libraries: </strong></p>	
+					<div class="row" style="width:130vw">
+						<div class="cell"  style="width: 70vw">
+							<input type="text" data-role="input" data-search-button="true" data-search-button-click="custom" data-on-search-button-click="search_remote_lib">	
+						</div>	
+						<div class="cell" style="width:25vw" id="_remote_lib_tags_">			
+							<select class="bg-cobalt fg-white" data-role="select" style="width:25vw" id="_remote_lib_select_">
+							<option value="all" selected="selected">All</option>
+							</select>
+						</div></div>
+					<div class="row" style="width:130vw" id="_search_results2_">
+					</div>	
+			</div></div></div>	
 
 				<div class="cell" id="_Files_" style="font-size: 1.86vh;display:none;overflow-z:auto;"><div><div style="width: 62.5vw;margin-left:0;margin-right:auto;">
 					<div id="_filedata_"></div>		
@@ -264,6 +293,14 @@ async function start_from_link(){
 	show_gameinfo()
 	var fname = prompt("Enter local path, gdrive path or public link", 
 					""); 	
+	resetInfo()	
+	start2(fname)
+}
+
+async function start_from_library(data){
+	fname=data.innerHTML
+	console.log(fname)
+	show_gameinfo()
 	resetInfo()	
 	start2(fname)
 }
@@ -557,11 +594,13 @@ document.getElementById("_Pictures_").style.display = "none";
 document.getElementById("_Video_").style.display = "none";	
 document.getElementById("_Gametree_").style.display = "none";
 document.getElementById("_Cheats_").style.display = "none";
+document.getElementById("_LocalLibrary_").style.display = "none";
+document.getElementById("_RemoteLibrary_").style.display = "none";
 document.getElementById("_Files_").style.display = "none";
 document.getElementById("_Nacp_").style.display = "none";
 document.getElementById("_Npdm_").style.display = "none";
 document.getElementById("_Cnmt_").style.display = "none";
-document.getElementById("_Verification_").style.display = "none";
+document.getElementById("_Verification_").style.display = "none";	
 document.getElementById("_GameInfo_").style.display = "block";
 document.getElementById("_imagebox_").style.display = "block";
 document.getElementById("_viewspace_").style.height = "80vh";
@@ -577,6 +616,8 @@ document.getElementById("_Pictures_").style.display = "none";
 document.getElementById("_Video_").style.display = "none";	
 document.getElementById("_Gametree_").style.display = "none";
 document.getElementById("_Cheats_").style.display = "none";
+document.getElementById("_LocalLibrary_").style.display = "none";
+document.getElementById("_RemoteLibrary_").style.display = "none";
 document.getElementById("_Files_").style.display = "none";
 document.getElementById("_Nacp_").style.display = "none";
 document.getElementById("_Npdm_").style.display = "none";
@@ -596,6 +637,8 @@ document.getElementById("_GameInfo_").style.display = "none";
 document.getElementById("_imagebox_").style.display = "none";
 document.getElementById("_Gametree_").style.display = "none";
 document.getElementById("_Cheats_").style.display = "none";
+document.getElementById("_LocalLibrary_").style.display = "none";
+document.getElementById("_RemoteLibrary_").style.display = "none";
 document.getElementById("_Description_").style.display = "none";
 document.getElementById("_Files_").style.display = "none";
 document.getElementById("_Nacp_").style.display = "none";
@@ -617,6 +660,8 @@ document.getElementById("_Pictures_").style.display = "none";
 document.getElementById("_imagebox_").style.display = "none";
 document.getElementById("_Gametree_").style.display = "none";
 document.getElementById("_Cheats_").style.display = "none";
+document.getElementById("_LocalLibrary_").style.display = "none";
+document.getElementById("_RemoteLibrary_").style.display = "none";
 document.getElementById("_Description_").style.display = "none";
 document.getElementById("_Files_").style.display = "none";
 document.getElementById("_Nacp_").style.display = "none";
@@ -638,6 +683,8 @@ document.getElementById("_Pictures_").style.display = "none";
 document.getElementById("_Video_").style.display = "none";	
 document.getElementById("_Description_").style.display = "none";
 document.getElementById("_Cheats_").style.display = "none";
+document.getElementById("_LocalLibrary_").style.display = "none";
+document.getElementById("_RemoteLibrary_").style.display = "none";
 document.getElementById("_Files_").style.display = "none";
 document.getElementById("_Nacp_").style.display = "none";
 document.getElementById("_Npdm_").style.display = "none";
@@ -664,10 +711,137 @@ document.getElementById("_Nacp_").style.display = "none";
 document.getElementById("_Npdm_").style.display = "none";
 document.getElementById("_Cnmt_").style.display = "none";
 document.getElementById("_Verification_").style.display = "none";
+document.getElementById("_LocalLibrary_").style.display = "none";
+document.getElementById("_RemoteLibrary_").style.display = "none";
 document.getElementById("_Cheats_").style.display = "block";
 document.getElementById("_imagebox_").style.display = "block";
 document.getElementById("_viewspace_").style.height = "80vh";
 }
+
+function get_local_libraries(){	
+	eel.get_libraries()(set_local_libraries)
+	show_local_libraries()
+}
+
+function set_local_libraries(data){	
+	<!-- console.log(data) -->
+	document.getElementById("_local_lib_tags_").innerHTML = data;
+}
+
+function show_local_libraries() {
+	if (navclicks>0){
+	document.getElementById("nav_view_but").click();
+	}
+	document.getElementById("info_tab").click();
+	window.scrollTo(0,0);
+	document.getElementById("_GameInfo_").style.display = "none";
+	document.getElementById("_imagebox_").style.display = "none";
+	document.getElementById("_Gametree_").style.display = "none";
+	document.getElementById("_Cheats_").style.display = "none";
+	document.getElementById("_Description_").style.display = "none";
+	document.getElementById("_Files_").style.display = "none";
+	document.getElementById("_Nacp_").style.display = "none";
+	document.getElementById("_Npdm_").style.display = "none";
+	document.getElementById("_Cnmt_").style.display = "none";
+	document.getElementById("_Verification_").style.display = "none";
+	document.getElementById("_Pictures_").style.display = "none";
+	document.getElementById("_LocalLibrary_").style.display = "block";	
+	document.getElementById("_viewspace_").style.height = "80vh";	
+}
+
+function search_local_lib(value){
+	<!-- console.log(value) -->
+	var selected = document.getElementById("_local_lib_select_").value
+	<!-- console.log(selected) -->
+	eel.search_local_lib(value,selected)(load_local_results)
+}
+function load_local_results(data){
+	console.log(data)
+	document.getElementById("_search_results_").innerHTML = data;
+}
+
+function set_local_libraries(data){	
+	<!-- console.log(data) -->
+	document.getElementById("_local_lib_tags_").innerHTML = data;
+}
+
+function show_local_libraries() {
+	if (navclicks>0){
+	document.getElementById("nav_view_but").click();
+	}
+	document.getElementById("info_tab").click();
+	window.scrollTo(0,0);
+	document.getElementById("_GameInfo_").style.display = "none";
+	document.getElementById("_imagebox_").style.display = "none";
+	document.getElementById("_Gametree_").style.display = "none";
+	document.getElementById("_Cheats_").style.display = "none";
+	document.getElementById("_Description_").style.display = "none";
+	document.getElementById("_Files_").style.display = "none";
+	document.getElementById("_Nacp_").style.display = "none";
+	document.getElementById("_Npdm_").style.display = "none";
+	document.getElementById("_Cnmt_").style.display = "none";
+	document.getElementById("_Verification_").style.display = "none";
+	document.getElementById("_Pictures_").style.display = "none";
+	document.getElementById("_LocalLibrary_").style.display = "block";	
+	document.getElementById("_viewspace_").style.height = "80vh";	
+}
+
+function search_local_lib(value){
+	<!-- console.log(value) -->
+	var selected = document.getElementById("_local_lib_select_").value
+	<!-- console.log(selected) -->
+	eel.search_local_lib(value,selected)(load_local_results)
+}
+function load_local_results(data){
+	console.log(data)
+	document.getElementById("_search_results_").innerHTML = data;
+}
+
+<!-- ############################## -->
+
+function get_remote_libraries(){	
+	eel.get_drive_libraries()(set_remote_libraries)
+	show_remote_libraries()
+}
+
+function set_remote_libraries(data){	
+	<!-- console.log(data) -->
+	document.getElementById("_remote_lib_tags_").innerHTML = data;
+}
+
+function show_remote_libraries() {
+	if (navclicks>0){
+	document.getElementById("nav_view_but").click();
+	}
+	document.getElementById("info_tab").click();
+	window.scrollTo(0,0);
+	document.getElementById("_GameInfo_").style.display = "none";
+	document.getElementById("_imagebox_").style.display = "none";
+	document.getElementById("_Gametree_").style.display = "none";
+	document.getElementById("_Cheats_").style.display = "none";
+	document.getElementById("_Description_").style.display = "none";
+	document.getElementById("_Files_").style.display = "none";
+	document.getElementById("_Nacp_").style.display = "none";
+	document.getElementById("_Npdm_").style.display = "none";
+	document.getElementById("_Cnmt_").style.display = "none";
+	document.getElementById("_Verification_").style.display = "none";
+	document.getElementById("_Pictures_").style.display = "none";
+	document.getElementById("_LocalLibrary_").style.display = "none";	
+	document.getElementById("_RemoteLibrary_").style.display = "block";		
+	document.getElementById("_viewspace_").style.height = "80vh";	
+}
+
+function search_remote_lib(value){
+	<!-- console.log(value) -->
+	var selected = document.getElementById("_remote_lib_select_").value
+	<!-- console.log(selected) -->
+	eel.search_remote_lib(value,selected)(load_remote_results)
+}
+function load_remote_results(data){
+	<!-- console.log(data) -->
+	document.getElementById("_search_results2_").innerHTML = data;
+}
+
 
 function show_filedata(){
 if (navclicks>0){
@@ -680,6 +854,8 @@ document.getElementById("_imagebox_").style.display = "none";
 document.getElementById("_Description_").style.display = "none";
 document.getElementById("_Gametree_").style.display = "none";
 document.getElementById("_Cheats_").style.display = "none";
+document.getElementById("_LocalLibrary_").style.display = "none";
+document.getElementById("_RemoteLibrary_").style.display = "none";	
 document.getElementById("_Pictures_").style.display = "none";
 document.getElementById("_Video_").style.display = "none";	
 document.getElementById("_Nacp_").style.display = "none";
@@ -700,6 +876,8 @@ document.getElementById("_imagebox_").style.display = "none";
 document.getElementById("_Description_").style.display = "none";
 document.getElementById("_Gametree_").style.display = "none";
 document.getElementById("_Cheats_").style.display = "none";
+document.getElementById("_LocalLibrary_").style.display = "none";
+document.getElementById("_RemoteLibrary_").style.display = "none";
 document.getElementById("_Pictures_").style.display = "none";
 document.getElementById("_Video_").style.display = "none";	
 document.getElementById("_Files_").style.display = "none";
@@ -720,6 +898,8 @@ document.getElementById("_imagebox_").style.display = "none";
 document.getElementById("_Description_").style.display = "none";
 document.getElementById("_Gametree_").style.display = "none";
 document.getElementById("_Cheats_").style.display = "none";
+document.getElementById("_LocalLibrary_").style.display = "none";
+document.getElementById("_RemoteLibrary_").style.display = "none";
 document.getElementById("_Pictures_").style.display = "none";
 document.getElementById("_Video_").style.display = "none";	
 document.getElementById("_Files_").style.display = "none";
@@ -740,6 +920,8 @@ document.getElementById("_imagebox_").style.display = "none";
 document.getElementById("_Description_").style.display = "none";
 document.getElementById("_Gametree_").style.display = "none";
 document.getElementById("_Cheats_").style.display = "none";
+document.getElementById("_LocalLibrary_").style.display = "none";
+document.getElementById("_RemoteLibrary_").style.display = "none";
 document.getElementById("_Pictures_").style.display = "none";
 document.getElementById("_Video_").style.display = "none";	
 document.getElementById("_Files_").style.display = "none";
@@ -760,6 +942,8 @@ document.getElementById("_imagebox_").style.display = "none";
 document.getElementById("_Description_").style.display = "none";
 document.getElementById("_Gametree_").style.display = "none";
 document.getElementById("_Cheats_").style.display = "none";
+document.getElementById("_LocalLibrary_").style.display = "none";
+document.getElementById("_RemoteLibrary_").style.display = "none";
 document.getElementById("_Pictures_").style.display = "none";
 document.getElementById("_Video_").style.display = "none";	
 document.getElementById("_Files_").style.display = "none";
