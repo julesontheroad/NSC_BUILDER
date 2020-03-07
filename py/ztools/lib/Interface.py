@@ -216,16 +216,16 @@ def search_local_lib(value,library):
 			for entry in db:
 				path=db[entry]['path']
 				print("* Searching library {}".format(entry))
-				results+=folder_to_list(path,'all',value)
+				results+=folder_to_list(path,'all',value)	
 			results.sort()	
 			html='<ul style="margin-bottom: 2px;margin-top: 3px">'
-			i=0					
+			i=0		
 			for item in results:
 				i+=1
 				var='local_res_'+str(i)
 				html+='<li style="margin-bottom: 2px;margin-top: 3px" onclick="start_from_library({})"><strong id="{}">{}</strong></li>'.format(var,var,item)
 				# print(item)	
-			html+='</ul>'				
+			html+='</ul>'	
 		return html	
 	except BaseException as e:
 		Print.error('Exception: ' + str(e))			
@@ -257,34 +257,42 @@ def search_remote_lib(value,library):
 			path=db[library]['path']
 			TD=db[library]['TD_name']
 			print("* Searching library {}".format(library))
-			results=DrivePrivate.search_folder(path,TD=TD,filter=value,Pick=False)
+			response=DrivePrivate.search_folder(path,TD=TD,filter=value,Pick=False)
+			if response!=False:
+				results+=response			
 			send_results=[]
-			for entry in results:
-				send_results.append('{}/{}'.format(entry[2],entry[0]))
-			send_results.sort()	
+			try:
+				for entry in results:
+					send_results.append('{}/{}'.format(entry[2],entry[0]))
+				send_results.sort()	
+			except:pass
 			html='<ul style="margin-bottom: 2px;margin-top: 3px">'
 			i=0
 			for item in send_results:
 				i+=1
-				var='local_res_'+str(i)
+				var='remote_res_'+str(i)
 				html+='<li style="margin-bottom: 2px;margin-top: 3px" onclick="start_from_library({})"><strong id="{}">{}</strong></li>'.format(var,var,item)
 			html+='</ul>'
 		else:
 			results=[]	
 			for entry in db:
 				path=db[entry]['path']
-				TD=db[library]['TD_name']
+				TD=db[entry]['TD_name']
 				print("* Searching library {}".format(entry))
-				results+=DrivePrivate.search_folder(path,TD=TD,filter=value,Pick=False)
+				response=DrivePrivate.search_folder(path,TD=TD,filter=value,Pick=False)
+				if response!=False:
+					results+=response
 			send_results=[]
-			for entry in results:
-				send_results.append('{}/{}'.format(entry[2],entry[0]))
-			send_results.sort()	
+			try:
+				for entry in results:
+					send_results.append('{}/{}'.format(entry[2],entry[0]))
+				send_results.sort()	
+			except:pass	
 			html='<ul style="margin-bottom: 2px;margin-top: 3px">'
 			i=0
 			for item in send_results:
 				i+=1
-				var='local_res_'+str(i)
+				var='remote_res_'+str(i)
 				html+='<li style="margin-bottom: 2px;margin-top: 3px" onclick="start_from_library({})"><strong id="{}">{}</strong></li>'.format(var,var,item)
 			html+='</ul>'			
 		return html	
