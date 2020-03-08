@@ -727,8 +727,6 @@ def db_multicontent_data(cnmtdata,files_list,remote,content_number):
 		if str(titleid).endswith('000'):	
 			nG+=1
 		elif str(titleid).endswith('800'):
-			if nU==0 and nG<2:
-				file=str(nca._path)
 			nU+=1
 		else:
 			nD+=1	
