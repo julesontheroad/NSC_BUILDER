@@ -3722,6 +3722,7 @@ if __name__ == '__main__':
 										contentlist=f.get_content(ofolder,vkeypatch,delta)
 								else:
 									contentlist=f.get_content(False,False,delta)
+								print(contentlist)
 								f.flush()
 								f.close()
 								if len(prlist)==0:
@@ -4084,6 +4085,7 @@ if __name__ == '__main__':
 					osizelist=list()
 					totSize=0
 					c=0
+					# print(prlist)
 					for i in range(len(prlist)):
 						for j in prlist[i][4]:
 							oflist.append(j[0])

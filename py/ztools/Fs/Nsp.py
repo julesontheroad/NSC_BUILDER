@@ -6312,8 +6312,18 @@ class Nsp(Pfs0):
 									try:
 										os.remove(outf) 	
 									except:
-										pass								
-							titlerights=titleid2+str('0'*15)+str(crypto2)
+										pass
+							# print(crypto2)
+							# print(str(hex(int(str(crypto2))))[2:])
+							if int(crypto2)>9:
+								kg=str(hex(int(str(crypto2))))[2:]
+							else:
+								kg=str(crypto2)
+							if len(str(kg))==1:
+								tikname=str(titleid2).lower()+'000000000000000'+kg+'.tik'
+							elif len(str(kg))==2:
+								tikname=str(titleid2)+'00000000000000'+kg+'.tik'										
+							titlerights=tikname[0:32]
 							# print(ncalist)
 							contentlist.append([str(self._path),titleid2,titlerights,keygen,ncalist,CTYPE,version])
 							
@@ -6322,6 +6332,8 @@ class Nsp(Pfs0):
 				test=file._path
 				test=test[0:32]
 				for i in contentlist:
+					# print(test)
+					# print(i[2])
 					if i[2]==test:
 						i[4].append([file._path,file.size])
 		'''
