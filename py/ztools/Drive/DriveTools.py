@@ -135,6 +135,114 @@ def get_files_from_head_xci(file,kbsize=8):
 		print(e, file=sys.stderr)
 	return files_list
 
+def get_files_from_head_xci_fw(file,partition='update',kbsize=32):
+	kbsize=int(kbsize);buf=int(8*1024)
+	files_list=list();file.rewind()
+	try:
+		rawhead = io.BytesIO(file.read(int(0x200)))
+		data=rawhead.read()	
+		try:			
+			rawhead.seek(0x100)
+			magic=rawhead.read(0x4)
+			# print(magic)
+			if magic==b'HEAD':
+				HFS0_offset=0xF000
+				data=file.read_at(HFS0_offset,int(kbsize*1024))
+				rawhead = io.BytesIO(data)
+				rmagic=rawhead.read(0x4)
+				# print(rmagic)
+				if rmagic==b'HFS0':
+					head=data[0:4]
+					n_files=(data[4:8])
+					n_files=int.from_bytes(n_files, byteorder='little')		
+					st_size=(data[8:12])
+					st_size=int.from_bytes(st_size, byteorder='little')		
+					junk=(data[12:16])
+					offset=(0x10 + n_files * 0x40)
+					stringTable=(data[offset:offset+st_size])
+					stringEndOffset = st_size
+					headerSize = 0x10 + 0x40 * n_files + st_size
+					# print(head)
+					# print(str(n_files))
+					# print(str(st_size))	
+					# print(str((stringTable)))
+					for i in range(n_files):
+						i = n_files - i - 1
+						pos=0x10 + i * 0x40
+						offset = data[pos:pos+8]
+						offset=int.from_bytes(offset, byteorder='little')			
+						size = data[pos+8:pos+16]
+						size=int.from_bytes(size, byteorder='little')			
+						nameOffset = data[pos+16:pos+20] # just the offset
+						nameOffset=int.from_bytes(nameOffset, byteorder='little')			
+						name = stringTable[nameOffset:stringEndOffset].decode('utf-8').rstrip(' \t\r\n\0')
+						stringEndOffset = nameOffset
+						junk2 = data[pos+20:pos+24] # junk data
+						# print(name)
+						# print(offset)	
+						# print(size)	
+						off1=offset+headerSize+HFS0_offset
+						off2=off1+size
+						files_list.append([name,off1,off2,size])	
+					files_list.reverse()	
+					# print(files_list)	
+					updoffset=False
+					for f in files_list:
+						if f[0]==str(partition).lower():
+							updoffset=f[1]
+							break
+					files_list=list()		
+					if updoffset!=False:
+						data=file.read_at(updoffset,int(kbsize*1024))
+						rawhead = io.BytesIO(data)
+						a=rawhead.read()
+						rawhead.seek(0)
+						rmagic=rawhead.read(0x4)	
+						if rmagic==b'HFS0':
+							#print(rmagic)
+							head=data[0:4]
+							n_files=(data[4:8])
+							n_files=int.from_bytes(n_files, byteorder='little')		
+							st_size=(data[8:12])
+							st_size=int.from_bytes(st_size, byteorder='little')		
+							junk=(data[12:16])
+							offset=(0x10 + n_files * 0x40)
+							stringTable=(data[offset:offset+st_size])
+							stringEndOffset = st_size
+							headerSize = 0x10 + 0x40 * n_files + st_size
+							# print(head)
+							# print(str(n_files))
+							# print(str(st_size))	
+							# print(str((stringTable)))
+							for i in range(n_files):
+								i = n_files - i - 1
+								pos=0x10 + i * 0x40
+								offset = data[pos:pos+8]
+								offset=int.from_bytes(offset, byteorder='little')			
+								size = data[pos+8:pos+16]
+								size=int.from_bytes(size, byteorder='little')			
+								nameOffset = data[pos+16:pos+20] # just the offset
+								nameOffset=int.from_bytes(nameOffset, byteorder='little')			
+								name = stringTable[nameOffset:stringEndOffset].decode('utf-8').rstrip(' \t\r\n\0')
+								stringEndOffset = nameOffset
+								junk2 = data[pos+20:pos+24] # junk data
+								#print(name)
+								#print(offset)	
+								#print(size)	
+								off1=offset+headerSize+HFS0_offset
+								off2=off1+size
+								files_list.append([name,off1,off2,size])	
+								# with open(filename, 'r+b') as f:	
+									# f.seek(off1)
+									# print(f.read(0x4))
+							files_list.reverse()	
+							# print(files_list)
+		except IOError as e:
+			print(e, fi=sys.stderr)				
+	except IOError as e:
+		print(e, fi=sys.stderr)
+	return files_list
+
 def get_files_from_head(file,output):
 	if output.endswith('.nsp') or output.endswith('.nsz') or output.endswith('.nsx'):
 		files_list=get_files_from_head_nsp(file)
@@ -237,10 +345,11 @@ def get_cnmt_data(path=None,TD=None,filter=None,target=None,file=None):
 		except IOError as e:
 			print(e, file=sys.stderr)
 
-def get_nacp_data(path,TD=None,filter=None,file=None):		
+def get_nacp_data(path=None,TD=None,filter=None,file=None):		
 	cnmtdict,files_list,remote=get_cnmt_data(path,TD,filter)
 	print(cnmtdict)
-	nacpdict=nacp_data(remote,cnmtdict['ncadata'],files_list)
+	ctype=cnmtdict['ctype']
+	nacpdict=nacp_data(remote,cnmtdict['ncadata'],files_list,ctype)
 	print(nacpdict)
 	return nacpdict
 		
@@ -341,7 +450,7 @@ def cnmt_data(cnmt,nca,nca_name):
 	rightsId=titleid+'000000000000000'+str(crypto2)	
 	return 	titleid,titleversion,base_ID,keygeneration,rightsId,RSV,RGV,ctype,metasdkversion,exesdkversion,hasHtmlManual,Installedsize,DeltaSize,ncadata						
 
-def nacp_data(file,ncadata,files_list):
+def nacp_data(file,ncadata,files_list,ctype):
 	ncaname=None;dict={}
 	for entry in ncadata:
 		if str(entry['NCAtype']).lower()=='control':
@@ -431,6 +540,24 @@ def nacp_data(file,ncadata,files_list):
 			dict['ProgramIndex']=nacp.get_ProgramIndex(readInt8(f,'little'))	
 			dict['RequiredNetworkServiceLicenseOnLaunch']=nacp.get_RequiredNetworkServiceLicenseOnLaunch(readInt8(f,'little'))	
 		except:pass	
+		nca.rewind()
+		title,editor,ediver,SupLg,regionstr,isdemo=nca.get_langueblock('DLC',roman=True)
+		dict['title']=title
+		dict['editor']=editor
+		dict['SupLg']=SupLg
+		if ctype=='GAME':
+			if isdemo==1:
+				ctype='DEMO'
+			if isdemo==2:
+				ctype='RETAILINTERACTIVEDISPLAY'
+		elif ctype=='UPDATE':		
+			if isdemo==1:
+				ctype='DEMO UPDATE'
+			if isdemo==2:
+				ctype='RETAILINTERACTIVEDISPLAY UPDATE'					
+		else:
+			ctype=ctype
+		dict['ctype']=ctype	
 	return dict						
 	
 def get_xci_rom_size(remote):

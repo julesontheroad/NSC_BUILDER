@@ -59,3 +59,5 @@ py/ztools/geckodriver.exe
 *.7z
 *.zip
 py/ztools/nstool.exe
+py/zconfig/local_libraries.txt
+py/zconfig/NUT_DB_RAW.txt

@@ -128,7 +128,7 @@ def getMinRSV(keygeneration, RSV):
 		RSV=9*67108864
 		return RSV	
 	if keygeneration == 11:
-		RSV=9*67108864+2*1048576
+		RSV=9*67108864+1*1048576
 		return RSV				
 	else:
 		return RSV		
@@ -1445,12 +1445,13 @@ def ret_xci_offsets_fw(filepath,partition='update',kbsize=32):
 		Print.error('Exception: ' + str(e))
 	return files_list	
 
-def count_content(filepath):
+def count_content(filepath,filelist=None):
 	counter=0
-	if filepath.endswith('.nsp')or filepath.endswith('.nsx') or filepath.endswith('.nsz') or filepath.endswith('.ns0'):
-		files_list=ret_nsp_offsets(filepath)
-	elif filepath.endswith('.xci') or filepath.endswith('.xcz') or filepath.endswith('.xc0'):	
-		files_list=ret_xci_offsets(filepath)
+	if files_list==None:
+		if filepath.endswith('.nsp')or filepath.endswith('.nsx') or filepath.endswith('.nsz') or filepath.endswith('.ns0'):
+			files_list=ret_nsp_offsets(filepath)
+		elif filepath.endswith('.xci') or filepath.endswith('.xcz') or filepath.endswith('.xc0'):	
+			files_list=ret_xci_offsets(filepath)
 	for i in range(len(files_list)):
 		entry=files_list[i]
 		if str(entry[0]).endswith('cnmt.nca'):
@@ -1463,15 +1464,18 @@ def trimm_module_id(moduleid):
 		moduleid=moduleid[:-2]
 	return moduleid	
 	
-def get_mc_isize(filepath):
+def get_mc_isize(filepath=None,files_list=None):
 	counter=0;size=0
-	if filepath.endswith('.nsp')or filepath.endswith('.nsx') or filepath.endswith('.nsz') or filepath.endswith('.ns0'):
-		files_list=ret_nsp_offsets(filepath)
-	elif filepath.endswith('.xci') or filepath.endswith('.xcz') or filepath.endswith('.xc0'):	
-		files_list=ret_xci_offsets(filepath)
-	for i in range(len(files_list)):
-		entry=files_list[i]
-		size+=int(entry[3])
+	if files_list==None:
+		files_list=[]
+		if filepath.endswith('.nsp')or filepath.endswith('.nsx') or filepath.endswith('.nsz') or filepath.endswith('.ns0'):
+			files_list=ret_nsp_offsets(filepath)
+		elif filepath.endswith('.xci') or filepath.endswith('.xcz') or filepath.endswith('.xc0'):	
+			files_list=ret_xci_offsets(filepath)
+	else:		
+		for i in range(len(files_list)):
+			entry=files_list[i]
+			size+=int(entry[3])
 	return size		
 
 def cnmt_type(type_n):

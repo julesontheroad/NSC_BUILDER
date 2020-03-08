@@ -484,9 +484,14 @@ class chunk():
 		titleKey=False;deckey=False
 		rightsId=self.cnmtdata['rightsId'];ticket=None
 		keygeneration=self.cnmtdata['keygeneration']
+		hasrights=True
 		try:
-			if rightsId != None and sum(rightsId)!=0:
-				tkname=str(rightsId.lower)+'.tik'
+			if int(rightsId,16)==0:
+				hasrights=False
+		except:pass			
+		try:
+			if rightsId != None and hasrights==True:
+				tkname=str(rightsId.lower())+'.tik'
 				tickets=file_location(filepath,name=tkname,Printdata=False)
 				# print(tickets)
 				if tickets:
@@ -494,10 +499,10 @@ class chunk():
 					tk=Ticket()
 					tk.open(MemoryFile(self.memoryload(ticket).read()))
 					tk.rewind()	
-					titleKey = ticket.getTitleKeyBlock()	
+					titleKey = tk.getTitleKeyBlock()	
 					titleKey=str(hx(titleKey.to_bytes(16, byteorder='big')))
 					titleKey=titleKey[2:-1].upper()
-					deckey = Keys.decryptTitleKey(ticket.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(int(keygeneration)))						
+					deckey = Keys.decryptTitleKey(tk.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(int(keygeneration)))						
 					deckey=(str(hx(deckey))[2:-1]).upper()	
 					# print(titleKey)	
 					# print(deckey)	
