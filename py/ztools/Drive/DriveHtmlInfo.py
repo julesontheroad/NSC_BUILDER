@@ -18,6 +18,7 @@ from Fs import Type
 from Fs.Nacp import Nacp
 from Fs.pyNPDM import NPDM
 from Fs.pyNCA3 import NCA3
+from Fs.Ticket import Ticket
 import nutdb
 import textwrap
 from secondary import clear_Screen
@@ -26,6 +27,8 @@ from python_pick import Picker
 from Interface import About
 import os
 import csv
+import Print
+import DBmodule
 
 squirrel_dir=os.path.abspath(os.curdir)
 NSCB_dir=os.path.abspath('../'+(os.curdir))
@@ -402,7 +405,353 @@ def print_dat(dat):
 	# img = Image.open(dat)
 	# img.show()
 	return a								
-								
+	
+def getDBdict(path=None,TD=None,filter=None,file=None,feed='',roma=True):		
+	if path==None and file==None:
+		return False
+	if file != None:
+		remote=file
+		type='file'
+		remote.rewind()
+	elif path.startswith('http'):
+		url=path
+		remote=Public.location(url)
+		type='file'
+	else:		
+		if path=='pick':
+			account=Private.token_picker()
+			TD=Private.TD_picker(account)
+			return
+		test=path.split(".+")
+		if TD=='pick':
+			TD=Private.TD_picker(path)		
+		if len(test)>1 or path.endswith('/') or path.endswith('\\'):
+			type="folder"
+		else:	
+			ID,name,type,size,md5,remote=Private.get_Data(path,TD=TD,Print=False)
+	if type!='file':
+		# print('Path is a folder')
+		Private.folderpicker(path,TD=TD,filter=filter,mode='read_nacp')
+		return
+	else:		
+		cnmtdata,files_list,remote=DriveTools.get_cnmt_data(file=remote)
+		ctype=cnmtdata['ctype']
+		DBdict={}
+		if ctype!='DLC':
+			nacpdata=DriveTools.nacp_data(remote,cnmtdata['ncadata'],files_list,ctype)		
+			sqname=nacpdata['title']
+			sqeditor=nacpdata['editor']
+			SupLg=nacpdata['SupLg']
+			ctype=nacpdata['ctype']
+			nacpdict=nacpdata
+		else:	
+			sqname,sqeditor,SupLg=DB_get_names_from_nutdb(cnmtdata['titleid'])
+		titlekey=''
+		dectkey=''
+		titlekey,dectkey=db_get_titlekey(cnmtdata,files_list,remote)
+
+		#cnmt flags	
+		DBdict['id']=cnmtdata['titleid']
+		DBdict['baseid']=cnmtdata['baseid']
+		DBdict['rightsId']=cnmtdata['rightsId']	
+		DBdict['Type']=ctype					
+		DBdict['version']=cnmtdata['version']		
+		DBdict['keygeneration']=cnmtdata['keygeneration']			
+		DBdict['RSV']=(cnmtdata['rsv'])[1:-1]		
+		DBdict['RGV']=cnmtdata['rgv']			
+		DBdict['metasdkversion']=cnmtdata['metasdkversion']	
+		DBdict['exesdkversion']=cnmtdata['exesdkversion']
+		DBdict['InstalledSize']=cnmtdata['Installedsize']		
+		DBdict['deltasize']=cnmtdata['DeltaSize']		
+		DBdict['HtmlManual']=cnmtdata['hasHtmlManual']			
+		DBdict['ncasizes']=cnmtdata['ncadata']				
+
+		#nacpt flags
+		if ctype != 'DLC':
+			DBdict['baseName']=sqname	
+			DBdict['contentname']='-'
+		else:
+			DBdict['baseName']='-'
+			DBdict['contentname']=sqname				
+		DBdict['editor']=sqeditor	
+		DBdict['languages']=SupLg			
+		if ctype != 'DLC':
+			try:
+				if nacpdict['StartupUserAccount']=='RequiredWithNetworkServiceAccountAvailable' or nacpdict['RequiredNetworkServiceLicenseOnLaunch']!='None':
+					DBdict['linkedAccRequired']='True'		
+				else:
+					DBdict['linkedAccRequired']='False'			
+				DBdict['dispversion']=nacpdict['BuildNumber']		
+				DBdict['RegionalBaseNames']=nacpdict['RegionalNames']
+				DBdict['RegionalContentNames']='-'		
+				DBdict['RegionalEditors']=nacpdict['RegionalEditors']
+				DBdict['AgeRatings']=nacpdict['AgeRatings']			
+				DBdict['isbn']=nacpdict['ISBN']	
+				DBdict['StartupUserAccount']=nacpdict['StartupUserAccount']	
+				DBdict['UserAccountSwitchLock']=nacpdict['UserAccountSwitchLock']	
+				DBdict['AddOnContentRegistrationType']=nacpdict['AddOnContentRegistrationType']		
+				DBdict['ctype']=nacpdict['ctype']				
+				DBdict['ParentalControl']=nacpdict['ParentalControl']		
+				DBdict['ScreenshotsEnabled']=nacpdict['ScreenshotsEnabled']
+				DBdict['VideocaptureEnabled']=nacpdict['VideocaptureEnabled']
+				DBdict['DataLossConfirmation']=nacpdict['dataLossConfirmation']
+				DBdict['PlayLogPolicy']=nacpdict['PlayLogPolicy']
+				DBdict['PresenceGroupId']=nacpdict['PresenceGroupId']	
+				DBdict['AddOnContentBaseId']=nacpdict['AddOnContentBaseId']	
+				DBdict['SaveDataOwnerId']=nacpdict['SaveDataOwnerId']	
+				DBdict['UserAccountSaveDataSize']=nacpdict['UserAccountSaveDataSize']
+				DBdict['UserAccountSaveDataJournalSize']=nacpdict['UserAccountSaveDataJournalSize']
+				DBdict['DeviceSaveDataSize']=nacpdict['DeviceSaveDataSize']
+				DBdict['DeviceSaveDataJournalSize']=nacpdict['DeviceSaveDataJournalSize']	
+				DBdict['BcatDeliveryCacheStorageSize']=nacpdict['BcatDeliveryCacheStorageSize']			
+				DBdict['ApplicationErrorCodeCategory']=nacpdict['ApplicationErrorCodeCategory']					
+				DBdict['LocalCommunicationId']=nacpdict['LocalCommunicationId']				
+				DBdict['LogoType']=nacpdict['LogoType']					
+				DBdict['LogoHandling']=nacpdict['LogoHandling']			
+				DBdict['RuntimeAddOnContentInstall']=nacpdict['RuntimeAddOnContentInstall']					
+				DBdict['CrashReport']=nacpdict['CrashReport']			
+				DBdict['Hdcp']=nacpdict['Hdcp']			
+				DBdict['SeedForPseudoDeviceId']=nacpdict['SeedForPseudoDeviceId']			
+				DBdict['BcatPassphrase']=nacpdict['BcatPassphrase']			
+				DBdict['UserAccountSaveDataSizeMax']=nacpdict['UserAccountSaveDataSizeMax']			
+				DBdict['UserAccountSaveDataJournalSizeMax']=nacpdict['UserAccountSaveDataJournalSizeMax']			
+				DBdict['DeviceSaveDataSizeMax']=nacpdict['DeviceSaveDataSizeMax']					
+				DBdict['DeviceSaveDataJournalSizeMax']=nacpdict['DeviceSaveDataJournalSizeMax']	
+				DBdict['TemporaryStorageSize']=nacpdict['TemporaryStorageSize']	
+				DBdict['CacheStorageSize']=nacpdict['CacheStorageSize']			
+				DBdict['CacheStorageJournalSize']=nacpdict['CacheStorageJournalSize']	
+				DBdict['CacheStorageDataAndJournalSizeMax']=nacpdict['CacheStorageDataAndJournalSizeMax']	
+				DBdict['CacheStorageIndexMax']=nacpdict['CacheStorageIndexMax']			
+				DBdict['PlayLogQueryableApplicationId']=nacpdict['PlayLogQueryableApplicationId']		
+				DBdict['PlayLogQueryCapability']=nacpdict['PlayLogQueryCapability']				
+				DBdict['Repair']=nacpdict['Repair']	
+				DBdict['ProgramIndex']=nacpdict['ProgramIndex']	
+				DBdict['RequiredNetworkServiceLicenseOnLaunch']=nacpdict['RequiredNetworkServiceLicenseOnLaunch']		
+			except:pass			
+
+		#ticket flags	
+		if titlekey==False:
+			titlekey='-'
+			dectkey='-'
+		DBdict['key']=titlekey		
+		DBdict['deckey']=dectkey
+		
+		#Distribution type flags
+		if ctype=='GAME':
+			DBdict['DistEshop']='-'
+			DBdict['DistCard']='True'
+		else:	
+			DBdict['DistEshop']='-'
+			DBdict['DistCard']='True'
+
+		#xci flags		
+		DBdict['FWoncard']='-'
+		if remote.name.endswith('.xci') or  remote.name.endswith('.xcz'):
+			try:
+				DBdict['FWoncard']=DBmodule.FWDB.detect_xci_fw(remote,remote=True)
+			except BaseException as e:
+				Print.error('Exception: ' + str(e))
+		
+		if remote.name.endswith('.xci') or  remote.name.endswith('.xcz'):
+			gamecardSize=remote.read_at(0x10D,0x1)
+			validDataEndOffset=remote.seek(0x118)
+			validDataEndOffset=readInt64(remote)
+			GCFlag=(str(hx(gamecardSize))[2:-1]).upper()
+			valid_data=int(((validDataEndOffset+0x1)*0x200))
+			GCSize=sq_tools.getGCsizeinbytes(GCFlag)
+			GCSize=int(GCSize)	
+			DBdict['GCSize']=GCSize	
+			DBdict['TrimmedSize']=valid_data	
+
+		#Check if multicontent
+		content_number=0
+		for i in range(len(files_list)):
+			if (files_list[i][0]).endswith('cnmt.nca'):
+				content_number+=1	
+		DBdict['ContentNumber']=str(content_number)
+		maincnmt,mcstring,mGame,mcontent=db_multicontent_data(cnmtdata,files_list,remote,content_number)
+		if mcstring !=False:
+			DBdict['ContentString']=mcstring
+		if content_number!=False and content_number>1:
+			if mGame==True:
+				DBdict['Type']="MULTIGAME"			
+			else:
+				DBdict['Type']="MULTICONTENT"
+			DBdict['InstalledSize']=sq_tools.get_mc_isize(files_list=files_list)
+			
+		DBdict['nsuId']='-'	
+		DBdict['genretags']='-'	
+		DBdict['ratingtags']='-'
+		DBdict['worldreleasedate']='-'			
+		DBdict['numberOfPlayers']='-'
+		DBdict['iconUrl']='-'					
+		DBdict['screenshots']='-'			
+		DBdict['bannerUrl']='-'			
+		DBdict['intro']='-'			
+		DBdict['description']='-'			
+		if ctype=='GAME' or ctype=='DLC' or ctype=='DEMO':	
+			nsuId,worldreleasedate,genretags,ratingtags,numberOfPlayers,intro,description,iconUrl,screenshots,bannerUrl,region,rating,developer,productCode,OnlinePlay,SaveDataCloud,playmodes,video,shopurl=nutdb.get_content_data(cnmtdata['titleid'])
+			regions=nutdb.get_contenregions(cnmtdata['titleid'])
+		else:
+			nsuId,worldreleasedate,genretags,ratingtags,numberOfPlayers,intro,description,iconUrl,screenshots,bannerUrl,region,rating,developer,productCode,OnlinePlay,SaveDataCloud,playmodes,video,shopurl=nutdb.get_content_data(cnmtdata['titleid'])
+			regions=nutdb.get_contenregions(cnmtdata['titleid'])		
+		if 	nsuId!=False:
+			DBdict['nsuId']=nsuId
+		if 	genretags!=False:
+			DBdict['genretags']=genretags
+		if 	ratingtags!=False:
+			DBdict['ratingtags']=ratingtags
+		if 	worldreleasedate!=False:
+			DBdict['worldreleasedate']=worldreleasedate
+		if 	numberOfPlayers!=False:
+			DBdict['numberOfPlayers']=numberOfPlayers
+		if 	iconUrl!=False:
+			DBdict['iconUrl']=iconUrl
+		if 	screenshots!=False:				
+			DBdict['screenshots']=screenshots
+		if 	bannerUrl!=False:				
+			DBdict['bannerUrl']=bannerUrl			
+		if 	intro!=False:	
+			DBdict['intro']=intro			
+		if 	description!=False:	
+			DBdict['description']=description		
+		if 	rating!=False:	
+			DBdict['eshoprating']=rating	
+		if 	developer!=False:	
+			DBdict['developer']=developer	
+		if 	productCode!=False:	
+			DBdict['productCode']=productCode	
+		if 	OnlinePlay!=False:	
+			DBdict['OnlinePlay']=OnlinePlay	
+		if 	SaveDataCloud!=False:	
+			DBdict['SaveDataCloud']=SaveDataCloud
+		if 	playmodes!=False:	
+			DBdict['playmodes']=playmodes
+		if 	video!=False:	
+			DBdict['video']=video
+		if 	shopurl!=False:	
+			DBdict['shopurl']=shopurl			
+		if 	len(regions)>0:	
+			DBdict['regions']=regions					
+		metascore,userscore,openscore=nutdb.get_metascores(cnmtdata['titleid'])	
+		DBdict['metascore']='-'				
+		DBdict['userscore']='-'	
+		DBdict['openscore']='-'			
+		if 	metascore!=False:	
+			DBdict['metascore']=metascore			
+		if 	userscore!=False:	
+			DBdict['userscore']=userscore	
+		if 	openscore!=False:	
+			DBdict['openscore']=openscore				
+		return DBdict							
+	
+def DB_get_names_from_nutdb(titleid):
+	try:
+		sqname,sqeditor=nutdb.get_dlcData(titleid)
+		SupLg=nutdb.get_content_langue(titleid)		
+		return sqname,sqeditor,SupLg
+	except BaseException as e:
+		Print.error('Exception: ' + str(e))	
+		return "-","-","-"		
+	
+def db_get_titlekey(cnmtdata,files_list,remote):	
+	titleKey=False;deckey=False
+	rightsId=cnmtdata['rightsId'];
+	keygeneration=cnmtdata['keygeneration']
+	hasrights=True;tkname=None
+	try:
+		if int(rightsId,16)==0:
+			hasrights=False
+	except:pass		
+	try:
+		if rightsId != None and hasrights==True:
+			tkname=str(rightsId.lower())+'.tik'
+			for i in range(len(files_list)):
+				if (files_list[i][0])==tkname:
+					tkname=files_list[i][0]
+					off1=files_list[i][1]
+					off2=files_list[i][2]
+					sz=files_list[i][3]
+					break			
+			remote.seek(off1,off2)				
+			buf=int(sz)				
+			tk=Ticket()
+			tk.open(MemoryFile(remote.read(buf)))
+			tk.rewind()	
+			titleKey = tk.getTitleKeyBlock()	
+			titleKey=str(hx(titleKey.to_bytes(16, byteorder='big')))
+			titleKey=titleKey[2:-1].upper()
+			deckey = Keys.decryptTitleKey(tk.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(int(keygeneration)))						
+			deckey=(str(hx(deckey))[2:-1]).upper()	
+	except BaseException as e:
+		# Print.error('Exception: ' + str(e))	
+		pass			
+	return titleKey,deckey
+	
+def db_multicontent_data(cnmtdata,files_list,remote,content_number):
+	file=False;titleid=False;nG=0;nU=0;nD=0;mcstring="";mGame=False;mcontent=False
+	if content_number>1:
+		mcontent=True
+		for i in range(len(files_list)):
+			if (files_list[i][0]).endswith('.cnmt.nca'):
+				name=files_list[i][0]
+				off1=files_list[i][1]
+				off2=files_list[i][2]
+				sz=files_list[i][3]
+				break		
+		remote.seek(off1,off2)				
+		buf=int(sz)			
+		nca=Nca()
+		nca.open(MemoryFile(remote.read(buf)))	
+		if titleid==False:
+			file=name
+		titleid=str(nca.header.titleId)								
+		if str(nca.header.titleId).endswith('000'):	
+			nG+=1
+		elif str(nca.header.titleId).endswith('800'):
+			if nU==0 and nG<2:
+				file=str(nca._path)
+			nU+=1
+		else:
+			nD+=1
+	else:	
+		for i in range(len(files_list)):
+			if (files_list[i][0]).endswith('.cnmt.nca'):
+				name=files_list[i][0]
+				off1=files_list[i][1]
+				off2=files_list[i][2]
+				sz=files_list[i][3]
+				break			
+		file=name
+		titleid=cnmtdata['titleid']
+		if str(titleid).endswith('000'):	
+			nG+=1
+		elif str(titleid).endswith('800'):
+			if nU==0 and nG<2:
+				file=str(nca._path)
+			nU+=1
+		else:
+			nD+=1	
+		mGame=False;mcontent=False	
+	if nG>0:
+		mcstring+='{} Game'.format(str(nG))
+		if nG>1:
+			mcstring+='s'
+			mGame=True
+	if nU>0:
+		if nG>0:
+			mcstring+=', '
+		mcstring+='{} Update'.format(str(nU))	
+		if nU>1:
+			mcstring+='s'			
+	if nD>0:
+		if nG>0 or nU>0: 
+			mcstring+=', '		
+		mcstring+='{} DLC'.format(str(nD))	
+		if nD>1:
+			mcstring+='s'			
+	return file,mcstring,mGame,mcontent	
+		
 def read_nacp(path=None,TD=None,filter=None,file=None,feed='',roma=True):
 	if path==None and file==None:
 		return False

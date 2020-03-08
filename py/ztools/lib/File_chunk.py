@@ -25,7 +25,6 @@ from Fs.Nca import NcaHeader
 from Fs.File import MemoryFile
 from Fs.pyNCA3 import NCA3
 from Fs.pyNPDM import NPDM
-from Fs.pyCNMT import CNMT
 from Fs.BaseFs import BaseFs
 import math  
 import sys
@@ -150,7 +149,10 @@ def generate_open_file_streams(filenames):
 		
 		
 def read_start(filepath):		
-	filenames=retchunks(filepath)
+	filelist=retchunks(filepath)
+	filenames=[];
+	for item in filelist:
+		filenames.append(item[0])
 	f = chain_streams(generate_open_file_streams(filenames))
 	if filepath.endswith('.xc0'):
 		files_list=sq_tools.ret_xci_offsets(filepath)	
@@ -248,12 +250,13 @@ def return_DBdict(filepath):
 	cnmtfiles=file_location(filepath,'.cnmt.nca',Printdata=False)	
 	content_number=len(cnmtfiles)	
 	memoryload(cnmtfiles,target=False,ender='.cnmt.nca')
-	# if content_number>1:
-		# file,mcstring,mGame=self.choosecnmt(cnmtnames)	
-		# DBdict=self.getDBdict(file,content_number=content_number,mcstring=mcstring,mGame=mGame)
-	# else:
-		# DBdict=self.getDBdict(cnmtnames[0],content_number=content_number)	
-	# return DBdict	
+	if content_number>1:
+		file,mcstring,mGame=self.choosecnmt(cnmtnames)	
+		DBdict=self.getDBdict(file,content_number=content_number,mcstring=mcstring,mGame=mGame)
+	else:
+		DBdict=self.getDBdict(cnmtnames[0],content_number=content_number)	
+	print(DBdict)
+	return DBdict	
 
 def memoryload(filelist,target=False,ender=False):
 	for i in range(len(filelist)):

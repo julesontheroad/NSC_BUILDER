@@ -169,12 +169,16 @@ class FWDB():
 		  json_file.write(app_json)	
 		print('Updated firmware json')	
 		
-	def detect_xci_fw(filepath,doprint=True):
+	def detect_xci_fw(filepath,doprint=True,remote=False):
 		import sq_tools	
 		import nutdb
 		nutdb.check_other_file(urlconfig,'fw',nutdb=False)
 		FW=None;dump={}
-		xcifw=sq_tools.ret_xci_offsets_fw(filepath)
+		if remote==False:
+			xcifw=sq_tools.ret_xci_offsets_fw(filepath)
+		else:
+			from Drive import DriveTools
+			xcifw=DriveTools.get_files_from_head_xci_fw(filepath)
 		# print(xcifw)
 		fwfiles=list()
 		if len(xcifw)>0:

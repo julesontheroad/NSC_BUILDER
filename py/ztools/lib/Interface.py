@@ -18,6 +18,25 @@ import File_chunk2 as file_chunk
 import csv
 from listmanager import folder_to_list
 
+def About():	
+	print('                                       __          _ __    __                         ')
+	print('                 ____  _____ ____     / /_  __  __(_) /___/ /__  _____                ')
+	print('                / __ \/ ___/ ___/    / __ \/ / / / / / __  / _ \/ ___/                ')
+	print('               / / / (__  ) /__     / /_/ / /_/ / / / /_/ /  __/ /                    ')
+	print('              /_/ /_/____/\___/____/_.___/\__,_/_/_/\__,_/\___/_/                     ')
+	print('                             /_____/                                                  ')
+	print('------------------------------------------------------------------------------------- ')
+	print('                        NINTENDO SWITCH CLEANER AND BUILDER                           ')
+	print('------------------------------------------------------------------------------------- ')
+	print('=============================     BY JULESONTHEROAD     ============================= ')
+	print('------------------------------------------------------------------------------------- ')
+	print('"                                POWERED BY SQUIRREL                                " ')
+	print('"                    BASED ON THE WORK OF BLAWAR AND LUCA FRAGA                     " ')
+	print('------------------------------------------------------------------------------------- ')                   
+	print("Program's github: https://github.com/julesontheroad/NSC_BUILDER                       ")
+	print('Cheats and Eshop information from nutdb and http://tinfoil.io                         ')
+	print('------------------------------------------------------------------------------------- ')
+
 eel.init('web')
 
 squirrel_dir=os.path.abspath(os.curdir)
@@ -50,6 +69,12 @@ local_lib_file = os.path.join(zconfig_dir, 'local_libraries.txt')
 remote_lib_file = os.path.join(zconfig_dir, 'remote_libraries.txt')
 download_lib_file = os.path.join(zconfig_dir, 'download_libraries.txt')
 
+globalpath=None;globalTD=None;globalremote=None
+globalocalpath=None
+from Drive import Private as DrivePrivate
+from Drive import DriveHtmlInfo
+from Drive import Public as DrivePublic
+
 def libraries(tfile):
 	db={}
 	try:
@@ -72,6 +97,33 @@ def libraries(tfile):
 		return db
 	except: return False
 
+def get_library_from_path(tfile,filename):
+	db=libraries(remote_lib_file)
+	TD=None;lib=None;path="null"
+	for entry in db:
+		path=db[entry]['path']
+		if filename.startswith(path):
+			TD=db[entry]['TD_name']
+			lib=entry
+			libpath=path
+			break
+		else:
+			pass
+	return lib,TD,libpath
+	
+def deepcheck_path(path1,path2,accuracy=0.9):	
+	path1=path1.lower()	
+	path1 = list([val for val in path1 if val.isalnum()]) 
+	path1 = "".join(path1) 			
+	path2=path2.lower()	
+	path2 = list([val for val in path2 if val.isalnum()]) 
+	path2 = "".join(path2) 	
+	ratio=SequenceMatcher(None, path1, path2).ratio()
+	if ratio>=accuracy:
+		return True
+	else:
+		return False
+										
 def  html_feed(feed='',style=1,message=''):	
 	if style==1:
 		feed+='<p style="font-size: 14px; justify;text-justify: inter-word;"><strong>{}</strong></p>'.format(message)	
@@ -206,6 +258,7 @@ def search_local_lib(value,library):
 			results.sort()	
 			html='<ul style="margin-bottom: 2px;margin-top: 3px">'
 			i=0
+			print("  - Retrieved {} files".format(str(len(results))))
 			for item in results:
 				i+=1
 				var='local_res_'+str(i)
@@ -216,7 +269,9 @@ def search_local_lib(value,library):
 			for entry in db:
 				path=db[entry]['path']
 				print("* Searching library {}".format(entry))
-				results+=folder_to_list(path,'all',value)	
+				res=folder_to_list(path,'all',value)	
+				print("  - Retrieved {} files".format(str(len(res))))
+				results+=res	
 			results.sort()	
 			html='<ul style="margin-bottom: 2px;margin-top: 3px">'
 			i=0		
@@ -248,12 +303,12 @@ def get_drive_libraries():
 		
 @eel.expose
 def search_remote_lib(value,library): 
-	from Drive import Private as DrivePrivate
 	try:	
 		db=libraries(remote_lib_file)	
 		if db==False:
 			return False
 		if not library.lower()=='all':
+			results=[]	
 			path=db[library]['path']
 			TD=db[library]['TD_name']
 			print("* Searching library {}".format(library))
@@ -271,7 +326,7 @@ def search_remote_lib(value,library):
 			for item in send_results:
 				i+=1
 				var='remote_res_'+str(i)
-				html+='<li style="margin-bottom: 2px;margin-top: 3px" onclick="start_from_library({})"><strong id="{}">{}</strong></li>'.format(var,var,item)
+				html+='<li style="margin-bottom: 2px;margin-top: 3px" onclick="start_from_remote_library({})"><strong id="{}">{}</strong></li>'.format(var,var,item)
 			html+='</ul>'
 		else:
 			results=[]	
@@ -293,7 +348,7 @@ def search_remote_lib(value,library):
 			for item in send_results:
 				i+=1
 				var='remote_res_'+str(i)
-				html+='<li style="margin-bottom: 2px;margin-top: 3px" onclick="start_from_library({})"><strong id="{}">{}</strong></li>'.format(var,var,item)
+				html+='<li style="margin-bottom: 2px;margin-top: 3px" onclick="start_from_remote_library({})"><strong id="{}">{}</strong></li>'.format(var,var,item)
 			html+='</ul>'			
 		return html	
 	except BaseException as e:
@@ -319,6 +374,13 @@ def getfname():
 	
 @eel.expose
 def showicon(filename):
+	# global globalocalpath;
+	# if globalocalpath!=filename:
+		# result=deepcheck_path(globalocalpath,filename)	
+		# if result==False:
+			# globalocalpath=filename
+		# else:
+			# filename=globalocalpath
 	print('* Seeking icon')
 	print(filename)
 	try:
@@ -330,11 +392,6 @@ def showicon(filename):
 			f = Fs.Xci(filename)	
 		elif filename.endswith('.xc0') or filename.endswith('.ns0') or filename.endswith('00'): 
 			a=file_chunk.icon_info(filename)	
-			encoded = b64encode(a).decode("ascii")
-			return "data:image/png;base64, " + encoded		
-		elif filename.startswith('http'):
-			from Drive import DriveHtmlInfo
-			a=DriveHtmlInfo.icon_info(filename)
 			encoded = b64encode(a).decode("ascii")
 			return "data:image/png;base64, " + encoded				
 		else: return ""
@@ -360,28 +417,61 @@ def retrieve_icon_from_server(filename):
 	else:	
 		return False	
 	iconurl=nutdb.get_icon(titleid)
-	return iconurl		
+	return iconurl
+	
+@eel.expose			
+def showicon_remote(filename):
+	global globalpath; global globalremote
+	if globalpath!=filename:
+		if not filename.startswith('http'):
+			globalpath=filename
+			lib,TD,libpath=get_library_from_path(remote_lib_file,filename)
+			ID,name,type,size,md5,remote=DrivePrivate.get_Data(filename,TD=TD,Print=False)
+			globalremote=remote
+		else:
+			globalpath=filename
+			remote=DrivePublic.location(filename);readable=remote.readable
+			globalremote=remote
+			if not readable:
+				return ""			
+	a=DriveHtmlInfo.icon_info(file=globalremote)
+		
+	# a=DriveHtmlInfo.icon_info(path=filename,TD=TD)
+	encoded = b64encode(a).decode("ascii")
+	return "data:image/png;base64, " + encoded			
 	
 @eel.expose	
-def getinfo(filename):
+def getinfo(filename,remotelocation=False):
 	print('* Retrieving Game Information')
-	if filename.endswith('.nsp')or filename.endswith('.nsx') or filename.endswith('.nsz'):
-		f = Fs.ChromeNsp(filename, 'rb')
-	elif filename.endswith('.xci') or filename.endswith('.xcz'):	
-		f = Fs.ChromeXci(filename)	
-	elif filename.endswith('.xc0') or filename.endswith('.ns0') or filename.endswith('00'):
-		f=file_chunk.chunk(filename)
-	else: return []		
-	if not filename.endswith('0'):
-		dict=f.return_DBdict()
+	if remotelocation == False:
+		if filename.endswith('.nsp')or filename.endswith('.nsx') or filename.endswith('.nsz'):
+			f = Fs.ChromeNsp(filename, 'rb')
+		elif filename.endswith('.xci') or filename.endswith('.xcz'):	
+			f = Fs.ChromeXci(filename)	
+		elif filename.endswith('.xc0') or filename.endswith('.ns0') or filename.endswith('00'):
+			f=file_chunk.chunk(filename)
+		else: return []		
+		if not filename.endswith('0'):
+			dict=f.return_DBdict()
+		else:
+			dict=f.getDBdict()		
+			# print(dict)
 	else:
-		dict=f.getDBdict()		
-		# print(dict)
-	try:
-		ModuleId,BuildID8,BuildID16=f.read_buildid()	
-		ModuleId=sq_tools.trimm_module_id(ModuleId)
-	except:
-		ModuleId="-";BuildID8="-";BuildID16="-";
+		global globalpath; global globalremote
+		if globalpath!=filename:
+			globalpath=filename
+			lib,TD,libpath=get_library_from_path(remote_lib_file,filename)
+			ID,name,type,size,md5,remote=DrivePrivate.get_Data(filename,TD=TD,Print=False)
+			globalremote=remote
+		dict=DriveHtmlInfo.getDBdict(file=globalremote)
+	if remotelocation == False:		
+		try:
+			ModuleId,BuildID8,BuildID16=f.read_buildid()	
+			ModuleId=sq_tools.trimm_module_id(ModuleId)
+		except:
+			ModuleId="-";BuildID8="-";BuildID16="-";
+	else:	
+		ModuleId="-";BuildID8="-";BuildID16="-";	
 	try:	
 		MinRSV=sq_tools.getMinRSV(dict['keygeneration'],dict['RSV'])
 		RSV_rq_min=sq_tools.getFWRangeRSV(MinRSV)
@@ -466,10 +556,13 @@ def getinfo(filename):
 	try:			
 		send_.append(RSV_rq_min[1:-1])	
 	except:send_.append('-')	
-	if 'regions' in dict:
-		reg=str((', '.join(dict['regions'])))
-		send_.append(reg)
-	else:
+	try:
+		if 'regions' in dict:
+			reg=str((', '.join(dict['regions'])))
+			send_.append(reg)
+		else:
+			send_.append('-')
+	except:
 		send_.append('-')
 	try:	
 		if dict["intro"] !='-' and dict["intro"] !=None and dict["intro"] !='':
@@ -483,14 +576,16 @@ def getinfo(filename):
 			else:
 				send_.append(dict['contentname'])				
 	except:	
-		if str(dict['Type']).upper()!='DLC':
-			try:
-				send_.append(dict['baseName'])	
-			except:send_.append('-')	
-		else:
-			try:
-				send_.append(dict['contentname'])
-			except:send_.append('-')	
+		try:
+			if str(dict['Type']).upper()!='DLC':
+				try:
+					send_.append(dict['baseName'])	
+				except:send_.append('-')	
+			else:
+				try:
+					send_.append(dict['contentname'])
+				except:send_.append('-')	
+		except:send_.append('-')		
 	try:	
 		if dict["description"] !='-':		
 			send_.append(dict["description"])
@@ -522,14 +617,25 @@ def getinfo(filename):
 		else:
 			send_.append("-")	
 	except:send_.append("-")		
-	try:	
-		if filename.endswith('.nsp')or filename.endswith('.nsx') or filename.endswith('.nsz'):
-			send_.append("Eshop")	
-		elif filename.endswith('.xci') or filename.endswith('.xcz'):
-			send_.append("Gamecard")	
-		else:		
-			send_.append("-")			
-	except:send_.append("-")
+	if remotelocation == False:	
+		try:	
+			if filename.endswith('.nsp')or filename.endswith('.nsx') or filename.endswith('.nsz'):
+				send_.append("Eshop")	
+			elif filename.endswith('.xci') or filename.endswith('.xcz'):
+				send_.append("Gamecard")	
+			else:		
+				send_.append("-")			
+		except:send_.append("-")
+	else:
+		remotename=globalremote.name
+		try:	
+			if remotename.endswith('.nsp')or remotename.endswith('.nsx') or remotename.endswith('.nsz'):
+				send_.append("Eshop")	
+			elif remotename.endswith('.xci') or remotename.endswith('.xcz'):
+				send_.append("Gamecard")	
+			else:		
+				send_.append("-")			
+		except:send_.append("-")	
 	try:
 		send_.append(sq_tools.getSize(dict['GCSize']))	
 	except:send_.append('-')	
@@ -736,25 +842,6 @@ def getverificationdata(filename):
 		os.remove(tmpfolder) 	
 	except:pass			
 	return	feed		
-	
-def About():	
-	print('                                       __          _ __    __                         ')
-	print('                 ____  _____ ____     / /_  __  __(_) /___/ /__  _____                ')
-	print('                / __ \/ ___/ ___/    / __ \/ / / / / / __  / _ \/ ___/                ')
-	print('               / / / (__  ) /__     / /_/ / /_/ / / / /_/ /  __/ /                    ')
-	print('              /_/ /_/____/\___/____/_.___/\__,_/_/_/\__,_/\___/_/                     ')
-	print('                             /_____/                                                  ')
-	print('------------------------------------------------------------------------------------- ')
-	print('                        NINTENDO SWITCH CLEANER AND BUILDER                           ')
-	print('------------------------------------------------------------------------------------- ')
-	print('=============================     BY JULESONTHEROAD     ============================= ')
-	print('------------------------------------------------------------------------------------- ')
-	print('"                                POWERED BY SQUIRREL                                " ')
-	print('"                    BASED ON THE WORK OF BLAWAR AND LUCA FRAGA                     " ')
-	print('------------------------------------------------------------------------------------- ')                   
-	print("Program's github: https://github.com/julesontheroad/NSC_BUILDER                       ")
-	print('Cheats and Eshop information from nutdb and http://tinfoil.io                         ')
-	print('------------------------------------------------------------------------------------- ')
 
 def start(browserpath='auto',videoplayback=True,height=800,width=740):
 	global enablevideoplayback
