@@ -3722,7 +3722,7 @@ if __name__ == '__main__':
 										contentlist=f.get_content(ofolder,vkeypatch,delta)
 								else:
 									contentlist=f.get_content(False,False,delta)
-								print(contentlist)
+								# print(contentlist)
 								f.flush()
 								f.close()
 								if len(prlist)==0:
