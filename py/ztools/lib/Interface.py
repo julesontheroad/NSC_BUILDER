@@ -17,6 +17,7 @@ from subprocess import call
 import File_chunk2 as file_chunk
 import csv
 from listmanager import folder_to_list
+import html
 
 def About():	
 	print('                                       __          _ __    __                         ')
@@ -374,6 +375,7 @@ def getfname():
 	
 @eel.expose
 def showicon(filename):
+	filename=html.unescape(filename)
 	# global globalocalpath;
 	# if globalocalpath!=filename:
 		# result=deepcheck_path(globalocalpath,filename)	
@@ -382,7 +384,7 @@ def showicon(filename):
 		# else:
 			# filename=globalocalpath
 	print('* Seeking icon')
-	print(filename)
+	# print(filename)
 	try:
 		if filename.endswith('.nsp')or filename.endswith('.nsx') or filename.endswith('.nsz'):
 			files_list=sq_tools.ret_nsp_offsets(filename)	
@@ -421,6 +423,7 @@ def retrieve_icon_from_server(filename):
 	
 @eel.expose			
 def showicon_remote(filename):
+	filename=html.unescape(filename)
 	global globalpath; global globalremote
 	if globalpath!=filename:
 		if not filename.startswith('http'):
@@ -442,6 +445,7 @@ def showicon_remote(filename):
 	
 @eel.expose	
 def getinfo(filename,remotelocation=False):
+	filename=html.unescape(filename)
 	print('* Retrieving Game Information')
 	if remotelocation == False:
 		if filename.endswith('.nsp')or filename.endswith('.nsx') or filename.endswith('.nsz'):
@@ -762,6 +766,7 @@ def getcheats(ID):
 
 @eel.expose	
 def getfiledata(filename,remotelocation=False):
+	filename=html.unescape(filename)
 	print('* Generating Titles File Data')
 	if remotelocation != False:
 		global globalpath; global globalremote
@@ -789,6 +794,7 @@ def getfiledata(filename,remotelocation=False):
 
 @eel.expose	
 def getnacpdata(filename,remotelocation=False):
+	filename=html.unescape(filename)
 	print('* Reading Data from Nacp')
 	if remotelocation != False:
 		global globalpath; global globalremote
@@ -822,6 +828,7 @@ def getnacpdata(filename,remotelocation=False):
 	
 @eel.expose	
 def getnpdmdata(filename,remotelocation=False):
+	filename=html.unescape(filename)
 	print('* Reading Data from Npdm')
 	if remotelocation != False:
 		global globalpath; global globalremote
@@ -851,6 +858,7 @@ def getnpdmdata(filename,remotelocation=False):
 	
 @eel.expose	
 def getcnmtdata(filename,remotelocation=False):
+	filename=html.unescape(filename)
 	print('* Reading Data from Cnmt')
 	if remotelocation != False:
 		global globalpath; global globalremote
@@ -878,6 +886,7 @@ def getcnmtdata(filename,remotelocation=False):
 	
 @eel.expose	
 def getverificationdata(filename,remotelocation=False):
+	filename=html.unescape(filename)
 	print('* Verifying files')
 	if filename.endswith('.nsp')or filename.endswith('.nsx') or filename.endswith('.nsz'):
 		f = Fs.ChromeNsp(filename, 'rb')
