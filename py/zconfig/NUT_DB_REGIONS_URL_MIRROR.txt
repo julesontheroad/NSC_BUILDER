@@ -1,8 +1,8 @@
 REGION|URL|REFRESH(h)|REFRESH(m)|REFRESH(s)
-AMERICA|https://raw.githubusercontent.com/julesontheroad/titledb/master/US.en.json|24|0|0
-EUROPE|https://raw.githubusercontent.com/julesontheroad/titledb/master/GB.en.json|24|0|0
-JAPAN|https://raw.githubusercontent.com/julesontheroad/titledb/master/JP.ja.json|24|0|0
-ASIA|https://raw.githubusercontent.com/julesontheroad/titledb/master/HK.zh.json|24|0|0
+AMERICA|https://raw.githubusercontent.com/julesontheroad/titledb/master/nutdb_America.json|24|0|0
+EUROPE|https://raw.githubusercontent.com/julesontheroad/titledb/master/nutdb_Europe.json|24|0|0
+JAPAN|https://raw.githubusercontent.com/julesontheroad/titledb/master/nutdb_Japan.json|24|0|0
+ASIA|https://raw.githubusercontent.com/julesontheroad/titledb/master/nutdb_Asia.json|24|0|0
 CHINA|https://raw.githubusercontent.com/julesontheroad/titledb/master/CN.zh.json|24|0|0
 AR_EN|https://raw.githubusercontent.com/julesontheroad/titledb/master/AR.en.json|24|0|0
 AR_ES|https://raw.githubusercontent.com/julesontheroad/titledb/master/AR.es.json|24|0|0
