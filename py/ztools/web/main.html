@@ -302,11 +302,14 @@ async function start(){
 }
 
 async function start_from_link(){
-	show_gameinfo()
 	var fname = prompt("Enter local path, gdrive path or public link", 
 					""); 	
-	resetInfo()	
-	start2_remote(fname)
+	<!-- console.log(fname) -->
+	if (fname!=null){
+		show_gameinfo()
+		resetInfo()	
+		start2_remote(fname)
+	}
 }
 
 async function start_from_library(data){
