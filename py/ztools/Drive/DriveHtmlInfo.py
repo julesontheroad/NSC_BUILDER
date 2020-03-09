@@ -29,6 +29,11 @@ import os
 import csv
 import Print
 import DBmodule
+from Fs.ChromeNca import Nca as ChromeNca
+from Fs.ChromeNacp import ChromeNacp
+import nutFs
+from nutFs.BaseFs import BaseFs
+from nutFs.Rom import Rom
 
 squirrel_dir=os.path.abspath(os.curdir)
 NSCB_dir=os.path.abspath('../'+(os.curdir))
@@ -72,11 +77,43 @@ def libraries(tfile):
 		return db
 	except: return False
 
+def readInt8(f, byteorder='little', signed = False):
+		return int.from_bytes(f.read(1), byteorder=byteorder, signed=signed)
+
+def readInt16(f, byteorder='little', signed = False):
+		return int.from_bytes(f.read(2), byteorder=byteorder, signed=signed)
+
+def readInt32(f, byteorder='little', signed = False):
+		return int.from_bytes(f.read(4), byteorder=byteorder, signed=signed)
+
 def readInt64(f, byteorder='little', signed = False):
 		return int.from_bytes(f.read(8), byteorder=byteorder, signed=signed)
 
 def readInt128(f, byteorder='little', signed = False):
 	return int.from_bytes(f.read(16), byteorder=byteorder, signed=signed)
+
+def html_feed(feed='',style=1,message=''):	
+	if style==1:
+		feed+='<p style="font-size: 14px; justify;text-justify: inter-word;"><strong>{}</strong></p>'.format(message)	
+		return feed
+	if style==2:			
+		feed+='<p style="margin-bottom: 2px;margin-top: 2px;font-size: 2vh"><strong>{}</strong></p>'.format(message)	
+		return feed
+	if style==3:				
+		feed+='<li style="margin-bottom: 2px;margin-top: 3px"><strong>{} </strong><span>{}</span></li>'.format(message[0],message[1])				
+		return feed				
+	if style==4:				
+		feed+='<li style="margin-bottom: 2px;margin-top: 3px"><strong>{} </strong><span>{}. </span><strong>{} </strong><strong>{}</strong></li>'.format(message[0],message[1],message[2],message[3])				
+		return feed	
+	if style==5:			
+		feed+='<p style="margin-bottom: 2px;margin-top: 2px;font-size: 2vh;text-indent:5vh";><strong style="text-indent:5vh;">{}</strong></p>'.format(message)	
+		return feed	
+	if style==6:			
+		feed+='<p style="margin-bottom: 2px;margin-top: 2px;font-size: 1.8vh;";><strong>{}</strong></p>'.format(message)	
+		return feed		
+	if style==7:			
+		feed+='<p style="margin-bottom: 2px;margin-top: 2px;font-size: 1.8vh;";><strong>{}</strong>{}</p>'.format(message[0],message[1])
+		return feed		
 
 class AESCTR:
 	def __init__(self, key, nonce, offset = 0):
@@ -309,6 +346,7 @@ def read_cnmt(path=None,TD=None,filter=None,file=None):
 		print("- Parsing header...")	
 		files_list=DriveTools.get_files_from_head(remote,remote.name)
 		# print(files_list)
+		feed=''
 		for i in range(len(files_list)):
 			if (files_list[i][0]).endswith('.cnmt.nca'):
 				nca_name=files_list[i][0]
@@ -319,13 +357,14 @@ def read_cnmt(path=None,TD=None,filter=None,file=None):
 				remote.seek(off1,off2)	
 				buf=int(sz)
 				try:
-					nca=Nca()
+					nca=ChromeNca()
 					nca.open(MemoryFile(remote.read(buf)))
 					nca.rewind()
 					nca._path=nca_name
-					nca.read_cnmt()
+					feed+=nca.read_cnmt()	
 				except IOError as e:
 					print(e, file=sys.stderr)
+		return feed	
 					
 def icon_info(path=None,TD=None,filter=None,file=None,feed='',roma=True):		
 	if path==None and file==None:
@@ -446,9 +485,15 @@ def getDBdict(path=None,TD=None,filter=None,file=None,feed='',roma=True):
 			nacpdict=nacpdata
 		else:	
 			sqname,sqeditor,SupLg=DB_get_names_from_nutdb(cnmtdata['titleid'])
-		titlekey=''
-		dectkey=''
-		titlekey,dectkey=db_get_titlekey(cnmtdata,files_list,remote)
+		titlekey='';dectkey='';sdkversion='-'
+		try:
+			titlekey,dectkey=db_get_titlekey(cnmtdata,files_list,remote)
+		except:
+			titlekey='';dectkey=''
+		if ctype!='DLC':
+			ModuleId,BuildID8,BuildID16,sdkversion=DriveTools.read_buildid(file=remote,cnmtdict=cnmtdata,files_list=files_list,dectkey=dectkey)
+		else:
+			ModuleId='-';BuildID8='-';BuildID16='-'
 
 		#cnmt flags	
 		DBdict['id']=cnmtdata['titleid']
@@ -460,12 +505,15 @@ def getDBdict(path=None,TD=None,filter=None,file=None,feed='',roma=True):
 		DBdict['RSV']=(cnmtdata['rsv'])[1:-1]		
 		DBdict['RGV']=cnmtdata['rgv']			
 		DBdict['metasdkversion']=cnmtdata['metasdkversion']	
-		DBdict['exesdkversion']=cnmtdata['exesdkversion']
+		DBdict['exesdkversion']=sdkversion
 		DBdict['InstalledSize']=cnmtdata['Installedsize']		
 		DBdict['deltasize']=cnmtdata['DeltaSize']		
 		DBdict['HtmlManual']=cnmtdata['hasHtmlManual']			
 		DBdict['ncasizes']=cnmtdata['ncadata']				
-
+		DBdict['ModuleId']=ModuleId
+		DBdict['BuildID8']=BuildID8
+		DBdict['BuildID16']=BuildID16
+		
 		#nacpt flags
 		if ctype != 'DLC':
 			DBdict['baseName']=sqname	
@@ -750,7 +798,7 @@ def db_multicontent_data(cnmtdata,files_list,remote,content_number):
 			mcstring+='s'			
 	return file,mcstring,mGame,mcontent	
 		
-def read_nacp(path=None,TD=None,filter=None,file=None,feed='',roma=True):
+def read_nacp(path=None,TD=None,filter=None,file=None,feed='',roma=True,gui=True):
 	if path==None and file==None:
 		return False
 	if file != None:
@@ -781,7 +829,7 @@ def read_nacp(path=None,TD=None,filter=None,file=None,feed='',roma=True):
 		return
 	else:			
 		print("- Parsing header...")	
-		count=0
+		count=0;feed=''
 		files_list=DriveTools.get_files_from_head(remote,remote.name)
 		for i in range(len(files_list)):		
 			nca_name=files_list[i][0]
@@ -796,17 +844,20 @@ def read_nacp(path=None,TD=None,filter=None,file=None,feed='',roma=True):
 						count+=1
 					else:	
 						print("")					
-					print("- Reading "+nca_name+":\n")
+					# print("- Reading "+nca_name+":\n")
 					nca=Nca()
-					nca.open(MemoryFile(remote.read_at(off1,sz)))			
+					nca.open(MemoryFile(remote.read_at(off1,sz)))
+					nca.rewind()	
+					titleid2=nca.header.titleId
+					feed+=html_feed(feed,1,message=str('TITLEID: ' + str(titleid2).upper()))		
+					nca.rewind()	
 					offset=nca.get_nacp_offset()					
 					for f in nca:
 						f.seek(offset)
-						nacp = Nacp()	
-						feed=nacp.par_getNameandPub(f.read(0x300*15),feed,False,roma)
-						message='...............................';print(message);feed+=message+'\n'
-						message='NACP FLAGS';print(message);feed+=message+'\n'						
-						message='...............................';print(message);feed+=message+'\n'
+						nacp = ChromeNacp()		
+						feed=nacp.par_getNameandPub(f.read(0x300*15),feed,gui)
+						feed=html_feed(feed,2,message=str("Nacp Flags:"))	
+						feed+='<ul style="margin-bottom: 2px;margin-top: 3px">'						
 						f.seek(offset+0x3000)							
 						feed=nacp.par_Isbn(f.read(0x24),feed)		
 						f.seek(offset+0x3025)							
@@ -820,18 +871,18 @@ def read_nacp(path=None,TD=None,filter=None,file=None,feed='',roma=True):
 						feed=nacp.par_dataLossConfirmation(f.readInt8('little'),feed)
 						feed=nacp.par_getPlayLogPolicy(f.readInt8('little'),feed)
 						feed=nacp.par_getPresenceGroupId(f.readInt64('little'),feed)
+						feed+='</ul>'						
 						f.seek(offset+0x3040)
 						listages=list()
-						message='...............................';print(message);feed+=message+'\n'							
-						message='Age Ratings';print(message);feed+=message+'\n'	
-						message='...............................';print(message);feed+=message+'\n'						
+						feed=html_feed(feed,2,message=str("Age Ratings:"))							
+						feed+='<ul style="margin-bottom: 2px;margin-top: 3px">'	
 						for i in range(12):
 							feed=nacp.par_getRatingAge(f.readInt8('little'),i,feed)
-						f.seek(offset+0x3060)
-						message='...............................';print(message);feed+=message+'\n'							
-						message='NACP ATTRIBUTES';print(message);feed+=message+'\n'	
-						message='...............................';print(message);feed+=message+'\n'
+						feed+='</ul>'								
+						f.seek(offset+0x3060)							
 						try:
+							feed=html_feed(feed,2,message=str("Nacp Atributes:"))							
+							feed+='<ul style="margin-bottom: 2px;margin-top: 3px">'							
 							feed=nacp.par_getDisplayVersion(f.read(0xF),feed)		
 							f.seek(offset+0x3070)							
 							feed=nacp.par_getAddOnContentBaseId(f.readInt64('little'),feed)
@@ -882,7 +933,10 @@ def read_nacp(path=None,TD=None,filter=None,file=None,feed='',roma=True):
 							feed=nacp.par_getRepair(f.readInt8('little'),feed)	
 							feed=nacp.par_getProgramIndex(f.readInt8('little'),feed)	
 							feed=nacp.par_getRequiredNetworkServiceLicenseOnLaunch(f.readInt8('little'),feed)	
-						except:continue	
+							feed+='</ul>'								
+						except:
+							feed+='</ul>'
+							continue	
 	return feed
 	
 	
@@ -1003,55 +1057,63 @@ def adv_file_list(path=None,TD=None,filter=None,file=None):
 						FW_rq=sq_tools.getFWRangeKG(keygen)
 						RSV_rq=sq_tools.getFWRangeRSV(min_sversion)									
 						RSV_rq_min=sq_tools.getFWRangeRSV(MinRSV)	
-						message=('-----------------------------');print(message);feed+=message+'\n'	
-						message=('CONTENT ID: ' + str(titleid2));print(message);feed+=message+'\n'									
-						message=('-----------------------------');print(message);feed+=message+'\n'									
+						feed=html_feed(feed,1,message=str('TITLEID: ' + str(titleid2).upper()))
+						feed=html_feed(feed,2,message=str("- Titleinfo:"))									
+						feed+='<ul style="margin-bottom: 2px;margin-top: 3px">'		
 						if content_type_cnmt != 'AddOnContent':		
-							message=("Titleinfo:");print(message);feed+=message+'\n'
-							message=("- Name: " + tit_name);print(message);feed+=message+'\n'
-							message=("- Editor: " + editor);print(message);feed+=message+'\n'
-							message=("- Display Version: " + str(ediver));print(message);feed+=message+'\n'								
-							message=("- Meta SDK version: " + sdkversion);print(message);feed+=message+'\n'	
-							message=("- Program SDK version: " + programSDKversion);print(message);feed+=message+'\n'
+
+							message=["Name:",tit_name];feed=html_feed(feed,3,message)
+							message=["Editor:",editor];feed=html_feed(feed,3,message)
+							message=["Display Version:",str(ediver)];feed=html_feed(feed,3,message)
+							message=["Meta SDK version:",sdkversion];feed=html_feed(feed,3,message)	
+							message=["Program SDK version:",programSDKversion];feed=html_feed(feed,3,message)
 							suplangue=str((', '.join(SupLg)))
-							message=("- Supported Languages: "+suplangue);print(message);feed+=message+'\n'								
-							message=("- Content type: "+content_type);print(message);feed+=message+'\n'	
-							message=("- Version: " + version+' -> '+content_type_cnmt+' ('+str(v_number)+')');print(message);feed+=message+'\n'								
+							message=["Supported Languages:",suplangue];feed=html_feed(feed,3,message)								
+							message=["Content type:",content_type];feed=html_feed(feed,3,message)
+							v_number=str(v_number)
+							data='{} -> {} ({})'.format(version,content_type_cnmt,v_number)
+							message=["Version:",data];feed=html_feed(feed,3,message=message);								
 						if content_type_cnmt == 'AddOnContent':
 							if tit_name != "DLC":
-								message=("- Name: " + tit_name);print(message);feed+=message+'\n'
-								message=("- Editor: " + editor);print(message);feed+=message+'\n'	
-							message=("- Content type: "+"DLC");print(message);feed+=message+'\n'									
+								message=["Name:",tit_name];feed=html_feed(feed,3,message)
+								message=["Editor:",editor];feed=html_feed(feed,3,message)		
+							message=["Content type:","DLC"];feed=html_feed(feed,3,message)									
 							DLCnumb=str(titleid2)
 							DLCnumb="0000000000000"+DLCnumb[-3:]									
 							DLCnumb=bytes.fromhex(DLCnumb)
 							DLCnumb=str(int.from_bytes(DLCnumb, byteorder='big'))									
 							DLCnumb=int(DLCnumb)
-							message=("- DLC number: "+str(DLCnumb)+' -> '+"AddOnContent"+' ('+str(DLCnumb)+')');print(message);feed+=message+'\n'
-							message=("- DLC version Number: " + version+' -> '+"Version"+' ('+str(v_number)+')');print(message);feed+=message+'\n'
-							message=("- Meta SDK version: " + sdkversion);print(message);feed+=message+'\n'
-							message=("- Data SDK version: " + dataSDKversion);print(message);feed+=message+'\n'
+							message=["DLC number:",str(str(DLCnumb)+' -> '+"AddOnContent"+' ('+str(DLCnumb)+')')];feed=html_feed(feed,3,message)								
+							message=["DLC version Number:",str( version+' -> '+"Version"+' ('+str(v_number)+')')];feed=html_feed(feed,3,message)	
+							message=["Meta SDK version:",sdkversion];feed=html_feed(feed,3,message)	
+							message=["Data SDK version:",dataSDKversion];feed=html_feed(feed,3,message)	
 							if SupLg !='':
 								suplangue=str((', '.join(SupLg)))
-								message=("- Supported Languages: "+suplangue);print(message);feed+=message+'\n'											
-						message=("\nRequired Firmware:");print(message);feed+=message+'\n'									
+								message=["Supported Languages:",suplangue];feed=html_feed(feed,3,message)
+						feed+='</ul>'										
+						feed=html_feed(feed,2,message=str("- Required Firmware:"))
+						if remote.name.endswith('.xci'):
+							incl_Firm=DBmodule.FWDB.detect_xci_fw(remote,doprint=False,remote=True)
+							feed+='<ul style="margin-bottom: 2px;margin-top: 3px">'	
+							message=["Included Firmware:",str(str(incl_Firm))];feed=html_feed(feed,3,message)										
 						if content_type_cnmt == 'AddOnContent':
 							if v_number == 0:
-								message=("- Required game version: " + str(min_sversion)+' -> '+"Application"+' ('+str(RS_number)+')');print(message);feed+=message+'\n'																
+								message=["Required game version:",str(str(min_sversion)+' -> '+"Application"+' ('+str(RS_number)+')')];feed=html_feed(feed,3,message)									
+								message=["Required game version:",str(str(min_sversion)+' -> '+"Application"+' ('+str(RS_number)+')')];feed=html_feed(feed,3,message)															
 							if v_number > 0:
-								message=("- Required game version: " + str(min_sversion)+' -> '+"Patch"+' ('+str(RS_number)+')');print(message);feed+=message+'\n'																																	
+								message=["Required game version:",str(str(min_sversion)+' -> '+"Patch"+' ('+str(RS_number)+')')];feed=html_feed(feed,3,message)
 						else:
-							message=(reqtag + str(min_sversion)+" -> " +RSV_rq);print(message);feed+=message+'\n'	
-						message=('- Encryption (keygeneration): ' + str(keygen)+" -> " +FW_rq);print(message);feed+=message+'\n'								
+							message=[reqtag,(str(min_sversion)+" -> " +RSV_rq)];feed=html_feed(feed,3,message)
+						message=['Encryption (keygeneration):',(str(keygen)+" -> " +FW_rq)];feed=html_feed(feed,3,message)							
 						if content_type_cnmt != 'AddOnContent':	
-							message=('- Patchable to: ' + str(MinRSV)+" -> " + RSV_rq_min);print(message);feed+=message+'\n'															
+							message=['Patchable to:',(str(MinRSV)+" -> " + RSV_rq_min)];feed=html_feed(feed,3,message)							
 						else:
-							message=('- Patchable to: DLC -> no RSV to patch\n');print(message);feed+=message+'\n'																														
+							message=['Patchable to:',('DLC -> no RSV to patch')];feed=html_feed(feed,3,message)							
+						feed+='</ul>'							
 						ncalist = list()
 						ncasize = 0		
-						message=('......................');print(message);feed+=message+'\n'		
-						message=('NCA FILES (NON DELTAS)');print(message);feed+=message+'\n'
-						message=('......................');print(message);feed+=message+'\n'
+						feed=html_feed(feed,2,message=str("- Nca files (Non Deltas):"))	
+						feed+='<ul style="margin-bottom: 2px;margin-top: 3px">'
 						for i in range(content_entries):
 							vhash = cnmt.read(0x20)
 							NcaId = cnmt.read(0x10)
@@ -1079,9 +1141,8 @@ def adv_file_list(path=None,TD=None,filter=None,file=None):
 						ncasize=ncasize+s1
 						size1=ncasize
 						size_pr=sq_tools.getSize(ncasize)		
-						bigtab="\t"*7
-						message=(bigtab+"  --------------------");print(message);feed+=message+'\n'		
-						message=(bigtab+'  TOTAL SIZE: '+size_pr);print(message);feed+=message+'\n'									
+						feed+='</ul>'	
+						feed=html_feed(feed,5,message=('TOTAL SIZE: '+size_pr))
 						if actually_has_deltas(ncalist,remote,files_list)=="true":
 							cnmt.rewind()
 							cnmt.seek(0x20+offset)
@@ -1093,9 +1154,8 @@ def adv_file_list(path=None,TD=None,filter=None,file=None):
 								ncatype = int.from_bytes(ncatype, byteorder='little')		
 								unknown = cnmt.read(0x1)								
 								if ncatype == 6:	
-									message=('......................');print(message);feed+=message+'\n'
-									message=('NCA FILES (DELTAS)');print(message);feed+=message+'\n'										
-									message=('......................');print(message);feed+=message+'\n'											
+									feed=html_feed(feed,2,message=('- Nca files (Deltas):'))	
+									feed+='<ul style="margin-bottom: 2px;margin-top: 3px">'
 									break
 							cnmt.rewind()
 							cnmt.seek(0x20+offset)
@@ -1114,13 +1174,11 @@ def adv_file_list(path=None,TD=None,filter=None,file=None):
 									ncasize=ncasize+s1
 							size2=ncasize
 							size_pr=sq_tools.getSize(ncasize)		
-							bigtab="\t"*7
-							message=(bigtab+"  --------------------");print(message);feed+=message+'\n'
-							message=(bigtab+'  TOTAL SIZE: '+size_pr);print(message);feed+=message+'\n'										
+							feed+='</ul>'
+							feed=html_feed(feed,5,message=('TOTAL SIZE: '+size_pr))			
 						if actually_has_other(titleid2,ncalist,files_list)=="true":	
-							message=('......................');print(message);feed+=message+'\n'
-							message=('OTHER TYPES OF FILES');print(message);feed+=message+'\n'										
-							message=('......................');print(message);feed+=message+'\n'							
+							feed=html_feed(feed,2,message=('- Other types of files:'))	
+							feed+='<ul style="margin-bottom: 2px;margin-top: 3px">'			
 							othersize=0;os1=0;os2=0;os3=0
 							os1,feed=print_xml_by_title(ncalist,contentlist,files_list,feed)
 							os2,feed=print_tac_by_title(titleid2,contentlist,files_list,feed)
@@ -1128,14 +1186,11 @@ def adv_file_list(path=None,TD=None,filter=None,file=None):
 							othersize=othersize+os1+os2+os3	
 							size3=othersize								
 							size_pr=sq_tools.getSize(othersize)							
-							bigtab="\t"*7
-							message=(bigtab+"  --------------------");print(message);feed+=message+'\n'
-							message=(bigtab+'  TOTAL SIZE: '+size_pr);print(message);feed+=message+'\n'										
+							feed+='</ul>'
+							feed=html_feed(feed,5,message=('TOTAL SIZE: '+size_pr))
 				finalsize=size1+size2+size3	
 				size_pr=sq_tools.getSize(finalsize)	
-				message=("/////////////////////////////////////");print(message);feed+=message+'\n'
-				message=('   FULL CONTENT TOTAL SIZE: '+size_pr+"   ");print(message);feed+=message+'\n'						
-				message=("/////////////////////////////////////");print(message);feed+=message+'\n'					
+				feed=html_feed(feed,2,message=('FULL CONTENT TOTAL SIZE: '+size_pr))	
 	printnonlisted(contentlist,files_list,feed)
 	return feed									
 
@@ -1206,7 +1261,7 @@ def print_fw_req(path=None,TD=None,filter=None,file=None,trans=True,roma=True):
 						content_type_cnmt=content_type_cnmt[:-22]		
 						if content_type_cnmt == 'Patch':
 							content_type='Update'
-							reqtag='- RequiredSystemVersion: '
+							reqtag='RequiredSystemVersion: '
 							tit_name,editor,ediver,SupLg,regionstr,isdemo = inf_get_title(nca,offset,content_entries,original_ID,remote,files_list,roman=roma)
 							if tit_name=='DLC':
 								tit_name='-'
@@ -1499,9 +1554,9 @@ def print_nca_by_title(nca_name,ncatype,remote,files_list,feed=''):
 			content=content[8:]+": "
 			ncatype=sq_tools.getTypeFromCNMT(ncatype)	
 			if ncatype != "Meta: ":
-				message=("- "+ncatype+tab+str(filename)+tab+tab+"Size: "+size_pr);print(message);feed+=message+'\n'						
+				message=[ncatype,str(filename),'Size:',size_pr];feed=html_feed(feed,4,message)
 			else:
-				message=("- "+ncatype+tab+str(filename)+tab+"Size: "+size_pr);print(message);feed+=message+'\n'					
+				message=[ncatype,str(filename),'Size:',size_pr];feed=html_feed(feed,4,message)		
 			return size,feed				
 	return size,feed	
 
@@ -1561,7 +1616,7 @@ def print_xml_by_title(ncalist,contentlist,files_list,feed=''):
 			size_pr=sq_tools.getSize(size)			
 			xml=filename[:-4]
 			if xml in ncalist:
-				message=("- XML: "+tab*2+str(filename)+tab+"Size: "+size_pr);print(message);feed+=message+'\n'
+				message=['XML:',str(filename),'Size:',size_pr];feed=html_feed(feed,4,message)
 				contentlist.append(filename)	
 				size2return=size+size2return			
 	return size2return,feed						
@@ -1579,7 +1634,7 @@ def print_tac_by_title(titleid,contentlist,files_list,feed=''):
 			size_pr=sq_tools.getSize(size)			
 			tik=filename[:-20]
 			if tik == titleid:
-				message=("- Ticket: "+tab+str(filename)+tab*2+"Size: "+size_pr);print(message);feed+=message+'\n'				
+				message=['Ticket:',str(filename),'Size:',size_pr];feed=html_feed(feed,4,message)
 				contentlist.append(filename)					
 				size2return=size+size2return													
 	for i in range(len(files_list)):	
@@ -1592,7 +1647,7 @@ def print_tac_by_title(titleid,contentlist,files_list,feed=''):
 			size_pr=sq_tools.getSize(size)
 			cert_id =filename[:-21]
 			if cert_id == titleid:
-				message=("- Cert: "+tab+str(filename)+tab*2+"Size: "+size_pr);print(message);feed+=message+'\n'
+				message=['Cert:',str(filename),'Size:',size_pr];feed=html_feed(feed,4,message)
 				contentlist.append(filename)					
 				size2return=size+size2return
 	return size2return,feed			
@@ -1610,7 +1665,7 @@ def print_jpg_by_title(ncalist,contentlist,files_list,feed=''):
 			size_pr=sq_tools.getSize(size)			
 			jpg=filename[:32]
 			if jpg in ncalist:
-				message=("- JPG: "+tab*2+"..."+str(filename[-38:])+tab+"Size: "+size_pr);print(message);feed+=message+'\n'
+				message=['JPG:',str(filename),'Size:',size_pr];feed=html_feed(feed,4,message)
 				contentlist.append(filename)					
 				size2return=size+size2return
 		return size2return,feed	
@@ -1623,9 +1678,7 @@ def printnonlisted(contentlist,files_list,feed=''):
 		if not filename in contentlist:
 			list_nonlisted="true"
 	if list_nonlisted == "true":
-		message=('-----------------------------------');print(message);feed+=message+'\n'
-		message=('FILES NOT LINKED TO CONTENT IN NSP');print(message);feed+=message+'\n'			
-		message=('-----------------------------------');print(message);feed+=message+'\n'
+		feed=html_feed(feed,2,'Files not linked to content:')
 		totsnl=0
 		for i in range(len(files_list)):	
 			filename=files_list[i][0]
@@ -1636,11 +1689,9 @@ def printnonlisted(contentlist,files_list,feed=''):
 			if not filename in contentlist and not nczname in contentlist:
 				totsnl=totsnl+sz
 				size_pr=sq_tools.getSize(sz)		
-				message=(str(filename)+3*tab+"Size: "+size_pr);print(message);feed+=message+'\n'							
-		bigtab="\t"*7
+				message=['OTHER:',str(filename),'Size:',size_pr];feed=html_feed(feed,4,message)
 		size_pr=sq_tools.getSize(totsnl)		
-		message=(bigtab+"  --------------------");print(message);feed+=message+'\n'			
-		message=(bigtab+'  TOTAL SIZE: '+size_pr);print(message);feed+=message+'\n'		
+		feed=html_feed(feed,5,message=('TOTAL SIZE: '+size_pr))
 	return feed					
 
 def getsdkvertit(titid,remote,files_list):
@@ -1668,3 +1719,131 @@ def getsdkvertit(titid,remote,files_list):
 	if 	programSDKversion=='':
 		programSDKversion=controlSDKversion
 	return 	programSDKversion,dataSDKversion		
+
+def read_npdm(path=None,TD=None,filter=None,file=None):
+	feed=''
+	sectionFilesystems=[]
+	if file !=None:
+		remote=file
+		cnmtdict,files_list,remote=DriveTools.get_cnmt_data(file=remote)
+		try:
+			titlekey,dectkey=db_get_titlekey(cnmtdict,files_list,remote)
+		except:
+			titlekey='';dectkey=''
+	else:
+		cnmtdict,files_list,remote=get_cnmt_data(path,TD,filter)		
+	ctype=cnmtdict['ctype']
+	if ctype != 'DLC':
+		ncadata=cnmtdict['ncadata']
+		for entry in ncadata:
+			if str(entry['NCAtype']).lower()=='program':
+				ncaname=entry['NcaId']+'.nca'
+				break		
+		for i in range(len(files_list)):
+			if (files_list[i][0])==ncaname:
+				name=files_list[i][0]
+				off1=files_list[i][1]
+				off2=files_list[i][2]
+				sz=files_list[i][3]
+				break			
+		remote.seek(off1,off2)	
+		ncaHeader = NcaHeader()		
+		ncaHeader.open(MemoryFile(remote.read(0xC00), Type.Crypto.XTS, uhx(Keys.get('header_key'))))			
+		ncaHeader.rewind()
+		if ncaHeader.getRightsId() == 0:	
+			decKey=ncaHeader.titleKeyDec
+		elif dectkey!=None:
+			decKey=bytes.fromhex(dectkey)
+		# print(decKey)
+		try:	
+			titleid2=ncaHeader.titleId
+			feed=html_feed(feed,1,message=str('TITLEID: ' + str(titleid2).upper()))
+			feed+='<p style="font-size: 1.86vh;text-align: left;white-space: pre-line;margin-top:0.2vh;"><strong><span">'	
+			ncaHeader.seek(0x400)
+			for i in range(4):
+				hdr = ncaHeader.read(0x200)
+				section = BaseFs(hdr, cryptoKey = ncaHeader.titleKeyDec)
+				fs = DriveTools.GetSectionFilesystem(hdr, cryptoKey = -1)
+				if fs.fsType:
+					fs.offset=ncaHeader.sectionTables[i].offset
+					sectionFilesystems.append(fs)
+					# Print.info('fs type = ' + hex(fs.fsType))
+					# Print.info('fs crypto = ' + hex(fs.cryptoType))
+					# Print.info('fs cryptocounter = ' + str(fs.cryptoCounter))
+					# Print.info('st end offset = ' + str(ncaHeader.sectionTables[i].endOffset - ncaHeader.sectionTables[i].offset))
+					# Print.info('fs offset = ' + hex(ncaHeader.sectionTables[i].offset))
+					# Print.info('fs section start = ' + hex(fs.sectionStart))
+					# Print.info('titleKey = ' + str(hx(ncaHeader.titleKeyDec)))					
+			for fs in sectionFilesystems:	
+				if fs.fsType == Type.Fs.PFS0 and fs.cryptoType == Type.Crypto.CTR:
+					# print(fs.fsType)
+					# print(fs.cryptoType)
+					# print(fs.buffer)
+					pfs0=fs
+					sectionHeaderBlock = fs.buffer
+					pfs0Offset=fs.offset+fs.sectionStart
+					skoff=off1+pfs0Offset
+					# pfs0Offset=off1+fs.offset+0xC00+ncaHeader.get_htable_offset()
+					remote.seek(skoff,off2)	
+					# print(str(fs.cryptoCounter))
+					pfs0Header = remote.read(0x10*30)
+					# print(hex(pfs0Offset))
+					# print(hex(fs.sectionStart))						
+					# Hex.dump(pfs0Header)	
+					off=fs.offset+fs.sectionStart
+					mem = MemoryFile(pfs0Header, Type.Crypto.CTR, decKey, pfs0.cryptoCounter, offset = pfs0Offset)
+					data = mem.read();
+					# Hex.dump(data)	
+					head=data[0:4]
+					n_files=(data[4:8])
+					n_files=int.from_bytes(n_files, byteorder='little')		
+					st_size=(data[8:12])
+					st_size=int.from_bytes(st_size, byteorder='little')		
+					junk=(data[12:16])
+					offset=(0x10 + n_files * 0x18)
+					stringTable=(data[offset:offset+st_size])
+					stringEndOffset = st_size
+					headerSize = 0x10 + 0x18 * n_files + st_size
+					# print(head)
+					# print(str(n_files))
+					# print(str(st_size))	
+					# print(str((stringTable)))	
+					files_list=list()
+					for i in range(n_files):
+						i = n_files - i - 1
+						pos=0x10 + i * 0x18
+						offset = data[pos:pos+8]
+						offset=int.from_bytes(offset, byteorder='little')			
+						size = data[pos+8:pos+16]
+						size=int.from_bytes(size, byteorder='little')			
+						nameOffset = data[pos+16:pos+20] # just the offset
+						nameOffset=int.from_bytes(nameOffset, byteorder='little')			
+						name = stringTable[nameOffset:stringEndOffset].decode('utf-8').rstrip(' \t\r\n\0')
+						stringEndOffset = nameOffset
+						# junk2 = data[pos+20:pos+24] # junk data
+						# print(name)
+						# print(offset)	
+						# print(size)	
+						files_list.append([name,offset,size])	
+					files_list.reverse()	
+					# print(files_list)								
+					for i in range(len(files_list)):
+						if files_list[i][0] == 'main.npdm':
+							foff=files_list[i][1]+pfs0Offset+headerSize
+							skoff2=files_list[i][1]+skoff+headerSize
+							remote.seek(skoff2,off2)	
+							np=remote.read(files_list[i][2])
+							mem = MemoryFile(np, Type.Crypto.CTR, decKey, pfs0.cryptoCounter, offset = foff)
+							data = mem.read();
+							Hex.dump(data)		
+							# inmemoryfile = io.BytesIO(data)
+							# npdm = NPDM(inmemoryfile)
+							# n=npdm.__str__()
+							# feed+=n	
+							feed+='</span></strong></p>'
+							return feed
+				break	
+			return feed		
+		except IOError as e:
+			print(e, file=sys.stderr)
+			feed=html_feed(feed,2,message=str('- Error decrypting npdm'))

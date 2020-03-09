@@ -74,7 +74,6 @@ class Ticket(File):
 		self.writeInt32(value)
 		return self.signatureType
 
-
 	def getSignature(self):
 		self.seek(0x4)
 		self.signature = self.read(self.signatureSizes[self.getSignatureType()])
@@ -86,11 +85,9 @@ class Ticket(File):
 		self.write(value, self.signatureSizes[self.getSignatureType()])
 		return self.signature
 
-
 	def getSignaturePadding(self):
 		self.signaturePadding = 0x40 - ((self.signatureSizes[self.signatureType] + 4) % 0x40)
 		return self.signaturePadding
-
 
 	def getIssuer(self):
 		self.seekStart(0x0)
@@ -132,7 +129,6 @@ class Ticket(File):
 		self.keyType = value
 		self.writeInt8(value)
 		return self.keyType
-
 
 	def getMasterKeyRevision(self):
 		self.seekStart(0x144)

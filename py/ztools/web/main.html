@@ -338,11 +338,11 @@ function start2(fname){
 function start2_remote(fname){	
 	showicon_remote(fname)	
 	getinfo_remote(fname)
-	<!-- get_adv_filelist(fname) -->
-	<!-- get_nacp_data(fname) -->
-	<!-- get_npdm_data(fname) -->
-	<!-- get_cnmt_data(fname) -->
-	<!-- get_verification_data(fname) -->
+	get_adv_filelist_remote(fname)
+	get_nacp_data_remote(fname)
+	<!-- get_npdm_data_remote(fname) -->
+	get_cnmt_data_remote(fname)
+	<!-- get_verification_data_remote(fname) -->
 }
 
 function showicon(fname){	
@@ -367,20 +367,40 @@ function get_adv_filelist(fname){
 	eel.getfiledata(fname)(set_adv_filelist)
 }
 
+function get_adv_filelist_remote(fname){	
+	eel.getfiledata(fname,"True")(set_adv_filelist)
+}
+
 function get_nacp_data(fname){	
 	eel.getnacpdata(fname)(set_nacp_data)
+}
+
+function get_nacp_data_remote(fname){	
+	eel.getnacpdata(fname,"True")(set_nacp_data)
 }
 
 function get_npdm_data(fname){	
 	eel.getnpdmdata(fname)(set_npdm_data)
 }
 
+function get_npdm_data_remote(fname){	
+	eel.getnpdmdata(fname,"True")(set_npdm_data)
+}
+
 function get_cnmt_data(fname){	
 	eel.getcnmtdata(fname)(set_cnmt_data)
 }
 
+function get_cnmt_data_remote(fname){	
+	eel.getcnmtdata(fname,"True")(set_cnmt_data)
+}
+
 function get_verification_data(fname){	
 	eel.getverificationdata(fname)(set_ver_data)
+}
+
+function get_verification_data_remote(fname){	
+	eel.getverificationdata(fname,"True")(set_ver_data)
 }
 
 function setImage(base64) {
