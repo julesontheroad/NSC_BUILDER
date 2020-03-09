@@ -729,7 +729,7 @@ class chunk():
 				nca.open(MemoryFile(self.memoryload(control).read()))
 				nca.rewind()	
 				titleid2=nca.header.titleId
-				feed=html_feed(feed,1,message=str('TITLEID: ' + str(titleid2).upper()))									
+				feed+=html_feed(feed,1,message=str('TITLEID: ' + str(titleid2).upper()))									
 				offset=nca.get_nacp_offset()
 				for f in nca:
 					f.seek(offset)
@@ -896,8 +896,8 @@ class chunk():
 					FW_rq=sq_tools.getFWRangeKG(keygen)
 					RSV_rq=sq_tools.getFWRangeRSV(min_sversion)									
 					RSV_rq_min=sq_tools.getFWRangeRSV(MinRSV)	
-					feed=html_feed(feed,1,message=str('TITLEID: ' + str(titleid2).upper()))
-					feed=html_feed(feed,2,message=str("- Titleinfo:"))									
+					feed+=html_feed(feed,1,message=str('TITLEID: ' + str(titleid2).upper()))
+					feed+=html_feed(feed,2,message=str("- Titleinfo:"))									
 					feed+='<ul style="margin-bottom: 2px;margin-top: 3px">'							
 					if content_type_cnmt != 'AddOnContent':	
 						message=["Name:",tit_name];feed=html_feed(feed,3,message)
@@ -1168,7 +1168,7 @@ class chunk():
 				
 		filedata=file_location(self.firstchunk)					
 		if list_nonlisted == "true":
-			feed=html_feed(feed,2,'Files not linked to content in xci:')
+			feed=html_feed(feed,2,'Files not linked to content:')
 			totsnl=0
 			for entry in filedata:
 				filename =  entry[0]
@@ -1176,7 +1176,6 @@ class chunk():
 					totsnl=totsnl+entry[1]
 					size_pr=sq_tools.getSize(entry[1])						
 					message=['OTHER:',str(filename),'Size:',size_pr];feed=html_feed(feed,4,message)
-			bigtab="\t"*7
 			size_pr=sq_tools.getSize(totsnl)					
 			feed=html_feed(feed,5,message=('TOTAL SIZE: '+size_pr))	
 		return feed				
@@ -1326,13 +1325,22 @@ class chunk():
 						# # print(fs.buffer)
 						# pfs0=fs
 						# sectionHeaderBlock = fs.buffer
-						# pfs0Offset=fs.offset
+						# print(fs.offset+fs.sectionStart+0xc00)
+						# pfs0Offset=fs.offset+0x13800
 						# # print(str(fs.cryptoCounter))
-						# pfs0Header = self.read_at(ncadata,fs.offset,0x10*14)
+						# pfs0Header = self.read_at(ncadata,pfs0Offset,0x10*14)
 						# # print(hex(pfs0Offset))
 						# # print(hex(fs.sectionStart))						
-						# # Hex.dump(pfs0Header)	
-						# mem = MemoryFile(pfs0Header, Type.Crypto.CTR, decKey, pfs0.cryptoCounter, offset = fs.offset)
+						# Hex.dump(pfs0Header)	
+						# ncaHeader.rewind()
+						# off=fs.offset+fs.sectionStart
+						# print(pfs0Offset)
+						# print(off)
+						# print(str(pfs0Offset-off))
+						# ncaHeader.rewind()
+						# print(str(off+0xc00+ncaHeader.get_htable_size()))
+						# print(str(pfs0Offset-(off+0xc00+ncaHeader.get_htable_size())))
+						# mem = MemoryFile(pfs0Header, Type.Crypto.CTR, decKey, pfs0.cryptoCounter, offset = off)
 						# data = mem.read();
 						# Hex.dump(data)	
 						# head=data[0:4]
@@ -1407,8 +1415,8 @@ class chunk():
 									# break						
 							# nca.rewind()
 							# for fs in nca.sectionFilesystems:
-								# #print(fs.fsType)
-								# #print(fs.cryptoType)						
+								# # print(fs.fsType)
+								# # print(fs.cryptoType)						
 								# if fs.fsType == Type.Fs.PFS0 and fs.cryptoType == Type.Crypto.CTR:
 									# nca.seek(0)
 									# ncaHeader = NcaHeader()
@@ -1422,7 +1430,7 @@ class chunk():
 									# pfs0Header = nca.read(0x10*14)
 									# mem = MemoryFile(pfs0Header, Type.Crypto.CTR, decKey, pfs0.cryptoCounter, offset = pfs0Offset)
 									# data = mem.read();
-									# #Hex.dump(data)	
+									# # Hex.dump(data)	
 									# head=data[0:4]
 									# n_files=(data[4:8])
 									# n_files=int.from_bytes(n_files, byteorder='little')		
@@ -1433,10 +1441,10 @@ class chunk():
 									# stringTable=(data[offset:offset+st_size])
 									# stringEndOffset = st_size
 									# headerSize = 0x10 + 0x18 * n_files + st_size
-									# #print(head)
-									# #print(str(n_files))
-									# #print(str(st_size))	
-									# #print(str((stringTable)))		
+									# # print(head)
+									# # print(str(n_files))
+									# # print(str(st_size))	
+									# # print(str((stringTable)))		
 									# files_list=list()
 									# for i in range(n_files):
 										# i = n_files - i - 1
@@ -1450,12 +1458,12 @@ class chunk():
 										# name = stringTable[nameOffset:stringEndOffset].decode('utf-8').rstrip(' \t\r\n\0')
 										# stringEndOffset = nameOffset
 										# junk2 = data[pos+20:pos+24] # junk data
-										# #print(name)
-										# #print(offset)	
-										# #print(size)	
+										# # print(name)
+										# # print(offset)	
+										# # print(size)	
 										# files_list.append([name,offset,size])	
 									# files_list.reverse()	
-									# #print(files_list)								
+									# # print(files_list)								
 									# for i in range(len(files_list)):
 										# if files_list[i][0] == 'main':
 											# off1=files_list[i][1]+pfs0Offset+headerSize

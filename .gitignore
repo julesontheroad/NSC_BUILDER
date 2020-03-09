@@ -61,3 +61,4 @@ py/ztools/geckodriver.exe
 py/ztools/nstool.exe
 py/zconfig/local_libraries.txt
 py/zconfig/NUT_DB_RAW.txt
+py/joinlist.txt

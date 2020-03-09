@@ -470,8 +470,14 @@ def getinfo(filename,remotelocation=False):
 			ModuleId=sq_tools.trimm_module_id(ModuleId)
 		except:
 			ModuleId="-";BuildID8="-";BuildID16="-";
-	else:	
-		ModuleId="-";BuildID8="-";BuildID16="-";	
+	else:
+		try:	
+			ModuleId=dict['ModuleId']
+			BuildID8=dict['BuildID8']
+			BuildID16=dict['BuildID16']
+			ModuleId=sq_tools.trimm_module_id(ModuleId)
+		except:
+			ModuleId="-";BuildID8="-";BuildID16="-";
 	try:	
 		MinRSV=sq_tools.getMinRSV(dict['keygeneration'],dict['RSV'])
 		RSV_rq_min=sq_tools.getFWRangeRSV(MinRSV)
@@ -755,77 +761,123 @@ def getcheats(ID):
 	return feed
 
 @eel.expose	
-def getfiledata(filename):
+def getfiledata(filename,remotelocation=False):
 	print('* Generating Titles File Data')
-	if filename.endswith('.nsp') or filename.endswith('.nsx') or filename.endswith('.nsz'):
-		f = Fs.ChromeNsp(filename, 'rb')
-	elif filename.endswith('.xci') or filename.endswith('.xcz'):	
-		f = Fs.ChromeXci(filename)	
-	elif filename.endswith('.xc0') or filename.endswith('.ns0') or filename.endswith('00'): 
-		ck=file_chunk.chunk(filename)	
-		feed=ck.send_html_adv_file_list()
-		return feed		
-	else: return ""		
-	feed=f.adv_file_list()
-	f.flush()
-	f.close()		
-	return	feed
+	if remotelocation != False:
+		global globalpath; global globalremote
+		if globalpath!=filename:
+			globalpath=filename
+			lib,TD,libpath=get_library_from_path(remote_lib_file,filename)
+			ID,name,type,size,md5,remote=DrivePrivate.get_Data(filename,TD=TD,Print=False)
+			globalremote=remote
+		feed=DriveHtmlInfo.adv_file_list(file=globalremote)
+		return feed			
+	else:
+		if filename.endswith('.nsp') or filename.endswith('.nsx') or filename.endswith('.nsz'):
+			f = Fs.ChromeNsp(filename, 'rb')
+		elif filename.endswith('.xci') or filename.endswith('.xcz'):	
+			f = Fs.ChromeXci(filename)	
+		elif filename.endswith('.xc0') or filename.endswith('.ns0') or filename.endswith('00'): 
+			ck=file_chunk.chunk(filename)	
+			feed=ck.send_html_adv_file_list()
+			return feed		
+		else: return ""		
+		feed=f.adv_file_list()
+		f.flush()
+		f.close()		
+		return	feed
 
 @eel.expose	
-def getnacpdata(filename):
+def getnacpdata(filename,remotelocation=False):
 	print('* Reading Data from Nacp')
-	if filename.endswith('.nsp')or filename.endswith('.nsx') or filename.endswith('.nsz'):
-		f = Fs.ChromeNsp(filename, 'rb')
-	elif filename.endswith('.xci') or filename.endswith('.xcz'):	
-		f = Fs.ChromeXci(filename)	
-	elif filename.endswith('.xc0') or filename.endswith('.ns0') or filename.endswith('00'): 
-		ck=file_chunk.chunk(filename)	
-		feed=ck.send_html_nacp_data()
-		return feed					
-	else: return ""		
-	feed=f.read_nacp(gui=True)
-	f.flush()
-	f.close()			
-	if feed=='':
-		feed=html_feed(feed,2,message=str('No nacp in the file'))		
-	return	feed
+	if remotelocation != False:
+		global globalpath; global globalremote
+		if globalpath!=filename:
+			globalpath=filename
+			lib,TD,libpath=get_library_from_path(remote_lib_file,filename)
+			ID,name,type,size,md5,remote=DrivePrivate.get_Data(filename,TD=TD,Print=False)
+			globalremote=remote
+		feed=DriveHtmlInfo.read_nacp(file=globalremote)		
+		if feed=='':
+			feed=html_feed(feed,2,message=str('No nacp in the file'))		
+		return	feed
+	else:
+		if filename.endswith('.nsp')or filename.endswith('.nsx') or filename.endswith('.nsz'):
+			f = Fs.ChromeNsp(filename, 'rb')
+		elif filename.endswith('.xci') or filename.endswith('.xcz'):	
+			f = Fs.ChromeXci(filename)	
+		elif filename.endswith('.xc0') or filename.endswith('.ns0') or filename.endswith('00'): 
+			ck=file_chunk.chunk(filename)	
+			feed=ck.send_html_nacp_data()
+			if feed=='':
+				feed=html_feed(feed,2,message=str('No nacp in the file'))	
+			return feed					
+		else: return ""		
+		feed=f.read_nacp(gui=True)
+		f.flush()
+		f.close()			
+		if feed=='':
+			feed=html_feed(feed,2,message=str('No nacp in the file'))		
+		return	feed
 	
 @eel.expose	
-def getnpdmdata(filename):
+def getnpdmdata(filename,remotelocation=False):
 	print('* Reading Data from Npdm')
-	if filename.endswith('.nsp')or filename.endswith('.nsx') or filename.endswith('.nsz'):
-		f = Fs.ChromeNsp(filename, 'rb')
-		files_list=sq_tools.ret_nsp_offsets(filename)			
-	elif filename.endswith('.xci') or filename.endswith('.xcz'):	
-		f = Fs.ChromeXci(filename)			
-		files_list=sq_tools.ret_xci_offsets(filename)	
-	else: return ""			
-	feed=f.read_npdm(files_list)
-	f.flush()
-	f.close()
-	if feed=='':
-		feed=html_feed(feed,2,message=str('No npdm in the file'))		
+	if remotelocation != False:
+		global globalpath; global globalremote
+		if globalpath!=filename:
+			globalpath=filename
+			lib,TD,libpath=get_library_from_path(remote_lib_file,filename)
+			ID,name,type,size,md5,remote=DrivePrivate.get_Data(filename,TD=TD,Print=False)
+			globalremote=remote
+		feed=DriveHtmlInfo.read_npdm(file=globalremote)	
+		if feed=='':
+			feed=html_feed(feed,2,message=str('No npdm in the file'))	
+		return	feed
+	else:
+		if filename.endswith('.nsp')or filename.endswith('.nsx') or filename.endswith('.nsz'):
+			f = Fs.ChromeNsp(filename, 'rb')
+			files_list=sq_tools.ret_nsp_offsets(filename)			
+		elif filename.endswith('.xci') or filename.endswith('.xcz'):	
+			f = Fs.ChromeXci(filename)			
+			files_list=sq_tools.ret_xci_offsets(filename)	
+		else: return ""			
+		feed=f.read_npdm(files_list)
+		f.flush()
+		f.close()
+		if feed=='':
+			feed=html_feed(feed,2,message=str('No npdm in the file'))		
 	return	feed
 	
 @eel.expose	
-def getcnmtdata(filename):
+def getcnmtdata(filename,remotelocation=False):
 	print('* Reading Data from Cnmt')
-	if filename.endswith('.nsp')or filename.endswith('.nsx') or filename.endswith('.nsz'):
-		f = Fs.ChromeNsp(filename, 'rb')
-	elif filename.endswith('.xci') or filename.endswith('.xcz'):	
-		f = Fs.ChromeXci(filename)	
-	elif filename.endswith('.xc0') or filename.endswith('.ns0') or filename.endswith('00'): 
-		ck=file_chunk.chunk(filename)	
-		feed=ck.send_html_cnmt_data()
-		return feed		
-	else: return ""			
-	feed=f.read_cnmt()
-	f.flush()
-	f.close()			
-	return	feed	
+	if remotelocation != False:
+		global globalpath; global globalremote
+		if globalpath!=filename:
+			globalpath=filename
+			lib,TD,libpath=get_library_from_path(remote_lib_file,filename)
+			ID,name,type,size,md5,remote=DrivePrivate.get_Data(filename,TD=TD,Print=False)
+			globalremote=remote
+		feed=DriveHtmlInfo.read_cnmt(file=globalremote)	
+		return	feed
+	else:
+		if filename.endswith('.nsp')or filename.endswith('.nsx') or filename.endswith('.nsz'):
+			f = Fs.ChromeNsp(filename, 'rb')
+		elif filename.endswith('.xci') or filename.endswith('.xcz'):	
+			f = Fs.ChromeXci(filename)	
+		elif filename.endswith('.xc0') or filename.endswith('.ns0') or filename.endswith('00'): 
+			ck=file_chunk.chunk(filename)	
+			feed=ck.send_html_cnmt_data()
+			return feed		
+		else: return ""			
+		feed=f.read_cnmt()
+		f.flush()
+		f.close()			
+		return	feed	
 	
 @eel.expose	
-def getverificationdata(filename):
+def getverificationdata(filename,remotelocation=False):
 	print('* Verifying files')
 	if filename.endswith('.nsp')or filename.endswith('.nsx') or filename.endswith('.nsz'):
 		f = Fs.ChromeNsp(filename, 'rb')

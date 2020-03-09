@@ -8,12 +8,20 @@ import Fs.Nca as Nca
 from Fs.Nca import NcaHeader
 import Fs.Nsp as Nsp
 import Fs.Nacp as Nacp
+from Fs.Pfs0 import Pfs0
+from Fs.Ticket import Ticket
+from Fs.pyNCA3 import NCA3
+from Fs.pyNPDM import NPDM
 from Fs.File import MemoryFile
 from hashlib import sha256,sha1
 from Drive import Public
 from Drive import Private
 import Keys
 from Fs import Type
+import nutFs
+from nutFs.BaseFs import BaseFs
+from nutFs.Rom import Rom
+import Print
 
 def readInt8(f, byteorder='little', signed = False):
 		return int.from_bytes(f.read(1), byteorder=byteorder, signed=signed)
@@ -29,7 +37,17 @@ def readInt64(f, byteorder='little', signed = False):
 
 def readInt128(f, byteorder='little', signed = False):
 	return int.from_bytes(f.read(16), byteorder=byteorder, signed=signed)
-	
+
+def GetSectionFilesystem(buffer, cryptoKey):
+	fsType = buffer[0x3]
+	if fsType == nutFs.Type.nutFs.PFS0:
+		return Pfs0(buffer, cryptoKey = cryptoKey)
+		
+	if fsType == nutFs.Type.nutFs.ROMFS:
+		return Rom(buffer, cryptoKey = cryptoKey)
+		
+	return BaseFs(buffer, cryptoKey = cryptoKey)
+
 def get_files_from_head_nsp(file,kbsize=8):
 	kbsize=int(kbsize);buf=int(kbsize*1024)
 	file.rewind();res=file.response
@@ -447,7 +465,14 @@ def cnmt_data(cnmt,nca,nca_name):
 	cnmtdata['Size']=str(nca.header.size)	
 	cnmtdata['Hash']=str(nsha)
 	ncadata.append(cnmtdata)
-	rightsId=titleid+'000000000000000'+str(crypto2)	
+	if int(crypto2)>9:
+		kg_=str(hex(int(str(crypto2))))[2:]
+	else:
+		kg_=str(crypto2)
+	if len(str(kg_))==1:
+		rightsId=str(titleid2).lower()+'000000000000000'+kg_
+	elif len(str(kg_))==2:
+		rightsId=str(titleid2)+'00000000000000'+kg_	
 	return 	titleid,titleversion,base_ID,keygeneration,rightsId,RSV,RGV,ctype,metasdkversion,exesdkversion,hasHtmlManual,Installedsize,DeltaSize,ncadata						
 
 def nacp_data(file,ncadata,files_list,ctype):
@@ -616,3 +641,135 @@ def file_hash(remote,target,files_list=None):
 				if sum(KB1L) == 0:					
 					gamecard=True							
 	return sha,sizef,gamecard	
+	
+def read_buildid(path=None,TD=None,filter=None,file=None,cnmtdict=None,files_list=None,dectkey=None):
+	ModuleId='';BuildID8='';BuildID16='';iscorrect=False;sdkversion='-'
+	sectionFilesystems=[]
+	if file !=None and cnmtdict!=None and files_list!=None:
+		remote=file
+	else:
+		cnmtdict,files_list,remote=get_cnmt_data(path,TD,filter)		
+	ctype=cnmtdict['ctype']
+	if ctype != 'DLC':
+		ncadata=cnmtdict['ncadata']
+		for entry in ncadata:
+			if str(entry['NCAtype']).lower()=='program':
+				ncaname=entry['NcaId']+'.nca'
+				break		
+		for i in range(len(files_list)):
+			if (files_list[i][0])==ncaname:
+				name=files_list[i][0]
+				off1=files_list[i][1]
+				off2=files_list[i][2]
+				sz=files_list[i][3]
+				break			
+		remote.seek(off1,off2)	
+		ncaHeader = NcaHeader()		
+		ncaHeader.open(MemoryFile(remote.read(0xC00), Type.Crypto.XTS, uhx(Keys.get('header_key'))))			
+		ncaHeader.rewind()
+		if ncaHeader.getRightsId() == 0:	
+			decKey=ncaHeader.titleKeyDec
+		elif dectkey!=None:
+			# print(dectkey)
+			decKey=bytes.fromhex(dectkey)
+		try:
+			sdkversion=get_sdkversion_from_head(ncaHeader)
+		except:
+			sdkversion='-'
+		try:	
+			ncaHeader.seek(0x400)
+			for i in range(4):
+				hdr = ncaHeader.read(0x200)
+				section = BaseFs(hdr, cryptoKey = ncaHeader.titleKeyDec)
+				fs = GetSectionFilesystem(hdr, cryptoKey = -1)
+				if fs.fsType:
+					fs.offset=ncaHeader.sectionTables[i].offset
+					sectionFilesystems.append(fs)
+					# Print.info('fs type = ' + hex(fs.fsType))
+					# Print.info('fs crypto = ' + hex(fs.cryptoType))
+					# Print.info('fs cryptocounter = ' + str(fs.cryptoCounter))
+					# Print.info('st end offset = ' + str(ncaHeader.sectionTables[i].endOffset - ncaHeader.sectionTables[i].offset))
+					# Print.info('fs offset = ' + hex(ncaHeader.sectionTables[i].offset))
+					# Print.info('fs section start = ' + hex(fs.sectionStart))
+					# Print.info('titleKey = ' + str(hx(ncaHeader.titleKeyDec)))					
+			for fs in sectionFilesystems:	
+				if fs.fsType == Type.Fs.PFS0 and fs.cryptoType == Type.Crypto.CTR:
+					# print(fs.fsType)
+					# print(fs.cryptoType)
+					# print(fs.buffer)
+					pfs0=fs
+					sectionHeaderBlock = fs.buffer
+					pfs0Offset=fs.offset+fs.sectionStart
+					skoff=off1+pfs0Offset
+					# pfs0Offset=off1+fs.offset+0xC00+ncaHeader.get_htable_offset()
+					remote.seek(skoff,off2)	
+					# print(str(fs.cryptoCounter))
+					pfs0Header = remote.read(0x10*30)
+					# print(hex(pfs0Offset))
+					# print(hex(fs.sectionStart))						
+					# Hex.dump(pfs0Header)	
+					off=fs.offset+fs.sectionStart
+					mem = MemoryFile(pfs0Header, Type.Crypto.CTR, decKey, pfs0.cryptoCounter, offset = pfs0Offset)
+					data = mem.read();
+					# Hex.dump(data)	
+					head=data[0:4]
+					n_files=(data[4:8])
+					n_files=int.from_bytes(n_files, byteorder='little')		
+					st_size=(data[8:12])
+					st_size=int.from_bytes(st_size, byteorder='little')		
+					junk=(data[12:16])
+					offset=(0x10 + n_files * 0x18)
+					stringTable=(data[offset:offset+st_size])
+					stringEndOffset = st_size
+					headerSize = 0x10 + 0x18 * n_files + st_size
+					# print(head)
+					# print(str(n_files))
+					# print(str(st_size))	
+					# print(str((stringTable)))	
+					files_list=list()
+					for i in range(n_files):
+						i = n_files - i - 1
+						pos=0x10 + i * 0x18
+						offset = data[pos:pos+8]
+						offset=int.from_bytes(offset, byteorder='little')			
+						size = data[pos+8:pos+16]
+						size=int.from_bytes(size, byteorder='little')			
+						nameOffset = data[pos+16:pos+20] # just the offset
+						nameOffset=int.from_bytes(nameOffset, byteorder='little')			
+						name = stringTable[nameOffset:stringEndOffset].decode('utf-8').rstrip(' \t\r\n\0')
+						stringEndOffset = nameOffset
+						# junk2 = data[pos+20:pos+24] # junk data
+						# print(name)
+						# print(offset)	
+						# print(size)	
+						files_list.append([name,offset,size])	
+					files_list.reverse()	
+					# print(files_list)								
+					for i in range(len(files_list)):
+						if files_list[i][0] == 'main':
+							foff=files_list[i][1]+pfs0Offset+headerSize
+							skoff2=files_list[i][1]+skoff+headerSize
+							remote.seek(skoff2,off2)	
+							np=remote.read(0x60)
+							mem = MemoryFile(np, Type.Crypto.CTR, decKey, pfs0.cryptoCounter, offset = foff)
+							magic=mem.read(0x4)
+							# print(magic)	
+							if magic==b'NSO0':
+								mem.seek(0x40)
+								data = mem.read(0x20);
+								ModuleId=(str(hx(data)).upper())[2:-1]
+								BuildID8=(str(hx(data[:8])).upper())[2:-1]
+								BuildID16=(str(hx(data[:16])).upper())[2:-1]
+								iscorrect=True;
+							break
+				break		
+		except:pass				
+	if iscorrect==False:
+		ModuleId='';BuildID8='';BuildID16='';
+	# print(ModuleId);print(BuildID8);print(BuildID16)	
+	return ModuleId,BuildID8,BuildID16,sdkversion
+	
+def get_sdkversion_from_head(ncaHeader):
+	ncaHeader.rewind()
+	sdkversion=str(ncaHeader.sdkVersion4)+'.'+str(ncaHeader.sdkVersion3)+'.'+str(ncaHeader.sdkVersion2)+'.'+str(ncaHeader.sdkVersion1)	
+	return sdkversion
