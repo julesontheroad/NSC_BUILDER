@@ -18,8 +18,8 @@
     <script type="text/javascript" src="/eel.js"></script>
 	<script>
 		document.addEventListener("DOMContentLoaded", function() {
-		  get_local_libraries();
-		  get_remote_libraries();
+		eel.get_libraries()(set_local_libraries)
+		eel.get_remote_libraries()(set_remote_libraries)
 		});	
 		<!-- var slocalbox_input = document.getElementById("slocalbox"); -->
 		<!-- // Execute a function when the user releases a key on the keyboard -->

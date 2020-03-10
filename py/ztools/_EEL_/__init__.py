@@ -173,9 +173,8 @@ def sleep(seconds):
 
 
 def spawn(function, *args, **kwargs):
-    a=gvt.spawn(function, *args, **kwargs)
-	return a
-	
+    gvt.spawn(function, *args, **kwargs)
+
 # Bottle Routes
 
 def _eel():

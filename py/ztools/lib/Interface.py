@@ -1067,4 +1067,4 @@ def start(browserpath='auto',videoplayback=True,height=800,width=740):
 				pass
 			print("User closed the program")
 			sys.exit()
-		except:raise		
+		except:pass
