@@ -296,16 +296,18 @@ document.getElementById("collapse_toggle_2").click();
 async function start(){
 	show_gameinfo()
 	var fname=await eel.getfname()();
-	<!-- console.log("Hello from"); -->
-	resetInfo()	
-	start2(fname)
+	if (fname!=null && fname!=""){	
+		console.log(fname);
+		resetInfo()	
+		start2(fname)
+	}	
 }
 
 async function start_from_link(){
 	var fname = prompt("Enter local path, gdrive path or public link", 
 					""); 	
 	<!-- console.log(fname) -->
-	if (fname!=null){
+	if (fname!=null && fname!=""){
 		show_gameinfo()
 		resetInfo()	
 		start2_remote(fname)
@@ -315,17 +317,21 @@ async function start_from_link(){
 async function start_from_library(data){
 	fname=data.innerHTML
 	<!-- console.log(fname) -->
-	show_gameinfo()
-	resetInfo()	
-	start2(fname)
+	if (fname!=null && fname!=""){	
+		show_gameinfo()
+		resetInfo()	
+		start2(fname)
+	}		
 }
 
 async function start_from_remote_library(data){
 	fname=data.innerHTML
 	<!-- console.log(fname) -->
-	show_gameinfo()
-	resetInfo()	
-	start2_remote(fname)
+	if (fname!=null && fname!=""){	
+		show_gameinfo()
+		resetInfo()	
+		start2_remote(fname)
+	}		
 }
 
 function start2(fname){	
@@ -855,7 +861,7 @@ function search_local_lib(value){
 	eel.search_local_lib(value,selected)(load_local_results)
 }
 function load_local_results(data){
-	console.log(data)
+	<!-- console.log(data) -->
 	document.getElementById("_search_results_").innerHTML = data;
 }
 
