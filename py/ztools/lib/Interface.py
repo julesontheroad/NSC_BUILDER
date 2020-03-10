@@ -1,5 +1,5 @@
 import io
-import eel
+import _EEL_ as eel
 import sq_tools
 import Fs
 import sys
@@ -80,6 +80,7 @@ download_lib_file = os.path.join(zconfig_dir, 'download_libraries.txt')
 
 globalpath=None;globalTD=None;globalremote=None
 globalocalpath=None
+threads=[]
 from Drive import Private as DrivePrivate
 from Drive import DriveHtmlInfo
 from Drive import Public as DrivePublic
@@ -237,36 +238,15 @@ def clear():
 		try:
 			call('clear') 
 		except:pass
-
-@eel.expose
-def get_libraries(): 
-	try:	
-		htmlcode='<select class="bg-cobalt fg-white" data-role="select" style="width:25vw" id="_local_lib_select_">'
-		htmlcode+='<option value="All" selected="selected">All</option>'
-		db=libraries(local_lib_file)	
-		if db==False:
-			htmlcode='<select class="bg-cobalt fg-white" data-role="select" style="width:25vw" id="_local_lib_select_">'
-			htmlcode+='<option value="{}">{}</option>'.format('None','Missing libraries')
-			htmlcode+='</select>'
-			# print(db[item])			
-			return htmlcode			
-		for item in db:
-			htmlcode+='<option value="{}">{}</option>'.format(item,item)
-			# print(db[item])
-		htmlcode+='</select>'		
-		return htmlcode
-	except BaseException as e:
-		Print.error('Exception: ' + str(e))
-		
-@eel.expose
+	
 def search_local_lib(value,library): 
 	if library=='None':
 		html='<p style="margin-bottom: 2px;margin-top: 3px"><strong style="margin-left: 12px">You need to create a library config file first</strong></p>'	
-		return html
+		eel.load_local_results(html)	
 	try:	
 		db=libraries(local_lib_file)	
 		if db==False:
-			return False
+			eel.load_local_results(False)	
 		if not library.lower()=='all':
 			path=db[library]['path']
 			print("* Searching library {}".format(library))
@@ -297,9 +277,29 @@ def search_local_lib(value,library):
 				html+='<li style="margin-bottom: 2px;margin-top: 3px" onclick="start_from_library({})"><strong id="{}">{}</strong></li>'.format(var,var,item)
 				# print(item)	
 			html+='</ul>'	
-		return html	
+		eel.load_local_results(html)	
 	except BaseException as e:
 		Print.error('Exception: ' + str(e))			
+		
+@eel.expose
+def get_libraries(): 
+	try:	
+		htmlcode='<select class="bg-cobalt fg-white" data-role="select" style="width:25vw" id="_local_lib_select_">'
+		htmlcode+='<option value="All" selected="selected">All</option>'
+		db=libraries(local_lib_file)	
+		if db==False:
+			htmlcode='<select class="bg-cobalt fg-white" data-role="select" style="width:25vw" id="_local_lib_select_">'
+			htmlcode+='<option value="{}">{}</option>'.format('None','Missing libraries')
+			htmlcode+='</select>'
+			# print(db[item])			
+			return htmlcode			
+		for item in db:
+			htmlcode+='<option value="{}">{}</option>'.format(item,item)
+			# print(db[item])
+		htmlcode+='</select>'		
+		return htmlcode
+	except BaseException as e:
+		Print.error('Exception: ' + str(e))		
 		
 @eel.expose
 def get_drive_libraries(): 
@@ -320,15 +320,14 @@ def get_drive_libraries():
 	except BaseException as e:
 		Print.error('Exception: ' + str(e))		
 		
-@eel.expose
 def search_remote_lib(value,library): 
 	if library=='None':
 		html='<p style="margin-bottom: 2px;margin-top: 3px"><strong style="margin-left: 12px">You need to create a library config file first</strong></p>'	
-		return html
+		eel.load_remote_results(html)	
 	try:	
 		db=libraries(remote_lib_file)	
 		if db==False:
-			return False
+			eel.load_remote_results(False)	
 		if not library.lower()=='all':
 			results=[]	
 			path=db[library]['path']
@@ -372,12 +371,21 @@ def search_remote_lib(value,library):
 				var='remote_res_'+str(i)
 				html+='<li style="margin-bottom: 2px;margin-top: 3px" onclick="start_from_remote_library({})"><strong id="{}">{}</strong></li>'.format(var,var,item)
 			html+='</ul>'			
-		return html	
+		eel.load_remote_results(html)		
 	except BaseException as e:
 		Print.error('Exception: ' + str(e))					
 
 @eel.expose
 def getfname():
+	try:
+		global threads
+		for t in threads:
+			# print(t)
+			t.kill()
+		treads=[]	
+	except BaseException as e:
+		# Print.error('Exception: ' + str(e))
+		pass		
 	root = tk.Tk()
 	root.withdraw()
 	root.wm_attributes('-topmost', 1)
@@ -395,6 +403,65 @@ def getfname():
 	return str(filename)
 	
 @eel.expose
+def call_search_remote_lib(value,selected):
+	global threads
+	threads.append(eel.spawn(search_remote_lib,value,selected))	
+	return
+	
+@eel.expose
+def call_search_local_lib(value,selected):
+	global threads
+	threads.append(eel.spawn(search_local_lib,value,selected))	
+	return	
+	
+@eel.expose
+def call_showicon(filename):
+	global threads
+	threads.append(eel.spawn(showicon,filename))
+	return
+	
+@eel.expose
+def call_showicon_remote(filename):
+	global threads
+	threads.append(eel.spawn(showicon_remote,filename))	
+	return
+
+@eel.expose
+def call_getinfo(filename,remotelocation=False):
+	global threads
+	threads.append(eel.spawn(getinfo,filename,remotelocation))
+	return
+
+@eel.expose
+def call_get_adv_filelist(filename,remotelocation=False):
+	global threads
+	threads.append(eel.spawn(getfiledata,filename,remotelocation))
+	return
+
+@eel.expose
+def call_get_nacp_data(filename,remotelocation=False):
+	global threads
+	threads.append(eel.spawn(getnacpdata,filename,remotelocation))
+	return
+
+@eel.expose
+def call_get_npdm_data(filename,remotelocation=False):
+	global threads
+	threads.append(eel.spawn(getnpdmdata,filename,remotelocation))
+	return
+
+@eel.expose
+def call_get_cnmt_data(filename,remotelocation=False):
+	global threads
+	threads.append(eel.spawn(getcnmtdata,filename,remotelocation))
+	return	
+	
+@eel.expose
+def call_get_verification_data(filename,remotelocation=False):
+	global threads
+	threads.append(eel.spawn(getverificationdata,filename,remotelocation))	
+	return	
+	
 def showicon(filename):
 	filename=html.unescape(filename)
 	# global globalocalpath;
@@ -416,19 +483,21 @@ def showicon(filename):
 		elif filename.endswith('.xc0') or filename.endswith('.ns0') or filename.endswith('00'): 
 			a=file_chunk.icon_info(filename)	
 			encoded = b64encode(a).decode("ascii")
-			return "data:image/png;base64, " + encoded				
-		else: return ""
+			data= "data:image/png;base64, " + encoded
+			eel.setImage(data)	
+		else:eel.setImage("")	
 		a=f.icon_info(files_list)
 		f.flush()
 		f.close()	
 		encoded = b64encode(a).decode("ascii")
-		return "data:image/png;base64, " + encoded	
+		data= "data:image/png;base64, " + encoded	
+		eel.setImage(data)	
 	except BaseException as e:
 		Print.error('Exception: ' + str(e))
 		iconurl=retrieve_icon_from_server(filename)
 		if iconurl!=False:
-			return iconurl
-		else:return ""	
+			eel.setImage(iconurl)
+		else:eel.setImage("")
 		
 def retrieve_icon_from_server(filename):
 	if filename.endswith('.nsp')or filename.endswith('.nsx') or filename.endswith('.nsz'):	
@@ -442,7 +511,6 @@ def retrieve_icon_from_server(filename):
 	iconurl=nutdb.get_icon(titleid)
 	return iconurl
 	
-@eel.expose			
 def showicon_remote(filename):
 	filename=html.unescape(filename)
 	global globalpath; global globalremote
@@ -457,14 +525,19 @@ def showicon_remote(filename):
 			remote=DrivePublic.location(filename);readable=remote.readable
 			globalremote=remote
 			if not readable:
-				return ""			
-	a=DriveHtmlInfo.icon_info(file=globalremote)
+				eel.setImage("")
+	try:				
+		a=DriveHtmlInfo.icon_info(file=globalremote)		
+		# a=DriveHtmlInfo.icon_info(path=filename,TD=TD)
+		encoded = b64encode(a).decode("ascii")
+		data="data:image/png;base64, " + encoded	
+		eel.setImage(data)	
+	except:
+		iconurl=nutdb.get_icon(remote.id)
+		if iconurl!=False:
+			eel.setImage(iconurl)
+		else:eel.setImage("")		
 		
-	# a=DriveHtmlInfo.icon_info(path=filename,TD=TD)
-	encoded = b64encode(a).decode("ascii")
-	return "data:image/png;base64, " + encoded			
-	
-@eel.expose	
 def getinfo(filename,remotelocation=False):
 	filename=html.unescape(filename)
 	print('* Retrieving Game Information')
@@ -745,7 +818,7 @@ def getinfo(filename,remotelocation=False):
 		f.flush()
 		f.close()			
 	except:pass	
-	return send_
+	eel.setInfo(send_)
 	
 @eel.expose	
 def getfiletree(ID):
@@ -785,7 +858,6 @@ def getcheats(ID):
 	print('  DONE')		
 	return feed
 
-@eel.expose	
 def getfiledata(filename,remotelocation=False):
 	filename=html.unescape(filename)
 	print('* Generating Titles File Data')
@@ -797,7 +869,7 @@ def getfiledata(filename,remotelocation=False):
 			ID,name,type,size,md5,remote=DrivePrivate.get_Data(filename,TD=TD,Print=False)
 			globalremote=remote
 		feed=DriveHtmlInfo.adv_file_list(file=globalremote)
-		return feed			
+		eel.set_adv_filelist(feed)		
 	else:
 		if filename.endswith('.nsp') or filename.endswith('.nsx') or filename.endswith('.nsz'):
 			f = Fs.ChromeNsp(filename, 'rb')
@@ -806,14 +878,13 @@ def getfiledata(filename,remotelocation=False):
 		elif filename.endswith('.xc0') or filename.endswith('.ns0') or filename.endswith('00'): 
 			ck=file_chunk.chunk(filename)	
 			feed=ck.send_html_adv_file_list()
-			return feed		
-		else: return ""		
+			eel.set_adv_filelist(feed)	
+		else: eel.set_adv_filelist("")		
 		feed=f.adv_file_list()
 		f.flush()
 		f.close()		
-		return	feed
+		eel.set_adv_filelist(feed)
 
-@eel.expose	
 def getnacpdata(filename,remotelocation=False):
 	filename=html.unescape(filename)
 	print('* Reading Data from Nacp')
@@ -827,7 +898,7 @@ def getnacpdata(filename,remotelocation=False):
 		feed=DriveHtmlInfo.read_nacp(file=globalremote)		
 		if feed=='':
 			feed=html_feed(feed,2,message=str('No nacp in the file'))		
-		return	feed
+		eel.set_nacp_data(feed)
 	else:
 		if filename.endswith('.nsp')or filename.endswith('.nsx') or filename.endswith('.nsz'):
 			f = Fs.ChromeNsp(filename, 'rb')
@@ -838,16 +909,15 @@ def getnacpdata(filename,remotelocation=False):
 			feed=ck.send_html_nacp_data()
 			if feed=='':
 				feed=html_feed(feed,2,message=str('No nacp in the file'))	
-			return feed					
-		else: return ""		
+			eel.set_nacp_data(feed)					
+		else: eel.set_nacp_data("")	
 		feed=f.read_nacp(gui=True)
 		f.flush()
 		f.close()			
 		if feed=='':
 			feed=html_feed(feed,2,message=str('No nacp in the file'))		
-		return	feed
+		eel.set_nacp_data(feed)
 	
-@eel.expose	
 def getnpdmdata(filename,remotelocation=False):
 	filename=html.unescape(filename)
 	print('* Reading Data from Npdm')
@@ -861,7 +931,7 @@ def getnpdmdata(filename,remotelocation=False):
 		feed=DriveHtmlInfo.read_npdm(file=globalremote)	
 		if feed=='':
 			feed=html_feed(feed,2,message=str('No npdm in the file'))	
-		return	feed
+		eel.set_npdm_data(feed)
 	else:
 		if filename.endswith('.nsp')or filename.endswith('.nsx') or filename.endswith('.nsz'):
 			f = Fs.ChromeNsp(filename, 'rb')
@@ -869,15 +939,14 @@ def getnpdmdata(filename,remotelocation=False):
 		elif filename.endswith('.xci') or filename.endswith('.xcz'):	
 			f = Fs.ChromeXci(filename)			
 			files_list=sq_tools.ret_xci_offsets(filename)	
-		else: return ""			
+		else: eel.set_npdm_data("")			
 		feed=f.read_npdm(files_list)
 		f.flush()
 		f.close()
 		if feed=='':
 			feed=html_feed(feed,2,message=str('No npdm in the file'))		
-	return	feed
+	eel.set_npdm_data(feed)
 	
-@eel.expose	
 def getcnmtdata(filename,remotelocation=False):
 	filename=html.unescape(filename)
 	print('* Reading Data from Cnmt')
@@ -889,7 +958,7 @@ def getcnmtdata(filename,remotelocation=False):
 			ID,name,type,size,md5,remote=DrivePrivate.get_Data(filename,TD=TD,Print=False)
 			globalremote=remote
 		feed=DriveHtmlInfo.read_cnmt(file=globalremote)	
-		return	feed
+		eel.set_cnmt_data(feed)
 	else:
 		if filename.endswith('.nsp')or filename.endswith('.nsx') or filename.endswith('.nsz'):
 			f = Fs.ChromeNsp(filename, 'rb')
@@ -898,14 +967,13 @@ def getcnmtdata(filename,remotelocation=False):
 		elif filename.endswith('.xc0') or filename.endswith('.ns0') or filename.endswith('00'): 
 			ck=file_chunk.chunk(filename)	
 			feed=ck.send_html_cnmt_data()
-			return feed		
-		else: return ""			
+			eel.set_cnmt_data(feed)		
+		else: eel.set_cnmt_data("")			
 		feed=f.read_cnmt()
 		f.flush()
 		f.close()			
-		return	feed	
+		eel.set_cnmt_data(feed)
 	
-@eel.expose	
 def getverificationdata(filename,remotelocation=False):
 	filename=html.unescape(filename)
 	print('* Verifying files')
@@ -913,7 +981,7 @@ def getverificationdata(filename,remotelocation=False):
 		f = Fs.ChromeNsp(filename, 'rb')
 	elif filename.endswith('.xci') or filename.endswith('.xcz'):	
 		f = Fs.ChromeXci(filename)		
-	else: return ""			
+	else: eel.set_ver_data("")				
 	check,feed=f.verify()
 	if not os.path.exists(tmpfolder):
 		os.makedirs(tmpfolder)		
@@ -923,7 +991,7 @@ def getverificationdata(filename,remotelocation=False):
 	try:
 		os.remove(tmpfolder) 	
 	except:pass			
-	return	feed		
+	eel.set_ver_data(feed)		
 
 def start(browserpath='auto',videoplayback=True,height=800,width=740):
 	global enablevideoplayback
@@ -988,6 +1056,15 @@ def start(browserpath='auto',videoplayback=True,height=800,width=740):
 					raise				
 	except (SystemExit, MemoryError, KeyboardInterrupt):	
 		try:
+			try:
+				global threads
+				for t in threads:
+					# print(t)
+					t.kill()
+				treads=[]	
+			except BaseException as e:
+				# Print.error('Exception: ' + str(e))
+				pass
 			print("User closed the program")
 			sys.exit()
-		except:pass		
+		except:raise		
