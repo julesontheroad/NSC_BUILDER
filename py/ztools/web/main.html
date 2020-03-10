@@ -16,7 +16,11 @@
 		}
 	</style>
     <script type="text/javascript" src="/eel.js"></script>
-	<!-- <script> -->
+	<script>
+		document.addEventListener("DOMContentLoaded", function() {
+		  get_local_libraries();
+		  get_remote_libraries();
+		});	
 		<!-- var slocalbox_input = document.getElementById("slocalbox"); -->
 		<!-- // Execute a function when the user releases a key on the keyboard -->
 		<!-- slocalbox_input.addEventListener("keyup", function(event) { -->
@@ -27,7 +31,7 @@
 			<!-- // Trigger the button element with a click -->
 			<!-- document.getElementById("slocalbox").getElementsByClassName("button input-search-button").click(); -->
 		  <!-- }			 -->
-	<!-- </script> -->
+	</script>
 </head>
 <body  class="bg-lightGray fg-white h-vh-100 m4-cloak">
 <div class="head-bar pos-absolute bg-cobalt fg-white">
@@ -334,111 +338,60 @@ async function start_from_remote_library(data){
 	}		
 }
 
-function start2(fname){	
-	showicon(fname)	
-	getinfo(fname)
-	get_adv_filelist(fname)
-	get_nacp_data(fname)
-	get_npdm_data(fname)
-	get_cnmt_data(fname)
-	get_verification_data(fname)
+async function start2(fname){	
+	eel.call_showicon(fname)	
+	eel.call_getinfo(fname)
+	eel.call_get_adv_filelist(fname)
+	eel.call_get_nacp_data(fname)
+	eel.call_get_npdm_data(fname)
+	eel.call_get_cnmt_data(fname)
+	eel.call_get_verification_data(fname)
 }
 
-function start2_remote(fname){	
-	showicon_remote(fname)	
-	getinfo_remote(fname)
-	get_adv_filelist_remote(fname)
-	get_nacp_data_remote(fname)
+async function start2_remote(fname){	
+	eel.call_showicon_remote(fname)	
+	eel.call_getinfo(fname,"True")
+	eel.call_get_adv_filelist(fname,"True")
+	eel.call_get_nacp_data(fname,"True")
 	<!-- get_npdm_data_remote(fname) -->
-	get_cnmt_data_remote(fname)
+	eel.call_get_cnmt_data(fname,"True")
 	<!-- get_verification_data_remote(fname) -->
 }
 
-function showicon(fname){	
-	eel.showicon(fname)(setImage)
-	<!-- eel.getinfo()(setInfo)	 -->
-}
-
-function showicon_remote(fname){	
-	eel.showicon_remote(fname)(setImage)
-	<!-- eel.getinfo()(setInfo)	 -->
-}
-
-function getinfo(fname){	
-	eel.getinfo(fname)(setInfo)
-}
-
-function getinfo_remote(fname){	
-	eel.getinfo(fname,"True")(setInfo)
-}
-
-function get_adv_filelist(fname){	
-	eel.getfiledata(fname)(set_adv_filelist)
-}
-
-function get_adv_filelist_remote(fname){	
-	eel.getfiledata(fname,"True")(set_adv_filelist)
-}
-
-function get_nacp_data(fname){	
-	eel.getnacpdata(fname)(set_nacp_data)
-}
-
-function get_nacp_data_remote(fname){	
-	eel.getnacpdata(fname,"True")(set_nacp_data)
-}
-
-function get_npdm_data(fname){	
-	eel.getnpdmdata(fname)(set_npdm_data)
-}
-
-function get_npdm_data_remote(fname){	
-	eel.getnpdmdata(fname,"True")(set_npdm_data)
-}
-
-function get_cnmt_data(fname){	
-	eel.getcnmtdata(fname)(set_cnmt_data)
-}
-
-function get_cnmt_data_remote(fname){	
-	eel.getcnmtdata(fname,"True")(set_cnmt_data)
-}
-
-function get_verification_data(fname){	
-	eel.getverificationdata(fname)(set_ver_data)
-}
-
-function get_verification_data_remote(fname){	
-	eel.getverificationdata(fname,"True")(set_ver_data)
-}
-
+eel.expose(setImage);
 function setImage(base64) {
 	<!-- console.log(base64) -->
 	document.getElementById("gamepicture").src = base64
 	if (base64!=''){document.getElementById("gamepicture").src = base64}
 	else{document.getElementById("gamepicture").src = "img/placeholder.gif"}	
 }
-	
+
+eel.expose(set_adv_filelist);	
 function set_adv_filelist(data) {
 	document.getElementById("_filedata_").innerHTML = data;
 }
 
+eel.expose(set_nacp_data);
 function set_nacp_data(data) {
 	document.getElementById("_nacpdata_").innerHTML = data;
 }
 
+eel.expose(set_npdm_data);
 function set_npdm_data(data) {
 	document.getElementById("_npdmdata_").innerHTML = data;
 }
 
+eel.expose(set_cnmt_data);
 function set_cnmt_data(data) {
 	document.getElementById("_cnmtdata_").innerHTML = data;
 }
 
+eel.expose(set_ver_data);
 function set_ver_data(data) {
 	document.getElementById("_verificationdata_").innerHTML = data;
 }
 
+eel.expose(setInfo);
 function setInfo(data) {
 	document.getElementById("tname").innerHTML = data[0];
 	document.getElementById("editor").innerHTML = data[1];	
@@ -786,6 +739,8 @@ document.getElementById("_imagebox_").style.display = "block";
 document.getElementById("_viewspace_").style.height = "80vh";
 }
 
+<!-- ############################## -->
+
 function get_local_libraries(){	
 	eel.get_libraries()(set_local_libraries)
 	show_local_libraries()
@@ -817,12 +772,14 @@ function show_local_libraries() {
 	document.getElementById("_viewspace_").style.height = "80vh";	
 }
 
-function search_local_lib(value){
+async  function search_local_lib(value){
 	<!-- console.log(value) -->
 	var selected = document.getElementById("_local_lib_select_").value
 	<!-- console.log(selected) -->
-	eel.search_local_lib(value,selected)(load_local_results)
+	eel.call_search_local_lib(value,selected)
 }
+
+eel.expose(load_local_results)
 function load_local_results(data){
 	console.log(data)
 	document.getElementById("_search_results_").innerHTML = data;
@@ -833,37 +790,6 @@ function set_local_libraries(data){
 	document.getElementById("_local_lib_tags_").innerHTML = data;
 }
 
-function show_local_libraries() {
-	if (navclicks>0){
-	document.getElementById("nav_view_but").click();
-	}
-	document.getElementById("info_tab").click();
-	window.scrollTo(0,0);
-	document.getElementById("_GameInfo_").style.display = "none";
-	document.getElementById("_imagebox_").style.display = "none";
-	document.getElementById("_Gametree_").style.display = "none";
-	document.getElementById("_Cheats_").style.display = "none";
-	document.getElementById("_Description_").style.display = "none";
-	document.getElementById("_Files_").style.display = "none";
-	document.getElementById("_Nacp_").style.display = "none";
-	document.getElementById("_Npdm_").style.display = "none";
-	document.getElementById("_Cnmt_").style.display = "none";
-	document.getElementById("_Verification_").style.display = "none";
-	document.getElementById("_Pictures_").style.display = "none";
-	document.getElementById("_LocalLibrary_").style.display = "block";	
-	document.getElementById("_viewspace_").style.height = "80vh";	
-}
-
-function search_local_lib(value){
-	<!-- console.log(value) -->
-	var selected = document.getElementById("_local_lib_select_").value
-	<!-- console.log(selected) -->
-	eel.search_local_lib(value,selected)(load_local_results)
-}
-function load_local_results(data){
-	<!-- console.log(data) -->
-	document.getElementById("_search_results_").innerHTML = data;
-}
 
 <!-- ############################## -->
 
@@ -899,17 +825,18 @@ function show_remote_libraries() {
 	document.getElementById("_viewspace_").style.height = "80vh";	
 }
 
-function search_remote_lib(value){
+async function search_remote_lib(value){
 	<!-- console.log(value) -->
 	var selected = document.getElementById("_remote_lib_select_").value
 	<!-- console.log(selected) -->
-	eel.search_remote_lib(value,selected)(load_remote_results)
+	eel.call_search_remote_lib(value,selected)
 }
+
+eel.expose(load_remote_results)
 function load_remote_results(data){
 	<!-- console.log(data) -->
 	document.getElementById("_search_results2_").innerHTML = data;
 }
-
 
 function show_filedata(){
 if (navclicks>0){
