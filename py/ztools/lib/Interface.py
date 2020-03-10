@@ -4,10 +4,13 @@ import sq_tools
 import Fs
 import sys
 import platform
-import win32com.client 
+if sys.platform in ['win32', 'win64']:
+	import win32com.client 
 from base64 import b64encode
-import tkinter as tk
-from tkinter import filedialog
+try:
+	import tkinter as tk
+	from tkinter import filedialog
+except:pass	
 import sq_tools
 import os
 import ast
@@ -59,12 +62,17 @@ else:
 tmpfolder =os.path.join(NSCB_dir,'tmp')
 chromiumpath=os.path.join(ztools_dir,'chromium')
 chromiumpath_alt=os.path.join(squirrel_dir,'chromium')
-slimjet='slimjet.exe'
-slimpath=os.path.join(chromiumpath,slimjet)
-slimpath_alt=os.path.join(chromiumpath_alt,slimjet)
-chrom='chrlauncher.exe'
-chromiumpath=os.path.join(chromiumpath,chrom)
-chromiumpath_alt=os.path.join(chromiumpath_alt,chrom)
+if sys.platform in ['win32', 'win64']:
+	slimjet='slimjet.exe'
+	slimpath=os.path.join(chromiumpath,slimjet)
+	slimpath_alt=os.path.join(chromiumpath_alt,slimjet)
+	chrom='chrlauncher.exe'
+	chromiumpath=os.path.join(chromiumpath,chrom)
+	chromiumpath_alt=os.path.join(chromiumpath_alt,chrom)
+else:
+	chromiumdir=os.path.join(ztools_dir, 'chromium')
+	chromiumpath=os.path.join(chromiumdir, 'chrome')	
+
 
 local_lib_file = os.path.join(zconfig_dir, 'local_libraries.txt')
 remote_lib_file = os.path.join(zconfig_dir, 'remote_libraries.txt')
@@ -936,7 +944,7 @@ def start(browserpath='auto',videoplayback=True,height=800,width=740):
 				browserpath=os.path.join(chrpath,browserpath)
 			elif not os.path.exists(browserpath) and os.path.exists(chrpath_alt):
 				browserpath=os.path.join(chrpath_alt,browserpath)
-			elif not os.path.exists(browserpath):
+			elif not os.path.exists(browserpath) and sys.platform == 'win32':
 				print(".lnk file doesn't exist")
 				return False
 			shell = win32com.client.Dispatch("WScript.Shell")
