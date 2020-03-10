@@ -245,7 +245,11 @@ def get_libraries():
 		htmlcode+='<option value="All" selected="selected">All</option>'
 		db=libraries(local_lib_file)	
 		if db==False:
-			return False			
+			htmlcode='<select class="bg-cobalt fg-white" data-role="select" style="width:25vw" id="_local_lib_select_">'
+			htmlcode+='<option value="{}">{}</option>'.format('None','Missing libraries')
+			htmlcode+='</select>'
+			# print(db[item])			
+			return htmlcode			
 		for item in db:
 			htmlcode+='<option value="{}">{}</option>'.format(item,item)
 			# print(db[item])
@@ -256,6 +260,9 @@ def get_libraries():
 		
 @eel.expose
 def search_local_lib(value,library): 
+	if library=='None':
+		html='<p style="margin-bottom: 2px;margin-top: 3px"><strong style="margin-left: 12px">You need to create a library config file first</strong></p>'	
+		return html
 	try:	
 		db=libraries(local_lib_file)	
 		if db==False:
@@ -301,7 +308,10 @@ def get_drive_libraries():
 		htmlcode+='<option value="All" selected="selected">All</option>'
 		db=libraries(remote_lib_file)	
 		if db==False:
-			return False			
+			htmlcode='<select class="bg-cobalt fg-white" data-role="select" style="width:25vw" id="_remote_lib_select_">'
+			htmlcode+='<option value="{}">{}</option>'.format('None','Missing libraries')
+			htmlcode+='</select>'	
+			return htmlcode
 		for item in db:
 			htmlcode+='<option value="{}">{}</option>'.format(item,item)
 			# print(db[item])
@@ -312,6 +322,9 @@ def get_drive_libraries():
 		
 @eel.expose
 def search_remote_lib(value,library): 
+	if library=='None':
+		html='<p style="margin-bottom: 2px;margin-top: 3px"><strong style="margin-left: 12px">You need to create a library config file first</strong></p>'	
+		return html
 	try:	
 		db=libraries(remote_lib_file)	
 		if db==False:
