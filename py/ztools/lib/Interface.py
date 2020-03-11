@@ -559,7 +559,8 @@ def showicon_remote(filename):
 		if iconurl!=False:
 			eel.setImage(iconurl)
 			return
-		else:eel.setImage("")	
+		else:
+			eel.setImage("")	
 			return
 		
 def getinfo(filename,remotelocation=False):
