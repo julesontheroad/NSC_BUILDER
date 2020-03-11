@@ -19,7 +19,7 @@
 	<script>
 		document.addEventListener("DOMContentLoaded", function() {
 		eel.get_libraries()(set_local_libraries)
-		eel.get_remote_libraries()(set_remote_libraries)
+		eel.get_drive_libraries()(set_remote_libraries)
 		});	
 		<!-- var slocalbox_input = document.getElementById("slocalbox"); -->
 		<!-- // Execute a function when the user releases a key on the keyboard -->
@@ -203,7 +203,7 @@
 					<p style="font-size: 2vh;text-align: justify;text-justify: inter-word;white-space: pre-line;" id="cheat_data"></p>
 			</div></div></div>					
 
-				<div class="cell" id="_LocalLibrary_" style="font-size: 2vh;display:none;overflow-z:auto;"><div><div style="width: 55vw;margin-left:0;margin-right:auto;">
+				<div class="cell" id="_LocalLibrary_" style="font-size: 1.84vh;display:none;overflow-z:auto;"><div><div style="width: 55vw;margin-left:0;margin-right:auto;">
 					<p style="margin-bottom: 2px;margin-top: 2px;font-size: 2.4vh"><strong>Local Libraries: </strong></p>	
 					<div class="row" style="width:130vw">
 						<div class="cell"  style="width: 70vw">
@@ -214,7 +214,7 @@
 							<option value="all" selected="selected">All</option>
 							</select>
 						</div></div>
-					<div class="row" style="width:130vw" id="_search_results_">
+					<div class="row" style="width:100vw" id="_search_results_">
 					</div>	
 			</div></div></div>	
 			
@@ -288,6 +288,7 @@
 <script>
 navclicks=0;
 sideclicks=0;
+H=screen.height;W=screen.width;
 function navviewclick(){
 if (navclicks>0){navclicks=0}
 else{navclicks = navclicks+1;}	
@@ -301,7 +302,7 @@ async function start(){
 	show_gameinfo()
 	var fname=await eel.getfname()();
 	if (fname!=null && fname!=""){	
-		console.log(fname);
+		<!-- console.log(fname); -->
 		resetInfo()	
 		start2(fname)
 	}	
@@ -477,7 +478,7 @@ function setInfo(data) {
 	eel.getfiletree(data[2])(set_filetree)
 	eel.getcheats(data[2])(set_cheats)	
 	if (data[40]!== "-"){	
-	set_video(data[40])()
+		set_video(data[40])
 	}
 }
 
@@ -951,9 +952,16 @@ document.getElementById("_viewspace_").style.height = "80vh";
 function setmainimage(route){
 document.getElementById("mainpicture").src = route
 }
-<!-- function zoommainimage(){ -->
-<!-- MediumLightbox('figure.zoom-effect'); -->
-<!-- } -->
+
+function showimg(){
+	img=document.getElementById("mainpicture").src
+	screen="height="+H+",width="+W+""
+	window.open(img, "Window Title", screen);
+}
+
+function zoommainimage(){
+MediumLightbox('figure.zoom-effect');
+}
 </script>
 </body>
 </html>

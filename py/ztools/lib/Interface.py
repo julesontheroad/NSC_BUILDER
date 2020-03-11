@@ -168,7 +168,7 @@ def  html_feed(feed='',style=1,message=''):
 
 def get_screen_gallery(banner,screenlist):
 	try:	
-		ret='<div class="grid"><div class="row"><div class="img-container thumbnail" style="width: auto;max-height:auto; margin-left: auto; margin-right: auto; display: block;"><img src="{}" id="mainpicture" style="width: auto;max-height:63vh;"></div></div></div><div class="row">'.format(banner)
+		ret='<div class="grid"><div class="row"><div class="img-container thumbnail" style="width: auto;max-height:auto; margin-left: auto; margin-right: auto; display: block;" onclick="showimg()"><img src="{}" id="mainpicture" style="width: auto;max-height:63vh;"></div></div></div><div class="row">'.format(banner)
 		banner1="'{}'".format(banner)
 		ret+='<div class="cell" style="width: auto;max-height:5vh;"><div class="img-container thumbnail" onclick="setmainimage({})"><img src="{}"></div></div>'.format(banner1,banner)
 		screenlist=ast.literal_eval(str(screenlist))
@@ -187,6 +187,9 @@ def get_screen_gallery(banner,screenlist):
 		ret+='</div>'
 		return ret
 	except:return "Not available"
+# @eel.expose	
+# def show_picture(img):	
+	# eel.show(img)
 
 def format_file_tree(baselist,updlist,dlclist,titleid):
 	feed=''
@@ -252,13 +255,14 @@ def search_local_lib(value,library):
 			print("* Searching library {}".format(library))
 			results=folder_to_list(path,'all',value)	
 			results.sort()	
-			html='<ul style="margin-bottom: 2px;margin-top: 3px">'
+			html='<ul style="margin-bottom: 2px;margin-top: 3px; list-style-type: none;">'
 			i=0
 			print("  - Retrieved {} files".format(str(len(results))))
 			for item in results:
 				i+=1
+				item2=str(os.path.basename(os.path.abspath(item)))
 				var='local_res_'+str(i)
-				html+='<li style="margin-bottom: 2px;margin-top: 3px" onclick="start_from_library({})"><strong id="{}">{}</strong></li>'.format(var,var,item)
+				html+='<li style="margin-bottom: 2px;margin-top: 3px" onclick="start_from_library({})"><span id="{}" style="display:none">{}</span><strong>{}</strong></li>'.format(var,var,item,item2)
 			html+='</ul>'
 		else:
 			results=[]	
@@ -269,12 +273,13 @@ def search_local_lib(value,library):
 				print("  - Retrieved {} files".format(str(len(res))))
 				results+=res	
 			results.sort()	
-			html='<ul style="margin-bottom: 2px;margin-top: 3px">'
+			html='<ul style="margin-bottom: 2px;margin-top: 3px; list-style-type: none;">'
 			i=0		
 			for item in results:
 				i+=1
+				item2=str(os.path.basename(os.path.abspath(item)))
 				var='local_res_'+str(i)
-				html+='<li style="margin-bottom: 2px;margin-top: 3px" onclick="start_from_library({})"><strong id="{}">{}</strong></li>'.format(var,var,item)
+				html+='<li style="margin-bottom: 2px;margin-top: 3px" onclick="start_from_library({})"><span id="{}" style="display:none">{}</span><strong>{}</strong></li>'.format(var,var,item,item2)
 				# print(item)	
 			html+='</ul>'	
 		eel.load_local_results(html)	
@@ -342,12 +347,13 @@ def search_remote_lib(value,library):
 					send_results.append('{}/{}'.format(entry[2],entry[0]))
 				send_results.sort()	
 			except:pass
-			html='<ul style="margin-bottom: 2px;margin-top: 3px">'
+			html='<ul style="margin-bottom: 2px;margin-top: 3px; list-style-type: none;">'
 			i=0
 			for item in send_results:
 				i+=1
+				item2=str(os.path.basename(os.path.abspath(item)))
 				var='remote_res_'+str(i)
-				html+='<li style="margin-bottom: 2px;margin-top: 3px" onclick="start_from_remote_library({})"><strong id="{}">{}</strong></li>'.format(var,var,item)
+				html+='<li style="margin-bottom: 2px;margin-top: 3px" onclick="start_from_remote_library({})"><span id="{}" style="display:none">{}</span><strong>{}</strong></li>'.format(var,var,item,item2)
 			html+='</ul>'
 		else:
 			results=[]	
@@ -364,12 +370,13 @@ def search_remote_lib(value,library):
 					send_results.append('{}/{}'.format(entry[2],entry[0]))
 				send_results.sort()	
 			except:pass	
-			html='<ul style="margin-bottom: 2px;margin-top: 3px">'
+			html='<ul style="margin-bottom: 2px;margin-top: 3px; list-style-type: none;">'
 			i=0
 			for item in send_results:
 				i+=1
+				item2=str(os.path.basename(os.path.abspath(item)))
 				var='remote_res_'+str(i)
-				html+='<li style="margin-bottom: 2px;margin-top: 3px" onclick="start_from_remote_library({})"><strong id="{}">{}</strong></li>'.format(var,var,item)
+				html+='<li style="margin-bottom: 2px;margin-top: 3px" onclick="start_from_remote_library({})"><span id="{}" style="display:none">{}</span><strong>{}</strong></li>'.format(var,var,item,item2)
 			html+='</ul>'			
 		eel.load_remote_results(html)		
 	except BaseException as e:
