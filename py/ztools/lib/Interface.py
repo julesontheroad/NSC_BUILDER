@@ -246,10 +246,12 @@ def search_local_lib(value,library):
 	if library=='None':
 		html='<p style="margin-bottom: 2px;margin-top: 3px"><strong style="margin-left: 12px">You need to create a library config file first</strong></p>'	
 		eel.load_local_results(html)	
+		return
 	try:	
 		db=libraries(local_lib_file)	
 		if db==False:
 			eel.load_local_results(False)	
+			return
 		if not library.lower()=='all':
 			path=db[library]['path']
 			print("* Searching library {}".format(library))
@@ -283,6 +285,7 @@ def search_local_lib(value,library):
 				# print(item)	
 			html+='</ul>'	
 		eel.load_local_results(html)	
+		return
 	except BaseException as e:
 		Print.error('Exception: ' + str(e))			
 		
@@ -329,10 +332,12 @@ def search_remote_lib(value,library):
 	if library=='None':
 		html='<p style="margin-bottom: 2px;margin-top: 3px"><strong style="margin-left: 12px">You need to create a library config file first</strong></p>'	
 		eel.load_remote_results(html)	
+		return
 	try:	
 		db=libraries(remote_lib_file)	
 		if db==False:
 			eel.load_remote_results(False)	
+			return
 		if not library.lower()=='all':
 			results=[]	
 			path=db[library]['path']
@@ -378,7 +383,8 @@ def search_remote_lib(value,library):
 				var='remote_res_'+str(i)
 				html+='<li style="margin-bottom: 2px;margin-top: 3px" onclick="start_from_remote_library({})"><span id="{}" style="display:none">{}</span><strong>{}</strong></li>'.format(var,var,item,item2)
 			html+='</ul>'			
-		eel.load_remote_results(html)		
+		eel.load_remote_results(html)
+		return	
 	except BaseException as e:
 		Print.error('Exception: ' + str(e))					
 
@@ -492,19 +498,26 @@ def showicon(filename):
 			encoded = b64encode(a).decode("ascii")
 			data= "data:image/png;base64, " + encoded
 			eel.setImage(data)	
-		else:eel.setImage("")	
+			return
+		else:
+			eel.setImage("")	
+			return
 		a=f.icon_info(files_list)
 		f.flush()
 		f.close()	
 		encoded = b64encode(a).decode("ascii")
 		data= "data:image/png;base64, " + encoded	
 		eel.setImage(data)	
+		return
 	except BaseException as e:
 		Print.error('Exception: ' + str(e))
 		iconurl=retrieve_icon_from_server(filename)
 		if iconurl!=False:
 			eel.setImage(iconurl)
-		else:eel.setImage("")
+			return
+		else:
+			eel.setImage("")
+			return
 		
 def retrieve_icon_from_server(filename):
 	if filename.endswith('.nsp')or filename.endswith('.nsx') or filename.endswith('.nsz'):	
@@ -533,17 +546,21 @@ def showicon_remote(filename):
 			globalremote=remote
 			if not readable:
 				eel.setImage("")
+				return
 	try:				
 		a=DriveHtmlInfo.icon_info(file=globalremote)		
 		# a=DriveHtmlInfo.icon_info(path=filename,TD=TD)
 		encoded = b64encode(a).decode("ascii")
 		data="data:image/png;base64, " + encoded	
 		eel.setImage(data)	
+		return
 	except:
 		iconurl=nutdb.get_icon(remote.id)
 		if iconurl!=False:
 			eel.setImage(iconurl)
-		else:eel.setImage("")		
+			return
+		else:eel.setImage("")	
+			return
 		
 def getinfo(filename,remotelocation=False):
 	filename=html.unescape(filename)
@@ -826,6 +843,7 @@ def getinfo(filename,remotelocation=False):
 		f.close()			
 	except:pass	
 	eel.setInfo(send_)
+	return
 	
 @eel.expose	
 def getfiletree(ID):
@@ -877,6 +895,7 @@ def getfiledata(filename,remotelocation=False):
 			globalremote=remote
 		feed=DriveHtmlInfo.adv_file_list(file=globalremote)
 		eel.set_adv_filelist(feed)		
+		return
 	else:
 		if filename.endswith('.nsp') or filename.endswith('.nsx') or filename.endswith('.nsz'):
 			f = Fs.ChromeNsp(filename, 'rb')
@@ -886,11 +905,13 @@ def getfiledata(filename,remotelocation=False):
 			ck=file_chunk.chunk(filename)	
 			feed=ck.send_html_adv_file_list()
 			eel.set_adv_filelist(feed)	
+			return
 		else: eel.set_adv_filelist("")		
 		feed=f.adv_file_list()
 		f.flush()
 		f.close()		
 		eel.set_adv_filelist(feed)
+		return
 
 def getnacpdata(filename,remotelocation=False):
 	filename=html.unescape(filename)
@@ -906,6 +927,7 @@ def getnacpdata(filename,remotelocation=False):
 		if feed=='':
 			feed=html_feed(feed,2,message=str('No nacp in the file'))		
 		eel.set_nacp_data(feed)
+		return
 	else:
 		if filename.endswith('.nsp')or filename.endswith('.nsx') or filename.endswith('.nsz'):
 			f = Fs.ChromeNsp(filename, 'rb')
@@ -916,14 +938,18 @@ def getnacpdata(filename,remotelocation=False):
 			feed=ck.send_html_nacp_data()
 			if feed=='':
 				feed=html_feed(feed,2,message=str('No nacp in the file'))	
-			eel.set_nacp_data(feed)					
-		else: eel.set_nacp_data("")	
+			eel.set_nacp_data(feed)		
+			return
+		else: 
+			eel.set_nacp_data("")	
+			return
 		feed=f.read_nacp(gui=True)
 		f.flush()
 		f.close()			
 		if feed=='':
 			feed=html_feed(feed,2,message=str('No nacp in the file'))		
 		eel.set_nacp_data(feed)
+		return
 	
 def getnpdmdata(filename,remotelocation=False):
 	filename=html.unescape(filename)
@@ -939,6 +965,7 @@ def getnpdmdata(filename,remotelocation=False):
 		if feed=='':
 			feed=html_feed(feed,2,message=str('No npdm in the file'))	
 		eel.set_npdm_data(feed)
+		return
 	else:
 		if filename.endswith('.nsp')or filename.endswith('.nsx') or filename.endswith('.nsz'):
 			f = Fs.ChromeNsp(filename, 'rb')
@@ -946,13 +973,16 @@ def getnpdmdata(filename,remotelocation=False):
 		elif filename.endswith('.xci') or filename.endswith('.xcz'):	
 			f = Fs.ChromeXci(filename)			
 			files_list=sq_tools.ret_xci_offsets(filename)	
-		else: eel.set_npdm_data("")			
+		else: 
+			eel.set_npdm_data("")	
+			return		
 		feed=f.read_npdm(files_list)
 		f.flush()
 		f.close()
 		if feed=='':
 			feed=html_feed(feed,2,message=str('No npdm in the file'))		
 	eel.set_npdm_data(feed)
+	return
 	
 def getcnmtdata(filename,remotelocation=False):
 	filename=html.unescape(filename)
@@ -966,6 +996,7 @@ def getcnmtdata(filename,remotelocation=False):
 			globalremote=remote
 		feed=DriveHtmlInfo.read_cnmt(file=globalremote)	
 		eel.set_cnmt_data(feed)
+		return
 	else:
 		if filename.endswith('.nsp')or filename.endswith('.nsx') or filename.endswith('.nsz'):
 			f = Fs.ChromeNsp(filename, 'rb')
@@ -974,12 +1005,16 @@ def getcnmtdata(filename,remotelocation=False):
 		elif filename.endswith('.xc0') or filename.endswith('.ns0') or filename.endswith('00'): 
 			ck=file_chunk.chunk(filename)	
 			feed=ck.send_html_cnmt_data()
-			eel.set_cnmt_data(feed)		
-		else: eel.set_cnmt_data("")			
+			eel.set_cnmt_data(feed)
+			return	
+		else: 
+			eel.set_cnmt_data("")	
+			return	
 		feed=f.read_cnmt()
 		f.flush()
 		f.close()			
 		eel.set_cnmt_data(feed)
+		return
 	
 def getverificationdata(filename,remotelocation=False):
 	filename=html.unescape(filename)
@@ -988,7 +1023,9 @@ def getverificationdata(filename,remotelocation=False):
 		f = Fs.ChromeNsp(filename, 'rb')
 	elif filename.endswith('.xci') or filename.endswith('.xcz'):	
 		f = Fs.ChromeXci(filename)		
-	else: eel.set_ver_data("")				
+	else: 
+		eel.set_ver_data("")
+		return	
 	check,feed=f.verify()
 	if not os.path.exists(tmpfolder):
 		os.makedirs(tmpfolder)		
@@ -998,7 +1035,8 @@ def getverificationdata(filename,remotelocation=False):
 	try:
 		os.remove(tmpfolder) 	
 	except:pass			
-	eel.set_ver_data(feed)		
+	eel.set_ver_data(feed)
+	return	
 
 def start(browserpath='auto',videoplayback=True,height=800,width=740):
 	global enablevideoplayback
