@@ -14,7 +14,7 @@ set "pycommand=py -3"
 ::**************************************************************
 ::START console minimized with GUI yes\no
 ::**************************************************************
-set "start_minimized=no"
+set "start_minimized=yes"
 ::**************************************************************
 ::PATH TO BROWSER. USE AUTO, DEFAULT, ADD A PATH
 ::**************************************************************
@@ -38,3 +38,11 @@ set "videoplayback=true"
 ::**************************************************************
 set "height=800"
 set "width=740"
+::**************************************************************
+::Port
+::**************************************************************
+::auto -> any open port
+::rg8000 -> any open port between 8000 and 8999
+::Port number -> Fixed port (example 8000)
+::Auto and rg8000 allow for multiwindows
+set "port=rg8000"
