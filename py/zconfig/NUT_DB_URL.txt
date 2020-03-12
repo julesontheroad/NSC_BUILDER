@@ -1,8 +1,8 @@
 NAME|URL|REFRESH(h)|REFRESH(m)|REFRESH(s)
-TITLES|http://tinfoil.media/repo/db/titles.json|24|0|0
-VERSIONS|http://tinfoil.media/repo/db/versions.json|24|0|0
-VERSIONS_TXT|http://tinfoil.media/repo/db/versions.txt|24|0|0
-CHEATS|http://tinfoil.media/repo/db/cheats.json|24|0|0
+TITLES|https://raw.githubusercontent.com/blawar/titledb/master/titles.json|24|0|0
+VERSIONS|https://raw.githubusercontent.com/blawar/titledb/master/versions.json|24|0|0
+VERSIONS_TXT|https://raw.githubusercontent.com/blawar/titledb/master/versions.txt|24|0|0
+CHEATS|https://raw.githubusercontent.com/blawar/titledb/master/cheats.json|24|0|0
 NINSHOP|https://raw.githubusercontent.com/julesontheroad/titledb/master/ninshop.json|24|0|0
 METACRITIC_ID|https://raw.githubusercontent.com/julesontheroad/titledb/master/metacritic_id.json|24|0|0
 FW|https://raw.githubusercontent.com/julesontheroad/titledb/master/fw.json|24|0|0
