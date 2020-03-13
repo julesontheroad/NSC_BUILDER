@@ -80,6 +80,7 @@ download_lib_file = os.path.join(zconfig_dir, 'download_libraries.txt')
 
 globalpath=None;globalTD=None;globalremote=None
 globalocalpath=None
+gl_current_local_lib='all';gl_current_remote_lib='all'
 threads=[]
 from Drive import Private as DrivePrivate
 from Drive import DriveHtmlInfo
