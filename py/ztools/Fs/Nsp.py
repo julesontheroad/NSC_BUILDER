@@ -1030,7 +1030,7 @@ class Nsp(Pfs0):
 								sectionHeaderBlock = fs.buffer
 								nca.seek(fs.offset)	
 								pfs0Offset=fs.offset
-								pfs0Header = nca.read(0x10*14)
+								pfs0Header = nca.read(0x10*30)
 								mem = MemoryFile(pfs0Header, Type.Crypto.CTR, decKey, pfs0.cryptoCounter, offset = pfs0Offset)
 								data = mem.read();
 								#Hex.dump(data)	
@@ -1123,7 +1123,7 @@ class Nsp(Pfs0):
 							sectionHeaderBlock = fs.buffer
 							nca.seek(fs.offset)	
 							pfs0Offset=fs.offset
-							pfs0Header = nca.read(0x10*14)
+							pfs0Header = nca.read(0x10*30)
 							mem = MemoryFile(pfs0Header, Type.Crypto.CTR, decKey, pfs0.cryptoCounter, offset = pfs0Offset)
 							data = mem.read();
 							#Hex.dump(data)	
