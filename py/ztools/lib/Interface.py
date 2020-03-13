@@ -257,15 +257,20 @@ def search_local_lib(value,library):
 			path=db[library]['path']
 			print("* Searching library {}".format(library))
 			results=folder_to_list(path,'all',value)	
-			results.sort()	
+			sr=sortbyname(results)	
 			html='<ul style="margin-bottom: 2px;margin-top: 3px; list-style-type: none;">'
 			i=0
 			print("  - Retrieved {} files".format(str(len(results))))
-			for item in results:
-				i+=1
-				item2=str(os.path.basename(os.path.abspath(item)))
+			for it in sorted(sr.keys()):
+				i+=1;type=''
+				item=sr[it]
+				item2='&nbsp'+it
+				if item2.endswith('.nsp'):
+					type='<span class="bg-darkBlue fg-white">&nbspnsp&nbsp</span>'	
+				elif item2.endswith('.xci'):
+					type='<span class="bg-darkRed fg-white">&nbspxci&nbsp&nbsp</span>'					
 				var='local_res_'+str(i)
-				html+='<li style="margin-bottom: 2px;margin-top: 3px" onclick="start_from_library({})"><span id="{}" style="display:none">{}</span><strong>{}</strong></li>'.format(var,var,item,item2)
+				html+='<li style="margin-bottom: 2px;margin-top: 3px" onclick="start_from_library({})"><span id="{}" style="display:none">{}</span>{}<strong>{}</strong></li>'.format(var,var,item,type,item2)
 			html+='</ul>'
 		else:
 			results=[]	
@@ -275,14 +280,19 @@ def search_local_lib(value,library):
 				res=folder_to_list(path,'all',value)	
 				print("  - Retrieved {} files".format(str(len(res))))
 				results+=res	
-			results.sort()	
+			sr=sortbyname(results)	
 			html='<ul style="margin-bottom: 2px;margin-top: 3px; list-style-type: none;">'
 			i=0		
-			for item in results:
-				i+=1
-				item2=str(os.path.basename(os.path.abspath(item)))
+			for it in sorted(sr.keys()):
+				i+=1;type=''
+				item=sr[it]
+				item2='&nbsp'+it
+				if item2.endswith('.nsp'):
+					type='<span class="bg-darkBlue fg-white">&nbspnsp&nbsp</span>'	
+				elif item2.endswith('.xci'):
+					type='<span class="bg-darkRed fg-white">&nbspxci&nbsp&nbsp</span>'					
 				var='local_res_'+str(i)
-				html+='<li style="margin-bottom: 2px;margin-top: 3px" onclick="start_from_library({})"><span id="{}" style="display:none">{}</span><strong>{}</strong></li>'.format(var,var,item,item2)
+				html+='<li style="margin-bottom: 2px;margin-top: 3px" onclick="start_from_library({})"><span id="{}" style="display:none">{}</span>{}<strong>{}</strong></li>'.format(var,var,item,type,item2)
 				# print(item)	
 			html+='</ul>'	
 		eel.load_local_results(html)	
@@ -351,15 +361,20 @@ def search_remote_lib(value,library):
 			try:
 				for entry in results:
 					send_results.append('{}/{}'.format(entry[2],entry[0]))
-				send_results.sort()	
+				sr=sortbyname(send_results)
 			except:pass
 			html='<ul style="margin-bottom: 2px;margin-top: 3px; list-style-type: none;">'
 			i=0
-			for item in send_results:
-				i+=1
-				item2=str(os.path.basename(os.path.abspath(item)))
+			for it in sorted(sr.keys()):
+				i+=1;type=''
+				item=sr[it]
+				item2='&nbsp'+it
+				if item2.endswith('.nsp'):
+					type='<span class="bg-darkBlue fg-white">&nbspnsp&nbsp</span>'	
+				elif item2.endswith('.xci'):
+					type='<span class="bg-darkRed fg-white">&nbspxci&nbsp&nbsp</span>'				
 				var='remote_res_'+str(i)
-				html+='<li style="margin-bottom: 2px;margin-top: 3px" onclick="start_from_remote_library({})"><span id="{}" style="display:none">{}</span><strong>{}</strong></li>'.format(var,var,item,item2)
+				html+='<li style="margin-bottom: 2px;margin-top: 3px" onclick="start_from_remote_library({})"><span id="{}" style="display:none">{}</span>{}<strong>{}</strong></li>'.format(var,var,item,type,item2)
 			html+='</ul>'
 		else:
 			results=[]	
@@ -374,21 +389,32 @@ def search_remote_lib(value,library):
 			try:
 				for entry in results:
 					send_results.append('{}/{}'.format(entry[2],entry[0]))
-				send_results.sort()	
+				sr=sortbyname(send_results)
 			except:pass	
 			html='<ul style="margin-bottom: 2px;margin-top: 3px; list-style-type: none;">'
 			i=0
-			for item in send_results:
-				i+=1
-				item2=str(os.path.basename(os.path.abspath(item)))
+			for it in sorted(sr.keys()):
+				i+=1;type=''
+				item=sr[it]
+				item2='&nbsp'+it
+				if item2.endswith('.nsp'):
+					type='<span class="bg-darkBlue fg-white">&nbspnsp&nbsp</span>'
+				elif item2.endswith('.xci'):
+					type='<span class="bg-darkRed fg-white">&nbspxci&nbsp&nbsp</span>'
 				var='remote_res_'+str(i)
-				html+='<li style="margin-bottom: 2px;margin-top: 3px" onclick="start_from_remote_library({})"><span id="{}" style="display:none">{}</span><strong>{}</strong></li>'.format(var,var,item,item2)
+				html+='<li style="margin-bottom: 2px;margin-top: 3px" onclick="start_from_remote_library({})"><span id="{}" style="display:none">{}</span>{}<strong>{}</strong></li>'.format(var,var,item,type,item2)
 			html+='</ul>'			
 		eel.load_remote_results(html)
 		return	
 	except BaseException as e:
 		Print.error('Exception: ' + str(e))					
-
+def sortbyname(files):
+	results={};
+	for f in files:
+		k=str(os.path.basename(os.path.abspath(f)))
+		results[k]=f
+	return results
+	
 @eel.expose
 def getfname():
 	try:
