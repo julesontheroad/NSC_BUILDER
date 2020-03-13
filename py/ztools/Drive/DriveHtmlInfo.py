@@ -1826,20 +1826,26 @@ def read_npdm(path=None,TD=None,filter=None,file=None):
 						# print(size)	
 						files_list.append([name,offset,size])	
 					files_list.reverse()	
-					# print(files_list)								
+					# print(files_list)	
+					for i in range(len(files_list)):
+						if files_list[i][0] == 'main':
+							foff=files_list[i][1]+pfs0Offset+headerSize
+							skoff1=files_list[i][1]+skoff+headerSize
+							sz1=files_list[i][2]
+							break
 					for i in range(len(files_list)):
 						if files_list[i][0] == 'main.npdm':
-							foff=files_list[i][1]+pfs0Offset+headerSize
 							skoff2=files_list[i][1]+skoff+headerSize
-							remote.seek(skoff2,off2)	
-							np=remote.read(files_list[i][2])
+							remote.seek(skoff1,off2)	
+							sz2=files_list[i][2]
+							np=remote.read(sz1+sz2)
 							mem = MemoryFile(np, Type.Crypto.CTR, decKey, pfs0.cryptoCounter, offset = foff)
-							data = mem.read();
-							Hex.dump(data)		
-							# inmemoryfile = io.BytesIO(data)
-							# npdm = NPDM(inmemoryfile)
-							# n=npdm.__str__()
-							# feed+=n	
+							mem.seek(sz1);
+							data=mem.read(sz2)	
+							inmemoryfile = io.BytesIO(data)
+							npdm = NPDM(inmemoryfile)
+							n=npdm.__str__()
+							feed+=n	
 							feed+='</span></strong></p>'
 							return feed
 				break	
