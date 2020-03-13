@@ -214,8 +214,11 @@
 							<option value="all" selected="selected">All</option>
 							</select>
 						</div></div>
-					<div class="row" style="width:100vw" id="_search_results_">
-					</div>	
+					<div class="row" style="width:100vw">
+						<div data-role="activity" data-type="metro" data-style="dark" id="local_activity" style="margin-top:200px;visibility:hidden;display:none"></div>
+					</div>						
+					<div class="row" style="width:100vw;display:none;" id="_search_results_">
+					</div>
 			</div></div></div>	
 			
 				<div class="cell" id="_RemoteLibrary_" style="font-size: 2vh;display:none;overflow-z:auto;"><div><div style="width: 55vw;margin-left:0;margin-right:auto;">
@@ -229,7 +232,10 @@
 							<option value="all" selected="selected">All</option>
 							</select>
 						</div></div>
-					<div class="row" style="width:130vw" id="_search_results2_">
+					<div class="row" style="width:100vw">
+						<div data-role="activity" data-type="metro" data-style="dark" id="remote_activity" style="margin-top:200px;visibility:hidden;display:none"></div>
+					</div>							
+					<div class="row" style="width:100vw;display:none;" id="_search_results2_">
 					</div>	
 			</div></div></div>	
 
@@ -775,14 +781,20 @@ function show_local_libraries() {
 
 async  function search_local_lib(value){
 	<!-- console.log(value) -->
+	document.getElementById("_search_results_").style.display = "none";		
+	document.getElementById("local_activity").style.visibility = "visible";
+	document.getElementById("local_activity").style.display = "block";		
 	var selected = document.getElementById("_local_lib_select_").value
 	<!-- console.log(selected) -->
-	eel.call_search_local_lib(value,selected)
+	await eel.call_search_local_lib(value,selected)	
 }
 
 eel.expose(load_local_results)
 function load_local_results(data){
-	console.log(data)
+	<!-- console.log(data) -->
+	document.getElementById("local_activity").style.display = "none";		
+	document.getElementById("local_activity").style.visibility = "hidden";
+	document.getElementById("_search_results_").style.display = "block";	
 	document.getElementById("_search_results_").innerHTML = data;
 }
 
@@ -828,6 +840,9 @@ function show_remote_libraries() {
 
 async function search_remote_lib(value){
 	<!-- console.log(value) -->
+	document.getElementById("_search_results2_").style.display = "none";		
+	document.getElementById("remote_activity").style.visibility = "visible";
+	document.getElementById("remote_activity").style.display = "block";			
 	var selected = document.getElementById("_remote_lib_select_").value
 	<!-- console.log(selected) -->
 	eel.call_search_remote_lib(value,selected)
@@ -836,6 +851,9 @@ async function search_remote_lib(value){
 eel.expose(load_remote_results)
 function load_remote_results(data){
 	<!-- console.log(data) -->
+	document.getElementById("remote_activity").style.display = "none";		
+	document.getElementById("remote_activity").style.visibility = "hidden";
+	document.getElementById("_search_results2_").style.display = "block";	
 	document.getElementById("_search_results2_").innerHTML = data;
 }
 
