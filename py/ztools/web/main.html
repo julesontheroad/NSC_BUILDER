@@ -207,7 +207,7 @@
 					<p style="margin-bottom: 2px;margin-top: 2px;font-size: 2.4vh"><strong>Local Libraries: </strong></p>	
 					<div class="row" style="width:130vw">
 						<div class="cell"  style="width: 70vw">
-							<input type="text" data-role="input" data-search-button="true" data-search-button-click="custom" data-on-search-button-click="search_local_lib" id="slocalbox">	
+							<input type="text" data-role="input" data-search-button="true" data-search-button-click="custom" data-on-search-button-click="search_local_lib" id="slocalbox" onkeyup="search_table('slocalbox','_search_results_')">	
 						</div>	
 						<div class="cell" style="width:25vw" id="_local_lib_tags_">			
 							<select class="bg-cobalt fg-white" data-role="select" style="width:25vw" id="_local_lib_select_">
@@ -225,7 +225,7 @@
 					<p style="margin-bottom: 2px;margin-top: 2px;font-size: 2.4vh"><strong>Cloud Libraries: </strong></p>	
 					<div class="row" style="width:130vw">
 						<div class="cell"  style="width: 70vw">
-							<input type="text" data-role="input" data-search-button="true" data-search-button-click="custom" data-on-search-button-click="search_remote_lib">	
+							<input type="text" data-role="input" data-search-button="true" data-search-button-click="custom" data-on-search-button-click="search_remote_lib" id="remotebox"  onkeyup="search_table('remotebox','_search_results2_')">	
 						</div>	
 						<div class="cell" style="width:25vw" id="_remote_lib_tags_">			
 							<select class="bg-cobalt fg-white" data-role="select" style="width:25vw" id="_remote_lib_select_">
@@ -282,7 +282,7 @@
 			<div class="row" style="margin-bottom: 2px;margin-top: 1px;height: 3vh;bottom:4vh; position:absolute;">
 				<div class="cell" style='width:55vw;'></div>		
 				<div class="cell" style="width:35vw;">
-					<button class="button alert"  style="height: 40px; width:70px;left:auto;right:-1;margin-right:0;margin-left:80%; position:absolute;" onclick="start()">
+					<button class="button alert"  style="height: 40px; width:70px;left:auto;right:-1;margin-right:0;margin-left:80%; position:absolute;" onclick="start()" id="load_button">
 					<span class="caption">Load</span></button></div>
 			</div>	
 	</div>	
@@ -629,6 +629,7 @@ document.getElementById("_Nacp_").style.display = "none";
 document.getElementById("_Npdm_").style.display = "none";
 document.getElementById("_Cnmt_").style.display = "none";
 document.getElementById("_Verification_").style.display = "none";	
+document.getElementById("load_button").style.display = "block";
 document.getElementById("_GameInfo_").style.display = "block";
 document.getElementById("_imagebox_").style.display = "block";
 document.getElementById("_viewspace_").style.height = "80vh";
@@ -651,6 +652,7 @@ document.getElementById("_Nacp_").style.display = "none";
 document.getElementById("_Npdm_").style.display = "none";
 document.getElementById("_Cnmt_").style.display = "none";
 document.getElementById("_Verification_").style.display = "none";
+document.getElementById("load_button").style.display = "block";
 document.getElementById("_Description_").style.display = "block";
 document.getElementById("_imagebox_").style.display = "block";
 document.getElementById("_viewspace_").style.height = "80vh";
@@ -673,6 +675,7 @@ document.getElementById("_Nacp_").style.display = "none";
 document.getElementById("_Npdm_").style.display = "none";
 document.getElementById("_Cnmt_").style.display = "none";
 document.getElementById("_Verification_").style.display = "none";
+document.getElementById("load_button").style.display = "block";
 document.getElementById("_Pictures_").style.display = "block";
 document.getElementById("_viewspace_").style.height = "80vh";
 }
@@ -696,6 +699,7 @@ document.getElementById("_Nacp_").style.display = "none";
 document.getElementById("_Npdm_").style.display = "none";
 document.getElementById("_Cnmt_").style.display = "none";
 document.getElementById("_Verification_").style.display = "none";
+document.getElementById("load_button").style.display = "block";
 document.getElementById("_Video_").style.display = "block";
 document.getElementById("_viewspace_").style.height = "80vh";
 }
@@ -718,6 +722,7 @@ document.getElementById("_Nacp_").style.display = "none";
 document.getElementById("_Npdm_").style.display = "none";
 document.getElementById("_Cnmt_").style.display = "none";
 document.getElementById("_Verification_").style.display = "none";
+document.getElementById("load_button").style.display = "block";
 document.getElementById("_Gametree_").style.display = "block";
 document.getElementById("_imagebox_").style.display = "block";
 document.getElementById("_viewspace_").style.height = "80vh";
@@ -741,6 +746,7 @@ document.getElementById("_Cnmt_").style.display = "none";
 document.getElementById("_Verification_").style.display = "none";
 document.getElementById("_LocalLibrary_").style.display = "none";
 document.getElementById("_RemoteLibrary_").style.display = "none";
+document.getElementById("load_button").style.display = "block";
 document.getElementById("_Cheats_").style.display = "block";
 document.getElementById("_imagebox_").style.display = "block";
 document.getElementById("_viewspace_").style.height = "80vh";
@@ -775,6 +781,7 @@ function show_local_libraries() {
 	document.getElementById("_Cnmt_").style.display = "none";
 	document.getElementById("_Verification_").style.display = "none";
 	document.getElementById("_Pictures_").style.display = "none";
+	document.getElementById("load_button").style.display = "none";	
 	document.getElementById("_LocalLibrary_").style.display = "block";	
 	document.getElementById("_viewspace_").style.height = "80vh";	
 }
@@ -796,13 +803,8 @@ function load_local_results(data){
 	document.getElementById("local_activity").style.visibility = "hidden";
 	document.getElementById("_search_results_").style.display = "block";	
 	document.getElementById("_search_results_").innerHTML = data;
+	document.getElementById('slocalbox').value='';	
 }
-
-function set_local_libraries(data){	
-	<!-- console.log(data) -->
-	document.getElementById("_local_lib_tags_").innerHTML = data;
-}
-
 
 <!-- ############################## -->
 
@@ -834,6 +836,7 @@ function show_remote_libraries() {
 	document.getElementById("_Verification_").style.display = "none";
 	document.getElementById("_Pictures_").style.display = "none";
 	document.getElementById("_LocalLibrary_").style.display = "none";	
+	document.getElementById("load_button").style.display = "none";		
 	document.getElementById("_RemoteLibrary_").style.display = "block";		
 	document.getElementById("_viewspace_").style.height = "80vh";	
 }
@@ -855,117 +858,123 @@ function load_remote_results(data){
 	document.getElementById("remote_activity").style.visibility = "hidden";
 	document.getElementById("_search_results2_").style.display = "block";	
 	document.getElementById("_search_results2_").innerHTML = data;
+	document.getElementById('remotebox').value='';
 }
 
 function show_filedata(){
 if (navclicks>0){
 document.getElementById("nav_view_but").click();
 }
-<!-- document.getElementById("_inf_bar_but").click(); -->
-window.scrollTo(0,0);
-document.getElementById("_GameInfo_").style.display = "none";
-document.getElementById("_imagebox_").style.display = "none";
-document.getElementById("_Description_").style.display = "none";
-document.getElementById("_Gametree_").style.display = "none";
-document.getElementById("_Cheats_").style.display = "none";
-document.getElementById("_LocalLibrary_").style.display = "none";
-document.getElementById("_RemoteLibrary_").style.display = "none";	
-document.getElementById("_Pictures_").style.display = "none";
-document.getElementById("_Video_").style.display = "none";	
-document.getElementById("_Nacp_").style.display = "none";
-document.getElementById("_Npdm_").style.display = "none";
-document.getElementById("_Cnmt_").style.display = "none";
-document.getElementById("_Verification_").style.display = "none";
-document.getElementById("_Files_").style.display = "block";
-document.getElementById("_viewspace_").style.height = "80vh";
+	<!-- document.getElementById("_inf_bar_but").click(); -->
+	window.scrollTo(0,0);
+	document.getElementById("_GameInfo_").style.display = "none";
+	document.getElementById("_imagebox_").style.display = "none";
+	document.getElementById("_Description_").style.display = "none";
+	document.getElementById("_Gametree_").style.display = "none";
+	document.getElementById("_Cheats_").style.display = "none";
+	document.getElementById("_LocalLibrary_").style.display = "none";
+	document.getElementById("_RemoteLibrary_").style.display = "none";	
+	document.getElementById("_Pictures_").style.display = "none";
+	document.getElementById("_Video_").style.display = "none";	
+	document.getElementById("_Nacp_").style.display = "none";
+	document.getElementById("_Npdm_").style.display = "none";
+	document.getElementById("_Cnmt_").style.display = "none";
+	document.getElementById("_Verification_").style.display = "none";
+	document.getElementById("load_button").style.display = "block";	
+	document.getElementById("_Files_").style.display = "block";
+	document.getElementById("_viewspace_").style.height = "80vh";
 }
 function show_nacpdata(){
 if (navclicks>0){
 document.getElementById("nav_view_but").click();
 }
-<!-- document.getElementById("_inf_bar_but").click(); -->
-window.scrollTo(0,0);
-document.getElementById("_GameInfo_").style.display = "none";
-document.getElementById("_imagebox_").style.display = "none";
-document.getElementById("_Description_").style.display = "none";
-document.getElementById("_Gametree_").style.display = "none";
-document.getElementById("_Cheats_").style.display = "none";
-document.getElementById("_LocalLibrary_").style.display = "none";
-document.getElementById("_RemoteLibrary_").style.display = "none";
-document.getElementById("_Pictures_").style.display = "none";
-document.getElementById("_Video_").style.display = "none";	
-document.getElementById("_Files_").style.display = "none";
-document.getElementById("_Npdm_").style.display = "none";
-document.getElementById("_Cnmt_").style.display = "none";
-document.getElementById("_Verification_").style.display = "none";
-document.getElementById("_Nacp_").style.display = "block";
-document.getElementById("_viewspace_").style.height = "80vh";
+	<!-- document.getElementById("_inf_bar_but").click(); -->
+	window.scrollTo(0,0);
+	document.getElementById("_GameInfo_").style.display = "none";
+	document.getElementById("_imagebox_").style.display = "none";
+	document.getElementById("_Description_").style.display = "none";
+	document.getElementById("_Gametree_").style.display = "none";
+	document.getElementById("_Cheats_").style.display = "none";
+	document.getElementById("_LocalLibrary_").style.display = "none";
+	document.getElementById("_RemoteLibrary_").style.display = "none";
+	document.getElementById("_Pictures_").style.display = "none";
+	document.getElementById("_Video_").style.display = "none";	
+	document.getElementById("_Files_").style.display = "none";
+	document.getElementById("_Npdm_").style.display = "none";
+	document.getElementById("_Cnmt_").style.display = "none";
+	document.getElementById("_Verification_").style.display = "none";
+	document.getElementById("load_button").style.display = "block";	
+	document.getElementById("_Nacp_").style.display = "block";
+	document.getElementById("_viewspace_").style.height = "80vh";
 }
 function show_npdmdata(){
 if (navclicks>0){
 document.getElementById("nav_view_but").click();
 }
-<!-- document.getElementById("_inf_bar_but").click(); -->
-window.scrollTo(0,0);
-document.getElementById("_GameInfo_").style.display = "none";
-document.getElementById("_imagebox_").style.display = "none";
-document.getElementById("_Description_").style.display = "none";
-document.getElementById("_Gametree_").style.display = "none";
-document.getElementById("_Cheats_").style.display = "none";
-document.getElementById("_LocalLibrary_").style.display = "none";
-document.getElementById("_RemoteLibrary_").style.display = "none";
-document.getElementById("_Pictures_").style.display = "none";
-document.getElementById("_Video_").style.display = "none";	
-document.getElementById("_Files_").style.display = "none";
-document.getElementById("_Nacp_").style.display = "none";
-document.getElementById("_Cnmt_").style.display = "none";
-document.getElementById("_Verification_").style.display = "none";
-document.getElementById("_Npdm_").style.display = "block";
-document.getElementById("_viewspace_").style.height = "80vh";
+	<!-- document.getElementById("_inf_bar_but").click(); -->
+	window.scrollTo(0,0);
+	document.getElementById("_GameInfo_").style.display = "none";
+	document.getElementById("_imagebox_").style.display = "none";
+	document.getElementById("_Description_").style.display = "none";
+	document.getElementById("_Gametree_").style.display = "none";
+	document.getElementById("_Cheats_").style.display = "none";
+	document.getElementById("_LocalLibrary_").style.display = "none";
+	document.getElementById("_RemoteLibrary_").style.display = "none";
+	document.getElementById("_Pictures_").style.display = "none";
+	document.getElementById("_Video_").style.display = "none";	
+	document.getElementById("_Files_").style.display = "none";
+	document.getElementById("_Nacp_").style.display = "none";
+	document.getElementById("_Cnmt_").style.display = "none";
+	document.getElementById("_Verification_").style.display = "none";
+	document.getElementById("load_button").style.display = "block";	
+	document.getElementById("_Npdm_").style.display = "block";
+	document.getElementById("_viewspace_").style.height = "80vh";
 }
 function show_cnmtdata(){
 if (navclicks>0){
 document.getElementById("nav_view_but").click();
 }
-<!-- document.getElementById("_inf_bar_but").click(); -->
-window.scrollTo(0,0);
-document.getElementById("_GameInfo_").style.display = "none";
-document.getElementById("_imagebox_").style.display = "none";
-document.getElementById("_Description_").style.display = "none";
-document.getElementById("_Gametree_").style.display = "none";
-document.getElementById("_Cheats_").style.display = "none";
-document.getElementById("_LocalLibrary_").style.display = "none";
-document.getElementById("_RemoteLibrary_").style.display = "none";
-document.getElementById("_Pictures_").style.display = "none";
-document.getElementById("_Video_").style.display = "none";	
-document.getElementById("_Files_").style.display = "none";
-document.getElementById("_Nacp_").style.display = "none";
-document.getElementById("_Npdm_").style.display = "none";
-document.getElementById("_Verification_").style.display = "none";
-document.getElementById("_Cnmt_").style.display = "block";
-document.getElementById("_viewspace_").style.height = "80vh";
+	<!-- document.getElementById("_inf_bar_but").click(); -->
+	window.scrollTo(0,0);
+	document.getElementById("_GameInfo_").style.display = "none";
+	document.getElementById("_imagebox_").style.display = "none";
+	document.getElementById("_Description_").style.display = "none";
+	document.getElementById("_Gametree_").style.display = "none";
+	document.getElementById("_Cheats_").style.display = "none";
+	document.getElementById("_LocalLibrary_").style.display = "none";
+	document.getElementById("_RemoteLibrary_").style.display = "none";
+	document.getElementById("_Pictures_").style.display = "none";
+	document.getElementById("_Video_").style.display = "none";	
+	document.getElementById("_Files_").style.display = "none";
+	document.getElementById("_Nacp_").style.display = "none";
+	document.getElementById("_Npdm_").style.display = "none";
+	document.getElementById("_Verification_").style.display = "none";
+	document.getElementById("load_button").style.display = "block";	
+	document.getElementById("_Cnmt_").style.display = "block";
+	document.getElementById("_viewspace_").style.height = "80vh";
 }
 function show_verdata(){
 if (navclicks>0){
 document.getElementById("nav_view_but").click();
 }
-<!-- document.getElementById("_inf_bar_but").click(); -->
-window.scrollTo(0,0);
-document.getElementById("_GameInfo_").style.display = "none";
-document.getElementById("_imagebox_").style.display = "none";
-document.getElementById("_Description_").style.display = "none";
-document.getElementById("_Gametree_").style.display = "none";
-document.getElementById("_Cheats_").style.display = "none";
-document.getElementById("_LocalLibrary_").style.display = "none";
-document.getElementById("_RemoteLibrary_").style.display = "none";
-document.getElementById("_Pictures_").style.display = "none";
-document.getElementById("_Video_").style.display = "none";	
-document.getElementById("_Files_").style.display = "none";
-document.getElementById("_Nacp_").style.display = "none";
-document.getElementById("_Npdm_").style.display = "none";
-document.getElementById("_Cnmt_").style.display = "none";
-document.getElementById("_Verification_").style.display = "block";
-document.getElementById("_viewspace_").style.height = "80vh";
+	<!-- document.getElementById("_inf_bar_but").click(); -->
+	window.scrollTo(0,0);
+	document.getElementById("_GameInfo_").style.display = "none";
+	document.getElementById("_imagebox_").style.display = "none";
+	document.getElementById("_Description_").style.display = "none";
+	document.getElementById("_Gametree_").style.display = "none";
+	document.getElementById("_Cheats_").style.display = "none";
+	document.getElementById("_LocalLibrary_").style.display = "none";
+	document.getElementById("_RemoteLibrary_").style.display = "none";
+	document.getElementById("_Pictures_").style.display = "none";
+	document.getElementById("_Video_").style.display = "none";	
+	document.getElementById("_Files_").style.display = "none";
+	document.getElementById("_Nacp_").style.display = "none";
+	document.getElementById("_Npdm_").style.display = "none";
+	document.getElementById("_Cnmt_").style.display = "none";
+	document.getElementById("load_button").style.display = "block";	
+	document.getElementById("_Verification_").style.display = "block";
+	document.getElementById("_viewspace_").style.height = "80vh";
 }
 function setmainimage(route){
 document.getElementById("mainpicture").src = route
@@ -979,6 +988,26 @@ function showimg(){
 
 function zoommainimage(){
 MediumLightbox('figure.zoom-effect');
+}
+
+function search_table(inputid,searchid){
+	var input, filter, table, tr, td, i, txtValue;
+	input = document.getElementById(inputid);
+	filter = input.value.toUpperCase();
+	table = document.getElementById(searchid);
+	tr = table.getElementsByTagName("li");	
+	  for (i = 0; i < tr.length; i++) {
+		td = tr[i].getElementsByTagName("strong")[0];
+		<!-- console.log(td) -->
+		if (td) {
+		  txtValue = td.innerHTML;
+		  if (txtValue.toUpperCase().indexOf(filter) > -1) {
+			tr[i].style.display = "";
+		  } else {
+			tr[i].style.display = "none";
+		  }
+		}
+	  }
 }
 </script>
 </body>
