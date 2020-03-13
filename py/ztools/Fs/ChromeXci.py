@@ -1060,7 +1060,7 @@ class ChromeXci(File):
 											sectionHeaderBlock = fs.buffer
 											nca.seek(fs.offset)	
 											pfs0Offset=fs.offset
-											pfs0Header = nca.read(0x10*14)
+											pfs0Header = nca.read(0x10*30)
 											mem = MemoryFile(pfs0Header, Type.Crypto.CTR, decKey, pfs0.cryptoCounter, offset = pfs0Offset)
 											data = mem.read();
 											#Hex.dump(data)	
@@ -1157,7 +1157,7 @@ class ChromeXci(File):
 									sectionHeaderBlock = fs.buffer
 									nca.seek(fs.offset)	
 									pfs0Offset=fs.offset
-									pfs0Header = nca.read(0x10*14)
+									pfs0Header = nca.read(0x10*30)
 									mem = MemoryFile(pfs0Header, Type.Crypto.CTR, decKey, pfs0.cryptoCounter, offset = pfs0Offset)
 									data = mem.read();
 									#Hex.dump(data)	
@@ -1193,7 +1193,7 @@ class ChromeXci(File):
 										#print(size)	
 										files_list.append([name,offset,size])	
 									files_list.reverse()	
-									#print(files_list)								
+									print(files_list)								
 									for i in range(len(files_list)):
 										if files_list[i][0] == 'main':
 											off1=files_list[i][1]+pfs0Offset+headerSize
@@ -1201,6 +1201,8 @@ class ChromeXci(File):
 											np=nca.read(0x60)
 											mem = MemoryFile(np, Type.Crypto.CTR, decKey, pfs0.cryptoCounter, offset = off1)
 											magic=mem.read(0x4)
+											mem.rewind()
+											Hex.dump(mem.read())
 											if magic==b'NSO0':
 												mem.seek(0x40)
 												data = mem.read(0x20);
