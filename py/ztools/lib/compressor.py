@@ -274,80 +274,90 @@ def supertrim_xci(filepath,buffer=65536,outfile=None,keepupd=False, level = 17, 
 					if nca._path==file:
 						if isinstance(nca, nutFs.Nca.Nca) and (nca.header.contentType == nutFs.Type.Content.PROGRAM or nca.header.contentType == nutFs.Type.Content.PUBLIC_DATA):
 							if isNcaPacked(nca):
-								cctx = zstandard.ZstdCompressor(level=compressionLevel, threads = threads)
+								skip=0
+							else:
+								skip=int(ncaHeaderSize-(((sortedFs(nca))[0]).offset))
+							cctx = zstandard.ZstdCompressor(level=compressionLevel, threads = threads)
 
-								newFileName = nca._path[0:-1] + 'z'
+							newFileName = nca._path[0:-1] + 'z'
 
-								f = newNsp.add(newFileName, nca.size,t,isthreaded)
-								
-								start = f.tell()
+							f = newNsp.add(newFileName, nca.size,t,isthreaded)
+							
+							start = f.tell()
 
-								nca.seek(0)
-								data=nca.read(ncaHeaderSize)
-								f.write(data)			
-								nca.seek(ncaHeaderSize)
+							nca.seek(0)
+							data=nca.read(ncaHeaderSize)
+							f.write(data)			
+							nca.seek(ncaHeaderSize)
 
-								written = ncaHeaderSize
+							written = ncaHeaderSize
 
-								compressor = cctx.stream_writer(f)
-								
-								sections = get_sections(nca)				
-								
-								header = b'NCZSECTN'
-								header += len(sections).to_bytes(8, 'little')
-								
-								i = 0
-								for fs in sections:
-									i += 1
+							compressor = cctx.stream_writer(f)
+							
+							sections = get_sections(nca)				
+							
+							header = b'NCZSECTN'
+							header += len(sections).to_bytes(8, 'little')
+							
+							i = 0
+							for fs in sections:
+								i += 1
+								if skip>0:
+									header += (fs.offset+skip).to_bytes(8, 'little')
+									header += (fs.size-skip).to_bytes(8, 'little')
+									header += fs.cryptoType.to_bytes(8, 'little')
+									header += b'\x00' * 8
+									header += fs.cryptoKey
+									header += fs.cryptoCounter						
+								else:
 									header += fs.offset.to_bytes(8, 'little')
 									header += fs.size.to_bytes(8, 'little')
 									header += fs.cryptoType.to_bytes(8, 'little')
 									header += b'\x00' * 8
 									header += fs.cryptoKey
 									header += fs.cryptoCounter
-									
-								f.write(header)
-								t.update(len(header))
-								written += len(header)
-								timestamp = time.time()
-								decompressedBytes = ncaHeaderSize
-								totsize=0
-								for fs in sections:
-									totsize+=fs.size
-
-								for section in sections:
-									#print('offset: %x\t\tsize: %x\t\ttype: %d\t\tiv%s' % (section.offset, section.size, section.cryptoType, str(hx(section.cryptoCounter))))
-									o = nca.partition(offset = section.offset, size = section.size, n = None, cryptoType = section.cryptoType, cryptoKey = section.cryptoKey, cryptoCounter = bytearray(section.cryptoCounter), autoOpen = True)
-									
-									while not o.eof():
-										buffer = o.read(CHUNK_SZ)
-										t.update(len(buffer))						
-										if len(buffer) == 0:
-											raise IOError('read failed')
-
-										written += compressor.write(buffer)
-										
-										decompressedBytes += len(buffer)
-															
-								compressor.flush(zstandard.FLUSH_FRAME)
-
-								elapsed = time.time() - timestamp
-								minutes = elapsed / 60
-								seconds = elapsed % 60
 								
-								speed = 0 if elapsed == 0 else (nca.size / elapsed)				
+							f.write(header)
+							t.update(len(header))
+							written += len(header)
+							timestamp = time.time()
+							decompressedBytes = ncaHeaderSize
+							totsize=0
+							for fs in sections:
+								totsize+=fs.size
+								
+							c0=0
+							for section in sections:
+								#print('offset: %x\t\tsize: %x\t\ttype: %d\t\tiv%s' % (section.offset, section.size, section.cryptoType, str(hx(section.cryptoCounter))))
+								o = nca.partition(offset = section.offset, size = section.size, n = None, cryptoType = section.cryptoType, cryptoKey = section.cryptoKey, cryptoCounter = bytearray(section.cryptoCounter), autoOpen = True)
+								if c0==0 and skip>0:
+									o.seek(skip)
+								while not o.eof():
+									buffer = o.read(CHUNK_SZ)
+									t.update(len(buffer))						
+									if len(buffer) == 0:
+										raise IOError('read failed')
 
-								written = f.tell() - start
-								if isthreaded==False:
-									t.write('\n  * Compressed at %d%% from %s to %s  - %s' % (int(written * 100 / nca.size), str(sq_tools.getSize(decompressedBytes)), str(sq_tools.getSize(written)), nca._path))
-									t.write('  * Compressed in %02d:%02d at speed: %.1f MB/s\n' % (minutes, seconds, speed / 1000000.0))				
-								newNsp.resize(newFileName, written)
-								files2.append(newFileName)
-								filesizes2.append(written)
-								continue
-							else:
-								if isthreaded==False:
-									t.write('not packed!')
+									written += compressor.write(buffer)
+									
+									decompressedBytes += len(buffer)
+								c0+=1						
+							compressor.flush(zstandard.FLUSH_FRAME)
+
+							elapsed = time.time() - timestamp
+							minutes = elapsed / 60
+							seconds = elapsed % 60
+							
+							speed = 0 if elapsed == 0 else (nca.size / elapsed)				
+
+							written = f.tell() - start
+							if isthreaded==False:
+								t.write('\n  * Compressed at %d%% from %s to %s  - %s' % (int(written * 100 / nca.size), str(sq_tools.getSize(decompressedBytes)), str(sq_tools.getSize(written)), nca._path))
+								t.write('  * Compressed in %02d:%02d at speed: %.1f MB/s\n' % (minutes, seconds, speed / 1000000.0))				
+							newNsp.resize(newFileName, written)
+							files2.append(newFileName)
+							filesizes2.append(written)
+							continue
 
 						f = newNsp.add(nca._path, nca.size,t,isthreaded)
 						files2.append(nca._path)
@@ -502,77 +512,86 @@ def xci_to_nsz(filepath,buffer=65536,outfile=None,keepupd=False, level = 17,  th
 			for nca in nspF:
 				if isinstance(nca, nutFs.Nca.Nca) and (nca.header.contentType == nutFs.Type.Content.PROGRAM or nca.header.contentType == nutFs.Type.Content.PUBLIC_DATA):
 					if isNcaPacked(nca):
-						cctx = zstandard.ZstdCompressor(level=compressionLevel, threads = threads)
+						skip=0
+					else:
+						skip=int(ncaHeaderSize-(((sortedFs(nca))[0]).offset))
+					cctx = zstandard.ZstdCompressor(level=compressionLevel, threads = threads)
 
-						newFileName = nca._path[0:-1] + 'z'
+					newFileName = nca._path[0:-1] + 'z'
 
-						f = newNsp.add(newFileName, nca.size,t,isthreaded)
-						
-						start = f.tell()
+					f = newNsp.add(newFileName, nca.size,t,isthreaded)
+					
+					start = f.tell()
 
-						nca.seek(0)
-						data=nca.read(ncaHeaderSize)
-						f.write(data)			
-						nca.seek(ncaHeaderSize)
+					nca.seek(0)
+					data=nca.read(ncaHeaderSize)
+					f.write(data)			
+					nca.seek(ncaHeaderSize)
 
-						written = ncaHeaderSize
+					written = ncaHeaderSize
 
-						compressor = cctx.stream_writer(f)
-						
-						sections = get_sections(nca)					
-						
-						header = b'NCZSECTN'
-						header += len(sections).to_bytes(8, 'little')
-						
-						i = 0
-						for fs in sections:
-							i += 1
+					compressor = cctx.stream_writer(f)
+					
+					sections = get_sections(nca)					
+					
+					header = b'NCZSECTN'
+					header += len(sections).to_bytes(8, 'little')
+					
+					i = 0
+					for fs in sections:
+						i += 1
+						if skip>0:
+							header += (fs.offset+skip).to_bytes(8, 'little')
+							header += (fs.size-skip).to_bytes(8, 'little')
+							header += fs.cryptoType.to_bytes(8, 'little')
+							header += b'\x00' * 8
+							header += fs.cryptoKey
+							header += fs.cryptoCounter						
+						else:
 							header += fs.offset.to_bytes(8, 'little')
 							header += fs.size.to_bytes(8, 'little')
 							header += fs.cryptoType.to_bytes(8, 'little')
 							header += b'\x00' * 8
 							header += fs.cryptoKey
 							header += fs.cryptoCounter
-							
-						f.write(header)
-						written += len(header)
-						timestamp = time.time()
-						decompressedBytes = ncaHeaderSize
-						totsize=0
-						for fs in sections:
-							totsize+=fs.size
-
-						for section in sections:
-							#print('offset: %x\t\tsize: %x\t\ttype: %d\t\tiv%s' % (section.offset, section.size, section.cryptoType, str(hx(section.cryptoCounter))))
-							o = nca.partition(offset = section.offset, size = section.size, n = None, cryptoType = section.cryptoType, cryptoKey = section.cryptoKey, cryptoCounter = bytearray(section.cryptoCounter), autoOpen = True)
-							
-							while not o.eof():
-								buffer = o.read(CHUNK_SZ)
-								t.update(len(buffer))						
-								if len(buffer) == 0:
-									raise IOError('read failed')
-
-								written += compressor.write(buffer)
-								
-								decompressedBytes += len(buffer)
-													
-						compressor.flush(zstandard.FLUSH_FRAME)
-
-						elapsed = time.time() - timestamp
-						minutes = elapsed / 60
-						seconds = elapsed % 60
 						
-						speed = 0 if elapsed == 0 else (nca.size / elapsed)				
-						
-						written = f.tell() - start
-						if isthreaded==False:	
-							t.write('\n  * Compressed at %d%% from %s to %s  - %s' % (int(written * 100 / nca.size), str(sq_tools.getSize(decompressedBytes)), str(sq_tools.getSize(written)), nca._path))
-							t.write('  * Compressed in %02d:%02d at speed: %.1f MB/s\n' % (minutes, seconds, speed / 1000000.0))				
-						newNsp.resize(newFileName, written)
-						continue
-					else:
-						if isthreaded==False:	
-							t.write('not packed!')
+					f.write(header)
+					written += len(header)
+					timestamp = time.time()
+					decompressedBytes = ncaHeaderSize
+					totsize=0
+					for fs in sections:
+						totsize+=fs.size
+					c0=0
+					for section in sections:
+						#print('offset: %x\t\tsize: %x\t\ttype: %d\t\tiv%s' % (section.offset, section.size, section.cryptoType, str(hx(section.cryptoCounter))))
+						o = nca.partition(offset = section.offset, size = section.size, n = None, cryptoType = section.cryptoType, cryptoKey = section.cryptoKey, cryptoCounter = bytearray(section.cryptoCounter), autoOpen = True)
+						if c0==0 and skip>0:
+							o.seek(skip)						
+						while not o.eof():
+							buffer = o.read(CHUNK_SZ)
+							t.update(len(buffer))						
+							if len(buffer) == 0:
+								raise IOError('read failed')
+
+							written += compressor.write(buffer)
+							
+							decompressedBytes += len(buffer)
+						c0+=1							
+					compressor.flush(zstandard.FLUSH_FRAME)
+
+					elapsed = time.time() - timestamp
+					minutes = elapsed / 60
+					seconds = elapsed % 60
+					
+					speed = 0 if elapsed == 0 else (nca.size / elapsed)				
+					
+					written = f.tell() - start
+					if isthreaded==False:	
+						t.write('\n  * Compressed at %d%% from %s to %s  - %s' % (int(written * 100 / nca.size), str(sq_tools.getSize(decompressedBytes)), str(sq_tools.getSize(written)), nca._path))
+						t.write('  * Compressed in %02d:%02d at speed: %.1f MB/s\n' % (minutes, seconds, speed / 1000000.0))				
+					newNsp.resize(newFileName, written)
+					continue
 
 				f = newNsp.add(nca._path, nca.size,t,isthreaded)
 
@@ -701,73 +720,84 @@ def compress(filePath,ofolder = None, level = 17,  threads = 0, delta=False, ofi
 					
 				if isinstance(nspf, nutFs.Nca.Nca) and (nspf.header.contentType == nutFs.Type.Content.PROGRAM or nspf.header.contentType == nutFs.Type.Content.PUBLIC_DATA):
 					if isNcaPacked(nspf):
-						cctx = zstandard.ZstdCompressor(level=compressionLevel, threads = threads)
+						skip=0
+					else:
+						skip=int(ncaHeaderSize-(((sortedFs(nspf))[0]).offset))			
+					cctx = zstandard.ZstdCompressor(level=compressionLevel, threads = threads)
 
-						newFileName = nspf._path[0:-1] + 'z'
+					newFileName = nspf._path[0:-1] + 'z'
 
-						f = newNsp.add(newFileName, nspf.size,t,isthreaded)
-						
-						start = f.tell()
+					f = newNsp.add(newFileName, nspf.size,t,isthreaded)
+					
+					start = f.tell()
 
-						nspf.seek(0)
-						f.write(nspf.read(ncaHeaderSize))
-						written = ncaHeaderSize
+					nspf.seek(0)
+					f.write(nspf.read(ncaHeaderSize))
+					written = ncaHeaderSize
 
-						compressor = cctx.stream_writer(f)
-						
-						sections = get_sections(nspf)				
-						
-						header = b'NCZSECTN'
-						header += len(sections).to_bytes(8, 'little')
-						
-						i = 0
-						for fs in sections:
-							i += 1
+					compressor = cctx.stream_writer(f)
+					
+					sections = get_sections(nspf)				
+					
+					header = b'NCZSECTN'
+					header += len(sections).to_bytes(8, 'little')
+					
+					i = 0
+					for fs in sections:
+						i += 1
+						if skip>0:
+							header += (fs.offset+skip).to_bytes(8, 'little')
+							header += (fs.size-skip).to_bytes(8, 'little')
+							header += fs.cryptoType.to_bytes(8, 'little')
+							header += b'\x00' * 8
+							header += fs.cryptoKey
+							header += fs.cryptoCounter						
+						else:
 							header += fs.offset.to_bytes(8, 'little')
 							header += fs.size.to_bytes(8, 'little')
 							header += fs.cryptoType.to_bytes(8, 'little')
 							header += b'\x00' * 8
 							header += fs.cryptoKey
 							header += fs.cryptoCounter
-							
-						f.write(header)
-						written += len(header)
-						timestamp = time.time()
-						decompressedBytes = ncaHeaderSize
-						totsize=0
-						for fs in sections:
-							totsize+=fs.size
-
-						for section in sections:
-							#print('offset: %x\t\tsize: %x\t\ttype: %d\t\tiv%s' % (section.offset, section.size, section.cryptoType, str(hx(section.cryptoCounter))))
-							o = nspf.partition(offset = section.offset, size = section.size, n = None, cryptoType = section.cryptoType, cryptoKey = section.cryptoKey, cryptoCounter = bytearray(section.cryptoCounter), autoOpen = True)
-							
-							while not o.eof():
-								buffer = o.read(CHUNK_SZ)
-								t.update(len(buffer))						
-								if len(buffer) == 0:
-									raise IOError('read failed')
-
-								written += compressor.write(buffer)
-								
-								decompressedBytes += len(buffer)
-							
-						compressor.flush(zstandard.FLUSH_FRAME)
-
-						elapsed = time.time() - timestamp
-						minutes = elapsed / 60
-						seconds = elapsed % 60
 						
-						speed = 0 if elapsed == 0 else (nspf.size / elapsed)	
-									
-						written = f.tell() - start
-						if isthreaded==False: 
-							t.write('\n  * Compressed at %d%% from %s to %s  - %s' % (int(written * 100 / nspf.size), str(sq_tools.getSize(decompressedBytes)), str(sq_tools.getSize(written)), nspf._path))						
-							t.write('  * Compressed in %02d:%02d at speed: %.1f MB/s\n' % (minutes, seconds, speed / 1000000.0))				
-						newNsp.resize(newFileName, written)
-						continue
-					else:
-						print('not packed!')
+					f.write(header)
+					written += len(header)
+					timestamp = time.time()
+					decompressedBytes = ncaHeaderSize
+					totsize=0
+					for fs in sections:
+						totsize+=fs.size
+					c0=0
+					for section in sections:
+						#print('offset: %x\t\tsize: %x\t\ttype: %d\t\tiv%s' % (section.offset, section.size, section.cryptoType, str(hx(section.cryptoCounter))))
+						o = nspf.partition(offset = section.offset, size = section.size, n = None, cryptoType = section.cryptoType, cryptoKey = section.cryptoKey, cryptoCounter = bytearray(section.cryptoCounter), autoOpen = True)
+						if c0==0 and skip>0:
+							o.seek(skip)
+							
+						while not o.eof():
+							buffer = o.read(CHUNK_SZ)
+							t.update(len(buffer))						
+							if len(buffer) == 0:
+								raise IOError('read failed')
+
+							written += compressor.write(buffer)
+							
+							decompressedBytes += len(buffer)
+						c0+=1
+					compressor.flush(zstandard.FLUSH_FRAME)
+
+					elapsed = time.time() - timestamp
+					minutes = elapsed / 60
+					seconds = elapsed % 60
+					
+					speed = 0 if elapsed == 0 else (nspf.size / elapsed)	
+								
+					written = f.tell() - start
+					if isthreaded==False: 
+						t.write('\n  * Compressed at %d%% from %s to %s  - %s' % (int(written * 100 / nspf.size), str(sq_tools.getSize(decompressedBytes)), str(sq_tools.getSize(written)), nspf._path))						
+						t.write('  * Compressed in %02d:%02d at speed: %.1f MB/s\n' % (minutes, seconds, speed / 1000000.0))				
+					newNsp.resize(newFileName, written)
+					continue
 
 				f = newNsp.add(nspf._path, nspf.size,t,isthreaded)
 				nspf.seek(0)
