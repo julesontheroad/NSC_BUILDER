@@ -458,7 +458,7 @@ def pararell(args,workers):
 
 			from colorama import Fore	
 			colors=Fore.__dict__
-			p=0			
+			p=0;threads=0			
 			for r in range(workers):
 				if index != items:
 					k=0;l=p
@@ -477,6 +477,7 @@ def pararell(args,workers):
 					tq = tqdm(leave=False,position=0)
 					#tq = tqdm(leave=False,position=0,bar_format="{l_bar}%s{bar}%s{r_bar}" % (color, color))
 					tq.write('Opening thread for '+f)
+					threads+=1
 					tq.close() 	
 					tq = tqdm(total=1, unit='|', leave=True,position=0,bar_format="{l_bar}%s{bar}%s{r_bar}" % (color, Fore.RESET))
 					tq.update(1)
@@ -541,8 +542,8 @@ def pararell(args,workers):
 					call('cls')#macos
 				except:
 					os.system('cls')#windows	
-			listmanager.striplines(tfile,number=workers,counter=False)					
-			items-=workers	
+			listmanager.striplines(tfile,number=threads,counter=False)					
+			items-=threads	
 			if items<0:
 				items=0	
 		return items		 		
