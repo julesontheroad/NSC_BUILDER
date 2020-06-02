@@ -62,5 +62,3 @@ py/ztools/nstool.exe
 py/zconfig/local_libraries.txt
 py/zconfig/NUT_DB_RAW.txt
 py/joinlist.txt
-py/zconfig/certificate.pem
-py/zconfig/key.pem
