@@ -43,15 +43,11 @@ versions =
 	603979776: "9.0.0"    ->   keygeneration = 10	
 	604045312: "9.0.1"    ->   keygeneration = 10
 	605028352: "9.1.0"    ->   keygeneration = 11	
-	606076928: "9.2.0"    ->   keygeneration = 11	
-	671088640: "10.0.0"    ->   keygeneration = 11		
-	671088641: "10.0.1"    ->   keygeneration = 11		
-	671088642: "10.0.2"    ->   keygeneration = 11	
-	671088643: "10.0.3"    ->   keygeneration = 11		
+	606076928: "9.2.0"    ->   keygeneration = 11		
 '''	
 def kgstring():
 	kg=list()
-	kg11=[605028352,606076928,671088640,671088641,671088642,671088643];kg.append(kg11)		
+	kg11=[605028352,606076928];kg.append(kg11)		
 	kg10=[603979776,604045312];kg.append(kg10)		
 	kg9=[537919488];kg.append(kg9)		
 	kg8=[536936448,536870912,469827584,469762048];kg.append(kg8)	
@@ -95,7 +91,7 @@ def getTopRSV(keygeneration, RSV):
 	if keygeneration == 10:
 		return 603979776
 	if keygeneration == 11:
-		return 671088643		
+		return 606076928		
 	else:
 		return RSV
 
@@ -132,7 +128,7 @@ def getMinRSV(keygeneration, RSV):
 		RSV=9*67108864
 		return RSV	
 	if keygeneration == 11:
-		RSV=10*67108864+0*1048576+0*65796+3*1
+		RSV=9*67108864+1*1048576
 		return RSV				
 	else:
 		return RSV		
@@ -161,7 +157,7 @@ def getFWRangeKG(keygeneration):
 	if keygeneration == 10:
 		return "(9.0.0 - 9.0.1)"
 	if keygeneration == 11:
-		return "(9.1.0 - >10.0.3)"		
+		return "(9.1.0 - >9.2.0)"		
 	else:
 		return "UNKNOWN"		
 
@@ -825,7 +821,7 @@ def verify_nkeys_startup(fileName):
 	if 'master_key_10' not in checkkeys and 'master_key_0a' not in checkkeys:
 		print("master_key_10|master_key_0a is Missing!!!")
 		print("The program won't be able to decrypt games content that uses this key")
-		print("This key represents FW 9.1-10.03 requirement")
+		print("This key represents FW 9.1 requirement")
 		startup=True		
 	else:
 		counter+=1		
