@@ -9846,7 +9846,7 @@ if __name__ == '__main__':
 		# ...................................................
 		
 		if args.restore:
-			feed=''
+			feed='';cnmt_is_patched=False
 			if args.buffer:
 				for var in args.buffer:
 					try:
@@ -9887,7 +9887,7 @@ if __name__ == '__main__':
 				try:
 					f = Fs.Nsp(filename, 'rb')
 					check,feed=f.verify()
-					verdict,headerlist,feed=f.verify_sig(feed,tmpfolder)
+					verdict,headerlist,feed=f.verify_sig(feed,tmpfolder,cnmt='nocheck')
 					output_type='nsp';multi=False;cnmtcount=0
 					if verdict == True:
 						isrestored=True
@@ -9895,6 +9895,10 @@ if __name__ == '__main__':
 							entry=headerlist[i]
 							if str(entry[0]).endswith('.cnmt.nca'):
 								cnmtcount+=1
+								if cnmt_is_patched==False:
+									status=entry[2]
+									if status=='patched':
+										cnmt_is_patched=True
 							if entry[1]!=False:
 								if int(entry[-1])==1:
 									output_type='xci'
@@ -9902,7 +9906,10 @@ if __name__ == '__main__':
 							else:
 								pass
 						if	isrestored == False:	
-							print('\nFILE WAS MODIFIED. FILE IS RESTORABLE')
+							if cnmt_is_patched !=True:
+								print('\nFILE WAS MODIFIED. FILE IS RESTORABLE')
+							else:
+								print('\nFILE WAS MODIFIED AND CNMT PATCHED. FILE MAY BE RESTORABLE')
 							if cnmtcount<2:
 								if not os.path.exists(ofolder):
 									os.makedirs(ofolder)
@@ -9952,7 +9959,6 @@ if __name__ == '__main__':
 
 		Status.close()
 
-
 		def init_interface():
 			import secondary
 			parameters=["Interface","start"]
@@ -9966,7 +9972,8 @@ if __name__ == '__main__':
 		Config.isRunning = False
 		Status.close()
 		raise
-
+		
+	# app=init_interface()
 
 
 

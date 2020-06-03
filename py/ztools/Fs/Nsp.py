@@ -8458,7 +8458,7 @@ class Nsp(Pfs0):
 			message='\nVERDICT: {} FILE IS CORRECT\n'.format(token);print(message);feed+=message
 		return verdict,feed			
 			
-	def verify_sig(self,feed,tmpfolder):	
+	def verify_sig(self,feed,tmpfolder,cnmt='check'):	
 		hlisthash=False
 		if feed == False:
 			feed=''	
@@ -8490,7 +8490,7 @@ class Nsp(Pfs0):
 				keygenerationlist.append([ncaname,origkg])
 				if verdict == True:
 					verdict=verify
-				message='';print(message);feed+=message+'\n'				
+				message='';print(message);feed+=message+'\n'
 		for f in self:	
 			hlisthash=False
 			if type(f) == Nca and f.header.contentType == Type.Content.META:
@@ -8498,8 +8498,20 @@ class Nsp(Pfs0):
 				f.rewind();meta_dat=f.read()
 				message=(str(f.header.titleId)+' - '+str(f.header.contentType));print(message);feed+=message+'\n'	
 				targetkg,minrsv=self.find_addecuatekg(meta_nca,keygenerationlist)
-				verify,origheader,ncaname,feed,origkg,tr,tkey,iGC=f.verify(feed)			
-				if verify == False:
+				verify,origheader,ncaname,feed,origkg,tr,tkey,iGC=f.verify(feed)	
+				if verify == False and cnmt!='check':
+					print('    > Checking if nca was rehashed')
+					f.rewind();
+					files_list=sq_tools.ret_nsp_offsets(self.path,kbsize=32)
+					for entry in files_list:
+						if entry[0]==f._path:
+							self.seek(entry[1])
+							sha0=sha256(self.read(entry[3]))
+							break
+					if str(sha0.hexdigest())[0:32] == str(f._path)[0:32]:
+						print('        * File was rehashed, will check validity after restoration')
+					hlisthash='patched'	
+				if verify == False and cnmt=='check':
 					tempfile=os.path.join(tmpfolder,meta_nca)
 					if not os.path.exists(tmpfolder):
 						os.makedirs(tmpfolder)	
@@ -8666,6 +8678,8 @@ class Nsp(Pfs0):
 					if str(f._path)==headerlist[i][0]:
 						origheader=headerlist[i][1]
 						listedhash=headerlist[i][2]
+						if listedhash=='patched':
+							listedhash=False
 						break			
 				message=(str(f.header.titleId)+' - '+str(f.header.contentType));print(message);feed+=message+'\n'
 				ncasize=f.header.size						
@@ -9002,7 +9016,7 @@ class Nsp(Pfs0):
 ##################		
 #FILE RESTORATION
 ##################
-	def restore_ncas(self,buffer,headerlist,didverify,ofile,feed='',output_type='nsp'):	
+	def restore_ncas(self,buffer,headerlist,didverify,ofile,feed='',output_type='nsp',cnmt_is_patched=False):	
 		from Fs.Ticket import PublicCert
 		from Fs.Ticket import PublicTik	
 		files_list=sq_tools.ret_nsp_offsets(self._path)
