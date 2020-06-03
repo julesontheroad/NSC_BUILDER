@@ -24,6 +24,9 @@ set "videoplayback=%videoplayback%"
 set "height=%height%"
 set "width=%width%"
 set "port=%port%"
+set "host=%host%"
+set "noconsole=%noconsole%"
+set "pycommandw=%pycommandw%"
 REM PROGRAMS
 set "squirrel=%nut%"
 REM FILES
@@ -47,7 +50,9 @@ goto start
 if not "%1" == "min" start /MIN cmd /c %0 min & exit/b >nul 2>&1 
 :start
 %pycommand% "%squirrel%" -lib_call nutdb  check_files
-%pycommand% "%squirrel%" -lib_call Interface start -xarg "%browserpath%" "%videoplayback%" "%height%" "%width%" "%port%"
+if "%noconsole%" == "false" (%pycommand% "%squirrel%" -lib_call Interface start -xarg "%browserpath%" "%videoplayback%" "%height%" "%width%" "%port%" "%host%" )
+if "%noconsole%" == "false" goto salida
+start %pycommandw% "%squirrel%" -lib_call Interface start -xarg "%browserpath%" "%videoplayback%" "%height%" "%width%" "%port%" "%host%" "%noconsole%"
 goto salida
 
 :missing_things
@@ -63,6 +68,5 @@ echo Program will exit now
 PING -n 2 127.0.0.1 >NUL 2>&1
 goto salida
 :salida
-REM pause
 exit
 

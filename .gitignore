@@ -66,3 +66,4 @@ py/zconfig/certificate.pem
 py/zconfig/key.pem
 py/zconfig/update_dbs_options.cmd
 py/update_dbs.bat
+py/ztools/_debug_/*
