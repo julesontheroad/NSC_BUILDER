@@ -84,6 +84,7 @@ class NcaHeader(File):
 		self.sdkVersion3 = None
 		self.sdkVersion4 = None		
 		self.cryptoType2 = None
+		self.sigKeyGen = None
 		self.rightsId = None
 		self.titleKeyDec = None
 		self.masterKey = None
@@ -119,8 +120,9 @@ class NcaHeader(File):
 		self.sdkVersion3 = self.readInt8()
 		self.sdkVersion4 = self.readInt8()		
 		self.cryptoType2 = self.readInt8()
+		self.sigKeyGen = self.readInt8()
 		
-		self.read(0xF) # padding
+		self.read(0xE) # padding
 		
 		self.rightsId = hx(self.read(0x10))
 		
@@ -222,14 +224,14 @@ class NcaHeader(File):
 	def setCryptoType2(self, value):
 		self.seek(0x220)
 		self.writeInt8(value)
-		
+
 	def getSigKeyGen(self):
 		self.seek(0x221)
 		return self.readInt8()
 
 	def setSigKeyGen(self, value):
 		self.seek(0x221)
-		self.writeInt8(value)		
+		self.writeInt8(value)
 
 	def getRightsId(self):
 		self.seek(0x230)
