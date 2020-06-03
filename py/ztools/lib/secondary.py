@@ -216,12 +216,15 @@ def call_class(args,xarg=None):
 		except:	
 			return 	vret
 	
-def route(args,workers):
+def route(args,workers,silence=False):
 	arguments,tfile=getargs(args)
 	#print(arguments)
 	# print(tfile)
 	if tfile==False:
-		process=subprocess.Popen(arguments)	
+		if silence==False:
+			process=subprocess.Popen(arguments)	
+		else:
+			process=subprocess.Popen(arguments, stdout=subprocess.PIPE, stderr=subprocess.PIPE)				
 		while process.poll()==None and process2.poll()==None:
 			if process.poll()!=None:
 				process.terminate();
@@ -271,7 +274,10 @@ def route(args,workers):
 					arguments[ind2]=fi
 					#print(arguments)
 				c+=1	
-			process.append(subprocess.Popen(arguments))		
+			if silence==False:
+				process.append(subprocess.Popen(arguments))	
+			else:
+				process.append(subprocess.Popen(arguments, stdout=subprocess.PIPE, stderr=subprocess.PIPE))	
 			#print(process)
 			#print(f)		
 		#print(len(process))	
@@ -405,7 +411,7 @@ def getargs(args,separate_list=True,current=False,pos=0,tothreads=1):
 						arguments.append(b)
 	return arguments,tfile		
 	
-def pass_command(args):	
+def pass_command(args,silence=False):	
 	c=0
 	if not args.findfile:
 		items=listmanager.counter(args.text_file)
@@ -418,7 +424,10 @@ def pass_command(args):
 			listmanager.printcurrent(args.text_file)
 			arguments,nonevar=getargs(args,separate_list=False)
 			# print(arguments)
-			process.append(subprocess.Popen(arguments))
+			if silence==False:
+				process.append(subprocess.Popen(arguments))
+			else:
+				process.append(subprocess.Popen(arguments, stdout=subprocess.PIPE, stderr=subprocess.PIPE))	
 			for p in process: 	
 				p.wait()
 				# print(str(p.poll()))
@@ -432,7 +441,10 @@ def pass_command(args):
 		arguments,nonevar=getargs(args,separate_list=False)
 		# print(arguments)
 		process=list()
-		process.append(subprocess.Popen(arguments))
+		if silence==False:
+			process.append(subprocess.Popen(arguments))
+		else:
+			process.append(subprocess.Popen(arguments, stdout=subprocess.PIPE, stderr=subprocess.PIPE))			
 		for p in process: 	
 			p.wait()
 			# print(str(p.poll()))
@@ -441,7 +453,7 @@ def pass_command(args):
 					p.terminate();				
 		return 0	
 
-def pararell(args,workers):	
+def pararell(args,workers,silence=False):	
 	from subprocess import call
 	from time import sleep
 	c=0;workers=int(workers);tfile=args.text_file;args0=args;f=False
@@ -490,7 +502,10 @@ def pararell(args,workers):
 					f=False
 					args=args0
 					#print(arguments)
-					process.append(subprocess.Popen(arguments))				
+					if silence==False:
+						process.append(subprocess.Popen(arguments))
+					else:
+						process.append(subprocess.Popen(arguments, stdout=subprocess.PIPE, stderr=subprocess.PIPE))
 					index+=1
 					p+=1
 	

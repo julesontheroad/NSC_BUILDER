@@ -64,3 +64,5 @@ py/zconfig/NUT_DB_RAW.txt
 py/joinlist.txt
 py/zconfig/certificate.pem
 py/zconfig/key.pem
+py/zconfig/update_dbs_options.cmd
+py/update_dbs.bat
