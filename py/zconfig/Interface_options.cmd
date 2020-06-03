@@ -59,4 +59,4 @@ set "host=localhost"
 ::**************************************************************
 ::True -> Dettach gui from console
 ::False -> Attach gui to console
-set "noconsole=false"
+set "noconsole=true"
