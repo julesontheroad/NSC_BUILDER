@@ -8,6 +8,7 @@ rem color 1F
 set "nut=ztools\squirrel.py"
 ::python command
 set "pycommand=py -3"
+set "pycommandw=pyw -3"
 ::--------------------------------------------------------------
 ::INTERFACE OPTIONS
 ::--------------------------------------------------------------
@@ -23,12 +24,12 @@ set "start_minimized=yes"
 ::2. Slimjet portable
 ::3. Chrome or Chromium installed on system
 ::4. Microsoft Edge
-::Default: USes default system brwoser (low compatibility)
+::Default: Uses default system brwoser (low compatibility)
 ::Path: Replace auto to the path to your browser, ending by exe
 ::Path: Replace auto to the path to an .lnk file(shortcut)
 ::Path: Add name to .lnk file in ztools\chromium.
 ::For example "brave.lnk" will redirect to the exe path launching brave browser
-set "browserpath=auto"
+set "browserpath=chrome"
 ::**************************************************************
 ::ENABLE VIDEO PLAYBACK
 ::**************************************************************
@@ -46,3 +47,16 @@ set "width=740"
 ::Port number -> Fixed port (example 8000)
 ::Auto and rg8000 allow for multiwindows
 set "port=rg8000"
+::**************************************************************
+::Host
+::**************************************************************
+::0.0.0.0 -> all hosts
+::localhost -> default
+::IP -> Some ip
+set "host=localhost"
+::**************************************************************
+::Noconsole
+::**************************************************************
+::True -> Dettach gui from console
+::False -> Attach gui to console
+set "noconsole=false"

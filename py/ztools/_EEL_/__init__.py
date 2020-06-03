@@ -1,16 +1,45 @@
 from __future__ import print_function   # Python 2 compatibility stuff
 from builtins import range
 from io import open
+import sys
+import os
 
+squirrel_dir=os.path.abspath(os.curdir)
+NSCB_dir=os.path.abspath('../'+(os.curdir))
+
+if os.path.exists(os.path.join(squirrel_dir,'ztools')):
+	NSCB_dir=squirrel_dir
+	zconfig_dir=os.path.join(NSCB_dir, 'zconfig')	  
+	ztools_dir=os.path.join(NSCB_dir,'ztools')
+	squirrel_dir=ztools_dir
+elif os.path.exists(os.path.join(NSCB_dir,'ztools')):
+	squirrel_dir=squirrel_dir
+	ztools_dir=os.path.join(NSCB_dir, 'ztools')
+	zconfig_dir=os.path.join(NSCB_dir, 'zconfig')
+else:	
+	ztools_dir=os.path.join(NSCB_dir, 'ztools')
+	zconfig_dir=os.path.join(NSCB_dir, 'zconfig')
+debug_folder=os.path.join(ztools_dir,'_debug_')
+flag_file=os.path.join(debug_folder,'flag')
+
+if not os.path.exists(debug_folder):
+	os.makedirs(debug_folder)
+if not os.path.exists(flag_file):	
+	with open(flag_file,'wt') as tfile:
+		tfile.write('False')
+with open(flag_file,'rt') as tfile:
+	flag=(tfile.read())
+	if flag=='True':
+		sys.stdout = open(os.path.join(debug_folder,'log.txt'), 'w')
+		sys.stderr = open(os.path.join(debug_folder,'err.txt'), 'w')
 import gevent as gvt
 import json as jsn
 import bottle as btl
 import _bottle_websocket_ as wbs
 import re as rgx
-import os
 import eel.browsers as brw
 import random as rnd
-import sys
+
 import pkg_resources as pkg
 import socket
 

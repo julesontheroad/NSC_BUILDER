@@ -119,6 +119,12 @@ def call_library(args,xarg=None):
 		try:	
 			if args[1]:
 				fimport=args[1]
+				if library=='Interface' and fimport=='start':
+					try:
+						if str(var[6]).lower()=='true':
+							debug_write(True)
+					except:
+						debug_write(False)
 				function = getattr(__import__(library,fromlist=[fimport]), fimport)	
 				if var==None:
 					vret=function()
@@ -215,7 +221,27 @@ def call_class(args,xarg=None):
 				print(str(vret))		
 		except:	
 			return 	vret
-	
+			
+def debug_write(state):
+	squirrel_dir=os.path.abspath(os.curdir)
+	NSCB_dir=os.path.abspath('../'+(os.curdir))
+	if os.path.exists(os.path.join(squirrel_dir,'ztools')):
+		NSCB_dir=squirrel_dir
+		zconfig_dir=os.path.join(NSCB_dir, 'zconfig')	  
+		ztools_dir=os.path.join(NSCB_dir,'ztools')
+		squirrel_dir=ztools_dir
+	elif os.path.exists(os.path.join(NSCB_dir,'ztools')):
+		squirrel_dir=squirrel_dir
+		ztools_dir=os.path.join(NSCB_dir, 'ztools')
+		zconfig_dir=os.path.join(NSCB_dir, 'zconfig')
+	else:	
+		ztools_dir=os.path.join(NSCB_dir, 'ztools')
+		zconfig_dir=os.path.join(NSCB_dir, 'zconfig')
+	debug_folder=os.path.join(ztools_dir,'_debug_')
+	flag_file=os.path.join(debug_folder,'flag')		
+	with open(flag_file,'wt') as tfile:	
+		tfile.write(str(state))	
+		
 def route(args,workers,silence=False):
 	arguments,tfile=getargs(args)
 	#print(arguments)

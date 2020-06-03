@@ -3,6 +3,7 @@ import _EEL_ as eel
 import sq_tools
 import Fs
 import sys
+
 import platform
 if sys.platform in ['win32', 'win64']:
 	import win32com.client 
@@ -1110,7 +1111,14 @@ def server(port='0.0.0.0',host='localhost',videoplayback=True,ssl=False):
 			eel.start('nscb.html', mode=False,port=port,host=host,ssl_cert=ssl_cert,ssl_key=ssl_key)			
 		except:pass
 			
-def start(browserpath='auto',videoplayback=True,height=800,width=740,port=8000,host='localhost',permanent=True):
+def start(browserpath='auto',videoplayback=True,height=800,width=740,port=8000,host='localhost',noconsole=False):
+	debug_folder=os.path.join(ztools_dir,'_debug_')
+	flag_file=os.path.join(debug_folder,'flag')	
+	with open(flag_file,'wt') as tfile:
+		if noconsole==True:	
+			tfile.write('True')
+		else:	
+			tfile.write('False')			
 	global enablevideoplayback
 	enablevideoplayback=videoplayback
 	host=str(host)
