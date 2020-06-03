@@ -77,6 +77,12 @@ else:
 local_lib_file = os.path.join(zconfig_dir, 'local_libraries.txt')
 remote_lib_file = os.path.join(zconfig_dir, 'remote_libraries.txt')
 download_lib_file = os.path.join(zconfig_dir, 'download_libraries.txt')
+ssl_cert= os.path.join(zconfig_dir, 'certificate.pem')
+ssl_key= os.path.join(zconfig_dir, 'key.pem')
+if os.path.exists(ssl_cert) and os.path.exists(ssl_key):
+	pass
+else:
+	ssl_cert=False;ssl_key=False
 
 globalpath=None;globalTD=None;globalremote=None
 globalocalpath=None
@@ -1066,9 +1072,48 @@ def getverificationdata(filename,remotelocation=False):
 	eel.set_ver_data(feed)
 	return	
 
-def start(browserpath='auto',videoplayback=True,height=800,width=740,port=8000):
+def server(port='0.0.0.0',host='localhost',videoplayback=True,ssl=False):
 	global enablevideoplayback
 	enablevideoplayback=videoplayback
+	host=str(host)
+	if port=='auto':
+		port=0
+	elif port=='rg8000':
+		import socket, errno
+		for p in range(8000,8999):
+			s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)		
+			try:
+				s.bind(("localhost", p))
+				port=p
+				s.close()
+				break
+			except socket.error as e:
+				# print(e)
+				pass
+			s.close()			
+	else:
+		try:
+			port=int(port)
+		except:
+			port=8000
+	About()
+	if host=='0.0.0.0':
+		h_='serverdomain'
+	else:
+		h_=str(host)
+	if ssl_cert!=False and ssl_key!=False:
+		print("Launched in https://{}:{}/nscb.html".format(h_,port))	
+	else:
+		print("Launched in http://{}:{}/nscb.html".format(h_,port))
+	while True:
+		try:
+			eel.start('nscb.html', mode=False,port=port,host=host,ssl_cert=ssl_cert,ssl_key=ssl_key)			
+		except:pass
+			
+def start(browserpath='auto',videoplayback=True,height=800,width=740,port=8000,host='localhost',permanent=True):
+	global enablevideoplayback
+	enablevideoplayback=videoplayback
+	host=str(host)
 	if port=='auto':
 		port=0
 	elif port=='rg8000':
@@ -1092,12 +1137,24 @@ def start(browserpath='auto',videoplayback=True,height=800,width=740,port=8000):
 	try:
 		if browserpath == 'default':
 			print("Launched using default system browser")
-			eel.start('main.html', mode='default', size=(height, width),port=port)				
+			eel.start('main.html', mode='default', size=(height, width),port=port,host=host)		
+		elif str(browserpath).lower() == 'false' or str(browserpath).lower() == 'none':
+			About()
+			if host=='0.0.0.0':
+				print("Launched in http://{}:{}/main.html".format('localhost',port))
+				print("Launched in http://{}:{}/main.html".format('127.0.0.1',port))
+			else:
+				print("Launched in http://{}:{}/main.html".format(host,port))
+			if permanent==True:
+				while True:
+					try:
+						eel.start('main.html', mode=False, size=(height, width),port=port,host=host)			
+					except:pass
 		elif browserpath != 'auto' and os.path.exists(browserpath) and not browserpath.endswith('.ink'):
 			eel.browsers.set_path('chrome', browserpath)
 			About()
 			print("Launched using: "+browserpath)
-			eel.start('main.html', mode='chrome', size=(height, width),port=port)
+			eel.start('main.html', mode='chrome', size=(height, width),port=port,host=host)
 		elif browserpath != 'auto' and browserpath.endswith('.lnk') and sys.platform in ['win32', 'win64']:
 			chrpath=os.path.join(ztools_dir,'chromium')
 			chrpath_alt=os.path.join(squirrel_dir,'chromium')
@@ -1114,37 +1171,37 @@ def start(browserpath='auto',videoplayback=True,height=800,width=740,port=8000):
 			eel.browsers.set_path('chrome', browserpath)
 			About()
 			print("Launched using: "+browserpath)
-			eel.start('main.html', mode='chrome', size=(height, width),port=port)			
+			eel.start('main.html', mode='chrome', size=(height, width),port=port,host=host)			
 		elif os.path.exists(chromiumpath):
 			eel.browsers.set_path('chrome', chromiumpath)
 			About()
 			print("Launched using: "+chromiumpath)
-			eel.start('main.html', mode='chrome', size=(height, width),port=port)		
+			eel.start('main.html', mode='chrome', size=(height, width),port=port,host=host)		
 		elif os.path.exists(chromiumpath_alt):	
 			eel.browsers.set_path('chrome', chromiumpath_alt)
 			About()
 			print("Launched using: "+chromiumpath_alt)
-			eel.start('main.html', mode='chrome', size=(height, width),port=port)		
+			eel.start('main.html', mode='chrome', size=(height, width),port=port,host=host)		
 		elif os.path.exists(slimpath):
 			eel.browsers.set_path('chrome', slimpath)
 			About()
 			print("Launched using: "+slimpath)
-			eel.start('main.html', mode='chrome', size=(height, width),port=port)		
+			eel.start('main.html', mode='chrome', size=(height, width),port=port,host=host)		
 		elif os.path.exists(slimpath_alt):	
 			eel.browsers.set_path('chrome', slimpath_alt)
 			About()
 			print("Launched using: "+slimpath_alt)
-			eel.start('main.html', mode='chrome', size=(height, width),port=port)						
+			eel.start('main.html', mode='chrome', size=(height, width),port=port,host=host)						
 		else:
 			try:
 				About()
 				print("Launched using Chrome Installation")
-				eel.start('main.html', mode='chrome', size=(height, width),port=port)
+				eel.start('main.html', mode='chrome', size=(height, width),port=port,host=host)
 			except EnvironmentError:
 				print("Chrome wasn't detected. Launched using Windows Edge with limited compatibility")	
 				if sys.platform in ['win32', 'win64'] and int(platform.release()) >= 10:
 					# print(platform.release())
-					eel.start('main.html', mode='edge', size=(height, width),port=port)
+					eel.start('main.html', mode='edge', size=(height, width),port=port,host=host)
 				else:
 					raise				
 	except (SystemExit, MemoryError, KeyboardInterrupt):	
