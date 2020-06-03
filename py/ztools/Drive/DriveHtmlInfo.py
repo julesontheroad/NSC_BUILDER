@@ -1853,3 +1853,24 @@ def read_npdm(path=None,TD=None,filter=None,file=None):
 		except IOError as e:
 			print(e, file=sys.stderr)
 			feed=html_feed(feed,2,message=str('- Error decrypting npdm'))
+			
+
+def verify(path=None,TD=None,filter=None,file=None):		
+	contentlist=list();validfiles=list();listed_files=list()		
+	contentlist=list();	feed='';delta = False;verdict = True		
+	checktik=False		
+	sectionFilesystems=[]
+	if file !=None:
+		remote=file
+		cnmtdict,files_list,remote=DriveTools.get_cnmt_data(file=remote)
+		try:
+			titlekey,dectkey=db_get_titlekey(cnmtdict,files_list,remote)
+		except:
+			titlekey='';dectkey=''
+	else:
+		cnmtdict,files_list,remote=get_cnmt_data(path,TD,filter)		
+	ctype=cnmtdict['ctype']	
+	# for f in files_list:
+
+	
+	feed=self.html_feed(feed,2,message=('DECRYPTION TEST:'))				
