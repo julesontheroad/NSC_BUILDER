@@ -243,7 +243,8 @@ def debug_write(state):
 	else:	
 		ztools_dir=os.path.join(NSCB_dir, 'ztools')
 		zconfig_dir=os.path.join(NSCB_dir, 'zconfig')
-	debug_folder=os.path.join(ztools_dir,'_debug_')
+	web_folder=os.path.join(ztools_dir,'web')
+	debug_folder=os.path.join(web_folder,'_debug_')
 	flag_file=os.path.join(debug_folder,'flag')		
 	with open(flag_file,'wt') as tfile:	
 		tfile.write(str(state))	

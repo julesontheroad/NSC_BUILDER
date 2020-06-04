@@ -134,6 +134,13 @@
 					<span class="icon"><span class="mif-link fg-black" id="_ link_bar_but1"></span></span>
 					<span class="caption fg-black" id="_ link_bar_but2">Direct Link</span>
 				</a>
+			</li>	
+			<li class="item-header" style="margin-top: 2vh">Debug</li>	
+			<li>
+				<a href="#_Information_" onclick="show_debug();set_debug()" class="enabled" id="_showdebug_bar_but">
+					<span class="icon"><span class="mif-description fg-black" id="_ showdebug_bar_but1"></span></span>
+					<span class="caption fg-black" id="_ showdebug_bar_but2">Console log</span>
+				</a>
 			</li>				
 		</ul>
 	</nav>
@@ -201,7 +208,12 @@
 			
 				<div class="cell" id="_Cheats_" style="font-size: 1.86vh;display:none;overflow-z:auto;"><div><div style="width: 55vw;margin-left:0;margin-right:auto;">
 					<p style="font-size: 2vh;text-align: justify;text-justify: inter-word;white-space: pre-line;" id="cheat_data"></p>
-			</div></div></div>					
+			</div></div></div>	
+
+				<div class="cell" id="_Debug_" style="font-size: 1.86vh;display:none;overflow-z:auto;"><div><div style="width: 55vw;margin-left:0;margin-right:auto;">
+					<p style="margin-bottom: 2px;margin-top: 2px;font-size: 2vh"><strong>Console log: </strong></p>					
+					<pre id="debug_data" style="width:90vw"></pre>					
+			</div></div></div>							
 
 				<div class="cell" id="_LocalLibrary_" style="font-size: 1.84vh;display:none;overflow-z:auto;"><div><div style="width: 55vw;margin-left:0;margin-right:auto;">
 					<p style="margin-bottom: 2px;margin-top: 2px;font-size: 2.4vh"><strong>Local Libraries: </strong></p>	
@@ -502,6 +514,16 @@ function set_cheats(data) {
 	document.getElementById("_cheats_bar_but2").setAttribute("class", "caption fg-black");		
 }
 
+function set_debug() {
+	console.log('test');
+    var xhr = new XMLHttpRequest();
+    xhr.onload = function () {
+		document.getElementById("debug_data").textContent = this.responseText;
+    };
+    xhr.open('GET', '_debug_/log.txt');
+    xhr.send();	
+}
+
 function set_video(data) {
 	if(Hls.isSupported()) {
 	  var video = document.getElementById('video_container');
@@ -629,6 +651,7 @@ document.getElementById("_Nacp_").style.display = "none";
 document.getElementById("_Npdm_").style.display = "none";
 document.getElementById("_Cnmt_").style.display = "none";
 document.getElementById("_Verification_").style.display = "none";	
+document.getElementById("_Debug_").style.display = "none";
 document.getElementById("load_button").style.display = "block";
 document.getElementById("_GameInfo_").style.display = "block";
 document.getElementById("_imagebox_").style.display = "block";
@@ -652,6 +675,7 @@ document.getElementById("_Nacp_").style.display = "none";
 document.getElementById("_Npdm_").style.display = "none";
 document.getElementById("_Cnmt_").style.display = "none";
 document.getElementById("_Verification_").style.display = "none";
+document.getElementById("_Debug_").style.display = "none";
 document.getElementById("load_button").style.display = "block";
 document.getElementById("_Description_").style.display = "block";
 document.getElementById("_imagebox_").style.display = "block";
@@ -675,6 +699,7 @@ document.getElementById("_Nacp_").style.display = "none";
 document.getElementById("_Npdm_").style.display = "none";
 document.getElementById("_Cnmt_").style.display = "none";
 document.getElementById("_Verification_").style.display = "none";
+document.getElementById("_Debug_").style.display = "none";
 document.getElementById("load_button").style.display = "block";
 document.getElementById("_Pictures_").style.display = "block";
 document.getElementById("_viewspace_").style.height = "80vh";
@@ -699,6 +724,7 @@ document.getElementById("_Nacp_").style.display = "none";
 document.getElementById("_Npdm_").style.display = "none";
 document.getElementById("_Cnmt_").style.display = "none";
 document.getElementById("_Verification_").style.display = "none";
+document.getElementById("_Debug_").style.display = "none";
 document.getElementById("load_button").style.display = "block";
 document.getElementById("_Video_").style.display = "block";
 document.getElementById("_viewspace_").style.height = "80vh";
@@ -722,6 +748,7 @@ document.getElementById("_Nacp_").style.display = "none";
 document.getElementById("_Npdm_").style.display = "none";
 document.getElementById("_Cnmt_").style.display = "none";
 document.getElementById("_Verification_").style.display = "none";
+document.getElementById("_Debug_").style.display = "none";
 document.getElementById("load_button").style.display = "block";
 document.getElementById("_Gametree_").style.display = "block";
 document.getElementById("_imagebox_").style.display = "block";
@@ -746,9 +773,35 @@ document.getElementById("_Cnmt_").style.display = "none";
 document.getElementById("_Verification_").style.display = "none";
 document.getElementById("_LocalLibrary_").style.display = "none";
 document.getElementById("_RemoteLibrary_").style.display = "none";
+document.getElementById("_Debug_").style.display = "none";
 document.getElementById("load_button").style.display = "block";
 document.getElementById("_Cheats_").style.display = "block";
 document.getElementById("_imagebox_").style.display = "block";
+document.getElementById("_viewspace_").style.height = "80vh";
+}
+
+function show_debug(){
+if (navclicks>0){
+document.getElementById("nav_view_but").click();
+}
+document.getElementById("info_tab").click();
+window.scrollTo(0,0);
+document.getElementById("_GameInfo_").style.display = "none";
+document.getElementById("_Pictures_").style.display = "none";
+document.getElementById("_Video_").style.display = "none";	
+document.getElementById("_Gametree_").style.display = "none";
+document.getElementById("_Description_").style.display = "none";
+document.getElementById("_Files_").style.display = "none";
+document.getElementById("_Nacp_").style.display = "none";
+document.getElementById("_Npdm_").style.display = "none";
+document.getElementById("_Cnmt_").style.display = "none";
+document.getElementById("_Verification_").style.display = "none";
+document.getElementById("_LocalLibrary_").style.display = "none";
+document.getElementById("_RemoteLibrary_").style.display = "none";
+document.getElementById("load_button").style.display = "none";
+document.getElementById("_Cheats_").style.display = "none";
+document.getElementById("_imagebox_").style.display = "none";
+document.getElementById("_Debug_").style.display = "block";
 document.getElementById("_viewspace_").style.height = "80vh";
 }
 
@@ -780,6 +833,7 @@ function show_local_libraries() {
 	document.getElementById("_Npdm_").style.display = "none";
 	document.getElementById("_Cnmt_").style.display = "none";
 	document.getElementById("_Verification_").style.display = "none";
+	document.getElementById("_Debug_").style.display = "none";	
 	document.getElementById("_Pictures_").style.display = "none";
 	document.getElementById("load_button").style.display = "none";	
 	document.getElementById("_LocalLibrary_").style.display = "block";	
@@ -836,6 +890,7 @@ function show_remote_libraries() {
 	document.getElementById("_Verification_").style.display = "none";
 	document.getElementById("_Pictures_").style.display = "none";
 	document.getElementById("_LocalLibrary_").style.display = "none";	
+	document.getElementById("_Debug_").style.display = "none";
 	document.getElementById("load_button").style.display = "none";		
 	document.getElementById("_RemoteLibrary_").style.display = "block";		
 	document.getElementById("_viewspace_").style.height = "80vh";	
@@ -880,6 +935,7 @@ document.getElementById("nav_view_but").click();
 	document.getElementById("_Npdm_").style.display = "none";
 	document.getElementById("_Cnmt_").style.display = "none";
 	document.getElementById("_Verification_").style.display = "none";
+	document.getElementById("_Debug_").style.display = "none";
 	document.getElementById("load_button").style.display = "block";	
 	document.getElementById("_Files_").style.display = "block";
 	document.getElementById("_viewspace_").style.height = "80vh";
@@ -903,6 +959,7 @@ document.getElementById("nav_view_but").click();
 	document.getElementById("_Npdm_").style.display = "none";
 	document.getElementById("_Cnmt_").style.display = "none";
 	document.getElementById("_Verification_").style.display = "none";
+	document.getElementById("_Debug_").style.display = "none";
 	document.getElementById("load_button").style.display = "block";	
 	document.getElementById("_Nacp_").style.display = "block";
 	document.getElementById("_viewspace_").style.height = "80vh";
@@ -926,6 +983,7 @@ document.getElementById("nav_view_but").click();
 	document.getElementById("_Nacp_").style.display = "none";
 	document.getElementById("_Cnmt_").style.display = "none";
 	document.getElementById("_Verification_").style.display = "none";
+	document.getElementById("_Debug_").style.display = "none";
 	document.getElementById("load_button").style.display = "block";	
 	document.getElementById("_Npdm_").style.display = "block";
 	document.getElementById("_viewspace_").style.height = "80vh";
@@ -949,6 +1007,7 @@ document.getElementById("nav_view_but").click();
 	document.getElementById("_Nacp_").style.display = "none";
 	document.getElementById("_Npdm_").style.display = "none";
 	document.getElementById("_Verification_").style.display = "none";
+	document.getElementById("_Debug_").style.display = "none";
 	document.getElementById("load_button").style.display = "block";	
 	document.getElementById("_Cnmt_").style.display = "block";
 	document.getElementById("_viewspace_").style.height = "80vh";
@@ -972,6 +1031,7 @@ document.getElementById("nav_view_but").click();
 	document.getElementById("_Nacp_").style.display = "none";
 	document.getElementById("_Npdm_").style.display = "none";
 	document.getElementById("_Cnmt_").style.display = "none";
+	document.getElementById("_Debug_").style.display = "none";
 	document.getElementById("load_button").style.display = "block";	
 	document.getElementById("_Verification_").style.display = "block";
 	document.getElementById("_viewspace_").style.height = "80vh";
