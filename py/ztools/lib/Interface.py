@@ -1073,7 +1073,14 @@ def getverificationdata(filename,remotelocation=False):
 	eel.set_ver_data(feed)
 	return	
 
-def server(port='0.0.0.0',host='localhost',videoplayback=True,ssl=False):
+def server(port='0.0.0.0',host='localhost',videoplayback=True,ssl=False,noconsole=False):
+	debug_folder=os.path.join(ztools_dir,'_debug_')
+	flag_file=os.path.join(debug_folder,'flag')	
+	with open(flag_file,'wt') as tfile:
+		if noconsole==True:	
+			tfile.write('True')
+		else:	
+			tfile.write('False')	
 	global enablevideoplayback
 	enablevideoplayback=videoplayback
 	host=str(host)

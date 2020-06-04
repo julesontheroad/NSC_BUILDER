@@ -3,7 +3,7 @@
 set "prog_dir=%~dp0"
 set "bat_name=%~n0"
 set "ofile_name=%bat_name%_options.cmd"
-Title NSC_Builder v0.98 -- Profile: %ofile_name% -- by JulesOnTheRoad
+Title NSC_Builder v0.99 -- Profile: %ofile_name% -- by JulesOnTheRoad
 set "list_folder=%prog_dir%lists"
 ::-----------------------------------------------------
 ::EDIT THIS VARIABLE TO LINK OTHER OPTION FILE
@@ -19,11 +19,12 @@ endlocal & (
 REM environment
 set "pycommand=%pycommand%"
 set "start_minimized=%start_minimized%"
-set "browserpath=%browserpath%"
 set "videoplayback=%videoplayback%"
-set "height=%height%"
-set "width=%width%"
 set "port=%port%"
+set "host=%host%"
+set "noconsole=%noconsole%"
+set "pycommandw=%pycommandw%"
+set "ssl=%ssl%"
 REM PROGRAMS
 set "squirrel=%nut%"
 REM FILES
@@ -47,7 +48,9 @@ goto start
 if not "%1" == "min" start /MIN cmd /c %0 min & exit/b >nul 2>&1 
 :start
 %pycommand% "%squirrel%" -lib_call nutdb  check_files
-%pycommand% "%squirrel%" -lib_call Interface server -xarg "port=rg8000" "host=localhost" "videoplayback=True" "ssl=True"
+if "%noconsole%" == "false" (%pycommand% "%squirrel%" -lib_call server start -xarg "%port%" "%host%" "%videoplayback%" "%ssl%" )
+if "%noconsole%" == "false" goto salida
+start %pycommandw% "%squirrel%" -lib_call Interface server -xarg "%port%" "%host%" "%videoplayback%" "%ssl%" "%noconsole%"
 goto salida
 
 :missing_things
