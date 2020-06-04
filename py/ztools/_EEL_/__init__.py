@@ -19,8 +19,11 @@ elif os.path.exists(os.path.join(NSCB_dir,'ztools')):
 else:	
 	ztools_dir=os.path.join(NSCB_dir, 'ztools')
 	zconfig_dir=os.path.join(NSCB_dir, 'zconfig')
-debug_folder=os.path.join(ztools_dir,'_debug_')
+web_folder=os.path.join(ztools_dir,'web')
+debug_folder=os.path.join(web_folder,'_debug_')
 flag_file=os.path.join(debug_folder,'flag')
+with open(os.path.join(debug_folder,'log.txt'), 'w') as tfile:
+	tfile.write('')
 
 if not os.path.exists(debug_folder):
 	os.makedirs(debug_folder)
@@ -31,7 +34,7 @@ with open(flag_file,'rt') as tfile:
 	flag=(tfile.read())
 	if flag=='True':
 		sys.stdout = open(os.path.join(debug_folder,'log.txt'), 'w')
-		sys.stderr = open(os.path.join(debug_folder,'err.txt'), 'w')
+		sys.stderr = sys.stdout
 import gevent as gvt
 import json as jsn
 import bottle as btl

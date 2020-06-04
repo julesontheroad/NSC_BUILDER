@@ -23,7 +23,11 @@ import csv
 from listmanager import folder_to_list
 import html
 
-def About():	
+def About(noconsole=False):	
+	if noconsole==True:
+		print('NSC_Builder by JulesOnTheRoad')
+		sys.stdout.flush()
+		return
 	print('                                       __          _ __    __                         ')
 	print('                 ____  _____ ____     / /_  __  __(_) /___/ /__  _____                ')
 	print('                / __ \/ ___/ ___/    / __ \/ / / / / / __  / _ \/ ___/                ')
@@ -41,7 +45,6 @@ def About():
 	print("Program's github: https://github.com/julesontheroad/NSC_BUILDER                       ")
 	print('Cheats and Eshop information from nutdb and http://tinfoil.io                         ')
 	print('------------------------------------------------------------------------------------- ')
-
 eel.init('web')
 
 squirrel_dir=os.path.abspath(os.curdir)
@@ -80,6 +83,10 @@ remote_lib_file = os.path.join(zconfig_dir, 'remote_libraries.txt')
 download_lib_file = os.path.join(zconfig_dir, 'download_libraries.txt')
 ssl_cert= os.path.join(zconfig_dir, 'certificate.pem')
 ssl_key= os.path.join(zconfig_dir, 'key.pem')
+web_folder=os.path.join(ztools_dir,'web')
+debug_folder=os.path.join(web_folder,'_debug_')
+flag_file=os.path.join(debug_folder,'flag')	
+debug_log=os.path.join(debug_folder,'log')	
 if os.path.exists(ssl_cert) and os.path.exists(ssl_key):
 	pass
 else:
@@ -113,7 +120,8 @@ def libraries(tfile):
 					db[row[0]]=dict
 		# print(db)			
 		return db
-	except: return False
+	except: 
+		return False
 
 def get_library_from_path(tfile,filename):
 	db=libraries(remote_lib_file)
@@ -194,7 +202,8 @@ def get_screen_gallery(banner,screenlist):
 			
 		ret+='</div>'
 		return ret
-	except:return "Not available"
+	except:
+		return "Not available"
 # @eel.expose	
 # def show_picture(img):	
 	# eel.show(img)
@@ -263,11 +272,13 @@ def search_local_lib(value,library):
 		if not library.lower()=='all':
 			path=db[library]['path']
 			print("* Searching library {}".format(library))
+			sys.stdout.flush()
 			results=folder_to_list(path,'all',value)	
 			sr=sortbyname(results)	
 			html='<ul style="margin-bottom: 2px;margin-top: 3px; list-style-type: none;">'
 			i=0
 			print("  - Retrieved {} files".format(str(len(results))))
+			sys.stdout.flush()
 			for it in sorted(sr.keys()):
 				i+=1;type=''
 				item=sr[it]
@@ -284,8 +295,10 @@ def search_local_lib(value,library):
 			for entry in db:
 				path=db[entry]['path']
 				print("* Searching library {}".format(entry))
+				sys.stdout.flush()
 				res=folder_to_list(path,'all',value)	
 				print("  - Retrieved {} files".format(str(len(res))))
+				sys.stdout.flush()
 				results+=res	
 			sr=sortbyname(results)	
 			html='<ul style="margin-bottom: 2px;margin-top: 3px; list-style-type: none;">'
@@ -305,7 +318,8 @@ def search_local_lib(value,library):
 		eel.load_local_results(html)	
 		return
 	except BaseException as e:
-		Print.error('Exception: ' + str(e))			
+		Print.error('Exception: ' + str(e))
+		sys.stdout.flush()	
 		
 @eel.expose
 def get_libraries(): 
@@ -325,7 +339,8 @@ def get_libraries():
 		htmlcode+='</select>'		
 		return htmlcode
 	except BaseException as e:
-		Print.error('Exception: ' + str(e))		
+		Print.error('Exception: ' + str(e))	
+		sys.stdout.flush()		
 		
 @eel.expose
 def get_drive_libraries(): 
@@ -345,6 +360,7 @@ def get_drive_libraries():
 		return htmlcode
 	except BaseException as e:
 		Print.error('Exception: ' + str(e))		
+		sys.stdout.flush()		
 		
 def search_remote_lib(value,library): 
 	if library=='None':
@@ -361,6 +377,7 @@ def search_remote_lib(value,library):
 			path=db[library]['path']
 			TD=db[library]['TD_name']
 			print("* Searching library {}".format(library))
+			sys.stdout.flush()			
 			response=DrivePrivate.search_folder(path,TD=TD,filter=value,Pick=False)
 			if response!=False:
 				results+=response			
@@ -389,6 +406,7 @@ def search_remote_lib(value,library):
 				path=db[entry]['path']
 				TD=db[entry]['TD_name']
 				print("* Searching library {}".format(entry))
+				sys.stdout.flush()				
 				response=DrivePrivate.search_folder(path,TD=TD,filter=value,Pick=False)
 				if response!=False:
 					results+=response
@@ -414,7 +432,8 @@ def search_remote_lib(value,library):
 		eel.load_remote_results(html)
 		return	
 	except BaseException as e:
-		Print.error('Exception: ' + str(e))					
+		Print.error('Exception: ' + str(e))		
+		sys.stdout.flush()		
 def sortbyname(files):
 	results={};
 	for f in files:
@@ -447,6 +466,7 @@ def getfname():
 			]
 	)	
 	print('\nLoaded: '+filename)
+	sys.stdout.flush()	
 	return str(filename)
 	
 @eel.expose
@@ -519,6 +539,7 @@ def showicon(filename):
 		# else:
 			# filename=globalocalpath
 	print('* Seeking icon')
+	sys.stdout.flush()	
 	# print(filename)
 	try:
 		if filename.endswith('.nsp')or filename.endswith('.nsx') or filename.endswith('.nsz'):
@@ -545,6 +566,7 @@ def showicon(filename):
 		return
 	except BaseException as e:
 		Print.error('Exception: ' + str(e))
+		sys.stdout.flush()		
 		iconurl=retrieve_icon_from_server(filename)
 		if iconurl!=False:
 			eel.setImage(iconurl)
@@ -600,6 +622,7 @@ def showicon_remote(filename):
 def getinfo(filename,remotelocation=False):
 	filename=html.unescape(filename)
 	print('* Retrieving Game Information')
+	sys.stdout.flush()	
 	if remotelocation == False:
 		if filename.endswith('.nsp')or filename.endswith('.nsx') or filename.endswith('.nsz'):
 			f = Fs.ChromeNsp(filename, 'rb')
@@ -883,6 +906,7 @@ def getinfo(filename,remotelocation=False):
 @eel.expose	
 def getfiletree(ID):
 	print('* Generating BaseID FileTree from DB')
+	sys.stdout.flush()
 	feed=''
 	try:
 		message,baselist,updlist,dlclist=nutdb.BaseID_tree(ID,printinfo=False)	
@@ -893,6 +917,7 @@ def getfiletree(ID):
 @eel.expose	
 def getcheats(ID):
 	print('* Seeking cheats from DB')
+	sys.stdout.flush()	
 	feed=''
 	try:
 		cheatID_list=nutdb.get_content_cheats(ID)	
@@ -915,12 +940,14 @@ def getcheats(ID):
 	except:
 			feed=html_feed(feed,1,message=str('LIST OF CHEATS: '))		
 			feed=html_feed(feed,2,message=str('- Cheats not found'))			
-	print('  DONE')		
+	print('  DONE')	
+	sys.stdout.flush()	
 	return feed
 
 def getfiledata(filename,remotelocation=False):
 	filename=html.unescape(filename)
 	print('* Generating Titles File Data')
+	sys.stdout.flush()	
 	if remotelocation != False:
 		global globalpath; global globalremote
 		if globalpath!=filename:
@@ -951,6 +978,7 @@ def getfiledata(filename,remotelocation=False):
 def getnacpdata(filename,remotelocation=False):
 	filename=html.unescape(filename)
 	print('* Reading Data from Nacp')
+	sys.stdout.flush()	
 	if remotelocation != False:
 		global globalpath; global globalremote
 		if globalpath!=filename:
@@ -989,6 +1017,7 @@ def getnacpdata(filename,remotelocation=False):
 def getnpdmdata(filename,remotelocation=False):
 	filename=html.unescape(filename)
 	print('* Reading Data from Npdm')
+	sys.stdout.flush()	
 	if remotelocation != False:
 		global globalpath; global globalremote
 		if globalpath!=filename:
@@ -1022,6 +1051,7 @@ def getnpdmdata(filename,remotelocation=False):
 def getcnmtdata(filename,remotelocation=False):
 	filename=html.unescape(filename)
 	print('* Reading Data from Cnmt')
+	sys.stdout.flush()	
 	if remotelocation != False:
 		global globalpath; global globalremote
 		if globalpath!=filename:
@@ -1054,6 +1084,7 @@ def getcnmtdata(filename,remotelocation=False):
 def getverificationdata(filename,remotelocation=False):
 	filename=html.unescape(filename)
 	print('* Verifying files')
+	sys.stdout.flush()	
 	if filename.endswith('.nsp')or filename.endswith('.nsx') or filename.endswith('.nsz'):
 		f = Fs.ChromeNsp(filename, 'rb')
 	elif filename.endswith('.xci') or filename.endswith('.xcz'):	
@@ -1074,8 +1105,6 @@ def getverificationdata(filename,remotelocation=False):
 	return	
 
 def server(port='0.0.0.0',host='localhost',videoplayback=True,ssl=False,noconsole=False):
-	debug_folder=os.path.join(ztools_dir,'_debug_')
-	flag_file=os.path.join(debug_folder,'flag')	
 	with open(flag_file,'wt') as tfile:
 		if noconsole==True:	
 			tfile.write('True')
@@ -1104,22 +1133,23 @@ def server(port='0.0.0.0',host='localhost',videoplayback=True,ssl=False,noconsol
 			port=int(port)
 		except:
 			port=8000
-	About()
+	About(noconsole)
 	if host=='0.0.0.0':
 		h_='serverdomain'
 	else:
 		h_=str(host)
 	if ssl_cert!=False and ssl_key!=False:
 		print("Launched in https://{}:{}/nscb.html".format(h_,port))	
+		sys.stdout.flush()		
 	else:
 		print("Launched in http://{}:{}/nscb.html".format(h_,port))
+		sys.stdout.flush()		
 	while True:
 		try:
 			eel.start('nscb.html', mode=False,port=port,host=host,ssl_cert=ssl_cert,ssl_key=ssl_key)			
 		except:pass
 			
 def start(browserpath='auto',videoplayback=True,height=800,width=740,port=8000,host='localhost',noconsole=False):
-	debug_folder=os.path.join(ztools_dir,'_debug_')
 	flag_file=os.path.join(debug_folder,'flag')	
 	with open(flag_file,'wt') as tfile:
 		if noconsole==True:	
@@ -1152,14 +1182,17 @@ def start(browserpath='auto',videoplayback=True,height=800,width=740,port=8000,h
 	try:
 		if browserpath == 'default':
 			print("Launched using default system browser")
+			sys.stdout.flush()			
 			eel.start('main.html', mode='default', size=(height, width),port=port,host=host)		
 		elif str(browserpath).lower() == 'false' or str(browserpath).lower() == 'none':
-			About()
+			About(noconsole)
 			if host=='0.0.0.0':
 				print("Launched in http://{}:{}/main.html".format('localhost',port))
 				print("Launched in http://{}:{}/main.html".format('127.0.0.1',port))
+				sys.stdout.flush()				
 			else:
 				print("Launched in http://{}:{}/main.html".format(host,port))
+				sys.stdout.flush()				
 			if permanent==True:
 				while True:
 					try:
@@ -1167,8 +1200,9 @@ def start(browserpath='auto',videoplayback=True,height=800,width=740,port=8000,h
 					except:pass
 		elif browserpath != 'auto' and os.path.exists(browserpath) and not browserpath.endswith('.ink'):
 			eel.browsers.set_path('chrome', browserpath)
-			About()
+			About(noconsole)
 			print("Launched using: "+browserpath)
+			sys.stdout.flush()			
 			eel.start('main.html', mode='chrome', size=(height, width),port=port,host=host)
 		elif browserpath != 'auto' and browserpath.endswith('.lnk') and sys.platform in ['win32', 'win64']:
 			chrpath=os.path.join(ztools_dir,'chromium')
@@ -1179,41 +1213,49 @@ def start(browserpath='auto',videoplayback=True,height=800,width=740,port=8000,h
 				browserpath=os.path.join(chrpath_alt,browserpath)
 			elif not os.path.exists(browserpath) and sys.platform == 'win32':
 				print(".lnk file doesn't exist")
+				sys.stdout.flush()				
 				return False
 			shell = win32com.client.Dispatch("WScript.Shell")
 			browserpath = shell.CreateShortCut(browserpath)
 			browserpath=browserpath.Targetpath	
 			eel.browsers.set_path('chrome', browserpath)
-			About()
+			About(noconsole)
 			print("Launched using: "+browserpath)
+			sys.stdout.flush()			
 			eel.start('main.html', mode='chrome', size=(height, width),port=port,host=host)			
 		elif os.path.exists(chromiumpath):
 			eel.browsers.set_path('chrome', chromiumpath)
-			About()
+			About(noconsole)
 			print("Launched using: "+chromiumpath)
+			sys.stdout.flush()			
 			eel.start('main.html', mode='chrome', size=(height, width),port=port,host=host)		
 		elif os.path.exists(chromiumpath_alt):	
 			eel.browsers.set_path('chrome', chromiumpath_alt)
-			About()
+			About(noconsole)
 			print("Launched using: "+chromiumpath_alt)
+			sys.stdout.flush()			
 			eel.start('main.html', mode='chrome', size=(height, width),port=port,host=host)		
 		elif os.path.exists(slimpath):
 			eel.browsers.set_path('chrome', slimpath)
-			About()
+			About(noconsole)
 			print("Launched using: "+slimpath)
+			sys.stdout.flush()			
 			eel.start('main.html', mode='chrome', size=(height, width),port=port,host=host)		
 		elif os.path.exists(slimpath_alt):	
 			eel.browsers.set_path('chrome', slimpath_alt)
-			About()
+			About(noconsole)
 			print("Launched using: "+slimpath_alt)
+			sys.stdout.flush()			
 			eel.start('main.html', mode='chrome', size=(height, width),port=port,host=host)						
 		else:
 			try:
-				About()
+				About(noconsole)
 				print("Launched using Chrome Installation")
+				sys.stdout.flush()				
 				eel.start('main.html', mode='chrome', size=(height, width),port=port,host=host)
 			except EnvironmentError:
 				print("Chrome wasn't detected. Launched using Windows Edge with limited compatibility")	
+				sys.stdout.flush()				
 				if sys.platform in ['win32', 'win64'] and int(platform.release()) >= 10:
 					# print(platform.release())
 					eel.start('main.html', mode='edge', size=(height, width),port=port,host=host)
@@ -1231,5 +1273,6 @@ def start(browserpath='auto',videoplayback=True,height=800,width=740,port=8000,h
 				# Print.error('Exception: ' + str(e))
 				pass
 			print("User closed the program")
+			sys.stdout.flush()			
 			sys.exit()
 		except:pass
