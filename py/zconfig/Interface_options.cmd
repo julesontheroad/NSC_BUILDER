@@ -57,6 +57,6 @@ set "host=localhost"
 ::**************************************************************
 ::Noconsole
 ::**************************************************************
-::True -> Dettach gui from console
-::False -> Attach gui to console
+::true -> Dettach gui from console
+::false -> Attach gui to console
 set "noconsole=true"
