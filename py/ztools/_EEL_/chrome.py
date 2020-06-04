@@ -20,7 +20,7 @@ def find_path():
     if sys.platform in ['win32', 'win64']:
         return _find_chrome_win()
     elif sys.platform == 'darwin':
-        return _find_chrome_mac()
+        return _find_chrome_mac() or _find_chromium_mac()
     elif sys.platform.startswith('linux'):
         return _find_chrome_linux()
     else:
@@ -38,6 +38,16 @@ def _find_chrome_mac():
         return alternate_dirs[0] + '/Contents/MacOS/Google Chrome'
     return None
 
+def _find_chromium_mac():
+    default_dir = r'/Applications/Chromium.app/Contents/MacOS/Chromium'
+    if os.path.exists(default_dir):
+        return default_dir
+    # use mdfind ci to locate Chromium in alternate locations and return the first one
+    name = 'Chromium.app'
+    alternate_dirs = [x for x in sps.check_output(["mdfind", name]).decode().split('\n') if x.endswith(name)]
+    if len(alternate_dirs):
+        return alternate_dirs[0] + '/Contents/MacOS/Chromium'
+    return None
 
 def _find_chrome_linux():
     import whichcraft as wch
@@ -51,7 +61,6 @@ def _find_chrome_linux():
         if chrome is not None:
             return chrome
     return None
-
 
 def _find_chrome_win():
     import winreg as reg

@@ -125,6 +125,12 @@ def call_library(args,xarg=None):
 							debug_write(True)
 					except:
 						debug_write(False)
+				if library=='Interface' and fimport=='server':
+					try:
+						if str(var[4]).lower()=='true':
+							debug_write(True)
+					except:
+						debug_write(False)						
 				function = getattr(__import__(library,fromlist=[fimport]), fimport)	
 				if var==None:
 					vret=function()
