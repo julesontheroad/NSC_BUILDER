@@ -515,12 +515,16 @@ function set_cheats(data) {
 }
 
 function set_debug() {
-	console.log('test');
+	var str = window.location.href;
+	var res = str.split(":");var str =res[2]
+	var res = str.split("/");var port =res[0]
+	var tlog='_debug_/log_'+port+'.txt'
+	<!-- console.log(tlog); -->
     var xhr = new XMLHttpRequest();
     xhr.onload = function () {
 		document.getElementById("debug_data").textContent = this.responseText;
     };
-    xhr.open('GET', '_debug_/log.txt');
+    xhr.open('GET', tlog);
     xhr.send();	
 }
 
