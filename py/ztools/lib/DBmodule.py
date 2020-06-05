@@ -224,12 +224,22 @@ class FWDB():
 		for i in fwfiles:
 			for j in dump:
 				entry=dump[j]
-				files=entry['specific']
-				if i in files:
-					FW=j
-					if doprint==True:
-						print('- Xci includes firmware: '+FW)
-					return FW
+				try:
+					files=entry['specific']
+					if i in files:
+						FW=j
+						if doprint==True:
+							print('- Xci includes firmware: '+FW)
+						return FW
+				except:
+					try:
+						RSVcnmt=entry['RSVcnmt']
+						if str(RSVcnmt).lower()==str(i).lower():
+							FW=j
+							if doprint==True:
+								print('- Xci includes firmware: '+FW)
+							return FW
+					except:pass		
 		fwfiles.sort()
 		for j in dump:
 			entry=dump[j]
