@@ -21,16 +21,6 @@
 		eel.get_libraries()(set_local_libraries)
 		eel.get_drive_libraries()(set_remote_libraries)
 		});	
-		<!-- var slocalbox_input = document.getElementById("slocalbox"); -->
-		<!-- // Execute a function when the user releases a key on the keyboard -->
-		<!-- slocalbox_input.addEventListener("keyup", function(event) { -->
-		  <!-- // Number 13 is the "Enter" key on the keyboard -->
-		  <!-- if (event.keyCode === 13) { -->
-			<!-- // Cancel the default action, if needed -->
-			<!-- event.preventDefault(); -->
-			<!-- // Trigger the button element with a click -->
-			<!-- document.getElementById("slocalbox").getElementsByClassName("button input-search-button").click(); -->
-		  <!-- }			 -->
 	</script>
 </head>
 <body  class="bg-lightGray fg-white h-vh-100 m4-cloak">
@@ -215,13 +205,13 @@
 					<pre id="debug_data" style="width:90vw"></pre>					
 			</div></div></div>							
 
-				<div class="cell" id="_LocalLibrary_" style="font-size: 1.84vh;display:none;overflow-z:auto;"><div><div style="width: 55vw;margin-left:0;margin-right:auto;">
-					<p style="margin-bottom: 2px;margin-top: 2px;font-size: 2.4vh"><strong>Local Libraries: </strong></p>	
-					<div class="row" style="width:130vw">
-						<div class="cell"  style="width: 70vw">
+				<div class="cell" id="_LocalLibrary_" style="font-size: 1.84vh;display:none;"><div><div style="width: 55vw;margin-left:0;margin-right:auto;">
+					<p style="margin-bottom: 2px;margin-top: 2px;font-size: 2.4vh;position: fixed; z-index: 1;"><strong>Local Libraries: </strong></p>	
+					<div class="row bg-lightGray" style="width:130vw;position: fixed; z-index: 1;">
+						<div class="cell bg-lightGray"  style="width: 70vw">
 							<input type="text" data-role="input" data-search-button="true" data-search-button-click="custom" data-on-search-button-click="search_local_lib" id="slocalbox" onkeyup="search_table('slocalbox','_search_results_')">	
 						</div>	
-						<div class="cell" style="width:25vw" id="_local_lib_tags_">			
+						<div class="cell bg-lightGray" style="width:25vw" id="_local_lib_tags_">			
 							<select class="bg-cobalt fg-white" data-role="select" style="width:25vw" id="_local_lib_select_">
 							<option value="all" selected="selected">All</option>
 							</select>
@@ -229,17 +219,17 @@
 					<div class="row" style="width:100vw">
 						<div data-role="activity" data-type="metro" data-style="dark" id="local_activity" style="margin-top:200px;visibility:hidden;display:none"></div>
 					</div>						
-					<div class="row" style="width:100vw;display:none;" id="_search_results_">
+					<div class="row" style="width:100vw;display:none;overflow-z:auto;margin-top: 50px;" id="_search_results_">
 					</div>
 			</div></div></div>	
 			
 				<div class="cell" id="_RemoteLibrary_" style="font-size: 2vh;display:none;overflow-z:auto;"><div><div style="width: 55vw;margin-left:0;margin-right:auto;">
-					<p style="margin-bottom: 2px;margin-top: 2px;font-size: 2.4vh"><strong>Cloud Libraries: </strong></p>	
-					<div class="row" style="width:130vw">
-						<div class="cell"  style="width: 70vw">
+					<p style="margin-bottom: 2px;margin-top: 2px;font-size: 2.4vh;position: fixed; z-index: 1;"><strong>Cloud Libraries: </strong></p>	
+					<div class="row  bg-lightGray" style="width:130vw;position: fixed; z-index: 1;">
+						<div class="cell  bg-lightGray"  style="width: 70vw">
 							<input type="text" data-role="input" data-search-button="true" data-search-button-click="custom" data-on-search-button-click="search_remote_lib" id="remotebox"  onkeyup="search_table('remotebox','_search_results2_')">	
 						</div>	
-						<div class="cell" style="width:25vw" id="_remote_lib_tags_">			
+						<div class="cell bg-lightGray" style="width:25vw" id="_remote_lib_tags_">			
 							<select class="bg-cobalt fg-white" data-role="select" style="width:25vw" id="_remote_lib_select_">
 							<option value="all" selected="selected">All</option>
 							</select>
@@ -247,7 +237,7 @@
 					<div class="row" style="width:100vw">
 						<div data-role="activity" data-type="metro" data-style="dark" id="remote_activity" style="margin-top:200px;visibility:hidden;display:none"></div>
 					</div>							
-					<div class="row" style="width:100vw;display:none;" id="_search_results2_">
+					<div class="row" style="width:100vw;display:none;overflow-z:auto;margin-top: 50px;" id="_search_results2_">
 					</div>	
 			</div></div></div>	
 
@@ -814,6 +804,8 @@ document.getElementById("_viewspace_").style.height = "80vh";
 function get_local_libraries(){	
 	eel.get_libraries()(set_local_libraries)
 	show_local_libraries()
+	var selected = document.getElementById("_local_lib_select_").value
+	set_local_lib_cache(selected)
 }
 
 function set_local_libraries(data){	
@@ -854,6 +846,18 @@ async  function search_local_lib(value){
 	await eel.call_search_local_lib(value,selected)	
 }
 
+function set_local_lib_cache(name) {
+	var lib='_cache_/_locallib_/'+name
+    var xhr = new XMLHttpRequest();
+    xhr.onload = function () {
+		if (this.status!=404){
+			load_local_results(this.responseText);
+		};
+    };
+    xhr.open('GET', lib);
+    xhr.send();
+}
+
 eel.expose(load_local_results)
 function load_local_results(data){
 	<!-- console.log(data) -->
@@ -869,6 +873,8 @@ function load_local_results(data){
 function get_remote_libraries(){	
 	eel.get_drive_libraries()(set_remote_libraries)
 	show_remote_libraries()
+	var selected = document.getElementById("_remote_lib_select_").value
+	set_remote_lib_cache(selected)	
 }
 
 function set_remote_libraries(data){	
@@ -908,6 +914,18 @@ async function search_remote_lib(value){
 	var selected = document.getElementById("_remote_lib_select_").value
 	<!-- console.log(selected) -->
 	eel.call_search_remote_lib(value,selected)
+}
+
+function set_remote_lib_cache(name) {
+	var lib='_cache_/_remotelib_/'+name
+    var xhr = new XMLHttpRequest();
+    xhr.onload = function () {
+		if (this.status!=404){
+			load_remote_results(this.responseText);
+		};
+    };
+    xhr.open('GET', lib);
+    xhr.send();
 }
 
 eel.expose(load_remote_results)

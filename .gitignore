@@ -67,3 +67,4 @@ py/zconfig/key.pem
 py/zconfig/update_dbs_options.cmd
 py/update_dbs.bat
 py/ztools/web/_debug_/*
+py/ztools/web/_cache_/*
