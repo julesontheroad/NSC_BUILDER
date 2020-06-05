@@ -221,7 +221,7 @@ class uXci(File):
 
 	def get_FW_number(self,printdata=False):
 		import sq_tools
-		fwver=0
+		fwver=0;unique=None
 		for nspF in self.hfs0:
 			if str(nspF._path)=="update":
 				for nca in nspF:				
@@ -239,12 +239,13 @@ class uXci(File):
 									version=int.from_bytes(titleversion, byteorder='little')
 									if fwver<version:
 										fwver=version
+										unique=str(nca._path)				
 									if printdata!=False:	
 										FWnumber=sq_tools.getFWRangeRSV(version)
-										print('- {}: {}'.format(str(nca._path),str(FWnumber)))
+										print('- {}: {}'.format(str(nca._path),str(FWnumber)))		
 		FWnumber=sq_tools.getFWRangeRSV(fwver)		
 		FWnumber=FWnumber[1:-1]
-		return 	FWnumber,fwver							
+		return 	FWnumber,fwver,unique						
 									
 class nXci(File):
 	def __init__(self, file = None):

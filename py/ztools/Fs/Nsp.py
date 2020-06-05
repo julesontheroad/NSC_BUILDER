@@ -10259,3 +10259,29 @@ class Nsp(Pfs0):
 		if verdict == True:	
 			message=('VERDICT: {} FILE IS CORRECT').format(token);print(message);feed+=message+'\n'
 		return 	verdict,feed		
+		
+	def get_FW_number(self,printdata=False):
+		import sq_tools
+		fwver=0;unique=None
+		for nca in self:		
+			if type(nca) == Nca:	
+				if 	str(nca.header.contentType) == 'Content.META':
+					for f in nca:
+						for cnmt in f:			
+							nca.rewind()
+							f.rewind()
+							cnmt.rewind()						
+							titleid=cnmt.readInt64()
+							titleid2 = str(hx(titleid.to_bytes(8, byteorder='big'))) 	
+							titleid2 = titleid2[2:-1]							
+							titleversion = cnmt.read(0x4)	
+							version=int.from_bytes(titleversion, byteorder='little')
+							if fwver<version:
+								fwver=version
+								unique=str(nca._path)								
+							if printdata!=False:	
+								FWnumber=sq_tools.getFWRangeRSV(version)
+								print('- {}: {}'.format(str(nca._path),str(FWnumber)))
+		FWnumber=sq_tools.getFWRangeRSV(fwver)		
+		FWnumber=FWnumber[1:-1]
+		return 	FWnumber,fwver,unique			
