@@ -167,7 +167,30 @@ class FWDB():
 		app_json = json.dumps(dump, indent=4)
 		with open(fwdb, 'w') as json_file:
 		  json_file.write(app_json)	
-		print('Updated firmware json')	
+		print('Updated firmware json')
+
+	def add_real_number(k,filepath):	
+		dump={};files=list()
+		if os.path.exists(fwdb):
+			with open(fwdb) as json_file:	
+				data = json.load(json_file)		
+				for i in data:	
+					dict=data[i]
+					if len(dict.items())>0:
+						dump[i]=dict
+					else: return False	
+		else: return False	
+		if k in dump.keys():
+			FW,fwver,unique=FWDB.read_fw(filepath,add=False,doprint=True)	
+			entry=dump[k]
+			entry['RSV']=fwver
+			entry['ExactFirm']=FW
+			entry['RSVcnmt']=unique			
+			dump[k]=entry			
+		app_json = json.dumps(dump, indent=4)
+		with open(fwdb, 'w') as json_file:
+		  json_file.write(app_json)	
+		print('Updated firmware json')			
 		
 	def detect_xci_fw(filepath,doprint=True,remote=False):
 		import sq_tools	
@@ -218,7 +241,7 @@ class FWDB():
 					print('- Xci includes firmware: '+FW)
 				return FW
 		try:
-			FW=read_fw(filepath,add=True,doprint=False)		
+			FW,fwver,unique=FWDB.read_fw(filepath,add=True,doprint=False)
 			if doprint==True:
 				print('- Xci includes firmware: '+FW)
 			return FWnumber
@@ -228,16 +251,27 @@ class FWDB():
 		return 'UNKNOWN'	
 			
 	def read_fw(filepath,add=False,doprint=True):
-		from Fs import uXci as fwFS
-		f=fwFS(filepath)
-		FWnumber,fwver=f.get_FW_number()
-		f.close()
-		if doprint==True:
-			print(str(fwver)+" ({})".format(FWnumber))
-		if add==True:
-			FWDB.add(FWnumber,filepath)
-			FWDB.add_specific()
-		return FWnumber
+		if filepath.endswith('.xci'):
+			from Fs import uXci as fwFS
+			f=fwFS(filepath)
+			FWnumber,fwver,unique=f.get_FW_number()
+			f.close()
+			if doprint==True:
+				print(str(fwver)+" ({})".format(FWnumber))
+			if add==True:
+				FWDB.add(FWnumber,filepath)
+				FWDB.add_specific()
+		elif filepath.endswith('.nsp'):
+			from Fs import Nsp as fwFS	
+			f=fwFS(filepath)			
+			FWnumber,fwver,unique=f.get_FW_number()
+			f.close()
+			if doprint==True:
+				print(str(fwver)+" ({})".format(FWnumber))
+			if add==True:
+				FWDB.add(FWnumber,filepath)
+				FWDB.add_specific()			
+		return FWnumber,fwver,unique
 	
 class Dict(dict):
 	START_FLAG = b'# FILE-DICT v1\n'
