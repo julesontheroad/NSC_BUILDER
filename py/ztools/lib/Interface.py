@@ -538,6 +538,8 @@ def addtodrive(filename):
 					name=DrivePrivate.add_to_drive(url=filename,filepath=libpath,makecopy=True,TD=TD)
 					filename=('{}/{}').format(libpath,name)
 					ID,name,type,size,md5,remote=DrivePrivate.get_Data(filename,TD=TD,Print=False)
+				else:
+					filename=testpath
 				globalremote=remote
 		return filename
 
