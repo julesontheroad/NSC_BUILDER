@@ -323,7 +323,7 @@ async function start_from_link(){
 	if (fname!=null && fname!=""){
 		show_gameinfo()
 		resetInfo()	
-		start2_remote(fname)
+		eel.addtodrive(fname)(start2_remote)	
 	}
 }
 
@@ -357,7 +357,8 @@ async function start2(fname){
 	eel.call_get_verification_data(fname)
 }
 
-async function start2_remote(fname){	
+async function start2_remote(fname){
+	console.log(fname)
 	eel.call_showicon_remote(fname)	
 	eel.call_getinfo(fname,"True")
 	eel.call_get_adv_filelist(fname,"True")
