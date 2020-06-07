@@ -23,6 +23,7 @@ import os.path
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
+from oauth2client.service_account import ServiceAccountCredentials
 import Hex
 import sq_tools
 from Drive import Public
@@ -122,43 +123,58 @@ def get_html_header(access_token,off1=None,off2=None):
 	return header
 	
 class auth():
-	def __init__(self,SCOPES=None,token='drive',SCOPES_type='default',headless=True):
-		tk = os.path.join(credentials_dir, token)	
-		alt_json=os.path.join(credentials_dir, (token+".json"))
-		if os.path.exists(alt_json):
-			credentials_json=alt_json
-		else:
-			credentials_json=os.path.join(credentials_dir, 'credentials.json')
+	def __init__(self,SCOPES=None,token='drive',SCOPES_type='default',headless=True,apiver='v3',json_file=None):
 		if SCOPES_type!='default':
-			SCOPES=get_scopes(SCOPES_type)
+			SCOPES=get_scopes(SCOPES_type)	
 		if SCOPES!=None:
 			if os.path.exists(tk):
 				try: 
 					os.remove(tk)
 				except:pass	
 		else:
-			SCOPES = ['https://www.googleapis.com/auth/drive']		
-		creds = None
+			SCOPES = ['https://www.googleapis.com/auth/drive']				
+		creds = None;json_auth=False		
+		tk = os.path.join(credentials_dir, token)	
+		alt_json=os.path.join(credentials_dir, (token+".json"))		
+		if os.path.exists(alt_json):
+			credentials_json=alt_json
+		else:	
+			credentials_json=os.path.join(credentials_dir, 'credentials.json')			
+		if json_file!=None:		
+			tk=json_file			
 		if os.path.exists(tk):
-			with open(tk, 'rb') as tok:
-				creds = pickle.load(tok)
+			try:
+				with open(tk) as jfile:						
+					test=json.load(jfile)	
+				json_auth=True
+				apiver='v3'
+			except:
+				with open(tk, 'rb') as tok:
+					creds = pickle.load(tok)							
 		# If there are no (valid) credentials available, let the user log in.
-		if not creds or not creds.valid:
-			if creds and creds.expired and creds.refresh_token:
-				creds.refresh(Request())
-			else:
-				flow = InstalledAppFlow.from_client_secrets_file(
-					credentials_json, SCOPES)
-				if headless==False:	
-					creds = flow.run_local_server(port=0)
+		if json_auth==False:		
+			if not creds or not creds.valid:
+				if creds and creds.expired and creds.refresh_token:
+					creds.refresh(Request())
 				else:
-					creds = flow.run_console()
-			# Save the credentials for the next run
-			with open(tk, 'wb') as tok:
-				pickle.dump(creds, tok)
-
-		self.drive_service = build('drive', 'v3', credentials=creds)
-		self.access_token = creds.token
+					flow = InstalledAppFlow.from_client_secrets_file(
+						credentials_json, SCOPES)
+					if headless==False:	
+						creds = flow.run_local_server(port=0)
+					else:
+						creds = flow.run_console()
+				# Save the credentials for the next run
+				with open(tk, 'wb') as tok:
+					pickle.dump(creds, tok)
+			self.drive_service = build('drive', apiver, credentials=creds)
+			self.access_token = creds.token
+		else:		
+			if os.path.exists(token):				
+				creds = ServiceAccountCredentials.from_json_keyfile_name(token, scopes=SCOPES)
+			elif os.path.exists(tk):		
+				creds = ServiceAccountCredentials.from_json_keyfile_name(tk, scopes=SCOPES)					
+			self.drive_service = build('drive', apiver, credentials=creds)
+			self.access_token = None
 
 class location():
 	def __init__(self,ID=None,route=None,TD_ID=None,TD_Name=None,token_name=None):
@@ -763,7 +779,7 @@ def add_to_drive(url=None,ID=None,filepath=None,makecopy=False,TD=None):
 			remote=location(route=filepath)				
 		else:
 			remote=location(route=filepath,TD_Name=TD)		
-		remote=location(route=filepath)
+		# remote=location(route=filepath)
 		drive=remote.drivename
 		FolderID=remote.ID
 		if makecopy!=True:

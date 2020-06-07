@@ -68,3 +68,4 @@ py/zconfig/update_dbs_options.cmd
 py/update_dbs.bat
 py/ztools/web/_debug_/*
 py/ztools/web/_cache_/*
+py/zconfig/remote_cache_location.txt

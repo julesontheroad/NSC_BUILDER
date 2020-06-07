@@ -80,6 +80,7 @@ else:
 
 local_lib_file = os.path.join(zconfig_dir, 'local_libraries.txt')
 remote_lib_file = os.path.join(zconfig_dir, 'remote_libraries.txt')
+cache_lib_file= os.path.join(zconfig_dir, 'remote_cache_location.txt')
 download_lib_file = os.path.join(zconfig_dir, 'download_libraries.txt')
 ssl_cert= os.path.join(zconfig_dir, 'certificate.pem')
 ssl_key= os.path.join(zconfig_dir, 'key.pem')
@@ -135,7 +136,35 @@ def get_library_from_path(tfile,filename):
 			break
 		else:
 			pass
+	if lib==None:
+		db=libraries(cache_lib_file)
+		TD=None;lib=None;path="null"
+		for entry in db:
+			path=db[entry]['path']
+			if filename.startswith(path):
+				TD=db[entry]['TD_name']
+				lib=entry
+				libpath=path
+				break
+			else:
+				pass		
+	if TD=='':
+		TD=None			
 	return lib,TD,libpath
+
+def get_cache_lib():
+	db=libraries(cache_lib_file)
+	TD=None;lib=None;path="null";libpath=None
+	for entry in db:
+		path=db[entry]['path']
+		TD=db[entry]['TD_name']
+		lib=entry
+		libpath=path
+		break
+	if TD=='':
+		TD=None
+	return lib,TD,libpath	
+	
 	
 def deepcheck_path(path1,path2,accuracy=0.9):	
 	path1=path1.lower()	
@@ -492,6 +521,25 @@ def call_showicon_remote(filename):
 	global threads
 	threads.append(eel.spawn(showicon_remote,filename))	
 	return
+	
+@eel.expose	
+def addtodrive(filename):
+	if os.path.exists(cache_lib_file):
+		lib,TD,libpath=get_cache_lib()
+		if lib!=None:
+			file_id, is_download_link=DrivePublic.parse_url(filename)		
+			if is_download_link:
+				remote=DrivePrivate.location(route=libpath,TD_Name=TD)		
+				result=remote.drive_service.files().get(fileId=file_id, fields="name,mimeType").execute()		
+				name=result['name']	
+				testpath=('{}/{}').format(libpath,name)
+				remote=DrivePrivate.location(route=testpath,TD_Name=TD)	
+				if remote.name==None:			
+					name=DrivePrivate.add_to_drive(url=filename,filepath=libpath,makecopy=True,TD=TD)
+					filename=('{}/{}').format(libpath,name)
+					ID,name,type,size,md5,remote=DrivePrivate.get_Data(filename,TD=TD,Print=False)
+				globalremote=remote
+		return filename
 
 @eel.expose
 def call_getinfo(filename,remotelocation=False):
