@@ -302,7 +302,7 @@ def parsetags(filepath):
 			# print(fileid+' '+str(fileversion)+' '+cctag)		
 	return str(fileid),str(fileversion),cctag,int(nG),int(nU),int(nD),baseid
 	
-def folder_to_list(ifolder,extlist=['nsp'],filter=False):	
+def folder_to_list(ifolder,extlist=['nsp'],filter=False,alfanumeric=False):	
 	ruta=ifolder
 	filelist=list()
 	if str(extlist)=='all' and os.path.isdir(ruta):
@@ -352,6 +352,9 @@ def folder_to_list(ifolder,extlist=['nsp'],filter=False):
 							if binbin.lower() not in filename.lower():
 								filelist.append(filename)
 				except:pass			
+		if alfanumeric==True:
+			nl=list([val for val in filelist if not val.isalnum()])
+			filelist=nl	
 	except BaseException as e:
 		nutPrint.error('Exception: ' + str(e))													
 	return filelist
