@@ -1154,7 +1154,10 @@ def getverificationdata(filename,remotelocation=False):
 	eel.set_ver_data(feed)
 	return	
 
-def server(port='0.0.0.0',host='localhost',videoplayback=True,ssl=False,noconsole=False):
+def server(port='0.0.0.0',host='localhost',videoplayback=True,ssl=False,noconsole=False,overwrite=False):
+	if ssl==False:
+		ssl_cert=False
+		ssl_key=False
 	with open(flag_file,'wt') as tfile:
 		if noconsole==True:	
 			tfile.write('True')
@@ -1191,7 +1194,10 @@ def server(port='0.0.0.0',host='localhost',videoplayback=True,ssl=False,noconsol
 		h_='serverdomain'
 	else:
 		h_=str(host)
-	if ssl_cert!=False and ssl_key!=False:
+	if overwrite!=False:
+		print("Launched in {}/nscb.html".format(overwrite))	
+		sys.stdout.flush()				
+	elif ssl_cert!=False and ssl_key!=False:
 		print("Launched in https://{}:{}/nscb.html".format(h_,port))	
 		sys.stdout.flush()		
 	else:
