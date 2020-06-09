@@ -10,6 +10,7 @@ call :program_logo
 ECHO .......................................................
 echo Input "1" to enter into DOWNLOAD mode
 echo Input "2" to enter into FILE-INFO mode
+echo Input "0"  to enter into CONFIGURATION mode
 echo.
 echo Input "N" to go to NEW MODES
 echo Input "L" to go to LEGACY MODES
@@ -21,6 +22,7 @@ if /i "%bs%"=="1" goto DOWNLOADMODE
 if /i "%bs%"=="2" goto INFMODE
 if /i "%bs%"=="N" exit /B
 if /i "%bs%"=="L" goto LegacyMode
+if /i "%bs%"=="0" goto OPT_CONFIG
 goto MAIN
 
 :LegacyMode
@@ -38,6 +40,14 @@ cls
 call :program_logo
 %pycommand% "%nut%" -lib_call Drive.Info Interface
 goto MAIN
+
+::///////////////////////////////////////////////////
+::NSCB_options.cmd configuration script
+::///////////////////////////////////////////////////
+:OPT_CONFIG
+call "%batconfig%" "%op_file%" "%listmanager%" "%batdepend%"
+cls
+goto TOP_INIT
 
 ::///////////////////////////////////////////////////
 ::SUBROUTINES
