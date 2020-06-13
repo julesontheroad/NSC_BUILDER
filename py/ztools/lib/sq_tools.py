@@ -1477,7 +1477,7 @@ def get_mc_isize(filepath=None,files_list=None):
 			files_list=ret_nsp_offsets(filepath)
 		elif filepath.endswith('.xci') or filepath.endswith('.xcz') or filepath.endswith('.xc0'):	
 			files_list=ret_xci_offsets(filepath)
-	else:		
+	if files_list!=None:	
 		for i in range(len(files_list)):
 			entry=files_list[i]
 			size+=int(entry[3])
