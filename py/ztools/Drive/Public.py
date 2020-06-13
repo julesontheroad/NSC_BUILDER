@@ -61,6 +61,7 @@ def parse_url(url, warning=True):
 		is_download_link = parsed.path.endswith('/edit')
 	if is_download_link == False:
 		is_download_link = parsed.path.endswith('/view?usp=drivesdk')
+		
 	file_id = None
 	if is_gdrive and 'id' in query:
 		file_ids = query['id']
@@ -73,10 +74,19 @@ def parse_url(url, warning=True):
 		file_id = match.groups()[0]
 		
 	if is_gdrive and not is_download_link:
+		if url.startswith('https://drive.google.com/open?id='):
+			url=url.replace('https://drive.google.com/open?id=','')	
+		if '/' in url:
+			url=url.split('/')
+			file_id=url[0]
+		else:
+			file_id=url
+		is_download_link=True
+	
+	if is_gdrive and not is_download_link:
 		warnings.warn(
 			'You specified Google Drive Link but it is not the correct link '
-			"to download the file. Maybe you should try: {url}"
-			.format(url='https://drive.google.com/uc?id={}'.format(file_id))
+			"to download the file. Maybe you should try: {url}".format(url='https://drive.google.com/uc?id={}'.format(file_id))
 		)
 	return file_id, is_download_link
 	
@@ -107,6 +117,7 @@ def get_url_from_gdrive_confirmation(contents):
 def is_readable(url,file_id,is_download_link,sess):
 	url_origin=url
 	readable=False
+	output=""
 	while True:
 		res = sess.get(url, stream=True)
 		if 'Content-Disposition' in res.headers:
@@ -231,11 +242,20 @@ class location():
 			self.position=self.position+len(dump)
 		return data	
 	
-def download(url,ofolder,sz=64,trimm=True,file=None):
+def download(url,ofolder,sz=64,trimm=True,file=None,name=None,readable=None):
 	if file==None:
 		file=location(url)
-	res=file.response;readable=file.readable;fname=file.name
+	res=file.response;
+	if readable==None:
+		readable=file.readable;
+	else:
+		readable=True
+	if name==None:
+		fname=file.name
+	else:
+		fname=name
 	file_id=file.ID;
+	# print(file_id)
 	if not readable:
 		return False
 	totsize=file.size
@@ -259,6 +279,8 @@ def download(url,ofolder,sz=64,trimm=True,file=None):
 			if not data:
 				break	
 	t.close()
+	# print(output)
+	return output
 	
 def return_remote(url):
 	file=location(url)

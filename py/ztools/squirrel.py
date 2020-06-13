@@ -37,6 +37,9 @@ from zipfile import ZipFile
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, 'lib')
+try:
+	sys.path.insert(0, 'private')
+except:pass	
 import sq_tools
 import listmanager
 import Keys
