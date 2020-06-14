@@ -2279,6 +2279,7 @@ class ChromeNsp(Pfs0):
 							feed=nacp.par_getLogoType(f.readInt8('little'),feed)							
 							feed=nacp.par_getLogoHandling(f.readInt8('little'),feed)		
 							feed=nacp.par_getRuntimeAddOnContentInstall(f.readInt8('little'),feed)	
+							f.seek(offset+0x30F6)
 							feed=nacp.par_getCrashReport(f.readInt8('little'),feed)	
 							feed=nacp.par_getHdcp(f.readInt8('little'),feed)		
 							feed=nacp.par_getSeedForPseudoDeviceId(f.readInt64('little'),feed)	
@@ -2300,12 +2301,13 @@ class ChromeNsp(Pfs0):
 							feed=nacp.par_getCacheStorageDataAndJournalSizeMax(f.readInt64('little'),feed)		
 							f.seek(offset+0x3188)	
 							feed=nacp.par_getCacheStorageIndexMax(f.readInt64('little'),feed)		
+							f.seek(offset+0x3188)	
 							feed=nacp.par_getPlayLogQueryableApplicationId(f.readInt64('little'),feed)		
 							f.seek(offset+0x3210)	
 							feed=nacp.par_getPlayLogQueryCapability(f.readInt8('little'),feed)	
 							feed=nacp.par_getRepair(f.readInt8('little'),feed)	
 							feed=nacp.par_getProgramIndex(f.readInt8('little'),feed)	
-							feed=nacp.par_getRequiredNetworkServiceLicenseOnLaunch(f.readInt8('little'),feed)	
+							feed=nacp.par_getRequiredNetworkServiceLicenseOnLaunch(f.readInt8('little'),feed)		
 							feed+='</ul>'								
 						except BaseException as e:
 							Print.error('Exception: ' + str(e))							
