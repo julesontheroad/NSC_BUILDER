@@ -386,11 +386,14 @@ def read_nacp(path=None,TD=None,filter=None,file=None,feed='',roma=True):
 						feed=nacp.par_getUserAccountSwitchLock(f.readInt8('little'),feed)		
 						feed=nacp.par_getAddOnContentRegistrationType(f.readInt8('little'),feed)						
 						feed=nacp.par_getContentType(f.readInt8('little'),feed)	
+						f.seek(offset+0x3030)	
 						feed=nacp.par_getParentalControl(f.readInt8('little'),feed)
+						f.seek(offset+0x3034)	
 						feed=nacp.par_getScreenshot(f.readInt8('little'),feed)
 						feed=nacp.par_getVideoCapture(f.readInt8('little'),feed)
 						feed=nacp.par_dataLossConfirmation(f.readInt8('little'),feed)
 						feed=nacp.par_getPlayLogPolicy(f.readInt8('little'),feed)
+						f.seek(offset+0x3038)	
 						feed=nacp.par_getPresenceGroupId(f.readInt64('little'),feed)
 						f.seek(offset+0x3040)
 						listages=list()
@@ -404,6 +407,8 @@ def read_nacp(path=None,TD=None,filter=None,file=None,feed='',roma=True):
 						message='NACP ATTRIBUTES';print(message);feed+=message+'\n'	
 						message='...............................';print(message);feed+=message+'\n'
 						try:
+							feed=html_feed(feed,2,message=str("Nacp Atributes:"))							
+							feed+='<ul style="margin-bottom: 2px;margin-top: 3px">'							
 							feed=nacp.par_getDisplayVersion(f.read(0xF),feed)		
 							f.seek(offset+0x3070)							
 							feed=nacp.par_getAddOnContentBaseId(f.readInt64('little'),feed)
@@ -427,6 +432,7 @@ def read_nacp(path=None,TD=None,filter=None,file=None,feed='',roma=True):
 							feed=nacp.par_getLogoType(f.readInt8('little'),feed)							
 							feed=nacp.par_getLogoHandling(f.readInt8('little'),feed)		
 							feed=nacp.par_getRuntimeAddOnContentInstall(f.readInt8('little'),feed)	
+							f.seek(offset+0x30F6)
 							feed=nacp.par_getCrashReport(f.readInt8('little'),feed)	
 							feed=nacp.par_getHdcp(f.readInt8('little'),feed)		
 							feed=nacp.par_getSeedForPseudoDeviceId(f.readInt64('little'),feed)	
@@ -448,6 +454,7 @@ def read_nacp(path=None,TD=None,filter=None,file=None,feed='',roma=True):
 							feed=nacp.par_getCacheStorageDataAndJournalSizeMax(f.readInt64('little'),feed)		
 							f.seek(offset+0x3188)	
 							feed=nacp.par_getCacheStorageIndexMax(f.readInt64('little'),feed)		
+							f.seek(offset+0x3188)	
 							feed=nacp.par_getPlayLogQueryableApplicationId(f.readInt64('little'),feed)		
 							f.seek(offset+0x3210)	
 							feed=nacp.par_getPlayLogQueryCapability(f.readInt8('little'),feed)	
