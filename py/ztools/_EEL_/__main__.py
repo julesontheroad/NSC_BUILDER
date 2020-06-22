@@ -1,4 +1,3 @@
-from __future__ import print_function
 import sys
 import pkg_resources as pkg
 import PyInstaller.__main__ as pyi
