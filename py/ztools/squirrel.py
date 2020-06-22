@@ -61,6 +61,7 @@ from datetime import datetime
 import math
 import pykakasi
 from Fs.pyNCA3 import NCA3
+from shutil import disk_usage
 
 # SET ENVIRONMENT
 squirrel_dir=os.path.abspath(os.curdir)
@@ -2285,6 +2286,12 @@ if __name__ == '__main__':
 						if os.path.exists(endfile) and os.path.getsize(endfile) == totSize:
 							print('- Placeholder file already exists, skipping...')
 							vskip=True
+						else:
+							v_drive, v_path = os.path.splitdrive(endfile)
+							dsktotal, dskused, dskfree=disk_usage(str(v_drive))	
+							if int(dsktotal)>int(totSize):
+								print("Warning disk space lower than required size. Program will exit")
+								sys.exit()
 						if vskip==False:
 							t = tqdm(total=totSize, unit='B', unit_scale=True, leave=False)
 							outf = open(endfile, 'w+b')
@@ -2352,6 +2359,12 @@ if __name__ == '__main__':
 						if os.path.exists(endfile) and os.path.getsize(endfile) == totSize:
 							print('- Placeholder file already exists, skipping...')
 							vskip=True
+						else:
+							v_drive, v_path = os.path.splitdrive(endfile)
+							dsktotal, dskused, dskfree=disk_usage(str(v_drive))	
+							if int(dsktotal)>int(totSize):
+								print("Warning disk space lower than required size. Program will exit")
+								sys.exit()						
 						if vskip==False:
 							c=0
 							t = tqdm(total=totSize, unit='B', unit_scale=True, leave=False)
@@ -4120,7 +4133,12 @@ if __name__ == '__main__':
 									filename= os.path.join(afolder,filename)
 									shutil.move(filename,ofolder)
 						shutil.rmtree(afolder, ignore_errors=True)
-
+						
+					v_drive, v_path = os.path.splitdrive(endfile)
+					dsktotal, dskused, dskfree=disk_usage(str(v_drive))	
+					if int(dsktotal)>int(totSize):
+						print("Warning disk space lower than required size. Program will exit")
+						sys.exit()					
 					t = tqdm(total=totSize, unit='B', unit_scale=True, leave=False)
 					outf = open(endfile, 'w+b')
 					t.write(tabs+'- Writing NSP header...')
@@ -4202,6 +4220,11 @@ if __name__ == '__main__':
 					#print(hx(xci_header))
 					#print(str(totSize))
 					c=0
+					v_drive, v_path = os.path.splitdrive(endfile)
+					dsktotal, dskused, dskfree=disk_usage(str(v_drive))	
+					if int(dsktotal)>int(totSize):
+						print("Warning disk space lower than required size. Program will exit")
+						sys.exit()					
 					t = tqdm(total=totSize, unit='B', unit_scale=True, leave=False)
 					t.write(tabs+'- Writing XCI header...')
 					outf = open(endfile, 'w+b')
@@ -4314,6 +4337,11 @@ if __name__ == '__main__':
 									shutil.move(filename,ofolder)
 						shutil.rmtree(afolder, ignore_errors=True)
 					#print(str(totSize))
+					v_drive, v_path = os.path.splitdrive(endfile)
+					dsktotal, dskused, dskfree=disk_usage(str(v_drive))	
+					if int(dsktotal)>int(totSize):
+						print("Warning disk space lower than required size. Program will exit")
+						sys.exit()					
 					t = tqdm(total=totSize, unit='B', unit_scale=True, leave=False)
 					outf = open(endfile, 'w+b')
 					t.write(tabs+'- Writing NSP header...')
@@ -4566,6 +4594,11 @@ if __name__ == '__main__':
 			except BaseException as e:
 				Print.error('Exception: ' + str(e))
 			totSize = sum(os.path.getsize(file) for file in file_list)
+			v_drive, v_path = os.path.splitdrive(outfile)
+			dsktotal, dskused, dskfree=disk_usage(str(v_drive))	
+			if int(dsktotal)>int(totSize):
+				print("Warning disk space lower than required size. Program will exit")
+				sys.exit()				
 			t = tqdm(total=totSize, unit='B', unit_scale=True, leave=False)
 			t.write(tabs+'- Joining files...')
 			index=0
@@ -5274,6 +5307,11 @@ if __name__ == '__main__':
 						else:
 							buf=buffer
 						#print(filepath)
+						v_drive, v_path = os.path.splitdrive(filename)
+						dsktotal, dskused, dskfree=disk_usage(str(v_drive))	
+						if int(dsktotal)>int(s):
+							print("Warning disk space lower than required size. Program will exit")
+							sys.exit()							
 						t = tqdm(total=s, unit='B', unit_scale=True, leave=False)
 						with open(filename, 'r+b') as f:
 							f.seek(off1)
@@ -5319,6 +5357,11 @@ if __name__ == '__main__':
 						else:
 							buf=buffer
 						#print(filepath)
+						v_drive, v_path = os.path.splitdrive(filename)
+						dsktotal, dskused, dskfree=disk_usage(str(v_drive))	
+						if int(dsktotal)>int(s):
+							print("Warning disk space lower than required size. Program will exit")
+							sys.exit()					
 						t = tqdm(total=s, unit='B', unit_scale=True, leave=False)
 						with open(filename, 'r+b') as f:
 							f.seek(off1)
