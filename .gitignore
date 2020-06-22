@@ -60,3 +60,4 @@ py/joinlist.txt
 py/zconfig/update_dbs_options.cmd
 py/update_dbs.bat
 py/zconfig/remote_cache_location.txt
+py/ztools/.net_code/*
