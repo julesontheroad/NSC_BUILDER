@@ -305,6 +305,9 @@ if __name__ == '__main__':
 			if (args.library_call[0]).startswith('Drive.'):
 				sys.path.insert(0, 'Drive')
 				args.library_call[0]=str(args.library_call[0]).replace("Drive.", "")
+			if (args.library_call[0]).startswith('mtp.'):
+				sys.path.insert(0, 'mtp')
+				args.library_call[0]=str(args.library_call[0]).replace("mtp.", "")				
 			import secondary
 			if args.explicit_argument:
 				vret=secondary.call_library(args.library_call,args.explicit_argument)
@@ -2289,7 +2292,7 @@ if __name__ == '__main__':
 						else:
 							v_drive, v_path = os.path.splitdrive(endfile)
 							dsktotal, dskused, dskfree=disk_usage(str(v_drive))	
-							if int(dsktotal)>int(totSize):
+							if int(dskfree)<int(totSize):
 								print("Warning disk space lower than required size. Program will exit")
 								sys.exit()
 						if vskip==False:
@@ -2362,7 +2365,7 @@ if __name__ == '__main__':
 						else:
 							v_drive, v_path = os.path.splitdrive(endfile)
 							dsktotal, dskused, dskfree=disk_usage(str(v_drive))	
-							if int(dsktotal)>int(totSize):
+							if int(dskfree)<int(totSize):
 								print("Warning disk space lower than required size. Program will exit")
 								sys.exit()						
 						if vskip==False:
@@ -4136,7 +4139,7 @@ if __name__ == '__main__':
 						
 					v_drive, v_path = os.path.splitdrive(endfile)
 					dsktotal, dskused, dskfree=disk_usage(str(v_drive))	
-					if int(dsktotal)>int(totSize):
+					if int(dskfree)<int(totSize):
 						print("Warning disk space lower than required size. Program will exit")
 						sys.exit()					
 					t = tqdm(total=totSize, unit='B', unit_scale=True, leave=False)
@@ -4222,7 +4225,7 @@ if __name__ == '__main__':
 					c=0
 					v_drive, v_path = os.path.splitdrive(endfile)
 					dsktotal, dskused, dskfree=disk_usage(str(v_drive))	
-					if int(dsktotal)>int(totSize):
+					if int(dskfree)<int(totSize):
 						print("Warning disk space lower than required size. Program will exit")
 						sys.exit()					
 					t = tqdm(total=totSize, unit='B', unit_scale=True, leave=False)
@@ -4339,7 +4342,7 @@ if __name__ == '__main__':
 					#print(str(totSize))
 					v_drive, v_path = os.path.splitdrive(endfile)
 					dsktotal, dskused, dskfree=disk_usage(str(v_drive))	
-					if int(dsktotal)>int(totSize):
+					if int(dskfree)<int(totSize):
 						print("Warning disk space lower than required size. Program will exit")
 						sys.exit()					
 					t = tqdm(total=totSize, unit='B', unit_scale=True, leave=False)
@@ -4596,7 +4599,7 @@ if __name__ == '__main__':
 			totSize = sum(os.path.getsize(file) for file in file_list)
 			v_drive, v_path = os.path.splitdrive(outfile)
 			dsktotal, dskused, dskfree=disk_usage(str(v_drive))	
-			if int(dsktotal)>int(totSize):
+			if int(dskfree)<int(totSize):
 				print("Warning disk space lower than required size. Program will exit")
 				sys.exit()				
 			t = tqdm(total=totSize, unit='B', unit_scale=True, leave=False)
