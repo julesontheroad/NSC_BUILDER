@@ -159,3 +159,17 @@ set "workers=-threads 1"
 set compression_lv=17
 set compression_threads=0
 set "xci_export=xcz"
+
+::--------------------------------------------------------------
+::MTP
+::--------------------------------------------------------------
+set "MTP=ztools\bin\nscb_mtp.exe"
+set "MTP_verification=True"
+set "MTP_prioritize_NSZ=True"
+set "MTP_exclude_xci_autinst=True"
+set "MTP_aut_ch_medium=True"
+set "MTP_chk_fw=True"
+set "MTP_prepatch_kg=False"
+:: Precheck if Installed
+set "MTP_prechk_Base=True"
+set "MTP_prechk_Upd=False"

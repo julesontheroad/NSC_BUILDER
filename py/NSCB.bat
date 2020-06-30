@@ -4,7 +4,7 @@ set "prog_dir=%~dp0"
 set "bat_name=%~n0"
 set "ofile_name=%bat_name%_options.cmd"
 set "opt_interface=Interface_options.cmd"
-Title NSC_Builder v0.98 -- Profile: %ofile_name% -- by JulesOnTheRoad
+Title NSC_Builder v0.99 -- Profile: %ofile_name% -- by JulesOnTheRoad
 set "list_folder=%prog_dir%lists"
 ::-----------------------------------------------------
 ::EDIT THIS VARIABLE TO LINK OTHER OPTION FILE
@@ -29,11 +29,19 @@ set "skipRSVprompt=%skipRSVprompt%"
 set "oforg=%oforg%"
 set "NSBMODE=%NSBMODE%"
 set "romaji=%romaji%"
-set "transnutdb=%transnutdb%"
+set "transsquirreldb=%transsquirreldb%"
 set "workers=%workers%"
 set "compression_lv=%compression_lv%"
 set "compression_threads=%compression_threads%"
 set "xci_export=%xci_export%"
+set "MTP_verification=%MTP_verification%"
+set "MTP_prioritize_NSZ=%MTP_prioritize_NSZ%"
+set "MTP_exclude_xci_autinst=%MTP_exclude_xci_autinst%"
+set "MTP_aut_ch_medium=%MTP_aut_ch_medium%"
+set "MTP_chk_fw=%MTP_chk_fw%"
+set "MTP_prepatch_kg=%MTP_prepatch_kg%"
+set "MTP_prechk_Base=%MTP_prechk_Base%"
+set "MTP_prechk_Upd=%MTP_prechk_Upd%"
 
 REM Copy function
 set "pycommand=%pycommand%"
@@ -47,6 +55,8 @@ set "fexport=%fexport%"
 set "skdelta=%skdelta%"
 REM PROGRAMS
 set "nut=%nut%"
+set "squirrel=%nut%"
+set "MTP=%MTP%"
 set "xci_lib=%xci_lib%"
 set "nsp_lib=%nsp_lib%"
 set "zip=%zip%"
@@ -67,7 +77,7 @@ set "zip_fold=%~dp0%zip_fold%"
 ::SET ABSOLUTE ROUTES
 ::-----------------------------------------------------
 ::Program full route
-if exist "%~dp0%nut%" set "nut=%~dp0%nut%"
+if exist "%~dp0%squirrel%" set "squirrel=%~dp0%squirrel%"
 if exist "%~dp0%xci_lib%"  set "xci_lib=%~dp0%xci_lib%"
 if exist "%~dp0%nsp_lib%"  set "nsp_lib=%~dp0%nsp_lib%"
 if exist "%~dp0%zip%"  set "zip=%~dp0%zip%"
@@ -91,7 +101,7 @@ if exist "%~dp0%fold_output%"  set "fold_output=%~dp0%fold_output%"
 ::Option file check
 if not exist "%op_file%" ( goto missing_things )
 ::Program checks
-if not exist "%nut%" ( goto missing_things )
+if not exist "%squirrel%" ( goto missing_things )
 if not exist "%xci_lib%" ( goto missing_things )
 if not exist "%nsp_lib%" ( goto missing_things )
 if not exist "%zip%" ( goto missing_things )
@@ -152,9 +162,9 @@ REM endlocal & ( set "vpack=!vrepack!" )
 REM if "%trn_skip%" EQU "true" ( call :check_titlerights )
 if "%vrename%" EQU "true" ( call :addtags_from_nsp )
 
-if "%vrepack%" EQU "nsp" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "nsp" -dc "%%f" )
-if "%vrepack%" EQU "xci" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "xci" -dc "%%f" )
-if "%vrepack%" EQU "both" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "both" -dc "%%f" )
+if "%vrepack%" EQU "nsp" ( %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "nsp" -dc "%%f" )
+if "%vrepack%" EQU "xci" ( %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "xci" -dc "%%f" )
+if "%vrepack%" EQU "both" ( %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "both" -dc "%%f" )
 
 if not exist "%fold_output%" MD "%fold_output%" >NUL 2>&1
 
@@ -164,7 +174,7 @@ move "%w_folder%\*.nsp" "%fold_output%" >NUL 2>&1
 move "%w_folder%\*.ns*" "%fold_output%" >NUL 2>&1
 if exist "%w_folder%\*.zip" ( MD "%zip_fold%" ) >NUL 2>&1
 move "%w_folder%\*.zip" "%zip_fold%" >NUL 2>&1
-if exist "%w_folder%\archfolder" ( %pycommand% "%nut%" -ifo "%w_folder%\archfolder" -archive "%fold_output%\%filename%.nsp" )
+if exist "%w_folder%\archfolder" ( %pycommand% "%squirrel%" -ifo "%w_folder%\archfolder" -archive "%fold_output%\%filename%.nsp" )
 
 RD /S /Q "%w_folder%" >NUL 2>&1
 echo DONE
@@ -196,9 +206,9 @@ REM endlocal & ( set "vpack=!vrepack!" )
 REM if "%trn_skip%" EQU "true" ( call :check_titlerights )
 if "%vrename%" EQU "true" ( call :addtags_from_nsp )
 
-if "%vrepack%" EQU "nsp" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "nsp" -dc "%%f" )
-if "%vrepack%" EQU "xci" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "xci" -dc "%%f" )
-if "%vrepack%" EQU "both" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "both" -dc "%%f" )
+if "%vrepack%" EQU "nsp" ( %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "nsp" -dc "%%f" )
+if "%vrepack%" EQU "xci" ( %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "xci" -dc "%%f" )
+if "%vrepack%" EQU "both" ( %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "both" -dc "%%f" )
 
 if not exist "%fold_output%" MD "%fold_output%" >NUL 2>&1
 
@@ -208,7 +218,7 @@ move "%w_folder%\*.nsp" "%fold_output%" >NUL 2>&1
 move "%w_folder%\*.ns*" "%fold_output%" >NUL 2>&1
 if exist "%w_folder%\*.zip" ( MD "%zip_fold%" ) >NUL 2>&1
 move "%w_folder%\*.zip" "%zip_fold%" >NUL 2>&1
-if exist "%w_folder%\archfolder" ( %pycommand% "%nut%" -ifo "%w_folder%\archfolder" -archive "%fold_output%\%filename%.nsp" )
+if exist "%w_folder%\archfolder" ( %pycommand% "%squirrel%" -ifo "%w_folder%\archfolder" -archive "%fold_output%\%filename%.nsp" )
 
 RD /S /Q "%w_folder%" >NUL 2>&1
 echo DONE
@@ -226,9 +236,9 @@ MD "%w_folder%"
 call :getname
 if "%vrename%" EQU "true" ( call :addtags_from_xci )
 
-if "%vrepack%" EQU "nsp" (  %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "nsp" -dc "%%f" )
-if "%vrepack%" EQU "xci" (  %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "xci" -dc "%%f" )
-if "%vrepack%" EQU "both" (  %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "both" -dc "%%f" )
+if "%vrepack%" EQU "nsp" (  %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "nsp" -dc "%%f" )
+if "%vrepack%" EQU "xci" (  %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "xci" -dc "%%f" )
+if "%vrepack%" EQU "both" (  %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "both" -dc "%%f" )
 
 if not exist "%fold_output%" MD "%fold_output%" >NUL 2>&1
 
@@ -238,7 +248,7 @@ move "%w_folder%\*.nsp" "%fold_output%" >NUL 2>&1
 move "%w_folder%\*.ns*" "%fold_output%" >NUL 2>&1
 if exist "%w_folder%\*.zip" ( MD "%zip_fold%" ) >NUL 2>&1
 move "%w_folder%\*.zip" "%zip_fold%" >NUL 2>&1
-if exist "%w_folder%\archfolder" ( %pycommand% "%nut%" -ifo "%w_folder%\archfolder" -archive "%fold_output%\%filename%.nsp" )
+if exist "%w_folder%\archfolder" ( %pycommand% "%squirrel%" -ifo "%w_folder%\archfolder" -archive "%fold_output%\%filename%.nsp" )
 
 RD /S /Q "%w_folder%" >NUL 2>&1
 echo DONE
@@ -260,9 +270,9 @@ MD "%w_folder%"
 call :getname
 if "%vrename%" EQU "true" ( call :addtags_from_xci )
 
-if "%vrepack%" EQU "nsp" (  %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "nsp" -dc "%%f" )
-if "%vrepack%" EQU "xci" (  %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "xci" -dc "%%f" )
-if "%vrepack%" EQU "both" (  %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "both" -dc "%%f" )
+if "%vrepack%" EQU "nsp" (  %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "nsp" -dc "%%f" )
+if "%vrepack%" EQU "xci" (  %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "xci" -dc "%%f" )
+if "%vrepack%" EQU "both" (  %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "both" -dc "%%f" )
 
 if not exist "%fold_output%" MD "%fold_output%" >NUL 2>&1
 
@@ -272,7 +282,7 @@ move "%w_folder%\*.nsp" "%fold_output%" >NUL 2>&1
 move "%w_folder%\*.ns*" "%fold_output%" >NUL 2>&1
 if exist "%w_folder%\*.zip" ( MD "%zip_fold%" ) >NUL 2>&1
 move "%w_folder%\*.zip" "%zip_fold%" >NUL 2>&1
-if exist "%w_folder%\archfolder" ( %pycommand% "%nut%" -ifo "%w_folder%\archfolder" -archive "%fold_output%\%filename%.nsp" )
+if exist "%w_folder%\archfolder" ( %pycommand% "%squirrel%" -ifo "%w_folder%\archfolder" -archive "%fold_output%\%filename%.nsp" )
 
 RD /S /Q "%w_folder%" >NUL 2>&1
 echo DONE
@@ -306,7 +316,7 @@ set "showname=%orinput%"
 call :processing_message
 REM echo %safe_var%>safe.txt
 call :squirrell
-%pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -o "%w_folder%\secure" %nf_cleaner% "%%f"
+%pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% -o "%w_folder%\secure" %nf_cleaner% "%%f"
 if "%zip_restore%" EQU "true" ( set "ziptarget=%%f" )
 if "%zip_restore%" EQU "true" ( call :makezip )
 call :getname
@@ -332,7 +342,7 @@ move "%w_folder%\*.nsp" "%gefolder%" >NUL 2>&1
 move "%w_folder%\*.ns*" "%gefolder%" >NUL 2>&1
 if exist "%w_folder%\*.zip" ( MD "%zip_fold%" ) >NUL 2>&1
 move "%w_folder%\*.zip" "%zip_fold%" >NUL 2>&1
-if exist "%w_folder%\archfolder" ( %pycommand% "%nut%" -ifo "%w_folder%\archfolder" -archive "%gefolder%\%filename%.nsp" )
+if exist "%w_folder%\archfolder" ( %pycommand% "%squirrel%" -ifo "%w_folder%\archfolder" -archive "%gefolder%\%filename%.nsp" )
 endlocal
 RD /S /Q "%w_folder%" >NUL 2>&1
 echo DONE
@@ -352,7 +362,7 @@ call :getname
 echo -------------------------------------
 echo Extracting secure partition from xci 
 echo -------------------------------------
-%pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -o "%w_folder%\secure" %nf_cleaner% "%%f"
+%pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% -o "%w_folder%\secure" %nf_cleaner% "%%f"
 echo DONE
 if "%vrename%" EQU "true" ( call :addtags_from_xci )
 if "%vrepack%" EQU "nsp" ( call "%nsp_lib%" "convert" "%w_folder%" )
@@ -365,7 +375,7 @@ move "%w_folder%\*.xci" "%fold_output%\!end_folder!" >NUL 2>&1
 move  "%w_folder%\*.xc*"  "%fold_output%\!end_folder!" >NUL 2>&1
 move "%w_folder%\*.nsp" "%fold_output%\!end_folder!" >NUL 2>&1
 move "%w_folder%\*.ns*" "%fold_output%\!end_folder!" >NUL 2>&1
-if exist "%w_folder%\archfolder" ( %pycommand% "%nut%" -ifo "%w_folder%\archfolder" -archive "%fold_output%\!end_folder!\%filename%.nsp" )
+if exist "%w_folder%\archfolder" ( %pycommand% "%squirrel%" -ifo "%w_folder%\archfolder" -archive "%fold_output%\!end_folder!\%filename%.nsp" )
 endlocal
 RD /S /Q "%w_folder%" >NUL 2>&1
 echo DONE
@@ -388,31 +398,31 @@ MD "%w_folder%"
 if exist "%prog_dir%mlist.txt" del "%prog_dir%mlist.txt" >NUL 2>&1
 
 echo - Generating filelist
-%pycommand% "%nut%" -t nsp xci nsz xcz -tfile "%prog_dir%mlist.txt" -ff "%~1"
+%pycommand% "%squirrel%" -t nsp xci nsz xcz -tfile "%prog_dir%mlist.txt" -ff "%~1"
 echo   DONE
 
 if "%vrepack%" EQU "nsp" echo ......................................
 if "%vrepack%" EQU "nsp" echo REPACKING FOLDER CONTENT TO NSP
 if "%vrepack%" EQU "nsp" echo ......................................
-if "%vrepack%" EQU "nsp" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t cnsp -o "%w_folder%" -tfile "%prog_dir%mlist.txt" -roma %romaji% -dmul "calculate" )
+if "%vrepack%" EQU "nsp" ( %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t cnsp -o "%w_folder%" -tfile "%prog_dir%mlist.txt" -roma %romaji% -dmul "calculate" )
 if "%vrepack%" EQU "nsp" echo.
 
 if "%vrepack%" EQU "xci" echo ......................................
 if "%vrepack%" EQU "xci" echo REPACKING FOLDER CONTENT TO XCI
 if "%vrepack%" EQU "xci" echo ......................................
-if "%vrepack%" EQU "xci" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t xci -o "%w_folder%" -tfile "%prog_dir%mlist.txt" -roma %romaji% -dmul "calculate" )
+if "%vrepack%" EQU "xci" ( %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t xci -o "%w_folder%" -tfile "%prog_dir%mlist.txt" -roma %romaji% -dmul "calculate" )
 if "%vrepack%" EQU "xci" echo.
 
 if "%vrepack%" EQU "both" echo ......................................
 if "%vrepack%" EQU "both" echo REPACKING FOLDER CONTENT TO NSP
 if "%vrepack%" EQU "both" echo ......................................
-if "%vrepack%" EQU "both" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t cnsp -o "%w_folder%" -tfile "%prog_dir%mlist.txt" -roma %romaji% -dmul "calculate" )
+if "%vrepack%" EQU "both" ( %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t cnsp -o "%w_folder%" -tfile "%prog_dir%mlist.txt" -roma %romaji% -dmul "calculate" )
 if "%vrepack%" EQU "both" echo.
 
 if "%vrepack%" EQU "both" echo ......................................
 if "%vrepack%" EQU "both" echo REPACKING FOLDER CONTENT TO XCI
 if "%vrepack%" EQU "both" echo ......................................
-if "%vrepack%" EQU "both" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t xci -o "%w_folder%" -tfile "%prog_dir%mlist.txt" -roma %romaji% -dmul "calculate" )
+if "%vrepack%" EQU "both" ( %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t xci -o "%w_folder%" -tfile "%prog_dir%mlist.txt" -roma %romaji% -dmul "calculate" )
 if "%vrepack%" EQU "both" echo.
 
 setlocal enabledelayedexpansion
@@ -426,7 +436,7 @@ move "%w_folder%\*.nsp" "%gefolder%" >NUL 2>&1
 move "%w_folder%\*.ns*" "%gefolder%" >NUL 2>&1
 if exist "%w_folder%\*.zip" ( MD "%zip_fold%" ) >NUL 2>&1
 move "%w_folder%\*.zip" "%zip_fold%" >NUL 2>&1
-if exist "%w_folder%\archfolder" ( %pycommand% "%nut%" -tfile "%w_folder%\filename.txt" -ifo "%w_folder%\archfolder" -archive "%gefolder%" )
+if exist "%w_folder%\archfolder" ( %pycommand% "%squirrel%" -tfile "%w_folder%\filename.txt" -ifo "%w_folder%\archfolder" -archive "%gefolder%" )
 endlocal
 RD /S /Q "%w_folder%" >NUL 2>&1
 ECHO ---------------------------------------------------
@@ -455,7 +465,7 @@ set "showname=%orinput%"
 call :processing_message
 ::echo %safe_var%>safe.txt
 call :squirrell
-%pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -o "%w_folder%\secure" %nf_cleaner% "%%f"
+%pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% -o "%w_folder%\secure" %nf_cleaner% "%%f"
 if "%zip_restore%" EQU "true" ( set "ziptarget=%%f" )
 if "%zip_restore%" EQU "true" ( call :makezip )
 )
@@ -465,7 +475,7 @@ for /r "%~1" %%f in (*.xci) do (
 echo ------------------------------------
 echo Extracting secure partition from xci
 echo ------------------------------------
-%pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -o "%w_folder%\secure" %nf_cleaner% "%%f"
+%pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% -o "%w_folder%\secure" %nf_cleaner% "%%f"
 echo DONE
 )
 if "%vrepack%" EQU "nsp" ( call "%nsp_lib%" "convert" "%w_folder%" )
@@ -483,7 +493,7 @@ move "%w_folder%\*.nsp" "%gefolder%" >NUL 2>&1
 move "%w_folder%\*.ns*" "%gefolder%" >NUL 2>&1
 if exist "%w_folder%\*.zip" ( MD "%zip_fold%" ) >NUL 2>&1
 move "%w_folder%\*.zip" "%zip_fold%" >NUL 2>&1
-if exist "%w_folder%\archfolder" ( %pycommand% "%nut%" -ifo "%w_folder%\archfolder" -archive "%gefolder%\%filename%.nsp" )
+if exist "%w_folder%\archfolder" ( %pycommand% "%squirrel%" -ifo "%w_folder%\archfolder" -archive "%gefolder%\%filename%.nsp" )
 endlocal
 RD /S /Q "%w_folder%" >NUL 2>&1
 echo DONE
@@ -508,10 +518,10 @@ if not exist "%list_folder%" MD "%list_folder%" >NUL 2>&1
 if not exist "%mlistfol%" MD "%mlistfol%" >NUL 2>&1
 
 echo - Generating filelist
-%pycommand% "%nut%" -t nsp xci -tfile "%prog_dir%mlist.txt" -ff "%~1"
+%pycommand% "%squirrel%" -t nsp xci -tfile "%prog_dir%mlist.txt" -ff "%~1"
 echo   DONE
 echo - Splitting filelist
-%pycommand% "%nut%" -splid "%mlistfol%" -tfile "%prog_dir%mlist.txt"
+%pycommand% "%squirrel%" -splid "%mlistfol%" -tfile "%prog_dir%mlist.txt"
 if "%vrepack%" EQU "nsp" set "vrepack=cnsp"
 if "%vrepack%" EQU "both" set "vrepack=cboth"
 goto m_process_jobs2
@@ -524,7 +534,7 @@ echo --------------------------------------
 if exist "%w_folder%" rmdir /s /q "%w_folder%" >NUL 2>&1
 MD "%w_folder%"
 if exist "%prog_dir%list.txt" del "%prog_dir%list.txt" >NUL 2>&1
-%pycommand% "%nut%" -t nsp xci -tfile "%prog_dir%list.txt" -ff "%~1"
+%pycommand% "%squirrel%" -t nsp xci -tfile "%prog_dir%list.txt" -ff "%~1"
 echo   DONE
 goto s_KeyChange_skip
 
@@ -536,7 +546,7 @@ echo --------------------------------------
 if exist "%w_folder%" rmdir /s /q "%w_folder%" >NUL 2>&1
 MD "%w_folder%"
 if exist "%prog_dir%list.txt" del "%prog_dir%list.txt" >NUL 2>&1
-%pycommand% "%nut%" -t nsp xci -tfile "%prog_dir%list.txt" -ff "%~1"
+%pycommand% "%squirrel%" -t nsp xci -tfile "%prog_dir%list.txt" -ff "%~1"
 echo   DONE
 goto s_KeyChange_skip
 
@@ -569,9 +579,9 @@ MD "%w_folder%"
 call :getname
 if "%vrename%" EQU "true" call :addtags_from_nsp
 
-if "%vrepack%" EQU "nsp" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "nsp" -dc "%~1" )
-if "%vrepack%" EQU "xci" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "xci" -dc "%~1" )
-if "%vrepack%" EQU "both" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "both" -dc "%~1"  )
+if "%vrepack%" EQU "nsp" ( %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "nsp" -dc "%~1" )
+if "%vrepack%" EQU "xci" ( %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "xci" -dc "%~1" )
+if "%vrepack%" EQU "both" ( %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "both" -dc "%~1"  )
 
 if not exist "%fold_output%" MD "%fold_output%" >NUL 2>&1
 
@@ -581,7 +591,7 @@ move "%w_folder%\*.nsp" "%fold_output%" >NUL 2>&1
 move "%w_folder%\*.ns*" "%fold_output%" >NUL 2>&1
 if exist "%w_folder%\*.zip" ( MD "%zip_fold%" ) >NUL 2>&1
 move "%w_folder%\*.zip" "%zip_fold%" >NUL 2>&1
-if exist "%w_folder%\archfolder" ( %pycommand% "%nut%" -ifo "%w_folder%\archfolder" -archive "%fold_output%\%filename%.nsp" )
+if exist "%w_folder%\archfolder" ( %pycommand% "%squirrel%" -ifo "%w_folder%\archfolder" -archive "%fold_output%\%filename%.nsp" )
 
 RD /S /Q "%w_folder%" >NUL 2>&1
 echo DONE
@@ -597,7 +607,7 @@ set "showname=%orinput%"
 call :processing_message
 if exist "%w_folder%" rmdir /s /q "%w_folder%" >NUL 2>&1
 call :squirrell
-%pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -o "%w_folder%\secure" %nf_cleaner% "%~1"
+%pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% -o "%w_folder%\secure" %nf_cleaner% "%~1"
 if "%zip_restore%" EQU "true" ( set "ziptarget=%~1" )
 if "%zip_restore%" EQU "true" ( call :makezip )
 call :getname
@@ -619,7 +629,7 @@ move "%w_folder%\*.nsp" "%gefolder%" >NUL 2>&1
 move "%w_folder%\*.ns*" "%gefolder%" >NUL 2>&1
 if exist "%w_folder%\*.zip" ( MD "%zip_fold%" ) >NUL 2>&1
 move "%w_folder%\*.zip" "%zip_fold%" >NUL 2>&1
-if exist "%w_folder%\archfolder" ( %pycommand% "%nut%" -ifo "%w_folder%\archfolder" -archive "%gefolder%\%filename%.nsp" )
+if exist "%w_folder%\archfolder" ( %pycommand% "%squirrel%" -ifo "%w_folder%\archfolder" -archive "%gefolder%\%filename%.nsp" )
 endlocal
 RD /S /Q "%w_folder%" >NUL 2>&1
 echo DONE
@@ -639,9 +649,9 @@ call :getname
 
 if "%vrename%" EQU "true" call :addtags_from_xci
 
-if "%vrepack%" EQU "nsp" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "nsp" -dc "%~1" )
-if "%vrepack%" EQU "xci" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "xci" -dc "%~1" )
-if "%vrepack%" EQU "both" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "both" -dc "%~1"  )
+if "%vrepack%" EQU "nsp" ( %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "nsp" -dc "%~1" )
+if "%vrepack%" EQU "xci" ( %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "xci" -dc "%~1" )
+if "%vrepack%" EQU "both" ( %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "both" -dc "%~1"  )
 
 MD "%fold_output%\" >NUL 2>&1
 
@@ -651,7 +661,7 @@ move "%w_folder%\*.nsp" "%fold_output%" >NUL 2>&1
 move "%w_folder%\*.ns*" "%fold_output%" >NUL 2>&1
 if exist "%w_folder%\*.zip" ( MD "%zip_fold%" ) >NUL 2>&1
 move "%w_folder%\*.zip" "%zip_fold%" >NUL 2>&1
-if exist "%w_folder%\archfolder" ( %pycommand% "%nut%" -ifo "%w_folder%\archfolder" -archive "%fold_output%\%filename%.nsp" )
+if exist "%w_folder%\archfolder" ( %pycommand% "%squirrel%" -ifo "%w_folder%\archfolder" -archive "%fold_output%\%filename%.nsp" )
 
 RD /S /Q "%w_folder%" >NUL 2>&1
 echo DONE
@@ -671,7 +681,7 @@ call :getname
 echo ------------------------------------
 echo Extracting secure partition from xci 
 echo ------------------------------------
-%pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -o "%w_folder%\secure" %nf_cleaner% "%~1"
+%pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% -o "%w_folder%\secure" %nf_cleaner% "%~1"
 echo DONE
 if "%vrename%" EQU "true" call :addtags_from_xci
 if "%vrepack%" EQU "nsp" ( call "%nsp_lib%" "convert" "%w_folder%" )
@@ -685,7 +695,7 @@ move  "%w_folder%\*.xci"  "%fold_output%\!end_folder!" >NUL 2>&1
 move  "%w_folder%\*.xc*"  "%fold_output%\!end_folder!" >NUL 2>&1
 move  "%w_folder%\*.nsp"  "%fold_output%\!end_folder!" >NUL 2>&1
 move "%w_folder%\*.ns*" "%fold_output%\!end_folder!" >NUL 2>&1
-if exist "%w_folder%\archfolder" ( %pycommand% "%nut%" -ifo "%w_folder%\archfolder" -archive "%fold_output%\!end_folder!\%filename%.nsp" )
+if exist "%w_folder%\archfolder" ( %pycommand% "%squirrel%" -ifo "%w_folder%\archfolder" -archive "%fold_output%\!end_folder!\%filename%.nsp" )
 endlocal
 RD /S /Q "%w_folder%" >NUL 2>&1
 echo DONE
@@ -737,6 +747,7 @@ REM echo Input "10" to enter into FILE-MANAGEMENT mode
 echo Input "0"  to enter into CONFIGURATION mode
 echo.
 echo Input "D" to enter GOOGLE DRIVE MODES
+echo Input "M" to enter MTP MODES
 echo Input "L" to enter LEGACY MODES
 echo .......................................................
 echo.
@@ -752,6 +763,7 @@ if /i "%bs%"=="7" goto JOINmode
 if /i "%bs%"=="8" goto ZSTDmode
 if /i "%bs%"=="9" goto RSTmode
 REM if /i "%bs%"=="10" goto MNGmode
+if /i "%bs%"=="M" goto MTPMode
 if /i "%bs%"=="D" goto DriveMode
 if /i "%bs%"=="L" goto LegacyMode
 if /i "%bs%"=="0" goto OPT_CONFIG
@@ -774,6 +786,9 @@ call "%prog_dir%ztools\MNG.bat"
 goto manual_Reentry
 :LegacyMode
 call "%prog_dir%ztools\LEGACY.bat"
+goto manual_Reentry
+:MTPMode
+call "%prog_dir%ztools\MtpMode.bat"
 goto manual_Reentry
 :DriveMode
 call "%prog_dir%ztools\DriveMode.bat"
@@ -846,15 +861,15 @@ echo Input "2" to add file to list via selector
 echo Input "0" to return to the MODE SELECTION MENU
 ECHO ***********************************************
 echo.
-%pycommand% "%nut%" -t nsp xci nsz nsx xcz -tfile "%prog_dir%list.txt" -uin "%uinput%" -ff "uinput"
+%pycommand% "%squirrel%" -t nsp xci nsz nsx xcz -tfile "%prog_dir%list.txt" -uin "%uinput%" -ff "uinput"
 set /p eval=<"%uinput%"
 set eval=%eval:"=%
 setlocal enabledelayedexpansion
 echo+ >"%uinput%"
 endlocal
 if /i "%eval%"=="0" goto manual_Reentry
-if /i "%eval%"=="1" ( %pycommand% "%nut%" -lib_call listmanager selector2list -xarg "%prog_dir%list.txt" mode=folder ext="nsp xci nsz nsx xcz" ) 2>&1>NUL
-if /i "%eval%"=="2" ( %pycommand% "%nut%" -lib_call listmanager selector2list -xarg "%prog_dir%list.txt" mode=file ext="nsp xci nsz nsx xcz" ) 2>&1>NUL  
+if /i "%eval%"=="1" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%list.txt" mode=folder ext="nsp xci nsz nsx xcz" ) 2>&1>NUL
+if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%list.txt" mode=file ext="nsp xci nsz nsx xcz" ) 2>&1>NUL  
 goto checkagain
 echo.
 :checkagain
@@ -874,7 +889,7 @@ ECHO *************************************************
 echo Or Input "0" to return to the MODE SELECTION MENU
 ECHO *************************************************
 echo.
-%pycommand% "%nut%" -t nsp xci nsz nsx xcz -tfile "%prog_dir%list.txt" -uin "%uinput%" -ff "uinput"
+%pycommand% "%squirrel%" -t nsp xci nsz nsx xcz -tfile "%prog_dir%list.txt" -uin "%uinput%" -ff "uinput"
 set /p eval=<"%uinput%"
 set eval=%eval:"=%
 setlocal enabledelayedexpansion
@@ -883,8 +898,8 @@ endlocal
 
 if /i "%eval%"=="0" goto manual_Reentry
 if /i "%eval%"=="1" goto start_cleaning
-if /i "%eval%"=="2" ( %pycommand% "%nut%" -lib_call listmanager selector2list -xarg  "%prog_dir%list.txt" mode=folder ext="nsp xci nsz nsx xcz" ) 2>&1>NUL
-if /i "%eval%"=="3" ( %pycommand% "%nut%" -lib_call listmanager selector2list -xarg  "%prog_dir%list.txt" mode=file ext="nsp xci nsz nsx xcz" )  2>&1>NUL
+if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg  "%prog_dir%list.txt" mode=folder ext="nsp xci nsz nsx xcz" ) 2>&1>NUL
+if /i "%eval%"=="3" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg  "%prog_dir%list.txt" mode=file ext="nsp xci nsz nsx xcz" )  2>&1>NUL
 if /i "%eval%"=="e" goto salida
 if /i "%eval%"=="i" goto showlist
 if /i "%eval%"=="r" goto r_files
@@ -1146,14 +1161,14 @@ if /i "%verif%"=="none" goto s_vertype
 
 :s_KeyChange_skip
 echo Filtering extensions from list according to options chosen
-if "%vrepack%" EQU "xci_supertrimmer" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=xci","token=False",Print="False" )
-if "%vrepack%" EQU "xci_supertrimmer_keep_upd" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=xci","token=False",Print="False" )
-if "%vrepack%" EQU "xci_trimmer" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=xci","token=False",Print="False" )
-if "%vrepack%" EQU "xci_untrimmer" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=xci","token=False",Print="False" )
-if "%vrepack%" EQU "rebuild" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=nsp nsz","token=False",Print="False" )
-if "%vrepack%" EQU "nodelta" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=nsp nsz","token=False",Print="False" )
+if "%vrepack%" EQU "xci_supertrimmer" ( %pycommand% "%squirrel%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=xci","token=False",Print="False" )
+if "%vrepack%" EQU "xci_supertrimmer_keep_upd" ( %pycommand% "%squirrel%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=xci","token=False",Print="False" )
+if "%vrepack%" EQU "xci_trimmer" ( %pycommand% "%squirrel%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=xci","token=False",Print="False" )
+if "%vrepack%" EQU "xci_untrimmer" ( %pycommand% "%squirrel%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=xci","token=False",Print="False" )
+if "%vrepack%" EQU "rebuild" ( %pycommand% "%squirrel%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=nsp nsz","token=False",Print="False" )
+if "%vrepack%" EQU "nodelta" ( %pycommand% "%squirrel%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=nsp nsz","token=False",Print="False" )
 if "%fatype%" EQU "-fat fat32" echo Fat32 selected, removing nsz and xcz from input list
-if "%fatype%" EQU "-fat fat32" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=nsp nsx xci","token=False",Print="False" ) 
+if "%fatype%" EQU "-fat fat32" ( %pycommand% "%squirrel%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=nsp nsx xci","token=False",Print="False" ) 
 cls
 call :program_logo
 
@@ -1167,7 +1182,7 @@ if "%%~nxf"=="%%~nf.nsp" call :nsp_manual
 if "%%~nxf"=="%%~nf.nsz" call :nsp_manual
 if "%%~nxf"=="%%~nf.xci" call :xci_manual
 if "%%~nxf"=="%%~nf.xcz" call :xci_manual
-%pycommand% "%nut%" --strip_lines "%prog_dir%list.txt" "1" "true"
+%pycommand% "%squirrel%" --strip_lines "%prog_dir%list.txt" "1" "true"
 rem call :contador_NF
 )
 ECHO ---------------------------------------------------
@@ -1291,7 +1306,7 @@ echo.
 echo *******************************************************
 echo DLC NAMES FALLBACK
 echo *******************************************************
-echo Current version request dlc names to nutdb, this option
+echo Current version request dlc names to squirreldb, this option
 echo states the fallback system to employ in case the name
 echo can't be retrieved.
 echo.
@@ -1322,8 +1337,8 @@ cls
 call :program_logo
 set "workers=-threads 1"
 for /f "tokens=*" %%f in (list.txt) do (
-%pycommand% "%nut%" -renf "single" -tfile "%prog_dir%list.txt" -t nsp xci nsx nsz xcz -renm %renmode% -nover %nover% -oaid %oaid% -addl %addlangue% -roma %romaji% -dlcrn %dlcrname% %workers%
-if "%workers%" EQU "-threads 1" ( %pycommand% "%nut%" --strip_lines "%prog_dir%list.txt" "1" "true" )
+%pycommand% "%squirrel%" -renf "single" -tfile "%prog_dir%list.txt" -t nsp xci nsx nsz xcz -renm %renmode% -nover %nover% -oaid %oaid% -addl %addlangue% -roma %romaji% -dlcrn %dlcrname% %workers%
+if "%workers%" EQU "-threads 1" ( %pycommand% "%squirrel%" --strip_lines "%prog_dir%list.txt" "1" "true" )
 if "%workers%" NEQ "-threads 1" ( call :renamecheck )
 rem call :contador_NF
 )
@@ -1347,8 +1362,8 @@ exit /B
 cls
 call :program_logo
 for /f "tokens=*" %%f in (list.txt) do (
-%pycommand% "%nut%" -snz "single" -tfile "%prog_dir%list.txt" -t nsp xci nsx nsz xcz
-%pycommand% "%nut%" --strip_lines "%prog_dir%list.txt" "1" "true"
+%pycommand% "%squirrel%" -snz "single" -tfile "%prog_dir%list.txt" -t nsp xci nsx nsz xcz
+%pycommand% "%squirrel%" --strip_lines "%prog_dir%list.txt" "1" "true"
 rem call :contador_NF
 )
 ECHO ---------------------------------------------------
@@ -1360,8 +1375,8 @@ goto s_exit_choice
 cls
 call :program_logo
 for /f "tokens=*" %%f in (list.txt) do (
-%pycommand% "%nut%" -roma "single" -tfile "%prog_dir%list.txt" -t nsp xci nsx nsz xcz
-%pycommand% "%nut%" --strip_lines "%prog_dir%list.txt" "1" "true"
+%pycommand% "%squirrel%" -roma "single" -tfile "%prog_dir%list.txt" -t nsp xci nsx nsz xcz
+%pycommand% "%squirrel%" --strip_lines "%prog_dir%list.txt" "1" "true"
 rem call :contador_NF
 )
 ECHO ---------------------------------------------------
@@ -1374,8 +1389,8 @@ goto s_exit_choice
 cls
 call :program_logo
 for /f "tokens=*" %%f in (list.txt) do (
-%pycommand% "%nut%" -cltg "single" -tfile "%prog_dir%list.txt" -t nsp xci nsx nsz xcz -tgtype "%tagtype%"
-%pycommand% "%nut%" --strip_lines "%prog_dir%list.txt" "1" "true"
+%pycommand% "%squirrel%" -cltg "single" -tfile "%prog_dir%list.txt" -t nsp xci nsx nsz xcz -tgtype "%tagtype%"
+%pycommand% "%squirrel%" --strip_lines "%prog_dir%list.txt" "1" "true"
 rem call :contador_NF
 )
 ECHO ---------------------------------------------------
@@ -1409,12 +1424,12 @@ call :squirrell
 
 if "%vrename%" EQU "true" call :addtags_from_nsp
 
-if "%vrepack%" EQU "nsp" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "nsp" -dc "%orinput%" -tfile "%prog_dir%list.txt")
-if "%vrepack%" EQU "xci" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "xci" -dc "%orinput%" -tfile "%prog_dir%list.txt")
-if "%vrepack%" EQU "both" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "both" -dc "%orinput%" -tfile "%prog_dir%list.txt")
-if "%vrepack%" EQU "nodelta" ( %pycommand% "%nut%" %buffer% --xml_gen "true" -o "%w_folder%" -tfile "%prog_dir%list.txt" --erase_deltas "")
-if "%vrepack%" EQU "rebuild" ( %pycommand% "%nut%" %buffer% %skdelta% --xml_gen "true" -o "%w_folder%" -tfile "%prog_dir%list.txt" --rebuild_nsp "")
-if "%vrepack%" EQU "verify" ( %pycommand% "%nut%" %buffer% -vt "%verif%" -tfile "%prog_dir%list.txt" -v "")
+if "%vrepack%" EQU "nsp" ( %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "nsp" -dc "%orinput%" -tfile "%prog_dir%list.txt")
+if "%vrepack%" EQU "xci" ( %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "xci" -dc "%orinput%" -tfile "%prog_dir%list.txt")
+if "%vrepack%" EQU "both" ( %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "both" -dc "%orinput%" -tfile "%prog_dir%list.txt")
+if "%vrepack%" EQU "nodelta" ( %pycommand% "%squirrel%" %buffer% --xml_gen "true" -o "%w_folder%" -tfile "%prog_dir%list.txt" --erase_deltas "")
+if "%vrepack%" EQU "rebuild" ( %pycommand% "%squirrel%" %buffer% %skdelta% --xml_gen "true" -o "%w_folder%" -tfile "%prog_dir%list.txt" --rebuild_nsp "")
+if "%vrepack%" EQU "verify" ( %pycommand% "%squirrel%" %buffer% -vt "%verif%" -tfile "%prog_dir%list.txt" -v "")
 if "%vrepack%" EQU "verify" ( goto end_nsp_manual )
 
 move "%w_folder%\*.xci" "%fold_output%" >NUL 2>&1
@@ -1423,7 +1438,7 @@ move "%w_folder%\*.nsp" "%fold_output%" >NUL 2>&1
 move "%w_folder%\*.ns*" "%fold_output%" >NUL 2>&1
 if exist "%w_folder%\*.zip" ( MD "%zip_fold%" ) >NUL 2>&1
 move "%w_folder%\*.zip" "%zip_fold%" >NUL 2>&1
-if exist "%w_folder%\archfolder" ( %pycommand% "%nut%" -ifo "%w_folder%\archfolder" -archive "%fold_output%\%filename%.nsp" )
+if exist "%w_folder%\archfolder" ( %pycommand% "%squirrel%" -ifo "%w_folder%\archfolder" -archive "%fold_output%\%filename%.nsp" )
 
 RD /S /Q "%w_folder%" >NUL 2>&1
 echo DONE
@@ -1442,7 +1457,7 @@ call :squirrell
 
 if "%vrepack%" EQU "zip" ( goto nsp_just_zip )
 
-%pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -o "%w_folder%\secure" %nf_cleaner% "%orinput%"
+%pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% -o "%w_folder%\secure" %nf_cleaner% "%orinput%"
 
 :nsp_just_zip
 if "%zip_restore%" EQU "true" ( call :makezip )
@@ -1466,7 +1481,7 @@ move "%w_folder%\*.nsp" "%gefolder%" >NUL 2>&1
 move "%w_folder%\*.ns*" "%gefolder%" >NUL 2>&1
 if exist "%w_folder%\*.zip" ( MD "%zip_fold%" ) >NUL 2>&1
 move "%w_folder%\*.zip" "%zip_fold%" >NUL 2>&1
-if exist "%w_folder%\archfolder" ( %pycommand% "%nut%" -ifo "%w_folder%\archfolder" -archive "%gefolder%\%filename%.nsp" )
+if exist "%w_folder%\archfolder" ( %pycommand% "%squirrel%" -ifo "%w_folder%\archfolder" -archive "%gefolder%\%filename%.nsp" )
 endlocal
 RD /S /Q "%w_folder%" >NUL 2>&1
 echo DONE
@@ -1486,14 +1501,14 @@ MD "%w_folder%"
 set "filename=%name%"
 set "showname=%orinput%"
 
-if "%vrepack%" EQU "nsp" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "nsp" -dc "%orinput%" -tfile "%prog_dir%list.txt")
-if "%vrepack%" EQU "xci" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "xci" -dc "%orinput%" -tfile "%prog_dir%list.txt")
-if "%vrepack%" EQU "both" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "both" -dc "%orinput%" -tfile "%prog_dir%list.txt")
-if "%vrepack%" EQU "xci_supertrimmer" ( %pycommand% "%nut%" %buffer% -o "%w_folder%" -tfile "%prog_dir%list.txt" -xci_st "%orinput%")
-if "%vrepack%" EQU "xci_supertrimmer_keep_upd" ( %pycommand% "%nut%" %buffer% -o "%w_folder%" -t "xci" -dc "%orinput%" -tfile "%prog_dir%list.txt" )
-if "%vrepack%" EQU "xci_trimmer" ( %pycommand% "%nut%" %buffer% -o "%w_folder%" -tfile "%prog_dir%list.txt" -xci_tr "%orinput%")
-if "%vrepack%" EQU "xci_untrimmer" ( %pycommand% "%nut%" %buffer% -o "%w_folder%" -tfile "%prog_dir%list.txt" -xci_untr "%orinput%" )
-if "%vrepack%" EQU "verify" ( %pycommand% "%nut%" %buffer% -vt "%verif%" -tfile "%prog_dir%list.txt" -v "")
+if "%vrepack%" EQU "nsp" ( %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "nsp" -dc "%orinput%" -tfile "%prog_dir%list.txt")
+if "%vrepack%" EQU "xci" ( %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "xci" -dc "%orinput%" -tfile "%prog_dir%list.txt")
+if "%vrepack%" EQU "both" ( %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "both" -dc "%orinput%" -tfile "%prog_dir%list.txt")
+if "%vrepack%" EQU "xci_supertrimmer" ( %pycommand% "%squirrel%" %buffer% -o "%w_folder%" -tfile "%prog_dir%list.txt" -xci_st "%orinput%")
+if "%vrepack%" EQU "xci_supertrimmer_keep_upd" ( %pycommand% "%squirrel%" %buffer% -o "%w_folder%" -t "xci" -dc "%orinput%" -tfile "%prog_dir%list.txt" )
+if "%vrepack%" EQU "xci_trimmer" ( %pycommand% "%squirrel%" %buffer% -o "%w_folder%" -tfile "%prog_dir%list.txt" -xci_tr "%orinput%")
+if "%vrepack%" EQU "xci_untrimmer" ( %pycommand% "%squirrel%" %buffer% -o "%w_folder%" -tfile "%prog_dir%list.txt" -xci_untr "%orinput%" )
+if "%vrepack%" EQU "verify" ( %pycommand% "%squirrel%" %buffer% -vt "%verif%" -tfile "%prog_dir%list.txt" -v "")
 if "%vrepack%" EQU "verify" ( goto end_xci_manual )
 
 if not exist "%fold_output%" MD "%fold_output%" >NUL 2>&1
@@ -1504,7 +1519,7 @@ move "%w_folder%\*.nsp" "%fold_output%" >NUL 2>&1
 move "%w_folder%\*.ns*" "%fold_output%" >NUL 2>&1
 if exist "%w_folder%\*.zip" ( MD "%zip_fold%" ) >NUL 2>&1
 move "%w_folder%\*.zip" "%zip_fold%" >NUL 2>&1
-if exist "%w_folder%\archfolder" ( %pycommand% "%nut%" -ifo "%w_folder%\archfolder" -archive "%fold_output%\%filename%.nsp" )
+if exist "%w_folder%\archfolder" ( %pycommand% "%squirrel%" -ifo "%w_folder%\archfolder" -archive "%fold_output%\%filename%.nsp" )
 
 RD /S /Q "%w_folder%" >NUL 2>&1
 echo DONE
@@ -1528,7 +1543,7 @@ call :getname
 echo ------------------------------------
 echo Extracting secure partition from xci
 echo ------------------------------------
-%pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -o "%w_folder%\secure" %nf_cleaner% "%orinput%"
+%pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% -o "%w_folder%\secure" %nf_cleaner% "%orinput%"
 echo DONE
 if "%vrename%" EQU "true" call :addtags_from_xci
 if "%vrepack%" EQU "nsp" ( call "%nsp_lib%" "convert" "%w_folder%" )
@@ -1542,7 +1557,7 @@ move  "%w_folder%\*.xci"  "%fold_output%\!end_folder!" >NUL 2>&1
 move  "%w_folder%\*.xc*"  "%fold_output%\!end_folder!" >NUL 2>&1
 move  "%w_folder%\*.nsp"  "%fold_output%\!end_folder!" >NUL 2>&1
 move "%w_folder%\*.ns*" "%fold_output%\!end_folder!" >NUL 2>&1
-if exist "%w_folder%\archfolder" ( %pycommand% "%nut%" -ifo "%w_folder%\archfolder" -archive "%fold_output%\!end_folder!\%filename%.nsp" )
+if exist "%w_folder%\archfolder" ( %pycommand% "%squirrel%" -ifo "%w_folder%\archfolder" -archive "%fold_output%\!end_folder!\%filename%.nsp" )
 endlocal
 RD /S /Q "%w_folder%" >NUL 2>&1
 echo DONE
@@ -1596,7 +1611,7 @@ echo Input "3" to add another file to list via selector
 echo Input "0" to return to the MODE SELECTION MENU
 ECHO ***********************************************
 echo.
-%pycommand% "%nut%" -t nsp xci nsz xcz -tfile "%prog_dir%mlist.txt" -uin "%uinput%" -ff "uinput"
+%pycommand% "%squirrel%" -t nsp xci nsz xcz -tfile "%prog_dir%mlist.txt" -uin "%uinput%" -ff "uinput"
 set /p eval=<"%uinput%"
 set eval=%eval:"=%
 setlocal enabledelayedexpansion
@@ -1605,8 +1620,8 @@ endlocal
 if /i "%eval%"=="0" goto manual_Reentry
 if /i "%eval%"=="1" set skip_list_split="true"
 if /i "%eval%"=="1" goto multi_start_cleaning
-if /i "%eval%"=="2" ( %pycommand% "%nut%" -lib_call listmanager selector2list -xarg "%prog_dir%mlist.txt" mode=folder ext="nsp xci nsz xcz" ) 2>&1>NUL
-if /i "%eval%"=="3" ( %pycommand% "%nut%" -lib_call listmanager selector2list -xarg "%prog_dir%mlist.txt" mode=file ext="nsp xci nsz xcz" ) 2>&1>NUL
+if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%mlist.txt" mode=folder ext="nsp xci nsz xcz" ) 2>&1>NUL
+if /i "%eval%"=="3" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%mlist.txt" mode=file ext="nsp xci nsz xcz" ) 2>&1>NUL
 
 goto multi_checkagain
 echo.
@@ -1632,7 +1647,7 @@ ECHO *************************************************
 echo Or Input "0" to return to the MODE SELECTION MENU
 ECHO *************************************************
 echo.
-%pycommand% "%nut%" -t nsp xci nsz xcz -tfile "%prog_dir%mlist.txt" -uin "%uinput%" -ff "uinput"
+%pycommand% "%squirrel%" -t nsp xci nsz xcz -tfile "%prog_dir%mlist.txt" -uin "%uinput%" -ff "uinput"
 set /p eval=<"%uinput%"
 set eval=%eval:"=%
 setlocal enabledelayedexpansion
@@ -1646,8 +1661,8 @@ if /i "%eval%"=="2" set "mlistfol=%list_folder%\m_multi"
 if /i "%eval%"=="2" goto multi_start_cleaning
 if /i "%eval%"=="3" set "mlistfol=%list_folder%\m_multi"
 if /i "%eval%"=="3" goto multi_saved_for_later
-if /i "%eval%"=="4" ( %pycommand% "%nut%" -lib_call listmanager selector2list -xarg "%prog_dir%mlist.txt" mode=folder ext="nsp xci nsz xcz" ) 2>&1>NUL
-if /i "%eval%"=="5" ( %pycommand% "%nut%" -lib_call listmanager selector2list -xarg "%prog_dir%mlist.txt" mode=file ext="nsp xci nsz xcz" ) 2>&1>NUL
+if /i "%eval%"=="4" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%mlist.txt" mode=folder ext="nsp xci nsz xcz" ) 2>&1>NUL
+if /i "%eval%"=="5" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%mlist.txt" mode=file ext="nsp xci nsz xcz" ) 2>&1>NUL
 REM if /i "%eval%"=="2" goto multi_set_clogo
 if /i "%eval%"=="e" goto salida
 if /i "%eval%"=="i" goto multi_showlist
@@ -1675,7 +1690,7 @@ set vrepack=none
 if /i "%bs%"=="b" goto multi_checkagain
 if /i "%bs%"=="0" goto manual_Reentry
 if /i "%bs%"=="1" goto multi_saved_for_later1
-if /i "%bs%"=="2" ( %pycommand% "%nut%" -splid "%mlistfol%" -tfile "%prog_dir%mlist.txt" )
+if /i "%bs%"=="2" ( %pycommand% "%squirrel%" -splid "%mlistfol%" -tfile "%prog_dir%mlist.txt" )
 if /i "%bs%"=="2" del "%prog_dir%mlist.txt"
 if /i "%bs%"=="2" goto multi_saved_for_later2
 echo WRONG CHOICE!!
@@ -1911,14 +1926,14 @@ goto m_KeyChange_skip
 
 :m_split_merge
 if "%fatype%" EQU "-fat fat32" echo Fat32 selected, removing nsz and xcz from input list
-if "%fatype%" EQU "-fat fat32" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%mlist.txt","ext=nsp nsx xci","token=False",Print="False" ) 
+if "%fatype%" EQU "-fat fat32" ( %pycommand% "%squirrel%" -lib_call listmanager filter_list "%prog_dir%mlist.txt","ext=nsp nsx xci","token=False",Print="False" ) 
 cls
 call :program_logo
-%pycommand% "%nut%" -splid "%mlistfol%" -tfile "%prog_dir%mlist.txt"
+%pycommand% "%squirrel%" -splid "%mlistfol%" -tfile "%prog_dir%mlist.txt"
 goto m_process_jobs2
 :m_process_jobs
 if "%fatype%" EQU "-fat fat32" echo Fat32 selected, removing nsz and xcz from input list
-if "%fatype%" EQU "-fat fat32" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%mlist.txt","ext=nsp nsx xci","token=False",Print="False" ) 
+if "%fatype%" EQU "-fat fat32" ( %pycommand% "%squirrel%" -lib_call listmanager filter_list "%prog_dir%mlist.txt","ext=nsp nsx xci","token=False",Print="False" ) 
 cls
 :m_process_jobs2
 dir "%mlistfol%\*.txt" /b  > "%prog_dir%mlist.txt"
@@ -1927,30 +1942,30 @@ for /f "tokens=*" %%f in (mlist.txt) do (
 set "listname=%%f"
 if "%vrepack%" EQU "cnsp" call :program_logo
 if "%vrepack%" EQU "cnsp" call :m_split_merge_list_name 
-if "%vrepack%" EQU "cnsp" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t cnsp -o "%w_folder%" -tfile "%mlistfol%\%%f" -roma %romaji% -dmul "calculate" )
+if "%vrepack%" EQU "cnsp" ( %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t cnsp -o "%w_folder%" -tfile "%mlistfol%\%%f" -roma %romaji% -dmul "calculate" )
 
 if "%vrepack%" EQU "xci" call :program_logo
 if "%vrepack%" EQU "xci" call :m_split_merge_list_name
-if "%vrepack%" EQU "xci" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t xci -o "%w_folder%" -tfile "%mlistfol%\%%f" -roma %romaji% -dmul "calculate" )
+if "%vrepack%" EQU "xci" ( %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t xci -o "%w_folder%" -tfile "%mlistfol%\%%f" -roma %romaji% -dmul "calculate" )
 
 if "%vrepack%" EQU "nsp" call :program_logo
 if "%vrepack%" EQU "nsp" call :m_split_merge_list_name
-if "%vrepack%" EQU "nsp" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t nsp -o "%w_folder%" -tfile "%mlistfol%\%%f" -roma %romaji% -dmul "calculate" )
+if "%vrepack%" EQU "nsp" ( %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t nsp -o "%w_folder%" -tfile "%mlistfol%\%%f" -roma %romaji% -dmul "calculate" )
 
 if "%vrepack%" EQU "cboth" call :program_logo
 if "%vrepack%" EQU "cboth" call :m_split_merge_list_name
-if "%vrepack%" EQU "cboth" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t xci -o "%w_folder%" -tfile "%mlistfol%\%%f" -roma %romaji% -dmul "calculate" )
+if "%vrepack%" EQU "cboth" ( %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t xci -o "%w_folder%" -tfile "%mlistfol%\%%f" -roma %romaji% -dmul "calculate" )
 if "%vrepack%" EQU "cboth" call :program_logo
 if "%vrepack%" EQU "cboth" call :m_split_merge_list_name
-if "%vrepack%" EQU "cboth" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t cnsp -o "%w_folder%" -tfile "%mlistfol%\%%f" -roma %romaji% -dmul "calculate" )
+if "%vrepack%" EQU "cboth" ( %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t cnsp -o "%w_folder%" -tfile "%mlistfol%\%%f" -roma %romaji% -dmul "calculate" )
 
 if "%vrepack%" EQU "both" call :program_logo
 if "%vrepack%" EQU "both" call :m_split_merge_list_name
-if "%vrepack%" EQU "both" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t nsp -o "%w_folder%" -tfile "%mlistfol%\%%f" -roma %romaji% -dmul "calculate" )
+if "%vrepack%" EQU "both" ( %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t nsp -o "%w_folder%" -tfile "%mlistfol%\%%f" -roma %romaji% -dmul "calculate" )
 if "%vrepack%" EQU "both" call :program_logo
 if "%vrepack%" EQU "both" call :m_split_merge_list_name
-if "%vrepack%" EQU "both" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t xci -o "%w_folder%" -tfile "%mlistfol%\%%f" -roma %romaji% -dmul "calculate" )
-%pycommand% "%nut%" --strip_lines "%prog_dir%mlist.txt" "1" "true"
+if "%vrepack%" EQU "both" ( %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t xci -o "%w_folder%" -tfile "%mlistfol%\%%f" -roma %romaji% -dmul "calculate" )
+%pycommand% "%squirrel%" --strip_lines "%prog_dir%mlist.txt" "1" "true"
 if exist "%mlistfol%\%%f" del "%mlistfol%\%%f"
 rem call :multi_contador_NF
 )
@@ -1962,7 +1977,7 @@ move "%w_folder%\*.xci" "%gefolder%" >NUL 2>&1
 move  "%w_folder%\*.xc*" "%gefolder%" >NUL 2>&1
 move "%w_folder%\*.nsp" "%gefolder%" >NUL 2>&1
 move "%w_folder%\*.ns*" "%gefolder%" >NUL 2>&1
-if exist "%w_folder%\archfolder" ( %pycommand% "%nut%" -tfile "%w_folder%\filename.txt" -ifo "%w_folder%\archfolder" -archive "%gefolder%" )
+if exist "%w_folder%\archfolder" ( %pycommand% "%squirrel%" -tfile "%w_folder%\filename.txt" -ifo "%w_folder%\archfolder" -archive "%gefolder%" )
 endlocal
 RD /S /Q "%w_folder%" >NUL 2>&1
 if exist "%mlistfol%" RD /S /Q "%mlistfol%" >NUL 2>&1
@@ -1979,7 +1994,7 @@ set "listname=%%f"
 set "list=%mlistfol%\%%f"
 call :m_split_merge_list_name
 call :m_process_jobs_fat32_2
-%pycommand% "%nut%" --strip_lines "%prog_dir%mlist.txt" "1" "true"
+%pycommand% "%squirrel%" --strip_lines "%prog_dir%mlist.txt" "1" "true"
 if exist "%mlistfol%\%%f" del "%mlistfol%\%%f"
 rem call :multi_contador_NF
 )
@@ -2012,11 +2027,11 @@ if exist "%w_folder%\tempname.*" goto m_process_jobs_fat32_4
 :m_process_jobs_fat32_3
 setlocal enabledelayedexpansion
 if not exist "%fold_output%" MD "%fold_output%" >NUL 2>&1
-if exist "%w_folder%\archfolder" ( %pycommand% "%nut%" -ifo "%w_folder%\archfolder" -archive "%fold_output%\tempname.nsp" )
+if exist "%w_folder%\archfolder" ( %pycommand% "%squirrel%" -ifo "%w_folder%\archfolder" -archive "%fold_output%\tempname.nsp" )
 endlocal
 dir "%fold_output%\tempname.*" /b  > "%w_folder%\templist.txt"
 for /f "usebackq tokens=*" %%f in ("%w_folder%\templist.txt") do (
-%pycommand% "%nut%" -roma %romaji% --renameftxt "%fold_output%\%%f" -tfile "%list%"
+%pycommand% "%squirrel%" -roma %romaji% --renameftxt "%fold_output%\%%f" -tfile "%list%"
 if exist "%w_folder%\templist.txt" del "%w_folder%\templist.txt"
 )
 
@@ -2028,7 +2043,7 @@ exit /B
 :m_process_jobs_fat32_4
 dir "%w_folder%\tempname.*" /b  > "%w_folder%\templist.txt"
 for /f "usebackq tokens=*" %%f in ("%w_folder%\templist.txt") do (
-%pycommand% "%nut%" -roma %romaji% --renameftxt "%w_folder%\%%f" -tfile "%list%"
+%pycommand% "%squirrel%" -roma %romaji% --renameftxt "%w_folder%\%%f" -tfile "%list%"
 )
 setlocal enabledelayedexpansion
 if not exist "%fold_output%" MD "%fold_output%" >NUL 2>&1
@@ -2061,23 +2076,23 @@ rem if /i "%finalname%"=="b" goto multi_checkagain
 
 cls
 if "%vrepack%" EQU "cnsp" call :program_logo
-if "%vrepack%" EQU "cnsp" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t cnsp -o "%w_folder%" -tfile "%prog_dir%mlist.txt" -roma %romaji% -dmul "calculate" )
+if "%vrepack%" EQU "cnsp" ( %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t cnsp -o "%w_folder%" -tfile "%prog_dir%mlist.txt" -roma %romaji% -dmul "calculate" )
 
 if "%vrepack%" EQU "xci" call :program_logo
-if "%vrepack%" EQU "xci" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t xci -o "%w_folder%" -tfile "%prog_dir%mlist.txt" -roma %romaji% -dmul "calculate" )
+if "%vrepack%" EQU "xci" ( %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t xci -o "%w_folder%" -tfile "%prog_dir%mlist.txt" -roma %romaji% -dmul "calculate" )
 
 if "%vrepack%" EQU "nsp" call :program_logo
-if "%vrepack%" EQU "nsp" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t nsp -o "%w_folder%" -tfile "%prog_dir%mlist.txt" -roma %romaji% -dmul "calculate" )
+if "%vrepack%" EQU "nsp" ( %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t nsp -o "%w_folder%" -tfile "%prog_dir%mlist.txt" -roma %romaji% -dmul "calculate" )
 
 if "%vrepack%" EQU "cboth" call :program_logo
-if "%vrepack%" EQU "cboth" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t xci -o "%w_folder%" -tfile "%prog_dir%mlist.txt" -roma %romaji% -dmul "calculate" )
+if "%vrepack%" EQU "cboth" ( %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t xci -o "%w_folder%" -tfile "%prog_dir%mlist.txt" -roma %romaji% -dmul "calculate" )
 if "%vrepack%" EQU "cboth" call :program_logo
-if "%vrepack%" EQU "cboth" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t cnsp -o "%w_folder%" -tfile "%prog_dir%mlist.txt" -roma %romaji% -dmul "calculate" )
+if "%vrepack%" EQU "cboth" ( %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t cnsp -o "%w_folder%" -tfile "%prog_dir%mlist.txt" -roma %romaji% -dmul "calculate" )
 
 if "%vrepack%" EQU "both" call :program_logo
-if "%vrepack%" EQU "both" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t nsp -o "%w_folder%" -tfile "%prog_dir%mlist.txt" -roma %romaji% -dmul "calculate" )
+if "%vrepack%" EQU "both" ( %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t nsp -o "%w_folder%" -tfile "%prog_dir%mlist.txt" -roma %romaji% -dmul "calculate" )
 if "%vrepack%" EQU "both" call :program_logo
-if "%vrepack%" EQU "both" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t xci -o "%w_folder%" -tfile "%prog_dir%mlist.txt" -roma %romaji% -dmul "calculate" )
+if "%vrepack%" EQU "both" ( %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t xci -o "%w_folder%" -tfile "%prog_dir%mlist.txt" -roma %romaji% -dmul "calculate" )
 
 setlocal enabledelayedexpansion
 if not exist "%fold_output%" MD "%fold_output%" >NUL 2>&1
@@ -2090,7 +2105,7 @@ move "%w_folder%\*.nsp" "%gefolder%" >NUL 2>&1
 move "%w_folder%\*.ns*" "%gefolder%" >NUL 2>&1
 if exist "%w_folder%\*.zip" ( MD "%zip_fold%" ) >NUL 2>&1
 move "%w_folder%\*.zip" "%zip_fold%" >NUL 2>&1
-if exist "%w_folder%\archfolder" ( %pycommand% "%nut%" -tfile "%w_folder%\filename.txt" -ifo "%w_folder%\archfolder" -archive "%gefolder%" )
+if exist "%w_folder%\archfolder" ( %pycommand% "%squirrel%" -tfile "%w_folder%\filename.txt" -ifo "%w_folder%\archfolder" -archive "%gefolder%" )
 endlocal
 RD /S /Q "%w_folder%" >NUL 2>&1
 goto m_exit_choice
@@ -2115,7 +2130,7 @@ set "filename=%%~nxf"
 set "orinput=%%f"
 if "%%~nxf"=="%%~nf.nsp" call :multi_nsp_manual
 if "%%~nxf"=="%%~nf.xci" call :multi_xci_manual
-%pycommand% "%nut%" --strip_lines "%prog_dir%mlist.txt" "1" "true"
+%pycommand% "%squirrel%" --strip_lines "%prog_dir%mlist.txt" "1" "true"
 rem call :multi_contador_NF
 )
 set "filename=%finalname%"
@@ -2138,7 +2153,7 @@ move "%w_folder%\*.nsp" "%gefolder%" >NUL 2>&1
 move "%w_folder%\*.ns*" "%gefolder%" >NUL 2>&1
 if exist "%w_folder%\*.zip" ( MD "%zip_fold%" ) >NUL 2>&1
 move "%w_folder%\*.zip" "%zip_fold%" >NUL 2>&1
-if exist "%w_folder%\archfolder" ( %pycommand% "%nut%" -ifo "%w_folder%\archfolder" -archive "%gefolder%\%filename%.nsp" )
+if exist "%w_folder%\archfolder" ( %pycommand% "%squirrel%" -ifo "%w_folder%\archfolder" -archive "%gefolder%\%filename%.nsp" )
 endlocal
 RD /S /Q "%w_folder%" >NUL 2>&1
 goto m_exit_choice
@@ -2166,7 +2181,7 @@ goto m_exit_choice
 set "showname=%orinput%"
 call :processing_message
 call :squirrell
-%pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -o "%w_folder%\secure" %nf_cleaner% "%orinput%"
+%pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% -o "%w_folder%\secure" %nf_cleaner% "%orinput%"
 echo DONE
 call :thumbup
 call :delay
@@ -2184,7 +2199,7 @@ call :getname
 echo ------------------------------------
 echo Extracting secure partition from xci
 echo ------------------------------------
-%pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -o "%w_folder%\secure" %nf_cleaner% "%orinput%"
+%pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% -o "%w_folder%\secure" %nf_cleaner% "%orinput%"
 echo DONE
 call :thumbup
 call :delay
@@ -2244,7 +2259,7 @@ del "%~dp0logo.txt"
 if not exist "%w_folder%" MD "%w_folder%" >NUL 2>&1
 if exist "%w_folder%\normal" RD /S /Q "%w_folder%\normal" >NUL 2>&1
 
-%pycommand% "%nut%" --nsptype "%custlogo%">"%w_folder%\nsptype.txt"
+%pycommand% "%squirrel%" --nsptype "%custlogo%">"%w_folder%\nsptype.txt"
 set /p nsptype=<"%w_folder%\nsptype.txt"
 del "%w_folder%\nsptype.txt"
 if "%nsptype%" EQU "DLC" echo.
@@ -2252,7 +2267,7 @@ if "%nsptype%" EQU "DLC" echo ---NSP DOESN'T HAVE A CONTROL NCA---
 if "%nsptype%" EQU "DLC" echo.
 if "%nsptype%" EQU "DLC" ( goto multi_set_clogo )
 MD "%w_folder%\normal" >NUL 2>&1
-%pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -o "%w_folder%\normal" --NSP_copy_nca_control "%custlogo%"
+%pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% -o "%w_folder%\normal" --NSP_copy_nca_control "%custlogo%"
 echo ................
 echo "EXTRACTED LOGO"
 echo ................
@@ -2263,7 +2278,7 @@ goto multi_checkagain
 del "%~dp0logo.txt"
 if not exist "%w_folder%" MD "%w_folder%" >NUL 2>&1
 if exist "%w_folder%\normal" RD /S /Q "%w_folder%\normal" >NUL 2>&1
-%pycommand% "%nut%" --ncatype "%custlogo%">"%w_folder%\ncatype.txt"
+%pycommand% "%squirrel%" --ncatype "%custlogo%">"%w_folder%\ncatype.txt"
 set /p ncatype=<"%w_folder%\ncatype.txt"
 del "%w_folder%\ncatype.txt"
 if "%ncatype%" NEQ "Content.CONTROL" echo.
@@ -2347,7 +2362,7 @@ echo Input "2" to add file to list via selector
 echo Input "0" to return to the MODE SELECTION MENU
 ECHO ***********************************************
 echo.
-%pycommand% "%nut%" -t nsp xci nsz xcz -tfile "%prog_dir%splist.txt" -uin "%uinput%" -ff "uinput"
+%pycommand% "%squirrel%" -t nsp xci nsz xcz -tfile "%prog_dir%splist.txt" -uin "%uinput%" -ff "uinput"
 set /p eval=<"%uinput%"
 set eval=%eval:"=%
 setlocal enabledelayedexpansion
@@ -2355,8 +2370,8 @@ echo+ >"%uinput%"
 endlocal
 
 if /i "%eval%"=="0" goto manual_Reentry
-if /i "%eval%"=="1" ( %pycommand% "%nut%" -lib_call listmanager selector2list -xarg "%prog_dir%splist.txt" mode=folder ext="nsp xci nsz xcz" ) 2>&1>NUL
-if /i "%eval%"=="2" ( %pycommand% "%nut%" -lib_call listmanager selector2list -xarg "%prog_dir%splist.txt" mode=file ext="nsp xci nsz xcz" )  2>&1>NUL
+if /i "%eval%"=="1" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%splist.txt" mode=folder ext="nsp xci nsz xcz" ) 2>&1>NUL
+if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%splist.txt" mode=file ext="nsp xci nsz xcz" )  2>&1>NUL
 
 echo.
 :sp_checkagain
@@ -2376,7 +2391,7 @@ ECHO *************************************************
 echo Or Input "0" to return to the MODE SELECTION MENU
 ECHO *************************************************
 echo.
-%pycommand% "%nut%" -t nsp xci nsz xcz -tfile "%prog_dir%splist.txt" -uin "%uinput%" -ff "uinput"
+%pycommand% "%squirrel%" -t nsp xci nsz xcz -tfile "%prog_dir%splist.txt" -uin "%uinput%" -ff "uinput"
 set /p eval=<"%uinput%"
 set eval=%eval:"=%
 setlocal enabledelayedexpansion
@@ -2385,8 +2400,8 @@ endlocal
 
 if /i "%eval%"=="0" goto manual_Reentry
 if /i "%eval%"=="1" goto sp_start_cleaning
-if /i "%eval%"=="2" ( %pycommand% "%nut%" -lib_call listmanager selector2list -xarg "%prog_dir%splist.txt" mode=folder ext="nsp xci nsz xcz" ) 2>&1>NUL
-if /i "%eval%"=="3" ( %pycommand% "%nut%" -lib_call listmanager selector2list -xarg "%prog_dir%splist.txt" mode=file ext="nsp xci nsz xcz" )  2>&1>NUL
+if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%splist.txt" mode=folder ext="nsp xci nsz xcz" ) 2>&1>NUL
+if /i "%eval%"=="3" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%splist.txt" mode=file ext="nsp xci nsz xcz" )  2>&1>NUL
 
 if /i "%eval%"=="e" goto salida
 if /i "%eval%"=="i" goto sp_showlist
@@ -2473,7 +2488,7 @@ if /i "%bs%"=="2" set "vrepack=xci"
 if /i "%bs%"=="3" set "vrepack=both"
 if %vrepack%=="none" goto sp_cl_wrongchoice
 if "%fatype%" EQU "-fat fat32" echo Fat32 selected, removing nsz and xcz from input list
-if "%fatype%" EQU "-fat fat32" ( %pycommand% "%nut%" -lib_call listmanager filter_list "%prog_dir%splist.txt","ext=nsp nsx xci","token=False",Print="False" ) 
+if "%fatype%" EQU "-fat fat32" ( %pycommand% "%squirrel%" -lib_call listmanager filter_list "%prog_dir%splist.txt","ext=nsp nsx xci","token=False",Print="False" ) 
 cls
 call :program_logo
 for /f "tokens=*" %%f in (splist.txt) do (
@@ -2489,7 +2504,7 @@ if "%%~nxf"=="%%~nf.xci" call :split_content
 if "%%~nxf"=="%%~nf.XCI" call :split_content
 if "%%~nxf"=="%%~nf.xcz" call :split_content
 if "%%~nxf"=="%%~nf.XCZ" call :split_content
-%pycommand% "%nut%" --strip_lines "%prog_dir%splist.txt" "1" "true"
+%pycommand% "%squirrel%" --strip_lines "%prog_dir%splist.txt" "1" "true"
 setlocal enabledelayedexpansion
 if exist "%fold_output%\!end_folder!" RD /S /Q "%fold_output%\!end_folder!" >NUL 2>&1
 MD "%fold_output%\!end_folder!" >NUL 2>&1
@@ -2497,7 +2512,7 @@ move "%w_folder%\*.xci" "%fold_output%\!end_folder!\" >NUL 2>&1
 move "%w_folder%\*.xc*" "%fold_output%\!end_folder!\" >NUL 2>&1
 move "%w_folder%\*.nsp" "%fold_output%\!end_folder!\" >NUL 2>&1
 move "%w_folder%\*.ns*" "%fold_output%\!end_folder!\" >NUL 2>&1
-if exist "%w_folder%\archfolder" ( %pycommand% "%nut%" -ifo "%w_folder%\archfolder" -archive "%fold_output%\!end_folder!\%filename%.nsp" )
+if exist "%w_folder%\archfolder" ( %pycommand% "%squirrel%" -ifo "%w_folder%\archfolder" -archive "%fold_output%\!end_folder!\%filename%.nsp" )
 if exist "%w_folder%" RD /S /Q  "%w_folder%" >NUL 2>&1
 endlocal
 rem call :sp_contador_NF
@@ -2528,9 +2543,9 @@ if exist "%w_folder%" RD /S /Q  "%w_folder%" >NUL 2>&1
 MD "%w_folder%" >NUL 2>&1
 call :processing_message
 call :squirrell
-if "%vrepack%" EQU "nsp" ( %pycommand% "%nut%" %buffer% -o "%w_folder%" %fatype% %fexport% -t "nsp" -dspl "%orinput%" -tfile "%prog_dir%splist.txt")
-if "%vrepack%" EQU "xci" ( %pycommand% "%nut%" %buffer% -o "%w_folder%" %fatype% %fexport% -t "xci" -dspl "%orinput%" -tfile "%prog_dir%splist.txt")
-if "%vrepack%" EQU "both" ( %pycommand% "%nut%" %buffer% -o "%w_folder%" %fatype% %fexport% -t "both" -dspl "%orinput%" -tfile "%prog_dir%splist.txt")
+if "%vrepack%" EQU "nsp" ( %pycommand% "%squirrel%" %buffer% -o "%w_folder%" %fatype% %fexport% -t "nsp" -dspl "%orinput%" -tfile "%prog_dir%splist.txt")
+if "%vrepack%" EQU "xci" ( %pycommand% "%squirrel%" %buffer% -o "%w_folder%" %fatype% %fexport% -t "xci" -dspl "%orinput%" -tfile "%prog_dir%splist.txt")
+if "%vrepack%" EQU "both" ( %pycommand% "%squirrel%" %buffer% -o "%w_folder%" %fatype% %fexport% -t "both" -dspl "%orinput%" -tfile "%prog_dir%splist.txt")
 
 call :thumbup
 call :delay
@@ -2544,7 +2559,7 @@ if exist "%w_folder%" RD /S /Q  "%w_folder%" >NUL 2>&1
 MD "%w_folder%" >NUL 2>&1
 call :processing_message
 call :squirrell
-%pycommand% "%nut%" %buffer% -o "%w_folder%" --splitter "%orinput%" -pe "secure"
+%pycommand% "%squirrel%" %buffer% -o "%w_folder%" --splitter "%orinput%" -pe "secure"
 for /f "usebackq tokens=*" %%f in ("%w_folder%\dirlist.txt") do (
 setlocal enabledelayedexpansion
 rem echo "!sp_repack!"
@@ -2569,7 +2584,7 @@ if "!sp_repack!" EQU "xci" ( call "%xci_lib%" "sp_repack" "%w_folder%" "!tfolder
 if "!sp_repack!" EQU "both" ( call "%nsp_lib%" "sp_convert" "%w_folder%" "!tfolder!" "!fname!" )
 if "!sp_repack!" EQU "both" ( call "%xci_lib%" "sp_repack" "%w_folder%" "!tfolder!" "!fname!" )
 endlocal
-%pycommand% "%nut%" --strip_lines "%prog_dir%dirlist.txt" "1" "true"
+%pycommand% "%squirrel%" --strip_lines "%prog_dir%dirlist.txt" "1" "true"
 )
 del "%w_folder%\dirlist.txt" >NUL 2>&1
 
@@ -2666,10 +2681,10 @@ if not errorlevel 1 goto DBcheckfolder
 if exist "%bs%\" goto DBcheckfolder
 goto DBcheckfile
 :DBcheckfolder
-%pycommand% "%nut%" -t nsp xci nsx nsz xcz -tfile "%prog_dir%DBL.txt" -ff "%targt%"
+%pycommand% "%squirrel%" -t nsp xci nsx nsz xcz -tfile "%prog_dir%DBL.txt" -ff "%targt%"
 goto DBcheckagain
 :DBcheckfile
-%pycommand% "%nut%" -t nsp xci nsx nsz xcz -tfile "%prog_dir%DBL.txt" -ff "%targt%"
+%pycommand% "%squirrel%" -t nsp xci nsx nsz xcz -tfile "%prog_dir%DBL.txt" -ff "%targt%"
 goto DBcheckagain
 echo.
 :DBcheckagain
@@ -2763,7 +2778,7 @@ echo ............
 echo *******************************************************
 echo CHOOSE WHAT TO DO AFTER PROCESSING THE SELECTED FILES
 echo *******************************************************
-echo Input "1" TO GENERATE NUTDB DATABASE
+echo Input "1" TO GENERATE squirrelDB DATABASE
 echo Input "2" TO GENERATE EXTENDED DATABASE
 echo Input "3" TO GENERATE KEYLESS DATABASE (EXTENDED)
 echo Input "4" TO GENERATE SIMPLE DATABASE
@@ -2780,7 +2795,7 @@ set vrepack=none
 if /i "%bs%"=="0" goto DBcheckagain
 if /i "%bs%"=="Z" set "vrepack=zip"
 if /i "%bs%"=="Z" goto DBs_start
-if /i "%bs%"=="1" set "dbformat=nutdb"
+if /i "%bs%"=="1" set "dbformat=squirreldb"
 if /i "%bs%"=="1" goto DBs_GENDB
 if /i "%bs%"=="2" set "dbformat=extended"
 if /i "%bs%"=="2" goto DBs_GENDB
@@ -2811,7 +2826,7 @@ if "%%~nxf"=="%%~nf.xci" call :DBnsp_manual
 if "%%~nxf"=="%%~nf.XCI" call :DBnsp_manual
 if "%%~nxf"=="%%~nf.xcz" call :DBnsp_manual
 if "%%~nxf"=="%%~nf.XCZ" call :DBnsp_manual
-%pycommand% "%nut%" --strip_lines "%prog_dir%DBL.txt" "1" "true"
+%pycommand% "%squirrel%" --strip_lines "%prog_dir%DBL.txt" "1" "true"
 rem call :DBcontador_NF
 )
 ECHO ---------------------------------------------------
@@ -2870,7 +2885,7 @@ for /f "tokens=*" %%f in (DBL.txt) do (
 set "orinput=%%f"
 if exist "%dbdir%temp" ( RD /S /Q "%dbdir%temp" ) >NUL 2>&1
 call :DBGeneration
-if "%workers%" EQU "-threads 1" ( %pycommand% "%nut%" --strip_lines "%prog_dir%DBL.txt" "1" "true")
+if "%workers%" EQU "-threads 1" ( %pycommand% "%squirrel%" --strip_lines "%prog_dir%DBL.txt" "1" "true")
 if "%workers%" NEQ "-threads 1" ( call :DBcheck )
 rem if "%workers%" NEQ "-threads 1" ( call :DBcontador_NF )
 )
@@ -2883,7 +2898,7 @@ goto DBs_exit_choice
 
 :DBGeneration
 if not exist "%dbdir%" MD "%dbdir%">NUL 2>&1
-%pycommand% "%nut%" --dbformat "%dbformat%" -dbfile "%db_file%" -tfile "%prog_dir%DBL.txt" -nscdb "%orinput%" %workers%
+%pycommand% "%squirrel%" --dbformat "%dbformat%" -dbfile "%db_file%" -tfile "%prog_dir%DBL.txt" -nscdb "%orinput%" %workers%
 exit /B
 
 :DBcheck
@@ -2960,7 +2975,7 @@ ECHO =============================     BY JULESONTHEROAD     ===================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                                POWERED BY SQUIRREL                                "
 ECHO "                    BASED ON THE WORK OF BLAWAR AND LUCA FRAGA                     "
-ECHO                                  VERSION 0.98 (NEW)
+ECHO                                  VERSION 0.99 (NEW)
 ECHO -------------------------------------------------------------------------------------                   
 ECHO Program's github: https://github.com/julesontheroad/NSC_BUILDER
 ECHO Blawar's github:  https://github.com/blawar
@@ -3019,25 +3034,25 @@ exit /B
 echo.
 echo Making zip for %ziptarget%
 echo.
-%pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -o "%w_folder%\zip" --zip_combo "%ziptarget%"
-%pycommand% "%nut%" -o "%w_folder%\zip" --NSP_c_KeyBlock "%ziptarget%"
-%pycommand% "%nut%" --nsptitleid "%ziptarget%" >"%w_folder%\nsptitleid.txt"
+%pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% -o "%w_folder%\zip" --zip_combo "%ziptarget%"
+%pycommand% "%squirrel%" -o "%w_folder%\zip" --NSP_c_KeyBlock "%ziptarget%"
+%pycommand% "%squirrel%" --nsptitleid "%ziptarget%" >"%w_folder%\nsptitleid.txt"
 if exist "%w_folder%\secure\*.dat" ( move "%w_folder%\secure\*.dat" "%w_folder%\zip" ) >NUL 2>&1
 
 set /p titleid=<"%w_folder%\nsptitleid.txt"
 del "%w_folder%\nsptitleid.txt" >NUL 2>&1
-%pycommand% "%nut%" --nsptype "%ziptarget%" >"%w_folder%\nsptype.txt"
+%pycommand% "%squirrel%" --nsptype "%ziptarget%" >"%w_folder%\nsptype.txt"
 set /p type=<"%w_folder%\nsptype.txt"
 del "%w_folder%\nsptype.txt" >NUL 2>&1
-%pycommand% "%nut%" --ReadversionID "%ziptarget%">"%w_folder%\nspversion.txt"
+%pycommand% "%squirrel%" --ReadversionID "%ziptarget%">"%w_folder%\nspversion.txt"
 set /p verID=<"%w_folder%\nspversion.txt"
 set "verID=V%verID%"
 del "%w_folder%\nspversion.txt" >NUL 2>&1
 if "%type%" EQU "BASE" ( set "ctag=" )
 if "%type%" EQU "UPDATE" ( set ctag=[UPD] )
 if "%type%" EQU "DLC" ( set ctag=[DLC] )
-%pycommand% "%nut%" -i "%ziptarget%">"%w_folder%\zip\fileinfo[%titleid%][%verID%]%ctag%.txt" 
-%pycommand% "%nut%" --filelist "%ziptarget%">"%w_folder%\zip\ORIGINAL_filelist[%titleid%][%verID%]%ctag%.txt"
+%pycommand% "%squirrel%" -i "%ziptarget%">"%w_folder%\zip\fileinfo[%titleid%][%verID%]%ctag%.txt" 
+%pycommand% "%squirrel%" --filelist "%ziptarget%">"%w_folder%\zip\ORIGINAL_filelist[%titleid%][%verID%]%ctag%.txt"
 "%zip%" -ifo "%w_folder%\zip" -zippy "%w_folder%\%titleid%[%verID%]%ctag%.zip"
 RD /S /Q "%w_folder%\zip" >NUL 2>&1
 exit /B
@@ -3048,7 +3063,7 @@ echo.
 exit /B
 
 :check_titlerights
-%pycommand% "%nut%" --nsp_htrights "%target%">"%w_folder%\trights.txt"
+%pycommand% "%squirrel%" --nsp_htrights "%target%">"%w_folder%\trights.txt"
 set /p trights=<"%w_folder%\trights.txt"
 del "%w_folder%\trights.txt" >NUL 2>&1
 if "%trights%" EQU "TRUE" ( goto ct_true )
@@ -3059,10 +3074,10 @@ exit /B
 
 
 :addtags_from_nsp
-%pycommand% "%nut%" --nsptitleid "%orinput%" >"%w_folder%\nsptitleid.txt"
+%pycommand% "%squirrel%" --nsptitleid "%orinput%" >"%w_folder%\nsptitleid.txt"
 set /p titleid=<"%w_folder%\nsptitleid.txt"
 del "%w_folder%\nsptitleid.txt" >NUL 2>&1
-%pycommand% "%nut%" --nsptype "%orinput%" >"%w_folder%\nsptype.txt"
+%pycommand% "%squirrel%" --nsptype "%orinput%" >"%w_folder%\nsptype.txt"
 set /p type=<"%w_folder%\nsptype.txt"
 del "%w_folder%\nsptype.txt" >NUL 2>&1
 if "%type%" EQU "BASE" ( set filename=%filename%[%titleid%][v0] )
@@ -3075,7 +3090,7 @@ dir "%w_folder%\secure\*.cnmt.nca" /b  >"%w_folder%\ncameta.txt"
 set /p ncameta=<"%w_folder%\ncameta.txt"
 del "%w_folder%\ncameta.txt" >NUL 2>&1 
 set "ncameta=%w_folder%\secure\%ncameta%"
-%pycommand% "%nut%" --ncatitleid "%ncameta%" >"%w_folder%\ncaid.txt"
+%pycommand% "%squirrel%" --ncatitleid "%ncameta%" >"%w_folder%\ncaid.txt"
 set /p titleid=<"%w_folder%\ncaid.txt"
 del "%w_folder%\ncaid.txt"
 echo [%titleid%]>"%w_folder%\titleid.txt"
@@ -3103,7 +3118,7 @@ echo You're missing the following things:
 echo ....................................
 echo.
 if not exist "%op_file%" echo - The config file is not correctly pointed or is missing.
-if not exist "%nut%" echo - "squirrel.py" is not correctly pointed or is missing.
+if not exist "%squirrel%" echo - "squirrel.py" is not correctly pointed or is missing.
 if not exist "%xci_lib%" echo - "XCI.bat" is not correctly pointed or is missing.
 if not exist "%nsp_lib%" echo - "NSP.bat" is not correctly pointed or is missing.
 if not exist "%zip%" echo - "7za.exe" is not correctly pointed or is missing.

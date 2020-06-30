@@ -2293,8 +2293,7 @@ if __name__ == '__main__':
 							v_drive, v_path = os.path.splitdrive(endfile)
 							dsktotal, dskused, dskfree=disk_usage(str(v_drive))	
 							if int(dskfree)<int(totSize):
-								print("Warning disk space lower than required size. Program will exit")
-								sys.exit()
+								sys.exit("Warning disk space lower than required size. Program will exit")
 						if vskip==False:
 							t = tqdm(total=totSize, unit='B', unit_scale=True, leave=False)
 							outf = open(endfile, 'w+b')
@@ -2366,8 +2365,7 @@ if __name__ == '__main__':
 							v_drive, v_path = os.path.splitdrive(endfile)
 							dsktotal, dskused, dskfree=disk_usage(str(v_drive))	
 							if int(dskfree)<int(totSize):
-								print("Warning disk space lower than required size. Program will exit")
-								sys.exit()						
+								sys.exit("Warning disk space lower than required size. Program will exit")						
 						if vskip==False:
 							c=0
 							t = tqdm(total=totSize, unit='B', unit_scale=True, leave=False)
@@ -4140,8 +4138,7 @@ if __name__ == '__main__':
 					v_drive, v_path = os.path.splitdrive(endfile)
 					dsktotal, dskused, dskfree=disk_usage(str(v_drive))	
 					if int(dskfree)<int(totSize):
-						print("Warning disk space lower than required size. Program will exit")
-						sys.exit()					
+						sys.exit("Warning disk space lower than required size. Program will exit")					
 					t = tqdm(total=totSize, unit='B', unit_scale=True, leave=False)
 					outf = open(endfile, 'w+b')
 					t.write(tabs+'- Writing NSP header...')
@@ -4226,8 +4223,7 @@ if __name__ == '__main__':
 					v_drive, v_path = os.path.splitdrive(endfile)
 					dsktotal, dskused, dskfree=disk_usage(str(v_drive))	
 					if int(dskfree)<int(totSize):
-						print("Warning disk space lower than required size. Program will exit")
-						sys.exit()					
+						sys.exit("Warning disk space lower than required size. Program will exit")					
 					t = tqdm(total=totSize, unit='B', unit_scale=True, leave=False)
 					t.write(tabs+'- Writing XCI header...')
 					outf = open(endfile, 'w+b')
@@ -4343,8 +4339,7 @@ if __name__ == '__main__':
 					v_drive, v_path = os.path.splitdrive(endfile)
 					dsktotal, dskused, dskfree=disk_usage(str(v_drive))	
 					if int(dskfree)<int(totSize):
-						print("Warning disk space lower than required size. Program will exit")
-						sys.exit()					
+						sys.exit("Warning disk space lower than required size. Program will exit")					
 					t = tqdm(total=totSize, unit='B', unit_scale=True, leave=False)
 					outf = open(endfile, 'w+b')
 					t.write(tabs+'- Writing NSP header...')
@@ -4600,8 +4595,7 @@ if __name__ == '__main__':
 			v_drive, v_path = os.path.splitdrive(outfile)
 			dsktotal, dskused, dskfree=disk_usage(str(v_drive))	
 			if int(dskfree)<int(totSize):
-				print("Warning disk space lower than required size. Program will exit")
-				sys.exit()				
+				sys.exit("Warning disk space lower than required size. Program will exit")				
 			t = tqdm(total=totSize, unit='B', unit_scale=True, leave=False)
 			t.write(tabs+'- Joining files...')
 			index=0
@@ -5313,8 +5307,7 @@ if __name__ == '__main__':
 						v_drive, v_path = os.path.splitdrive(filename)
 						dsktotal, dskused, dskfree=disk_usage(str(v_drive))	
 						if int(dsktotal)>int(s):
-							print("Warning disk space lower than required size. Program will exit")
-							sys.exit()							
+							sys.exit("Warning disk space lower than required size. Program will exit")							
 						t = tqdm(total=s, unit='B', unit_scale=True, leave=False)
 						with open(filename, 'r+b') as f:
 							f.seek(off1)
@@ -5363,8 +5356,7 @@ if __name__ == '__main__':
 						v_drive, v_path = os.path.splitdrive(filename)
 						dsktotal, dskused, dskfree=disk_usage(str(v_drive))	
 						if int(dsktotal)>int(s):
-							print("Warning disk space lower than required size. Program will exit")
-							sys.exit()					
+							sys.exit("Warning disk space lower than required size. Program will exit")					
 						t = tqdm(total=s, unit='B', unit_scale=True, leave=False)
 						with open(filename, 'r+b') as f:
 							f.seek(off1)
@@ -6180,10 +6172,15 @@ if __name__ == '__main__':
 					ruta=ruta[1:]
 			except:
 				raised_error=True
+			if not os.path.exists(ruta):
+				raised_error=True
 			if raised_error==False:
 				extlist=list()
 				if args.type:
 					for t in args.type:
+						if t=="all":
+							extlist.append('all')
+							continue
 						x='.'+t
 						extlist.append(x)
 						if x[-1]=='*':
@@ -6200,11 +6197,38 @@ if __name__ == '__main__':
 				try:
 					fname=""
 					binbin='RECYCLE.BIN'
-					for ext in extlist:
-						#print (ext)
+					if not 'all' in extlist:
+						for ext in extlist:
+							#print (ext)
+							if os.path.isdir(ruta):
+								for dirpath, dirnames, filenames in os.walk(ruta):
+									for filename in [f for f in filenames if f.endswith(ext.lower()) or f.endswith(ext.upper()) or f[:-1].endswith(ext.lower()) or f[:-1].endswith(ext.lower())]:
+										fname=""
+										if args.filter:
+											if filter.lower() in filename.lower():
+												fname=filename
+										else:
+											fname=filename
+										if fname != "":
+											if binbin.lower() not in filename.lower():
+												filelist.append(os.path.join(dirpath, filename))
+							else:
+								if ruta.endswith(ext.lower()) or ruta.endswith(ext.upper()) or ruta[:-1].endswith(ext.lower()) or ruta[:-1].endswith(ext.upper()):
+									filename = ruta
+									fname=""
+									if args.filter:
+										if filter.lower() in filename.lower():
+											fname=filename
+									else:
+										fname=filename
+									if fname != "":
+										if binbin.lower() not in filename.lower():
+											filelist.append(filename)
+					else:
+						# print(ruta)
 						if os.path.isdir(ruta):
 							for dirpath, dirnames, filenames in os.walk(ruta):
-								for filename in [f for f in filenames if f.endswith(ext.lower()) or f.endswith(ext.upper()) or f[:-1].endswith(ext.lower()) or f[:-1].endswith(ext.lower())]:
+								for filename in [f for f in filenames]:
 									fname=""
 									if args.filter:
 										if filter.lower() in filename.lower():
@@ -6215,18 +6239,16 @@ if __name__ == '__main__':
 										if binbin.lower() not in filename.lower():
 											filelist.append(os.path.join(dirpath, filename))
 						else:
-							if ruta.endswith(ext.lower()) or ruta.endswith(ext.upper()) or ruta[:-1].endswith(ext.lower()) or ruta[:-1].endswith(ext.upper()):
-								filename = ruta
-								fname=""
-								if args.filter:
-									if filter.lower() in filename.lower():
-										fname=filename
-								else:
+							filename = ruta
+							fname=""
+							if args.filter:
+								if filter.lower() in filename.lower():
 									fname=filename
-								if fname != "":
-									if binbin.lower() not in filename.lower():
-										filelist.append(filename)
-
+							else:
+								fname=filename
+							if fname != "":
+								if binbin.lower() not in filename.lower():
+									filelist.append(filename)
 					if args.text_file:
 						tfile=args.text_file
 						with open(tfile,"a", encoding='utf8') as tfile:

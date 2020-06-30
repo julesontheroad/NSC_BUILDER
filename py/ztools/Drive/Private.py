@@ -799,6 +799,30 @@ def add_to_drive(url=None,ID=None,filepath=None,makecopy=False,TD=None):
 	except IOError as e:
 		print(e, file=sys.stderr)	
 	return name		
+	
+# def get_plink_data(url=None,ID=None,filepath=None,TD=None):
+	# try:
+		# if ID==None and url==None:
+			# return False
+		# if filepath==None:
+			# return False			
+		# if ID!=None:
+			# file_id=ID
+		# else:	
+			# file_id, is_download_link=Public.parse_url(url)
+		# if TD==None:	
+			# remote=location(route=filepath)				
+		# else:
+			# remote=location(route=filepath,TD_Name=TD)		
+		# remote=location(route=filepath)
+		# drive=remote.drivename
+		# FolderID=remote.ID
+		# result=remote.drive_service.files().get(fileId=file_id, fields="name,mimeType").execute()	
+		# name=result['name']	
+		# id=file_id									
+	# except IOError as e:
+		# print(e, file=sys.stderr)	
+	# return name,id		
 
 def delete_from_drive(filepath=None,url=None,lkID=None,TD=None):
 	try:

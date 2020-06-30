@@ -61,3 +61,8 @@ py/zconfig/update_dbs_options.cmd
 py/update_dbs.bat
 py/zconfig/remote_cache_location.txt
 py/ztools/.net_code/*
+py/zconfig/mtp_SD_libraries.txt
+py/zconfig/mtp_source_libraries.txt
+py/ztools/_mtp_cache_/games_installed.txt
+*.chm
+py/ztools/_mtp_cache_/storage.csv

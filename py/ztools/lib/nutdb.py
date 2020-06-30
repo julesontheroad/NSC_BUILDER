@@ -118,6 +118,10 @@ else:
 			
 if not os.path.exists(DATABASE_folder):
 	os.makedirs(DATABASE_folder)	
+
+def get_DBfolder():
+	return DATABASE_folder
+	
 def getnutdb():
 	try:
 		response = requests.get(json_url, stream=True)

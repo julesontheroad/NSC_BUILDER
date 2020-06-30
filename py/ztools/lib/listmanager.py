@@ -183,6 +183,7 @@ def remove_from_list(textfile,ext=False,token=False,Print=True):
 		
 def parsetags(filepath):	
 	fileid='unknown';fileversion='unknown';cctag='unknown';nG=0;nU=0;nD=0;
+	baseid=None
 	tid1=list()
 	tid2=list()
 	tid1=[pos for pos, char in enumerate(filepath) if char == '[']
@@ -365,7 +366,10 @@ def selector2list(textfile,mode='folder',ext=False,filter=False,Print=False):
 	root.withdraw()
 	root.wm_attributes('-topmost', 1)
 	if mode=='file':
-		filepath = filedialog.askopenfilename()		
+		filepath = filedialog.askopenfilename()	
+		filelist=[]
+		filelist.append(filepath)		
+		return filelist
 	else:
 		filepath = filedialog.askdirectory()
 	extlist=list()

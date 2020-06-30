@@ -4095,8 +4095,8 @@ class Nsp(Pfs0):
 		header += remainder * b'\x00'
 		
 		return header					
-					
-	def c_nsp_direct(self,buffer,outfile,ofolder,fat,fx,delta,metapatch,RSV_cap,keypatch):
+	
+	def c_nsp_direct(self,buffer,outfile,ofolder,fat="exfat",fx="files",delta=False,metapatch='false',RSV_cap=268435656,keypatch='false'):
 		buffer=int(buffer)
 	
 		t = tqdm(total=False, unit='B', unit_scale=False, leave=False)	

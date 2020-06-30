@@ -579,6 +579,16 @@ def call_get_verification_data(filename,remotelocation=False):
 	threads.append(eel.spawn(getverificationdata,filename,remotelocation))	
 	return	
 	
+@eel.expose
+def download(filename,remotelocation=False):
+	filename=html.unescape(filename)
+	lib,TD,libpath=get_library_from_path(remote_lib_file,filename)
+	ID,name,type,size,md5,remote=DrivePrivate.get_Data(filename,TD=TD,Print=False)
+	# header=DrivePrivate.get_html_header(remote.access_token)
+	token=remote.access_token
+	URL='https://www.googleapis.com/drive/v3/files/'+remote.ID+'?alt=media'		
+	eel.browser_download(URL,token)
+	
 def showicon(filename):
 	filename=html.unescape(filename)
 	# global globalocalpath;
