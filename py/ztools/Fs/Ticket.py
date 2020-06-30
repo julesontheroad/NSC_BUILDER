@@ -145,6 +145,16 @@ class Ticket(File):
 					filename=bytearray.fromhex(filename)
 					self.masterKeyRevision = int(filename,16) 
 				else:self.masterKeyRevision=0
+		elif self.masterKeyRevision > 2:		
+			self.rewind()
+			self.seekStart(0x145)
+			test = self.readInt8() | self.readInt8()
+			if test > 0 and test<self.masterKeyRevision:
+				filename = str(self._path)
+				filename = filename[:-4] 
+				filename = filename[-3:-1] 
+				if filename != '00' and filename==test:
+					self.masterKeyRevision==test
 		return self.masterKeyRevision
 
 	def setMasterKeyRevision(self, value):
