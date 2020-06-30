@@ -133,10 +133,10 @@ class Ticket(File):
 		self.writeInt8(value)
 		return self.keyType
 
-
 	def getMasterKeyRevision(self):
 		self.seekStart(0x144)
 		self.masterKeyRevision = self.readInt8() | self.readInt8()
+		masterKeyRevision1=self.masterKeyRevision 
 		if self.masterKeyRevision == 0:
 			self.rewind()
 			self.seekStart(0x145)
@@ -149,6 +149,30 @@ class Ticket(File):
 					filename=bytearray.fromhex(filename)
 					self.masterKeyRevision = int(filename,16) 
 				else:self.masterKeyRevision=0
+			elif self.masterKeyRevision >2:	
+				filename = str(self._path)
+				filename = filename[:-4] 
+				filename = filename[-3:-1] 
+				if filename != '00': 
+					filename=bytearray.fromhex(filename)				
+					if int(filename,16)==self.masterKeyRevision:
+						pass	
+					else:
+						self.masterKeyRevision=masterKeyRevision1
+				else:
+					self.masterKeyRevision=masterKeyRevision1					
+		elif self.masterKeyRevision > 2:		
+			self.rewind()
+			self.seekStart(0x145)
+			test = self.readInt8() | self.readInt8()
+			if test > 0 and test<self.masterKeyRevision:
+				filename = str(self._path)
+				filename = filename[:-4] 
+				filename = filename[-3:-1] 
+				if filename != '00':
+					filename=bytearray.fromhex(filename)				
+					if int(filename,16) ==test:
+						self.masterKeyRevision==test
 		return self.masterKeyRevision
 
 	def setMasterKeyRevision(self, value):
