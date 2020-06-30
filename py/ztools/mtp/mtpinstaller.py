@@ -628,8 +628,8 @@ def update_console(libraries="all",destiny="SD",exclude_xci=True,prioritize_nsz=
 			localgames[entry[0]]=entry
 		else:
 			v=(localgames[entry[0]])[1]
-			if entry[1]>v:
-				localgames[entry[0]]=entry
+			if int(entry[1])>int(v):
+				localgames[entry[0]]=entry		
 	print("3. Searching new updates. Please Wait...")						
 	gamestosend={}		
 	for g in installed.keys():
@@ -638,27 +638,27 @@ def update_console(libraries="all",destiny="SD",exclude_xci=True,prioritize_nsz=
 				updid=g[:-3]+'800'
 				if updid in localgames:
 					if updid in installed:
-						if ((installed[updid])[2])<((localgames[updid])[2]):
+						if ((installed[updid])[1])<((localgames[updid])[1]):
 							if not updid in gamestosend:
 								gamestosend[updid]=localgames[updid]
 							else:
-								if ((gamestosend[updid])[2])<((localgames[updid])[2]):
+								if ((gamestosend[updid])[1])<((localgames[updid])[1]):
 									gamestosend[updid]=localgames[updid]
 					else:
 						if not updid in gamestosend:
 							gamestosend[updid]=localgames[updid]
 						else:
-							if ((gamestosend[updid])[2])<((localgames[updid])[2]):
+							if ((gamestosend[updid])[1])<((localgames[updid])[1]):
 								gamestosend[updid]=localgames[updid]								
 			except:pass
 		else:
 			try:		
 				if g in localgames:
-					if ((installed[g])[2])<((localgames[g])[2]):
+					if ((installed[g])[1])<((localgames[g])[1]):
 						if not g in gamestosend:
 							gamestosend[g]=localgames[g]
 						else:
-							if ((gamestosend[g])[2])<((localgames[g])[2]):
+							if ((gamestosend[g])[1])<((localgames[g])[1]):
 								gamestosend[g]=localgames[g]
 			except:pass							
 	print("4. Searching new dlcs. Please Wait...")	
@@ -676,7 +676,7 @@ def update_console(libraries="all",destiny="SD",exclude_xci=True,prioritize_nsz=
 							if not k in gamestosend:
 								gamestosend[k]=localgames[k]
 							else:
-								if ((gamestosend[k])[2])<((localgames[k])[2]):
+								if ((gamestosend[k])[1])<((localgames[k])[1]):
 									gamestosend[k]=localgames[k]	
 				except BaseException as e:
 					# Print.error('Exception: ' + str(e))			
