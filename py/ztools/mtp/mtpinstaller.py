@@ -209,7 +209,7 @@ def install_conv_st1(filepath,outfolder,keypatch='false'):
 		f.open(filepath, 'rb')
 	elif filepath.endswith('nsp'):	
 		f = squirrelNSP(filepath, 'rb')	
-	f.c_nsp_direct(65536,tmpfile,outfolder,keypatch='false')
+	f.c_nsp_direct(65536,tmpfile,outfolder,keypatch=keypatch)
 	f.flush()
 	f.close()	
 			

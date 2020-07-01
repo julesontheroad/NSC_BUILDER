@@ -144,21 +144,23 @@ class Ticket(File):
 			if self.masterKeyRevision == 0:
 				filename = str(self._path)
 				filename = filename[:-4] 
-				filename = filename[-3:-1] 
+				filename = filename[-2:] 			
 				if filename != '00':
-					filename=bytearray.fromhex(filename)
-					self.masterKeyRevision = int(filename,16) 
+					if filename[0]=='00':
+						filename=filename[-1] 				
+						self.masterKeyRevision = int(filename,16) 
 				else:self.masterKeyRevision=0
 			elif self.masterKeyRevision >2:	
-				filename = str(self._path)
+				filename = str(self._path)		
 				filename = filename[:-4] 
-				filename = filename[-3:-1] 
+				filename = filename[-2:] 				
 				if filename != '00': 
-					filename=bytearray.fromhex(filename)				
-					if int(filename,16)==self.masterKeyRevision:
-						pass	
-					else:
-						self.masterKeyRevision=masterKeyRevision1
+					if filename[0]=='0':
+						filename=filename[-1] 						
+						if int(filename,16)==self.masterKeyRevision:
+							pass	
+						else:
+							self.masterKeyRevision=masterKeyRevision1
 				else:
 					self.masterKeyRevision=masterKeyRevision1					
 		elif self.masterKeyRevision > 2:		
@@ -168,11 +170,12 @@ class Ticket(File):
 			if test > 0 and test<self.masterKeyRevision:
 				filename = str(self._path)
 				filename = filename[:-4] 
-				filename = filename[-3:-1] 
+				filename = filename[-1] 			
 				if filename != '00':
-					filename=bytearray.fromhex(filename)				
-					if int(filename,16) ==test:
-						self.masterKeyRevision==test
+					if filename[0]=='0':
+						filename=filename[-1] 	
+						if int(filename,16) ==test:
+							self.masterKeyRevision==test
 		return self.masterKeyRevision
 
 	def setMasterKeyRevision(self, value):

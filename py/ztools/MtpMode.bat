@@ -274,10 +274,39 @@ call :program_logo
 echo -------------------------------------------------
 echo MTP - FILE TRANFER MODE ACTIVATED
 echo -------------------------------------------------
+echo *******************************************************
+echo SELECT FUNCTION
+echo *******************************************************
+echo.
+echo 1. FILE TRANSFER FROM LOCAL FILES
+echo 2. FILE TRANSFER FROM REMOTE LIBRARIES (GDRIVE)
+echo 3. CREATE XCI AND TRANSFER
+echo 4. CREATE MULTI-XCI AND TRANSFER
+echo. 
+ECHO ******************************************
+echo Or Input "b" to return to the list options
+ECHO ******************************************
+echo.
+set /p bs="Enter your choice: "
+set bs=%bs:"=%
+if /i "%bs%"=="b" goto MAIN
+if /i "%bs%"=="1" goto F_TR_LOCAL
+if /i "%bs%"=="2" goto F_TR_GD
+if /i "%bs%"=="3" goto F_TR_C_xci_Transfer
+if /i "%bs%"=="4" goto F_TR_C_mxci_Transfer
+goto F_TR
+
 :F_TR_LOCAL
 call "%prog_dir%ztools\MtpFTLocal.bat"
 goto MAIN
 :F_TR_GD
+call "%prog_dir%ztools\MtpFTLocal.bat"
+goto MAIN
+:F_TR_C_xci_Transfer
+call "%prog_dir%ztools\MtpCxciFTLocal.bat"
+goto MAIN
+:F_TR_C_mxci_Transfer
+call "%prog_dir%ztools\MtpCmxciFTLocal.bat"
 goto MAIN
 
 :AUTOUPDATE

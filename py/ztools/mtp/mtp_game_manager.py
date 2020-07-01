@@ -142,7 +142,7 @@ def pick_transfer_folder():
 	title = 'Select transfer folder: '
 	db=libraries(mtp_internal_lib)
 	if db==False:
-		return False,False
+		return "SD"
 	options = [x for x in db.keys()]
 	selected = pick(options, title,min_selection_count=1)	
 	path=(db[selected[0]])['path']

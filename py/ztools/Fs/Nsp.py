@@ -4956,7 +4956,7 @@ class Nsp(Pfs0):
 		with open(ofile, 'a') as dbfile:
 			dbfile.write('\n')				
 						
-	def c_xci_direct(self,buffer,outfile,ofolder,fat,delta,metapatch,RSV_cap,keypatch):	
+	def c_xci_direct(self,buffer,outfile,ofolder,fat="exfat",fx="files",delta=False,metapatch='false',RSV_cap=268435656,keypatch='false'):	
 		buffer=int(buffer)
 		if keypatch != 'false':
 			try:

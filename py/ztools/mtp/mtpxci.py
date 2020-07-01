@@ -3,10 +3,11 @@ import Print
 import os
 import shutil
 import json
-# import listmanager
+import listmanager
 # from tqdm import tqdm
 from Fs import Nsp as squirrelNSP
 from Fs import Xci as squirrelXCI
+from Fs import factory
 from Fs.Nca import NcaHeader
 from Fs.File import MemoryFile
 import sq_tools
@@ -16,8 +17,388 @@ import Keys
 from binascii import hexlify as hx, unhexlify as uhx
 from DBmodule import Exchange as exchangefile
 import math
+import subprocess
+import sys
+from mtp.wpd import is_switch_connected
+from python_pick import pick
+from python_pick import Picker
+import csv
+
+
+if not is_switch_connected():
+	sys.exit("Switch device isn't connected.\nCheck if mtp responder is running!!!")	
 
 bucketsize = 81920
+
+# SET ENVIRONMENT
+squirrel_dir=os.path.abspath(os.curdir)
+NSCB_dir=os.path.abspath('../'+(os.curdir))
+
+if os.path.exists(os.path.join(squirrel_dir,'ztools')):
+	NSCB_dir=squirrel_dir
+	zconfig_dir=os.path.join(NSCB_dir, 'zconfig')	  
+	ztools_dir=os.path.join(NSCB_dir,'ztools')
+	squirrel_dir=ztools_dir
+elif os.path.exists(os.path.join(NSCB_dir,'ztools')):
+	squirrel_dir=squirrel_dir
+	ztools_dir=os.path.join(NSCB_dir, 'ztools')
+	zconfig_dir=os.path.join(NSCB_dir, 'zconfig')
+else:	
+	ztools_dir=os.path.join(NSCB_dir, 'ztools')
+	zconfig_dir=os.path.join(NSCB_dir, 'zconfig')
+
+testroute1=os.path.join(squirrel_dir, "squirrel.py")
+testroute2=os.path.join(squirrel_dir, "squirrel.exe")
+urlconfig=os.path.join(zconfig_dir,'NUT_DB_URL.txt')
+isExe=False
+if os.path.exists(testroute1):
+	squirrel=testroute1
+	isExe=False
+elif os.path.exists(testroute2):	
+	squirrel=testroute2
+	isExe=True
+bin_folder=os.path.join(ztools_dir, 'bin')
+nscb_mtp=os.path.join(bin_folder, 'nscb_mtp.exe')
+cachefolder=os.path.join(ztools_dir, '_mtp_cache_')
+if not os.path.exists(cachefolder):
+	os.makedirs(cachefolder)
+games_installed_cache=os.path.join(cachefolder, 'games_installed.txt')
+valid_saves_cache=os.path.join(cachefolder, 'valid_saves.txt')
+mtp_source_lib=os.path.join(zconfig_dir,'mtp_source_libraries.txt')
+mtp_internal_lib=os.path.join(zconfig_dir,'mtp_SD_libraries.txt')
+storage_info=os.path.join(cachefolder, 'storage.csv')
+download_lib_file = os.path.join(zconfig_dir, 'mtp_download_libraries.txt')
+
+def libraries(tfile):
+	db={}
+	try:
+		with open(tfile,'rt',encoding='utf8') as csvfile:
+			readCSV = csv.reader(csvfile, delimiter='|')	
+			i=0	
+			for row in readCSV:
+				if i==0:
+					csvheader=row
+					i=1
+				else:
+					dict={}
+					for j in range(len(csvheader)):
+						try:
+							dict[csvheader[j]]=row[j]
+						except:
+							dict[csvheader[j]]=None
+					db[row[0]]=dict
+		return db
+	except: return False
+
+def pick_transfer_folder():
+	if not os.path.exists(mtp_internal_lib):
+		return "SD"
+	title = 'Select transfer folder: '
+	db=libraries(mtp_internal_lib)
+	if db==False:
+		return "SD"
+	options = [x for x in db.keys()]
+	selected = pick(options, title,min_selection_count=1)	
+	path=(db[selected[0]])['path']
+	return path			
+
+def file_verification(filename,hash=False):
+	if not os.path.exists(cachefolder):
+		os.makedirs(cachefolder)
+	tempfolder=os.path.join(cachefolder, 'temp')	
+	if not os.path.exists(tempfolder):
+		os.makedirs(tempfolder)	
+	verdict=False;isrestored=False;cnmt_is_patched=False
+	if filename.endswith('.nsp') or filename.endswith('.nsx') or filename.endswith('.nsz') or filename.endswith('.xcz') or filename.endswith('.xci'):
+		try:
+			if filename.endswith('.nsp') or filename.endswith('.nsx') or filename.endswith('.nsz'):		
+				f = squirrelNSP(filename, 'rb')
+			elif filename.endswith('.xci') or filename.endswith('.xcz'):	
+				f = factory(filename)		
+				f.open(filename, 'rb')	
+			check,feed=f.verify()
+			if filename.endswith('.nsp') or filename.endswith('.nsx') or filename.endswith('.nsz'):					
+				verdict,headerlist,feed=f.verify_sig(feed,tempfolder,cnmt='nocheck')
+			else:
+				verdict,headerlist,feed=f.verify_sig(feed,tempfolder)
+			output_type='nsp';multi=False;cnmtcount=0
+			if verdict == True:
+				isrestored=True
+				for i in range(len(headerlist)):
+					entry=headerlist[i]
+					if str(entry[0]).endswith('.cnmt.nca'):
+						cnmtcount+=1
+						if cnmt_is_patched==False:
+							status=entry[2]
+							if status=='patched':
+								cnmt_is_patched=True
+					if entry[1]!=False:
+						if int(entry[-1])==1:
+							output_type='xci'
+						isrestored=False	
+					else:
+						pass
+				if	isrestored == False:	
+					if cnmt_is_patched !=True:
+						print('\nFILE VERIFICATION CORRECT.\n -> FILE WAS MODIFIED BUT ORIGIN IS CONFIRMED AS LEGIT\n')
+					else:
+						print('\nFILE VERIFICATION CORRECT. \n -> FILE WAS MODIFIED AND CNMT PATCHED\n')
+				else:
+					print("\nFILE VERIFICATION CORRECT. FILE IS SAFE.\n")
+			if verdict == False:		
+				print("\nFILE VERIFICATION INCORRECT. \n -> UNCONFIRMED ORIGIN FILE HAS BEEN TAMPERED WITH\n")	
+			if 	hash==True and verdict==True:
+				if filename.endswith('.nsp') or filename.endswith('.nsx') or filename.endswith('.xci'):
+					verdict,feed=f.verify_hash_nca(65536,headerlist,verdict,feed)
+				elif filename.endswith('.nsz'):
+					verdict,feed=f.nsz_hasher(65536,headerlist,verdict,feed)
+				elif filename.endswith('.xcz'):	
+					verdict,feed=f.xcz_hasher(65536,headerlist,verdict,feed)
+			f.flush()
+			f.close()					
+		except BaseException as e:
+			Print.error('Exception: ' + str(e))
+	return verdict,isrestored,cnmt_is_patched	
+
+def generate_and_transfer_st1(filepath,outfolder,keypatch='false'):
+	tname=str(os.path.basename(filepath))[:-3]+'xci'
+	tmpfile=os.path.join(outfolder,tname)
+	if filepath.endswith('xci') or filepath.endswith('xcz'):
+		f = factory(filepath)
+		f.open(filepath, 'rb')
+	elif filepath.endswith('nsp') or filepath.endswith('nsz'):	
+		f = squirrelNSP(filepath, 'rb')	
+	f.c_xci_direct(65536,tmpfile,outfolder,metapatch='true',keypatch=keypatch)
+	f.flush()
+	f.close()	
+			
+def generate_xci_and_transfer(filepath=None,outfolder=None,destiny="SD",kgpatch=False,verification=False):
+	if destiny=="SD":
+		destiny="1: External SD Card\\"
+	from mtpinstaller import get_storage_info,get_DB_dict
+	tgkg=0;kgwarning=False
+	if filepath=="":
+		filepath=None	
+	if filepath==None:
+		print("File input = null")
+		return False		
+	if outfolder=="":
+		filepath=None			
+	if outfolder==None:
+		outfolder=cachefolder
+		if not os.path.exists(cachefolder):
+			os.makedirs(cachefolder)
+	if not os.path.exists(outfolder):
+		os.makedirs(outfolder)	
+	for f in os.listdir(outfolder):
+		fp = os.path.join(outfolder, f)
+		try:
+			shutil.rmtree(fp)
+		except OSError:
+			os.remove(fp)	
+	if verification==True or str(verification).upper()=="HASH":	
+		if str(verification).upper()=="HASH":
+			verdict,isrestored,cnmt_is_patched=file_verification(filepath,hash=True)		
+		else:
+			verdict,isrestored,cnmt_is_patched=file_verification(filepath)
+		if verdict==False:
+			print("File didn't pass verification. Skipping...")
+			return False			
+	dopatch=False		
+	print("- Retrieving Space on device")
+	SD_ds,SD_fs,NAND_ds,NAND_fs,FW,device=get_storage_info()			
+	print("- Calculating Size")	
+	head_xci_size,keygeneration,sz=get_header_size(filepath)
+	installedsize=head_xci_size+sz
+	print(f"  * SD free space: {SD_fs} ({sq_tools.getSize(SD_fs)})")	
+	print(f"  * File installed size: {installedsize} ({sq_tools.getSize(installedsize)})")
+	if installedsize>SD_fs:
+		sys.exit("   NOT ENOUGH SPACE SD STORAGE")		
+	if kgpatch==True:	
+		if FW!='unknown':	
+			try:
+				FW_RSV,RRSV=sq_tools.transform_fw_string(FW)
+				FW_kg=sq_tools.kg_by_RSV(FW_RSV)
+			except BaseException as e:
+				Print.error('Exception: ' + str(e))
+				FW='unknown'
+				FW_kg='unknown'
+				pass
+		if FW!='unknown' and FW_kg!='unknown':			
+			if int(keygeneration)>int(FW_kg):
+				kgwarning=True
+				tgkg=int(FW_kg)
+			else:
+				tgkg=keygeneration
+		else:
+			tgkg=keygeneration
+		print(f"- Console Firmware: {FW} ({FW_RSV}) - keygen {FW_kg})")		
+		print(f"- File keygeneration: {keygeneration}")				
+	else:
+		tgkg=keygeneration
+	if kgwarning==True: 	
+		print("File requires a higher firmware. It'll will be prepatch")
+		dopatch=True	
+	keypatch=int(tgkg)	
+	tname=str(os.path.basename(filepath))[:-3]+'xci'
+	tmpfile=os.path.join(outfolder,tname)	
+	if isExe==False:
+		process0=subprocess.Popen([sys.executable,squirrel,"-lib_call","mtp.mtpxci","generate_and_transfer_st1","-xarg",filepath,outfolder,str(keypatch)])	
+	else:
+		process0=subprocess.Popen([squirrel,"-lib_call","mtp.mtpxci","generate_and_transfer_st1","-xarg",filepath,outfolder,str(keypatch)])		
+	while process0.poll()==None:
+		if process0.poll()!=None:
+			process0.terminate();
+	if isExe==False:
+		process1=subprocess.Popen([sys.executable,squirrel,"-renf",tmpfile,"-t","xci","-renm","force","-nover","xci_no_v0","-addl","false","-roma","TRUE"])
+	else:	
+		process1=subprocess.Popen([sys.executable,squirrel,"-renf",tmpfile,"-t","xci","-renm","force","-nover","xci_no_v0","-addl","false","-roma","TRUE"])		
+	while process1.poll()==None:
+		if process1.poll()!=None:
+			process1.terminate();	
+	files2transfer=listmanager.folder_to_list(outfolder,['xci'])
+	for f in files2transfer:
+		bname=str(os.path.basename(f))
+		destinypath=os.path.join(destiny,bname)
+		process=subprocess.Popen([nscb_mtp,"Transfer","-ori",f,"-dst",destinypath])		
+		while process.poll()==None:
+			if process.poll()!=None:
+				process.terminate();	
+	try:			
+		for f in os.listdir(outfolder):
+			fp = os.path.join(outfolder, f)
+			try:
+				shutil.rmtree(fp)
+			except OSError:
+				os.remove(fp)	
+	except:pass			
+	
+	
+# def generate_multixci_and_transfer_st1(filepath,outfolder,keypatch='false'):
+	# tname=str(os.path.basename(filepath))[:-3]+'xci'
+	# tmpfile=os.path.join(outfolder,tname)
+	# if filepath.endswith('xci'):
+		# f = factory(filepath)
+		# f.open(filepath, 'rb')
+	# elif filepath.endswith('nsp'):	
+		# f = squirrelNSP(filepath, 'rb')	
+	# f.c_xci_direct(65536,tmpfile,outfolder,metapatch='true',keypatch=keypatch)
+	# f.flush()
+	# f.close()		
+
+def generate_multixci_and_transfer(filepath=None,outfolder=None,destiny="SD",kgpatch=False):
+	if destiny=="SD":
+		destiny="1: External SD Card\\"
+	from mtpinstaller import get_storage_info,get_DB_dict
+
+
+
+
+
+
+def loop_xci_transfer(tfile,destiny=False,verification=True,outfolder=None,patch_keygen=False,mode="single"):
+	if destiny==False or destiny=="pick" or destiny=="":
+		destiny=pick_transfer_folder()	
+	if not os.path.exists(tfile):
+		sys.exit(f"Couldn't find {tfile}")	
+	file_list=listmanager.read_lines_to_list(tfile,all=True)
+	for item in file_list:
+		if mode=="single":
+			generate_xci_and_transfer(filepath=item,destiny=destiny,verification=verification,outfolder=outfolder,kgpatch=patch_keygen)
+			print("")
+			listmanager.striplines(tfile,counter=True)
+		elif mode=="multi":
+			continue
+
+
+
+
+
+def get_header_size(filepath):
+	properheadsize=0;sz=0
+	if filepath.endswith('xci') or filepath.endswith('xcz'):
+		files_list=sq_tools.ret_xci_offsets(filepath)
+		files=list();filesizes=list()
+		fplist=list()
+		for k in range(len(files_list)):
+			entry=files_list[k]
+			fplist.append(entry[0])
+		for i in range(len(files_list)):
+			entry=files_list[i]
+			cnmtfile=entry[0]
+			if cnmtfile.endswith('.cnmt.nca'):
+				f=squirrelXCI(filepath)
+				titleid,titleversion,base_ID,keygeneration,rightsId,RSV,RGV,ctype,metasdkversion,exesdkversion,hasHtmlManual,Installedsize,DeltaSize,ncadata=f.get_data_from_cnmt(cnmtfile)
+				for j in range(len(ncadata)):
+					row=ncadata[j]
+					# print(row)
+					if row['NCAtype']!='Meta':
+						test1=str(row['NcaId'])+'.nca';test2=str(row['NcaId'])+'.ncz'
+						if test1 in fplist or test2 in fplist:
+							# print(str(row['NcaId'])+'.nca')
+							files.append(str(row['NcaId'])+'.nca')
+							filesizes.append(int(row['Size']))	
+							sz+=int(row['Size'])		
+					elif row['NCAtype']=='Meta':
+						# print(str(row['NcaId'])+'.cnmt.nca')
+						files.append(str(row['NcaId'])+'.cnmt.nca')
+						filesizes.append(int(row['Size']))	
+						sz+=int(row['Size'])
+		sec_hashlist=list()
+		try:
+			for file in files:
+				sha,size,gamecard=f.file_hash(file)
+				# print(sha)
+				if sha != False:
+					sec_hashlist.append(sha)	
+		except BaseException as e:
+			Print.error('Exception: ' + str(e))									
+		f.flush()
+		f.close()	
+		xci_header,game_info,sig_padding,xci_certificate,root_header,upd_header,norm_header,sec_header,rootSize,upd_multiplier,norm_multiplier,sec_multiplier=sq_tools.get_xciheader(files,filesizes,sec_hashlist)			
+		outheader=xci_header
+		outheader+=game_info
+		outheader+=sig_padding
+		outheader+=xci_certificate
+		outheader+=root_header
+		outheader+=upd_header
+		outheader+=norm_header
+		outheader+=sec_header		
+	elif filepath.endswith('nsp') or filepath.endswith('nsz'):
+		files_list=sq_tools.ret_nsp_offsets(filepath)
+		files=list();filesizes=list()
+		fplist=list()
+		for k in range(len(files_list)):
+			entry=files_list[k]
+			fplist.append(entry[0])
+		for i in range(len(files_list)):
+			entry=files_list[i]
+			cnmtfile=entry[0]
+			if cnmtfile.endswith('.cnmt.nca'):
+				f=squirrelNSP(filepath)
+				titleid,titleversion,base_ID,keygeneration,rightsId,RSV,RGV,ctype,metasdkversion,exesdkversion,hasHtmlManual,Installedsize,DeltaSize,ncadata=f.get_data_from_cnmt(cnmtfile)
+				f.flush()
+				f.close()
+				for j in range(len(ncadata)):
+					row=ncadata[j]
+					# print(row)
+					if row['NCAtype']!='Meta':
+						test1=str(row['NcaId'])+'.nca';test2=str(row['NcaId'])+'.ncz'
+						if test1 in fplist or test2 in fplist:
+							# print(str(row['NcaId'])+'.nca')
+							files.append(str(row['NcaId'])+'.nca')
+							filesizes.append(int(row['Size']))	
+							sz+=int(row['Size'])								
+					elif row['NCAtype']=='Meta':
+						# print(str(row['NcaId'])+'.cnmt.nca')
+						files.append(str(row['NcaId'])+'.cnmt.nca')
+						filesizes.append(int(row['Size']))
+						sz+=int(row['Size'])												
+		f.flush()
+		f.close()	
+		outheader = sq_tools.gen_nsp_header(files,filesizes)			
+	properheadsize=len(outheader)
+	return properheadsize,keygeneration,sz
 
 
 def gen_xci_parts(filepath,cachefolder=None,keepupd=False,id_target=False,keypatch=False,export_type='csv'):
