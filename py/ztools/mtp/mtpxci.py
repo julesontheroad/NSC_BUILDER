@@ -24,7 +24,6 @@ from python_pick import pick
 from python_pick import Picker
 import csv
 
-
 if not is_switch_connected():
 	sys.exit("Switch device isn't connected.\nCheck if mtp responder is running!!!")	
 
@@ -183,7 +182,7 @@ def generate_xci_and_transfer(filepath=None,outfolder=None,destiny="SD",kgpatch=
 		print("File input = null")
 		return False		
 	if outfolder=="":
-		filepath=None			
+		outfolder=None			
 	if outfolder==None:
 		outfolder=cachefolder
 		if not os.path.exists(cachefolder):
@@ -286,15 +285,113 @@ def generate_xci_and_transfer(filepath=None,outfolder=None,destiny="SD",kgpatch=
 	# f.flush()
 	# f.close()		
 
-def generate_multixci_and_transfer(filepath=None,outfolder=None,destiny="SD",kgpatch=False):
+# def generate_xci_and_transfer(filepath=None,outfolder=None,destiny="SD",kgpatch=False,verification=False):
+
+
+def generate_multixci_and_transfer(tfile=None,outfolder=None,destiny="SD",kgpatch=False,verification=False):
+	if destiny==False or destiny=="pick" or destiny=="":
+		destiny=pick_transfer_folder()	
 	if destiny=="SD":
 		destiny="1: External SD Card\\"
 	from mtpinstaller import get_storage_info,get_DB_dict
-
-
-
-
-
+	tgkg=0;kgwarning=False
+	if tfile=="":
+		tfile=None	
+	if tfile==None:
+		print("File input = null")
+		return False	
+	if not os.path.exists(tfile):
+		sys.exit(f"Couldn't find {tfile}")			
+	if outfolder=="":
+		outfolder=None			
+	if outfolder==None:
+		outfolder=cachefolder
+		if not os.path.exists(cachefolder):
+			os.makedirs(cachefolder)
+	if not os.path.exists(outfolder):
+		os.makedirs(outfolder)	
+	for f in os.listdir(outfolder):
+		fp = os.path.join(outfolder, f)
+		try:
+			shutil.rmtree(fp)
+		except OSError:
+			os.remove(fp)	
+	file_list=listmanager.read_lines_to_list(tfile,all=True)
+	if verification==True or str(verification).upper()=="HASH":	
+		verdict=False
+		for fp in file_list:	
+			if str(verification).upper()=="HASH":
+				verdict,isrestored,cnmt_is_patched=file_verification(fp,hash=True)		
+			else:
+				verdict,isrestored,cnmt_is_patched=file_verification(fp)
+			if verdict==False:
+				print(f"{fp} didn't pass verification. Skipping {tfile}")
+				return False						
+	dopatch=False		
+	print("- Retrieving Space on device")
+	SD_ds,SD_fs,NAND_ds,NAND_fs,FW,device=get_storage_info()			
+	print("- Calculating Size")	
+	fullxcisize=0;maxkg=0
+	for fp in file_list:	
+		head_xci_size,keygeneration,sz=get_header_size(fp)
+		installedsize=head_xci_size+sz
+		fullxcisize+=installedsize
+		if int(maxkg)<int(keygeneration):
+			maxkg=keygeneration
+	print(f"  * SD free space: {SD_fs} ({sq_tools.getSize(SD_fs)})")	
+	print(f"  * File installed size: {installedsize} ({sq_tools.getSize(installedsize)})")
+	if installedsize>SD_fs:
+		sys.exit("   NOT ENOUGH SPACE SD STORAGE")		
+	if kgpatch==True:	
+		if FW!='unknown':	
+			try:
+				FW_RSV,RRSV=sq_tools.transform_fw_string(FW)
+				FW_kg=sq_tools.kg_by_RSV(FW_RSV)
+			except BaseException as e:
+				Print.error('Exception: ' + str(e))
+				FW='unknown'
+				FW_kg='unknown'
+				pass
+		if FW!='unknown' and FW_kg!='unknown':			
+			if int(keygeneration)>int(FW_kg):
+				kgwarning=True
+				tgkg=int(FW_kg)
+			else:
+				tgkg=keygeneration
+		else:
+			tgkg=keygeneration
+		print(f"- Console Firmware: {FW} ({FW_RSV}) - keygen {FW_kg})")		
+		print(f"- File keygeneration: {keygeneration}")				
+	else:
+		tgkg=keygeneration
+	if kgwarning==True: 	
+		print("File requires a higher firmware. It'll will be prepatch")
+		dopatch=True	
+	keypatch=int(tgkg)	
+	
+	if isExe==False:
+		process0=subprocess.Popen([sys.executable,squirrel,"-b","65536","-pv","true","-kp",str(keypatch),"--RSVcap","268435656","-fat","exfat","-fx","files","-ND","true","-t","xci","-o",outfolder,"-tfile",tfile,"-roma","TRUE","-dmul","calculate"])
+	else:
+		process0=subprocess.Popen([squirrel,"-b","65536","-pv","true","-kp",str(keypatch),"--RSVcap","268435656","-fat","exfat","-fx","files","-ND","true","-t","xci","-o",outfolder,"-tfile",tfile,"-roma","TRUE","-dmul","calculate"])	
+	while process0.poll()==None:
+		if process0.poll()!=None:
+			process0.terminate();
+	files2transfer=listmanager.folder_to_list(outfolder,['xci'])
+	for f in files2transfer:
+		bname=str(os.path.basename(f))
+		destinypath=os.path.join(destiny,bname)
+		process=subprocess.Popen([nscb_mtp,"Transfer","-ori",f,"-dst",destinypath])		
+		while process.poll()==None:
+			if process.poll()!=None:
+				process.terminate();	
+	try:			
+		for f in os.listdir(outfolder):
+			fp = os.path.join(outfolder, f)
+			try:
+				shutil.rmtree(fp)
+			except OSError:
+				os.remove(fp)	
+	except:pass		
 
 def loop_xci_transfer(tfile,destiny=False,verification=True,outfolder=None,patch_keygen=False,mode="single"):
 	if destiny==False or destiny=="pick" or destiny=="":
@@ -309,10 +406,6 @@ def loop_xci_transfer(tfile,destiny=False,verification=True,outfolder=None,patch
 			listmanager.striplines(tfile,counter=True)
 		elif mode=="multi":
 			continue
-
-
-
-
 
 def get_header_size(filepath):
 	properheadsize=0;sz=0
