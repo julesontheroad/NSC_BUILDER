@@ -67,3 +67,5 @@ py/ztools/_mtp_cache_/games_installed.txt
 *.chm
 py/ztools/_mtp_cache_/storage.csv
 py/zconfig/mtp_download_libraries.txt
+*.csv
+py/ztools/_mtp_cache_/valid_saves.txt

@@ -64,6 +64,7 @@ cachefolder=os.path.join(ztools_dir, '_mtp_cache_')
 if not os.path.exists(cachefolder):
 	os.makedirs(cachefolder)
 games_installed_cache=os.path.join(cachefolder, 'games_installed.txt')
+valid_saves_cache=os.path.join(cachefolder, 'valid_saves.txt')
 mtp_source_lib=os.path.join(zconfig_dir,'mtp_source_libraries.txt')
 mtp_internal_lib=os.path.join(zconfig_dir,'mtp_SD_libraries.txt')
 storage_info=os.path.join(cachefolder, 'storage.csv')
@@ -192,7 +193,7 @@ def dump_content():
 	picker = Picker(options, title, multi_select=True, min_selection_count=1)
 	def end_selection(picker):
 		return False,-1
-	picker.register_custom_handler(ord('e'),  end_selection)
+	picker.register_custom_handler(ord('e'),  end_selection);picker.register_custom_handler(ord('E'),  end_selection)
 	selected=picker.start()
 	if selected[0]==False:
 		print("    User didn't select any files")
@@ -222,7 +223,7 @@ def uninstall_content():
 	picker = Picker(options, title, multi_select=True, min_selection_count=1)
 	def end_selection(picker):
 		return False,-1
-	picker.register_custom_handler(ord('e'),  end_selection)
+	picker.register_custom_handler(ord('e'),  end_selection);picker.register_custom_handler(ord('E'),  end_selection)
 	selected=picker.start()
 	if selected[0]==False:
 		print("    User didn't select any files")
@@ -238,4 +239,177 @@ def uninstall_content():
 		print('...................................................')
 		print('STILL '+str(counter)+' FILES TO PROCESS')
 		print('...................................................') 		
+		
+def back_up_saves(backup_all=False,inline=False,tidandver=True,romaji=True,outfolder=None):	
+	import zipfile 
+	from datetime import datetime
+	try:			
+		for f in os.listdir(cachefolder):
+			fp = os.path.join(cachefolder, f)
+			try:
+				shutil.rmtree(fp)
+			except OSError:
+				os.remove(fp)	
+	except:pass		
+	if outfolder==None:
+		outfolder=pick_download_folder()
+	if not os.path.exists(outfolder):	
+		os.makedirs(outfolder)		
+	process=subprocess.Popen([nscb_mtp,"ShowSaveGames","-saves",valid_saves_cache,"-show","False"])				
+	while process.poll()==None:
+		if process.poll()!=None:
+			process.terminate();	
+	if not os.path.exists(valid_saves_cache):
+		sys.exit("Savegames couldn't be retrieved")		
+	valid_saves=[]		
+	with open(valid_saves_cache,'rt',encoding='utf8') as tfile:		
+		for line in tfile:			
+			valid_saves.append(line.strip())
+	if backup_all==False:		
+		title = 'Select saves to backup: \n + Press space or right to select content \n + Press E to finish selection'
+		options=valid_saves
+		picker = Picker(options, title, multi_select=True, min_selection_count=1)
+		def end_selection(picker):
+			return False,-1
+		picker.register_custom_handler(ord('e'),  end_selection);picker.register_custom_handler(ord('E'),  end_selection)
+		selected=picker.start()
+		if selected[0]==False:
+			print("    User didn't select any games")
+			return False	
+	else:
+		selected=[]
+		for i in range(len(valid_saves)):
+			selected.append([valid_saves[i],i])
+	print("- Retrieving registered to get TitleIDs...")			
+	dbicsv=os.path.join(cachefolder,"registered.csv")
+	process=subprocess.Popen([nscb_mtp,"Download","-ori","4: Installed games\\InstalledApplications.csv","-dst",dbicsv],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+	while process.poll()==None:
+		if process.poll()!=None:
+			process.terminate();
+	if os.path.exists(dbicsv):	
+		print("   Success")	
+	if tidandver==True:		
+		dbi_dict={}		
+		with open(dbicsv,'rt',encoding='utf8') as csvfile:
+			readCSV = csv.reader(csvfile, delimiter=',')
+			id=0;ver=1;tname=2;
+			for row in readCSV:	
+				version=0;
+				try:
+					tid=(str(row[id]).upper())[2:]
+					tid=tid[:-3]+'000'
+					version=int(row[ver])
+					name=str(row[tname])
+					if name in dbi_dict:
+						if version<((dbi_dict[name])['version']):
+							continue		
+					dbi_dict[name]={'tid':tid,'version':version,'name':name}
+				except:pass	
+	counter=len(selected)	
+	for file in selected:	
+		if tidandver==True:		
+			print(f'- Searching "{file[0]}" in registered data')
+			titleid="";version=""
+			name=file[0]
+			try:
+				titleid=((dbi_dict[file[0]])['tid'])
+				titleid=f'[{titleid}]'
+				version=str((dbi_dict[file[0]])['version'])
+				version=f'[v{version}]'
+			except:
+				pass
+			game=f"{name} {titleid}{version}"	
+		else:
+			game=f"{name}"			
+		game=sanitize(game,romaji)
+		if inline==False:
+			dmpfolder=os.path.join(outfolder,game)
+		else:
+			dmpfolder=outfolder
+		tmpfolder=os.path.join(dmpfolder,'tmp')
+		if not os.path.exists(dmpfolder):	
+			os.makedirs(dmpfolder)	
+		if not os.path.exists(tmpfolder):	
+			os.makedirs(tmpfolder)				
+		process=subprocess.Popen([nscb_mtp,"BackSaves","-sch",file[0],"-dst",tmpfolder])	
+		while process.poll()==None:
+			if process.poll()!=None:
+				process.terminate();
+		counter-=1	
+		subfolders = [ f.path for f in os.scandir(tmpfolder) if f.is_dir() ]	
+		for folder in subfolders:
+			dname=os.path.basename(folder)
+			timedate = datetime.now()
+			timedate = timedate.strftime("[%Y.%m.%d @ %H.%M.%S]")
+			zipname=f"{game}{timedate}[{dname}].zip"
+			output=os.path.join(dmpfolder,zipname)
+			print(f"- Zipping {folder} to {output}")
+			file_list=listmanager.folder_to_list(folder,extlist='all')
+			if not file_list:
+				continue
+			z = zipfile.ZipFile(output, "w",zipfile.ZIP_DEFLATED)			
+			basedir=os.path.dirname(folder)
+			for dirpath, dirnames, filenames in os.walk(folder):
+				for filename in filenames:
+					filePath = os.path.join(dirpath, filename)
+					dirname = filePath.replace(folder,'')
+					dirname=dirname[0:]
+					if os.path.isfile(filePath):  
+						z.write(filePath, dirname)			
+			z.close()	
+		try:
+			shutil.rmtree(tmpfolder, ignore_errors=True)
+		except: pass
+		print('...................................................')
+		print('STILL '+str(counter)+' FILES TO PROCESS')
+		print('...................................................') 
+		
+def sanitize(filename,roma=True):		
+	import re
+	filename = (re.sub(r'[\/\\\:\*\?]+', '', filename))
+	filename = re.sub(r'[™©®`~^´ªº¢#£€¥$ƒ±¬½¼♡«»±•²‰œæÆ³☆<<>>|]', '', filename)
+	filename = re.sub(r'[Ⅰ]', 'I', filename);filename = re.sub(r'[Ⅱ]', 'II', filename)
+	filename = re.sub(r'[Ⅲ]', 'III', filename);filename = re.sub(r'[Ⅳ]', 'IV', filename)
+	filename = re.sub(r'[Ⅴ]', 'V', filename);filename = re.sub(r'[Ⅵ]', 'VI', filename)
+	filename = re.sub(r'[Ⅶ]', 'VII', filename);filename = re.sub(r'[Ⅷ]', 'VIII', filename)
+	filename = re.sub(r'[Ⅸ]', 'IX', filename);filename = re.sub(r'[Ⅹ]', 'X', filename)
+	filename = re.sub(r'[Ⅺ]', 'XI', filename);filename = re.sub(r'[Ⅻ]', 'XII', filename)
+	filename = re.sub(r'[Ⅼ]', 'L', filename);filename = re.sub(r'[Ⅽ]', 'C', filename)
+	filename = re.sub(r'[Ⅾ]', 'D', filename);filename = re.sub(r'[Ⅿ]', 'M', filename)
+	filename = re.sub(r'[—]', '-', filename);filename = re.sub(r'[√]', 'Root', filename)
+	filename = re.sub(r'[àâá@äå]', 'a', filename);filename = re.sub(r'[ÀÂÁÄÅ]', 'A', filename)
+	filename = re.sub(r'[èêéë]', 'e', filename);filename = re.sub(r'[ÈÊÉË]', 'E', filename)
+	filename = re.sub(r'[ìîíï]', 'i', filename);filename = re.sub(r'[ÌÎÍÏ]', 'I', filename)
+	filename = re.sub(r'[òôóöø]', 'o', filename);filename = re.sub(r'[ÒÔÓÖØ]', 'O', filename)
+	filename = re.sub(r'[ùûúü]', 'u', filename);filename = re.sub(r'[ÙÛÚÜ]', 'U', filename)
+	filename = re.sub(r'[’]', "'", filename);filename = re.sub(r'[“”]', '"', filename)
+	filename = re.sub(' {3,}', ' ',filename);re.sub(' {2,}', ' ',filename);
+	filename = filename.replace("( ", "(");filename = filename.replace(" )", ")")
+	filename = filename.replace("[ ", "[");filename = filename.replace(" ]", "]")
+	filename = filename.replace("[ (", "[(");filename = filename.replace(") ]", ")]")
+	filename = filename.replace("[]", "");filename = filename.replace("()", "")
+	filename = filename.replace('" ','"');filename = filename.replace(' "','"')
+	filename = filename.replace(" !", "!");filename = filename.replace(" ?", "?")
+	filename = filename.replace("  ", " ");filename = filename.replace("  ", " ")
+	filename = filename.replace('"', '');
+	filename = filename.replace(')', ') ');filename = filename.replace(']', '] ')
+	filename = filename.replace("[ (", "[(");filename = filename.replace(") ]", ")]")
+	filename = filename.replace("  ", " ")	
+	if roma==True:
+		converter = kakashi_conv()
+		filename=converter.do(filename)		
+	filename.strip()		
+	return filename	
 	
+def kakashi_conv():
+	import pykakasi
+	kakasi = pykakasi.kakasi()
+	kakasi.setMode("H", "a")
+	kakasi.setMode("K", "a")
+	kakasi.setMode("J", "a")
+	kakasi.setMode("s", True)
+	kakasi.setMode("E", "a")
+	kakasi.setMode("a", None)
+	kakasi.setMode("C", False)
+	converter = kakasi.getConverter()	
+	return converter	

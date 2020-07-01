@@ -42,6 +42,8 @@ set "MTP_chk_fw=%MTP_chk_fw%"
 set "MTP_prepatch_kg=%MTP_prepatch_kg%"
 set "MTP_prechk_Base=%MTP_prechk_Base%"
 set "MTP_prechk_Upd=%MTP_prechk_Upd%"
+set "MTP_saves_Inline=%MTP_saves_Inline%"
+set "MTP_saves_AddTIDandVer=%MTP_saves_AddTIDandVer%"
 
 REM Copy function
 set "pycommand=%pycommand%"

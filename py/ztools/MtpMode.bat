@@ -382,8 +382,39 @@ REM ECHO *********** ALL FILES WERE PROCESSED! *************
 REM ECHO ---------------------------------------------------
 goto MAIN
 
+:SAVES_wrongchoice
+echo wrong choice
+echo ............
 :SAVES
-goto MAIN
+cls
+call :program_logo
+echo.
+ECHO ******************************************
+echo SAVEGAMES DUMPER
+ECHO ******************************************
+echo.
+echo 1. DUMP ALL SAVES
+echo 2. SELECT WHAT SAVES TO DUMP
+echo. 
+ECHO ******************************************
+echo Or Input "0" to return to the list options
+ECHO ******************************************
+echo.
+set /p bs="Enter your choice: "
+set bs=%bs:"=%
+set backup_all=none
+if /i "%bs%"=="0" goto MAIN
+if /i "%bs%"=="1" set "backup_all=True"
+if /i "%bs%"=="2" set "backup_all=False"
+if /i "%bs%"=="3" goto delete_archived
+if %backup_all%=="none" goto SAVES_wrongchoice
+
+%pycommand% "%squirrel%" -lib_call mtp.mtp_game_manager back_up_saves -xarg  %backup_all% %MTP_saves_Inline% %MTP_saves_AddTIDandVer% %romaji%
+echo.
+ECHO ---------------------------------------------------
+ECHO *********** ALL FILES WERE PROCESSED! *************
+ECHO ---------------------------------------------------
+goto s_exit_choice
 
 :SX_AUTOLOADER
 goto MAIN

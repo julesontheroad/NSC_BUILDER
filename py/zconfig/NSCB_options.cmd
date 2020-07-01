@@ -173,3 +173,6 @@ set "MTP_prepatch_kg=False"
 :: Precheck if Installed
 set "MTP_prechk_Base=True"
 set "MTP_prechk_Upd=False"
+:: Save Dumping
+set "MTP_saves_Inline=False"
+set "MTP_saves_AddTIDandVer=False"

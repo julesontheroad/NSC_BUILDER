@@ -239,7 +239,10 @@ def install_converted(filepath=None,outfolder=None,destiny="SD",kgpatch=False,tg
 			os.remove(fp)		
 	tname=str(os.path.basename(filepath))[:-3]+'nsp'
 	tmpfile=os.path.join(outfolder,tname)	
-	process0=subprocess.Popen([sys.executable,squirrel,"-lib_call","mtp.mtpinstaller","install_conv_st1","-xarg",filepath,outfolder,keypatch])	
+	if isExe==False:
+		process0=subprocess.Popen([sys.executable,squirrel,"-lib_call","mtp.mtpinstaller","install_conv_st1","-xarg",filepath,outfolder,keypatch])	
+	else:
+		process0=subprocess.Popen([squirrel,"-lib_call","mtp.mtpinstaller","install_conv_st1","-xarg",filepath,outfolder,keypatch])		
 	while process0.poll()==None:
 		if process0.poll()!=None:
 			process0.terminate();
