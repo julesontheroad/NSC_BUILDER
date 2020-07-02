@@ -1,4 +1,8 @@
 import os
+from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import as_completed as completedfuture
+from ast import literal_eval
+
 squirrel_dir=os.path.abspath(os.curdir)
 NSCB_dir=os.path.abspath('../'+(os.curdir))
 
@@ -32,6 +36,11 @@ remote_cache_folder=os.path.join(cache_folder,'_remotelib_')
 if not os.path.exists(remote_cache_folder):
 	os.makedirs(remote_cache_folder)
 
+remote_lib_cache=os.path.join(zconfig_dir, 'remote_lib_cache')	
+if not os.path.exists(remote_lib_cache):
+	os.makedirs(remote_lib_cache)
+
+	
 	
 def back_check_files():		
 	templog=os.path.join(debug_folder,'temp.txt')
@@ -146,10 +155,84 @@ def remote_lib_2html(libname,results):
 	cachefile=os.path.join(remote_cache_folder,libname)
 	with open(cachefile,'wt',encoding='utf8') as file:
 		file.write(html)	
+
+def scrape_lib_worker(db,entry,filter=''): 
+	results=[];		
+	path=db[entry]['path']
+	TD=db[entry]['TD_name']	
+	from Drive import Private as DrivePrivate
+	response=DrivePrivate.search_folder(path,TD=TD,filter=filter,Pick=False)
+	if response!=False:
+		results+=response	
+	return results
+		
+def concurrent_scrapper(filter='',order='name_ascending',remotelib='all',db=False):
+	if db==False:
+		db=libraries(remote_lib_file)	
+	else:
+		db=db
+	checks=[]
+	if db==False:	
+		return	
+	if isinstance(remotelib, list):
+		for item in remotelib:
+			if item in db.keys():
+				checks.append(item)		
+	elif remotelib=='all':
+		checks=db.keys()
+	else:
+		if remotelib in db.keys():
+			checks.append(remotelib)
+	# elif literal_eval(remotelib)	
+	with ThreadPoolExecutor(max_workers=8) as executor:
+		# future = executor.map(scrape_lib_worker,db.keys())
+		futures = {executor.submit(scrape_lib_worker,db,entry,filter): entry for entry in checks}
+	items=[]		
+	for future in completedfuture(futures):
+		for res in future.result():
+			items.append(res)		
+	if order=='name_ascending':
+		items.sort(key=lambda x: x[0])
+	elif order=='name_descending':	
+		(items.sort(key=lambda x: x[0]))
+		items.reverse()
+	elif order=='size_ascending':
+		items.sort(key=lambda x: x[1])		
+	elif order=='size_descending':	
+		(items.sort(key=lambda x: x[1]))
+		items.reverse()	
+	elif order=='date_ascending':
+		items.sort(key=lambda x: x[3])		
+	elif order=='date_descending':	
+		(items.sort(key=lambda x: x[3]))
+		items.reverse()				
+	# for item in items:
+		# print(item[0])
+	return items
+
 	
+def kakashi_conv():
+	import pykakasi
+	kakasi = pykakasi.kakasi()
+	kakasi.setMode("H", "a")
+	kakasi.setMode("K", "a")
+	kakasi.setMode("J", "a")
+	kakasi.setMode("s", True)
+	kakasi.setMode("E", "a")
+	kakasi.setMode("a", None)
+	kakasi.setMode("C", False)
+	converter = kakasi.getConverter()	
+	return converter	
+
+def romaji(filename):	
+	converter = kakashi_conv()
+	filename=converter.do(filename)	
+	return filename
 	
-	
-	
+def concurrent_romaji(filenames,workers=20):
+	with ThreadPoolExecutor(max_workers=workers) as executor:
+		future = executor.map(romaji,filenames)
+	return future	
 	
 	
 	

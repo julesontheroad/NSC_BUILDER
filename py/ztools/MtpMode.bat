@@ -41,10 +41,32 @@ call "%prog_dir%ztools\LEGACY.bat"
 exit /B
 
 :G_INST
-goto G_INST_LOCAL
+cls
+call :program_logo
+echo -------------------------------------------------
+echo MTP - FILE TRANFER MODE ACTIVATED
+echo -------------------------------------------------
+echo *******************************************************
+echo SELECT FUNCTION
+echo *******************************************************
+echo.
+echo 1. GAME INSTALLATION FROM LOCAL FILES
+echo 2. GAME INSTALLATION FROM REMOTE LIBRARIES (GDRIVE)
+echo. 
+ECHO ******************************************
+echo Or Input "0" to return to the list options
+ECHO ******************************************
+echo.
+set /p bs="Enter your choice: "
+set bs=%bs:"=%
+if /i "%bs%"=="0" goto MAIN
+if /i "%bs%"=="1" goto G_INST_LOCAL
+if /i "%bs%"=="2" goto G_INST_GDRIVE
+goto G_INST
 
 :G_INST_GDRIVE
-goto G_INST
+call "%prog_dir%ztools\MtpInstallRemote.bat"
+goto MAIN
 
 :G_INST_LOCAL
 cls
@@ -284,12 +306,12 @@ echo 3. CREATE XCI AND TRANSFER
 echo 4. CREATE MULTI-XCI AND TRANSFER
 echo. 
 ECHO ******************************************
-echo Or Input "b" to return to the list options
+echo Or Input "0" to return to the list options
 ECHO ******************************************
 echo.
 set /p bs="Enter your choice: "
 set bs=%bs:"=%
-if /i "%bs%"=="b" goto MAIN
+if /i "%bs%"=="0" goto MAIN
 if /i "%bs%"=="1" goto F_TR_LOCAL
 if /i "%bs%"=="2" goto F_TR_GD
 if /i "%bs%"=="3" goto F_TR_C_xci_Transfer

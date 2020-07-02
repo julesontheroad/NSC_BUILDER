@@ -39,7 +39,7 @@ set eval=%eval:"=%
 setlocal enabledelayedexpansion
 echo+ >"%uinput%"
 endlocal
-if /i "%eval%"=="0" goto manual_Reentry
+if /i "%eval%"=="0" goto MAIN
 if /i "%eval%"=="1" set skip_list_split="true"
 if /i "%eval%"=="1" goto m_patch_keygen
 if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%mlistMTP.txt" mode=folder ext="nsp xci nsz xcz" ) 2>&1>NUL
@@ -77,7 +77,7 @@ setlocal enabledelayedexpansion
 echo+ >"%uinput%"
 endlocal
 
-if /i "%eval%"=="0" goto manual_Reentry
+if /i "%eval%"=="0" goto MAIN
 if /i "%eval%"=="1" set "mlistfol=%list_folder%\a_multiMTP"
 if /i "%eval%"=="1" goto m_patch_keygen
 if /i "%eval%"=="2" set "mlistfol=%list_folder%\m_multiMTP"
@@ -111,7 +111,7 @@ set /p bs="Enter your choice: "
 set bs=%bs:"=%
 set vrepack=none
 if /i "%bs%"=="b" goto multi_checkagain
-if /i "%bs%"=="0" goto manual_Reentry
+if /i "%bs%"=="0" goto MAIN
 if /i "%bs%"=="1" goto multi_saved_for_later1
 if /i "%bs%"=="2" ( %pycommand% "%squirrel%" -splid "%mlistfol%" -tfile "%prog_dir%mlistMTP.txt" )
 if /i "%bs%"=="2" del "%prog_dir%mlistMTP.txt"
@@ -138,7 +138,7 @@ echo Input "2" to exit the program
 echo.
 set /p bs="Enter your choice: "
 set bs=%bs:"=%
-if /i "%bs%"=="0" goto manual_Reentry
+if /i "%bs%"=="0" goto MAIN
 if /i "%bs%"=="1" echo.
 if /i "%bs%"=="1" echo CREATE ANOTHER JOB
 if /i "%bs%"=="1" goto multi_manual_INIT
@@ -350,9 +350,8 @@ echo       \    \
 echo.
 echo HOPE YOU HAVE A FUN TIME
 exit /B
-
-:call_main
-call "%prog_dir%\NSCB.bat"
+:MAIN
+call "%prog_dir%\MtpMode.bat"
 exit /B
 
 :salida
