@@ -64,11 +64,13 @@ cachefolder=os.path.join(ztools_dir, '_mtp_cache_')
 if not os.path.exists(cachefolder):
 	os.makedirs(cachefolder)
 games_installed_cache=os.path.join(cachefolder, 'games_installed.txt')
+sd_xci_cache=os.path.join(cachefolder, 'sd_xci.txt')
 valid_saves_cache=os.path.join(cachefolder, 'valid_saves.txt')
 mtp_source_lib=os.path.join(zconfig_dir,'mtp_source_libraries.txt')
 mtp_internal_lib=os.path.join(zconfig_dir,'mtp_SD_libraries.txt')
 storage_info=os.path.join(cachefolder, 'storage.csv')
 download_lib_file = os.path.join(zconfig_dir, 'mtp_download_libraries.txt')
+sx_autoloader_db=os.path.join(zconfig_dir, 'sx_autoloader_db')
 
 def libraries(tfile):
 	db={}
@@ -107,7 +109,24 @@ def retrieve_installed():
 		if process.poll()!=None:
 			process.terminate();	
 	if os.path.exists(games_installed_cache):	
-		print("    Success")		
+		print("    Success")	
+
+def retrieve_xci_paths():	
+	try:			
+		for f in os.listdir(cachefolder):
+			fp = os.path.join(cachefolder, f)
+			try:
+				shutil.rmtree(fp)
+			except OSError:
+				os.remove(fp)	
+	except:pass		
+	print("  * Parsing games in device. Please Wait...")			
+	process=subprocess.Popen([nscb_mtp,"Retrieve_XCI_paths","-tfile",sd_xci_cache,"-show","false",],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+	while process.poll()==None:
+		if process.poll()!=None:
+			process.terminate();	
+	if os.path.exists(games_installed_cache):	
+		print("    Success")			
 			
 def parsedinstalled():
 	installed={}	
@@ -120,9 +139,10 @@ def parsedinstalled():
 			installed[entry[0]]=entry
 	return installed
 	
-def get_gamelist(dosort=True):	
-	if os.path.exists(games_installed_cache):	
-		gamelist=listmanager.read_lines_to_list(games_installed_cache,all=True)	
+def get_gamelist(dosort=True,file=games_installed_cache):	
+	gamelist=[]
+	if os.path.exists(file):	
+		gamelist=listmanager.read_lines_to_list(file,all=True)	
 		gamelist.sort()
 	return gamelist
 	
@@ -183,7 +203,37 @@ def loop_transfer(tfile):
 		transfer(filepath=item,destiny=destiny)
 		print("")
 		listmanager.striplines(tfile,counter=True)	
-	
+		
+def gen_sx_autoloader_sd_files():
+	retrieve_xci_paths()
+	gamelist=get_gamelist(file=sd_xci_cache)
+	SD_folder=os.path.join(sx_autoloader_db, 'sd')
+	if not os.path.exists(sx_autoloader_db):
+		os.makedirs(sx_autoloader_db)		
+	if not os.path.exists(SD_folder):
+		os.makedirs(SD_folder)		
+	for f in os.listdir(SD_folder):
+		fp = os.path.join(SD_folder, f)
+		try:
+			shutil.rmtree(fp)
+		except OSError:
+			os.remove(fp)	
+	print('  * Genereting autoloader files')
+	for g in gamelist:	
+		fileid,fileversion,cctag,nG,nU,nD,baseid=listmanager.parsetags(g)	
+		tfile=os.path.join(SD_folder,fileid)
+		new_path=g.replace('\\1: External SD Card\\','sdmc:/')
+		new_path=new_path.replace('\\','/')
+		with open(tfile,'w') as text_file:
+			text_file.write(new_path)
+	print('  * Pushing autoloader files')			
+	destiny="1: External SD Card/sxos/titles/00FF0012656180FF/cach/sd"
+	process=subprocess.Popen([nscb_mtp,"TransferFolder","-ori",SD_folder,"-dst",destiny])
+	while process.poll()==None:
+		if process.poll()!=None:
+			process.terminate();	
+			
+		
 def dump_content():
 	retrieve_installed()
 	installed=get_gamelist()
