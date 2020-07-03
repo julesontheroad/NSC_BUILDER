@@ -176,3 +176,5 @@ set "MTP_prechk_Upd=False"
 :: Save Dumping
 set "MTP_saves_Inline=False"
 set "MTP_saves_AddTIDandVer=False"
+:: Activate truecopy for public google drive cache or use symlinks
+set "MTP_pdrive_truecopy=True"

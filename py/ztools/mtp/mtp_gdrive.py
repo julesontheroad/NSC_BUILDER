@@ -114,7 +114,7 @@ def get_cache_lib():
 		TD=None
 	return lib,TD,libpath		
 	
-def addtodrive(filename):
+def addtodrive(filename,truecopy=True):
 	if os.path.exists(cache_lib_file):
 		lib,TD,libpath=get_cache_lib()
 		if lib!=None:
@@ -126,7 +126,7 @@ def addtodrive(filename):
 				testpath=('{}/{}').format(libpath,name)
 				remote=DrivePrivate.location(route=testpath,TD_Name=TD)	
 				if remote.name==None:			
-					name=DrivePrivate.add_to_drive(url=filename,filepath=libpath,makecopy=True,TD=TD)
+					name=DrivePrivate.add_to_drive(url=filename,filepath=libpath,makecopy=truecopy,TD=TD)
 					filename=('{}/{}').format(libpath,name)
 					ID,name,type,size,md5,remote=DrivePrivate.get_Data(filename,TD=TD,Print=False)
 				else:
@@ -150,10 +150,17 @@ def interface_filter(path=None):
 		return ck		
 
 def pick_order():
-	title = 'Select order to list the files: '
+	title = 'Select order to list the files: \n + Press enter or intro to select \n + Press E to scape back to menu'
 	db=libraries(download_lib_file)
 	options = ['name_ascending','name_descending','size_ascending','size_descending','date_ascending','date_descending']
-	selected = pick(options, title,min_selection_count=1)	
+	picker = Picker(options, title, min_selection_count=1)	
+	def end_selection(picker):
+		return False,-1	
+	picker.register_custom_handler(ord('e'),  end_selection)
+	picker.register_custom_handler(ord('E'),  end_selection)		
+	selected = picker.start()	
+	if selected[0]==False:
+		return False
 	order=selected[0]
 	return order			
 	
@@ -180,8 +187,12 @@ def select_from_libraries(tfile):
 	if db==False:
 		sys.exit(f"Missing {remote_lib_file}")
 	paths,TDs=Drv.pick_libraries()
+	if paths==False:
+		return False	
 	filter=interface_filter()	
 	order=pick_order()
+	if order==False:
+		return False
 	print("  * Parsing files from Google Drive. Please Wait...")		
 	if isinstance(paths, list):
 		db={}
@@ -210,7 +221,6 @@ def select_from_libraries(tfile):
 		for f in selected:
 			textfile.write((files[f[1]])[2]+'/'+(files[f[1]])[0]+'\n')
 
-		
 def loop_install(tfile,destiny="SD",outfolder=None,ch_medium=True,check_fw=True,patch_keygen=False,ch_base=False,ch_other=False,checked=False):	
 	if not os.path.exists(tfile):
 		sys.exit(f"Couldn't find {tfile}")		
@@ -285,11 +295,11 @@ def gdrive_install(filename,destiny="SD"):
 		if process.poll()!=None:
 			process.terminate();	
 
-def public_gdrive_install(filepath,destiny="SD"):
+def public_gdrive_install(filepath,destiny="SD",truecopy=True):
 	lib,TD,libpath=get_cache_lib()
 	if lib==None:
 		sys.exit(f"Google Drive Public Links are only supported via cache folder")	
-	filename=addtodrive(filepath)
+	filename=addtodrive(filepath,truecopy=truecopy)
 	ID,name,type,size,md5,remote=DrivePrivate.get_Data(filename,TD=TD,Print=False)	
 	token=remote.access_token
 	name=remote.name
@@ -344,173 +354,102 @@ def fichier_install(url,destiny="SD"):
 		if process.poll()!=None:
 			process.terminate();		
 			
-			
-def Interface_Installer():
-	clear_Screen()
-	About()
-	response=False	
-	print('\n********************************************************')
-	print('REMOTE INSTALLER')
-	print('********************************************************')
-	while True:
-		print('Input "1" to select folder and file via file-picker')
-		if os.path.exists(remote_lib_file):
-			print('Input "2" to select from libraries')		
-		print('')
-		print('Input "0" to go back to the MAIN PROGRAM')	
-		print('')		
-		print('--- Or INPUT GDRIVE Route OR PUBLIC_LINK ---')		
-		print('')		
-		ck=input('Input your answer: ')
-		if ck=="0":
-			break
-		elif ck=="1":	
-			while True:
-				folder,TD=DrivePrivate.folder_walker()		
-				print(folder)
-				response=interface_file(folder,TD)
-				if response==False:
-					return False
-		elif ck=="2" and os.path.exists(remote_lib_file):
-			while True:
-				paths,TDs=Drv.pick_libraries()
-				if paths==False:
-					return False
-				response=interface_file(paths,TDs)
-				if response==False:
-					return False				
-		elif ck=="0":
-			break	
-		elif ck.startswith('http'):
-			url=ck
-			response=interface_menu(url,None,True)
-		elif ck.endswith('/') or ck.endswith('\\'):		
-			response=interface_file(ck,"pick")		
-		elif (ck[:-1]).endswith('.xc') or (ck[:-1]).endswith('.ns'):
-			TD=DrivePrivate.TD_picker(ck)		
-			response=interface_menu(ck,TD,True)
-		if 	response==False:
-			break	
 
-def interface_menu(path,TD):
-	xcipr=False;nxzpr=False;xcimode="Untrimmed";zmode="Compressed"
-	if isinstance(path, list):
-		if not isinstance(path[0], list):	
-			for file in path:
-				if file.endswith('.xci'):
-					xcipr=True
-				elif file.endswith('.xcz') or file.endswith('.nsz'):
-					nxzpr=True	
-				if xcipr==True and nxzpr==True:
-					break
-				print(file)
-			return False
-	else:
-		return False	
-			# if xcipr==True:
-				# xcimode=interface_xci_mode()
-			# if nxzpr==True:	
-				# zmode=interface_compressedf_mode()
-			# ofolder=ask_download_folder()	
-			# clear_Screen()
-			# About()						
-			# counter=len(path)	
-			# for file in path:	
-				# route_download(file,TD,ofolder,xcimode=xcimode,zmode=zmode)	
-				# counter-=1
-				# if counter>0:
-					# print("Still {} files to download".format(str(counter)))	
-			# input('\nPress any key to continue...')					
-			# return False	
-		# else:
-			# counter=0;files=list()
-			# for i in path:
-				# counter+=len(i[0])
-				# files+=i[0]
-			# for file in files:
-				# if file.endswith('.xci'):
-					# xcipr=True
-				# elif file.endswith('.xcz') or file.endswith('.nsz'):
-					# nxzpr=True	
-				# if xcipr==True and nxzpr==True:
-					# break
-			# if xcipr==True:
-				# xcimode=interface_xci_mode()
-			# if nxzpr==True:	
-				# zmode=interface_compressedf_mode()
-			# ofolder=ask_download_folder()	
-			# clear_Screen()
-			# About()			
-			# for k in path:
-				# TD=k[1];files=k[0]
-				# for file in files:	
-					# route_download(file,TD,ofolder,xcimode=xcimode,zmode=zmode)	
-					# counter-=1
-					# if counter>0:
-						# print("Still {} files to download".format(str(counter)))	
-			# input('\nPress any key to continue...')					
-			# return False				
-	# elif path.startswith('http'):
-		# file=DrivePublic.return_remote(path)		
-		# if file.name.endswith('.xci'):
-			# xcipr=True
-		# elif file.name.endswith('.xcz') or file.name.endswith('.nsz'):
-			# nxzpr=True
-		# elif file.name==None:
-			# print("File overpassed quota or is unreadable")
-			# input('\nPress any key to continue...')	
-			# clear_Screen()
-			# About()		
-		# if xcipr==True:
-			# xcimode=interface_xci_mode()
-		# if nxzpr==True:	
-			# zmode=interface_compressedf_mode()
-		# ofolder=ask_download_folder()		
-		# route_download_public(path,ofolder,file.name,xcimode=xcimode,zmode=zmode,file=file)	
-		# input('\nPress any key to continue...')					
-		# return False
-	# elif path !=None:
-		# if path.endswith('.xci'):
-			# xcipr=True
-		# elif path.endswith('.xcz') or path.endswith('.nsz'):
-			# nxzpr=True	
-		# if xcipr==True:
-			# xcimode=interface_xci_mode()
-		# if nxzpr==True:	
-			# zmode=interface_compressedf_mode()
-		# ofolder=ask_download_folder()	
-		# route_download(path,TD,ofolder,xcimode=xcimode,zmode=zmode)	
-		# input('\nPress any key to continue...')					
-		# return False	
-	# else:
-		# return False		
-def interface_file(path,TD):
-	if TD=="pick":
-		TD=DrivePrivate.TD_picker(path)
-	folder=path;TeamDrive=TD
-	response=False	
-	files=list()
-	filter=interface_filter(path)	
-	if isinstance(path, list):
-		db={}
-		for i in range(len(path)):
-			db[path[i]]={'path':path[i],'TD_name':TD[i]}	
-		files=concurrent_scrapper(filter='',order='name_ascending',remotelib='all',db=db)
-	else:
-		db={}
-		db[path]={'path':path,'TD_name':TD}	
-		files=concurrent_scrapper(filter='',order='name_ascending',remotelib='all',db=db)		
-		if files==False:
-			print("Query returned no files")
-			input('\nPress any key to continue...')	
-			clear_Screen()
-			About()
-			return False			
-		else:	
-			response=interface_menu(files,TeamDrive)
-			if str(response)=="False":
-				return response
-			elif str(response)=="CHANGE": 
-				return True
+def gdrive_transfer(filename,destiny="SD"):
+	if destiny=="SD":
+		destiny="1: External SD Card/"
+	lib,TD,libpath=get_library_from_path(remote_lib_file,filename)
+	ID,name,type,size,md5,remote=DrivePrivate.get_Data(filename,TD=TD,Print=False)
+	# header=DrivePrivate.get_html_header(remote.access_token)
+	token=remote.access_token
+	name=remote.name
+	sz=remote.size
+	URL='https://www.googleapis.com/drive/v3/files/'+remote.ID+'?alt=media'	
+	ext=name.split('.')
+	ext=ext[-1]
+	process=subprocess.Popen([nscb_mtp,"DriveTransfer","-ori",URL,"-dst",destiny,"-name",name,"-size",sz,"-tk",token])
+	while process.poll()==None:
+		if process.poll()!=None:
+			process.terminate();	
 
+def public_gdrive_transfer(filepath,destiny="SD",truecopy=True):
+	lib,TD,libpath=get_cache_lib()
+	if lib==None:
+		sys.exit(f"Google Drive Public Links are only supported via cache folder")	
+	if destiny=="SD":
+		destiny="1: External SD Card/"		
+	filename=addtodrive(filepath,truecopy=truecopy)
+	ID,name,type,size,md5,remote=DrivePrivate.get_Data(filename,TD=TD,Print=False)	
+	token=remote.access_token
+	name=remote.name
+	sz=remote.size
+	URL='https://www.googleapis.com/drive/v3/files/'+remote.ID+'?alt=media'	
+	ext=name.split('.')
+	ext=ext[-1]		
+	process=subprocess.Popen([nscb_mtp,"DriveTransfer","-ori",URL,"-dst",destiny,"-name",name,"-size",sz,"-tk",token])
+	while process.poll()==None:
+		if process.poll()!=None:
+			process.terminate();		
+	
+def fichier_transfer(url,destiny="SD"):
+	if not os.path.exists(_1fichier_token):
+		sys.exit("No 1fichier token setup")
+	with open(_1fichier_token,'rt',encoding='utf8') as tfile:
+		token=(tfile.readline().strip())
+	if token==None:
+		sys.exit("Missing 1fichier token")		
+	APIkey=token
+	auth={'Authorization':f'Bearer {APIkey}','Content-Type':'application/json'}
+	session = requests.session()
+	download_params = {
+		'url' : url,
+		'inline' : 0,
+		'cdn' : 0,
+		'restrict_ip':  0,
+		'no_ssl' : 0,
+	}			
+	info_params={
+		'url' : url	
+	}
+	r=session.post('https://api.1fichier.com/v1/file/info.cgi',json=info_params,headers=auth)
+	info_dict=r.json()
+	# print(info_dict)
+	sz=info_dict['size']
+	name=info_dict['filename']
+	r=session.post('https://api.1fichier.com/v1/download/get_token.cgi',json=download_params,headers=auth)
+	dict=r.json()
+	# print(dict)
+	ext=name.split('.')
+	ext=ext[-1]			
+	if not dict['status']=="OK":
+		sys.exit(f"API call returned {dict['status']}")			
+	URL=dict['url']
+	process=subprocess.Popen([nscb_mtp,"fichierTransfer","-ori",URL,"-dst",destiny,"-name",name,"-size",str(sz)])
+	while process.poll()==None:
+		if process.poll()!=None:
+			process.terminate();
+
+def loop_transfer(tfile):	
+	if not os.path.exists(tfile):
+		sys.exit(f"Couldn't find {tfile}")		
+	from mtp_game_manager import pick_transfer_folder
+	destiny=pick_transfer_folder()
+	file_list=listmanager.read_lines_to_list(tfile,all=True)	
+	for item in file_list:
+		if item.startswith('https://1fichier.com'):
+			print("Item is 1fichier link. Redirecting...")
+			fichier_transfer(item,destiny)			
+		elif item.startswith('https://drive.google.com'):
+			print("Item is google drive public link. Redirecting...")
+			public_gdrive_transfer(item,destiny)			
+		elif os.path.exists(item):
+			print("Item is a local link. Skipping...")	
+		else:
+			test=item.split('|')
+			item=test[0]
+			lib,TD,libpath=get_library_from_path(remote_lib_file,item)			
+			if lib!=None:
+				print("Item is a remote library link. Redirecting...")
+				gdrive_transfer(item,destiny)
+	
 	

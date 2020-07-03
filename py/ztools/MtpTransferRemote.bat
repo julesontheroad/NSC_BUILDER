@@ -5,20 +5,20 @@ set "bat_name=%~n0"
 Title NSC_Builder v0.99 -- Profile: %ofile_name% -- by JulesOnTheRoad
 
 :MAIN
-if exist "MTP1GD.txt" goto prevlist
+if exist "MTP2GD.txt" goto prevlist
 goto manual_INIT
 :prevlist
 set conta=0
-for /f "tokens=*" %%f in (MTP1GD.txt) do (
+for /f "tokens=*" %%f in (MTP2GD.txt) do (
 echo %%f
 ) >NUL 2>&1
 setlocal enabledelayedexpansion
-for /f "tokens=*" %%f in (MTP1GD.txt) do (
+for /f "tokens=*" %%f in (MTP2GD.txt) do (
 set /a conta=!conta! + 1
 ) >NUL 2>&1
-if !conta! LEQ 0 ( del MTP1GD.txt )
+if !conta! LEQ 0 ( del MTP2GD.txt )
 endlocal
-if not exist "MTP1GD.txt" goto manual_INIT
+if not exist "MTP2GD.txt" goto manual_INIT
 ECHO .......................................................
 ECHO A PREVIOUS LIST WAS FOUND. WHAT DO YOU WANT TO DO?
 :prevlist0
@@ -39,17 +39,17 @@ set /p bs="Enter your choice: "
 set bs=%bs:"=%
 if /i "%bs%"=="3" goto showlist
 if /i "%bs%"=="2" goto delist
-if /i "%bs%"=="1" goto select_medium
+if /i "%bs%"=="1" goto START_TRANSFER
 if /i "%bs%"=="0" call "%prog_dir%ztools\MtpMode.bat"
 echo.
 echo BAD CHOICE
 goto prevlist0
 :delist
-del MTP1GD.txt
+del MTP2GD.txt
 cls
 call :program_logo
 echo -------------------------------------------------
-echo MTP - INSTALL FROM GOOGLE DRIVE
+echo MTP - TRANSFER FROM GOOGLE DRIVE
 echo -------------------------------------------------
 echo ..................................
 echo YOU'VE DECIDED TO START A NEW LIST
@@ -72,7 +72,7 @@ ECHO *************************************************
 echo Or Input "0" to return to the MODE SELECTION MENU
 ECHO *************************************************
 echo.
-%pycommand% "%squirrel%" -lib_call mtp.mtp_gdrive eval_link -xarg "%bs%" "%prog_dir%MTP1GD.txt" "%uinput%"
+%pycommand% "%squirrel%" -lib_call mtp.mtp_gdrive eval_link -xarg "%bs%" "%prog_dir%MTP2GD.txt" "%uinput%"
 set /p eval=<"%uinput%"
 set eval=%eval:"=%
 setlocal enabledelayedexpansion
@@ -80,7 +80,7 @@ echo+ >"%uinput%"
 endlocal
 if /i "%eval%"=="0" goto MAIN
 if /i "%eval%"=="1" goto MAIN
-if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call mtp.mtp_gdrive select_from_libraries -xarg "%prog_dir%MTP1GD.txt" )
+if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call mtp.mtp_gdrive select_from_libraries -xarg "%prog_dir%MTP2GD.txt" )
 echo.
 goto checkagain
 
@@ -89,7 +89,7 @@ echo WHAT DO YOU WANT TO DO?
 echo ......................................................................
 echo "DRAG ANOTHER FILE OR FOLDER AND PRESS ENTER TO ADD ITEMS TO THE LIST"
 echo.
-echo Input "1" to START INSTALLING
+echo Input "1" to START TRANSFER
 echo Input "2" to PICK FILES FROM CACHE FILES
 echo Input "3" to PICK FILES FROM LIBRARIES (REFRESH CACHE)
 echo Input "e" to exit
@@ -103,22 +103,22 @@ ECHO *************************************************
 echo Or Input "0" to return to the MODE SELECTION MENU
 ECHO *************************************************
 echo.
-%pycommand% "%squirrel%" -lib_call mtp.mtp_gdrive eval_link -xarg "%bs%" "%prog_dir%MTP1GD.txt" "%uinput%"
+%pycommand% "%squirrel%" -lib_call mtp.mtp_gdrive eval_link -xarg "%bs%" "%prog_dir%MTP2GD.txt" "%uinput%"
 set /p eval=<"%uinput%"
 set eval=%eval:"=%
 setlocal enabledelayedexpansion
 echo+ >"%uinput%"
 endlocal
 if /i "%eval%"=="0" goto MAIN
-if /i "%eval%"=="1" goto select_medium
+if /i "%eval%"=="1" goto START_TRANSFER
 if /i "%eval%"=="2" goto checkagain
-if /i "%eval%"=="3" ( %pycommand% "%squirrel%" -lib_call mtp.mtp_gdrive select_from_libraries -xarg "%prog_dir%MTP1GD.txt" )
+if /i "%eval%"=="3" ( %pycommand% "%squirrel%" -lib_call mtp.mtp_gdrive select_from_libraries -xarg "%prog_dir%MTP2GD.txt" )
 if /i "%eval%"=="e" goto salida
 if /i "%eval%"=="i" goto showlist
 if /i "%eval%"=="r" goto r_files
-if /i "%eval%"=="z" del "%prog_dir%MTP1GD.txt"
+if /i "%eval%"=="z" del "%prog_dir%MTP2GD.txt"
 if /i "%eval%"=="1" goto MAIN
-if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call mtp.mtp_gdrive select_from_libraries -xarg "%prog_dir%MTP1GD.txt" )
+if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call mtp.mtp_gdrive select_from_libraries -xarg "%prog_dir%MTP2GD.txt" )
 echo.
 goto checkagain
 
@@ -128,7 +128,7 @@ set bs=%bs:"=%
 
 setlocal enabledelayedexpansion
 set conta=
-for /f "tokens=*" %%f in (MTP1GD.txt) do (
+for /f "tokens=*" %%f in (MTP2GD.txt) do (
 set /a conta=!conta! + 1
 )
 
@@ -145,25 +145,25 @@ set string=%string%,
 set skiplist=%string%
 Set "skip=%skiplist%"
 setlocal DisableDelayedExpansion
-(for /f "tokens=1,*delims=:" %%a in (' findstr /n "^" ^<MTP1GD.txt'
+(for /f "tokens=1,*delims=:" %%a in (' findstr /n "^" ^<MTP2GD.txt'
 ) do Echo=%skip%|findstr ",%%a," 2>&1>NUL ||Echo=%%b
-)>MTP1GD.txt.new
+)>MTP2GD.txt.new
 endlocal
-move /y "MTP1GD.txt.new" "MTP1GD.txt" >nul
+move /y "MTP2GD.txt.new" "MTP2GD.txt" >nul
 endlocal
 :showlist
 cls
 call :program_logo
 echo -------------------------------------------------
-echo MTP - INSTALL FROM GOOGLE DRIVE
+echo MTP - TRANSFER FROM GOOGLE DRIVE
 echo -------------------------------------------------
 ECHO FILES TO PROCESS: 
-for /f "tokens=*" %%f in (MTP1GD.txt) do (
+for /f "tokens=*" %%f in (MTP2GD.txt) do (
 echo %%f
 )
 setlocal enabledelayedexpansion
 set conta=
-for /f "tokens=*" %%f in (MTP1GD.txt) do (
+for /f "tokens=*" %%f in (MTP2GD.txt) do (
 set /a conta=!conta! + 1
 )
 echo .................................................
@@ -172,35 +172,11 @@ echo .................................................
 endlocal
 goto checkagain
 
-:select_medium_wrongchoice
-echo wrong choice
-echo ............
-:select_medium
-echo *******************************************************
-echo INSTALLATION MEDIUM
-echo *******************************************************
-echo.
-echo 1. SD
-echo 2. EMMC
-echo. 
-ECHO ******************************************
-echo Or Input "0" to return to the list options
-ECHO ******************************************
-echo.
-set /p bs="Enter your choice: "
-set bs=%bs:"=%
-set medium=none
-if /i "%bs%"=="0" goto MAIN
-if /i "%bs%"=="1" set "medium=SD"
-if /i "%bs%"=="2" set "medium=EMMC"
-
-if %medium%=="none" goto select_medium_wrongchoice
-
-:START_INSTALLATION
+:START_TRANSFER
 cls
 call :program_logo
 CD /d "%prog_dir%"
-%pycommand% "%squirrel%" -lib_call mtp.mtp_gdrive loop_install -xarg "%prog_dir%MTP1GD.txt" "destiny=%medium%" "ch_medium=%MTP_aut_ch_medium%" "check_fw=%MTP_chk_fw%" "patch_keygen=%MTP_prepatch_kg%" "ch_base=%MTP_prechk_Base%" "ch_other=%MTP_prechk_Upd%"
+%pycommand% "%squirrel%" -lib_call mtp.mtp_gdrive loop_transfer -xarg "%prog_dir%MTP2GD.txt"
 echo.
 ECHO ---------------------------------------------------
 ECHO *********** ALL FILES WERE PROCESSED! *************
@@ -208,7 +184,7 @@ ECHO ---------------------------------------------------
 goto s_exit_choice
 
 :s_exit_choice
-if exist MTP1GD.txt del MTP1GD.txt
+if exist MTP2GD.txt del MTP2GD.txt
 if /i "%va_exit%"=="true" echo PROGRAM WILL CLOSE NOW
 if /i "%va_exit%"=="true" ( PING -n 2 127.0.0.1 >NUL 2>&1 )
 if /i "%va_exit%"=="true" goto salida

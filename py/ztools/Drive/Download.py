@@ -103,12 +103,19 @@ class Section:
 		self.cryptoCounter = f.read(16)
 
 def pick_libraries():
-	title = 'Select libraries to search: '
+	title = 'Select libraries to search:  \n + Press space or right to select content \n + Press E to finish selection'
 	db=libraries(remote_lib_file)
 	if db==False:
 		return False,False
 	options = [x for x in db.keys()]
-	selected = pick(options, title,multi_select=True,min_selection_count=1)	
+	picker = Picker(options, title,multi_select=True,min_selection_count=1)	
+	def end_selection(picker):
+		return False,-1		
+	picker.register_custom_handler(ord('e'),  end_selection)
+	picker.register_custom_handler(ord('E'),  end_selection)
+	selected = picker.start()	
+	if selected[0]==False:
+		return False,False	
 	# print(selected)
 	paths=list();TDs=list()
 	for entry in selected:

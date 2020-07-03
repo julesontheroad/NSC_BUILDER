@@ -322,7 +322,7 @@ goto F_TR
 call "%prog_dir%ztools\MtpFTLocal.bat"
 goto MAIN
 :F_TR_GD
-call "%prog_dir%ztools\MtpFTLocal.bat"
+call "%prog_dir%ztools\MtpTransferRemote.bat"
 goto MAIN
 :F_TR_C_xci_Transfer
 call "%prog_dir%ztools\MtpCxciFTLocal.bat"
