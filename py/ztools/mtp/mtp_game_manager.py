@@ -121,7 +121,7 @@ def retrieve_xci_paths():
 				os.remove(fp)	
 	except:pass		
 	print("  * Parsing games in device. Please Wait...")			
-	process=subprocess.Popen([nscb_mtp,"Retrieve_XCI_paths","-tfile",sd_xci_cache,"-show","false",],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+	process=subprocess.Popen([nscb_mtp,"Retrieve_XCI_paths","-tfile",sd_xci_cache,"-show","false"],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
 	while process.poll()==None:
 		if process.poll()!=None:
 			process.terminate();	
@@ -227,8 +227,8 @@ def gen_sx_autoloader_sd_files():
 		with open(tfile,'w') as text_file:
 			text_file.write(new_path)
 	print('  * Pushing autoloader files')			
-	destiny="1: External SD Card/sxos/titles/00FF0012656180FF/cach/sd"
-	process=subprocess.Popen([nscb_mtp,"TransferFolder","-ori",SD_folder,"-dst",destiny])
+	destiny="1: External SD Card\\sxos\\titles\\00FF0012656180FF\\cach\\sd"
+	process=subprocess.Popen([nscb_mtp,"TransferFolder","-ori",SD_folder,"-dst",destiny,"-fbf","true"])
 	while process.poll()==None:
 		if process.poll()!=None:
 			process.terminate();	
