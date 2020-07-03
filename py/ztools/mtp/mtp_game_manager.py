@@ -111,6 +111,38 @@ def retrieve_installed():
 	if os.path.exists(games_installed_cache):	
 		print("    Success")	
 
+def retrieve_registered():	
+	try:			
+		for f in os.listdir(cachefolder):
+			fp = os.path.join(cachefolder, f)
+			try:
+				shutil.rmtree(fp)
+			except OSError:
+				os.remove(fp)	
+	except:pass		
+	print("1. Retrieving registered...")			
+	dbicsv=os.path.join(cachefolder,"registered.csv")
+	process=subprocess.Popen([nscb_mtp,"Download","-ori","4: Installed games\\InstalledApplications.csv","-dst",dbicsv],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+	while process.poll()==None:
+		if process.poll()!=None:
+			process.terminate();
+	if os.path.exists(dbicsv):	
+		print("   Success")				
+	else:
+		sys.exit("Couldn't retrieved Game Registry")
+	dbi_dict={}
+	with open(dbicsv,'rt',encoding='utf8') as csvfile:
+		readCSV = csv.reader(csvfile, delimiter=',')
+		id=0;ver=1;tname=2;
+		for row in readCSV:		
+			try:
+				tid=(str(row[id]).upper())[2:]
+				version=int(row[ver])
+				name=str(row[tname])
+				dbi_dict[tid]=[tid,version,name]
+			except:pass	
+	return dbi_dict
+
 def retrieve_xci_paths():	
 	try:			
 		for f in os.listdir(cachefolder):
@@ -238,7 +270,7 @@ def dump_content():
 	retrieve_installed()
 	installed=get_gamelist()
 	print("  * Entering File Picker")	
-	title = 'Select content to uninstall: \n + Press space or right to select content \n + Press E to finish selection'
+	title = 'Select content to dump_content: \n + Press space or right to select content \n + Press E to finish selection'
 	options=installed
 	picker = Picker(options, title, multi_select=True, min_selection_count=1)
 	def end_selection(picker):
@@ -289,6 +321,58 @@ def uninstall_content():
 		print('...................................................')
 		print('STILL '+str(counter)+' FILES TO PROCESS')
 		print('...................................................') 		
+		
+def delete_archived():
+	retrieve_installed()
+	installed=get_gamelist()	
+	registered=retrieve_registered()
+	for game in installed:
+		fileid,fileversion,cctag,nG,nU,nD,baseid=listmanager.parsetags(game)
+		try:
+			del registered[fileid]
+		except:pass		
+	games=[]
+	# Name [version][title]
+	for k in registered.keys():
+		games.append(f"{(registered[k])[2]} [{(registered[k])[0]}][{(registered[k])[1]}]")
+	print("  * Entering File Picker")
+	title = 'Select content to uninstall: \n + Press space or right to select content \n + Press E to finish selection \n + Press A to select all entries'
+	options=games
+	picker = Picker(options, title, multi_select=True, min_selection_count=1)
+	def end_selection(picker):
+		return False,-1
+	def select_all(picker):
+		return "ALL",-1		
+	picker.register_custom_handler(ord('e'),  end_selection)
+	picker.register_custom_handler(ord('E'),  end_selection)
+	picker.register_custom_handler(ord('a'),  select_all)
+	picker.register_custom_handler(ord('A'),  select_all)	
+	selected=picker.start()
+	if selected[0]==False:
+		print("    User didn't select any files")
+		return False		
+	print("  * Starting uninstalling process...")
+	arch2delete=[]
+	if selected[0]=="ALL":		
+		for k in registered:	
+			g0=(registered[k])[2]
+			arch2delete.append(g0)
+	else:
+		for game in selected:
+			g=game[0]
+			g0=[pos for pos, char in enumerate(g) if char == '[']	
+			g0=(g[0:g0[0]]).strip()
+			arch2delete.append(g0)
+	counter=len(arch2delete)	
+	for file in arch2delete:	
+		process=subprocess.Popen([nscb_mtp,"DeleteRegistry","-ID",file])	
+		while process.poll()==None:
+			if process.poll()!=None:
+				process.terminate();				
+		counter-=1		
+		print('...................................................')
+		print('STILL '+str(counter)+' FILES TO PROCESS')
+		print('...................................................') 				
 		
 def back_up_saves(backup_all=False,inline=False,tidandver=True,romaji=True,outfolder=None):	
 	import zipfile 

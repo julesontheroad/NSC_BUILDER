@@ -521,10 +521,10 @@ def get_archived_info(search_new=True,excludehb=True):
 	if os.path.exists(games_installed_cache):	
 		print("   Success")
 	gamelist=listmanager.read_lines_to_list(games_installed_cache,all=True)	
+	dbi_dict={}
 	with open(dbicsv,'rt',encoding='utf8') as csvfile:
 		readCSV = csv.reader(csvfile, delimiter=',')
 		id=0;ver=1;tname=2;
-		dbi_dict={}
 		for row in readCSV:		
 			try:
 				tid=(str(row[id]).upper())[2:]
