@@ -287,12 +287,12 @@ def parsetags(filepath):
 							nU=test
 						except:pass						
 				if 'D)' in t:			
-					z_= t.find('D')-1
+					z_= t.find('D')
 					nD=t[z_]	
 					for i in range(len(t)):
 						try:
 							index=z_-i
-							test=t[index:z_]
+							test=t[index:z_]						
 							int(test)
 							nD=test
 						except:pass							

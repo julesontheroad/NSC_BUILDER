@@ -367,18 +367,23 @@ def get_installed_info(tfile=None,search_new=True,excludehb=True):
 			g0=(g[0:g0[0]]).strip()
 			installed[fileid]=[fileid,fileversion,cctag,nG,nU,nD,baseid,g0,g]
 			if len(g0)>33:
-				g0=g0[0:30]+'...'					
+				g0=g0[0:30]+'...'	
+			else:
+				g0=g0+((33-len(g0))*' ')
+			verprint=str(fileversion)
+			if len(verprint)<9:
+				verprint=verprint+((9-len(verprint))*' ')					
 			if excludehb==True:
 				if not fileid.startswith('05') and not fileid.startswith('04')  and not str(fileid).lower()=='unknown':
 					if g.endswith('.xci') or g.endswith('.xc0'):
-						print(f"{g0}|{fileid}|{fileversion}|XCI|{nG}G|{nU}U|{nD}D")
+						print(f"{g0}|{fileid}|{verprint}|XCI|{nG}G|{nU}U|{nD}D")
 					else:
-						print(f"{g0}|{fileid}|{fileversion}|{cctag}")
+						print(f"{g0}|{fileid}|{verprint}|{cctag}")
 			else:
 				if g.endswith('.xci') or g.endswith('.xc0'):
-					print(f"{g0}|{fileid}|{fileversion}|XCI|{nG}G|{nU}U|{nD}D")	
+					print(f"{g0}|{fileid}|{verprint}|XCI|{nG}G|{nU}U|{nD}D")	
 				else:	
-					print(f"{g0}|{fileid}|{fileversion}|{cctag}")
+					print(f"{g0}|{fileid}|{verprint}|{cctag}")
 		if search_new==True:			
 			import nutdb
 			nutdb.check_other_file(urlconfig,'versions_txt')
@@ -416,7 +421,13 @@ def get_installed_info(tfile=None,search_new=True,excludehb=True):
 			for k in installed.keys():	
 				fileid,fileversion,cctag,nG,nU,nD,baseid,g0,g=installed[k]
 				if len(g0)>33:
-					g0=g0[0:30]+'...'						
+					g0=g0[0:30]+'...'	
+				else:
+					g0=g0+((33-len(g0))*' ')
+				verprint=str(fileversion)
+				fillver=''
+				if len(verprint)<6:
+					fillver=(6-len(verprint))*' '					
 				v=0;
 				updateid=fileid[:-3]+'800'
 				if updateid in installed.keys() and fileid.endswith('000'):				
@@ -432,9 +443,10 @@ def get_installed_info(tfile=None,search_new=True,excludehb=True):
 				if int(v)>int(fileversion):
 					if fileid.endswith('000') or fileid.endswith('800'):
 						updid=fileid[:-3]+'800'
-						print(f"{g0} [{baseid}][{fileversion}] -> "+forecombo+  f"[{updid}] [v{v}]"+Style.RESET_ALL)
+						print(f"{g0} [{baseid}][{verprint}]{fillver} -> "+forecombo+  f"[{updid}] [v{v}]"+Style.RESET_ALL)
 					else:
-						print(f"{g0} [{fileid}][{fileversion}] -> "+forecombo+  f"[{fileid}] [v{v}]"+Style.RESET_ALL)	
+						print(f"{g0} [{fileid}][{verprint}]{fillver} -> "+forecombo+  f"[{fileid}] [v{v}]"+Style.RESET_ALL)	
+			check_xcis=False;xci_dlcs={}			
 			print("..........................................................")
 			print("NEW DLCS")
 			print("..........................................................")	
@@ -446,9 +458,41 @@ def get_installed_info(tfile=None,search_new=True,excludehb=True):
 					updid=baseid[:-3]+'800'
 					if baseid in installed.keys() or updid in installed.keys():
 						fileid,fileversion,cctag,nG,nU,nD,baseid,g0,g=installed[baseid]
+						if nD>0:
+							if check_xcis==False:
+								check_xcis=True
+							if not baseid in xci_dlcs.keys():
+								entry=list()
+								entry.append(k)
+								xci_dlcs[baseid]=entry
+							else:
+								entry=xci_dlcs[baseid]
+								entry.append(k)
+								xci_dlcs[baseid]=entry
+							continue
 						if len(g0)>33:
-							g0=g0[0:30]+'...'						
+							g0=g0[0:30]+'...'	
+						else:
+							g0=g0+((33-len(g0))*' ')										
 						print(f"{g0} [{baseid}] -> "+forecombo+ f"[{k}] [v{versiondict[k]}]"+Style.RESET_ALL)
+			t=0			
+			if check_xcis==True:
+				for bid in xci_dlcs.keys():
+					fileid,fileversion,cctag,nG,nU,nD,baseid,g0,g=installed[bid]
+					entry=xci_dlcs[bid]
+					test=len(entry)
+					if test>nD:
+						if t==0:
+								print("..........................................................")
+								print("XCI MAY HAVE NEW DLCS. LISTING AVAILABLE")
+								print("..........................................................")	
+								t+=1
+						if len(g0)>33:
+							g0=g0[0:30]+'...'	
+						else:
+							g0=g0+((33-len(g0))*' ')		
+						for k in xci_dlcs[baseid]:	
+							print(f"{g0} [{baseid}] -> "+forecombo+ f"[{k}] [v{versiondict[k]}]"+Style.RESET_ALL)						
 					
 
 def get_archived_info(search_new=True,excludehb=True):	
@@ -539,6 +583,8 @@ def get_archived_info(search_new=True,excludehb=True):
 			fileid,fileversion,g0=dbi_dict[k]
 			if len(g0)>33:
 				g0=g0[0:30]+'...'
+			else:
+				g0=g0+(33-len(g0))*' '
 			v=0;
 			updateid=fileid[:-3]+'800'
 			if updateid in dbi_dict.keys() and fileid.endswith('000'):				
@@ -569,7 +615,9 @@ def get_archived_info(search_new=True,excludehb=True):
 				if baseid in dbi_dict.keys() or updid in dbi_dict.keys():
 					fileid,fileversion,g0=dbi_dict[baseid]
 					if len(g0)>33:
-						g0=g0[0:30]+'...'				
+						g0=g0[0:30]+'...'	
+					else:
+						g0=g0+((33-len(g0))*' ')						
 					print(f"{g0} [{baseid}] -> "+forecombo+ f"[{k}] [v{versiondict[k]}]"+Style.RESET_ALL)			
 			
 
