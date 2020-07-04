@@ -246,7 +246,7 @@ def loop_install(tfile,destiny="SD",outfolder=None,ch_medium=True,check_fw=True,
 			item=test[0]
 			lib,TD,libpath=get_library_from_path(remote_lib_file,item)			
 			if lib!=None:
-				print("Item item remote library link. Redirecting...")
+				print("Item is a remote library link. Redirecting...")
 				gdrive_install(item,destiny)
 	
 def get_library_from_path(tfile,filename):
@@ -507,7 +507,7 @@ def get_libs_remote_source(lib=remote_lib_file):
 			return False
 	return libraries				
 
-def update_console_from_gd(libraries="all",destiny="SD",exclude_xci=True,prioritize_nsz=True,tfile=None,verification=True,ch_medium=True,ch_other=False):	
+def update_console_from_gd(libraries="all",destiny="SD",exclude_xci=True,prioritize_nsz=True,tfile=None,verification=True,ch_medium=True,ch_other=False,autoupd_aut=True):	
 	if tfile==None:
 		tfile=os.path.join(NSCB_dir, 'MTP1.txt')
 	if os.path.exists(tfile):
@@ -644,13 +644,49 @@ def update_console_from_gd(libraries="all",destiny="SD",exclude_xci=True,priorit
 	print("5. List of content that will get installed...")	
 	gamepaths=[]
 	if len(gamestosend.keys())>0:
-		for i in sorted(gamestosend.keys()):
-			fileid,fileversion,cctag,nG,nU,nD,baseid,path=gamestosend[i]
-			bname=os.path.basename(path) 
-			gamepaths.append(path)
-			g0=[pos for pos, char in enumerate(bname) if char == '[']	
-			g0=(bname[0:g0[0]]).strip()
-			print(f"   * {g0} [{fileid}][{fileversion}] [{cctag}] - {(bname[-3:]).upper()}")
+		if autoupd_aut==True:	
+			for i in sorted(gamestosend.keys()):
+				fileid,fileversion,cctag,nG,nU,nD,baseid,path=gamestosend[i]
+				bname=os.path.basename(path) 
+				gamepaths.append(path)
+				g0=[pos for pos, char in enumerate(bname) if char == '[']	
+				g0=(bname[0:g0[0]]).strip()
+				print(f"   * {g0} [{fileid}][{fileversion}] [{cctag}] - {(bname[-3:]).upper()}")
+		else:
+			options=[]
+			for i in sorted(gamestosend.keys()):			
+				fileid,fileversion,cctag,nG,nU,nD,baseid,path=gamestosend[i]
+				bname=os.path.basename(path) 
+				gamepaths.append(path)
+				g0=[pos for pos, char in enumerate(bname) if char == '[']	
+				g0=(bname[0:g0[0]]).strip()
+				cstring=f"{g0} [{fileid}][{fileversion}] [{cctag}] - {(bname[-3:]).upper()}"
+				options.append(cstring)
+			if options:
+				title = 'Select content to install: \n + Press space or right to select entries \n + Press E to finish selection \n + Press A to select all entries'				
+				picker = Picker(options, title, multi_select=True, min_selection_count=1)
+				def end_selection(picker):
+					return False,-1
+				def select_all(picker):
+					return "ALL",-1			
+				picker.register_custom_handler(ord('e'),  end_selection)
+				picker.register_custom_handler(ord('E'),  end_selection)
+				picker.register_custom_handler(ord('a'),  select_all)
+				picker.register_custom_handler(ord('A'),  select_all)	
+				selected=picker.start()					
+			if selected[0]==False:
+				print("    User didn't select any files")
+				return False					
+			if selected[0]=="ALL":		
+				pass
+			else:
+				newgpaths=[]
+				for game in selected:
+					g=game[1]
+					g0=gamepaths[g]
+					newgpaths.append(g0)
+					break
+				gamepaths=newgpaths					
 		print("6. Generating text file...")		
 		with open(tfile,'w', encoding='utf8') as textfile:
 			wpath=''
