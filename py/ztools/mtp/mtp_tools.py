@@ -7,6 +7,8 @@ import shutil
 from mtp.wpd import is_switch_connected
 import sys
 import subprocess
+from python_pick import pick
+from python_pick import Picker
 
 squirrel_dir=os.path.abspath(os.curdir)
 NSCB_dir=os.path.abspath('../'+(os.curdir))
@@ -49,6 +51,37 @@ storage_info=os.path.join(cachefolder, 'storage.csv')
 download_lib_file = os.path.join(zconfig_dir, 'mtp_download_libraries.txt')
 sx_autoloader_db=os.path.join(zconfig_dir, 'sx_autoloader_db')
 
+def gen_sx_autoloader_files_menu():
+	print('***********************************************')
+	print('SX AUTOLOADER GENERATE FILES FROM HDD OR FOLDER')
+	print('***********************************************')
+	print('')
+	folder=input("Input a drive path: ")
+	if not os.path.exists(folder):
+		sys.exit("Can't find location")
+	title = 'Target for autoloader files: '	
+	options = ['HDD','SD']		
+	selected = pick(options, title, min_selection_count=1)
+	if selected[0]=='HDD':
+		type='hdd'
+	else:
+		type='sd'
+	title = 'Push files after generation?: '		
+	options = ['YES','NO']			
+	selected = pick(options, title, min_selection_count=1)
+	if selected[0]=='YES':
+		push=True
+	else:
+		push=False
+	title = "Ensure files can't colide after transfer?: "		
+	options = ['YES','NO']			
+	selected = pick(options, title, min_selection_count=1)		
+	if selected[0]=='YES':
+		no_colide=True
+	else:
+		no_colide=False
+	gen_sx_autoloader_files(folder,type=type,push=push,no_colide=no_colide)	
+		
 def gen_sx_autoloader_files(folder,type='hdd',push=False,no_colide=False):
 	gamelist=folder_to_list(folder,['xci','xc0'])
 	if type=='hdd':
@@ -142,7 +175,32 @@ def cleanup_sx_autoloader_files():
 		process=subprocess.Popen([nscb_mtp,"DeleteFile","-fp",f])
 		while process.poll()==None:
 			if process.poll()!=None:
-				process.terminate();		
-# def push_sx_autoloader_file():			
-# def push_sx_autoloader_folder():
-# def push_sx_autoloader_libraries():
+				process.terminate();	
+				
+def push_sx_autoloader_libraries():
+	if not is_switch_connected():
+		sys.exit("Can't push files. Switch device isn't connected.\nCheck if mtp responder is running!!!")		
+	title = "Ensure files can't colide after transfer?: "		
+	options = ['YES','NO']				
+	selected = pick(options, title, min_selection_count=1)		
+	if selected[0]=='YES':
+		no_colide=True
+	else:
+		no_colide=False				
+	print('  * Pushing autoloader files in hdd folder')			
+	HDD_folder=os.path.join(sx_autoloader_db, 'hdd')
+	destiny="1: External SD Card\\sxos\\titles\\00FF0012656180FF\\cach\\hdd"
+	process=subprocess.Popen([nscb_mtp,"TransferFolder","-ori",HDD_folder,"-dst",destiny,"-fbf","true"])
+	while process.poll()==None:
+		if process.poll()!=None:
+			process.terminate();		
+	print('  * Pushing autoloader files in SD folder')					
+	SD_folder=os.path.join(sx_autoloader_db, 'sd')		
+	destiny="1: External SD Card\\sxos\\titles\\00FF0012656180FF\\cach\\sd"
+	process=subprocess.Popen([nscb_mtp,"TransferFolder","-ori",SD_folder,"-dst",destiny,"-fbf","true"])
+	while process.poll()==None:
+		if process.poll()!=None:
+			process.terminate();
+	if no_colide==True:
+		cleanup_sx_autoloader_files()	
+						

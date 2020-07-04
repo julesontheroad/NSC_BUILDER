@@ -336,7 +336,7 @@ def delete_archived():
 	for k in registered.keys():
 		games.append(f"{(registered[k])[2]} [{(registered[k])[0]}][{(registered[k])[1]}]")
 	print("  * Entering File Picker")
-	title = 'Select content to uninstall: \n + Press space or right to select content \n + Press E to finish selection \n + Press A to select all entries'
+	title = 'Select registries to delete: \n + Press space or right to select entries \n + Press E to finish selection \n + Press A to select all entries'
 	options=games
 	picker = Picker(options, title, multi_select=True, min_selection_count=1)
 	def end_selection(picker):
