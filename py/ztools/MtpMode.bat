@@ -334,6 +334,35 @@ goto MAIN
 :AUTOUPDATE
 goto AUTOUPDATE_LOCAL
 :AUTOUPDATE_GD
+cls
+call :program_logo
+echo *******************************************************
+echo INSTALLATION MEDIUM
+echo *******************************************************
+echo.
+echo 1. SD
+echo 2. EMMC
+echo. 
+ECHO ******************************************
+echo Or Input "0" to return to the list options
+ECHO ******************************************
+echo.
+set /p bs="Enter your choice: "
+set bs=%bs:"=%
+set medium=none
+if /i "%bs%"=="0" goto MAIN
+if /i "%bs%"=="1" set "medium=SD"
+if /i "%bs%"=="2" set "medium=EMMC"
+
+if %medium%=="none" goto AUTOUPDATE_GD
+CD /d "%prog_dir%"
+echo.
+%pycommand% "%squirrel%" -lib_call mtp.mtp_gdrive update_console_from_gd -xarg "libraries=update" "destiny=%medium%" "exclude_xci=%MTP_exclude_xci_autinst%" "prioritize_nsz=%MTP_prioritize_NSZ%" "%prog_dir%MTP1GD.txt" "verification=%MTP_verification%" "ch_medium=%MTP_aut_ch_medium%" "ch_other=%MTP_prechk_Upd%"
+echo.
+ECHO ---------------------------------------------------
+ECHO *********** ALL FILES WERE PROCESSED! *************
+ECHO ---------------------------------------------------
+goto s_exit_choice
 
 :AUTOUPDATE_LOCAL
 cls
@@ -366,7 +395,7 @@ if %medium%=="none" goto select_medium_wrongchoice_AUTOUPDATE
 :AUTOUPDATE_START
 CD /d "%prog_dir%"
 echo.
-%pycommand% "%squirrel%" -lib_call mtp.mtpinstaller update_console -xarg "libraries=all" "destiny=%medium%" "exclude_xci=%MTP_exclude_xci_autinst%" "prioritize_nsz=%MTP_aut_ch_medium%" "%prog_dir%MTP1.txt" "verification=%MTP_verification%" "ch_medium=%MTP_aut_ch_medium%" "ch_other=%MTP_prechk_Upd%"
+%pycommand% "%squirrel%" -lib_call mtp.mtpinstaller update_console -xarg "libraries=all" "destiny=%medium%" "exclude_xci=%MTP_exclude_xci_autinst%" "prioritize_nsz=%MTP_prioritize_NSZ%" "%prog_dir%MTP1.txt" "verification=%MTP_verification%" "ch_medium=%MTP_aut_ch_medium%" "ch_other=%MTP_prechk_Upd%"
 
 echo.
 ECHO ---------------------------------------------------

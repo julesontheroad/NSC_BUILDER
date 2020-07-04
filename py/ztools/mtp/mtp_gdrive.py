@@ -451,5 +451,227 @@ def loop_transfer(tfile):
 			if lib!=None:
 				print("Item is a remote library link. Redirecting...")
 				gdrive_transfer(item,destiny)
+				
+
+def get_libs_remote_source(lib=remote_lib_file):
+	libraries={}
+	libtfile=lib
+	with open(libtfile,'rt',encoding='utf8') as csvfile:
+		readCSV = csv.reader(csvfile, delimiter='|')	
+		i=0;up=False;tdn=False;	
+		for row in readCSV:
+			if i==0:
+				csvheader=row
+				i=1
+				if 'library_name' and 'path' and 'TD_name' and 'Update' in csvheader:
+					lb=csvheader.index('library_name')
+					pth=csvheader.index('path')	
+					tdn=csvheader.index('TD_name')	
+					up=csvheader.index('Update')	
+				else:
+					if 'library_name' and 'path' and 'TD_name' in csvheader:
+						lb=csvheader.index('library_name')
+						tdn=csvheader.index('TD_name')
+						pth=csvheader.index('path')				
+					else:break	
+			else:	
+				try:
+					update=False
+					library=str(row[lb])
+					route=str(row[pth])		
+					if tdn!=False:
+						try:
+							TD=str(row[tdn])
+							if TD=='':
+								TD=None
+						except:
+							TD=None
+					else:	
+						TD=None					
+					if up!=False:
+						try:
+							update=str(row[up])
+							if update.upper()=="TRUE":
+								update=True
+							else:
+								update=False
+						except:	
+							update=True
+					else:
+						update=False
+					libraries[library]=[route,TD,update]
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))			
+					pass
+		if not libraries:
+			return False
+	return libraries				
+
+def update_console_from_gd(libraries="all",destiny="SD",exclude_xci=True,prioritize_nsz=True,tfile=None,verification=True,ch_medium=True,ch_other=False):	
+	if tfile==None:
+		tfile=os.path.join(NSCB_dir, 'MTP1.txt')
+	if os.path.exists(tfile):
+		try:
+			os.remove(tfile)
+		except: pass			
+	libdict=get_libs_remote_source(remote_lib_file);
+	if libdict==False:
+		sys.exit("No libraries set up")
+	pths={};TDs={};
+	if libraries=="all":
+		for entry in libdict.keys():
+			pths[entry]=((libdict[entry])[0])
+			TDs[entry]=((libdict[entry])[1])
+	else:
+		for entry in libdict.keys():
+			if (libdict[entry])[2]==True:
+				pths[entry]=((libdict[entry])[0])	
+				TDs[entry]=((libdict[entry])[1])
+	# print(pths);print(TDs);
+	if not os.path.exists(cachefolder):
+		os.makedirs(cachefolder)				
+	for f in os.listdir(cachefolder):
+		fp = os.path.join(cachefolder, f)
+		try:
+			shutil.rmtree(fp)
+		except OSError:
+			os.remove(fp)	
+	print("1. Parsing games in device. Please Wait...")			
+	process=subprocess.Popen([nscb_mtp,"ShowInstalled","-tfile",games_installed_cache,"-show","false"],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+	while process.poll()==None:
+		if process.poll()!=None:
+			process.terminate();	
+	if os.path.exists(games_installed_cache):	
+		print("   Success")
+	gamelist=listmanager.read_lines_to_list(games_installed_cache,all=True)
+	installed={}		
+	for g in gamelist:
+		if exclude_xci==True:
+			if g.endswith('xci') or g.endswith('xc0'):
+				continue
+		entry=listmanager.parsetags(g)
+		entry=list(entry)		
+		entry.append(g)
+		installed[entry[0]]=entry	
+	# for i in pths:
+		# print(i)
+	print("2. Parsing files from Google Drive. Please Wait...")		
+	# print(pths)
+	if isinstance(pths, dict):
+		db={}
+		for i in pths.keys():
+			db[i]={'path':pths[i],'TD_name':TDs[i]}	
+		files=concurrent_scrapper(filter='',order='name_ascending',remotelib='all',db=db)
+	else:
+		db={}
+		db[pths]={'path':pths,'TD_name':TDs}			
+		files=concurrent_scrapper(filter=filter,order='name_ascending',remotelib='all',db=db)
+	remotelist=[]		
+	for f in files:
+		remotelist.append(f[0])
+	if prioritize_nsz==True:		
+		remotelist=sorted(remotelist, key=lambda x: x[-1])	
+		remotelist.reverse()	
+	else:
+		remotelist.reverse()
+	# for f in remotelist:
+		# print(f)
+	remotegames={}		
+	for g in remotelist:
+		entry=listmanager.parsetags(g)
+		entry=list(entry)
+		entry.append(g)		
+		if not entry[0] in remotegames:
+			remotegames[entry[0]]=entry
+		else:
+			v=(remotegames[entry[0]])[1]
+			if int(entry[1])>int(v):
+				remotegames[entry[0]]=entry		
+	print("3. Searching new updates. Please Wait...")						
+	gamestosend={}		
+	for g in installed.keys():
+		if g.endswith('000') or g.endswith('800'): 
+			try:
+				updid=g[:-3]+'800'
+				if updid in remotegames:
+					if updid in installed:
+						if ((installed[updid])[1])<((remotegames[updid])[1]):
+							if not updid in gamestosend:
+								gamestosend[updid]=remotegames[updid]
+							else:
+								if ((gamestosend[updid])[1])<((remotegames[updid])[1]):
+									gamestosend[updid]=remotegames[updid]
+					else:
+						if not updid in gamestosend:
+							gamestosend[updid]=remotegames[updid]
+						else:
+							if ((gamestosend[updid])[1])<((remotegames[updid])[1]):
+								gamestosend[updid]=remotegames[updid]								
+			except:pass
+		else:
+			try:		
+				if g in remotegames:
+					if ((installed[g])[1])<((remotegames[g])[1]):
+						if not g in gamestosend:
+							gamestosend[g]=remotegames[g]
+						else:
+							if ((gamestosend[g])[1])<((remotegames[g])[1]):
+								gamestosend[g]=remotegames[g]
+			except:pass							
+	print("4. Searching new dlcs. Please Wait...")	
+	for g in installed.keys():	
+		try:
+			if g.endswith('000') or g.endswith('800'): 
+				baseid=g[:-3]+'000'
+			else:
+				baseid=(installed[g])[6]
+			for k in remotegames.keys():
+				try:				
+					if not (k.endswith('000') or k.endswith('800')) and not k in installed:
+						test=get_dlc_baseid(k)
+						if baseid ==test:
+							if not k in gamestosend:
+								gamestosend[k]=remotegames[k]
+							else:
+								if ((gamestosend[k])[1])<((remotegames[k])[1]):
+									gamestosend[k]=remotegames[k]	
+				except BaseException as e:
+					# Print.error('Exception: ' + str(e))			
+					pass								
+		except BaseException as e:
+			# Print.error('Exception: ' + str(e))			
+			pass
+	print("5. List of content that will get installed...")	
+	gamepaths=[]
+	if len(gamestosend.keys())>0:
+		for i in sorted(gamestosend.keys()):
+			fileid,fileversion,cctag,nG,nU,nD,baseid,path=gamestosend[i]
+			bname=os.path.basename(path) 
+			gamepaths.append(path)
+			g0=[pos for pos, char in enumerate(bname) if char == '[']	
+			g0=(bname[0:g0[0]]).strip()
+			print(f"   * {g0} [{fileid}][{fileversion}] [{cctag}] - {(bname[-3:]).upper()}")
+		print("6. Generating text file...")		
+		with open(tfile,'w', encoding='utf8') as textfile:
+			wpath=''
+			for i in gamepaths:
+				location=None
+				for f in files:
+					if f[0]==i:	
+						location=f[2]
+						break
+				if location==None:
+					print(f"Can't find location for {i}")
+					continue
+				wpath=f"{location}/{i}"
+				textfile.write((wpath).strip()+"\n")	
+		print("7. Triggering installer on loop mode.")
+		print("   Note:If you interrupt the list use normal install mode to continue list")	
+		loop_install(tfile,destiny=destiny,outfolder=None,ch_medium=ch_medium,check_fw=True,patch_keygen=False,ch_base=False,ch_other=False,checked=True)
+	else:
+		print("\n   --- DEVICE IS UP TO DATE ---")		
+	
+	
+	
 	
 	
