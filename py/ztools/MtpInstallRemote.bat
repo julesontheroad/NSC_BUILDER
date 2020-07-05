@@ -64,7 +64,8 @@ echo SELECT FUNCTION
 echo *******************************************************
 echo.
 echo Input "1" to PICK FILES FROM CACHE FILES
-echo Input "2" to PICK FILES FROM LIBRARIES (REFRESH CACHE)
+echo Input "2" to PICK FILES FROM LIBRARIES
+echo Input "c" to regenerate the cache for remote libraries
 ECHO.
 echo --- Or INPUT GDRIVE PUBLIC_LINK or 1FICHIER LINK ---	
 echo. 
@@ -79,8 +80,9 @@ setlocal enabledelayedexpansion
 echo+ >"%uinput%"
 endlocal
 if /i "%eval%"=="0" goto MAIN
-if /i "%eval%"=="1" goto MAIN
+if /i "%eval%"=="1" ( %pycommand% "%squirrel%" -lib_call mtp.mtp_gdrive select_from_cache -xarg "%prog_dir%MTP1GD.txt" )
 if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call mtp.mtp_gdrive select_from_libraries -xarg "%prog_dir%MTP1GD.txt" )
+if /i "%eval%"=="c" ( %pycommand% "%squirrel%" -lib_call workers concurrent_cache )
 echo.
 goto checkagain
 
@@ -91,7 +93,8 @@ echo "DRAG ANOTHER FILE OR FOLDER AND PRESS ENTER TO ADD ITEMS TO THE LIST"
 echo.
 echo Input "1" to START INSTALLING
 echo Input "2" to PICK FILES FROM CACHE FILES
-echo Input "3" to PICK FILES FROM LIBRARIES (REFRESH CACHE)
+echo Input "3" to PICK FILES FROM LIBRARIES
+echo Input "c" to regenerate the cache for remote libraries
 echo Input "e" to exit
 echo Input "i" to see list of files to process
 echo Input "r" to remove some files (counting from bottom)
@@ -111,8 +114,9 @@ echo+ >"%uinput%"
 endlocal
 if /i "%eval%"=="0" goto MAIN
 if /i "%eval%"=="1" goto select_medium
-if /i "%eval%"=="2" goto checkagain
+if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call mtp.mtp_gdrive select_from_cache -xarg "%prog_dir%MTP1GD.txt" )
 if /i "%eval%"=="3" ( %pycommand% "%squirrel%" -lib_call mtp.mtp_gdrive select_from_libraries -xarg "%prog_dir%MTP1GD.txt" )
+if /i "%eval%"=="c" ( %pycommand% "%squirrel%" -lib_call workers concurrent_cache )
 if /i "%eval%"=="e" goto salida
 if /i "%eval%"=="i" goto showlist
 if /i "%eval%"=="r" goto r_files

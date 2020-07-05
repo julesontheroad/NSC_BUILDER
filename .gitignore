@@ -73,3 +73,4 @@ py/MTP1GD.txt
 py/MTP2.txt
 py/ztools/_mtp_cache_/sd_xci.txt
 py/MTP1.txt
+py/zconfig/remote_lib_cache/*

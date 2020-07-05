@@ -79,18 +79,20 @@ def libraries(tfile):
 					csvheader=row
 					i=1
 				else:
-					dict={}
+					dict_={}
 					for j in range(len(csvheader)):
 						try:
 							if row[j]==None or row[j]=='':
-								dict[csvheader[j]]=None
+								dict_[csvheader[j]]=None
 							else:	
-								dict[csvheader[j]]=row[j]
+								dict_[csvheader[j]]=row[j]
 						except:
-							dict[csvheader[j]]=None
-					db[row[0]]=dict
+							dict_[csvheader[j]]=None
+					db[row[0]]=dict_
 		return db
-	except: return False
+	except BaseException as e:
+		Print.error('Exception: ' + str(e))
+		return False
 
 def pick_transfer_folder():
 	if not os.path.exists(mtp_internal_lib):

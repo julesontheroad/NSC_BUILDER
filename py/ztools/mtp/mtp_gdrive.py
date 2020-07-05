@@ -33,6 +33,10 @@ from Drive import Download as Drv
 from Interface import About
 from workers import concurrent_scrapper
 from mtpinstaller import get_storage_info
+try:
+	import ujson as json
+except:
+	import json
 
 if not is_switch_connected():
 	sys.exit("Switch device isn't connected.\nCheck if mtp responder is running!!!")	
@@ -79,6 +83,7 @@ download_lib_file = os.path.join(zconfig_dir, 'mtp_download_libraries.txt')
 remote_lib_file = os.path.join(zconfig_dir, 'remote_libraries.txt')
 cache_lib_file= os.path.join(zconfig_dir, 'remote_cache_location.txt')
 _1fichier_token=os.path.join((os.path.join(zconfig_dir, 'credentials')),'_1fichier_token.tk')
+remote_lib_cache=os.path.join(zconfig_dir, 'remote_lib_cache')	
 
 def libraries(tfile):
 	db={}
@@ -95,15 +100,16 @@ def libraries(tfile):
 					for j in range(len(csvheader)):
 						try:
 							if row[j]==None or row[j]=='':
-								dict[csvheader[j]]=None
+								dict_[csvheader[j]]=None
 							else:	
-								dict[csvheader[j]]=row[j]
+								dict_[csvheader[j]]=row[j]
 						except:
-							dict[csvheader[j]]=None
+							dict_[csvheader[j]]=None
 					db[row[0]]=dict_
-		# print(db)			
-		return db
-	except: return False
+		return db			
+	except BaseException as e:
+		Print.error('Exception: ' + str(e))
+		return False
 	
 def get_cache_lib():
 	db=libraries(cache_lib_file)
@@ -208,7 +214,7 @@ def select_from_libraries(tfile):
 		db[paths]={'path':paths,'TD_name':TDs}			
 		files=concurrent_scrapper(filter=filter,order=order,remotelib='all',db=db)	
 	print("  * Entering File Picker")	
-	title = 'Select content to install: \n + Press space or right to select content \n + Press E to finish selection'
+	title = 'Select content to install or transfer: \n + Press space or right to select content \n + Press E to finish selection'
 	filenames=[]
 	for f in files:
 		filenames.append(f[0])
@@ -224,6 +230,91 @@ def select_from_libraries(tfile):
 	with open(tfile,'a') as  textfile:		
 		for f in selected:
 			textfile.write((files[f[1]])[2]+'/'+(files[f[1]])[0]+'\n')
+
+def select_from_cache(tfile):	
+	cache_is_setup=False
+	if not os.path.exists(remote_lib_cache):
+		os.makedirs(remote_lib_cache)
+	jsonlist=listmanager.folder_to_list(remote_lib_cache,extlist=['json'])	
+	if not jsonlist:
+		print("Cache wasn't found. Generating cache up...")
+		from workers import concurrent_cache
+		concurrent_cache()
+	jsonlist=listmanager.folder_to_list(remote_lib_cache,extlist=['json'])			
+	if not jsonlist:
+		sys.exit("Can't setup remote cache. Are libraries set up?")
+	libnames=[]
+	for j in jsonlist:
+		bname=os.path.basename(j) 
+		bname=bname.replace('.json','')
+		libnames.append(bname)
+	title = 'Select libraries to search:  \n + Press space or right to select content \n + Press E to finish selection \n + Press A to select all libraries'
+	db=libraries(remote_lib_file)
+	options = libnames
+	picker = Picker(options, title,multi_select=True,min_selection_count=1)	
+	def end_selection(picker):
+		return False,-1	
+	def select_all(picker):
+		return True,libnames
+	picker.register_custom_handler(ord('e'),  end_selection)
+	picker.register_custom_handler(ord('E'),  end_selection)	
+	picker.register_custom_handler(ord('a'),  select_all)
+	picker.register_custom_handler(ord('A'),  select_all)	
+	selected = picker.start()	
+	if selected[0]==False:
+		print("User didn't select any libraries")
+		return False,False		
+	if selected[0]==True:	
+		cachefiles=jsonlist
+	else:
+		cachefiles=[]
+		for entry in selected:
+			fname=entry[0]+'.json'
+			fpath=os.path.join(remote_lib_cache,fname)
+			cachefiles.append(fpath)
+	cachedict={}
+	for cach in cachefiles:
+		with open(cach) as json_file:					
+			data = json.load(json_file)		
+		for entry in data:
+			if not entry in cachedict:
+				cachedict[entry]=data[entry]
+	# for k in cachedict.keys():
+		# print(k)
+	order=pick_order()
+	if order==False:
+		return False	
+	options=[]	
+	if order=='name_ascending':
+		options=sorted(cachedict,key=lambda x:cachedict[x]['filepath'])
+	elif order=='name_descending':	
+		options=sorted(cachedict,key=lambda x:cachedict[x]['filepath'])
+		options.reverse()
+	elif order=='size_ascending':
+		options=sorted(cachedict,key=lambda x:cachedict[x]['size'])
+	elif order=='size_descending':	
+		options=sorted(cachedict,key=lambda x:cachedict[x]['size'])
+		options.reverse()	
+	elif order=='date_ascending':
+		options=sorted(cachedict,key=lambda x:cachedict[x]['date'])
+	elif order=='date_descending':	
+		options=sorted(cachedict,key=lambda x:cachedict[x]['date'])
+		options.reverse()				
+	print("  * Entering File Picker")	
+	title = 'Select content to install or transfer: \n + Press space or right to select content \n + Press E to finish selection'
+	picker = Picker(options, title, multi_select=True, min_selection_count=1)
+	def end_selection(picker):
+		return False,-1
+	picker.register_custom_handler(ord('e'),  end_selection);picker.register_custom_handler(ord('E'),  end_selection)
+	selected=picker.start()
+	if selected[0]==False:
+		print("    User didn't select any files")
+		return False
+	with open(tfile,'a') as  textfile:		
+		for f in selected:
+			fpath=(cachedict[f[0]])['filepath']
+			textfile.write(fpath+'\n')
+			
 
 def loop_install(tfile,destiny="SD",outfolder=None,ch_medium=True,check_fw=True,patch_keygen=False,ch_base=False,ch_other=False,truecopy=True,checked=False):	
 	if not os.path.exists(tfile):
@@ -253,13 +344,17 @@ def loop_install(tfile,destiny="SD",outfolder=None,ch_medium=True,check_fw=True,
 			if lib!=None:
 				print("Item is a remote library link. Redirecting...")
 				gdrive_install(item,destiny,outfolder=outfolder,ch_medium=ch_medium,check_fw=check_fw,patch_keygen=patch_keygen,ch_base=ch_base,ch_other=ch_other,checked=checked,installed_list=installed)
+			else:
+				print("Couldn't find file. Skipping...")
 	
-def get_library_from_path(tfile,filename):
-	db=libraries(remote_lib_file)
+def get_library_from_path(tfile=None,filename=None):
+	if tfile==None:
+		db=libraries(remote_lib_file)
+	else:
+		db=libraries(tfile)		
 	TD=None;lib=None;path="null"
 	for entry in db:
 		path=db[entry]['path']
-		# print(path)
 		if filename.startswith(path):
 			TD=db[entry]['TD_name']
 			lib=entry
@@ -594,7 +689,6 @@ def fichier_install(url,destiny="SD",ch_medium=True,ch_base=False,ch_other=False
 		if process.poll()!=None:
 			process.terminate();		
 			
-
 def gdrive_transfer(filename,destiny="SD"):
 	if destiny=="SD":
 		destiny="1: External SD Card/"
@@ -607,6 +701,13 @@ def gdrive_transfer(filename,destiny="SD"):
 	URL='https://www.googleapis.com/drive/v3/files/'+remote.ID+'?alt=media'	
 	ext=name.split('.')
 	ext=ext[-1]
+	file_size=int(sz)
+	print(f"  * SD free space: {SD_fs} ({sq_tools.getSize(SD_fs)})")	
+	print(f"  * File installed size: {file_size} ({sq_tools.getSize(file_size)})")		
+	if file_size>SD_fs:
+		print("  Not enough space on SD. Changing target to EMMC")
+		print(f"  * EMMC free space: {NAND_fs} ({sq_tools.getSize(NAND_fs)})")						
+		sys.exit("   NOT ENOUGH SPACE SD STORAGE")		
 	process=subprocess.Popen([nscb_mtp,"DriveTransfer","-ori",URL,"-dst",destiny,"-name",name,"-size",sz,"-tk",token])
 	while process.poll()==None:
 		if process.poll()!=None:
@@ -626,6 +727,13 @@ def public_gdrive_transfer(filepath,destiny="SD",truecopy=True):
 	URL='https://www.googleapis.com/drive/v3/files/'+remote.ID+'?alt=media'	
 	ext=name.split('.')
 	ext=ext[-1]		
+	file_size=int(sz)
+	print(f"  * SD free space: {SD_fs} ({sq_tools.getSize(SD_fs)})")	
+	print(f"  * File installed size: {file_size} ({sq_tools.getSize(file_size)})")		
+	if file_size>SD_fs:
+		print("  Not enough space on SD. Changing target to EMMC")
+		print(f"  * EMMC free space: {NAND_fs} ({sq_tools.getSize(NAND_fs)})")						
+		sys.exit("   NOT ENOUGH SPACE SD STORAGE")		
 	process=subprocess.Popen([nscb_mtp,"DriveTransfer","-ori",URL,"-dst",destiny,"-name",name,"-size",sz,"-tk",token])
 	while process.poll()==None:
 		if process.poll()!=None:
@@ -664,6 +772,16 @@ def fichier_transfer(url,destiny="SD"):
 	if not dict_['status']=="OK":
 		sys.exit(f"API call returned {dict_['status']}")			
 	URL=dict_['url']
+	print("- Retrieving Space on device")
+	SD_ds,SD_fs,NAND_ds,NAND_fs,FW,device=get_storage_info()
+	print("- Calculating File size")	
+	file_size=int(sz)
+	print(f"  * SD free space: {SD_fs} ({sq_tools.getSize(SD_fs)})")	
+	print(f"  * File installed size: {file_size} ({sq_tools.getSize(file_size)})")		
+	if file_size>SD_fs:
+		print("  Not enough space on SD. Changing target to EMMC")
+		print(f"  * EMMC free space: {NAND_fs} ({sq_tools.getSize(NAND_fs)})")						
+		sys.exit("   NOT ENOUGH SPACE SD STORAGE")	
 	process=subprocess.Popen([nscb_mtp,"fichierTransfer","-ori",URL,"-dst",destiny,"-name",name,"-size",str(sz)])
 	while process.poll()==None:
 		if process.poll()!=None:
