@@ -11,9 +11,10 @@ echo Input "1" for AUTO-MODE OPTIONS
 echo Input "2" for GLOBAL AND MANUAL OPTIONS
 echo Input "3" to VERIFY KEYS.TXT 
 echo Input "4" to UPDATE NUTDB
-echo Input "5" to INTERFACE OPTIONS
-echo Input "6" to SERVER OPTIONS
-echo Input "7" to GOOGLE DRIVE OPTIONS
+echo Input "5" for INTERFACE OPTIONS
+echo Input "6" for SERVER OPTIONS
+echo Input "7" for GOOGLE DRIVE OPTIONS
+echo Input "8" for MTP OPTIONS
 echo.
 echo Input "c" to read CURRENT PROFILE
 echo Input "d" to set DEFAULT SETTINGS
@@ -28,6 +29,7 @@ if /i "%bs%"=="4" goto update_nutdb
 if /i "%bs%"=="5" goto interface
 if /i "%bs%"=="6" goto server
 if /i "%bs%"=="7" goto google_drive
+if /i "%bs%"=="8" goto MTP
 
 if /i "%bs%"=="c" call :curr_set1
 if /i "%bs%"=="c" call :curr_set2
@@ -1385,7 +1387,7 @@ echo ***************************************************************************
 echo VERIFY KEYS IN KEYS.TXT AGAINST SHA256 HASHES FROM THE CORRECT KEYS
 echo ***************************************************************************
 
-%pycommand% "%nut%" -nint_keys "%dec_keys%"
+%pycommand% "%squirrel%" -nint_keys "%dec_keys%"
 
 echo ...........................................................................
 echo Input "0" to return to CONFIG MENU
@@ -1408,7 +1410,7 @@ echo ***************************************************************************
 echo FORCING NUT_DB UPDATE
 echo ***************************************************************************
 
-%pycommand% "%nut%" -lib_call nutdb force_refresh
+%pycommand% "%squirrel%" -lib_call nutdb force_refresh
 
 echo ...........................................................................
 echo Input "0" to return to CONFIG MENU
@@ -1428,6 +1430,7 @@ echo ********************************************************
 echo GOOGLE-DRIVE - CONFIGURATION
 echo ********************************************************
 echo Input "1" to register account
+echo Input "2" to refresh cache for remote libraries
 echo.
 echo Input "0" to return to CONFIG MENU
 echo Input "e" to go back to the MAIN PROGRAM
@@ -1435,6 +1438,8 @@ echo .......................................................
 echo.
 set /p bs="Enter your choice: "
 if /i "%bs%"=="1" goto op_google_drive_account
+if /i "%bs%"=="2" ( %pycommand% "%squirrel%" -lib_call workers concurrent_cache )
+if /i "%bs%"=="2" goto google_drive
 
 if /i "%bs%"=="0" goto sc1
 if /i "%bs%"=="e" goto salida
@@ -1463,7 +1468,7 @@ echo.
 set /p bs="Enter the drive name: "
 set "token=%bs%"
 echo.
-%pycommand% "%nut%" -lib_call Drive.Private create_token -xarg "%token%" headless="False"
+%pycommand% "%squirrel%" -lib_call Drive.Private create_token -xarg "%token%" headless="False"
 pause
 goto google_drive
 
@@ -2090,6 +2095,10 @@ set v_server_SSL="%v_server_SSL%"
 %pycommand% "%listmanager%" -cl "%opt_server%" -ln "48" -nl "set %v_server_SSL%" 
 %pycommand% "%listmanager%" -rl "%opt_server%" -ln "48" -nl "Line in config was changed to: "
 
+pause
+goto sc1
+
+:MTP
 pause
 goto sc1
 
