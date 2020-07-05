@@ -168,7 +168,7 @@ set "MTP_verification=True"
 set "MTP_prioritize_NSZ=True"
 set "MTP_exclude_xci_autinst=True"
 set "MTP_aut_ch_medium=True"
-set "MTP_chk_fw=True"
+set "MTP_chk_fw=False"
 set "MTP_prepatch_kg=False"
 :: Precheck if Installed
 set "MTP_prechk_Base=True"

@@ -1677,7 +1677,7 @@ goto interface
 cls
 call :logo
 echo ***************************************************************************
-echo CHOOSE PORT FOR INSTERFACE
+echo CHOOSE PORT FOR INTERFACE
 echo ***************************************************************************
 echo Localhost. Interface is only visible locally (default)
 echo 0.0.0.0. Inteface can be visible on the same network
@@ -1795,7 +1795,7 @@ goto sc1
 cls
 call :logo
 echo ********************************************************
-echo INTERFACE - CONFIGURATION
+echo SERVER - CONFIGURATION
 echo ********************************************************
 echo Input "1" to change STARTUP VISIBILITY configuration
 echo Input "2" to deactivate VIDEO PLAYBACK
@@ -1804,7 +1804,7 @@ echo Input "4" to setup host
 echo Input "5" to setup the noconsole parameter
 echo Input "6" to setup the ssl parameter
 echo.
-echo Input "d" to restore INTERFACE DEFAULTS
+echo Input "d" to restore SERVER DEFAULTS
 echo Input "0" to return to CONFIG MENU
 echo Input "e" to go back to the MAIN PROGRAM
 echo .......................................................
@@ -1822,13 +1822,13 @@ if /i "%bs%"=="0" goto sc1
 if /i "%bs%"=="e" goto salida
 echo WRONG CHOICE
 echo.
-goto interface
+goto server
 
 :op_server_consolevisibility
 cls
 call :logo
 echo ***************************************************************************
-echo START INTERFACE.BAT MINIMIZED?
+echo START SERVER.BAT MINIMIZED?
 echo ***************************************************************************
 echo Controls if the debugging console starts minimized together with the web
 echo interface
@@ -1838,7 +1838,7 @@ echo Input "2"  to NOT start MINIMIZED
 echo Input "D"  for default (NOT MINIMIZED)
 echo.
 echo Input "0" to return to CONFIG MENU
-echo Input "b" to return to INTERFACE MENU
+echo Input "b" to return to SERVER MENU
 echo Input "e" to go back to the MAIN PROGRAM
 echo.
 set /p bs="Enter your choice: "
@@ -1848,7 +1848,7 @@ if /i "%bs%"=="2" set "v_server_vis=no"
 if /i "%bs%"=="d" set "v_server_vis=no"
 
 if /i "%bs%"=="0" goto sc1
-if /i "%bs%"=="b" goto interface
+if /i "%bs%"=="b" goto server
 if /i "%bs%"=="e" goto salida
 
 if "%v_server_vis%"=="none" echo WRONG CHOICE
@@ -1879,7 +1879,7 @@ echo Input "2"  to DISABLE video playback
 echo Input "D"  for default (NOT MINIMIZED)
 echo.
 echo Input "0" to return to CONFIG MENU
-echo Input "b" to return to INTERFACE MENU
+echo Input "b" to return to SERVER MENU
 echo Input "e" to go back to the MAIN PROGRAM
 echo.
 set /p bs="Enter your choice: "
@@ -1889,7 +1889,7 @@ if /i "%bs%"=="2" set "v_video_playback=false"
 if /i "%bs%"=="d" set "v_video_playback=false"
 
 if /i "%bs%"=="0" goto sc1
-if /i "%bs%"=="b" goto interface
+if /i "%bs%"=="b" goto server
 if /i "%bs%"=="e" goto salida
 
 if "%v_video_playback%"=="none" echo WRONG CHOICE
@@ -1903,13 +1903,13 @@ echo.
 %pycommand% "%listmanager%" -rl "%opt_server%" -ln "21" -nl "Line in config was changed to: "
 echo.
 pause
-goto interface
+goto server
 
 :op_server_port
 cls
 call :logo
 echo ***************************************************************************
-echo CHOOSE PORT FOR INSTERFACE
+echo CHOOSE PORT FOR SERVER
 echo ***************************************************************************
 echo. 
 echo Note "rg8000" locates an open port between 8000 an 8999, it allows to open
@@ -1919,7 +1919,7 @@ echo Input "1" or "d" to set variable to rg8000
 echo or input a PORT NUMBER
 echo.
 echo Input "0" to return to CONFIG MENU
-echo Input "b" to return to INTERFACE MENU
+echo Input "b" to return to SERVER MENU
 echo Input "e" to go back to the MAIN PROGRAM
 echo.
 set /p bs="Enter your choice: "
@@ -1928,7 +1928,7 @@ if /i "%bs%"=="1" set "v_server_port=rg8000"
 if /i "%bs%"=="d" set "v_server_port=rg8000"
 
 if /i "%bs%"=="0" goto sc1
-if /i "%bs%"=="b" goto interface
+if /i "%bs%"=="b" goto server
 if /i "%bs%"=="e" goto salida
 
 set v_server_port="port=%v_server_port%"
@@ -1939,7 +1939,7 @@ echo.
 %pycommand% "%listmanager%" -rl "%opt_server%" -ln "29" -nl "Line in config was changed to: "
 echo.
 pause
-goto interface
+goto server
 
 :op_server_host
 cls
@@ -1947,14 +1947,14 @@ call :logo
 echo ***************************************************************************
 echo CHOOSE PORT FOR INSTERFACE
 echo ***************************************************************************
-echo Localhost. Interface is only visible locally (default)
+echo Localhost. Server is only visible locally (default)
 echo 0.0.0.0. Inteface can be visible on the same network
 echo.
 echo Input "1" or "D" to setup host as LOCALHOST 
 echo Input "2" to setup host as 0.0.0.0 
 echo.
 echo Input "0" to return to CONFIG MENU
-echo Input "b" to return to INTERFACE MENU
+echo Input "b" to return to SERVER MENU
 echo Input "e" to go back to the MAIN PROGRAM
 echo.
 set /p bs="Enter your choice: "
@@ -1964,7 +1964,7 @@ if /i "%bs%"=="2" set "v_server_host=0.0.0.0"
 if /i "%bs%"=="d" set "v_server_host=localhost"
 
 if /i "%bs%"=="0" goto sc1
-if /i "%bs%"=="b" goto interface
+if /i "%bs%"=="b" goto server
 if /i "%bs%"=="e" goto salida
 
 if "%v_server_host%"=="none" echo WRONG CHOICE
@@ -1978,15 +1978,15 @@ echo.
 %pycommand% "%listmanager%" -rl "%opt_server%" -ln "36" -nl "Line in config was changed to: "
 echo.
 pause
-goto interface
+goto server
 
 :op_server_noconsole
 cls
 call :logo
 echo ***************************************************************************
-echo HIDDEN CONSOLE FOR INTERFACE
+echo HIDDEN CONSOLE FOR SERVER
 echo ***************************************************************************
-echo NoConsole=True. Hides cmd console and redirects console prints to interface
+echo NoConsole=True. Hides cmd console and redirects console prints to server
 echo this is the default parameter.
 echo NoConsole=False. Shows cmd console
 echo.
@@ -1994,7 +1994,7 @@ echo Input "1" or "D" to setup NOCONSOLE as TRUE
 echo Input "2" to setup NOCONSOLE as FALSE
 echo.
 echo Input "0" to return to CONFIG MENU
-echo Input "b" to return to INTERFACE MENU
+echo Input "b" to return to SERVER MENU
 echo Input "e" to go back to the MAIN PROGRAM
 echo.
 set /p bs="Enter your choice: "
@@ -2004,7 +2004,7 @@ if /i "%bs%"=="2" set "v_server_noconsole=false"
 if /i "%bs%"=="d" set "v_server_noconsole=true"
 
 if /i "%bs%"=="0" goto sc1
-if /i "%bs%"=="b" goto interface
+if /i "%bs%"=="b" goto server
 if /i "%bs%"=="e" goto salida
 
 if "%v_server_noconsole%"=="none" echo WRONG CHOICE
@@ -2018,7 +2018,7 @@ echo.
 %pycommand% "%listmanager%" -rl "%opt_server%" -ln "42" -nl "Line in config was changed to: "
 echo.
 pause
-goto interface
+goto server
 
 :op_server_ssl
 cls
@@ -2034,7 +2034,7 @@ echo Input "1" or "D" to SSL OFF (DEFAULT)
 echo Input "2" to setup SSL ON
 echo.
 echo Input "0" to return to CONFIG MENU
-echo Input "b" to return to INTERFACE MENU
+echo Input "b" to return to SERVER MENU
 echo Input "e" to go back to the MAIN PROGRAM
 echo.
 set /p bs="Enter your choice: "
@@ -2044,7 +2044,7 @@ if /i "%bs%"=="2" set "v_server_SSL=true"
 if /i "%bs%"=="d" set "v_server_SSL=false"
 
 if /i "%bs%"=="0" goto sc1
-if /i "%bs%"=="b" goto interface
+if /i "%bs%"=="b" goto server
 if /i "%bs%"=="e" goto salida
 
 if "%v_server_SSL%"=="none" echo WRONG CHOICE
@@ -2058,7 +2058,7 @@ echo.
 %pycommand% "%listmanager%" -rl "%opt_server%" -ln "48" -nl "Line in config was changed to: "
 echo.
 pause
-goto interface
+goto server
 
 :op_server_defaults
 cls
@@ -2099,6 +2099,552 @@ pause
 goto sc1
 
 :MTP
+cls
+call :logo
+echo ********************************************************
+echo MTP - CONFIGURATION
+echo ********************************************************
+echo Input "1" to setup VERIFICATION pre-installation
+echo Input "2" to PRIORITIZE NSZ when autoupdating the device
+echo Input "3" to EXCLUDE XCI on the SD when installing updates 
+echo in the AUTOUPDATE function
+echo Input "4" to change between SD and EMMC depending on free 
+echo space when doing installations
+echo Input "5" to check firmware on console before doing 
+echo installations
+echo Input "6" to patch keygeneration of files if the device is
+echo on a lower firmware or skip the installation
+echo Input "7" to check if base content is installed in the device
+echo before attempting installation
+echo Input "8" to check if old or equal update or dlc content is 
+echo installed in the device before attempting installation
+echo Input "9" to choose folder setup when dumping saves
+echo Input "10" to choose if adding titleid and version to save dumps
+echo Input "11" to choose to add files to the cache remote for`public
+echo links
+echo.
+echo Input "d" to restore MTP DEFAULTS
+echo Input "0" to return to CONFIG MENU
+echo Input "e" to go back to the MAIN PROGRAM
+echo .......................................................
+echo.
+set /p bs="Enter your choice: "
+if /i "%bs%"=="1" goto op_MTP_verification
+if /i "%bs%"=="2" goto op_MTP_prioritize_NSZ
+if /i "%bs%"=="3" goto op_MTP_exclude_xci_autinst
+if /i "%bs%"=="4" goto op_MTP_aut_ch_medium
+if /i "%bs%"=="5" goto op_MTP_chk_fw
+if /i "%bs%"=="6" goto op_MTP_prepatch_kg
+if /i "%bs%"=="7" goto op_MTP_prechk_Base
+if /i "%bs%"=="8" goto op_MTP_prechk_Upd
+if /i "%bs%"=="9" goto op_MTP_saves_Inline
+if /i "%bs%"=="10" goto op_MTP_saves_AddTIDandVer
+if /i "%bs%"=="11" goto op_MTP_pdrive_truecopy
+
+if /i "%bs%"=="d" goto op_mtp_defaults
+if /i "%bs%"=="0" goto sc1
+if /i "%bs%"=="e" goto salida
+echo WRONG CHOICE
+echo.
+goto MTP
+
+:op_MTP_verification
+cls
+call :logo
+echo ***************************************************************************
+echo ACTIVATE FILE VERIFICATION PRE-INSTALLATION
+echo ***************************************************************************
+echo False: Verification deactivated
+echo Level 2 verification: Nca are readable, no files missing, titlekey is 
+echo correct and signature 1 is from a legit VERIFIABLE origin. (default)
+echo Hash: Level 2 verification + Hash verification
+echo.
+echo Input "1" or "D" to setup VERIFICATION to LEVEL2
+echo Input "2" to setup VERIFICATION to HASH
+echo Input "3" to DEACTIVATE VERIFICATION
+echo.
+echo Input "0" to return to CONFIG MENU
+echo Input "b" to return to MTP MENU
+echo Input "e" to go back to the MAIN PROGRAM
+echo.
+set /p bs="Enter your choice: "
+set "v_mtp_verification=none"
+if /i "%bs%"=="1" set "v_mtp_verification=True"
+if /i "%bs%"=="2" set "v_mtp_verification=Hash"
+if /i "%bs%"=="3" set "v_mtp_verification=False"
+if /i "%bs%"=="d" set "v_mtp_verification=True"
+
+if /i "%bs%"=="0" goto sc1
+if /i "%bs%"=="b" goto MTP
+if /i "%bs%"=="e" goto salida
+
+if "%v_mtp_verification%"=="none" echo WRONG CHOICE
+if "%v_mtp_verification%"=="none" echo.
+if "%v_mtp_verification%"=="none" goto op_MTP_verification
+
+set v_mtp_verification="MTP_verification=%v_mtp_verification%"
+set v_mtp_verification="%v_mtp_verification%"
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "166" -nl "set %v_mtp_verification%" 
+echo.
+%pycommand% "%listmanager%" -rl "%op_file%" -ln "166" -nl "Line in config was changed to: "
+echo.
+pause
+goto MTP
+
+:op_MTP_prioritize_NSZ
+cls
+call :logo
+echo ***************************************************************************
+echo PRIORITIZE NSZ OVER NSP WHEN CHECKING FOR NEW UPDATES AND DLC IN LIBRARY
+echo ***************************************************************************
+echo.
+echo Input "1" or "D" to PRIORITIZE nsz
+echo Input "2" to NOT prioritize nsz
+echo.
+echo Input "0" to return to CONFIG MENU
+echo Input "b" to return to MTP MENU
+echo Input "e" to go back to the MAIN PROGRAM
+echo.
+set /p bs="Enter your choice: "
+set "v_MTP_prioritize_NSZ=none"
+if /i "%bs%"=="1" set "v_MTP_prioritize_NSZ=True"
+if /i "%bs%"=="3" set "v_MTP_prioritize_NSZ=False"
+if /i "%bs%"=="d" set "v_MTP_prioritize_NSZ=True"
+
+if /i "%bs%"=="0" goto sc1
+if /i "%bs%"=="b" goto MTP
+if /i "%bs%"=="e" goto salida
+
+if "%v_MTP_prioritize_NSZ%"=="none" echo WRONG CHOICE
+if "%v_MTP_prioritize_NSZ%"=="none" echo.
+if "%v_MTP_prioritize_NSZ%"=="none" goto op_MTP_prioritize_NSZ
+
+set v_MTP_prioritize_NSZ="MTP_prioritize_NSZ=%v_MTP_prioritize_NSZ%"
+set v_MTP_prioritize_NSZ="%v_MTP_prioritize_NSZ%"
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "167" -nl "set %v_MTP_prioritize_NSZ%" 
+echo.
+%pycommand% "%listmanager%" -rl "%op_file%" -ln "167" -nl "Line in config was changed to: "
+echo.
+pause
+goto MTP
+
+:op_MTP_exclude_xci_autinst
+cls
+call :logo
+echo ***************************************************************************
+echo EXCLUDE XCI FROM AUTOUPDATER CHECKS FOR NEW CONTENT
+echo ***************************************************************************
+echo.
+echo Input "1" or "D" to EXCLUDE xci from checks
+echo Input "2" to NOT EXCLUDE xci from checks
+echo.
+echo Input "0" to return to CONFIG MENU
+echo Input "b" to return to MTP MENU
+echo Input "e" to go back to the MAIN PROGRAM
+echo.
+set /p bs="Enter your choice: "
+set "v_MTP_exclude_xci_autinst=none"
+if /i "%bs%"=="1" set "v_MTP_exclude_xci_autinst=True"
+if /i "%bs%"=="2" set "v_MTP_exclude_xci_autinst=False"
+if /i "%bs%"=="d" set "v_MTP_exclude_xci_autinst=True"
+
+if /i "%bs%"=="0" goto sc1
+if /i "%bs%"=="b" goto MTP
+if /i "%bs%"=="e" goto salida
+
+if "%v_MTP_exclude_xci_autinst%"=="none" echo WRONG CHOICE
+if "%v_MTP_exclude_xci_autinst%"=="none" echo.
+if "%v_MTP_exclude_xci_autinst%"=="none" goto op_MTP_exclude_xci_autinst
+
+set v_MTP_exclude_xci_autinst="MTP_exclude_xci_autinst=%v_MTP_exclude_xci_autinst%"
+set v_MTP_exclude_xci_autinst="%v_MTP_exclude_xci_autinst%"
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "168" -nl "set %v_MTP_exclude_xci_autinst%" 
+echo.
+%pycommand% "%listmanager%" -rl "%op_file%" -ln "168" -nl "Line in config was changed to: "
+echo.
+pause
+goto MTP
+
+:op_MTP_aut_ch_medium
+cls
+call :logo
+echo ***************************************************************************
+echo AUTOCHANGE MEDIUM ACCORDING TO SPACE ON DEVICE
+echo ***************************************************************************
+echo If true changes between SD and EMMC when the space is low in the selected
+echo medium. If false skips the intallation. 
+echo.
+echo Input "1" or "D" to CHANGE MEDIUM according to space on device
+echo Input "2" to NOT CHANGE MEDIUM according to space on device
+echo.
+echo Input "0" to return to CONFIG MENU
+echo Input "b" to return to MTP MENU
+echo Input "e" to go back to the MAIN PROGRAM
+echo.
+set /p bs="Enter your choice: "
+set "v_MTP_aut_ch_medium=none"
+if /i "%bs%"=="1" set "v_MTP_aut_ch_medium=True"
+if /i "%bs%"=="2" set "v_MTP_aut_ch_medium=False"
+if /i "%bs%"=="d" set "v_MTP_aut_ch_medium=True"
+
+if /i "%bs%"=="0" goto sc1
+if /i "%bs%"=="b" goto MTP
+if /i "%bs%"=="e" goto salida
+
+if "%v_MTP_aut_ch_medium%"=="none" echo WRONG CHOICE
+if "%v_MTP_aut_ch_medium%"=="none" echo.
+if "%v_MTP_aut_ch_medium%"=="none" goto op_MTP_aut_ch_medium
+
+set v_MTP_aut_ch_medium="MTP_aut_ch_medium=%v_MTP_aut_ch_medium%"
+set v_MTP_aut_ch_medium="%v_MTP_aut_ch_medium%"
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "169" -nl "set %v_MTP_aut_ch_medium%" 
+echo.
+%pycommand% "%listmanager%" -rl "%op_file%" -ln "169" -nl "Line in config was changed to: "
+echo.
+pause
+goto MTP
+
+:op_MTP_chk_fw
+cls
+call :logo
+echo ***************************************************************************
+echo CHECK FIRMWARE ON DEVICE AND ON FILE BEING PROCESSEDD
+echo ***************************************************************************
+echo.
+echo Input "1" or "D" to NOT CHECK FIRMWARE (default)
+echo Input "2" to CHECK FIRMWARE 
+echo.
+echo Input "0" to return to CONFIG MENU
+echo Input "b" to return to MTP MENU
+echo Input "e" to go back to the MAIN PROGRAM
+echo.
+set /p bs="Enter your choice: "
+set "v_MTP_chk_fw=none"
+if /i "%bs%"=="1" set "v_MTP_chk_fw=False"
+if /i "%bs%"=="2" set "v_MTP_chk_fw=True"
+if /i "%bs%"=="d" set "v_MTP_chk_fw=False"
+
+if /i "%bs%"=="0" goto sc1
+if /i "%bs%"=="b" goto MTP
+if /i "%bs%"=="e" goto salida
+
+if "%v_MTP_chk_fw%"=="none" echo WRONG CHOICE
+if "%v_MTP_chk_fw%"=="none" echo.
+if "%v_MTP_chk_fw%"=="none" goto op_MTP_chk_fw
+
+set v_MTP_chk_fw="MTP_chk_fw=%v_MTP_chk_fw%"
+set v_MTP_chk_fw="%v_MTP_chk_fw%"
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "170" -nl "set %v_MTP_chk_fw%" 
+echo.
+%pycommand% "%listmanager%" -rl "%op_file%" -ln "170" -nl "Line in config was changed to: "
+echo.
+pause
+goto MTP
+
+:op_MTP_prepatch_kg
+cls
+call :logo
+echo ***************************************************************************
+echo CHECK FIRMWARE ON DEVICE AND ON FILE BEING PROCESSEDD
+echo ***************************************************************************
+echo After a firmware check on the console and the files hte program will decide
+echo if it should patch or skip the file based in this option
+echo Note: Currently it's needed to generate a new file before pushing it via MTP
+echo since the ability of patching streams on the fly is not implemented yet on
+echo the mtp hook.
+echo.
+echo Input "1" or "D" to NOT PATCH FILES (default)
+echo Input "2" to PATCH FILES
+echo.
+echo Input "0" to return to CONFIG MENU
+echo Input "b" to return to MTP MENU
+echo Input "e" to go back to the MAIN PROGRAM
+echo.
+set /p bs="Enter your choice: "
+set "v_MTP_prepatch_kg=none"
+if /i "%bs%"=="1" set "v_MTP_prepatch_kg=False"
+if /i "%bs%"=="2" set "v_MTP_prepatch_kg=True"
+if /i "%bs%"=="d" set "v_MTP_prepatch_kg=False"
+
+if /i "%bs%"=="0" goto sc1
+if /i "%bs%"=="b" goto MTP
+if /i "%bs%"=="e" goto salida
+
+if "%v_MTP_prepatch_kg%"=="none" echo WRONG CHOICE
+if "%v_MTP_prepatch_kg%"=="none" echo.
+if "%v_MTP_prepatch_kg%"=="none" goto op_MTP_prepatch_kg
+
+set v_MTP_prepatch_kg="MTP_chk_fw=%v_MTP_prepatch_kg%"
+set v_MTP_prepatch_kg="%v_MTP_prepatch_kg%"
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "171" -nl "set %v_MTP_prepatch_kg%" 
+echo.
+%pycommand% "%listmanager%" -rl "%op_file%" -ln "171" -nl "Line in config was changed to: "
+echo.
+pause
+goto MTP
+
+:op_MTP_prechk_Base
+cls
+call :logo
+echo ***************************************************************************
+echo CHECK IF BASEGAMES ARE ALREADY INSTALLED IN DEVICE
+echo ***************************************************************************
+echo If activated if a base game is in the device the installation will be skipped
+echo If deactivated the installation will be overwritten.
+echo.
+echo Input "1" or "D" to CHECK AND SKIP GAMES ALREADY INSTALLED (default)
+echo Input "2" to NOT check and skip games already installed 
+echo.
+echo Input "0" to return to CONFIG MENU
+echo Input "b" to return to MTP MENU
+echo Input "e" to go back to the MAIN PROGRAM
+echo.
+set /p bs="Enter your choice: "
+set "v_MTP_prechk_Base=none"
+if /i "%bs%"=="1" set "v_MTP_prechk_Base=True"
+if /i "%bs%"=="2" set "v_MTP_prechk_Base=False"
+if /i "%bs%"=="d" set "v_MTP_prechk_Base=True"
+
+if /i "%bs%"=="0" goto sc1
+if /i "%bs%"=="b" goto MTP
+if /i "%bs%"=="e" goto salida
+
+if "%v_MTP_prechk_Base%"=="none" echo WRONG CHOICE
+if "%v_MTP_prechk_Base%"=="none" echo.
+if "%v_MTP_prechk_Base%"=="none" goto op_MTP_prechk_Base
+
+set v_MTP_prechk_Base="MTP_prechk_Base=%v_MTP_prechk_Base%"
+set v_MTP_prechk_Base="%v_MTP_prechk_Base%"
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "173" -nl "set %v_MTP_prechk_Base%" 
+echo.
+%pycommand% "%listmanager%" -rl "%op_file%" -ln "173" -nl "Line in config was changed to: "
+echo.
+pause
+goto MTP
+
+:op_MTP_prechk_Upd
+cls
+call :logo
+echo ***************************************************************************
+echo CHECK IF UPDATES AND ARE ALREADY INSTALLED IN DEVICE
+echo ***************************************************************************
+echo If activated checks if an update or dlc is already in the device if the 
+echo version is lower to the one pushed it deletes the old one pre-installation
+echo to reclaim space before the installation process, if the version in the
+echo device is equal or higher installation is skipped.
+echo If deactivated it allows to install order updates or dlc as well as overwrite
+echo updates with the same version number.
+echo.
+echo Input "1" or "D" to NOT CHECK AND SKIP updates or dlc already installed (default)
+echo Input "2" to CHECK AND SKIP updates or dlc already installed 
+echo.
+echo Input "0" to return to CONFIG MENU
+echo Input "b" to return to MTP MENU
+echo Input "e" to go back to the MAIN PROGRAM
+echo.
+set /p bs="Enter your choice: "
+set "v_MTP_prechk_Upd=none"
+if /i "%bs%"=="1" set "v_MTP_prechk_Upd=False"
+if /i "%bs%"=="2" set "v_MTP_prechk_Upd=True"
+if /i "%bs%"=="d" set "v_MTP_prechk_Upd=False"
+
+if /i "%bs%"=="0" goto sc1
+if /i "%bs%"=="b" goto MTP
+if /i "%bs%"=="e" goto salida
+
+if "%v_MTP_prechk_Upd%"=="none" echo WRONG CHOICE
+if "%v_MTP_prechk_Upd%"=="none" echo.
+if "%v_MTP_prechk_Upd%"=="none" goto op_MTP_prechk_Upd
+
+set v_MTP_prechk_Upd="MTP_prechk_Upd=%v_MTP_prechk_Upd%"
+set v_MTP_prechk_Upd="%v_MTP_prechk_Upd%"
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "174" -nl "set %v_MTP_prechk_Upd%" 
+echo.
+%pycommand% "%listmanager%" -rl "%op_file%" -ln "174" -nl "Line in config was changed to: "
+echo.
+pause
+goto MTP
+
+:op_MTP_saves_Inline
+cls
+call :logo
+echo ***************************************************************************
+echo STORE SAVEGAMES DUMPS IN FOLDERS OR INLINE
+echo ***************************************************************************
+echo.
+echo Input "1" or "D" to store savegames in FOLDERS (default)
+echo Input "2" to store savegames in INLINE
+echo.
+echo Input "0" to return to CONFIG MENU
+echo Input "b" to return to MTP MENU
+echo Input "e" to go back to the MAIN PROGRAM
+echo.
+set /p bs="Enter your choice: "
+set "v_MTP_saves_Inline=none"
+if /i "%bs%"=="1" set "v_MTP_saves_Inline=False"
+if /i "%bs%"=="2" set "v_MTP_saves_Inline=True"
+if /i "%bs%"=="d" set "v_MTP_saves_Inline=False"
+
+if /i "%bs%"=="0" goto sc1
+if /i "%bs%"=="b" goto MTP
+if /i "%bs%"=="e" goto salida
+
+if "%v_MTP_saves_Inline%"=="none" echo WRONG CHOICE
+if "%v_MTP_saves_Inline%"=="none" echo.
+if "%v_MTP_saves_Inline%"=="none" goto op_MTP_saves_Inline
+
+set v_MTP_saves_Inline="MTP_saves_Inline=%v_MTP_saves_Inline%"
+set v_MTP_saves_Inline="%v_MTP_saves_Inline%"
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "176" -nl "set %v_MTP_saves_Inline%" 
+echo.
+%pycommand% "%listmanager%" -rl "%op_file%" -ln "176" -nl "Line in config was changed to: "
+echo.
+pause
+goto MTP
+
+:op_MTP_saves_AddTIDandVer
+cls
+call :logo
+echo ***************************************************************************
+echo ADD TITLEID AND VERSION TAGS TO SAVEGAMES
+echo ***************************************************************************
+echo This is meant to know the game version on device when the savedump was made
+echo to avoid compatibility issues.
+echo.
+echo Input "1" or "D" to ADD titleid and version tags to file (default)
+echo Input "2" to NOT ADD titleid and version tags to file (default)
+echo.
+echo Input "0" to return to CONFIG MENU
+echo Input "b" to return to MTP MENU
+echo Input "e" to go back to the MAIN PROGRAM
+echo.
+set /p bs="Enter your choice: "
+set "v_MTP_saves_AddTIDandVer=none"
+if /i "%bs%"=="1" set "v_MTP_saves_AddTIDandVer=False"
+if /i "%bs%"=="2" set "v_MTP_saves_AddTIDandVer=True"
+if /i "%bs%"=="d" set "v_MTP_saves_AddTIDandVer=False"
+
+if /i "%bs%"=="0" goto sc1
+if /i "%bs%"=="b" goto MTP
+if /i "%bs%"=="e" goto salida
+
+if "%v_MTP_saves_AddTIDandVer%"=="none" echo WRONG CHOICE
+if "%v_MTP_saves_AddTIDandVer%"=="none" echo.
+if "%v_MTP_saves_AddTIDandVer%"=="none" goto op_MTP_saves_AddTIDandVer
+
+set v_MTP_saves_AddTIDandVer="MTP_saves_AddTIDandVer=%v_MTP_saves_AddTIDandVer%"
+set v_MTP_saves_AddTIDandVer="%v_MTP_saves_AddTIDandVer%"
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "177" -nl "set %v_MTP_saves_AddTIDandVer%" 
+echo.
+%pycommand% "%listmanager%" -rl "%op_file%" -ln "177" -nl "Line in config was changed to: "
+echo.
+pause
+goto MTP
+
+:op_MTP_pdrive_truecopy
+cls
+call :logo
+echo ***************************************************************************
+echo ADD TITLEID AND VERSION TAGS TO SAVEGAMES
+echo ***************************************************************************
+echo When installing or transferring a game from a google drive public link NSCB
+echo requires a token auth and cache folder setup in a google drive account for
+echo better compatibility.
+echo.
+echo The game is copied gaining ownership to the cache folder, which also avoids
+echo quota issues if TRUECOPY is enabled.
+echo If TRUECOPY is disabled the game is added to the cache folder as symlink, 
+echo this allows the file to be called with the auth token but can present quota
+echo issues if the link was shared.
+echo.
+echo Input "1" or "D" to ACTIVATE TRUECOPY(default)
+echo Input "2" to NOT activate TRUECOPY (default)
+echo.
+echo Input "0" to return to CONFIG MENU
+echo Input "b" to return to MTP MENU
+echo Input "e" to go back to the MAIN PROGRAM
+echo.
+set /p bs="Enter your choice: "
+set "v_op_MTP_pdrive_truecopy=none"
+if /i "%bs%"=="1" set "v_op_MTP_pdrive_truecopy=True"
+if /i "%bs%"=="2" set "v_op_MTP_pdrive_truecopy=False"
+if /i "%bs%"=="d" set "v_op_MTP_pdrive_truecopy=True"
+
+if /i "%bs%"=="0" goto sc1
+if /i "%bs%"=="b" goto MTP
+if /i "%bs%"=="e" goto salida
+
+if "%v_op_MTP_pdrive_truecopy%"=="none" echo WRONG CHOICE
+if "%v_op_MTP_pdrive_truecopy%"=="none" echo.
+if "%v_op_MTP_pdrive_truecopy%"=="none" goto op_MTP_pdrive_truecopy
+
+set v_op_MTP_pdrive_truecopy="MTP_pdrive_truecopy=%v_op_MTP_pdrive_truecopy%"
+set v_op_MTP_pdrive_truecopy="%v_op_MTP_pdrive_truecopy%"
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "179" -nl "set %v_op_MTP_pdrive_truecopy%" 
+echo.
+%pycommand% "%listmanager%" -rl "%op_file%" -ln "179" -nl "Line in config was changed to: "
+echo.
+pause
+goto MTP
+
+:op_mtp_defaults
+cls
+call :logo
+::MTP_verification
+set v_mtp_verification="MTP_verification=True"
+set v_mtp_verification="%v_mtp_verification%"
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "166" -nl "set %v_mtp_verification%" 
+%pycommand% "%listmanager%" -rl "%op_file%" -ln "166" -nl "Line in config was changed to: "
+::MTP_prioritize_NSZ
+set v_MTP_prioritize_NSZ="MTP_prioritize_NSZ=True"
+set v_MTP_prioritize_NSZ="%v_MTP_prioritize_NSZ%"
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "167" -nl "set %v_MTP_prioritize_NSZ%" 
+%pycommand% "%listmanager%" -rl "%op_file%" -ln "167" -nl "Line in config was changed to: "
+::MTP_exclude_xci_autinst
+set v_MTP_exclude_xci_autinst="MTP_exclude_xci_autinst=True"
+set v_MTP_exclude_xci_autinst="%v_MTP_exclude_xci_autinst%"
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "168" -nl "set %v_MTP_exclude_xci_autinst%" 
+%pycommand% "%listmanager%" -rl "%op_file%" -ln "168" -nl "Line in config was changed to: "
+::MTP_aut_ch_medium
+set v_MTP_aut_ch_medium="MTP_aut_ch_medium=True"
+set v_MTP_aut_ch_medium="%v_MTP_aut_ch_medium%"
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "169" -nl "set %v_MTP_aut_ch_medium%" 
+%pycommand% "%listmanager%" -rl "%op_file%" -ln "169" -nl "Line in config was changed to: "
+::MTP_chk_fw
+set v_MTP_chk_fw="MTP_chk_fw=False"
+set v_MTP_chk_fw="%v_MTP_chk_fw%"
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "170" -nl "set %v_MTP_chk_fw%" 
+%pycommand% "%listmanager%" -rl "%op_file%" -ln "170" -nl "Line in config was changed to: "
+::MTP_prepatch_kg
+set v_MTP_prepatch_kg="MTP_chk_fw=False"
+set v_MTP_prepatch_kg="%v_MTP_prepatch_kg%"
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "171" -nl "set %v_MTP_prepatch_kg%" 
+%pycommand% "%listmanager%" -rl "%op_file%" -ln "171" -nl "Line in config was changed to: "
+::MTP_prechk_Base
+set v_MTP_prechk_Base="MTP_prechk_Base=True"
+set v_MTP_prechk_Base="%v_MTP_prechk_Base%"
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "173" -nl "set %v_MTP_prechk_Base%" 
+%pycommand% "%listmanager%" -rl "%op_file%" -ln "173" -nl "Line in config was changed to: "
+::MTP_prechk_Upd
+set v_MTP_prechk_Upd="MTP_prechk_Upd=False"
+set v_MTP_prechk_Upd="%v_MTP_prechk_Upd%"
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "174" -nl "set %v_MTP_prechk_Upd%" 
+%pycommand% "%listmanager%" -rl "%op_file%" -ln "174" -nl "Line in config was changed to: "
+::MTP_saves_Inline
+set v_MTP_saves_Inline="MTP_saves_Inline=False"
+set v_MTP_saves_Inline="%v_MTP_saves_Inline%"
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "176" -nl "set %v_MTP_saves_Inline%" 
+%pycommand% "%listmanager%" -rl "%op_file%" -ln "176" -nl "Line in config was changed to: "
+::MTP_saves_AddTIDandVer
+set v_MTP_saves_AddTIDandVer="MTP_saves_AddTIDandVer=False"
+set v_MTP_saves_AddTIDandVer="%v_MTP_saves_AddTIDandVer%"
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "177" -nl "set %v_MTP_saves_AddTIDandVer%" 
+%pycommand% "%listmanager%" -rl "%op_file%" -ln "177" -nl "Line in config was changed to: "
+::MTP_pdrive_truecopy
+set v_op_MTP_pdrive_truecopy="MTP_pdrive_truecopy=True"
+set v_op_MTP_pdrive_truecopy="%v_op_MTP_pdrive_truecopy%"
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "179" -nl "set %v_op_MTP_pdrive_truecopy%" 
+%pycommand% "%listmanager%" -rl "%op_file%" -ln "179" -nl "Line in config was changed to: "
 pause
 goto sc1
 
