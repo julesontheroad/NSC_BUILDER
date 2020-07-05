@@ -1,0 +1,3 @@
+library_name|path
+Dumps|N:\Dumps
+Saves|N:\Saves
