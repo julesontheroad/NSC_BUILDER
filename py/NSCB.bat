@@ -4,6 +4,7 @@ set "prog_dir=%~dp0"
 set "bat_name=%~n0"
 set "ofile_name=%bat_name%_options.cmd"
 set "opt_interface=Interface_options.cmd"
+set "opt_server=Server_options.cmd"
 Title NSC_Builder v0.99 -- Profile: %ofile_name% -- by JulesOnTheRoad
 set "list_folder=%prog_dir%lists"
 ::-----------------------------------------------------
@@ -11,6 +12,7 @@ set "list_folder=%prog_dir%lists"
 ::-----------------------------------------------------
 set "op_file=%~dp0zconfig\%ofile_name%"
 set "opt_interface=%~dp0zconfig\%opt_interface%"
+set "opt_server=%~dp0zconfig\%opt_server%"
 ::-----------------------------------------------------
 ::COPY OPTIONS FROM OPTION FILE
 ::-----------------------------------------------------

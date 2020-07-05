@@ -12,7 +12,8 @@ echo Input "2" for GLOBAL AND MANUAL OPTIONS
 echo Input "3" to VERIFY KEYS.TXT 
 echo Input "4" to UPDATE NUTDB
 echo Input "5" to INTERFACE OPTIONS
-echo Input "6" to GOOGLE DRIVE OPTIONS
+echo Input "6" to SERVER OPTIONS
+echo Input "7" to GOOGLE DRIVE OPTIONS
 echo.
 echo Input "c" to read CURRENT PROFILE
 echo Input "d" to set DEFAULT SETTINGS
@@ -25,7 +26,8 @@ if /i "%bs%"=="2" goto sc3
 if /i "%bs%"=="3" goto verify_keys
 if /i "%bs%"=="4" goto update_nutdb
 if /i "%bs%"=="5" goto interface
-if /i "%bs%"=="6" goto google_drive
+if /i "%bs%"=="6" goto server
+if /i "%bs%"=="7" goto google_drive
 
 if /i "%bs%"=="c" call :curr_set1
 if /i "%bs%"=="c" call :curr_set2
@@ -1474,6 +1476,9 @@ echo ********************************************************
 echo Input "1" to change STARTUP VISIBILITY configuration
 echo Input "2" to choose a BROWSER for the interface 
 echo Input "3" to deactivate VIDEO PLAYBACK
+echo Input "4" to setup PORT
+echo Input "5" to setup HOST
+echo Input "6" to setup the NOCONSOLE parameter
 echo.
 echo Input "d" to restore INTERFACE DEFAULTS
 echo Input "0" to return to CONFIG MENU
@@ -1484,6 +1489,9 @@ set /p bs="Enter your choice: "
 if /i "%bs%"=="1" goto op_interface_consolevisibility
 if /i "%bs%"=="2" goto op_interface_browser
 if /i "%bs%"=="3" goto op_interface_video_playback
+if /i "%bs%"=="4" goto op_interface_port
+if /i "%bs%"=="5" goto op_interface_host
+if /i "%bs%"=="6" goto op_interface_noconsole
 
 if /i "%bs%"=="d" goto op_interface_defaults
 if /i "%bs%"=="0" goto sc1
@@ -1525,9 +1533,9 @@ if "%v_interface%"=="none" goto op_interface_consolevisibility
 
 set v_interface="start_minimized=%v_interface%"
 set v_interface="%v_interface%"
-%pycommand% "%listmanager%" -cl "%opt_interface%" -ln "16" -nl "set %v_interface%" 
+%pycommand% "%listmanager%" -cl "%opt_interface%" -ln "17" -nl "set %v_interface%" 
 echo.
-%pycommand% "%listmanager%" -rl "%opt_interface%" -ln "16" -nl "Line in config was changed to: "
+%pycommand% "%listmanager%" -rl "%opt_interface%" -ln "17" -nl "Line in config was changed to: "
 echo.
 pause
 goto interface
@@ -1576,9 +1584,9 @@ if /i "%bs%"=="e" goto salida
 set v_interface_browser="browserpath=%v_interface_browser%"
 set v_interface_browser="%v_interface_browser%"
 
-%pycommand% "%listmanager%" -cl "%opt_interface%" -ln "30" -nl "set %v_interface_browser%" 
+%pycommand% "%listmanager%" -cl "%opt_interface%" -ln "31" -nl "set %v_interface_browser%" 
 echo.
-%pycommand% "%listmanager%" -rl "%opt_interface%" -ln "30" -nl "Line in config was changed to: "
+%pycommand% "%listmanager%" -rl "%opt_interface%" -ln "31" -nl "Line in config was changed to: "
 echo.
 pause
 goto interface
@@ -1617,9 +1625,124 @@ if "%v_video_playback%"=="none" goto op_interface_video_playback
 
 set v_video_playback="videoplayback=%v_video_playback%"
 set v_video_playback="%v_video_playback%"
-%pycommand% "%listmanager%" -cl "%opt_interface%" -ln "34" -nl "set %v_video_playback%" 
+%pycommand% "%listmanager%" -cl "%opt_interface%" -ln "35" -nl "set %v_video_playback%" 
 echo.
-%pycommand% "%listmanager%" -rl "%opt_interface%" -ln "34" -nl "Line in config was changed to: "
+%pycommand% "%listmanager%" -rl "%opt_interface%" -ln "35" -nl "Line in config was changed to: "
+echo.
+pause
+goto interface
+
+:op_interface_port
+cls
+call :logo
+echo ***************************************************************************
+echo CHOOSE PORT FOR INSTERFACE
+echo ***************************************************************************
+echo. 
+echo Note "rg8000" locates an open port between 8000 an 8999, it allows to open
+echo several inteface windows at the same time. This is the default parameter
+echo.
+echo Input "1" or "d" to set variable to rg8000
+echo or input a PORT NUMBER
+echo.
+echo Input "0" to return to CONFIG MENU
+echo Input "b" to return to INTERFACE MENU
+echo Input "e" to go back to the MAIN PROGRAM
+echo.
+set /p bs="Enter your choice: "
+set "v_interface_port=%bs%"
+if /i "%bs%"=="1" set "v_interface_port=rg8000"
+if /i "%bs%"=="d" set "v_interface_port=rg8000"
+
+if /i "%bs%"=="0" goto sc1
+if /i "%bs%"=="b" goto interface
+if /i "%bs%"=="e" goto salida
+
+set v_interface_port="port=%v_interface_port%"
+set v_interface_port="%v_interface_port%"
+
+%pycommand% "%listmanager%" -cl "%opt_interface%" -ln "48" -nl "set %v_interface_port%" 
+echo.
+%pycommand% "%listmanager%" -rl "%opt_interface%" -ln "48" -nl "Line in config was changed to: "
+echo.
+pause
+goto interface
+
+:op_interface_host
+cls
+call :logo
+echo ***************************************************************************
+echo CHOOSE PORT FOR INSTERFACE
+echo ***************************************************************************
+echo Localhost. Interface is only visible locally (default)
+echo 0.0.0.0. Inteface can be visible on the same network
+echo.
+echo Input "1" or "D" to setup host as LOCALHOST 
+echo Input "2" to setup host as 0.0.0.0 
+echo.
+echo Input "0" to return to CONFIG MENU
+echo Input "b" to return to INTERFACE MENU
+echo Input "e" to go back to the MAIN PROGRAM
+echo.
+set /p bs="Enter your choice: "
+set "v_interface_host=none"
+if /i "%bs%"=="1" set "v_interface_host=localhost"
+if /i "%bs%"=="2" set "v_interface_host=0.0.0.0"
+if /i "%bs%"=="d" set "v_interface_host=localhost"
+
+if /i "%bs%"=="0" goto sc1
+if /i "%bs%"=="b" goto interface
+if /i "%bs%"=="e" goto salida
+
+if "%v_interface_host%"=="none" echo WRONG CHOICE
+if "%v_interface_host%"=="none" echo.
+if "%v_interface_host%"=="none" goto op_interface_host
+
+set v_interface_host="host=%v_interface_host%"
+set v_interface_host="%v_interface_host%"
+%pycommand% "%listmanager%" -cl "%opt_interface%" -ln "55" -nl "set %v_interface_host%" 
+echo.
+%pycommand% "%listmanager%" -rl "%opt_interface%" -ln "55" -nl "Line in config was changed to: "
+echo.
+pause
+goto interface
+
+:op_interface_noconsole
+cls
+call :logo
+echo ***************************************************************************
+echo HIDDEN CONSOLE FOR INTERFACE
+echo ***************************************************************************
+echo NoConsole=True. Hides cmd console and redirects console prints to interface
+echo this is the default parameter.
+echo NoConsole=False. Shows cmd console
+echo.
+echo Input "1" or "D" to setup NOCONSOLE as TRUE
+echo Input "2" to setup NOCONSOLE as FALSE
+echo.
+echo Input "0" to return to CONFIG MENU
+echo Input "b" to return to INTERFACE MENU
+echo Input "e" to go back to the MAIN PROGRAM
+echo.
+set /p bs="Enter your choice: "
+set "v_interface_noconsole=none"
+if /i "%bs%"=="1" set "v_interface_noconsole=true"
+if /i "%bs%"=="2" set "v_interface_noconsole=false"
+if /i "%bs%"=="d" set "v_interface_noconsole=true"
+
+if /i "%bs%"=="0" goto sc1
+if /i "%bs%"=="b" goto interface
+if /i "%bs%"=="e" goto salida
+
+if "%v_interface_noconsole%"=="none" echo WRONG CHOICE
+if "%v_interface_noconsole%"=="none" echo.
+if "%v_interface_noconsole%"=="none" goto op_interface_noconsole
+
+set v_interface_noconsole="noconsole=%v_interface_noconsole%"
+set v_interface_noconsole="%v_interface_noconsole%"
+%pycommand% "%listmanager%" -cl "%opt_interface%" -ln "61" -nl "set %v_interface_noconsole%" 
+echo.
+%pycommand% "%listmanager%" -rl "%opt_interface%" -ln "61" -nl "Line in config was changed to: "
 echo.
 pause
 goto interface
@@ -1630,22 +1753,344 @@ call :logo
 ::Startup
 set v_interface="start_minimized=no"
 set v_interface="%v_interface%"
-%pycommand% "%listmanager%" -cl "%opt_interface%" -ln "16" -nl "set %v_interface%" 
-%pycommand% "%listmanager%" -rl "%opt_interface%" -ln "16" -nl "Line in config was changed to: "
+%pycommand% "%listmanager%" -cl "%opt_interface%" -ln "17" -nl "set %v_interface%" 
+%pycommand% "%listmanager%" -rl "%opt_interface%" -ln "17" -nl "Line in config was changed to: "
 echo.
 ::Browserpath
 set v_interface_browser="browserpath=auto"
 set v_interface_browser="%v_interface_browser%"
-%pycommand% "%listmanager%" -cl "%opt_interface%" -ln "30" -nl "set %v_interface_browser%" 
-%pycommand% "%listmanager%" -rl "%opt_interface%" -ln "30" -nl "Line in config was changed to: "
+%pycommand% "%listmanager%" -cl "%opt_interface%" -ln "31" -nl "set %v_interface_browser%" 
+%pycommand% "%listmanager%" -rl "%opt_interface%" -ln "31" -nl "Line in config was changed to: "
 echo.
 ::Video playback
 set v_video_playback="videoplayback=true"
 set v_video_playback="%v_video_playback%"
-%pycommand% "%listmanager%" -cl "%opt_interface%" -ln "34" -nl "set %v_video_playback%" 
-%pycommand% "%listmanager%" -rl "%opt_interface%" -ln "34" -nl "Line in config was changed to: "
-pause
+%pycommand% "%listmanager%" -cl "%opt_interface%" -ln "35" -nl "set %v_video_playback%" 
+%pycommand% "%listmanager%" -rl "%opt_interface%" -ln "35" -nl "Line in config was changed to: "
+::Port
+set v_interface_port="port=rg8000"
+set v_interface_port="%v_interface_port%"
+%pycommand% "%listmanager%" -cl "%opt_interface%" -ln "48" -nl "set %v_interface_port%" 
+%pycommand% "%listmanager%" -rl "%opt_interface%" -ln "48" -nl "Line in config was changed to: "
+::Host
+set v_interface_host="host=localhost"
+set v_interface_host="%v_interface_host%"
+%pycommand% "%listmanager%" -cl "%opt_interface%" -ln "55" -nl "set %v_interface_host%" 
+%pycommand% "%listmanager%" -rl "%opt_interface%" -ln "55" -nl "Line in config was changed to: "
 
+::NoConsole
+set v_interface_noconsole="noconsole=true"
+set v_interface_noconsole="%v_interface_noconsole%"
+%pycommand% "%listmanager%" -cl "%opt_interface%" -ln "61" -nl "set %v_interface_noconsole%" 
+%pycommand% "%listmanager%" -rl "%opt_interface%" -ln "61" -nl "Line in config was changed to: "
+pause
+goto sc1
+
+:server
+cls
+call :logo
+echo ********************************************************
+echo INTERFACE - CONFIGURATION
+echo ********************************************************
+echo Input "1" to change STARTUP VISIBILITY configuration
+echo Input "2" to deactivate VIDEO PLAYBACK
+echo Input "3" to setup port number
+echo Input "4" to setup host
+echo Input "5" to setup the noconsole parameter
+echo Input "6" to setup the ssl parameter
+echo.
+echo Input "d" to restore INTERFACE DEFAULTS
+echo Input "0" to return to CONFIG MENU
+echo Input "e" to go back to the MAIN PROGRAM
+echo .......................................................
+echo.
+set /p bs="Enter your choice: "
+if /i "%bs%"=="1" goto op_server_consolevisibility
+if /i "%bs%"=="2" goto op_server_video_playback
+if /i "%bs%"=="3" goto op_server_port
+if /i "%bs%"=="4" goto op_server_host
+if /i "%bs%"=="5" goto op_server_noconsole
+if /i "%bs%"=="6" goto op_server_ssl
+
+if /i "%bs%"=="d" goto op_server_defaults
+if /i "%bs%"=="0" goto sc1
+if /i "%bs%"=="e" goto salida
+echo WRONG CHOICE
+echo.
+goto interface
+
+:op_server_consolevisibility
+cls
+call :logo
+echo ***************************************************************************
+echo START INTERFACE.BAT MINIMIZED?
+echo ***************************************************************************
+echo Controls if the debugging console starts minimized together with the web
+echo interface
+echo.
+echo Input "1"  to start MINIMIZED
+echo Input "2"  to NOT start MINIMIZED
+echo Input "D"  for default (NOT MINIMIZED)
+echo.
+echo Input "0" to return to CONFIG MENU
+echo Input "b" to return to INTERFACE MENU
+echo Input "e" to go back to the MAIN PROGRAM
+echo.
+set /p bs="Enter your choice: "
+set "v_server_vis=none"
+if /i "%bs%"=="1" set "v_server_vis=yes"
+if /i "%bs%"=="2" set "v_server_vis=no"
+if /i "%bs%"=="d" set "v_server_vis=no"
+
+if /i "%bs%"=="0" goto sc1
+if /i "%bs%"=="b" goto interface
+if /i "%bs%"=="e" goto salida
+
+if "%v_server_vis%"=="none" echo WRONG CHOICE
+if "%v_server_vis%"=="none" echo.
+if "%v_server_vis%"=="none" goto op_server_consolevisibility
+
+set v_server_vis="start_minimized=%v_server_vis%"
+set v_server_vis="%v_server_vis%"
+%pycommand% "%listmanager%" -cl "%opt_server%" -ln "17" -nl "set %v_server_vis%" 
+echo.
+%pycommand% "%listmanager%" -rl "%opt_server%" -ln "17" -nl "Line in config was changed to: "
+echo.
+pause
+goto server
+
+:op_server_video_playback
+cls
+call :logo
+echo ***************************************************************************
+echo DEACTIVATE VIDEO PLAYBACK
+echo ***************************************************************************
+echo Deactivates HLS player for Nintendo.com videos.
+echo This is meant for old computers that may freeze with the HLS javascript 
+echo player
+echo.
+echo Input "1"  to ENABLE video playback
+echo Input "2"  to DISABLE video playback
+echo Input "D"  for default (NOT MINIMIZED)
+echo.
+echo Input "0" to return to CONFIG MENU
+echo Input "b" to return to INTERFACE MENU
+echo Input "e" to go back to the MAIN PROGRAM
+echo.
+set /p bs="Enter your choice: "
+set "v_video_playback=none"
+if /i "%bs%"=="1" set "v_video_playback=true"
+if /i "%bs%"=="2" set "v_video_playback=false"
+if /i "%bs%"=="d" set "v_video_playback=false"
+
+if /i "%bs%"=="0" goto sc1
+if /i "%bs%"=="b" goto interface
+if /i "%bs%"=="e" goto salida
+
+if "%v_video_playback%"=="none" echo WRONG CHOICE
+if "%v_video_playback%"=="none" echo.
+if "%v_video_playback%"=="none" goto op_server_video_playback
+
+set v_video_playback="videoplayback=%v_video_playback%"
+set v_video_playback="%v_video_playback%"
+%pycommand% "%listmanager%" -cl "%opt_server%" -ln "21" -nl "set %v_video_playback%" 
+echo.
+%pycommand% "%listmanager%" -rl "%opt_server%" -ln "21" -nl "Line in config was changed to: "
+echo.
+pause
+goto interface
+
+:op_server_port
+cls
+call :logo
+echo ***************************************************************************
+echo CHOOSE PORT FOR INSTERFACE
+echo ***************************************************************************
+echo. 
+echo Note "rg8000" locates an open port between 8000 an 8999, it allows to open
+echo several inteface windows at the same time. This is the default parameter
+echo.
+echo Input "1" or "d" to set variable to rg8000
+echo or input a PORT NUMBER
+echo.
+echo Input "0" to return to CONFIG MENU
+echo Input "b" to return to INTERFACE MENU
+echo Input "e" to go back to the MAIN PROGRAM
+echo.
+set /p bs="Enter your choice: "
+set "v_server_port=%bs%"
+if /i "%bs%"=="1" set "v_server_port=rg8000"
+if /i "%bs%"=="d" set "v_server_port=rg8000"
+
+if /i "%bs%"=="0" goto sc1
+if /i "%bs%"=="b" goto interface
+if /i "%bs%"=="e" goto salida
+
+set v_server_port="port=%v_server_port%"
+set v_server_port="%v_server_port%"
+
+%pycommand% "%listmanager%" -cl "%opt_server%" -ln "29" -nl "set %v_server_port%" 
+echo.
+%pycommand% "%listmanager%" -rl "%opt_server%" -ln "29" -nl "Line in config was changed to: "
+echo.
+pause
+goto interface
+
+:op_server_host
+cls
+call :logo
+echo ***************************************************************************
+echo CHOOSE PORT FOR INSTERFACE
+echo ***************************************************************************
+echo Localhost. Interface is only visible locally (default)
+echo 0.0.0.0. Inteface can be visible on the same network
+echo.
+echo Input "1" or "D" to setup host as LOCALHOST 
+echo Input "2" to setup host as 0.0.0.0 
+echo.
+echo Input "0" to return to CONFIG MENU
+echo Input "b" to return to INTERFACE MENU
+echo Input "e" to go back to the MAIN PROGRAM
+echo.
+set /p bs="Enter your choice: "
+set "v_server_host=none"
+if /i "%bs%"=="1" set "v_server_host=localhost"
+if /i "%bs%"=="2" set "v_server_host=0.0.0.0"
+if /i "%bs%"=="d" set "v_server_host=localhost"
+
+if /i "%bs%"=="0" goto sc1
+if /i "%bs%"=="b" goto interface
+if /i "%bs%"=="e" goto salida
+
+if "%v_server_host%"=="none" echo WRONG CHOICE
+if "%v_server_host%"=="none" echo.
+if "%v_server_host%"=="none" goto op_server_host
+
+set v_server_host="host=%v_server_host%"
+set v_server_host="%v_server_host%"
+%pycommand% "%listmanager%" -cl "%opt_server%" -ln "36" -nl "set %v_server_host%" 
+echo.
+%pycommand% "%listmanager%" -rl "%opt_server%" -ln "36" -nl "Line in config was changed to: "
+echo.
+pause
+goto interface
+
+:op_server_noconsole
+cls
+call :logo
+echo ***************************************************************************
+echo HIDDEN CONSOLE FOR INTERFACE
+echo ***************************************************************************
+echo NoConsole=True. Hides cmd console and redirects console prints to interface
+echo this is the default parameter.
+echo NoConsole=False. Shows cmd console
+echo.
+echo Input "1" or "D" to setup NOCONSOLE as TRUE
+echo Input "2" to setup NOCONSOLE as FALSE
+echo.
+echo Input "0" to return to CONFIG MENU
+echo Input "b" to return to INTERFACE MENU
+echo Input "e" to go back to the MAIN PROGRAM
+echo.
+set /p bs="Enter your choice: "
+set "v_server_noconsole=none"
+if /i "%bs%"=="1" set "v_server_noconsole=true"
+if /i "%bs%"=="2" set "v_server_noconsole=false"
+if /i "%bs%"=="d" set "v_server_noconsole=true"
+
+if /i "%bs%"=="0" goto sc1
+if /i "%bs%"=="b" goto interface
+if /i "%bs%"=="e" goto salida
+
+if "%v_server_noconsole%"=="none" echo WRONG CHOICE
+if "%v_server_noconsole%"=="none" echo.
+if "%v_server_noconsole%"=="none" goto op_server_noconsole
+
+set v_server_noconsole="noconsole=%v_server_noconsole%"
+set v_server_noconsole="%v_server_noconsole%"
+%pycommand% "%listmanager%" -cl "%opt_server%" -ln "42" -nl "set %v_server_noconsole%" 
+echo.
+%pycommand% "%listmanager%" -rl "%opt_server%" -ln "42" -nl "Line in config was changed to: "
+echo.
+pause
+goto interface
+
+:op_server_ssl
+cls
+call :logo
+echo ***************************************************************************
+echo SSL PROTOCOL
+echo ***************************************************************************
+echo If true the server will be serve via https: if there's a properly signed
+echo certificate.pem and key.pem file in zconfig. If those files are not found
+echo squirrel will fallback to http: 
+echo.
+echo Input "1" or "D" to SSL OFF (DEFAULT)
+echo Input "2" to setup SSL ON
+echo.
+echo Input "0" to return to CONFIG MENU
+echo Input "b" to return to INTERFACE MENU
+echo Input "e" to go back to the MAIN PROGRAM
+echo.
+set /p bs="Enter your choice: "
+set "v_server_SSL=none"
+if /i "%bs%"=="1" set "v_server_SSL=false"
+if /i "%bs%"=="2" set "v_server_SSL=true"
+if /i "%bs%"=="d" set "v_server_SSL=false"
+
+if /i "%bs%"=="0" goto sc1
+if /i "%bs%"=="b" goto interface
+if /i "%bs%"=="e" goto salida
+
+if "%v_server_SSL%"=="none" echo WRONG CHOICE
+if "%v_server_SSL%"=="none" echo.
+if "%v_server_SSL%"=="none" goto op_server_ssl
+
+set v_server_SSL="ssl=%v_server_SSL%"
+set v_server_SSL="%v_server_SSL%"
+%pycommand% "%listmanager%" -cl "%opt_server%" -ln "48" -nl "set %v_server_SSL%" 
+echo.
+%pycommand% "%listmanager%" -rl "%opt_server%" -ln "48" -nl "Line in config was changed to: "
+echo.
+pause
+goto interface
+
+:op_server_defaults
+cls
+call :logo
+::Startup
+set v_interface="start_minimized=no"
+set v_interface="%v_interface%"
+%pycommand% "%listmanager%" -cl "%opt_server%" -ln "17" -nl "set %v_interface%" 
+%pycommand% "%listmanager%" -rl "%opt_server%" -ln "17" -nl "Line in config was changed to: "
+echo.
+::Video playback
+set v_video_playback="videoplayback=true"
+set v_video_playback="%v_video_playback%"
+%pycommand% "%listmanager%" -cl "%opt_server%" -ln "21" -nl "set %v_video_playback%" 
+%pycommand% "%listmanager%" -rl "%opt_server%" -ln "21" -nl "Line in config was changed to: "
+::Port
+set v_interface_port="port=rg8000"
+set v_interface_port="%v_interface_port%"
+%pycommand% "%listmanager%" -cl "%opt_server%" -ln "29" -nl "set %v_interface_port%" 
+%pycommand% "%listmanager%" -rl "%opt_server%" -ln "29" -nl "Line in config was changed to: "
+::Host
+set v_interface_host="host=localhost"
+set v_interface_host="%v_interface_host%"
+%pycommand% "%listmanager%" -cl "%opt_server%" -ln "36" -nl "set %v_interface_host%" 
+%pycommand% "%listmanager%" -rl "%opt_server%" -ln "36" -nl "Line in config was changed to: "
+::NoConsole
+set v_interface_noconsole="noconsole=true"
+set v_interface_noconsole="%v_interface_noconsole%"
+%pycommand% "%listmanager%" -cl "%opt_server%" -ln "42" -nl "set %v_interface_noconsole%" 
+%pycommand% "%listmanager%" -rl "%opt_server%" -ln "42" -nl "Line in config was changed to: "
+::SSL
+set v_server_SSL="ssl=false"
+set v_server_SSL="%v_server_SSL%"
+%pycommand% "%listmanager%" -cl "%opt_server%" -ln "48" -nl "set %v_server_SSL%" 
+%pycommand% "%listmanager%" -rl "%opt_server%" -ln "48" -nl "Line in config was changed to: "
+
+pause
 goto sc1
 
 :salida
@@ -1666,7 +2111,7 @@ ECHO =============================     BY JULESONTHEROAD     ===================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                                POWERED BY SQUIRREL                                "
 ECHO "                    BASED IN THE WORK OF BLAWAR AND LUCA FRAGA                     "
-ECHO                                    VERSION 0.98
+ECHO                                    VERSION 0.99
 ECHO -------------------------------------------------------------------------------------                   
 ECHO Program's github: https://github.com/julesontheroad/NSC_BUILDER
 ECHO Blawar's github:  https://github.com/blawar
