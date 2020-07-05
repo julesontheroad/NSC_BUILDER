@@ -2106,22 +2106,15 @@ echo MTP - CONFIGURATION
 echo ********************************************************
 echo Input "1" to setup VERIFICATION pre-installation
 echo Input "2" to PRIORITIZE NSZ when autoupdating the device
-echo Input "3" to EXCLUDE XCI on the SD when installing updates 
-echo in the AUTOUPDATE function
-echo Input "4" to change between SD and EMMC depending on free 
-echo space when doing installations
-echo Input "5" to check firmware on console before doing 
-echo installations
-echo Input "6" to patch keygeneration of files if the device is
-echo on a lower firmware or skip the installation
-echo Input "7" to check if base content is installed in the device
-echo before attempting installation
-echo Input "8" to check if old or equal update or dlc content is 
-echo installed in the device before attempting installation
+echo Input "3" to EXCLUDE XCI when installing updates in AUTOUPDATE
+echo Input "4" to change between SD and EMMC depending on free space
+echo Input "5" to check firmware on console before doing installations
+echo Input "6" to patch keygeneration of files if needed
+echo Input "7" to check if base content is installed before installation
+echo Input "8" to check if old updates or dlcs are installed before installation
 echo Input "9" to choose folder setup when dumping saves
 echo Input "10" to choose if adding titleid and version to save dumps
-echo Input "11" to choose to add files to the cache remote for`public
-echo links
+echo Input "11" to choose how to add files to the cache remote for public links
 echo.
 echo Input "d" to restore MTP DEFAULTS
 echo Input "0" to return to CONFIG MENU
