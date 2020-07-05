@@ -200,7 +200,7 @@ if %medium%=="none" goto select_medium_wrongchoice
 cls
 call :program_logo
 CD /d "%prog_dir%"
-%pycommand% "%squirrel%" -lib_call mtp.mtp_gdrive loop_install -xarg "%prog_dir%MTP1GD.txt" "destiny=%medium%" "ch_medium=%MTP_aut_ch_medium%" "check_fw=%MTP_chk_fw%" "patch_keygen=%MTP_prepatch_kg%" "ch_base=%MTP_prechk_Base%" "ch_other=%MTP_prechk_Upd%"
+%pycommand% "%squirrel%" -lib_call mtp.mtp_gdrive loop_install -xarg "%prog_dir%MTP1GD.txt" "destiny=%medium%" "%w_folder%" "ch_medium=%MTP_aut_ch_medium%" "check_fw=%MTP_chk_fw%" "patch_keygen=%MTP_prepatch_kg%" "ch_base=%MTP_prechk_Base%" "ch_other=%MTP_prechk_Upd%" "truecopy=%MTP_pdrive_truecopy%"
 echo.
 ECHO ---------------------------------------------------
 ECHO *********** ALL FILES WERE PROCESSED! *************

@@ -32,6 +32,7 @@ import requests
 from Drive import Download as Drv
 from Interface import About
 from workers import concurrent_scrapper
+from mtpinstaller import get_storage_info
 
 if not is_switch_connected():
 	sys.exit("Switch device isn't connected.\nCheck if mtp responder is running!!!")	
@@ -90,13 +91,16 @@ def libraries(tfile):
 					csvheader=row
 					i=1
 				else:
-					dict={}
+					dict_={}
 					for j in range(len(csvheader)):
 						try:
-							dict[csvheader[j]]=row[j]
+							if row[j]==None or row[j]=='':
+								dict[csvheader[j]]=None
+							else:	
+								dict[csvheader[j]]=row[j]
 						except:
 							dict[csvheader[j]]=None
-					db[row[0]]=dict
+					db[row[0]]=dict_
 		# print(db)			
 		return db
 	except: return False
@@ -197,7 +201,7 @@ def select_from_libraries(tfile):
 	if isinstance(paths, list):
 		db={}
 		for i in range(len(paths)):
-			db[paths[i]]={'path':paths[i],'TD_name':TDs[i]}				
+			db[paths[i]]={'path':paths[i],'TD_name':TDs[i]}		
 		files=concurrent_scrapper(filter=filter,order=order,remotelib='all',db=db)
 	else:
 		db={}
@@ -221,9 +225,10 @@ def select_from_libraries(tfile):
 		for f in selected:
 			textfile.write((files[f[1]])[2]+'/'+(files[f[1]])[0]+'\n')
 
-def loop_install(tfile,destiny="SD",outfolder=None,ch_medium=True,check_fw=True,patch_keygen=False,ch_base=False,ch_other=False,checked=False):	
+def loop_install(tfile,destiny="SD",outfolder=None,ch_medium=True,check_fw=True,patch_keygen=False,ch_base=False,ch_other=False,truecopy=True,checked=False):	
 	if not os.path.exists(tfile):
-		sys.exit(f"Couldn't find {tfile}")		
+		sys.exit(f"Couldn't find {tfile}")	
+	from mtpinstaller import retrieve_installed,parsedinstalled
 	if (ch_base==True or ch_other==True) and checked==False:		
 		print("Content check activated")			
 		retrieve_installed()
@@ -235,10 +240,10 @@ def loop_install(tfile,destiny="SD",outfolder=None,ch_medium=True,check_fw=True,
 	for item in file_list:
 		if item.startswith('https://1fichier.com'):
 			print("Item is 1fichier link. Redirecting...")
-			fichier_install(item,destiny)			
+			fichier_install(item,destiny,ch_medium,ch_base=ch_base,ch_other=ch_other,installed_list=installed)			
 		elif item.startswith('https://drive.google.com'):
 			print("Item is google drive public link. Redirecting...")
-			public_gdrive_install(item,destiny)			
+			public_gdrive_install(item,destiny,outfolder=outfolder,ch_medium=ch_medium,check_fw=check_fw,patch_keygen=patch_keygen,ch_base=ch_base,ch_other=ch_other,checked=checked,truecopy=truecopy,installed_list=installed)			
 		elif os.path.exists(item):
 			print("Item is a local link. Skipping...")	
 		else:
@@ -247,7 +252,7 @@ def loop_install(tfile,destiny="SD",outfolder=None,ch_medium=True,check_fw=True,
 			lib,TD,libpath=get_library_from_path(remote_lib_file,item)			
 			if lib!=None:
 				print("Item is a remote library link. Redirecting...")
-				gdrive_install(item,destiny)
+				gdrive_install(item,destiny,outfolder=outfolder,ch_medium=ch_medium,check_fw=check_fw,patch_keygen=patch_keygen,ch_base=ch_base,ch_other=ch_other,checked=checked,installed_list=installed)
 	
 def get_library_from_path(tfile,filename):
 	db=libraries(remote_lib_file)
@@ -278,7 +283,7 @@ def get_library_from_path(tfile,filename):
 		TD=None			
 	return lib,TD,libpath	
 	
-def gdrive_install(filename,destiny="SD"):
+def gdrive_install(filename,destiny="SD",outfolder=None,ch_medium=True,check_fw=True,patch_keygen=False,ch_base=False,ch_other=False,checked=False,installed_list=False):
 	lib,TD,libpath=get_library_from_path(remote_lib_file,filename)
 	ID,name,type,size,md5,remote=DrivePrivate.get_Data(filename,TD=TD,Print=False)
 	# header=DrivePrivate.get_html_header(remote.access_token)
@@ -289,13 +294,100 @@ def gdrive_install(filename,destiny="SD"):
 	ext=name.split('.')
 	ext=ext[-1]
 	if not name.endswith('nsp') and not name.endswith('nsz'):
-		sys.exit(f"Extension not supported for direct instalation {ext} in {name}")			
+		sys.exit(f"Extension not supported for direct instalation {ext} in {name}")	
+	print("- Retrieving Space on device")
+	SD_ds,SD_fs,NAND_ds,NAND_fs,FW,device=get_storage_info()
+	print("- Calculating Installed size")	
+	filesize=int(sz)
+	if destiny=="SD":
+		print(f"  * SD free space: {SD_fs} ({sq_tools.getSize(SD_fs)})")	
+		print(f"  * File size: {filesize} ({sq_tools.getSize(filesize)})")		
+		if filesize>SD_fs:
+			if filesize<NAND_fs and ch_medium==True:
+				print("  Not enough space on SD. Changing target to EMMC")
+				print(f"  * EMMC free space: {NAND_fs} ({sq_tools.getSize(NAND_fs)})")						
+				destiny="NAND"
+			elif  ch_medium==False:	
+				sys.exit("   NOT ENOUGH SPACE SD STORAGE")				
+			else:
+				sys.exit("   NOT ENOUGH SPACE ON DEVICE")				
+	else:
+		print(f"  * EMMC free space: {NAND_fs} ({sq_tools.getSize(NAND_fs)})")	
+		print(f"  * File size: {filesize} ({sq_tools.getSize(filesize)})")		
+		if filesize>NAND_fs:		
+			if filesize<SD_fs and ch_medium==True:
+				print("  Not enough space on EMMC. Changing target to SD")			
+				print(f"  * SD free space: {SD_fs} ({sq_tools.getSize(SD_fs)})")					
+				destiny="SD"
+			elif  ch_medium==False:	
+				sys.exit("   NOT ENOUGH SPACE EMMC STORAGE")							
+			else:
+				sys.exit("   NOT ENOUGH SPACE ON DEVICE")
+	kgwarning=False			
+	if check_fw==True:	
+		cnmtdata,files_list,remote=DriveTools.get_cnmt_data(file=remote)		
+		keygeneration=int(cnmtdata['keygeneration'])
+		if FW!='unknown':	
+			try:
+				FW_RSV,RRSV=sq_tools.transform_fw_string(FW)
+				FW_kg=sq_tools.kg_by_RSV(FW_RSV)
+			except BaseException as e:
+				Print.error('Exception: ' + str(e))
+				FW='unknown'
+				FW_kg='unknown'
+				pass
+		if FW!='unknown' and FW_kg!='unknown':			
+			if int(keygeneration)>int(FW_kg):
+				kgwarning=True
+				tgkg=int(FW_kg)
+			else:
+				tgkg=keygeneration
+		else:
+			tgkg=keygeneration
+		print(f"- Console Firmware: {FW} ({FW_RSV}) - keygen {FW_kg})")		
+		print(f"- File keygeneration: {keygeneration}")				
+		if kgwarning==True:
+			print("File requires a higher firmware. Skipping...")
+			return False	
+	if installed_list!=False:
+		fileid,fileversion,cctag,nG,nU,nD,baseid=listmanager.parsetags(name)
+		fileversion=int(fileversion)
+		if fileid.endswith('000') and fileversion==0 and fileid in installed_list.keys() and ch_base==True:
+			print("Base game already installed. Skipping...")
+			return False	
+		elif fileid.endswith('000') and fileid in installed_list.keys() and ch_other==True:
+			updid=fileid[:-3]+'800'
+			if fileversion>((installed_list[fileid])[2]):
+				print("Asking DBI to delete previous content")
+				process=subprocess.Popen([nscb_mtp,"DeleteID","-ID",fileid])	
+				while process.poll()==None:
+					if process.poll()!=None:
+						process.terminate();					
+				process=subprocess.Popen([nscb_mtp,"DeleteID","-ID",updid])		
+				while process.poll()==None:
+					if process.poll()!=None:
+						process.terminate();					
+			else:
+				print("The update is a previous version than the installed on device.Skipping..")
+				listmanager.striplines(tfile,counter=True)
+				return False		
+		elif ch_other==True	and fileid in installed_list.keys():
+			if fileversion>((installed_list[fileid])[2]):
+				print("Asking DBI to delete previous update")
+				process=subprocess.Popen([nscb_mtp,"DeleteID","-ID",fileid])					
+				while process.poll()==None:
+					if process.poll()!=None:
+						process.terminate();
+			else:
+				print("The update is a previous version than the installed on device.Skipping..")
+				listmanager.striplines(tfile,counter=True)
+				return False						
 	process=subprocess.Popen([nscb_mtp,"DriveInstall","-ori",URL,"-dst",destiny,"-name",name,"-size",sz,"-tk",token])
 	while process.poll()==None:
 		if process.poll()!=None:
 			process.terminate();	
 
-def public_gdrive_install(filepath,destiny="SD",truecopy=True):
+def public_gdrive_install(filepath,destiny="SD",truecopy=True,outfolder=None,ch_medium=True,check_fw=True,patch_keygen=False,ch_base=False,ch_other=False,installed_list=False):
 	lib,TD,libpath=get_cache_lib()
 	if lib==None:
 		sys.exit(f"Google Drive Public Links are only supported via cache folder")	
@@ -308,13 +400,100 @@ def public_gdrive_install(filepath,destiny="SD",truecopy=True):
 	ext=name.split('.')
 	ext=ext[-1]
 	if not name.endswith('nsp') and not name.endswith('nsz'):
-		sys.exit(f"Extension not supported for direct instalation {ext} in {name}")			
+		sys.exit(f"Extension not supported for direct instalation {ext} in {name}")
+	print("- Retrieving Space on device")
+	SD_ds,SD_fs,NAND_ds,NAND_fs,FW,device=get_storage_info()
+	print("- Calculating Installed size")	
+	filesize=int(sz)
+	if destiny=="SD":
+		print(f"  * SD free space: {SD_fs} ({sq_tools.getSize(SD_fs)})")	
+		print(f"  * File size: {filesize} ({sq_tools.getSize(filesize)})")		
+		if filesize>SD_fs:
+			if filesize<NAND_fs and ch_medium==True:
+				print("  Not enough space on SD. Changing target to EMMC")
+				print(f"  * EMMC free space: {NAND_fs} ({sq_tools.getSize(NAND_fs)})")						
+				destiny="NAND"
+			elif  ch_medium==False:	
+				sys.exit("   NOT ENOUGH SPACE SD STORAGE")				
+			else:
+				sys.exit("   NOT ENOUGH SPACE ON DEVICE")				
+	else:
+		print(f"  * EMMC free space: {NAND_fs} ({sq_tools.getSize(NAND_fs)})")	
+		print(f"  * File size: {filesize} ({sq_tools.getSize(filesize)})")		
+		if filesize>NAND_fs:		
+			if filesize<SD_fs and ch_medium==True:
+				print("  Not enough space on EMMC. Changing target to SD")			
+				print(f"  * SD free space: {SD_fs} ({sq_tools.getSize(SD_fs)})")					
+				destiny="SD"
+			elif  ch_medium==False:	
+				sys.exit("   NOT ENOUGH SPACE EMMC STORAGE")							
+			else:
+				sys.exit("   NOT ENOUGH SPACE ON DEVICE")
+	kgwarning=False						
+	if check_fw==True:	
+		cnmtdata,files_list,remote=DriveTools.get_cnmt_data(file=remote)		
+		keygeneration=int(cnmtdata['keygeneration'])
+		if FW!='unknown':	
+			try:
+				FW_RSV,RRSV=sq_tools.transform_fw_string(FW)
+				FW_kg=sq_tools.kg_by_RSV(FW_RSV)
+			except BaseException as e:
+				Print.error('Exception: ' + str(e))
+				FW='unknown'
+				FW_kg='unknown'
+				pass
+		if FW!='unknown' and FW_kg!='unknown':			
+			if int(keygeneration)>int(FW_kg):
+				kgwarning=True
+				tgkg=int(FW_kg)
+			else:
+				tgkg=keygeneration
+		else:
+			tgkg=keygeneration
+		print(f"- Console Firmware: {FW} ({FW_RSV}) - keygen {FW_kg})")		
+		print(f"- File keygeneration: {keygeneration}")				
+		if kgwarning==True:
+			print("File requires a higher firmware. Skipping...")
+			return False		
+	if installed_list!=False:
+		fileid,fileversion,cctag,nG,nU,nD,baseid=listmanager.parsetags(name)
+		fileversion=int(fileversion)
+		if fileid.endswith('000') and fileversion==0 and fileid in installed_list.keys() and ch_base==True:
+			print("Base game already installed. Skipping...")
+			return False	
+		elif fileid.endswith('000') and fileid in installed_list.keys() and ch_other==True:
+			updid=fileid[:-3]+'800'
+			if fileversion>((installed_list[fileid])[2]):
+				print("Asking DBI to delete previous content")
+				process=subprocess.Popen([nscb_mtp,"DeleteID","-ID",fileid])	
+				while process.poll()==None:
+					if process.poll()!=None:
+						process.terminate();					
+				process=subprocess.Popen([nscb_mtp,"DeleteID","-ID",updid])		
+				while process.poll()==None:
+					if process.poll()!=None:
+						process.terminate();					
+			else:
+				print("The update is a previous version than the installed on device.Skipping..")
+				listmanager.striplines(tfile,counter=True)
+				return False		
+		elif ch_other==True	and fileid in installed_list.keys():
+			if fileversion>((installed_list[fileid])[2]):
+				print("Asking DBI to delete previous update")
+				process=subprocess.Popen([nscb_mtp,"DeleteID","-ID",fileid])					
+				while process.poll()==None:
+					if process.poll()!=None:
+						process.terminate();
+			else:
+				print("The update is a previous version than the installed on device.Skipping..")
+				listmanager.striplines(tfile,counter=True)
+				return False			
 	process=subprocess.Popen([nscb_mtp,"DriveInstall","-ori",URL,"-dst",destiny,"-name",name,"-size",sz,"-tk",token])
 	while process.poll()==None:
 		if process.poll()!=None:
 			process.terminate();		
 	
-def fichier_install(url,destiny="SD"):
+def fichier_install(url,destiny="SD",ch_medium=True,ch_base=False,ch_other=False,installed_list=False):
 	if not os.path.exists(_1fichier_token):
 		sys.exit("No 1fichier token setup")
 	with open(_1fichier_token,'rt',encoding='utf8') as tfile:
@@ -340,15 +519,76 @@ def fichier_install(url,destiny="SD"):
 	sz=info_dict['size']
 	name=info_dict['filename']
 	r=session.post('https://api.1fichier.com/v1/download/get_token.cgi',json=download_params,headers=auth)
-	dict=r.json()
-	# print(dict)
+	dict_=r.json()
+	# print(dict_)
 	ext=name.split('.')
 	ext=ext[-1]
 	if not name.endswith('nsp') and not name.endswith('nsz'):
 		sys.exit(f"Extension not supported for direct instalation {ext} in {name}")			
-	if not dict['status']=="OK":
-		sys.exit(f"API call returned {dict['status']}")			
-	URL=dict['url']
+	if not dict_['status']=="OK":
+		sys.exit(f"API call returned {dict_['status']}")			
+	URL=dict_['url']
+	print("- Retrieving Space on device")
+	SD_ds,SD_fs,NAND_ds,NAND_fs,FW,device=get_storage_info()
+	print("- Calculating Installed size")	
+	filesize=int(sz)
+	if destiny=="SD":
+		print(f"  * SD free space: {SD_fs} ({sq_tools.getSize(SD_fs)})")	
+		print(f"  * File size: {filesize} ({sq_tools.getSize(filesize)})")		
+		if filesize>SD_fs:
+			if filesize<NAND_fs and ch_medium==True:
+				print("  Not enough space on SD. Changing target to EMMC")
+				print(f"  * EMMC free space: {NAND_fs} ({sq_tools.getSize(NAND_fs)})")						
+				destiny="NAND"
+			elif  ch_medium==False:	
+				sys.exit("   NOT ENOUGH SPACE SD STORAGE")				
+			else:
+				sys.exit("   NOT ENOUGH SPACE ON DEVICE")				
+	else:
+		print(f"  * EMMC free space: {NAND_fs} ({sq_tools.getSize(NAND_fs)})")	
+		print(f"  * File size: {filesize} ({sq_tools.getSize(filesize)})")		
+		if filesize>NAND_fs:		
+			if filesize<SD_fs and ch_medium==True:
+				print("  Not enough space on EMMC. Changing target to SD")			
+				print(f"  * SD free space: {SD_fs} ({sq_tools.getSize(SD_fs)})")					
+				destiny="SD"
+			elif  ch_medium==False:	
+				sys.exit("   NOT ENOUGH SPACE EMMC STORAGE")							
+			else:
+				sys.exit("   NOT ENOUGH SPACE ON DEVICE")			
+	if installed_list!=False:
+		fileid,fileversion,cctag,nG,nU,nD,baseid=listmanager.parsetags(name)
+		fileversion=int(fileversion)
+		if fileid.endswith('000') and fileversion==0 and fileid in installed_list.keys() and ch_base==True:
+			print("Base game already installed. Skipping...")
+			return False	
+		elif fileid.endswith('000') and fileid in installed_list.keys() and ch_other==True:
+			updid=fileid[:-3]+'800'
+			if fileversion>((installed_list[fileid])[2]):
+				print("Asking DBI to delete previous content")
+				process=subprocess.Popen([nscb_mtp,"DeleteID","-ID",fileid])	
+				while process.poll()==None:
+					if process.poll()!=None:
+						process.terminate();					
+				process=subprocess.Popen([nscb_mtp,"DeleteID","-ID",updid])		
+				while process.poll()==None:
+					if process.poll()!=None:
+						process.terminate();					
+			else:
+				print("The update is a previous version than the installed on device.Skipping..")
+				listmanager.striplines(tfile,counter=True)
+				return False		
+		elif ch_other==True	and fileid in installed_list.keys():
+			if fileversion>((installed_list[fileid])[2]):
+				print("Asking DBI to delete previous update")
+				process=subprocess.Popen([nscb_mtp,"DeleteID","-ID",fileid])					
+				while process.poll()==None:
+					if process.poll()!=None:
+						process.terminate();
+			else:
+				print("The update is a previous version than the installed on device.Skipping..")
+				listmanager.striplines(tfile,counter=True)
+				return False				
 	process=subprocess.Popen([nscb_mtp,"fichierInstall","-ori",URL,"-dst",destiny,"-name",name,"-size",str(sz)])
 	while process.poll()==None:
 		if process.poll()!=None:
@@ -417,13 +657,13 @@ def fichier_transfer(url,destiny="SD"):
 	sz=info_dict['size']
 	name=info_dict['filename']
 	r=session.post('https://api.1fichier.com/v1/download/get_token.cgi',json=download_params,headers=auth)
-	dict=r.json()
-	# print(dict)
+	dict_=r.json()
+	# print(dict_)
 	ext=name.split('.')
 	ext=ext[-1]			
-	if not dict['status']=="OK":
-		sys.exit(f"API call returned {dict['status']}")			
-	URL=dict['url']
+	if not dict_['status']=="OK":
+		sys.exit(f"API call returned {dict_['status']}")			
+	URL=dict_['url']
 	process=subprocess.Popen([nscb_mtp,"fichierTransfer","-ori",URL,"-dst",destiny,"-name",name,"-size",str(sz)])
 	while process.poll()==None:
 		if process.poll()!=None:

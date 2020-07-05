@@ -69,7 +69,10 @@ def libraries(tfile):
 					dict={}
 					for j in range(len(csvheader)):
 						try:
-							dict[csvheader[j]]=row[j]
+							if row[j]==None or row[j]=='':
+								dict[csvheader[j]]=None
+							else:	
+								dict[csvheader[j]]=row[j]
 						except:
 							dict[csvheader[j]]=None
 					db[row[0]]=dict

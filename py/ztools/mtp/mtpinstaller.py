@@ -144,6 +144,30 @@ def install(filepath=None,destiny="SD",verification=True,outfolder=None,ch_mediu
 	print("- Calculating Installed size")	
 	dbDict=get_DB_dict(filepath)
 	installedsize=dbDict['InstalledSize']	
+	if destiny=="SD":
+		print(f"  * SD free space: {SD_fs} ({sq_tools.getSize(SD_fs)})")	
+		print(f"  * File installed size: {installedsize} ({sq_tools.getSize(installedsize)})")		
+		if installedsize>SD_fs:
+			if installedsize<NAND_fs and ch_medium==True:
+				print("  Not enough space on SD. Changing target to EMMC")
+				print(f"  * EMMC free space: {NAND_fs} ({sq_tools.getSize(NAND_fs)})")						
+				destiny="NAND"
+			elif  ch_medium==False:	
+				sys.exit("   NOT ENOUGH SPACE SD STORAGE")				
+			else:
+				sys.exit("   NOT ENOUGH SPACE ON DEVICE")				
+	else:
+		print(f"  * EMMC free space: {NAND_fs} ({sq_tools.getSize(NAND_fs)})")	
+		print(f"  * File installed size: {installedsize} ({sq_tools.getSize(installedsize)})")		
+		if installedsize>NAND_fs:		
+			if installedsize<SD_fs and ch_medium==True:
+				print("  Not enough space on EMMC. Changing target to SD")			
+				print(f"  * SD free space: {SD_fs} ({sq_tools.getSize(SD_fs)})")					
+				destiny="SD"
+			elif  ch_medium==False:	
+				sys.exit("   NOT ENOUGH SPACE EMMC STORAGE")							
+			else:
+				sys.exit("   NOT ENOUGH SPACE ON DEVICE")	
 	if check_fw==True:	
 		keygeneration=dbDict['keygeneration']
 		if FW!='unknown':	
@@ -171,30 +195,6 @@ def install(filepath=None,destiny="SD",verification=True,outfolder=None,ch_mediu
 	elif kgwarning==True and patch_keygen==True: 	
 		print("File requires a higher firmware. It'll will be prepatch")
 		dopatch=True	
-	if destiny=="SD":
-		print(f"  * SD free space: {SD_fs} ({sq_tools.getSize(SD_fs)})")	
-		print(f"  * File installed size: {installedsize} ({sq_tools.getSize(installedsize)})")		
-		if installedsize>SD_fs:
-			if installedsize<NAND_fs and ch_medium==True:
-				print("  Not enough space on SD. Changing target to EMMC")
-				print(f"  * EMMC free space: {NAND_fs} ({sq_tools.getSize(NAND_fs)})")						
-				destiny="NAND"
-			elif  ch_medium==False:	
-				sys.exit("   NOT ENOUGH SPACE SD STORAGE")				
-			else:
-				sys.exit("   NOT ENOUGH SPACE ON DEVICE")				
-	else:
-		print(f"  * EMMC free space: {NAND_fs} ({sq_tools.getSize(NAND_fs)})")	
-		print(f"  * File installed size: {installedsize} ({sq_tools.getSize(installedsize)})")		
-		if installedsize>NAND_fs:		
-			if installedsize<SD_fs and ch_medium==True:
-				print("  Not enough space on EMMC. Changing target to SD")			
-				print(f"  * SD free space: {SD_fs} ({sq_tools.getSize(SD_fs)})")					
-				destiny="SD"
-			elif  ch_medium==False:	
-				sys.exit("   NOT ENOUGH SPACE EMMC STORAGE")							
-			else:
-				sys.exit("   NOT ENOUGH SPACE ON DEVICE")
 	if filepath.endswith('xci') or dopatch==True:
 		install_converted(filepath=filepath,outfolder=outfolder,destiny=destiny,kgpatch=dopatch,tgkg=keygeneration)
 		return	
