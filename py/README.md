@@ -1,4 +1,5 @@
 # Nintendo Switch Cleaner and Builder (NSC_Builder)
+![DeviceTag](https://img.shields.io/badge/Device-SWITCH-e60012.svg)       ![LanguageTag](https://img.shields.io/badge/languages-python_batch_html5_javascript-blue.svg)
 https://github.com/julesontheroad/NSC_BUILDER 
 
 ## 1. Description
@@ -60,9 +61,27 @@ Current version of the program allows you to:
 
 21.- Compression of nsp files into .nsz files 
 
-22.- Graphical interface for file information trough a gui running on chromium\chrome
+22.- Graphical interface for file information trough a gui running on chromium\chrome for local files and files on google drive
 
 23.- Restoration of nsp\xci modified with NSC_Builder to their original game nca files.
+
+## 3.1 With the help of DBI installer it can:
+
+24.- Install or transfer files to mtp via switch locally, from google drive (auth and links) or from 1fichier
+
+25.- Generate and transfer xcis and multicontent xcis from pc to switch
+
+26.- Autoupdate your Nintendo Switch locally or from google drive
+
+27- Search new updates and dlcs for your installed games via nutdb for your installed games and xci in the gamecard
+
+28- Dump your saves or games from your Nintendo Switch
+
+29- Uninstall your games and delete archived games/placeholders
+
+30- Generate and transfer SX autoloader files for automounting your xcis for SD and HDD locations for scannable locations and non scannable by SX OS
+
+31- Cleanup duplicated SX OS autoloader files to avoid collision between SD and HDD files
 
 ## 4. Batch modes:
 
@@ -89,26 +108,57 @@ The behavior of the auto-mode is configured trough the “Configuration menu in 
   * Process previous jobs
 - MODE 3: Multi-Content-Splitter. Let’s you separate content to nsp and xci files.
 - MODE 4: File-Info. Let’s you see and export several info about nsp and xci files
-  * 1. Data about included files in nsp\xci
-  * 2. Data about content ids in file
-  * 3. Nut info as implemented by nut by blawar
-  * 4. Information about firmware requirements and other game data
-  * 5. Read cnmt file from meta nca
-  * 6. Read nacp file from control nca
-  * 7. Read npdm file from program nca 
-  * 8. Verify files with ability of detecting NSCB changes over them
+  * Data about included files in nsp\xci
+  * Data about content ids in file
+  * Nut info as implemented by nut by blawar
+  * Information about firmware requirements and other game data
+  * Read cnmt file from meta nca
+  * Read nacp file from control nca
+  * Read npdm file from program nca 
+  * Verify files with ability of detecting NSCB changes over them
 - MODE 5: Database Mode. Let’s you mass output information
 - MODE 6: Advanced Mode.
-  * 1. Extracts all contents from a nsp\xci
-  * 2. Extracts all contents from a nsp\xci in raw mode
-  * 3. Extracts all contents from a nsp\xci in plaintext
-  * 4. Extracts files from nca inside a nsp\xci  
+  * Extracts all contents from a nsp\xci
+  * Extracts all contents from a nsp\xci in raw mode
+  * Extracts all contents from a nsp\xci in plaintext
+  * Extracts files from nca inside a nsp\xci  
+  * Patches a game that requires s link sccount
 - MODE 7: File joiner mode. Joins fat32 splitted files  
 - MODE 8: Compression\Decompression
-  * 1. Compress nsp files into nsz format
-  * 2. Decompress nsz files into nsp files
+  * Compress nsp files into nsz format
+  * Decompress nsz files into nsp files
+- MODE 9: File Restoration Mode. Restores modified files that are verifiable
 - L: Legacy Mode. Old functions
-
+- D: GOOGLE DRIVE MODE:
+  * Download Files from google drive
+    * Normal Download Function
+    * Search filter and library selection
+    * Download xci files trimmed or supertrimmed
+    * Download nsz files decompressed
+  * Check information about the files
+- M: MTP MODE
+  * Game installation from local files or remote libraries
+  * File transfer from local files or remote libraries
+    * Normal transfer
+    * Generate xci and transfer
+    * Generate multi-xci and transfer
+  * Autoupdate the device via local libraries or google drive libraries
+  * Dump or uninstall files
+    * Dump installed content from the device to the pc
+    * Uninstall installed content on the device
+    * Delete archived games or placeholders entries from pc
+  * Backup Savegames in zips following JKSV format
+  * Show device information
+    * Device information shared via mtp
+    * Show installed games and xci on device
+    * Show new updates and dlc for installed games and xci on device. For accuracy xci has to follow NSCB format including the content_number tags
+    * Show archived games/placeholders registries
+    * Show list of available updates and dlcs for archived games
+  * Generate SX autoloader files
+    * Generate files for xci on the sd
+    * Generate files for xci in a hdd, optionally push and run a collision check with the SD files
+    * Push SX autoloader files from library folder
+    * Run collision check, cleanup unused SD autoloader files, cleanup colliding autoloader files pointing to HDD (In case a xci with that id is already in the SD)
 ## 6. Configuration mode:
 ### Auto Mode options. (Affects only Auto-Mode)
 #### REPACK configuration
@@ -251,11 +301,13 @@ https://github.com/digableinc/tinfoil
   A friend can lend you the needed keys.
   If you want to add the xci_header_key a friend will need to lend it to you.
   https://github.com/shchmue/Lockpick/releases
+- The mtp function requires 4.0 or upper but was built with 4.7.2 net frameworks as target. Recommended versions of net frameworks are 4.7.2 and 4.8.0
 
 ## 11. Limitations 
 - You can't make multi-content xci files with more than 8 games. It'll give error when loading in horizon. I suspect it may be a qlauncher limitation so it could work with theme mods but INTRO didn't test it.
 Note: This means “games”, updates and dl car not hold by that limitation.
 - Title-rights remove dlcs give a message prompt of incomplete content for some games from 6.0 onwards, that message can be skipped and the dlcs will work fine despite the prompt.
+- Currently the mtp mode can't patch\convert games on the fly, it requires implementing the ability of patching streams or send the files via sockets from squirrel. One of the 2 options will be implemented in the future.
 
 ## 12. Thanks and credits to 
 
@@ -270,13 +322,21 @@ b.) Hacbuild: The xci repacking functions are based on hacbuild's code, made by 
 
 - Revised hacbuild by me: https://github.com/julesontheroad/hacbuild
 
-c.) nsz,xcz and ncz specification by blawar: https://github.com/blawar/nsz
+c.) The mtp mode relies heavily on DBI installer from  Rashevskyv and the Keffir team. Specifically it was tested with DBI 1.25
 
-d.) Big thx to 0Liam for his constant help.
+- DBI is included in keffir CFW pack: https://github.com/rashevskyv/switch/releases
 
-e.) pyNCA3,pyNPDM,pyPFS0,pyRomFS libraries adapted from pythac (made by Rikikooo)
+- DBI 1.25 is first included in this release: https://github.com/rashevskyv/switch/releases/tag/456
 
-f.) an adaptation of Pysos from dagnelies is used for some operations: https://github.com/dagnelies/pysos
+- A copy od DBI can also be found as nro and nsp in the NSCB master's folder called "DBI"
+
+d.) nsz,xcz and ncz specification by blawar: https://github.com/blawar/nsz
+
+e.) Big thx to 0Liam for his constant help.
+
+f.) pyNCA3,pyNPDM,pyPFS0,pyRomFS libraries adapted from pythac (made by Rikikooo)
+
+g.) an adaptation of Pysos from dagnelies is used for some operations: https://github.com/dagnelies/pysos
 
 Also thanks to:
 
