@@ -375,6 +375,8 @@ function onFailed(error) {
 <!-- xhr.send(); -->
 <!-- } -->
 
+
+
 eel.expose(browser_download);
 function browser_download(url,token){
 	console.log(url)
@@ -407,6 +409,12 @@ function downloadFile(blob)
     a.click();
     window.URL.revokeObjectURL(url);
 }
+
+
+
+
+
+
 
 async function start2_remote(fname){
 	console.log(fname)
