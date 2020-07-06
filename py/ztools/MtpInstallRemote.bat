@@ -121,8 +121,6 @@ if /i "%eval%"=="e" goto salida
 if /i "%eval%"=="i" goto showlist
 if /i "%eval%"=="r" goto r_files
 if /i "%eval%"=="z" del "%prog_dir%MTP1GD.txt"
-if /i "%eval%"=="1" goto MAIN
-if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call mtp.mtp_gdrive select_from_libraries -xarg "%prog_dir%MTP1GD.txt" )
 echo.
 goto checkagain
 

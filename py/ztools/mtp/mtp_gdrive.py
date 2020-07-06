@@ -172,7 +172,21 @@ def pick_order():
 	if selected[0]==False:
 		return False
 	order=selected[0]
-	return order			
+	return order		
+
+def interface_filter_local(filelist,Print=False):
+	title = 'Add a search filter?: '
+	options = ['Yes','No']	
+	selected = pick(options, title, min_selection_count=1)
+	response=selected[0]
+	if response=='No':
+		return filelist
+	else:
+		clear_Screen()
+		About()
+		ck=input('INPUT SEARCH FILTER: ')
+		filelist=listmanager.filter_vlist(filelist,token=ck,Print=False)
+	return filelist	
 	
 def eval_link(link,tfile,userfile):	
 	link=input("Enter your choice: ")
@@ -299,7 +313,8 @@ def select_from_cache(tfile):
 		options=sorted(cachedict,key=lambda x:cachedict[x]['date'])
 	elif order=='date_descending':	
 		options=sorted(cachedict,key=lambda x:cachedict[x]['date'])
-		options.reverse()				
+		options.reverse()	
+	options=interface_filter_local(options)	
 	print("  * Entering File Picker")	
 	title = 'Select content to install or transfer: \n + Press space or right to select content \n + Press E to finish selection'
 	picker = Picker(options, title, multi_select=True, min_selection_count=1)
