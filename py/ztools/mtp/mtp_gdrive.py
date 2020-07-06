@@ -337,7 +337,6 @@ def loop_install(tfile,destiny="SD",outfolder=None,ch_medium=True,check_fw=True,
 	from mtpinstaller import retrieve_installed,parsedinstalled
 	installed=[]
 	if ch_base==True or ch_other==True:
-		print("here")
 		if checked==False:		
 			print("Content check activated")			
 			retrieve_installed()
