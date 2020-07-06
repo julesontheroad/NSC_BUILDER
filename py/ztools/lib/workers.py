@@ -8,7 +8,6 @@ except:
 	import json
 import subprocess
 
-
 squirrel_dir=os.path.abspath(os.curdir)
 NSCB_dir=os.path.abspath('../'+(os.curdir))
 
@@ -46,7 +45,6 @@ remote_lib_cache=os.path.join(zconfig_dir, 'remote_lib_cache')
 if not os.path.exists(remote_lib_cache):
 	os.makedirs(remote_lib_cache)
 
-	
 def back_check_files():		
 	templog=os.path.join(debug_folder,'temp.txt')
 	import sys	
