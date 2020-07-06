@@ -80,7 +80,7 @@ setlocal enabledelayedexpansion
 echo+ >"%uinput%"
 endlocal
 if /i "%eval%"=="0" goto MAIN
-if /i "%eval%"=="1" ( %pycommand% "%squirrel%" -lib_call mtp.mtp_gdrive select_from_cache -xarg "%prog_dir%MTP1GD.txt" )
+if /i "%eval%"=="1" ( %pycommand% "%squirrel%" -lib_call mtp.mtp_gdrive select_from_cache -xarg "%prog_dir%MTP2GD.txt" )
 if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call mtp.mtp_gdrive select_from_libraries -xarg "%prog_dir%MTP2GD.txt" )
 if /i "%eval%"=="c" ( %pycommand% "%squirrel%" -lib_call workers concurrent_cache )
 echo.
@@ -114,7 +114,7 @@ echo+ >"%uinput%"
 endlocal
 if /i "%eval%"=="0" goto MAIN
 if /i "%eval%"=="1" goto START_TRANSFER
-if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call mtp.mtp_gdrive select_from_cache -xarg "%prog_dir%MTP1GD.txt" )
+if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call mtp.mtp_gdrive select_from_cache -xarg "%prog_dir%MTP2GD.txt" )
 if /i "%eval%"=="3" ( %pycommand% "%squirrel%" -lib_call mtp.mtp_gdrive select_from_libraries -xarg "%prog_dir%MTP2GD.txt" )
 if /i "%eval%"=="c" ( %pycommand% "%squirrel%" -lib_call workers concurrent_cache )
 if /i "%eval%"=="e" goto salida

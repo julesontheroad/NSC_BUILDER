@@ -174,7 +174,7 @@ def pick_order():
 	order=selected[0]
 	return order		
 
-def interface_filter_local(filelist,Print=False):
+def interface_filter_local(filelist):
 	title = 'Add a search filter?: '
 	options = ['Yes','No']	
 	selected = pick(options, title, min_selection_count=1)
@@ -335,13 +335,16 @@ def loop_install(tfile,destiny="SD",outfolder=None,ch_medium=True,check_fw=True,
 	if not os.path.exists(tfile):
 		sys.exit(f"Couldn't find {tfile}")	
 	from mtpinstaller import retrieve_installed,parsedinstalled
-	if (ch_base==True or ch_other==True) and checked==False:		
-		print("Content check activated")			
-		retrieve_installed()
-		installed=parsedinstalled()		
-	elif (ch_base==True or ch_other==True) and checked==True:	
-		print("Content check activated. Games are preparsed")		
-		installed=parsedinstalled()		
+	installed=[]
+	if ch_base==True or ch_other==True:
+		print("here")
+		if checked==False:		
+			print("Content check activated")			
+			retrieve_installed()
+			installed=parsedinstalled()		
+		elif checked==True:
+			print("Content check activated. Games are preparsed")		
+			installed=parsedinstalled()		
 	file_list=listmanager.read_lines_to_list(tfile,all=True)	
 	for item in file_list:
 		if item.startswith('https://1fichier.com'):
@@ -716,7 +719,9 @@ def gdrive_transfer(filename,destiny="SD"):
 	URL='https://www.googleapis.com/drive/v3/files/'+remote.ID+'?alt=media'	
 	ext=name.split('.')
 	ext=ext[-1]
-	file_size=int(sz)
+	file_size=int(sz)	
+	print("- Retrieving Space on device")
+	SD_ds,SD_fs,NAND_ds,NAND_fs,FW,device=get_storage_info()
 	print(f"  * SD free space: {SD_fs} ({sq_tools.getSize(SD_fs)})")	
 	print(f"  * File installed size: {file_size} ({sq_tools.getSize(file_size)})")		
 	if file_size>SD_fs:
@@ -743,6 +748,8 @@ def public_gdrive_transfer(filepath,destiny="SD",truecopy=True):
 	ext=name.split('.')
 	ext=ext[-1]		
 	file_size=int(sz)
+	print("- Retrieving Space on device")
+	SD_ds,SD_fs,NAND_ds,NAND_fs,FW,device=get_storage_info()	
 	print(f"  * SD free space: {SD_fs} ({sq_tools.getSize(SD_fs)})")	
 	print(f"  * File installed size: {file_size} ({sq_tools.getSize(file_size)})")		
 	if file_size>SD_fs:

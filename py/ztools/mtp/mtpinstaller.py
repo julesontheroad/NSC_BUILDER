@@ -24,6 +24,8 @@ from colorama import Fore, Back, Style
 import time
 from python_pick import pick
 from python_pick import Picker
+from secondary import clear_Screen
+from Interface import About
 if not is_switch_connected():
 	sys.exit("Switch device isn't connected.\nCheck if mtp responder is running!!!")	
 	
@@ -65,6 +67,117 @@ games_installed_cache=os.path.join(cachefolder, 'games_installed.txt')
 mtp_source_lib=os.path.join(zconfig_dir,'mtp_source_libraries.txt')
 mtp_internal_lib=os.path.join(zconfig_dir,'mtp_SD_libraries.txt')
 storage_info=os.path.join(cachefolder, 'storage.csv')
+
+def search_with_filter(folder_paths,mode='installer'):
+	if mode=='installer':
+		extlist=['nsp','nsz','xci','xcz']
+	else:
+		extlist='all'
+	filepaths=[]
+	title = 'Add a search filter?: '
+	options = ['Yes','No']	
+	selected = pick(options, title, min_selection_count=1)
+	response=selected[0]
+	if response=='No':
+		for fo in folder_paths:
+			rlist=listmanager.folder_to_list(fo,extlist)
+			filepaths=[*filepaths,*rlist]
+		return filepaths
+	else:
+		clear_Screen()
+		About()
+		ck=input('INPUT SEARCH FILTER: ')
+		for fo in folder_paths:
+			rlist=listmanager.folder_to_list(fo,extlist,ck)
+			filepaths=[*filepaths,*rlist]		
+		return filepaths
+		
+def pick_order():
+	title = 'Select order to list the files: \n + Press enter or intro to select \n + Press E to scape back to menu'
+	options = ['name_ascending','name_descending','size_ascending','size_descending','date_ascending','date_descending']
+	picker = Picker(options, title, min_selection_count=1)	
+	def end_selection(picker):
+		return False,-1	
+	picker.register_custom_handler(ord('e'),  end_selection)
+	picker.register_custom_handler(ord('E'),  end_selection)		
+	selected = picker.start()	
+	if selected[0]==False:
+		return False
+	order=selected[0]
+	return order			
+
+def select_from_local_libraries(tfile,mode='installer'):	
+	if not os.path.exists(mtp_source_lib):
+		sys.exit("mtp_source_libraries.txt")
+	db=get_libs()
+	title = 'Select libraries to search:  \n + Press space or right to select content \n + Press E to finish selection \n + Press A to select all libraries'
+	folder_paths= []
+	options=[]
+	for k in db:
+		options.append(k)
+	picker = Picker(options, title,multi_select=True,min_selection_count=1)	
+	def end_selection(picker):
+		return False,-1	
+	def select_all(picker):
+		return True,options
+	picker.register_custom_handler(ord('e'),  end_selection)
+	picker.register_custom_handler(ord('E'),  end_selection)	
+	picker.register_custom_handler(ord('a'),  select_all)
+	picker.register_custom_handler(ord('A'),  select_all)	
+	selected = picker.start()	
+	if selected[0]==False:
+		print("User didn't select any libraries")
+		return False,False		
+	if selected[0]==True:	
+		for k in db.keys():
+			folder_paths.append((db[k])[0])
+	else:
+		for entry in selected:
+			folder_paths.append((db[entry[0]])[0])
+	order=pick_order()
+	if order==False:
+		return False				
+	filepaths=search_with_filter(folder_paths,mode)
+	filedata={}
+	for file in filepaths:
+		try:
+			fname=os.path.basename(file)
+			fsize=os.path.getsize(file)
+			fdate=os.path.getctime(file)
+			entry={'filepath':file,'filename':fname,'size':fsize,'date':fdate}
+			if not fname in filedata:
+				filedata[fname]=entry
+		except:pass		
+	options=[]	
+	if order=='name_ascending':
+		options=sorted(filedata,key=lambda x:filedata[x]['filename'])
+	elif order=='name_descending':	
+		options=sorted(filedata,key=lambda x:filedata[x]['filename'])
+		options.reverse()
+	elif order=='size_ascending':
+		options=sorted(filedata,key=lambda x:filedata[x]['size'])
+	elif order=='size_descending':	
+		options=sorted(filedata,key=lambda x:filedata[x]['size'])
+		options.reverse()	
+	elif order=='date_ascending':
+		options=sorted(filedata,key=lambda x:filedata[x]['date'])
+	elif order=='date_descending':	
+		options=sorted(filedata,key=lambda x:filedata[x]['date'])
+		options.reverse()	
+	print("  * Entering File Picker")	
+	title = 'Select content to install or transfer: \n + Press space or right to select content \n + Press E to finish selection'
+	picker = Picker(options, title, multi_select=True, min_selection_count=1)
+	def end_selection(picker):
+		return False,-1
+	picker.register_custom_handler(ord('e'),  end_selection);picker.register_custom_handler(ord('E'),  end_selection)
+	selected=picker.start()
+	if selected[0]==False:
+		print("    User didn't select any files")
+		return False
+	with open(tfile,'a') as  textfile:		
+		for f in selected:
+			fpath=(filedata[f[0]])['filepath']		
+			textfile.write(fpath+'\n')
 
 def file_verification(filename,hash=False):
 	if not os.path.exists(cachefolder):
@@ -264,13 +377,14 @@ def install_converted(filepath=None,outfolder=None,destiny="SD",kgpatch=False,tg
 def loop_install(tfile,destiny="SD",verification=True,outfolder=None,ch_medium=True,check_fw=True,patch_keygen=False,ch_base=False,ch_other=False,checked=False):		
 	if not os.path.exists(tfile):
 		sys.exit(f"Couldn't find {tfile}")		
-	if (ch_base==True or ch_other==True) and checked==False:		
-		print("Content check activated")			
-		retrieve_installed()
-		installed=parsedinstalled()
-	elif (ch_base==True or ch_other==True) and checked==True:	
-		print("Content check activated. Games are preparsed")		
-		installed=parsedinstalled()	
+	if ch_base==True or ch_other==True:
+		if checked==False:		
+			print("Content check activated")			
+			retrieve_installed()
+			installed=parsedinstalled()
+		elif checked==True:	
+			print("Content check activated. Games are preparsed")		
+			installed=parsedinstalled()	
 	file_list=listmanager.read_lines_to_list(tfile,all=True)
 	for item in file_list:
 		if ch_base==True or ch_other==True:

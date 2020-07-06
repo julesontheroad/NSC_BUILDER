@@ -143,7 +143,7 @@ More information about DBI here:
 
   * **mtp_source_libraries_example.txt > mtp_source_libraries.txt**    
 
-    > Libraries to setup the local folders from your pc that will be used by the autoupdate function to search for new files, when used in local mode.
+    > Libraries to setup the local folders from your pc that will be used by the autoupdate function to search for new files, as well as with the install and transfer functions.
 
     Setup: **library_name|path|Update**
 
