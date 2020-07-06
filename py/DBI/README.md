@@ -5,7 +5,7 @@ https://github.com/rashevskyv/switch/releases/tag/456
 
 DBI is a installer in a similar fashion as old tinfoil by Adubbz with extended functions and a MTP responder mode that allows access to the Nintendo Switch via the MTP protocol to transfer files between Switch and pc and to get several information from the switch like installed games, storage used, firmware on the Switch, etc...
 
-Included is the tested 1.25 version of DBI + an nsp that includes the full romfs (not a redirector), use what you prefer but the nsp allows going home without closing the install, is safer to the nand and can be overclocked with sys-clk to improve performance.
+Included is the tested 1.25 version of DBI + a nsp that includes the full romfs (not a redirector), use what you prefer but the nsp allows going home without closing the install, is safer to the nand and can be overclocked with sys-clk to improve performance.
 
 ## 2. Why do you include this on your github?
 
@@ -94,13 +94,29 @@ Other interesting function that NSCB makes use of is to search for new updates o
 
     > Libraries to setup the dumps and savegames and in general files the pc receives from the Switch.
 
+    Setup: **library_name|path**
+
+    Example: **Dumps|C:\Dumps**
+
   * **mtp_SD_libraries_example.txt > mtp_SD_libraries.txt**    
 
     > Libraries to setup the folders in which the switch will receive files pushed with the transfer function.
 
+    Setup: **library_name|path**
+
+    Example: **SD_XCI|1: External SD Card\sxos\xci**
+
+   As you can see the SD locations starts with **1: External SD Card\** this is the name of the SD mount DBI makes on your pc, start your locations on the sd with that string.
+
   * **mtp_source_libraries_example.txt > mtp_source_libraries.txt**    
 
     > Libraries to setup the local folders from your pc that will be used by the autoupdate function to search for new files, when used in local mode.
+
+    Setup: **library_name|path|Update**
+
+    Example: **BASE|C:\NSP\BASE|FALSE** or **UPDATES|C:\NSP\UPDATES|TRUE**
+
+   As you can see a **Update** parameter is added, this sets up what folders are scanned in the autoupdate function. If **TRUE** the folder is scanned if **FALSE** it won't get scanned. The non scanned libraries will get used by the installer and transfer mode in the future.
 
   * **remote_libraries_example.txt > remote_libraries.txt**    
 
@@ -108,9 +124,25 @@ Other interesting function that NSCB makes use of is to search for new updates o
 
     > It will also be used in the NSCB Drive Mode and in the library function from NSCB Web Interface.
 
+    Setup: **library_name|path|TD_name|Update**
+
+    Example: **BASE|drive:/base|TD_Name|FALSE** or **UPD|drive:/updates|None|TRUE**
+
+  The **Update** parameter sets up what folders are scanned in the autoupdate function. If **TRUE** the folder is scanned if **FALSE** it won't get scanned. The non scanned libraries are used by the remote installer and remote transfer functions.
+
+  The **TD** parameter is used when your files or folders are in a TeamDrive or Shared Drives as are called currently. If your files aren't in a TD input **None** there or **||**. With double bar it'll look as  **UPD|drive:/updates||TRUE**
+
+  Remember that **drive** is your token name.
+
   * **remote_cache_location_example.txt > remote_cache_location.txt**    
 
     > Folder in your google drive account where public files are stored to avoid quota and get a better support on the google drive API. Is recommended for the Interface and required for the mtp mode when using public links.
+
+    Setup: **library_name|path|TD_name**
+
+    Example: **cache|token:/cache|** or **cache|drive:/cache|TDName**
+
+    As you can see if you don't have a TD just add a **|** at the end, you can also add **None** if you have a TD add your TeamDrive name.
 
 ## 6. How to setup auth for google drive
 To enable the google drive api you need to go here https://developers.google.com/drive/api/v3/quickstart/python and press on **Enable the drive api**, select **Desktop App**, press **Create** and the press **Download Client Configuration**, you'll get a credentials json.
@@ -133,7 +165,9 @@ To get the token you need a 1fichier account, then in this page https://1fichier
 
 During the initial testings I couldn't get tinfoil to be recognize by the api, unlike nx-mtp and DBI installer. This changed by using the driver present in this nut released:
 https://github.com/blawar/nut/releases/tag/v2.7
+
 Either way even with the driver I had issues in several functions, and my installer just makes tinfoil hang up so the support is limited to the info functions, which will tell you the new updates for the device if using tinfoil.
+
 Future versions may support tinfoil with a mixed approach by using the usb installation protocol to install and the mtp api to get console information.
 
 ## 9. Limitations
