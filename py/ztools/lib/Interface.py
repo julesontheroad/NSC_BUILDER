@@ -77,7 +77,6 @@ else:
 	chromiumdir=os.path.join(ztools_dir, 'chromium')
 	chromiumpath=os.path.join(chromiumdir, 'chrome')	
 
-
 local_lib_file = os.path.join(zconfig_dir, 'local_libraries.txt')
 remote_lib_file = os.path.join(zconfig_dir, 'remote_libraries.txt')
 cache_lib_file= os.path.join(zconfig_dir, 'remote_cache_location.txt')
@@ -112,16 +111,20 @@ def libraries(tfile):
 					csvheader=row
 					i=1
 				else:
-					dict={}
+					dict_={}
 					for j in range(len(csvheader)):
 						try:
-							dict[csvheader[j]]=row[j]
+							if row[j]==None or row[j]=='':
+								dict_[csvheader[j]]=None
+							else:	
+								dict_[csvheader[j]]=row[j]
 						except:
-							dict[csvheader[j]]=None
-					db[row[0]]=dict
+							dict_[csvheader[j]]=None
+					db[row[0]]=dict_
 		# print(db)			
 		return db
-	except: 
+	except BaseException as e:
+		Print.error('Exception: ' + str(e))
 		return False
 
 def get_library_from_path(tfile,filename):
@@ -579,6 +582,16 @@ def call_get_verification_data(filename,remotelocation=False):
 	threads.append(eel.spawn(getverificationdata,filename,remotelocation))	
 	return	
 	
+@eel.expose
+def download(filename,remotelocation=False):
+	filename=html.unescape(filename)
+	lib,TD,libpath=get_library_from_path(remote_lib_file,filename)
+	ID,name,type,size,md5,remote=DrivePrivate.get_Data(filename,TD=TD,Print=False)
+	# header=DrivePrivate.get_html_header(remote.access_token)
+	token=remote.access_token
+	URL='https://www.googleapis.com/drive/v3/files/'+remote.ID+'?alt=media'		
+	eel.browser_download(URL,token)
+
 def showicon(filename):
 	filename=html.unescape(filename)
 	# global globalocalpath;

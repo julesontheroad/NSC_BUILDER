@@ -75,7 +75,9 @@ def read_lines_to_list(textfile,number=1,all=False):
 	return 	filelist		
 	
 def filter_list(textfile,ext=False,token=False,Print=True):
-	ext=ext.split(' ')	
+	try:
+		ext=ext.split(' ')	
+	except:pass
 	if ext==False and token==False and not textfile.endswith('.txt'):
 		if Print==True:
 			print("List wasn't filtered")
@@ -126,6 +128,27 @@ def filter_list(textfile,ext=False,token=False,Print=True):
 					continue	
 		if Print==True:							
 			print("List was filtered")		
+			
+def filter_vlist(inputlist,ext=False,token=False,Print=True):
+	filelist=list()
+	i=0	
+	if ext!=False:	
+		for line in inputlist:			
+			fp=line.strip()	
+			for xt in extlist:
+				if (fp.lower()).endswith(xt.lower()):
+					filelist.append(fp)	
+		if Print==True:									
+			for xt in extlist:
+				print(" - Added items matching extension {}".format(xt))					
+	if token!=False:	
+		for line in inputlist:			
+			fp=line.strip()	
+			if token.lower() in fp.lower():
+				filelist.append(fp)		
+		if Print==True:								
+			print(" - Added items matching search {}".format(token))				
+	return filelist				
 			
 	
 def remove_from_list(textfile,ext=False,token=False,Print=True):
@@ -183,6 +206,7 @@ def remove_from_list(textfile,ext=False,token=False,Print=True):
 		
 def parsetags(filepath):	
 	fileid='unknown';fileversion='unknown';cctag='unknown';nG=0;nU=0;nD=0;
+	baseid=None
 	tid1=list()
 	tid2=list()
 	tid1=[pos for pos, char in enumerate(filepath) if char == '[']
@@ -286,12 +310,12 @@ def parsetags(filepath):
 							nU=test
 						except:pass						
 				if 'D)' in t:			
-					z_= t.find('D')-1
+					z_= t.find('D')
 					nD=t[z_]	
 					for i in range(len(t)):
 						try:
 							index=z_-i
-							test=t[index:z_]
+							test=t[index:z_]						
 							int(test)
 							nD=test
 						except:pass							
@@ -365,7 +389,10 @@ def selector2list(textfile,mode='folder',ext=False,filter=False,Print=False):
 	root.withdraw()
 	root.wm_attributes('-topmost', 1)
 	if mode=='file':
-		filepath = filedialog.askopenfilename()		
+		filepath = filedialog.askopenfilename()	
+		filelist=[]
+		filelist.append(filepath)		
+		return filelist
 	else:
 		filepath = filedialog.askdirectory()
 	extlist=list()

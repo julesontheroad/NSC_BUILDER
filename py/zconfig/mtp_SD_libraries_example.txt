@@ -1,0 +1,4 @@
+library_name|path
+SD_XCI|1: External SD Card\sxos\xci
+SD_ROOT|1: External SD Card\
+SD_MOVIES|1: External SD Card\MOVIES

@@ -66,6 +66,40 @@ def kgstring():
 	kg0=[450,0];kg.append(kg0)
 	return kg
 	
+def kg_by_RSV(RSV):
+	kgs=kgstring();keygen=len(kgs)-1;topkg=len(kgs)
+	for k in range(len(kgs)):
+		if RSV in kgs[k]:
+			keygen-=1
+	if keygen<0:
+		return 'unknown'
+	return keygen	
+	
+def transform_fw_string(FW):
+	FW=FW.split('-');rem=0;RRSV=0
+	if len(FW)>1:
+		rem=FW[1]
+	else:
+		rem=0
+	FW=FW[0]		
+	FW=FW.split('.')
+	RSV=0
+	for i in range(len(FW)):
+		n=int(FW[i])	
+		if i==1:
+			if n>=3:
+				RSV+=67108864*n
+			elif n==2:
+				RSV+=65536
+		elif i==2 and int(FW[0])>3:
+			RSV+=1048576*n
+		elif i==2 and int(FW[0])==2:			
+			RSV+=1*n
+		elif i==3 and int(FW[0])>3:
+			RSV+=65536*n
+			RRSV=RSV+rem
+	return RSV,RRSV	
+	
 def kg2masterkey(kg):
 	if kg == 1:
 		return 1

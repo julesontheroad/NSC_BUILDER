@@ -56,16 +56,21 @@ def libraries(tfile):
 					csvheader=row
 					i=1
 				else:
-					dict={}
+					dict_={}
 					for j in range(len(csvheader)):
 						try:
-							dict[csvheader[j]]=row[j]
+							if row[j]==None or row[j]=='':
+								dict_[csvheader[j]]=None
+							else:	
+								dict_[csvheader[j]]=row[j]
 						except:
-							dict[csvheader[j]]=None
-					db[row[0]]=dict
+							dict_[csvheader[j]]=None
+					db[row[0]]=dict_
 		# print(db)			
 		return db
-	except: return False
+	except BaseException as e:
+		Print.error('Exception: ' + str(e))
+		return False
 
 def readInt64(f, byteorder='little', signed = False):
 		return int.from_bytes(f.read(8), byteorder=byteorder, signed=signed)

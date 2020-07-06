@@ -535,21 +535,21 @@ def search_folder(path,TD=None,ext=None,filter=None,order=None,mime='files',Pick
 					if root != 'root':
 						results = drive_service.files().list(
 						q="mimeType!='application/vnd.google-apps.folder' and '{}' in parents{}".format(remote.ID,filter),
-						pageSize=pagesize,pageToken=page_token,fields="nextPageToken, files(id, name, size)",includeItemsFromAllDrives = True,supportsAllDrives = True).execute() 
+						pageSize=pagesize,pageToken=page_token,fields="nextPageToken, files(id, name, size, createdTime)",includeItemsFromAllDrives = True,supportsAllDrives = True).execute() 
 					else:
 						results = drive_service.files().list(
 						q="mimeType!='application/vnd.google-apps.folder' and '{}' in parents{}".format(remote.ID,filter),
-						pageSize=pagesize,pageToken=page_token,fields="nextPageToken, files(id, name, size)").execute()	
+						pageSize=pagesize,pageToken=page_token,fields="nextPageToken, files(id, name, size, createdTime)").execute()	
 					items = results.get('files', [])
 					try:
 						page_token = results.get('nextPageToken', None)	
 					except:pass
 					for file in items:
 						try:
-							file_list.append([file['name'],file['size'],path])
+							file_list.append([file['name'],file['size'],path,file['createdTime']])
 						except:pass	
 					if Print==True:
-						print('- Total Retrieved '+str(len(file_list)))	
+						print(f'- {path}: Total Retrieved '+str(len(file_list)))	
 					if page_token == None:
 						break		
 			elif mime=='folders':	
@@ -572,11 +572,11 @@ def search_folder(path,TD=None,ext=None,filter=None,order=None,mime='files',Pick
 							file_list.append([file['name'],path])
 						except:pass							
 					if Print==True:
-						print('- Total Retrieved '+str(len(file_list)))	
+						print(f'- {path}: Total Retrieved '+str(len(file_list)))	
 					if page_token == None:
 						break	
 		except:
-			print('- Total Retrieved 0')
+			print(f'- {path}: Retrieved 0')
 			return False	
 	if not file_list:
 		return False
@@ -587,7 +587,7 @@ def search_folder(path,TD=None,ext=None,filter=None,order=None,mime='files',Pick
 		elif mime=="files":
 			title = 'Select result:'
 		else:
-			title = 'Select result: (press E to finish selection)'
+			title = 'Select result:\n + Press space or right to select content \n + Press E to finish selection'
 		oplist=list();cleanlist=list()
 		if mime=='folders':
 			for item in file_list:
@@ -610,6 +610,7 @@ def search_folder(path,TD=None,ext=None,filter=None,order=None,mime='files',Pick
 			def end_selection(picker):
 				return False,-1
 			picker.register_custom_handler(ord('e'),  end_selection)
+			picker.register_custom_handler(ord('E'),  end_selection)			
 			selected=picker.start()
 			if selected[0]==False:
 				return False
@@ -799,6 +800,30 @@ def add_to_drive(url=None,ID=None,filepath=None,makecopy=False,TD=None):
 	except IOError as e:
 		print(e, file=sys.stderr)	
 	return name		
+	
+# def get_plink_data(url=None,ID=None,filepath=None,TD=None):
+	# try:
+		# if ID==None and url==None:
+			# return False
+		# if filepath==None:
+			# return False			
+		# if ID!=None:
+			# file_id=ID
+		# else:	
+			# file_id, is_download_link=Public.parse_url(url)
+		# if TD==None:	
+			# remote=location(route=filepath)				
+		# else:
+			# remote=location(route=filepath,TD_Name=TD)		
+		# remote=location(route=filepath)
+		# drive=remote.drivename
+		# FolderID=remote.ID
+		# result=remote.drive_service.files().get(fileId=file_id, fields="name,mimeType").execute()	
+		# name=result['name']	
+		# id=file_id									
+	# except IOError as e:
+		# print(e, file=sys.stderr)	
+	# return name,id		
 
 def delete_from_drive(filepath=None,url=None,lkID=None,TD=None):
 	try:
