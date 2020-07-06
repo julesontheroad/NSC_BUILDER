@@ -1,5 +1,5 @@
 # Nintendo Switch Cleaner and Builder (NSC_Builder)
-https://github.com/julesontheroad/NSC_BUILDER 
+https://github.com/julesontheroad/NSC_BUILDER
 
 ## 1. Description
 
@@ -26,7 +26,7 @@ Current version of the program allows you to:
 
 5.- Split multi content back into xci or nsp files
 
-6.- Change the packing of the content between xci and nsp 
+6.- Change the packing of the content between xci and nsp
 
 7.- Lower the Required System Version to the actual encryption of the game.
 
@@ -58,7 +58,7 @@ Current version of the program allows you to:
 
 20.- Joiner for xc*,ns* and *0 fat32 files
 
-21.- Compression of nsp files into .nsz files 
+21.- Compression of nsp files into .nsz files
 
 22.- Graphical interface for file information trough a gui running on chromium\chrome
 
@@ -95,7 +95,7 @@ The behavior of the auto-mode is configured trough the “Configuration menu in 
   * 4. Information about firmware requirements and other game data
   * 5. Read cnmt file from meta nca
   * 6. Read nacp file from control nca
-  * 7. Read npdm file from program nca 
+  * 7. Read npdm file from program nca
   * 8. Verify files with ability of detecting NSCB changes over them
 - MODE 5: Database Mode. Let’s you mass output information
 - MODE 6: Advanced Mode.
@@ -112,7 +112,7 @@ The behavior of the auto-mode is configured trough the “Configuration menu in 
 ## 6. Configuration mode:
 ### Auto Mode options. (Affects only Auto-Mode)
 #### REPACK configuration
-- NSP 
+- NSP
 - XCI
 - BOTH
 #### FOLDER'S TREATMENT
@@ -175,7 +175,7 @@ Pack xci or nsp in fat32 compatible formats or exfat format.
   * NPDM Reader from NSCB
   * CNMT Reader from NSCB
   * Verification from NSCB, till Level 2 so it's loaded fast. Use normal NSCB for hashing for now.
-- You'll notice some information like BuildIDs is added now, the cnmt was made more readable and I added detection for multiprogram games like Grandia and Hotline 
+- You'll notice some information like BuildIDs is added now, the cnmt was made more readable and I added detection for multiprogram games like Grandia and Hotline
   Miami
 - Known Issues:
   * CSS probably needs some work, specially for fullscreen.
@@ -198,17 +198,17 @@ Pack xci or nsp in fat32 compatible formats or exfat format.
   * Once you have all setup just execute "Interface.bat"
 	5. Rememeber you need to fill keys_template.txt in ztools but i imagine you already know that
 - I use python:		   
-  * Just get latest python 3 and install these dependencies: 
+  * Just get latest python 3 and install these dependencies:
 	urllib3 unidecode tqdm bs4 tqdm requests image pywin32 pycryptodome pykakasi googletrans chardet eel bottle
   * Now the tricky part, I use the unreleased version of eel that isn't in pypy so go here https://github.com/ChrisKnott/Eel Download the master, seek the folder where  your eel installation is and overwrite the files with the ones in the master.
 	If you have trouble finding it try doing again pip install eel it'll tell you is up to date and installed in 'X' folder.
-  * Then execute "Interface.bat" 
+  * Then execute "Interface.bat"
 - I use linux or mac:			  
   * Well i tested it on linux and i'll give you a build at a later time, have to admit I didn't test anything on mac though i imagine it works
   * Install python and:
 	urllib3 unidecode tqdm bs4 tqdm requests image pycryptodome pykakasi googletrans chardet eel bottle
-  * Basically same as before ignoring pywin32 that NSCB uses to set the archive bit in folders	
-  * Replace the eel files for the ones in the master like explained above.	
+  * Basically same as before ignoring pywin32 that NSCB uses to set the archive bit in folders
+  * Replace the eel files for the ones in the master like explained above.
   * Run squirrel with:
 	squirrel.py -lib_call Interface start
   * Or wait a few days for a build if you don't like python
@@ -243,21 +243,21 @@ To install ncz files you need:
 - Blawar’s tinfoil:
 https://github.com/digableinc/tinfoil
 
-## 10. Requirements 
+## 10. Requirements
 
 - A computer with a Window's OS is needed
 - Fill keys_template.txt on the ztools folder and rename it to keys.txt
-  You can get a full keyset with Lockpick if your console is at FW6.2 or 
+  You can get a full keyset with Lockpick if your console is at FW6.2 or
   A friend can lend you the needed keys.
   If you want to add the xci_header_key a friend will need to lend it to you.
   https://github.com/shchmue/Lockpick/releases
 
-## 11. Limitations 
+## 11. Limitations
 - You can't make multi-content xci files with more than 8 games. It'll give error when loading in horizon. I suspect it may be a qlauncher limitation so it could work with theme mods but INTRO didn't test it.
 Note: This means “games”, updates and dl car not hold by that limitation.
 - Title-rights remove dlcs give a message prompt of incomplete content for some games from 6.0 onwards, that message can be skipped and the dlcs will work fine despite the prompt.
 
-## 12. Thanks and credits to 
+## 12. Thanks and credits to
 
 NSC_Builder is based on
 
