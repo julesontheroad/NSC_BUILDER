@@ -1311,7 +1311,7 @@ echo.
 echo *******************************************************
 echo DLC NAMES FALLBACK
 echo *******************************************************
-echo Current version request dlc names to squirreldb, this option
+echo Current version request dlc names to nutdb, this option
 echo states the fallback system to employ in case the name
 echo can't be retrieved.
 echo.
@@ -2783,7 +2783,7 @@ echo ............
 echo *******************************************************
 echo CHOOSE WHAT TO DO AFTER PROCESSING THE SELECTED FILES
 echo *******************************************************
-echo Input "1" TO GENERATE squirrelDB DATABASE
+echo Input "1" TO GENERATE nutdb DATABASE
 echo Input "2" TO GENERATE EXTENDED DATABASE
 echo Input "3" TO GENERATE KEYLESS DATABASE (EXTENDED)
 echo Input "4" TO GENERATE SIMPLE DATABASE
@@ -2800,7 +2800,7 @@ set vrepack=none
 if /i "%bs%"=="0" goto DBcheckagain
 if /i "%bs%"=="Z" set "vrepack=zip"
 if /i "%bs%"=="Z" goto DBs_start
-if /i "%bs%"=="1" set "dbformat=squirreldb"
+if /i "%bs%"=="1" set "dbformat=nutdb"
 if /i "%bs%"=="1" goto DBs_GENDB
 if /i "%bs%"=="2" set "dbformat=extended"
 if /i "%bs%"=="2" goto DBs_GENDB
@@ -4454,7 +4454,7 @@ echo.
 echo *******************************************************
 echo DLC NAMES FALLBACK
 echo *******************************************************
-echo Current version request dlc names to squirreldb, this option
+echo Current version request dlc names to nutdb, this option
 echo states the fallback system to employ in case the name
 echo can't be retrieved.
 echo.
@@ -5926,7 +5926,7 @@ echo ............
 echo *******************************************************
 echo CHOOSE WHAT TO DO AFTER PROCESSING THE SELECTED FILES
 echo *******************************************************
-echo Input "1" TO GENERATE squirrelDB DATABASE
+echo Input "1" TO GENERATE nutdb DATABASE
 echo Input "2" TO GENERATE EXTENDED DATABASE
 echo Input "3" TO GENERATE KEYLESS DATABASE (EXTENDED)
 echo Input "4" TO GENERATE SIMPLE DATABASE
@@ -5943,7 +5943,7 @@ set vrepack=none
 if /i "%bs%"=="0" goto DBcheckagain
 if /i "%bs%"=="Z" set "vrepack=zip"
 if /i "%bs%"=="Z" goto DBs_start
-if /i "%bs%"=="1" set "dbformat=squirreldb"
+if /i "%bs%"=="1" set "dbformat=nutdb"
 if /i "%bs%"=="1" goto DBs_GENDB
 if /i "%bs%"=="2" set "dbformat=extended"
 if /i "%bs%"=="2" goto DBs_GENDB
