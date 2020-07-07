@@ -2160,10 +2160,13 @@ class Nca(File):
 		crypto2=self.header.getCryptoType2()		
 		nca_id=self.header.titleId	
 		cr2=str(hex(crypto2))[2:]
+		trstart=str(nca_id)
+		if str(self.header.contentType) == 'Content.PROGRAM':
+			trstart=nca_id[:-3]+'000'
 		if len(str(cr2))==1:
-			tr=nca_id+'000000000000000'+str(cr2)	
+			tr=trstart+'000000000000000'+str(cr2) 	
 		elif len(str(cr2))==2:
-			tr=nca_id+'00000000000000'+str(cr2)				
+			tr=trstart+'00000000000000'+str(cr2)				
 		tr=bytes.fromhex(tr)				
 		if crypto1>crypto2:
 			masterKeyRev = crypto1
@@ -2234,8 +2237,10 @@ class Nca(File):
 					crypto = aes128.AESECB(key)
 					decKeyBlock = currdecKeyBlock		
 					titleKeyEnc = Keys.encryptTitleKey(decKeyBlock, Keys.getMasterKeyIndex(masterKeyRev))		
-					
-					tr1=nca_id+'000000000000000'+str(crypto2[1])					
+					trstart=str(nca_id)
+					if str(self.header.contentType) == 'Content.PROGRAM':
+						trstart=nca_id[:-3]+'000'
+					tr1=trstart+'000000000000000'+str(crypto2[1])					
 					tr2=nca_id[:-3]+'800000000000000000'+str(crypto2[1])
 					tr1=bytes.fromhex(tr1);tr2=bytes.fromhex(tr2)
 					crypto1=bytes.fromhex(crypto1);crypto2=bytes.fromhex(crypto2)
