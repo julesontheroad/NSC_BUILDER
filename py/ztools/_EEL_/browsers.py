@@ -1,11 +1,11 @@
 import subprocess as sps
 import webbrowser as wbr
 
-import eel.chrome as chm
-import eel.electron as ele
-import eel.edge as edge
-#import eel.firefox as ffx      TODO
-#import eel.safari as saf       TODO
+import _EEL_.chrome as chm
+import _EEL_.electron as ele
+import _EEL_.edge as edge
+#import _EEL_.firefox as ffx      TODO
+#import _EEL_.safari as saf       TODO
 
 _browser_paths = {}
 _browser_modules = {'chrome':   chm,

@@ -40,7 +40,7 @@ import json as jsn
 import bottle as btl
 import _bottle_websocket_ as wbs
 import re as rgx
-import eel.browsers as brw
+import _EEL_.browsers as brw
 import random as rnd
 
 import pkg_resources as pkg
