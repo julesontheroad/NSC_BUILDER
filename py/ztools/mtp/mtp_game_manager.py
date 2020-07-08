@@ -445,7 +445,9 @@ def back_up_saves(backup_all=False,inline=False,tidandver=True,romaji=True,outfo
 						if version<((dbi_dict[name])['version']):
 							continue		
 					dbi_dict[name]={'tid':tid,'version':version,'name':name}
-				except:pass	
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))
+					return False				
 	counter=len(selected)	
 	for file in selected:	
 		if tidandver==True:		
@@ -461,6 +463,7 @@ def back_up_saves(backup_all=False,inline=False,tidandver=True,romaji=True,outfo
 				pass
 			game=f"{name} {titleid}{version}"	
 		else:
+			name=file[0]		
 			game=f"{name}"			
 		game=sanitize(game,romaji)
 		if inline==False:
