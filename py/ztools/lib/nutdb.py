@@ -118,6 +118,33 @@ else:
 			
 if not os.path.exists(DATABASE_folder):
 	os.makedirs(DATABASE_folder)	
+	
+apivjson=os.path.join(DATABASE_folder,'apiv.json')	
+
+def get_apivjson():
+	try:
+		response = requests.get('http://tinfoil.io/Api/patches/get', stream=True)
+	except BaseException as e:
+		Print.error('Exception: ' + str(e))		
+	if '<Response [404]>'!=str(response):
+		tempfile=apivjson[:-4]+'2.json'		
+		try:
+			with open(tempfile,'wb') as nutfile:
+				print('Getting apiv json')
+				for data in response:
+					nutfile.write(data)
+					if not data:
+						break	
+			with open(tempfile) as json_file:					
+				data = json.load(json_file)	
+			app_json = json.dumps(data, indent=4)		
+			with open(apivjson, 'w') as json_file:
+			  json_file.write(app_json)			
+			try:os.remove(tempfile)
+			except:pass	
+		except BaseException as e:
+			Print.error('Exception: ' + str(e))	
+			pass			
 
 def get_DBfolder():
 	return DATABASE_folder
@@ -428,8 +455,11 @@ def check_other_file(dbfile,dbname,nutdb=True):
 				return False
 	return	False
 
-def get_otherDB(dbfile,dbname,f):
-	url=get_otherurl(dbfile,dbname)
+def get_otherDB(dbfile,dbname,f,URL=None):
+	if URL==None:
+		url=get_otherurl(dbfile,dbname)
+	else:
+		url=URL
 	_dbfile_=os.path.join(DATABASE_folder,f)
 	try:
 		response = requests.get(url, stream=True)
@@ -450,6 +480,8 @@ def get_otherDB(dbfile,dbname,f):
 			Print.error('Exception: ' + str(e))		
 			try:os.remove(_dbfile_)
 			except:pass	
+		if 	dbname=='versions_txt' and URL==None:	
+			check_ver_not_missing(_dbfile_)
 		return True				
 	else:
 		dbfile_mirror=dbfile[:-4]+'_mirror.txt'
@@ -474,11 +506,40 @@ def get_otherDB(dbfile,dbname,f):
 				Print.error('Exception: ' + str(e))		
 				try:os.remove(_dbfile_)
 				except:pass	
+			if 	dbname=='versions_txt' and URL==None:	
+				check_ver_not_missing(_dbfile_)				
 			return True			
 		else:	
 			print(json_url)
 			print("Response 404. Old Files weren't removed")	
-			return False			
+			return False	
+
+def check_ver_not_missing(_dbfile_):
+	try:	
+		with open(_dbfile_,'rt',encoding='utf8') as csvfile:
+			readCSV = csv.reader(csvfile, delimiter='|')	
+			i=0	
+			for row in readCSV:
+				if i==0:
+					csvheader=row
+					i=1
+					if 'id' and 'version' in csvheader:
+						id=csvheader.index('id')
+						ver=csvheader.index('version')	
+				else:	
+					try:
+						tid=str(row[id]).upper() 
+						v_=str(row[ver])
+						if v_=='':
+							print("Version numbers missing falling back to tinfoil media")
+							get_otherDB(urlconfig,'versions_txt','nutdb_versions.txt',URL='http://tinfoil.media/repo/db/versions.txt')
+					except:
+						get_otherDB(urlconfig,'versions_txt','nutdb_versions.txt',URL='http://tinfoil.media/repo/db/versions.txt')
+					break	
+	except:
+		get_otherDB(urlconfig,'versions_txt','nutdb_versions.txt',URL='http://tinfoil.media/repo/db/versions.txt')	
+	
+		
 		
 def get_regionDB(region):
 	url=regionurl(region)
