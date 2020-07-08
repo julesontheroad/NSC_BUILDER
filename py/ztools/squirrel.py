@@ -2290,8 +2290,11 @@ if __name__ == '__main__':
 							print('- Placeholder file already exists, skipping...')
 							vskip=True
 						else:
-							v_drive, v_path = os.path.splitdrive(endfile)
-							dsktotal, dskused, dskfree=disk_usage(str(v_drive))	
+							if sys.platform == 'win32':
+								 v_drive, v_path = os.path.splitdrive(endfile)
+							else:
+								 v_drive = os.path.abspath(endfile)
+							dsktotal, dskused, dskfree=disk_usage(str(v_drive))
 							if int(dskfree)<int(totSize):
 								sys.exit("Warning disk space lower than required size. Program will exit")
 						if vskip==False:
@@ -2362,8 +2365,11 @@ if __name__ == '__main__':
 							print('- Placeholder file already exists, skipping...')
 							vskip=True
 						else:
-							v_drive, v_path = os.path.splitdrive(endfile)
-							dsktotal, dskused, dskfree=disk_usage(str(v_drive))	
+							if sys.platform == 'win32':
+								 v_drive, v_path = os.path.splitdrive(endfile)
+							else:
+								 v_drive = os.path.abspath(endfile)
+							dsktotal, dskused, dskfree=disk_usage(str(v_drive))
 							if int(dskfree)<int(totSize):
 								sys.exit("Warning disk space lower than required size. Program will exit")						
 						if vskip==False:
@@ -4134,9 +4140,11 @@ if __name__ == '__main__':
 									filename= os.path.join(afolder,filename)
 									shutil.move(filename,ofolder)
 						shutil.rmtree(afolder, ignore_errors=True)
-						
-					v_drive, v_path = os.path.splitdrive(endfile)
-					dsktotal, dskused, dskfree=disk_usage(str(v_drive))	
+					if sys.platform == 'win32':
+						 v_drive, v_path = os.path.splitdrive(endfile)
+					else:
+						 v_drive = os.path.abspath(endfile)
+					dsktotal, dskused, dskfree=disk_usage(str(v_drive))
 					if int(dskfree)<int(totSize):
 						sys.exit("Warning disk space lower than required size. Program will exit")					
 					t = tqdm(total=totSize, unit='B', unit_scale=True, leave=False)
@@ -4220,8 +4228,11 @@ if __name__ == '__main__':
 					#print(hx(xci_header))
 					#print(str(totSize))
 					c=0
-					v_drive, v_path = os.path.splitdrive(endfile)
-					dsktotal, dskused, dskfree=disk_usage(str(v_drive))	
+					if sys.platform == 'win32':
+						 v_drive, v_path = os.path.splitdrive(endfile)
+					else:
+						 v_drive = os.path.abspath(endfile)
+					dsktotal, dskused, dskfree=disk_usage(str(v_drive))
 					if int(dskfree)<int(totSize):
 						sys.exit("Warning disk space lower than required size. Program will exit")					
 					t = tqdm(total=totSize, unit='B', unit_scale=True, leave=False)
@@ -4592,8 +4603,11 @@ if __name__ == '__main__':
 			except BaseException as e:
 				Print.error('Exception: ' + str(e))
 			totSize = sum(os.path.getsize(file) for file in file_list)
-			v_drive, v_path = os.path.splitdrive(outfile)
-			dsktotal, dskused, dskfree=disk_usage(str(v_drive))	
+			if sys.platform == 'win32':
+				 v_drive, v_path = os.path.splitdrive(endfile)
+			else:
+				 v_drive = os.path.abspath(endfile)
+			dsktotal, dskused, dskfree=disk_usage(str(v_drive))
 			if int(dskfree)<int(totSize):
 				sys.exit("Warning disk space lower than required size. Program will exit")				
 			t = tqdm(total=totSize, unit='B', unit_scale=True, leave=False)
@@ -5304,8 +5318,11 @@ if __name__ == '__main__':
 						else:
 							buf=buffer
 						#print(filepath)
-						v_drive, v_path = os.path.splitdrive(filename)
-						dsktotal, dskused, dskfree=disk_usage(str(v_drive))	
+						if sys.platform == 'win32':
+							 v_drive, v_path = os.path.splitdrive(endfile)
+						else:
+							 v_drive = os.path.abspath(endfile)
+						dsktotal, dskused, dskfree=disk_usage(str(v_drive))
 						if int(dsktotal)>int(s):
 							sys.exit("Warning disk space lower than required size. Program will exit")							
 						t = tqdm(total=s, unit='B', unit_scale=True, leave=False)
@@ -5353,8 +5370,11 @@ if __name__ == '__main__':
 						else:
 							buf=buffer
 						#print(filepath)
-						v_drive, v_path = os.path.splitdrive(filename)
-						dsktotal, dskused, dskfree=disk_usage(str(v_drive))	
+						if sys.platform == 'win32':
+							 v_drive, v_path = os.path.splitdrive(endfile)
+						else:
+							 v_drive = os.path.abspath(endfile)
+						dsktotal, dskused, dskfree=disk_usage(str(v_drive))
 						if int(dsktotal)>int(s):
 							sys.exit("Warning disk space lower than required size. Program will exit")					
 						t = tqdm(total=s, unit='B', unit_scale=True, leave=False)
