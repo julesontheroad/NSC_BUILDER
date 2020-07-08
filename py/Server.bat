@@ -48,7 +48,7 @@ goto start
 if not "%1" == "min" start /MIN cmd /c %0 min & exit/b >nul 2>&1 
 :start
 %pycommand% "%squirrel%" -lib_call nutdb  check_files
-if "%noconsole%" == "false" (%pycommand% "%squirrel%" -lib_call server start -xarg "%port%" "%host%" "%videoplayback%" "%ssl%" )
+if "%noconsole%" == "false" (%pycommand% "%squirrel%" -lib_call Interface server -xarg "%port%" "%host%" "%videoplayback%" "%ssl%" )
 if "%noconsole%" == "false" goto salida
 start %pycommandw% "%squirrel%" -lib_call Interface server -xarg "%port%" "%host%" "%videoplayback%" "%ssl%" "%noconsole%"
 goto salida
