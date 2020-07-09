@@ -27,7 +27,7 @@ set "videoplayback=true"
 ::rg8000 -> any open port between 8000 and 8999
 ::Port number -> Fixed port (example 8000)
 ::Auto and rg8000 allow for multiwindows
-set "port=rg8000"
+set "port=9001"
 ::**************************************************************
 ::Host
 ::**************************************************************
@@ -40,10 +40,10 @@ set "host=localhost"
 ::**************************************************************
 ::true -> Dettach gui from console
 ::false -> Attach gui to console
-set "noconsole=true"
+set "noconsole=false"
 ::**************************************************************
 ::SSL
 ::**************************************************************
 ::true -> https protocol, requires ssl cert and key
 ::false -> http protocol
-set "ssl=true"
+set "ssl=false"
