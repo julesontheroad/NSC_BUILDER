@@ -1,4 +1,4 @@
-# DBI 1.25 from RASHEVSKYV
+# DBI 125 from RASHEVSKYV
 https://github.com/rashevskyv/switch/releases/tag/456
 
 ## 1. What's DBI?
