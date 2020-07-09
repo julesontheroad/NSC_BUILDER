@@ -22,11 +22,12 @@ else:
 web_folder=os.path.join(ztools_dir,'web')
 debug_folder=os.path.join(web_folder,'_debug_')
 flag_file=os.path.join(debug_folder,'flag')
-with open(os.path.join(debug_folder,'log.txt'), 'w') as tfile:
-	tfile.write('')
 
 if not os.path.exists(debug_folder):
 	os.makedirs(debug_folder)
+with open(os.path.join(debug_folder,'log.txt'), 'w') as tfile:
+	tfile.write('')
+
 if not os.path.exists(flag_file):	
 	with open(flag_file,'wt') as tfile:
 		tfile.write('False')
