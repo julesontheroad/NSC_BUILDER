@@ -7,6 +7,7 @@ try:
 except:
 	import json
 import subprocess
+import Print
 
 
 squirrel_dir=os.path.abspath(os.curdir)
