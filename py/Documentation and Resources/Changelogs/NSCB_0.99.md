@@ -14,7 +14,7 @@ https://github.com/rashevskyv/switch/releases/tag/456
 
 It can also be downloaded individually as nro or nsp here:
 
-[DBI_1.25.nsp](../DBI/1.25/DBI_0591703820420000.nsp)
+[DBI_1.25.nsp](../DBI/1.25/)
 [DBI_1.25.nro](../DBI/1.25/DBI.nro)
 
 More information about DBI here:
