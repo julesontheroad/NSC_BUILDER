@@ -570,6 +570,7 @@ def gen_xci_parts(filepath,cachefolder=None,keepupd=False,id_target=False,keypat
 	outf = open(outfile, 'w+b')		
 	outf.write(outheader)	
 	written+=len(outheader)
+	movoffset=0
 	for fi in files:
 		for nspF in xci.hfs0:
 			if str(nspF._path)=="secure":
@@ -604,17 +605,12 @@ def gen_xci_parts(filepath,cachefolder=None,keepupd=False,id_target=False,keypat
 						outf.write(newheader)
 						written+=len(newheader)
 						nca.seek(0xC00)	
+						movoffset+=0xC00
 						if (str(nca.header.contentType) != 'Content.PROGRAM'):
 							data=nca.read()	
 							nca.close()
 							outf.write(data)
 							written+=len(data)
-						else:
-							remainder = bucketsize*multiplier - written
-							data=nca.read(remainder)
-							nca.close()
-							outf.write(data)
-							written+=len(data)						
 						break					
 					else:pass
 	outf.close()		
@@ -623,16 +619,16 @@ def gen_xci_parts(filepath,cachefolder=None,keepupd=False,id_target=False,keypat
 		d={}
 		d['0']={"step": 0,
 		  "filepath":outfile ,
-		  "size":( bucketsize*multiplier) ,
-		  "targetsize":( bucketsize*multiplier) ,
+		  "size":( written) ,
+		  "targetsize":( written) ,
 		  "off1":0,
-		  "off2":( bucketsize*multiplier)
+		  "off2":( written)
 		}
 		for j in files_list:
 			if j[0]==files[-1]:
-				off1=j[1]
+				off1=j[1]+0xC00
 				off2=j[2]
-				targetsize=j[3]
+				targetsize=j[3]-0xC00
 		d['1']={"step": 1,
 		  "filepath":filepath ,
 		  "size":( os.path.getsize(filepath)) ,
@@ -647,9 +643,9 @@ def gen_xci_parts(filepath,cachefolder=None,keepupd=False,id_target=False,keypat
 	else:
 		for j in files_list:
 			if j[0]==files[-1]:
-				off1=j[1]
+				off1=j[1]+0xC00
 				off2=j[2]
-				targetsize=j[3]	
+				targetsize=j[3]-0xC00
 		tfile=os.path.join(cachefolder, "files.csv")
 		i=0;
 		with open(tfile,'w') as csvfile:
@@ -662,4 +658,4 @@ def gen_xci_parts(filepath,cachefolder=None,keepupd=False,id_target=False,keypat
 			if i==2:	
 				csvfile.write("{}|{}|{}|{}|{}|{}".format(1,filepath,( os.path.getsize(filepath)),targetsize,off1,off2))		
 				i+=1			
-					
+
