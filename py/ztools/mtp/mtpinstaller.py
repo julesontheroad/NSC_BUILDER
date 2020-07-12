@@ -237,7 +237,7 @@ def file_verification(filename,hash=False):
 			Print.error('Exception: ' + str(e))
 	return verdict,isrestored,cnmt_is_patched
 		
-def install(filepath=None,destiny="SD",verification=True,outfolder=None,ch_medium=True,check_fw=True,patch_keygen=False,install_mode="spec1"):	
+def install(filepath=None,destiny="SD",verification=True,outfolder=None,ch_medium=True,check_fw=True,patch_keygen=False,install_mode="spec1",st_crypto=False):	
 	kgwarning=False;dopatch=False;keygeneration=0;tgkg=0
 	if filepath=="":
 		filepath=None
@@ -308,15 +308,29 @@ def install(filepath=None,destiny="SD",verification=True,outfolder=None,ch_mediu
 	elif kgwarning==True and patch_keygen==True: 	
 		print("File requires a higher firmware. It'll will be prepatch")
 		dopatch=True
-	if dopatch==True and not filepath.endswith('xci'):
-		install_converted(filepath=filepath,outfolder=outfolder,destiny=destiny,kgpatch=dopatch,tgkg=keygeneration)	
+	dopatch=True	
+	if (filepath.endswith('nsp') or filepath.endswith('nsz')) and st_crypto==True:	
+			if install_mode=="legacy":	
+				install_converted(filepath=filepath,outfolder=outfolder,destiny=destiny,kgpatch=dopatch,tgkg=tgkg)	
+			else:
+				if dopatch==False:
+					tgkg=False		
+				install_nsp_csv(filepath,destiny=destiny,cachefolder=outfolder,keypatch=tgkg)		
+	if (filepath.endswith('nsp') or filepath.endswith('nsz')) and dopatch==True:	
+		if install_mode=="legacy":	
+			install_converted(filepath=filepath,outfolder=outfolder,destiny=destiny,kgpatch=dopatch,tgkg=tgkg)	
+		else:
+			from mtpnsp import install_nsp_csv	
+			install_nsp_csv(filepath,destiny=destiny,cachefolder=outfolder,keypatch=tgkg)		
 		return			
-	elif filepath.endswith('xci'):
+	if filepath.endswith('xci') or filepath.endswith('xcz'):
 		if install_mode=="legacy":
-			install_converted(filepath=filepath,outfolder=outfolder,destiny=destiny,kgpatch=dopatch,tgkg=keygeneration)
+			install_converted(filepath=filepath,outfolder=outfolder,destiny=destiny,kgpatch=dopatch,tgkg=tgkg)
 		else:
 			from mtpxci import install_xci_csv
-			install_xci_csv(filepath,destiny=destiny,cachefolder=outfolder,keypatch=keygeneration)
+			if dopatch==False:
+				tgkg=False			
+			install_xci_csv(filepath,destiny=destiny,cachefolder=outfolder,keypatch=tgkg)
 		return	
 	process=subprocess.Popen([nscb_mtp,"Install","-ori",filepath,"-dst",destiny])
 	while process.poll()==None:

@@ -526,7 +526,9 @@ def install_xci_csv(filepath,destiny="SD",cachefolder=None,override=False,keypat
 				if process.poll()!=None:
 					process.terminate();	
 			counter-=1		
-			print('\n- Still '+str(counter)+' subitems to process\n')	
+			print('\n- Still '+str(counter)+' subitems to process')	
+			if counter>0:
+				print("")			
 	if os.path.exists(cachefolder):			
 		for f in os.listdir(cachefolder):
 			fp = os.path.join(cachefolder, f)
