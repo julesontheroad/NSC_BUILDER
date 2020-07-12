@@ -237,7 +237,7 @@ def file_verification(filename,hash=False):
 			Print.error('Exception: ' + str(e))
 	return verdict,isrestored,cnmt_is_patched
 		
-def install(filepath=None,destiny="SD",verification=True,outfolder=None,ch_medium=True,check_fw=True,patch_keygen=False):	
+def install(filepath=None,destiny="SD",verification=True,outfolder=None,ch_medium=True,check_fw=True,patch_keygen=False,install_mode="spec1"):	
 	kgwarning=False;dopatch=False;keygeneration=0;tgkg=0
 	if filepath=="":
 		filepath=None
@@ -307,9 +307,16 @@ def install(filepath=None,destiny="SD",verification=True,outfolder=None,ch_mediu
 		return False		
 	elif kgwarning==True and patch_keygen==True: 	
 		print("File requires a higher firmware. It'll will be prepatch")
-		dopatch=True	
-	if filepath.endswith('xci') or dopatch==True:
-		install_converted(filepath=filepath,outfolder=outfolder,destiny=destiny,kgpatch=dopatch,tgkg=keygeneration)
+		dopatch=True
+	if dopatch==True and not filepath.endswith('xci'):
+		install_converted(filepath=filepath,outfolder=outfolder,destiny=destiny,kgpatch=dopatch,tgkg=keygeneration)	
+		return			
+	elif filepath.endswith('xci'):
+		if install_mode=="legacy":
+			install_converted(filepath=filepath,outfolder=outfolder,destiny=destiny,kgpatch=dopatch,tgkg=keygeneration)
+		else:
+			from mtpxci import install_xci_csv
+			install_xci_csv(filepath,destiny=destiny,cachefolder=outfolder,keypatch=keygeneration)
 		return	
 	process=subprocess.Popen([nscb_mtp,"Install","-ori",filepath,"-dst",destiny])
 	while process.poll()==None:

@@ -880,7 +880,7 @@ def gen_xci_parts_spec1(filepath,target_cnmt=None,cachefolder=None,keypatch=Fals
 							if str(keypatch) != "False":
 								t = tqdm(total=False, unit='B', unit_scale=False, leave=False)	
 								if keypatch < nca.header.getCryptoType2():
-									encKeyBlock,crypto1,crypto2=squirrelXCI.get_new_cryptoblock(squirrelXCI,nca, keypatch,encKeyBlock,t)	
+									encKeyBlock,crypto1,crypto2=squirrelXCI.get_new_cryptoblock(squirrelXCI,nca,keypatch,encKeyBlock,t)	
 								t.close()
 						if nca.header.getRightsId() == 0:
 							nca.rewind()											
