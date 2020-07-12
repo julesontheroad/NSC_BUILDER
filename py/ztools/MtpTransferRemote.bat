@@ -27,8 +27,8 @@ echo Input "1" to auto-start processing from the previous list
 echo Input "2" to erase list and make a new one.
 echo Input "3" to continue building the previous list
 echo .......................................................
-echo NOTE: By pressing 3 you'll see the previous list 
-echo before starting the processing the files and you will 
+echo NOTE: By pressing 3 you'll see the previous list
+echo before starting the processing the files and you will
 echo be able to add and delete items from the list
 echo.
 ECHO *************************************************
@@ -67,8 +67,8 @@ echo Input "1" to PICK FILES FROM CACHE FILES
 echo Input "2" to PICK FILES FROM LIBRARIES
 echo Input "c" to regenerate the cache for remote libraries
 ECHO.
-echo --- Or INPUT GDRIVE PUBLIC_LINK or 1FICHIER LINK ---	
-echo. 
+echo --- Or INPUT GDRIVE PUBLIC_LINK or 1FICHIER LINK ---
+echo.
 ECHO *************************************************
 echo Or Input "0" to return to the MODE SELECTION MENU
 ECHO *************************************************
@@ -100,8 +100,8 @@ echo Input "i" to see list of files to process
 echo Input "r" to remove some files (counting from bottom)
 echo Input "z" to remove the whole list
 ECHO.
-echo --- Or INPUT GDRIVE PUBLIC_LINK or 1FICHIER LINK ---	
-echo. 
+echo --- Or INPUT GDRIVE PUBLIC_LINK or 1FICHIER LINK ---
+echo.
 ECHO *************************************************
 echo Or Input "0" to return to the MODE SELECTION MENU
 ECHO *************************************************
@@ -143,7 +143,7 @@ set string=
 :update_list1
 if !pos1! GTR !pos2! ( goto :update_list2 ) else ( set /a pos1+=1 )
 set string=%string%,%pos1%
-goto :update_list1 
+goto :update_list1
 :update_list2
 set string=%string%,
 set skiplist=%string%
@@ -161,7 +161,7 @@ call :program_logo
 echo -------------------------------------------------
 echo MTP - TRANSFER FROM GOOGLE DRIVE
 echo -------------------------------------------------
-ECHO FILES TO PROCESS: 
+ECHO FILES TO PROCESS:
 for /f "tokens=*" %%f in (MTP2GD.txt) do (
 echo %%f
 )
@@ -215,17 +215,17 @@ echo          /_', "=. ';:;:;
 echo          @=:__,  \,;:;:'
 echo            _(\.=  ;:;;'
 echo           `"_(  _/="`
-echo            `"'		
+echo            `"'
 exit /B
 
 :program_logo
 
-ECHO                                        __          _ __    __         
+ECHO                                        __          _ __    __
 ECHO                  ____  _____ ____     / /_  __  __(_) /___/ /__  _____
 ECHO                 / __ \/ ___/ ___/    / __ \/ / / / / / __  / _ \/ ___/
-ECHO                / / / (__  ) /__     / /_/ / /_/ / / / /_/ /  __/ /    
-ECHO               /_/ /_/____/\___/____/_.___/\__,_/_/_/\__,_/\___/_/     
-ECHO                              /_____/                                  
+ECHO                / / / (__  ) /__     / /_/ / /_/ / / / /_/ /  __/ /
+ECHO               /_/ /_/____/\___/____/_.___/\__,_/_/_/\__,_/\___/_/
+ECHO                              /_____/
 ECHO -------------------------------------------------------------------------------------
 ECHO                         NINTENDO SWITCH CLEANER AND BUILDER
 ECHO                      (THE XCI MULTI CONTENT BUILDER AND MORE)
@@ -235,8 +235,8 @@ ECHO ---------------------------------------------------------------------------
 ECHO "                                POWERED BY SQUIRREL                                "
 ECHO "                         A MTP MANAGER FOR DBI INSTALLER                           "
 ECHO                                  VERSION 0.99 (MTP)
-ECHO -------------------------------------------------------------------------------------                   
-ECHO DBI by RASHEVSKYV: https://github.com/rashevskyv/switch/releases
+ECHO -------------------------------------------------------------------------------------
+ECHO DBI by DUCKBILL: https://github.com/rashevskyv/switch/releases
 ECHO Tested with v1.25: https://github.com/rashevskyv/switch/releases/tag/456
 ECHO -------------------------------------------------------------------------------------
 exit /B
@@ -266,6 +266,3 @@ exit /B
 :salida
 ::pause
 exit
-
-
-

@@ -4,7 +4,7 @@
 
 ## *Introducing MTP Mode a mtp manager for DBI Installer*
 
-**DBI is a installer made by Rashevsky and the Keffir** Team in a similar fashion as old tinfoil by Adubbz with extended functions and a MTP responder mode that allows access to the Nintendo Switch via the MTP protocol to transfer files between Switch and pc and to get several information from the switch like installed games, storage used, firmware on the Switch, etc...
+**DBI is a installer made by Duckbill and the Keffir** Team in a similar fashion as old tinfoil by Adubbz with extended functions and a MTP responder mode that allows access to the Nintendo Switch via the MTP protocol to transfer files between Switch and pc and to get several information from the switch like installed games, storage used, firmware on the Switch, etc...
 
 When you open the nro or installed DBI program on your switch and run the **MTP responder** option you'll be able to connect your switch via usb to your pc, allowing NSC_Builder v0.99 to work together with DBI an access your Switch providing a whole lot of functions.
 

@@ -10,6 +10,7 @@ from Fs import Xci as squirrelXCI
 from Fs import factory
 from Fs.Nca import NcaHeader
 from Fs.File import MemoryFile
+from Fs import Ticket
 import sq_tools
 import io
 from Fs import Type as FsType
@@ -497,9 +498,39 @@ def get_header_size(filepath):
 		outheader = sq_tools.gen_nsp_header(files,filesizes)			
 	properheadsize=len(outheader)
 	return properheadsize,keygeneration,sz
+	
+def install_xci_csv(filepath,destiny="SD",cachefolder=None,override=False,keypatch=False):
+	import time
+	if cachefolder==None:
+		cachefolder=os.path.join(ztools_dir, '_mtp_cache_')	
+	files_list=sq_tools.ret_xci_offsets(filepath)
+	print(f"Installing {filepath} by content")
+	counter=0
+	for i in range(len(files_list)):			
+		entry=files_list[i]
+		cnmtfile=entry[0]	
+		if cnmtfile.endswith('.cnmt.nca'):
+			counter+=1
+	print(f"- Detected {counter} content ids")		
+	for i in range(len(files_list)):			
+		entry=files_list[i]
+		cnmtfile=entry[0]	
+		if cnmtfile.endswith('.cnmt.nca'):
+			target_cnmt=cnmtfile
+			nspname=gen_xci_parts(filepath,target_cnmt=target_cnmt,cachefolder=cachefolder,keypatch=keypatch,export_type='csv')
+			files_csv=os.path.join(cachefolder, 'files.csv')	
+			process=subprocess.Popen([nscb_mtp,"InstallfromCSV","-cs",files_csv,"-nm",nspname,"-dst",destiny])		
+			while process.poll()==None:
+				if process.poll()!=None:
+					process.terminate();	
+			counter-=1		
+			print('\n...................................................')
+			print('STILL '+str(counter)+' FILES TO PROCESS')
+			print('...................................................\n')		
 
-
-def gen_xci_parts(filepath,cachefolder=None,keepupd=False,id_target=False,keypatch=False,export_type='csv'):
+def gen_xci_parts(filepath,target_cnmt=None,cachefolder=None,keypatch=False,export_type='csv'):
+	if cachefolder==None:
+		cachefolder=os.path.join(ztools_dir, '_mtp_cache_')	
 	if not os.path.exists(cachefolder):
 		os.makedirs(cachefolder)
 	else:
@@ -509,16 +540,24 @@ def gen_xci_parts(filepath,cachefolder=None,keepupd=False,id_target=False,keypat
 				shutil.rmtree(fp)
 			except OSError:
 				os.remove(fp)
+	program_name=None			
 	files_list=sq_tools.ret_xci_offsets(filepath)
 	files=list();filesizes=list()
 	fplist=list()
 	for k in range(len(files_list)):
 		entry=files_list[k]
 		fplist.append(entry[0])
+	if target_cnmt==None:	
+		for i in range(len(files_list)):			
+			entry=files_list[i]
+			cnmtfile=entry[0]	
+			if cnmtfile.endswith('.cnmt.nca'):
+				target_cnmt=cnmtfile
+				break
 	for i in range(len(files_list)):
 		entry=files_list[i]
 		cnmtfile=entry[0]
-		if cnmtfile.endswith('.cnmt.nca'):
+		if cnmtfile.endswith('.cnmt.nca') and target_cnmt==cnmtfile:
 			f=squirrelXCI(filepath)
 			titleid,titleversion,base_ID,keygeneration,rightsId,RSV,RGV,ctype,metasdkversion,exesdkversion,hasHtmlManual,Installedsize,DeltaSize,ncadata=f.get_data_from_cnmt(cnmtfile)
 			f.flush()
@@ -531,8 +570,10 @@ def gen_xci_parts(filepath,cachefolder=None,keepupd=False,id_target=False,keypat
 					if test1 in fplist or test2 in fplist:
 						# print(str(row['NcaId'])+'.nca')
 						files.append(str(row['NcaId'])+'.nca')
-						filesizes.append(int(row['Size']))					
-				elif row['NCAtype']=='Meta':
+						filesizes.append(int(row['Size']))	
+			for j in range(len(ncadata)):
+				row=ncadata[j]						
+				if row['NCAtype']=='Meta':
 					# print(str(row['NcaId'])+'.cnmt.nca')
 					files.append(str(row['NcaId'])+'.cnmt.nca')
 					filesizes.append(int(row['Size']))	
@@ -544,7 +585,12 @@ def gen_xci_parts(filepath,cachefolder=None,keepupd=False,id_target=False,keypat
 					if test1 in fplist or test2 in fplist:
 						# print(str(row['NcaId'])+'.nca')
 						files.append(str(row['NcaId'])+'.nca')
-						filesizes.append(int(row['Size']))				
+						filesizes.append(int(row['Size']))
+						if test1 in fplist:
+							program_name=test1
+						elif test2 in fplist:	
+							program_name=test2
+			break			
 	f.flush()
 	f.close()						
 	outheader = sq_tools.gen_nsp_header(files,filesizes)	
@@ -571,6 +617,17 @@ def gen_xci_parts(filepath,cachefolder=None,keepupd=False,id_target=False,keypat
 	outf.write(outheader)	
 	written+=len(outheader)
 	movoffset=0
+	for nspF in xci.hfs0:
+		if str(nspF._path)=="secure":
+			for ticket in nspF:			
+				if type(ticket) == Ticket:
+					size=ticket.size			
+					size_pr=sq_tools.getSize(size)			
+					filename =  str(ticket._path)
+					tik=filename[:-20]				
+					if str(tik).upper() == str(titleid).upper():
+						titleKey = ticket.getTitleKeyBlock().to_bytes(16, byteorder='big')
+						break	
 	for fi in files:
 		for nspF in xci.hfs0:
 			if str(nspF._path)=="secure":
@@ -589,6 +646,11 @@ def gen_xci_parts(filepath,cachefolder=None,keepupd=False,id_target=False,keypat
 						crypto2=nca.header.getCryptoType2()					
 						if nca.header.getRightsId() != 0:				
 							nca.rewind()	
+							if crypto2>crypto1:
+								masterKeyRev=crypto2
+							if crypto2<=crypto1:	
+								masterKeyRev=crypto1								
+							titleKeyDec = Keys.decryptTitleKey(titleKey, Keys.getMasterKeyIndex(int(masterKeyRev)))							
 							encKeyBlock = crypto.encrypt(titleKeyDec * 4)
 							if str(keypatch) != "False":
 								if keypatch < nca.header.getCryptoType2():
@@ -613,6 +675,8 @@ def gen_xci_parts(filepath,cachefolder=None,keepupd=False,id_target=False,keypat
 							written+=len(data)
 						break					
 					else:pass
+	xci.flush()
+	xci.close()						
 	outf.close()		
 	if export_type=='json':
 		files_json=os.path.join(cachefolder, "files.json")	
@@ -657,5 +721,12 @@ def gen_xci_parts(filepath,cachefolder=None,keepupd=False,id_target=False,keypat
 				i+=1				
 			if i==2:	
 				csvfile.write("{}|{}|{}|{}|{}|{}".format(1,filepath,( os.path.getsize(filepath)),targetsize,off1,off2))		
-				i+=1			
-
+				i+=1
+	g=os.path.basename(filepath) 			
+	g0=[pos for pos, char in enumerate(g) if char == '[']
+	g0=(g[0:g0[0]]).strip()			
+	nspname="test.nsp"
+	try:
+		nspname=f"{g0} [{titleid}] [v{titleversion}] [{ctype}].nsp"
+	except:pass
+	return nspname

@@ -319,24 +319,26 @@ Pack xci or nsp in fat32 compatible formats or exfat format.
 This program attempts to modify the minimum data possible in nsp and xci files, due to that reason it requires signature patches to ignore both signatures at NCA headers. Firmwares that already include them are:
 - SX OS
 - ReiNX
-https://github.com/Reisyukaku/ReiNX/releases
-- For Kosmos use joonie86 sigpatches and Hekate5.0 or joonie86 Hekate Mod "a.k.a J"
-https://github.com/Joonie86/hekate/releases/tag/5.0.0J
-- For atmosphere use the4n sigpatches
-https://gbatemp.net/attachments/2-0-0-8-1-0-zip.170607/
+- For atmosphere you'll need the appropiate sigpatches, which should include the acid patches
 
 To install multi-nsp you need a installer compatible with them. Reported compatible installers are:
 - SX OS rom-menu
 - SX OS installer
-- Blawar’s tinfoil:
-https://github.com/digableinc/tinfoil
-- Blawar’s lithium:
-https://github.com/blawar/lithium
+- Blawar’s tinfoil or Lithium:
+http://tinfoil.io/Download#download
+- DBI Installer from DuckBill
+https://github.com/rashevskyv/switch/releases/tag/456
+- Awoo Installer
+https://github.com/Huntereb/Awoo-Installer
 
 To install ncz files you need:
 - SX OS installer
 - Blawar’s tinfoil:
 https://github.com/digableinc/tinfoil
+- DBI Installer from DuckBill
+https://github.com/rashevskyv/switch/releases/tag/456
+- Awoo Installer
+https://github.com/Huntereb/Awoo-Installer
 
 ## 10. Requirements
 
@@ -367,9 +369,9 @@ b.) Hacbuild: The xci repacking functions are based on hacbuild's code, made by 
 
 - Revised hacbuild by me: https://github.com/julesontheroad/hacbuild
 
-c.) The mtp mode relies heavily on DBI installer from  Rashevskyv and the Keffir team. Specifically it was tested with DBI 1.25
+c.) The mtp mode relies heavily on DBI installer by DUCKBILL. Specifically it was tested with DBI 1.25
 
-- DBI is included in keffir CFW pack: https://github.com/rashevskyv/switch/releases
+- DBI is included in kefir CFW pack: https://github.com/rashevskyv/switch/releases
 
 - DBI 1.25 is first included in this release: https://github.com/rashevskyv/switch/releases/tag/456
 

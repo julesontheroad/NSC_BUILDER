@@ -18,7 +18,7 @@ call :program_logo
 echo -----------------------------------------------
 echo CREATE MULTI-XCI AND TRANSFER TO MTP
 echo -----------------------------------------------
-if exist "mlistMTP.txt" del "mlistMTP.txt" 
+if exist "mlistMTP.txt" del "mlistMTP.txt"
 :multi_manual_INIT
 endlocal
 set skip_list_split="false"
@@ -122,7 +122,7 @@ goto multi_saved_for_later
 echo.
 echo CHOOSE NAME FOR THE JOB
 echo ......................................................................
-echo The list will be saved under the name of your choosing in the list's 
+echo The list will be saved under the name of your choosing in the list's
 echo folder ( Route is "program's folder\list\m_multi")
 echo.
 set /p lname="Input name for the list job: "
@@ -162,7 +162,7 @@ set string=
 :multi_update_list1
 if !pos1! GTR !pos2! ( goto :multi_update_list2 ) else ( set /a pos1+=1 )
 set string=%string%,%pos1%
-goto :multi_update_list1 
+goto :multi_update_list1
 :multi_update_list2
 set string=%string%,
 set skiplist=%string%
@@ -182,7 +182,7 @@ echo -------------------------------------------------
 echo MULTI-REPACK MODE ACTIVATED
 echo -------------------------------------------------
 ECHO -------------------------------------------------
-ECHO                FILES TO PROCESS 
+ECHO                FILES TO PROCESS
 ECHO -------------------------------------------------
 for /f "tokens=*" %%f in (mlistMTP.txt) do (
 echo %%f
@@ -209,7 +209,7 @@ echo *******************************************************
 echo.
 echo 1. YES
 echo 2. NO
-echo. 
+echo.
 ECHO ******************************************
 echo Or Input "0" to return to the list options
 ECHO ******************************************
@@ -307,17 +307,17 @@ echo          /_', "=. ';:;:;
 echo          @=:__,  \,;:;:'
 echo            _(\.=  ;:;;'
 echo           `"_(  _/="`
-echo            `"'		
+echo            `"'
 exit /B
 
 :program_logo
 
-ECHO                                        __          _ __    __         
+ECHO                                        __          _ __    __
 ECHO                  ____  _____ ____     / /_  __  __(_) /___/ /__  _____
 ECHO                 / __ \/ ___/ ___/    / __ \/ / / / / / __  / _ \/ ___/
-ECHO                / / / (__  ) /__     / /_/ / /_/ / / / /_/ /  __/ /    
-ECHO               /_/ /_/____/\___/____/_.___/\__,_/_/_/\__,_/\___/_/     
-ECHO                              /_____/                                  
+ECHO                / / / (__  ) /__     / /_/ / /_/ / / / /_/ /  __/ /
+ECHO               /_/ /_/____/\___/____/_.___/\__,_/_/_/\__,_/\___/_/
+ECHO                              /_____/
 ECHO -------------------------------------------------------------------------------------
 ECHO                         NINTENDO SWITCH CLEANER AND BUILDER
 ECHO                      (THE XCI MULTI CONTENT BUILDER AND MORE)
@@ -327,8 +327,8 @@ ECHO ---------------------------------------------------------------------------
 ECHO "                                POWERED BY SQUIRREL                                "
 ECHO "                         A MTP MANAGER FOR DBI INSTALLER                           "
 ECHO                                  VERSION 0.99 (MTP)
-ECHO -------------------------------------------------------------------------------------                   
-ECHO DBI by RASHEVSKYV: https://github.com/rashevskyv/switch/releases
+ECHO -------------------------------------------------------------------------------------
+ECHO DBI by DUCKBILL: https://github.com/rashevskyv/switch/releases
 ECHO Tested with v1.25: https://github.com/rashevskyv/switch/releases/tag/456
 ECHO -------------------------------------------------------------------------------------
 exit /B

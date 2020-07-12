@@ -1,4 +1,4 @@
-# DBI 125 from RASHEVSKYV
+# DBI 125 from DuckBill
 https://github.com/rashevskyv/switch/releases/tag/456
 
 ## 1. What's DBI?
