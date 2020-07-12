@@ -308,7 +308,6 @@ def install(filepath=None,destiny="SD",verification=True,outfolder=None,ch_mediu
 	elif kgwarning==True and patch_keygen==True: 	
 		print("File requires a higher firmware. It'll will be prepatch")
 		dopatch=True
-	dopatch=True	
 	if (filepath.endswith('nsp') or filepath.endswith('nsz')) and st_crypto==True:	
 			if install_mode=="legacy":	
 				install_converted(filepath=filepath,outfolder=outfolder,destiny=destiny,kgpatch=dopatch,tgkg=tgkg)	
