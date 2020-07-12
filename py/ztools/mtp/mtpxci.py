@@ -4,7 +4,6 @@ import os
 import shutil
 import json
 import listmanager
-# from tqdm import tqdm
 from Fs import Nsp as squirrelNSP
 from Fs import Xci as squirrelXCI
 from Fs import factory
@@ -25,6 +24,7 @@ from mtp.wpd import is_switch_connected
 from python_pick import pick
 from python_pick import Picker
 import csv
+from tqdm import tqdm
 
 if not is_switch_connected():
 	sys.exit("Switch device isn't connected.\nCheck if mtp responder is running!!!")	
@@ -517,7 +517,7 @@ def install_xci_csv(filepath,destiny="SD",cachefolder=None,override=False,keypat
 		cnmtfile=entry[0]	
 		if cnmtfile.endswith('.cnmt.nca'):
 			target_cnmt=cnmtfile
-			nspname=gen_xci_parts_spec1(filepath,target_cnmt=target_cnmt,cachefolder=cachefolder,keypatch=keypatch,export_type='csv')
+			nspname=gen_xci_parts_spec1(filepath,target_cnmt=target_cnmt,cachefolder=cachefolder,keypatch=keypatch)
 			if filepath.endswith('xcz'):
 				nspname=nspname[:-1]+'z'
 			files_csv=os.path.join(cachefolder, 'files.csv')	
@@ -673,14 +673,18 @@ def gen_xci_parts_spec0(filepath,target_cnmt=None,cachefolder=None,keypatch=Fals
 							titleKeyDec = Keys.decryptTitleKey(titleKey, Keys.getMasterKeyIndex(int(masterKeyRev)))							
 							encKeyBlock = crypto.encrypt(titleKeyDec * 4)
 							if str(keypatch) != "False":
+								t = tqdm(total=False, unit='B', unit_scale=False, leave=False)								
 								if keypatch < nca.header.getCryptoType2():
-									encKeyBlock,crypto1,crypto2=squirrelXCI.get_new_cryptoblock(nca, keypatch,encKeyBlock,t)	
+									encKeyBlock,crypto1,crypto2=squirrelXCI.get_new_cryptoblock(squirrelXCI,nca, keypatch,encKeyBlock,t)	
+								t.close()
 						if nca.header.getRightsId() == 0:
 							nca.rewind()				
 							encKeyBlock = nca.header.getKeyBlock()	
 							if str(keypatch) != "False":
+								t = tqdm(total=False, unit='B', unit_scale=False, leave=False)									
 								if keypatch < nca.header.getCryptoType2():
-									encKeyBlock,crypto1,crypto2=squirrelXCI.get_new_cryptoblock(nca, keypatch,encKeyBlock,t)					
+									encKeyBlock,crypto1,crypto2=squirrelXCI.get_new_cryptoblock(squirrelXCI,nca,keypatch,encKeyBlock,t)					
+								t.close()									
 						nca.rewind()					
 						i=0				
 						newheader=xci.get_newheader(nca,encKeyBlock,crypto1,crypto2,hcrypto,gc_flag)		
@@ -751,7 +755,11 @@ def gen_xci_parts_spec0(filepath,target_cnmt=None,cachefolder=None,keypatch=Fals
 	except:pass
 	return nspname
 
-def gen_xci_parts_spec1(filepath,target_cnmt=None,cachefolder=None,keypatch=False,export_type='csv'):
+def gen_xci_parts_spec1(filepath,target_cnmt=None,cachefolder=None,keypatch=False):
+	if keypatch!=False:
+		try:
+			keypatch=int(keypatch)
+		except:	keypatch=False
 	if cachefolder==None:
 		cachefolder=os.path.join(ztools_dir, '_mtp_cache_')	
 	if not os.path.exists(cachefolder):
@@ -870,14 +878,18 @@ def gen_xci_parts_spec1(filepath,target_cnmt=None,cachefolder=None,keypatch=Fals
 							titleKeyDec = Keys.decryptTitleKey(titleKey, Keys.getMasterKeyIndex(int(masterKeyRev)))							
 							encKeyBlock = crypto.encrypt(titleKeyDec * 4)
 							if str(keypatch) != "False":
+								t = tqdm(total=False, unit='B', unit_scale=False, leave=False)	
 								if keypatch < nca.header.getCryptoType2():
-									encKeyBlock,crypto1,crypto2=squirrelXCI.get_new_cryptoblock(nca, keypatch,encKeyBlock,t)	
+									encKeyBlock,crypto1,crypto2=squirrelXCI.get_new_cryptoblock(squirrelXCI,nca, keypatch,encKeyBlock,t)	
+								t.close()
 						if nca.header.getRightsId() == 0:
 							nca.rewind()											
 							encKeyBlock = nca.header.getKeyBlock()	
 							if str(keypatch) != "False":
+								t = tqdm(total=False, unit='B', unit_scale=False, leave=False)								
 								if keypatch < nca.header.getCryptoType2():
-									encKeyBlock,crypto1,crypto2=squirrelXCI.get_new_cryptoblock(nca, keypatch,encKeyBlock,t)					
+									encKeyBlock,crypto1,crypto2=squirrelXCI.get_new_cryptoblock(squirrelXCI,nca,keypatch,encKeyBlock,t)	
+								t.close()									
 						nca.rewind()					
 						i=0				
 						newheader=xci.get_newheader(nca,encKeyBlock,crypto1,crypto2,hcrypto,gc_flag)	
