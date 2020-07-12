@@ -367,9 +367,9 @@ b.) Hacbuild: The xci repacking functions are based on hacbuild's code, made by 
 
 - Revised hacbuild by me: https://github.com/julesontheroad/hacbuild
 
-c.) The mtp mode relies heavily on DBI installer from  Rashevskyv and the Keffir team. Specifically it was tested with DBI 1.25
+c.) The mtp mode relies heavily on DBI installer from  DuckBill and the kefir team. Specifically it was tested with DBI 1.25
 
-- DBI is included in keffir CFW pack: https://github.com/rashevskyv/switch/releases
+- DBI is included in kefir CFW pack: https://github.com/rashevskyv/switch/releases
 
 - DBI 1.25 is first included in this release: https://github.com/rashevskyv/switch/releases/tag/456
 

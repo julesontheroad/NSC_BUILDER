@@ -52,7 +52,7 @@ echo *******************************************************
 echo.
 echo 1. GAME INSTALLATION FROM LOCAL FILES
 echo 2. GAME INSTALLATION FROM REMOTE LIBRARIES (GDRIVE)
-echo. 
+echo.
 ECHO ******************************************
 echo Or Input "0" to return to the list options
 ECHO ******************************************
@@ -96,8 +96,8 @@ echo Input "1" to auto-start processing from the previous list
 echo Input "2" to erase list and make a new one.
 echo Input "3" to continue building the previous list
 echo .......................................................
-echo NOTE: By pressing 3 you'll see the previous list 
-echo before starting the processing the files and you will 
+echo NOTE: By pressing 3 you'll see the previous list
+echo before starting the processing the files and you will
 echo be able to add and delete items from the list
 echo.
 ECHO *************************************************
@@ -202,7 +202,7 @@ set string=
 :update_list1
 if !pos1! GTR !pos2! ( goto :update_list2 ) else ( set /a pos1+=1 )
 set string=%string%,%pos1%
-goto :update_list1 
+goto :update_list1
 :update_list2
 set string=%string%,
 set skiplist=%string%
@@ -221,7 +221,7 @@ call :program_logo
 echo -------------------------------------------------
 echo MTP - INSTALLATION MODE ACTIVATED
 echo -------------------------------------------------
-ECHO FILES TO PROCESS: 
+ECHO FILES TO PROCESS:
 for /f "tokens=*" %%f in (MTP1.txt) do (
 echo %%f
 )
@@ -267,7 +267,7 @@ echo *******************************************************
 echo.
 echo 1. SD
 echo 2. EMMC
-echo. 
+echo.
 ECHO ******************************************
 echo Or Input "b" to return to the list options
 ECHO ******************************************
@@ -308,7 +308,7 @@ echo 1. FILE TRANSFER FROM LOCAL FILES
 echo 2. FILE TRANSFER FROM REMOTE LIBRARIES (GDRIVE)
 echo 3. CREATE XCI AND TRANSFER
 echo 4. CREATE MULTI-XCI AND TRANSFER
-echo. 
+echo.
 ECHO ******************************************
 echo Or Input "0" to return to the list options
 ECHO ******************************************
@@ -345,7 +345,7 @@ echo *******************************************************
 echo.
 echo 1. SD
 echo 2. EMMC
-echo. 
+echo.
 ECHO ******************************************
 echo Or Input "0" to return to the list options
 ECHO ******************************************
@@ -365,7 +365,7 @@ echo *******************************************************
 echo.
 echo 1. START INSTALLATION AFTER DETECTING NEW CONTENT
 echo 2. SELECT CONTENT TO INSTALL
-echo. 
+echo.
 ECHO ******************************************
 echo Input "0" to return to the list options
 echo Input "b" to go to the previous menu
@@ -388,7 +388,7 @@ echo *******************************************************
 echo.
 echo 1. AUTOUPDATE FROM LOCAL LIBRARIES
 echo 2. AUTOUPDATE FROM REMOTE LIBRARIES (GOOGLE DRIVE)
-echo. 
+echo.
 ECHO ******************************************
 echo Input "0" to return to the list options
 echo Input "b" to go to the previous menu
@@ -431,7 +431,7 @@ echo.
 echo 1. DUMP INSTALLED CONTENT
 echo 2. UNINSTALL CONTENT
 echo 3. DELETE ARCHIVED GAMES
-echo. 
+echo.
 ECHO ******************************************
 echo Or Input "0" to return to the list options
 ECHO ******************************************
@@ -450,7 +450,7 @@ ECHO ******************************************
 echo CONTENT DUMPER
 ECHO ******************************************
 echo.
-%pycommand% "%squirrel%" -lib_call mtp.mtp_game_manager dump_content 
+%pycommand% "%squirrel%" -lib_call mtp.mtp_game_manager dump_content
 echo.
 ECHO ---------------------------------------------------
 ECHO *********** ALL FILES WERE PROCESSED! *************
@@ -463,7 +463,7 @@ ECHO ******************************************
 echo CONTENT UNINSTALLER
 ECHO ******************************************
 echo.
-%pycommand% "%squirrel%" -lib_call mtp.mtp_game_manager uninstall_content 
+%pycommand% "%squirrel%" -lib_call mtp.mtp_game_manager uninstall_content
 echo.
 ECHO ---------------------------------------------------
 ECHO *********** ALL FILES WERE PROCESSED! *************
@@ -476,7 +476,7 @@ ECHO ******************************************
 echo DELETE ARCHIVED_GAMES
 ECHO ******************************************
 echo.
-%pycommand% "%squirrel%" -lib_call mtp.mtp_game_manager delete_archived 
+%pycommand% "%squirrel%" -lib_call mtp.mtp_game_manager delete_archived
 echo.
 ECHO ---------------------------------------------------
 ECHO *********** ALL FILES WERE PROCESSED! *************
@@ -496,7 +496,7 @@ ECHO ******************************************
 echo.
 echo 1. DUMP ALL SAVES
 echo 2. SELECT WHAT SAVES TO DUMP
-echo. 
+echo.
 ECHO ******************************************
 echo Or Input "0" to return to the list options
 ECHO ******************************************
@@ -529,7 +529,7 @@ echo 1. GENERATE SX AUTOLOADER FILES FOR SD GAMES
 echo 2. GENERATE SX AUTOLOADER FILES FOR HDD GAMES
 echo 3. PUSH SX AUTOLOADER FILES TO CONSOLE
 echo 4. CHECK AND CLEAN AUTOLOADER FILES (MEANT TO AVOID COLLISION BETWEEN SD AND HDD)
-echo. 
+echo.
 ECHO ******************************************
 echo Or Input "0" to return to the list options
 ECHO ******************************************
@@ -573,7 +573,7 @@ ECHO ******************************************
 echo INFORMATION
 ECHO ******************************************
 echo Input "1" to show device information
-echo Input "2" to show installed and xci games on device 
+echo Input "2" to show installed and xci games on device
 echo Input "3" to show list of new available updates or dlcs for PLAY-READY GAMES
 echo Input "4" to show archived games
 echo Input "5" to show list of new available updates or dlcs for ARCHIVED GAMES
@@ -623,7 +623,7 @@ goto DEV_INF
 cls
 call :program_logo
 echo.
-%pycommand% "%squirrel%" -lib_call mtp.mtpinstaller get_archived_info -xarg False  
+%pycommand% "%squirrel%" -lib_call mtp.mtpinstaller get_archived_info -xarg False
 echo.
 PAUSE
 goto DEV_INF
@@ -632,7 +632,7 @@ goto DEV_INF
 cls
 call :program_logo
 echo.
-%pycommand% "%squirrel%" -lib_call mtp.mtpinstaller get_archived_info -xarg True 
+%pycommand% "%squirrel%" -lib_call mtp.mtpinstaller get_archived_info -xarg True
 echo.
 PAUSE
 goto DEV_INF
@@ -671,17 +671,17 @@ echo          /_', "=. ';:;:;
 echo          @=:__,  \,;:;:'
 echo            _(\.=  ;:;;'
 echo           `"_(  _/="`
-echo            `"'		
+echo            `"'
 exit /B
 
 :program_logo
 
-ECHO                                        __          _ __    __         
+ECHO                                        __          _ __    __
 ECHO                  ____  _____ ____     / /_  __  __(_) /___/ /__  _____
 ECHO                 / __ \/ ___/ ___/    / __ \/ / / / / / __  / _ \/ ___/
-ECHO                / / / (__  ) /__     / /_/ / /_/ / / / /_/ /  __/ /    
-ECHO               /_/ /_/____/\___/____/_.___/\__,_/_/_/\__,_/\___/_/     
-ECHO                              /_____/                                  
+ECHO                / / / (__  ) /__     / /_/ / /_/ / / / /_/ /  __/ /
+ECHO               /_/ /_/____/\___/____/_.___/\__,_/_/_/\__,_/\___/_/
+ECHO                              /_____/
 ECHO -------------------------------------------------------------------------------------
 ECHO                         NINTENDO SWITCH CLEANER AND BUILDER
 ECHO                      (THE XCI MULTI CONTENT BUILDER AND MORE)
@@ -691,8 +691,8 @@ ECHO ---------------------------------------------------------------------------
 ECHO "                                POWERED BY SQUIRREL                                "
 ECHO "                         A MTP MANAGER FOR DBI INSTALLER                           "
 ECHO                                  VERSION 0.99 (MTP)
-ECHO -------------------------------------------------------------------------------------                   
-ECHO DBI by RASHEVSKYV: https://github.com/rashevskyv/switch/releases
+ECHO -------------------------------------------------------------------------------------
+ECHO DBI by DUCKBILL: https://github.com/rashevskyv/switch/releases
 ECHO Tested with v1.25: https://github.com/rashevskyv/switch/releases/tag/456
 ECHO -------------------------------------------------------------------------------------
 exit /B
@@ -722,6 +722,3 @@ exit /B
 :salida
 ::pause
 exit
-
-
-
