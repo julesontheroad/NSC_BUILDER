@@ -525,6 +525,13 @@ def install_xci_csv(filepath,destiny="SD",cachefolder=None,override=False,keypat
 					process.terminate();	
 			counter-=1		
 			print('\n- Still '+str(counter)+' subitems to process\n')	
+	if os.path.exists(cachefolder):			
+		for f in os.listdir(cachefolder):
+			fp = os.path.join(cachefolder, f)
+			try:
+				shutil.rmtree(fp)
+			except OSError:
+				os.remove(fp)			
 
 def gen_xci_parts_spec0(filepath,target_cnmt=None,cachefolder=None,keypatch=False,export_type='csv'):
 	if cachefolder==None:
