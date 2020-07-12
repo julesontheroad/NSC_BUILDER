@@ -517,18 +517,16 @@ def install_xci_csv(filepath,destiny="SD",cachefolder=None,override=False,keypat
 		cnmtfile=entry[0]	
 		if cnmtfile.endswith('.cnmt.nca'):
 			target_cnmt=cnmtfile
-			nspname=gen_xci_parts(filepath,target_cnmt=target_cnmt,cachefolder=cachefolder,keypatch=keypatch,export_type='csv')
+			nspname=gen_xci_parts_spec1(filepath,target_cnmt=target_cnmt,cachefolder=cachefolder,keypatch=keypatch,export_type='csv')
 			files_csv=os.path.join(cachefolder, 'files.csv')	
 			process=subprocess.Popen([nscb_mtp,"InstallfromCSV","-cs",files_csv,"-nm",nspname,"-dst",destiny])		
 			while process.poll()==None:
 				if process.poll()!=None:
 					process.terminate();	
 			counter-=1		
-			print('\n...................................................')
-			print('STILL '+str(counter)+' FILES TO PROCESS')
-			print('...................................................\n')		
+			print('\n- Still '+str(counter)+' subitems to process\n')	
 
-def gen_xci_parts(filepath,target_cnmt=None,cachefolder=None,keypatch=False,export_type='csv'):
+def gen_xci_parts_spec0(filepath,target_cnmt=None,cachefolder=None,keypatch=False,export_type='csv'):
 	if cachefolder==None:
 		cachefolder=os.path.join(ztools_dir, '_mtp_cache_')	
 	if not os.path.exists(cachefolder):
@@ -730,3 +728,153 @@ def gen_xci_parts(filepath,target_cnmt=None,cachefolder=None,keypatch=False,expo
 		nspname=f"{g0} [{titleid}] [v{titleversion}] [{ctype}].nsp"
 	except:pass
 	return nspname
+
+def gen_xci_parts_spec1(filepath,target_cnmt=None,cachefolder=None,keypatch=False,export_type='csv'):
+	if cachefolder==None:
+		cachefolder=os.path.join(ztools_dir, '_mtp_cache_')	
+	if not os.path.exists(cachefolder):
+		os.makedirs(cachefolder)
+	else:
+		for f in os.listdir(cachefolder):
+			fp = os.path.join(cachefolder, f)
+			try:
+				shutil.rmtree(fp)
+			except OSError:
+				os.remove(fp)
+	files_list=sq_tools.ret_xci_offsets(filepath)
+	files=list();filesizes=list()
+	fplist=list()
+	for k in range(len(files_list)):
+		entry=files_list[k]
+		fplist.append(entry[0])
+	if target_cnmt==None:	
+		for i in range(len(files_list)):			
+			entry=files_list[i]
+			cnmtfile=entry[0]	
+			if cnmtfile.endswith('.cnmt.nca'):
+				target_cnmt=cnmtfile
+				break				
+	for i in range(len(files_list)):
+		entry=files_list[i]
+		cnmtfile=entry[0]
+		if cnmtfile.endswith('.cnmt.nca') and target_cnmt==cnmtfile:
+			f=squirrelXCI(filepath)
+			titleid,titleversion,base_ID,keygeneration,rightsId,RSV,RGV,ctype,metasdkversion,exesdkversion,hasHtmlManual,Installedsize,DeltaSize,ncadata=f.get_data_from_cnmt(cnmtfile)
+			f.flush()
+			f.close()
+			for j in range(len(ncadata)):
+				row=ncadata[j]
+				# print(row)
+				if row['NCAtype']!='Meta':
+					test1=str(row['NcaId'])+'.nca';test2=str(row['NcaId'])+'.ncz'
+					if test1 in fplist or test2 in fplist:
+						# print(str(row['NcaId'])+'.nca')
+						files.append(str(row['NcaId'])+'.nca')
+						filesizes.append(int(row['Size']))					
+			for j in range(len(ncadata)):
+				row=ncadata[j]						
+				if row['NCAtype']=='Meta':
+					# print(str(row['NcaId'])+'.cnmt.nca')
+					files.append(str(row['NcaId'])+'.cnmt.nca')
+					filesizes.append(int(row['Size']))	
+			for j in range(len(ncadata)):
+				row=ncadata[j]
+				# print(row)
+				if row['NCAtype']=='Program':
+					test1=str(row['NcaId'])+'.nca';test2=str(row['NcaId'])+'.ncz'
+					if test1 in fplist or test2 in fplist:
+						# print(str(row['NcaId'])+'.nca')
+						files.append(str(row['NcaId'])+'.nca')
+						filesizes.append(int(row['Size']))
+			break										
+	f.flush()
+	f.close()						
+	outheader = sq_tools.gen_nsp_header(files,filesizes)	
+	properheadsize=len(outheader)
+	# print(properheadsize)
+	# print(bucketsize)
+	i=0;sum=properheadsize;
+	xci=squirrelXCI(filepath)
+	outfile=os.path.join(cachefolder, "0")
+	outf = open(outfile, 'w+b')		
+	outf.write(outheader)	
+	written=0
+	for nspF in xci.hfs0:
+		if str(nspF._path)=="secure":
+			for ticket in nspF:			
+				if type(ticket) == Ticket:
+					size=ticket.size			
+					size_pr=sq_tools.getSize(size)			
+					filename =  str(ticket._path)
+					tik=filename[:-20]				
+					if str(tik).upper() == str(titleid).upper():
+						titleKey = ticket.getTitleKeyBlock().to_bytes(16, byteorder='big')
+						break	
+	for fi in files:
+		for nspF in xci.hfs0:	
+			if str(nspF._path)=="secure":
+				for nca in nspF:					
+					if nca._path==fi:
+						crypto1=nca.header.getCryptoType()
+						crypto2=nca.header.getCryptoType2()	
+						if crypto2>crypto1:
+							masterKeyRev=crypto2
+						if crypto2<=crypto1:	
+							masterKeyRev=crypto1									
+						crypto = aes128.AESECB(Keys.keyAreaKey(Keys.getMasterKeyIndex(masterKeyRev), nca.header.keyIndex))
+						hcrypto = aes128.AESXTS(uhx(Keys.get('header_key')))	
+						gc_flag='00'*0x01					
+						crypto1=nca.header.getCryptoType()
+						crypto2=nca.header.getCryptoType2()					
+						if nca.header.getRightsId() != 0:					
+							nca.rewind()	
+							if crypto2>crypto1:
+								masterKeyRev=crypto2
+							if crypto2<=crypto1:	
+								masterKeyRev=crypto1								
+							titleKeyDec = Keys.decryptTitleKey(titleKey, Keys.getMasterKeyIndex(int(masterKeyRev)))							
+							encKeyBlock = crypto.encrypt(titleKeyDec * 4)
+							if str(keypatch) != "False":
+								if keypatch < nca.header.getCryptoType2():
+									encKeyBlock,crypto1,crypto2=squirrelXCI.get_new_cryptoblock(nca, keypatch,encKeyBlock,t)	
+						if nca.header.getRightsId() == 0:
+							nca.rewind()											
+							encKeyBlock = nca.header.getKeyBlock()	
+							if str(keypatch) != "False":
+								if keypatch < nca.header.getCryptoType2():
+									encKeyBlock,crypto1,crypto2=squirrelXCI.get_new_cryptoblock(nca, keypatch,encKeyBlock,t)					
+						nca.rewind()					
+						i=0				
+						newheader=xci.get_newheader(nca,encKeyBlock,crypto1,crypto2,hcrypto,gc_flag)	
+						outf.write(newheader)
+						written+=len(newheader)
+						nca.seek(0xC00)	
+						break					
+					else:pass					
+	xci.flush()
+	xci.close()							
+	outf.flush()							
+	outf.close()		
+	tfile=os.path.join(cachefolder, "files.csv")	
+	with open(tfile,'w') as csvfile:	
+		csvfile.write("{}|{}|{}|{}|{}|{}\n".format("step","filepath","size","targetsize","off1","off2"))	
+		csvfile.write("{}|{}|{}|{}|{}|{}\n".format(0,outfile,properheadsize+written,properheadsize,0,properheadsize))	
+		k=0;l=0	
+		for fi in files:
+			for j in files_list:
+				if j[0]==fi:	
+					csvfile.write("{}|{}|{}|{}|{}|{}\n".format(k+1,outfile,properheadsize+written,0xC00,(properheadsize+l*0xC00),(properheadsize+(l*0xC00)+0xC00)))	
+					off1=j[1]+0xC00
+					off2=j[2]
+					targetsize=j[3]-0xC00				
+					csvfile.write("{}|{}|{}|{}|{}|{}\n".format(k+2,filepath,(os.path.getsize(filepath)),targetsize,off1,off2))	
+					break
+			k+=2;l+=1							
+	g=os.path.basename(filepath) 			
+	g0=[pos for pos, char in enumerate(g) if char == '[']
+	g0=(g[0:g0[0]]).strip()			
+	nspname="test.nsp"
+	try:
+		nspname=f"{g0} [{titleid}] [v{titleversion}] [{ctype}].nsp"
+	except:pass
+	return nspname					
