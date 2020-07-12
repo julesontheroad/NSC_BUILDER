@@ -275,7 +275,7 @@ def dump_content():
 	retrieve_installed()
 	installed=get_gamelist()
 	print("  * Entering File Picker")	
-	title = 'Select content to dump_content: \n + Press space or right to select content \n + Press E to finish selection'
+	title = 'Select content to dump: \n + Press space or right to select content \n + Press Enter or Intro to accept selection \n + Press E to exit selection'
 	options=installed
 	picker = Picker(options, title, multi_select=True, min_selection_count=1)
 	def end_selection(picker):
