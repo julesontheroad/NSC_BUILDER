@@ -9,6 +9,7 @@ from Fs import Nsp as squirrelNSP
 from Fs import Xci as squirrelXCI
 from Fs import factory
 from Fs.Nca import NcaHeader
+from Fs import Nca
 from Fs.File import MemoryFile
 from Fs import Ticket
 import sq_tools
@@ -500,7 +501,6 @@ def get_header_size(filepath):
 	return properheadsize,keygeneration,sz
 	
 def install_xci_csv(filepath,destiny="SD",cachefolder=None,override=False,keypatch=False):
-	import time
 	if cachefolder==None:
 		cachefolder=os.path.join(ztools_dir, '_mtp_cache_')	
 	files_list=sq_tools.ret_xci_offsets(filepath)
@@ -518,6 +518,8 @@ def install_xci_csv(filepath,destiny="SD",cachefolder=None,override=False,keypat
 		if cnmtfile.endswith('.cnmt.nca'):
 			target_cnmt=cnmtfile
 			nspname=gen_xci_parts_spec1(filepath,target_cnmt=target_cnmt,cachefolder=cachefolder,keypatch=keypatch,export_type='csv')
+			if filepath.endswith('xcz'):
+				nspname=nspname[:-1]+'z'
 			files_csv=os.path.join(cachefolder, 'files.csv')	
 			process=subprocess.Popen([nscb_mtp,"InstallfromCSV","-cs",files_csv,"-nm",nspname,"-dst",destiny])		
 			while process.poll()==None:
@@ -574,8 +576,16 @@ def gen_xci_parts_spec0(filepath,target_cnmt=None,cachefolder=None,keypatch=Fals
 					test1=str(row['NcaId'])+'.nca';test2=str(row['NcaId'])+'.ncz'
 					if test1 in fplist or test2 in fplist:
 						# print(str(row['NcaId'])+'.nca')
-						files.append(str(row['NcaId'])+'.nca')
-						filesizes.append(int(row['Size']))	
+						if test1 in fplist:
+							files.append(str(row['NcaId'])+'.nca')
+							filesizes.append(int(row['Size']))
+						elif test2 in fplist:	
+							files.append(str(row['NcaId'])+'.ncz')
+							for k in range(len(files_list)):
+								entry=files_list[k]
+								if entry[0]==test2:				
+									filesizes.append(int(entry[3]))	
+									break
 			for j in range(len(ncadata)):
 				row=ncadata[j]						
 				if row['NCAtype']=='Meta':
@@ -589,12 +599,16 @@ def gen_xci_parts_spec0(filepath,target_cnmt=None,cachefolder=None,keypatch=Fals
 					test1=str(row['NcaId'])+'.nca';test2=str(row['NcaId'])+'.ncz'
 					if test1 in fplist or test2 in fplist:
 						# print(str(row['NcaId'])+'.nca')
-						files.append(str(row['NcaId'])+'.nca')
-						filesizes.append(int(row['Size']))
 						if test1 in fplist:
-							program_name=test1
+							files.append(str(row['NcaId'])+'.nca')
+							filesizes.append(int(row['Size']))
 						elif test2 in fplist:	
-							program_name=test2
+							files.append(str(row['NcaId'])+'.ncz')
+							for k in range(len(files_list)):
+								entry=files_list[k]
+								if entry[0]==test2:				
+									filesizes.append(int(entry[3]))	
+									break
 			break			
 	f.flush()
 	f.close()						
@@ -638,6 +652,7 @@ def gen_xci_parts_spec0(filepath,target_cnmt=None,cachefolder=None,keypatch=Fals
 			if str(nspF._path)=="secure":
 				for nca in nspF:	
 					if nca._path==fi:
+						nca=Nca(nca)
 						crypto1=nca.header.getCryptoType()
 						crypto2=nca.header.getCryptoType2()	
 						if crypto2>crypto1:
@@ -774,10 +789,16 @@ def gen_xci_parts_spec1(filepath,target_cnmt=None,cachefolder=None,keypatch=Fals
 				# print(row)
 				if row['NCAtype']!='Meta':
 					test1=str(row['NcaId'])+'.nca';test2=str(row['NcaId'])+'.ncz'
-					if test1 in fplist or test2 in fplist:
-						# print(str(row['NcaId'])+'.nca')
+					if test1 in fplist:
 						files.append(str(row['NcaId'])+'.nca')
-						filesizes.append(int(row['Size']))					
+						filesizes.append(int(row['Size']))
+					elif test2 in fplist:	
+						files.append(str(row['NcaId'])+'.ncz')
+						for k in range(len(files_list)):
+							entry=files_list[k]
+							if entry[0]==test2:				
+								filesizes.append(int(entry[3]))	
+								break				
 			for j in range(len(ncadata)):
 				row=ncadata[j]						
 				if row['NCAtype']=='Meta':
@@ -789,10 +810,16 @@ def gen_xci_parts_spec1(filepath,target_cnmt=None,cachefolder=None,keypatch=Fals
 				# print(row)
 				if row['NCAtype']=='Program':
 					test1=str(row['NcaId'])+'.nca';test2=str(row['NcaId'])+'.ncz'
-					if test1 in fplist or test2 in fplist:
-						# print(str(row['NcaId'])+'.nca')
+					if test1 in fplist:
 						files.append(str(row['NcaId'])+'.nca')
 						filesizes.append(int(row['Size']))
+					elif test2 in fplist:	
+						files.append(str(row['NcaId'])+'.ncz')
+						for k in range(len(files_list)):
+							entry=files_list[k]
+							if entry[0]==test2:				
+								filesizes.append(int(entry[3]))	
+								break				
 			break										
 	f.flush()
 	f.close()						
@@ -822,6 +849,7 @@ def gen_xci_parts_spec1(filepath,target_cnmt=None,cachefolder=None,keypatch=Fals
 			if str(nspF._path)=="secure":
 				for nca in nspF:					
 					if nca._path==fi:
+						nca=Nca(nca)
 						crypto1=nca.header.getCryptoType()
 						crypto2=nca.header.getCryptoType2()	
 						if crypto2>crypto1:
