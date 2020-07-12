@@ -797,7 +797,7 @@ def gen_xci_parts_spec1(filepath,target_cnmt=None,cachefolder=None,keypatch=Fals
 			for j in range(len(ncadata)):
 				row=ncadata[j]
 				# print(row)
-				if row['NCAtype']!='Meta':
+				if row['NCAtype']!='Meta' and row['NCAtype']!='Program':
 					test1=str(row['NcaId'])+'.nca';test2=str(row['NcaId'])+'.ncz'
 					if test1 in fplist:
 						files.append(str(row['NcaId'])+'.nca')
@@ -912,6 +912,8 @@ def gen_xci_parts_spec1(filepath,target_cnmt=None,cachefolder=None,keypatch=Fals
 		for fi in files:
 			for j in files_list:
 				if j[0]==fi:	
+					print(j[0])
+					print(fi)
 					csvfile.write("{}|{}|{}|{}|{}|{}\n".format(k+1,outfile,properheadsize+written,0xC00,(properheadsize+l*0xC00),(properheadsize+(l*0xC00)+0xC00)))	
 					off1=j[1]+0xC00
 					off2=j[2]

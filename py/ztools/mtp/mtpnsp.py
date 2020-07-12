@@ -148,7 +148,7 @@ def gen_nsp_parts_spec1(filepath,target_cnmt=None,cachefolder=None,keypatch=Fals
 			for j in range(len(ncadata)):
 				row=ncadata[j]
 				# print(row)
-				if row['NCAtype']!='Meta':
+				if row['NCAtype']!='Meta' and row['NCAtype']!='Program':
 					test1=str(row['NcaId'])+'.nca';test2=str(row['NcaId'])+'.ncz'
 					if test1 in fplist:
 						files.append(str(row['NcaId'])+'.nca')
