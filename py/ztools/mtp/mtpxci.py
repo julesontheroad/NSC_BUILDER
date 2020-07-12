@@ -720,11 +720,11 @@ def gen_xci_parts_spec0(filepath,target_cnmt=None,cachefolder=None,keypatch=Fals
 			if i==2:	
 				csvfile.write("{}|{}|{}|{}|{}|{}".format(1,filepath,( os.path.getsize(filepath)),targetsize,off1,off2))		
 				i+=1
-	g=os.path.basename(filepath) 			
-	g0=[pos for pos, char in enumerate(g) if char == '[']
-	g0=(g[0:g0[0]]).strip()			
-	nspname="test.nsp"
+	nspname="test.nsp"				
 	try:
+		g=os.path.basename(filepath) 			
+		g0=[pos for pos, char in enumerate(g) if char == '[']
+		g0=(g[0:g0[0]]).strip()			
 		nspname=f"{g0} [{titleid}] [v{titleversion}] [{ctype}].nsp"
 	except:pass
 	return nspname
@@ -869,12 +869,12 @@ def gen_xci_parts_spec1(filepath,target_cnmt=None,cachefolder=None,keypatch=Fals
 					targetsize=j[3]-0xC00				
 					csvfile.write("{}|{}|{}|{}|{}|{}\n".format(k+2,filepath,(os.path.getsize(filepath)),targetsize,off1,off2))	
 					break
-			k+=2;l+=1							
-	g=os.path.basename(filepath) 			
-	g0=[pos for pos, char in enumerate(g) if char == '[']
-	g0=(g[0:g0[0]]).strip()			
-	nspname="test.nsp"
+			k+=2;l+=1	
+	nspname="test.nsp"				
 	try:
+		g=os.path.basename(filepath) 			
+		g0=[pos for pos, char in enumerate(g) if char == '[']
+		g0=(g[0:g0[0]]).strip()			
 		nspname=f"{g0} [{titleid}] [v{titleversion}] [{ctype}].nsp"
 	except:pass
 	return nspname					
