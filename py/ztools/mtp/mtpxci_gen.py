@@ -185,10 +185,9 @@ def transfer_xci_csv(filepath,destiny="SD",cachefolder=None,override=False,keypa
 	files_list=sq_tools.ret_nsp_offsets(filepath)
 	print(f"Creating xci for {filepath}")
 	xciname=gen_xci_parts(filepath,cachefolder=cachefolder,keypatch=keypatch)
-	xciname=destiny+xciname
-	print(xciname)
+	destinypath=os.path.join(destiny,xciname)	
 	files_csv=os.path.join(cachefolder, 'files.csv')	
-	process=subprocess.Popen([nscb_mtp,"TransferfromCSV","-cs",files_csv,"-dst",xciname])		
+	process=subprocess.Popen([nscb_mtp,"TransferfromCSV","-cs",files_csv,"-dst",destinypath])		
 	while process.poll()==None:
 		if process.poll()!=None:
 			process.terminate();	
