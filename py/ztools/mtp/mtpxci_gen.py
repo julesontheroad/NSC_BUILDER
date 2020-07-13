@@ -192,13 +192,13 @@ def transfer_xci_csv(filepath,destiny="SD",cachefolder=None,override=False,keypa
 	while process.poll()==None:
 		if process.poll()!=None:
 			process.terminate();	
-	# if os.path.exists(cachefolder):			
-		# for f in os.listdir(cachefolder):
-			# fp = os.path.join(cachefolder, f)
-			# try:
-				# shutil.rmtree(fp)
-			# except OSError:
-				# os.remove(fp)		
+	if os.path.exists(cachefolder):			
+		for f in os.listdir(cachefolder):
+			fp = os.path.join(cachefolder, f)
+			try:
+				shutil.rmtree(fp)
+			except OSError:
+				os.remove(fp)		
 	
 def gen_xci_parts(filepath,cachefolder=None,keypatch=False):
 	if keypatch!=False:
