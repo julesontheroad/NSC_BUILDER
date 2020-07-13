@@ -248,53 +248,41 @@ def generate_xci_and_transfer(filepath=None,outfolder=None,destiny="SD",kgpatch=
 	keypatch=int(tgkg)	
 	tname=str(os.path.basename(filepath))[:-3]+'xci'
 	tmpfile=os.path.join(outfolder,tname)	
-	if isExe==False:
-		process0=subprocess.Popen([sys.executable,squirrel,"-lib_call","mtp.mtpxci","generate_and_transfer_st1","-xarg",filepath,outfolder,str(keypatch)])	
-	else:
-		process0=subprocess.Popen([squirrel,"-lib_call","mtp.mtpxci","generate_and_transfer_st1","-xarg",filepath,outfolder,str(keypatch)])		
-	while process0.poll()==None:
-		if process0.poll()!=None:
-			process0.terminate();
-	if isExe==False:
-		process1=subprocess.Popen([sys.executable,squirrel,"-renf",tmpfile,"-t","xci","-renm","force","-nover","xci_no_v0","-addl","false","-roma","TRUE"])
-	else:	
-		process1=subprocess.Popen([sys.executable,squirrel,"-renf",tmpfile,"-t","xci","-renm","force","-nover","xci_no_v0","-addl","false","-roma","TRUE"])		
-	while process1.poll()==None:
-		if process1.poll()!=None:
-			process1.terminate();	
-	files2transfer=listmanager.folder_to_list(outfolder,['xci'])
-	for f in files2transfer:
-		bname=str(os.path.basename(f))
-		destinypath=os.path.join(destiny,bname)
-		process=subprocess.Popen([nscb_mtp,"Transfer","-ori",f,"-dst",destinypath])		
-		while process.poll()==None:
-			if process.poll()!=None:
-				process.terminate();	
-	try:			
-		for f in os.listdir(outfolder):
-			fp = os.path.join(outfolder, f)
-			try:
-				shutil.rmtree(fp)
-			except OSError:
-				os.remove(fp)	
-	except:pass			
+	if filepath.endswith('xcz') or filepath.endswith('nsz'):
+		if isExe==False:
+			process0=subprocess.Popen([sys.executable,squirrel,"-lib_call","mtp.mtpxci","generate_and_transfer_st1","-xarg",filepath,outfolder,str(keypatch)])	
+		else:
+			process0=subprocess.Popen([squirrel,"-lib_call","mtp.mtpxci","generate_and_transfer_st1","-xarg",filepath,outfolder,str(keypatch)])		
+		while process0.poll()==None:
+			if process0.poll()!=None:
+				process0.terminate();
+		if isExe==False:
+			process1=subprocess.Popen([sys.executable,squirrel,"-renf",tmpfile,"-t","xci","-renm","force","-nover","xci_no_v0","-addl","false","-roma","TRUE"])
+		else:	
+			process1=subprocess.Popen([sys.executable,squirrel,"-renf",tmpfile,"-t","xci","-renm","force","-nover","xci_no_v0","-addl","false","-roma","TRUE"])		
+		while process1.poll()==None:
+			if process1.poll()!=None:
+				process1.terminate();	
+		files2transfer=listmanager.folder_to_list(outfolder,['xci'])
+		for f in files2transfer:
+			bname=str(os.path.basename(f))
+			destinypath=os.path.join(destiny,bname)
+			process=subprocess.Popen([nscb_mtp,"Transfer","-ori",f,"-dst",destinypath])		
+			while process.poll()==None:
+				if process.poll()!=None:
+					process.terminate();	
+		try:			
+			for f in os.listdir(outfolder):
+				fp = os.path.join(outfolder, f)
+				try:
+					shutil.rmtree(fp)
+				except OSError:
+					os.remove(fp)	
+		except:pass
+	elif filepath.endswith('xci') or filepath.endswith('nsp'):		
+		from mtpxci_gen import transfer_xci_csv
+		transfer_xci_csv(filepath,destiny,cachefolder=outfolder,keypatch=keypatch)	
 	
-	
-# def generate_multixci_and_transfer_st1(filepath,outfolder,keypatch='false'):
-	# tname=str(os.path.basename(filepath))[:-3]+'xci'
-	# tmpfile=os.path.join(outfolder,tname)
-	# if filepath.endswith('xci'):
-		# f = factory(filepath)
-		# f.open(filepath, 'rb')
-	# elif filepath.endswith('nsp'):	
-		# f = squirrelNSP(filepath, 'rb')	
-	# f.c_xci_direct(65536,tmpfile,outfolder,metapatch='true',keypatch=keypatch)
-	# f.flush()
-	# f.close()		
-
-# def generate_xci_and_transfer(filepath=None,outfolder=None,destiny="SD",kgpatch=False,verification=False):
-
-
 def generate_multixci_and_transfer(tfile=None,outfolder=None,destiny="SD",kgpatch=False,verification=False):
 	if destiny==False or destiny=="pick" or destiny=="":
 		destiny=pick_transfer_folder()	
