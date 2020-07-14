@@ -394,7 +394,7 @@ def install_converted(filepath=None,outfolder=None,destiny="SD",kgpatch=False,tg
 				os.remove(fp)	
 	except:pass				
 		
-def loop_install(tfile,destiny="SD",verification=True,outfolder=None,ch_medium=True,check_fw=True,patch_keygen=False,ch_base=False,ch_other=False,checked=False):		
+def loop_install(tfile,destiny="SD",verification=True,outfolder=None,ch_medium=True,check_fw=True,patch_keygen=False,ch_base=False,ch_other=False,install_mode="spec1",st_crypto=False,checked=False):		
 	if not os.path.exists(tfile):
 		sys.exit(f"Couldn't find {tfile}")		
 	if ch_base==True or ch_other==True:
@@ -440,7 +440,7 @@ def loop_install(tfile,destiny="SD",verification=True,outfolder=None,ch_medium=T
 					print("The update is a previous version than the installed on device.Skipping..")
 					listmanager.striplines(tfile,counter=True)
 					continue					
-		install(filepath=item,destiny=destiny,verification=verification,outfolder=outfolder,ch_medium=ch_medium,check_fw=check_fw,patch_keygen=patch_keygen)
+		install(filepath=item,destiny=destiny,verification=verification,outfolder=outfolder,ch_medium=ch_medium,check_fw=check_fw,patch_keygen=patch_keygen,install_mode=install_mode,st_crypto=st_crypto)
 		print("")
 		listmanager.striplines(tfile,counter=True)
 		

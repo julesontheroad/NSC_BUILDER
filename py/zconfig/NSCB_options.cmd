@@ -178,3 +178,6 @@ set "MTP_saves_Inline=False"
 set "MTP_saves_AddTIDandVer=False"
 :: Activate truecopy for public google drive cache or use symlinks
 set "MTP_pdrive_truecopy=True"
+:: Advanced installation options
+set "MTP_stc_installs=False"
+set "MTP_ptch_inst_spec=spec1"

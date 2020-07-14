@@ -2106,15 +2106,17 @@ echo MTP - CONFIGURATION
 echo ********************************************************
 echo Input "1" to setup VERIFICATION pre-installation
 echo Input "2" to PRIORITIZE NSZ when autoupdating the device
-echo Input "3" to EXCLUDE XCI when installing updates in AUTOUPDATE
-echo Input "4" to change between SD and EMMC depending on free space
-echo Input "5" to check firmware on console before doing installations
-echo Input "6" to patch keygeneration of files if needed
-echo Input "7" to check if base content is installed before installation
-echo Input "8" to check if old updates or dlcs are installed before installation
-echo Input "9" to choose folder setup when dumping saves
-echo Input "10" to choose if adding titleid and version to save dumps
-echo Input "11" to choose how to add files to the cache remote for public links
+echo Input "3" to activate STANDARD CRYPTO INSTALLATIONS
+echo Input "4" to EXCLUDE XCI when installing updates in AUTOUPDATE
+echo Input "5" to change between SD and EMMC depending on free space
+echo Input "6" to check firmware on console before doing installations
+echo Input "7" to patch keygeneration of files if needed
+echo Input "8" to check if base content is installed before installation
+echo Input "9" to check if old updates or dlcs are installed before installation
+echo Input "10" to choose folder setup when dumping saves
+echo Input "11" to choose if adding titleid and version to save dumps
+echo Input "12" to choose how to add files to the cache remote for public links
+echo Input "13" to change PATCHED FILES AND XCI INSTALLATION SPECIFICATION
 echo.
 echo Input "d" to restore MTP DEFAULTS
 echo Input "0" to return to CONFIG MENU
@@ -2124,15 +2126,17 @@ echo.
 set /p bs="Enter your choice: "
 if /i "%bs%"=="1" goto op_MTP_verification
 if /i "%bs%"=="2" goto op_MTP_prioritize_NSZ
-if /i "%bs%"=="3" goto op_MTP_exclude_xci_autinst
-if /i "%bs%"=="4" goto op_MTP_aut_ch_medium
-if /i "%bs%"=="5" goto op_MTP_chk_fw
-if /i "%bs%"=="6" goto op_MTP_prepatch_kg
-if /i "%bs%"=="7" goto op_MTP_prechk_Base
-if /i "%bs%"=="8" goto op_MTP_prechk_Upd
-if /i "%bs%"=="9" goto op_MTP_saves_Inline
-if /i "%bs%"=="10" goto op_MTP_saves_AddTIDandVer
-if /i "%bs%"=="11" goto op_MTP_pdrive_truecopy
+if /i "%bs%"=="3" goto op_MTP_standard_crypto
+if /i "%bs%"=="4" goto op_MTP_exclude_xci_autinst
+if /i "%bs%"=="5" goto op_MTP_aut_ch_medium
+if /i "%bs%"=="6" goto op_MTP_chk_fw
+if /i "%bs%"=="7" goto op_MTP_prepatch_kg
+if /i "%bs%"=="8" goto op_MTP_prechk_Base
+if /i "%bs%"=="9" goto op_MTP_prechk_Upd
+if /i "%bs%"=="10" goto op_MTP_saves_Inline
+if /i "%bs%"=="11" goto op_MTP_saves_AddTIDandVer
+if /i "%bs%"=="12" goto op_MTP_pdrive_truecopy
+if /i "%bs%"=="13" goto op_MTP_ptch_install_spec
 
 if /i "%bs%"=="d" goto op_mtp_defaults
 if /i "%bs%"=="0" goto sc1
@@ -2551,7 +2555,7 @@ echo this allows the file to be called with the auth token but can present quota
 echo issues if the link was shared.
 echo.
 echo Input "1" or "D" to ACTIVATE TRUECOPY(default)
-echo Input "2" to NOT activate TRUECOPY (default)
+echo Input "2" to NOT activate TRUECOPY
 echo.
 echo Input "0" to return to CONFIG MENU
 echo Input "b" to return to MTP MENU
@@ -2576,6 +2580,86 @@ set v_op_MTP_pdrive_truecopy="%v_op_MTP_pdrive_truecopy%"
 %pycommand% "%listmanager%" -cl "%op_file%" -ln "179" -nl "set %v_op_MTP_pdrive_truecopy%" 
 echo.
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "179" -nl "Line in config was changed to: "
+echo.
+pause
+goto MTP
+
+:op_MTP_standard_crypto
+cls
+call :logo
+echo ***************************************************************************
+echo INSTALL ALL NSP FILES AS STANDARD CRYPTO
+echo ***************************************************************************
+echo This means nsp files are installed without tickets and titlerights, this
+echo to keep the ticketblob in the console clean.
+echo.
+echo Input "1" or "D" to INSTALL WITH TITLERIGHTS(default)
+echo Input "2" to INSTALL AS STANDARD CRYPTO
+echo.
+echo Input "0" to return to CONFIG MENU
+echo Input "b" to return to MTP MENU
+echo Input "e" to go back to the MAIN PROGRAM
+echo.
+set /p bs="Enter your choice: "
+set "v_MTP_standard_crypto=none"
+if /i "%bs%"=="1" set "v_MTP_standard_crypto=False"
+if /i "%bs%"=="2" set "v_MTP_standard_crypto=True"
+if /i "%bs%"=="d" set "v_MTP_standard_crypto=False"
+
+if /i "%bs%"=="0" goto sc1
+if /i "%bs%"=="b" goto MTP
+if /i "%bs%"=="e" goto salida
+
+if "%v_MTP_standard_crypto%"=="none" echo WRONG CHOICE
+if "%v_MTP_standard_crypto%"=="none" echo.
+if "%v_MTP_standard_crypto%"=="none" goto op_MTP_standard_crypto
+
+set v_MTP_standard_crypto="MTP_stc_installs=%v_MTP_standard_crypto%"
+set v_MTP_standard_crypto="%v_MTP_standard_crypto%"
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "181" -nl "set %v_MTP_standard_crypto%" 
+echo.
+%pycommand% "%listmanager%" -rl "%op_file%" -ln "181" -nl "Line in config was changed to: "
+echo.
+pause
+goto MTP
+
+:op_MTP_ptch_install_spec
+cls
+call :logo
+echo ***************************************************************************
+echo SPECIFICATION FOR INSTALLATION OF PATCHED NSP AND XCI
+echo ***************************************************************************
+echo Legacy creates the patched file or converted file and then transfers to the
+echo console.
+echo Spec1 creates a patch to patch the stream on the fly. Spec1 treates multifiles
+echo as diferent files triggering several consecutive installations.
+echo.
+echo Input "1" or "D" to use SPECIFICATION Nº 1 (default)
+echo Input "2" to use LEGACY specification
+echo.
+echo Input "0" to return to CONFIG MENU
+echo Input "b" to return to MTP MENU
+echo Input "e" to go back to the MAIN PROGRAM
+echo.
+set /p bs="Enter your choice: "
+set "v_MTP_ptch_install_spec=none"
+if /i "%bs%"=="1" set "v_MTP_ptch_install_spec=spec1"
+if /i "%bs%"=="2" set "v_MTP_ptch_install_spec=legacy"
+if /i "%bs%"=="d" set "v_MTP_ptch_install_spec=spec1"
+
+if /i "%bs%"=="0" goto sc1
+if /i "%bs%"=="b" goto MTP
+if /i "%bs%"=="e" goto salida
+
+if "%v_MTP_ptch_install_spec%"=="none" echo WRONG CHOICE
+if "%v_MTP_ptch_install_spec%"=="none" echo.
+if "%v_MTP_ptch_install_spec%"=="none" goto op_MTP_ptch_install_spec
+
+set v_MTP_ptch_install_spec="MTP_ptch_inst_spec=%v_MTP_ptch_install_spec%"
+set v_MTP_ptch_install_spec="%v_MTP_ptch_install_spec%"
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "182" -nl "set %v_MTP_ptch_install_spec%" 
+echo.
+%pycommand% "%listmanager%" -rl "%op_file%" -ln "182" -nl "Line in config was changed to: "
 echo.
 pause
 goto MTP
@@ -2638,6 +2722,16 @@ set v_op_MTP_pdrive_truecopy="MTP_pdrive_truecopy=True"
 set v_op_MTP_pdrive_truecopy="%v_op_MTP_pdrive_truecopy%"
 %pycommand% "%listmanager%" -cl "%op_file%" -ln "179" -nl "set %v_op_MTP_pdrive_truecopy%" 
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "179" -nl "Line in config was changed to: "
+::MTP_standard_crypto
+set v_MTP_standard_crypto="MTP_stc_installs=False"
+set v_MTP_standard_crypto="%v_MTP_standard_crypto%"
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "181" -nl "set %v_MTP_standard_crypto%" 
+%pycommand% "%listmanager%" -rl "%op_file%" -ln "181" -nl "Line in config was changed to: "
+::MTP_ptch_install_spec
+set v_MTP_ptch_install_spec="MTP_ptch_inst_spec=spec1"
+set v_MTP_ptch_install_spec="%v_MTP_ptch_install_spec%"
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "182" -nl "set %v_MTP_ptch_install_spec%" 
+%pycommand% "%listmanager%" -rl "%op_file%" -ln "182" -nl "Line in config was changed to: "
 pause
 goto sc1
 
