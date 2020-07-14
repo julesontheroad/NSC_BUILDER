@@ -7039,7 +7039,7 @@ if __name__ == '__main__':
 				Print.error('Exception: ' + str(e))
 			Status.close()
 		# **********************
-		# Rename using txt file
+		# Rename sing txt file
 		# **********************
 		if args.renameftxt:
 			ruta=args.renameftxt
