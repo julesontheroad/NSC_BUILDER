@@ -238,6 +238,8 @@ def file_verification(filename,hash=False):
 	return verdict,isrestored,cnmt_is_patched
 		
 def install(filepath=None,destiny="SD",verification=True,outfolder=None,ch_medium=True,check_fw=True,patch_keygen=False,install_mode="spec1",st_crypto=False):	
+	if install_mode!="legacy":
+		from mtpnsp import install_nsp_csv
 	kgwarning=False;dopatch=False;keygeneration=0;tgkg=0
 	if filepath=="":
 		filepath=None
@@ -309,17 +311,17 @@ def install(filepath=None,destiny="SD",verification=True,outfolder=None,ch_mediu
 		print("File requires a higher firmware. It'll will be prepatch")
 		dopatch=True
 	if (filepath.endswith('nsp') or filepath.endswith('nsz')) and st_crypto==True:	
-			if install_mode=="legacy":	
-				install_converted(filepath=filepath,outfolder=outfolder,destiny=destiny,kgpatch=dopatch,tgkg=tgkg)	
-			else:
-				if dopatch==False:
-					tgkg=False		
-				install_nsp_csv(filepath,destiny=destiny,cachefolder=outfolder,keypatch=tgkg)		
+		if install_mode=="legacy":	
+			install_converted(filepath=filepath,outfolder=outfolder,destiny=destiny,kgpatch=dopatch,tgkg=tgkg)	
+		else:
+			if dopatch==False:
+				tgkg=False		
+			install_nsp_csv(filepath,destiny=destiny,cachefolder=outfolder,keypatch=tgkg)	
+		return					
 	if (filepath.endswith('nsp') or filepath.endswith('nsz')) and dopatch==True:	
 		if install_mode=="legacy":	
 			install_converted(filepath=filepath,outfolder=outfolder,destiny=destiny,kgpatch=dopatch,tgkg=tgkg)	
 		else:
-			from mtpnsp import install_nsp_csv	
 			install_nsp_csv(filepath,destiny=destiny,cachefolder=outfolder,keypatch=tgkg)		
 		return			
 	if filepath.endswith('xci') or filepath.endswith('xcz'):
