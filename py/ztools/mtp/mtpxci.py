@@ -363,30 +363,39 @@ def generate_multixci_and_transfer(tfile=None,outfolder=None,destiny="SD",kgpatc
 		print("File requires a higher firmware. It'll will be prepatch")
 		dopatch=True	
 	keypatch=int(tgkg)	
-	
-	if isExe==False:
-		process0=subprocess.Popen([sys.executable,squirrel,"-b","65536","-pv","true","-kp",str(keypatch),"--RSVcap","268435656","-fat","exfat","-fx","files","-ND","true","-t","xci","-o",outfolder,"-tfile",tfile,"-roma","TRUE","-dmul","calculate"])
-	else:
-		process0=subprocess.Popen([squirrel,"-b","65536","-pv","true","-kp",str(keypatch),"--RSVcap","268435656","-fat","exfat","-fx","files","-ND","true","-t","xci","-o",outfolder,"-tfile",tfile,"-roma","TRUE","-dmul","calculate"])	
-	while process0.poll()==None:
-		if process0.poll()!=None:
-			process0.terminate();
-	files2transfer=listmanager.folder_to_list(outfolder,['xci'])
-	for f in files2transfer:
-		bname=str(os.path.basename(f))
-		destinypath=os.path.join(destiny,bname)
-		process=subprocess.Popen([nscb_mtp,"Transfer","-ori",f,"-dst",destinypath])		
-		while process.poll()==None:
-			if process.poll()!=None:
-				process.terminate();	
-	try:			
-		for f in os.listdir(outfolder):
-			fp = os.path.join(outfolder, f)
-			try:
-				shutil.rmtree(fp)
-			except OSError:
-				os.remove(fp)	
-	except:pass		
+	input_files=listmanager.read_lines_to_list(tfile,all=True)
+	has_compressed=False
+	for fi in input_files:
+		if fi.endswith('xcz') or fi.endswith('nsz'):
+			has_compressed=True
+			break	
+	if has_compressed==True:
+		if isExe==False:
+			process0=subprocess.Popen([sys.executable,squirrel,"-b","65536","-pv","true","-kp",str(keypatch),"--RSVcap","268435656","-fat","exfat","-fx","files","-ND","true","-t","xci","-o",outfolder,"-tfile",tfile,"-roma","TRUE","-dmul","calculate"])
+		else:
+			process0=subprocess.Popen([squirrel,"-b","65536","-pv","true","-kp",str(keypatch),"--RSVcap","268435656","-fat","exfat","-fx","files","-ND","true","-t","xci","-o",outfolder,"-tfile",tfile,"-roma","TRUE","-dmul","calculate"])	
+		while process0.poll()==None:
+			if process0.poll()!=None:
+				process0.terminate();
+		files2transfer=listmanager.folder_to_list(outfolder,['xci'])
+		for f in files2transfer:
+			bname=str(os.path.basename(f))
+			destinypath=os.path.join(destiny,bname)
+			process=subprocess.Popen([nscb_mtp,"Transfer","-ori",f,"-dst",destinypath])		
+			while process.poll()==None:
+				if process.poll()!=None:
+					process.terminate();	
+		try:			
+			for f in os.listdir(outfolder):
+				fp = os.path.join(outfolder, f)
+				try:
+					shutil.rmtree(fp)
+				except OSError:
+					os.remove(fp)	
+		except:pass	
+	elif has_compressed==False:
+		from mtpxci_gen import transfer_mxci_csv
+		transfer_mxci_csv(tfile=tfile,destiny=destiny,cachefolder=outfolder,keypatch=keypatch,input_files=input_files)		
 
 def loop_xci_transfer(tfile,destiny=False,verification=True,outfolder=None,patch_keygen=False,mode="single"):
 	if destiny==False or destiny=="pick" or destiny=="":

@@ -374,13 +374,15 @@ def gen_xci_parts(filepath,cachefolder=None,keypatch=False):
 	except:pass
 	return xciname					
 
-
-def transfer_mxci_csv(tfile,destiny="SD",cachefolder=None,override=False,keypatch=False):
+def transfer_mxci_csv(tfile=None,destiny="SD",cachefolder=None,override=False,keypatch=False,input_files=None):
+	if input_files==None and tfile==None:
+		sys.exit("Missing input!!!")
 	if destiny=="SD":
 		destiny="1: External SD Card\\"
 	if cachefolder==None:
 		cachefolder=os.path.join(ztools_dir, '_mtp_cache_')	
-	input_files=listmanager.read_lines_to_list(tfile,all=True)
+	if input_files==None:	
+		input_files=listmanager.read_lines_to_list(tfile,all=True)
 	print(f"Creating mxci from {tfile}")
 	xciname=gen_mxci_parts(input_files,cachefolder=cachefolder,keypatch=keypatch)
 	destinypath=os.path.join(destiny,xciname)	
@@ -389,13 +391,13 @@ def transfer_mxci_csv(tfile,destiny="SD",cachefolder=None,override=False,keypatc
 	while process.poll()==None:
 		if process.poll()!=None:
 			process.terminate();	
-	# if os.path.exists(cachefolder):			
-		# for f in os.listdir(cachefolder):
-			# fp = os.path.join(cachefolder, f)
-			# try:
-				# shutil.rmtree(fp)
-			# except OSError:
-				# os.remove(fp)	
+	if os.path.exists(cachefolder):			
+		for f in os.listdir(cachefolder):
+			fp = os.path.join(cachefolder, f)
+			try:
+				shutil.rmtree(fp)
+			except OSError:
+				os.remove(fp)	
 
 def gen_mxci_parts(input_files,cachefolder=None,keypatch=False):
 	from listmanager import calculate_name
