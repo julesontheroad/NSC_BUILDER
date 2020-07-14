@@ -540,3 +540,200 @@ def size_sorted_from_tfile(itfile,otfile=None,first='small'):
 		for i in sortedlist:
 			tfile.write(i[0]+"\n")
 	print('- List was ordered by size')
+	
+def calculate_name(filelist,romanize=True,ext='.xci'):	
+	from Fs import Nsp as squirrelNSP
+	from Fs import Xci as squirrelXCI
+	import re
+	prlist=list()	
+	for filepath in filelist:
+		if filepath.endswith('.nsp'):
+			try:
+				c=list()
+				f = squirrelNSP(filepath)
+				contentlist=f.get_content(False,False,True)
+				f.flush()
+				f.close()
+				if len(prlist)==0:
+					for i in contentlist:
+						prlist.append(i)
+				else:
+					for j in range(len(contentlist)):
+						notinlist=False
+						for i in range(len(prlist)):
+							if contentlist[j][1] == prlist[i][1]:
+								if contentlist[j][6] > prlist[i][6]:
+									del prlist[i]
+									prlist.append(contentlist[j])
+									notinlist=False
+								elif contentlist[j][6] == prlist[i][6]:
+									notinlist=False
+							else:
+								notinlist=True
+						if notinlist == True:
+							prlist.append(contentlist[j])
+			except BaseException as e:
+				nutPrint.error('Exception: ' + str(e))
+		if filepath.endswith('.xci'):
+			try:
+				c=list()
+				f = squirrelXCI(filepath)
+				contentlist=f.get_content(False,False,True)
+				f.flush()
+				f.close()
+				if len(prlist)==0:
+					for i in contentlist:
+						prlist.append(i)
+				else:
+					for j in range(len(contentlist)):
+						notinlist=False
+						for i in range(len(prlist)):
+							if contentlist[j][1] == prlist[i][1]:
+								if contentlist[j][6] > prlist[i][6]:
+									del prlist[i]
+									prlist.append(contentlist[j])
+									notinlist=False
+								elif contentlist[j][6] == prlist[i][6]:
+									notinlist=False
+							else:
+								notinlist=True
+						if notinlist == True:
+							prlist.append(contentlist[j])
+			except BaseException as e:
+				nutPrint.error('Exception: ' + str(e))
+	basecount=0; basename='';basever='';baseid='';basefile=''
+	updcount=0; updname='';updver='';updid='';updfile=''
+	dlccount=0; dlcname='';dlcver='';dlcid='';dlcfile=''
+	ccount='';bctag='';updtag='';dctag=''
+	for i in range(len(prlist)):
+		if prlist[i][5] == 'BASE':
+			basecount+=1
+			if baseid == "":
+				basefile=str(prlist[i][0])
+				baseid=str(prlist[i][1])
+				basever='[v'+str(prlist[i][6])+']'
+		if prlist[i][5] == 'UPDATE':
+			updcount+=1
+			endver=str(prlist[i][6])
+			if updid == "":
+				updfile=str(prlist[i][0])
+				updid=str(prlist[i][1])
+				updver='[v'+str(prlist[i][6])+']'
+		if prlist[i][5] == 'DLC':
+			dlccount+=1
+			if dlcid == "":
+				dlcfile=str(prlist[i][0])
+				dlcid=str(prlist[i][1])
+				dlcver='[v'+str(prlist[i][6])+']'
+		if 	basecount !=0:
+			bctag=str(basecount)+'G'
+		else:
+			bctag=''
+		if 	updcount !=0:
+			if bctag != '':
+				updtag='+'+str(updcount)+'U'
+			else:
+				updtag=str(updcount)+'U'
+		else:
+			updtag=''
+		if 	dlccount !=0:
+			if bctag != '' or updtag != '':
+				dctag='+'+str(dlccount)+'D'
+			else:
+				dctag=str(dlccount)+'D'
+		else:
+			dctag=''
+		ccount='('+bctag+updtag+dctag+')'
+	if baseid != "":
+		if basefile.endswith('.xci'):
+			f =squirrelXCI(basefile)
+		elif basefile.endswith('.nsp'):
+			f = squirrelNSP(basefile)
+		ctitl=f.get_title(baseid)
+		f.flush()
+		f.close()
+		if ctitl=='DLC' or ctitl=='-':
+			ctitl=''
+	elif updid !="":
+		if updfile.endswith('.xci'):
+			f = squirrelXCI(updfile)
+		elif updfile.endswith('.nsp'):
+			f = squirrelNSP(updfile)
+		ctitl=f.get_title(updid)
+		f.flush()
+		f.close()
+		if ctitl=='DLC' or ctitl=='-':
+			ctitl=''
+	elif dlcid !="":
+		ctitl=get_title
+		if dlcfile.endswith('.xci'):
+			f = squirrelXCI(dlcfile)
+		elif dlcfile.endswith('.nsp'):
+			f = squirrelNSP(dlcfile)
+		ctitl=f.get_title(dlcid)
+		f.flush()
+		f.close()
+	else:
+		ctitl='UNKNOWN'
+	baseid='['+baseid.upper()+']'
+	updid='['+updid.upper()+']'
+	dlcid='['+dlcid.upper()+']'
+	if ccount == '(1G)' or ccount == '(1U)' or ccount == '(1D)':
+		ccount=''
+	if baseid != "[]":
+		if updver != "":
+			endname=ctitl+' '+baseid+' '+updver+' '+ccount
+		else:
+			endname=ctitl+' '+baseid+' '+basever+' '+ccount
+	elif updid != "[]":
+		endname=ctitl+' '+updid+' '+updver+' '+ccount
+	else:
+		endname=ctitl+' '+dlcid+' '+dlcver+' '+ccount
+	if romanize == True:
+		import pykakasi	
+		kakasi = pykakasi.kakasi()
+		kakasi.setMode("H", "a")
+		kakasi.setMode("K", "a")
+		kakasi.setMode("J", "a")
+		kakasi.setMode("s", True)
+		kakasi.setMode("E", "a")
+		kakasi.setMode("a", None)
+		kakasi.setMode("C", False)
+		converter = kakasi.getConverter()
+		endname=converter.do(endname)
+		endname=endname[0].upper()+endname[1:]
+	endname = (re.sub(r'[\/\\\:\*\?]+', '', endname))
+	endname = re.sub(r'[™©®`~^´ªº¢#£€¥$ƒ±¬½¼♡«»±•²‰œæÆ³☆<<>>|]', '', endname)
+	endname = re.sub(r'[Ⅰ]', 'I', endname);endname = re.sub(r'[Ⅱ]', 'II', endname)
+	endname = re.sub(r'[Ⅲ]', 'III', endname);endname = re.sub(r'[Ⅳ]', 'IV', endname)
+	endname = re.sub(r'[Ⅴ]', 'V', endname);endname = re.sub(r'[Ⅵ]', 'VI', endname)
+	endname = re.sub(r'[Ⅶ]', 'VII', endname);endname = re.sub(r'[Ⅷ]', 'VIII', endname)
+	endname = re.sub(r'[Ⅸ]', 'IX', endname);endname = re.sub(r'[Ⅹ]', 'X', endname)
+	endname = re.sub(r'[Ⅺ]', 'XI', endname);endname = re.sub(r'[Ⅻ]', 'XII', endname)
+	endname = re.sub(r'[Ⅼ]', 'L', endname);endname = re.sub(r'[Ⅽ]', 'C', endname)
+	endname = re.sub(r'[Ⅾ]', 'D', endname);endname = re.sub(r'[Ⅿ]', 'M', endname)
+	endname = re.sub(r'[—]', '-', endname);endname = re.sub(r'[√]', 'Root', endname)
+	endname = re.sub(r'[àâá@äå]', 'a', endname);endname = re.sub(r'[ÀÂÁÄÅ]', 'A', endname)
+	endname = re.sub(r'[èêéë]', 'e', endname);endname = re.sub(r'[ÈÊÉË]', 'E', endname)
+	endname = re.sub(r'[ìîíï]', 'i', endname);endname = re.sub(r'[ÌÎÍÏ]', 'I', endname)
+	endname = re.sub(r'[òôóöø]', 'o', endname);endname = re.sub(r'[ÒÔÓÖØ]', 'O', endname)
+	endname = re.sub(r'[ùûúü]', 'u', endname);endname = re.sub(r'[ÙÛÚÜ]', 'U', endname)
+	endname = re.sub(r'[’]', "'", endname);endname = re.sub(r'[“”]', '"', endname)
+	endname = re.sub(' {3,}', ' ',endname);re.sub(' {2,}', ' ',endname);
+	try:
+		endname = endname.replace("( ", "(");endname = endname.replace(" )", ")")
+		endname = endname.replace("[ ", "[");endname = endname.replace(" ]", "]")
+		endname = endname.replace("[ (", "[(");endname = endname.replace(") ]", ")]")
+		endname = endname.replace("[]", "");endname = endname.replace("()", "")
+		endname = endname.replace('" ','"');endname = endname.replace(' "','"')
+		endname = endname.replace(" !", "!");endname = endname.replace(" ?", "?")
+		endname = endname.replace("  ", " ");endname = endname.replace("  ", " ")
+		endname = endname.replace('"', '');
+		endname = endname.replace(')', ') ');endname = endname.replace(']', '] ')
+		endname = endname.replace("[ (", "[(");endname = endname.replace(") ]", ")]")
+		endname = endname.replace("  ", " ")
+	except:pass
+	if endname[-1]==' ':
+		endname=endname[:-1]
+	endname=endname+ext
+	return endname
