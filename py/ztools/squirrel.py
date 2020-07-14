@@ -5326,7 +5326,7 @@ if __name__ == '__main__':
 						else:
 							 v_drive = os.path.dirname(os.path.abspath(filepath))
 						dsktotal, dskused, dskfree=disk_usage(str(v_drive))
-						if int(dsktotal)>int(s):
+						if int(dskfree)<int(s):
 							sys.exit("Warning disk space lower than required size. Program will exit")							
 						t = tqdm(total=s, unit='B', unit_scale=True, leave=False)
 						with open(filename, 'r+b') as f:
@@ -5378,7 +5378,7 @@ if __name__ == '__main__':
 						else:
 							 v_drive = os.path.dirname(os.path.abspath(filepath))
 						dsktotal, dskused, dskfree=disk_usage(str(v_drive))
-						if int(dsktotal)>int(s):
+						if int(dskfree)<int(s):
 							sys.exit("Warning disk space lower than required size. Program will exit")					
 						t = tqdm(total=s, unit='B', unit_scale=True, leave=False)
 						with open(filename, 'r+b') as f:
