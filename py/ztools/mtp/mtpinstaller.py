@@ -237,7 +237,9 @@ def file_verification(filename,hash=False):
 			Print.error('Exception: ' + str(e))
 	return verdict,isrestored,cnmt_is_patched
 		
-def install(filepath=None,destiny="SD",verification=True,outfolder=None,ch_medium=True,check_fw=True,patch_keygen=False):	
+def install(filepath=None,destiny="SD",verification=True,outfolder=None,ch_medium=True,check_fw=True,patch_keygen=False,install_mode="spec1",st_crypto=False):	
+	if install_mode!="legacy":
+		from mtpnsp import install_nsp_csv
 	kgwarning=False;dopatch=False;keygeneration=0;tgkg=0
 	if filepath=="":
 		filepath=None
@@ -307,9 +309,29 @@ def install(filepath=None,destiny="SD",verification=True,outfolder=None,ch_mediu
 		return False		
 	elif kgwarning==True and patch_keygen==True: 	
 		print("File requires a higher firmware. It'll will be prepatch")
-		dopatch=True	
-	if filepath.endswith('xci') or dopatch==True:
-		install_converted(filepath=filepath,outfolder=outfolder,destiny=destiny,kgpatch=dopatch,tgkg=keygeneration)
+		dopatch=True
+	if (filepath.endswith('nsp') or filepath.endswith('nsz')) and st_crypto==True:	
+		if install_mode=="legacy":	
+			install_converted(filepath=filepath,outfolder=outfolder,destiny=destiny,kgpatch=dopatch,tgkg=tgkg)	
+		else:
+			if dopatch==False:
+				tgkg=False		
+			install_nsp_csv(filepath,destiny=destiny,cachefolder=outfolder,keypatch=tgkg)	
+		return					
+	if (filepath.endswith('nsp') or filepath.endswith('nsz')) and dopatch==True:	
+		if install_mode=="legacy":	
+			install_converted(filepath=filepath,outfolder=outfolder,destiny=destiny,kgpatch=dopatch,tgkg=tgkg)	
+		else:
+			install_nsp_csv(filepath,destiny=destiny,cachefolder=outfolder,keypatch=tgkg)		
+		return			
+	if filepath.endswith('xci') or filepath.endswith('xcz'):
+		if install_mode=="legacy":
+			install_converted(filepath=filepath,outfolder=outfolder,destiny=destiny,kgpatch=dopatch,tgkg=tgkg)
+		else:
+			from mtpxci import install_xci_csv
+			if dopatch==False:
+				tgkg=False			
+			install_xci_csv(filepath,destiny=destiny,cachefolder=outfolder,keypatch=tgkg)
 		return	
 	process=subprocess.Popen([nscb_mtp,"Install","-ori",filepath,"-dst",destiny])
 	while process.poll()==None:
@@ -374,7 +396,7 @@ def install_converted(filepath=None,outfolder=None,destiny="SD",kgpatch=False,tg
 				os.remove(fp)	
 	except:pass				
 		
-def loop_install(tfile,destiny="SD",verification=True,outfolder=None,ch_medium=True,check_fw=True,patch_keygen=False,ch_base=False,ch_other=False,checked=False):		
+def loop_install(tfile,destiny="SD",verification=True,outfolder=None,ch_medium=True,check_fw=True,patch_keygen=False,ch_base=False,ch_other=False,install_mode="spec1",st_crypto=False,checked=False):		
 	if not os.path.exists(tfile):
 		sys.exit(f"Couldn't find {tfile}")		
 	if ch_base==True or ch_other==True:
@@ -420,7 +442,7 @@ def loop_install(tfile,destiny="SD",verification=True,outfolder=None,ch_medium=T
 					print("The update is a previous version than the installed on device.Skipping..")
 					listmanager.striplines(tfile,counter=True)
 					continue					
-		install(filepath=item,destiny=destiny,verification=verification,outfolder=outfolder,ch_medium=ch_medium,check_fw=check_fw,patch_keygen=patch_keygen)
+		install(filepath=item,destiny=destiny,verification=verification,outfolder=outfolder,ch_medium=ch_medium,check_fw=check_fw,patch_keygen=patch_keygen,install_mode=install_mode,st_crypto=st_crypto)
 		print("")
 		listmanager.striplines(tfile,counter=True)
 		
