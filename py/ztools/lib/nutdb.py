@@ -520,6 +520,7 @@ def get_otherDB(dbfile,dbname,f,URL=None):
 def check_ver_not_missing(_dbfile_,force=False):
 	if force==True:
 		get_otherDB(urlconfig,'versions_txt','nutdb_versions.txt',URL='http://tinfoil.media/repo/db/versions.txt')	
+		get_otherDB(urlconfig,'versions')			
 		return
 	try:	
 		with open(_dbfile_,'rt',encoding='utf8') as csvfile:
@@ -539,14 +540,71 @@ def check_ver_not_missing(_dbfile_,force=False):
 						if v_=='':
 							print("Version numbers missing falling back to tinfoil media")
 							get_otherDB(urlconfig,'versions_txt','nutdb_versions.txt',URL='http://tinfoil.media/repo/db/versions.txt')
+							get_otherDB(urlconfig,'versions')								
 					except:
 						get_otherDB(urlconfig,'versions_txt','nutdb_versions.txt',URL='http://tinfoil.media/repo/db/versions.txt')
+						get_otherDB(urlconfig,'versions','nutdb_versions.json',URL='http://tinfoil.media/repo/db/versions.json')
 					break	
 	except:
 		get_otherDB(urlconfig,'versions_txt','nutdb_versions.txt',URL='http://tinfoil.media/repo/db/versions.txt')	
+		get_otherDB(urlconfig,'versions')			
+	consolidate_versiondb()
+
+def consolidate_versiondb():
+	ver_txt=os.path.join(DATABASE_folder, 'nutdb_versions.txt')
+	ver_JSON=os.path.join(DATABASE_folder, 'nutdb_versions.json')
+	ver_txt_dict={};
+	if os.path.exists(ver_txt):	
+		with open(ver_txt,'rt',encoding='utf8') as csvfile:
+			readCSV = csv.reader(csvfile, delimiter='|')	
+			i=0			
+			for row in readCSV:
+				if i==0:
+					csvheader=row
+					i=1
+					if 'id' and 'version' in csvheader:
+						id=csvheader.index('id')
+						ver=csvheader.index('version')	
+					else:break	
+				else:	
+					tid=str(row[id]).upper() 
+					v_=str(row[ver])
+					if v_=="" and tid.endswith('800'):
+						v_=65536
+					elif v_=="":
+						v_=0					
+					if tid.endswith('800'):
+						tid=tid[:-3]+'000'					
+					if not tid in ver_txt_dict:
+						ver_txt_dict[tid]=v_			
+					else:
+						if int(v_)>int(ver_txt_dict[tid]):
+							ver_txt_dict[tid]=v_
+	if os.path.exists(ver_JSON):	
+		with open(ver_JSON, 'r') as json_file:	
+			data = json.load(json_file)	
+			for i in data:
+				c=0;tid=i
+				if tid.endswith('800'):
+					tid=tid[:-3]+'000'
+				for j in (data[i]).keys():
+					if j=="" and i.endswith('800'):
+						j=65536
+					elif j=="":
+						j=0							
+					try:
+						if not tid in ver_txt_dict:
+							ver_txt_dict[tid]=j
+						else:
+							if int(j)>int(ver_txt_dict[tid]):
+								ver_txt_dict[tid]=j
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))	
+	with open(ver_txt,'wt',encoding='utf8') as csvfile:			
+		csvfile.write('id|version\n')
+		for i in ver_txt_dict:
+			csvfile.write(f"{i}|{ver_txt_dict[i]}\n")
 	
-		
-		
 def get_regionDB(region):
 	url=regionurl(region)
 	f='nutdb_'+region+'.json'
@@ -615,10 +673,12 @@ def force_refresh():
 		get_regionDB('Japan')	
 		get_regionDB('Asia')		
 		get_otherDB(urlconfig,'versions_txt','nutdb_versions.txt')
+		get_otherDB(urlconfig,'versions','nutdb_versions.json')		
 		get_otherDB(urlconfig,'cheats','nutdb_cheats.json')	
 		get_otherDB(urlconfig,'ninshop','ninshop.json')
 		get_otherDB(urlconfig,'metacritic_id','metacritic_id.json')	
-		get_otherDB(urlconfig,'fw','fw.json')			
+		get_otherDB(urlconfig,'fw','fw.json')
+		consolidate_versiondb()
 		return True
 	except:
 		return False
@@ -1877,4 +1937,6 @@ def check_files():
 	check_other_file(urlconfig,'metacritic_id',nutdb=False)
 	check_other_file(urlconfig,'fw',nutdb=False)	
 	check_other_file(urlconfig,'versions_txt')
-	check_other_file(urlconfig,'cheats')	
+	check_other_file(urlconfig,'versions')		
+	check_other_file(urlconfig,'cheats')
+	consolidate_versiondb()	
