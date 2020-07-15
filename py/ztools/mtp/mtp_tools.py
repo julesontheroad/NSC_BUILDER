@@ -204,3 +204,28 @@ def push_sx_autoloader_libraries():
 	if no_colide==True:
 		cleanup_sx_autoloader_files()	
 						
+def get_nca_ticket(filepath,nca):
+	import Fs
+	from binascii import hexlify as hx, unhexlify as uhx
+	if filepath.endswith('xci') or filepath.endswith('xcz'):
+		f = Fs.Xci(filepath)
+		check=False;titleKey=0
+		for nspF in f.hfs0:
+			if str(nspF._path)=="secure":
+				for file in nspF:	
+					if (file._path).endswith('.tik'):
+						titleKey = file.getTitleKeyBlock().to_bytes(16, byteorder='big')
+						check=f.verify_key(nca,str(file._path))
+						if check==True:
+							break
+		return check,titleKey		
+	elif filepath.endswith('nsp') or filepath.endswith('nsz'):
+		f = Fs.Nsp(filepath)	
+		check=False;titleKey=0
+		for file in f:	
+			if (file._path).endswith('.tik'):
+				titleKey = file.getTitleKeyBlock().to_bytes(16, byteorder='big')
+				check=f.verify_key(nca,str(file._path))
+				if check==True:
+					break
+	return check,titleKey		

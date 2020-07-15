@@ -510,11 +510,17 @@ def get_otherDB(dbfile,dbname,f,URL=None):
 				check_ver_not_missing(_dbfile_)				
 			return True			
 		else:	
-			print(json_url)
-			print("Response 404. Old Files weren't removed")	
-			return False	
+			if 	dbname=='versions_txt' and URL==None:
+				check_ver_not_missing(_dbfile_,force=True)	
+			else:	
+				print(dbname)
+				print("Response 404. Old Files weren't removed")	
+				return False	
 
-def check_ver_not_missing(_dbfile_):
+def check_ver_not_missing(_dbfile_,force=False):
+	if force==True:
+		get_otherDB(urlconfig,'versions_txt','nutdb_versions.txt',URL='http://tinfoil.media/repo/db/versions.txt')	
+		return
 	try:	
 		with open(_dbfile_,'rt',encoding='utf8') as csvfile:
 			readCSV = csv.reader(csvfile, delimiter='|')	
