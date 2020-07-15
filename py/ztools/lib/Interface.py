@@ -1172,6 +1172,17 @@ def server(port='0.0.0.0',host='localhost',videoplayback=True,ssl=False,noconsol
 	if ssl==False:
 		ssl_cert=False
 		ssl_key=False
+	else:
+		ssl_cert= os.path.join(zconfig_dir, 'certificate.pem')
+		ssl_key= os.path.join(zconfig_dir, 'key.pem')
+		web_folder=os.path.join(ztools_dir,'web')
+		debug_folder=os.path.join(web_folder,'_debug_')
+		flag_file=os.path.join(debug_folder,'flag')	
+		debug_log=os.path.join(debug_folder,'log')	
+		if os.path.exists(ssl_cert) and os.path.exists(ssl_key):
+			pass
+		else:
+			ssl_cert=False;ssl_key=False	
 	with open(flag_file,'wt') as tfile:
 		if noconsole==True:	
 			tfile.write('True')
@@ -1212,10 +1223,12 @@ def server(port='0.0.0.0',host='localhost',videoplayback=True,ssl=False,noconsol
 		print("Launched in {}/nscb.html".format(overwrite))	
 		sys.stdout.flush()				
 	elif ssl_cert!=False and ssl_key!=False:
-		print("Launched in https://{}:{}/nscb.html".format(h_,port))	
+		print("Server launched in https://{}:{}/nscb.html".format(h_,port))	
+		print("Local Interface launched in https://{}:{}/main.html".format(h_,port))			
 		sys.stdout.flush()		
 	else:
-		print("Launched in http://{}:{}/nscb.html".format(h_,port))
+		print("Server launched in http://{}:{}/nscb.html".format(h_,port))
+		print("Local Interface in https://{}:{}/main.html".format(h_,port))			
 		sys.stdout.flush()		
 	while True:
 		try:
