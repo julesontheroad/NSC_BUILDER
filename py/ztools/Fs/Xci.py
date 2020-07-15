@@ -3225,11 +3225,9 @@ class Xci(File):
 			IV= bytes.fromhex(IV)
 			xkey=True
 			#print(hx(IV))
-			#print("i'm here") 
 		except:
 			IV=(0x5B408B145E277E81E5BF677C94888D7B).to_bytes(16, byteorder='big')
 			xkey=False
-			#print("i'm here 2") 
 			
 		HFS0_offset=(0xF000).to_bytes(8, byteorder='little')
 		len_rHFS0=(len(root_header)).to_bytes(8, byteorder='little')
@@ -5181,11 +5179,9 @@ class Xci(File):
 			IV= bytes.fromhex(IV)
 			xkey=True
 			#print(hx(IV))
-			#print("i'm here") 
 		except:
 			IV=(0x5B408B145E277E81E5BF677C94888D7B).to_bytes(16, byteorder='big')
 			xkey=False
-			#print("i'm here 2") 
 			
 		HFS0_offset=(0xF000).to_bytes(8, byteorder='little')
 		len_rHFS0=(len(root_header)).to_bytes(8, byteorder='little')
@@ -6351,11 +6347,9 @@ class Xci(File):
 			IV= bytes.fromhex(IV)
 			xkey=True
 			#print(hx(IV))
-			#print("i'm here") 
 		except:
 			IV=(0x5B408B145E277E81E5BF677C94888D7B).to_bytes(16, byteorder='big')
 			xkey=False
-			#print("i'm here 2") 
 			
 		HFS0_offset=(0xF000).to_bytes(8, byteorder='little')
 		len_rHFS0=(len(root_header)).to_bytes(8, byteorder='little')
