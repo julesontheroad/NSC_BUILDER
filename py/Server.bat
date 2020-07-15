@@ -66,6 +66,6 @@ echo Program will exit now
 PING -n 2 127.0.0.1 >NUL 2>&1
 goto salida
 :salida
-pause
+REM pause
 exit
 

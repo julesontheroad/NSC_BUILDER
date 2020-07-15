@@ -510,9 +510,12 @@ def get_otherDB(dbfile,dbname,f,URL=None):
 				check_ver_not_missing(_dbfile_)				
 			return True			
 		else:	
-			print(json_url)
-			print("Response 404. Old Files weren't removed")	
-			return False	
+			if 	dbname=='versions_txt' and URL==None:
+				check_ver_not_missing(_dbfile_)	
+			else:	
+				print(dbname)
+				print("Response 404. Old Files weren't removed")	
+				return False	
 
 def check_ver_not_missing(_dbfile_):
 	try:	
