@@ -226,19 +226,6 @@ def gen_xci_parts(filepath,cachefolder=None,keypatch=False):
 		outf = open(outfile, 'w+b')		
 		outf.write(outheader)	
 		written=0
-		for nspF in xci.hfs0:
-			if str(nspF._path)=="secure":
-				for ticket in nspF:			
-					if type(ticket) == Ticket:
-						size=ticket.size			
-						size_pr=sq_tools.getSize(size)			
-						filename =  str(ticket._path)
-						tik=filename[:-20]				
-						# if str(tik).upper() == str(titleid).upper():
-							# titleKey = ticket.getTitleKeyBlock().to_bytes(16, byteorder='big')
-							# break	
-						titleKey = ticket.getTitleKeyBlock().to_bytes(16, byteorder='big')
-						break	
 		for fi in files:
 			for nspF in xci.hfs0:	
 				if str(nspF._path)=="secure":
@@ -261,7 +248,11 @@ def gen_xci_parts(filepath,cachefolder=None,keypatch=False):
 								if crypto2>crypto1:
 									masterKeyRev=crypto2
 								if crypto2<=crypto1:	
-									masterKeyRev=crypto1								
+									masterKeyRev=crypto1	
+								from mtp_tools import get_nca_ticket
+								check,titleKey=get_nca_ticket(filepath,fi)
+								if check==False:
+									sys.exit("Can't verify titleckey")
 								titleKeyDec = Keys.decryptTitleKey(titleKey, Keys.getMasterKeyIndex(int(masterKeyRev)))							
 								encKeyBlock = crypto.encrypt(titleKeyDec * 4)
 								if str(keypatch) != "False":
@@ -292,18 +283,7 @@ def gen_xci_parts(filepath,cachefolder=None,keypatch=False):
 		outfile=os.path.join(cachefolder, "0")
 		outf = open(outfile, 'w+b')		
 		outf.write(outheader)	
-		written=0
-		for ticket in nsp:			
-			if type(ticket) == Ticket:
-				size=ticket.size			
-				size_pr=sq_tools.getSize(size)			
-				filename =  str(ticket._path)
-				tik=filename[:-20]				
-				# if str(tik).upper() == str(titleid).upper():
-					# titleKey = ticket.getTitleKeyBlock().to_bytes(16, byteorder='big')
-					# break	
-				titleKey = ticket.getTitleKeyBlock().to_bytes(16, byteorder='big')
-				break	
+		written=0	
 		for fi in files:				
 			for nca in nsp:					
 				if nca._path==fi:
@@ -324,7 +304,11 @@ def gen_xci_parts(filepath,cachefolder=None,keypatch=False):
 						if crypto2>crypto1:
 							masterKeyRev=crypto2
 						if crypto2<=crypto1:	
-							masterKeyRev=crypto1								
+							masterKeyRev=crypto1		
+						from mtp_tools import get_nca_ticket
+						check,titleKey=get_nca_ticket(filepath,fi)
+						if check==False:
+							sys.exit("Can't verify titleckey")							
 						titleKeyDec = Keys.decryptTitleKey(titleKey, Keys.getMasterKeyIndex(int(masterKeyRev)))							
 						encKeyBlock = crypto.encrypt(titleKeyDec * 4)
 						if str(keypatch) != "False":
@@ -484,20 +468,7 @@ def gen_mxci_parts(input_files,cachefolder=None,keypatch=False):
 		for filepath in input_files:
 			if filepath.endswith('xci'):
 				xci=squirrelXCI(filepath)
-				written=0
-				for nspF in xci.hfs0:
-					if str(nspF._path)=="secure":
-						for ticket in nspF:			
-							if type(ticket) == Ticket:
-								size=ticket.size			
-								size_pr=sq_tools.getSize(size)			
-								filename =  str(ticket._path)
-								tik=filename[:-20]				
-								# if str(tik).upper() == str(titleid).upper():
-									# titleKey = ticket.getTitleKeyBlock().to_bytes(16, byteorder='big')
-									# break	
-								titleKey = ticket.getTitleKeyBlock().to_bytes(16, byteorder='big')
-								break	
+				written=0	
 				for nspF in xci.hfs0:	
 					if str(nspF._path)=="secure":
 						for nca in nspF:					
@@ -519,7 +490,11 @@ def gen_mxci_parts(input_files,cachefolder=None,keypatch=False):
 									if crypto2>crypto1:
 										masterKeyRev=crypto2
 									if crypto2<=crypto1:	
-										masterKeyRev=crypto1								
+										masterKeyRev=crypto1
+									from mtp_tools import get_nca_ticket
+									check,titleKey=get_nca_ticket(filepath,fi)
+									if check==False:
+										sys.exit("Can't verify titleckey")
 									titleKeyDec = Keys.decryptTitleKey(titleKey, Keys.getMasterKeyIndex(int(masterKeyRev)))							
 									encKeyBlock = crypto.encrypt(titleKeyDec * 4)
 									if str(keypatch) != "False":
@@ -547,18 +522,7 @@ def gen_mxci_parts(input_files,cachefolder=None,keypatch=False):
 				xci.close()		
 			elif filepath.endswith('nsp'):		
 				nsp=squirrelNSP(filepath)
-				written=0
-				for ticket in nsp:			
-					if type(ticket) == Ticket:
-						size=ticket.size			
-						size_pr=sq_tools.getSize(size)			
-						filename =  str(ticket._path)
-						tik=filename[:-20]				
-						# if str(tik).upper() == str(titleid).upper():
-							# titleKey = ticket.getTitleKeyBlock().to_bytes(16, byteorder='big')
-							# break	
-						titleKey = ticket.getTitleKeyBlock().to_bytes(16, byteorder='big')
-						break					
+				written=0				
 				for nca in nsp:					
 					if nca._path==fi:
 						nca=Nca(nca)
@@ -578,7 +542,11 @@ def gen_mxci_parts(input_files,cachefolder=None,keypatch=False):
 							if crypto2>crypto1:
 								masterKeyRev=crypto2
 							if crypto2<=crypto1:	
-								masterKeyRev=crypto1								
+								masterKeyRev=crypto1		
+							from mtp_tools import get_nca_ticket
+							check,titleKey=get_nca_ticket(filepath,fi)
+							if check==False:
+								sys.exit("Can't verify titleckey")
 							titleKeyDec = Keys.decryptTitleKey(titleKey, Keys.getMasterKeyIndex(int(masterKeyRev)))							
 							encKeyBlock = crypto.encrypt(titleKeyDec * 4)
 							if str(keypatch) != "False":
