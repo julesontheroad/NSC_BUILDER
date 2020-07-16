@@ -553,7 +553,7 @@ def check_ver_not_missing(_dbfile_,force=False):
 def consolidate_versiondb():
 	ver_txt=os.path.join(DATABASE_folder, 'nutdb_versions.txt')
 	ver_JSON=os.path.join(DATABASE_folder, 'nutdb_versions.json')
-	ver_txt_dict={};
+	ver_txt_dict={};data={}
 	if os.path.exists(ver_txt):	
 		with open(ver_txt,'rt',encoding='utf8') as csvfile:
 			readCSV = csv.reader(csvfile, delimiter='|')	
@@ -584,7 +584,7 @@ def consolidate_versiondb():
 		with open(ver_JSON, 'r') as json_file:	
 			data = json.load(json_file)	
 			for i in data:
-				c=0;tid=i
+				c=0;tid=str(i).upper()
 				if tid.endswith('800'):
 					tid=tid[:-3]+'000'
 				for j in (data[i]).keys():
@@ -599,10 +599,30 @@ def consolidate_versiondb():
 							if int(j)>int(ver_txt_dict[tid]):
 								ver_txt_dict[tid]=j
 					except BaseException as e:
-						Print.error('Exception: ' + str(e))	
+						Print.error('Exception: ' + str(e))
+	from copy import deepcopy
+	newdict= deepcopy(ver_txt_dict)				
+	for i in ver_txt_dict:
+		v_=ver_txt_dict[i]
+		if int(v_)<65536:
+			pass
+		elif i.endswith('000'):
+			updid=i[:-3]+'800'
+			if not updid in newdict:
+				newdict[i]='0'
+				newdict[updid]=v_
+	ver_txt_dict=newdict		
+	for i in data:
+		tid=i.upper()
+		if i.endswith('000'):
+			for j in (data[i]).keys():
+				if not j=="":
+					if int(j)>0 and int(j)<65536:
+						ver_txt_dict[tid]=str(j)
+						
 	with open(ver_txt,'wt',encoding='utf8') as csvfile:			
 		csvfile.write('id|version\n')
-		for i in ver_txt_dict:
+		for i in sorted(ver_txt_dict.keys()):
 			csvfile.write(f"{i}|{ver_txt_dict[i]}\n")
 	
 def get_regionDB(region):
