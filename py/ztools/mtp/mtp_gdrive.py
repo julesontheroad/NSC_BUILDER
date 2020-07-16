@@ -38,8 +38,9 @@ try:
 except:
 	import json
 
-if not is_switch_connected():
-	sys.exit("Switch device isn't connected.\nCheck if mtp responder is running!!!")	
+def check_connection():
+	if not is_switch_connected():
+		sys.exit("Switch device isn't connected.\nCheck if mtp responder is running!!!")	
 	
 bucketsize = 81920
 
@@ -332,6 +333,7 @@ def select_from_cache(tfile):
 			
 
 def loop_install(tfile,destiny="SD",outfolder=None,ch_medium=True,check_fw=True,patch_keygen=False,ch_base=False,ch_other=False,truecopy=True,checked=False):	
+	check_connection()
 	if not os.path.exists(tfile):
 		sys.exit(f"Couldn't find {tfile}")	
 	from mtpinstaller import retrieve_installed,parsedinstalled
@@ -396,6 +398,7 @@ def get_library_from_path(tfile=None,filename=None):
 	return lib,TD,libpath	
 	
 def gdrive_install(filename,destiny="SD",outfolder=None,ch_medium=True,check_fw=True,patch_keygen=False,ch_base=False,ch_other=False,checked=False,installed_list=False):
+	check_connection()
 	lib,TD,libpath=get_library_from_path(remote_lib_file,filename)
 	ID,name,type,size,md5,remote=DrivePrivate.get_Data(filename,TD=TD,Print=False)
 	# header=DrivePrivate.get_html_header(remote.access_token)
@@ -500,6 +503,7 @@ def gdrive_install(filename,destiny="SD",outfolder=None,ch_medium=True,check_fw=
 			process.terminate();	
 
 def public_gdrive_install(filepath,destiny="SD",truecopy=True,outfolder=None,ch_medium=True,check_fw=True,patch_keygen=False,ch_base=False,ch_other=False,installed_list=False):
+	check_connection()
 	lib,TD,libpath=get_cache_lib()
 	if lib==None:
 		sys.exit(f"Google Drive Public Links are only supported via cache folder")	
@@ -606,6 +610,7 @@ def public_gdrive_install(filepath,destiny="SD",truecopy=True,outfolder=None,ch_
 			process.terminate();		
 	
 def fichier_install(url,destiny="SD",ch_medium=True,ch_base=False,ch_other=False,installed_list=False):
+	check_connection()
 	if not os.path.exists(_1fichier_token):
 		sys.exit("No 1fichier token setup")
 	with open(_1fichier_token,'rt',encoding='utf8') as tfile:
@@ -707,6 +712,7 @@ def fichier_install(url,destiny="SD",ch_medium=True,ch_base=False,ch_other=False
 			process.terminate();		
 			
 def gdrive_transfer(filename,destiny="SD"):
+	check_connection()
 	if destiny=="SD":
 		destiny="1: External SD Card/"
 	lib,TD,libpath=get_library_from_path(remote_lib_file,filename)
@@ -733,6 +739,7 @@ def gdrive_transfer(filename,destiny="SD"):
 			process.terminate();	
 
 def public_gdrive_transfer(filepath,destiny="SD",truecopy=True):
+	check_connection()
 	lib,TD,libpath=get_cache_lib()
 	if lib==None:
 		sys.exit(f"Google Drive Public Links are only supported via cache folder")	
@@ -761,6 +768,7 @@ def public_gdrive_transfer(filepath,destiny="SD",truecopy=True):
 			process.terminate();		
 	
 def fichier_transfer(url,destiny="SD"):
+	check_connection()
 	if not os.path.exists(_1fichier_token):
 		sys.exit("No 1fichier token setup")
 	with open(_1fichier_token,'rt',encoding='utf8') as tfile:
@@ -809,6 +817,7 @@ def fichier_transfer(url,destiny="SD"):
 			process.terminate();
 
 def loop_transfer(tfile):	
+	check_connection()
 	if not os.path.exists(tfile):
 		sys.exit(f"Couldn't find {tfile}")		
 	from mtp_game_manager import pick_transfer_folder
@@ -833,6 +842,7 @@ def loop_transfer(tfile):
 				
 
 def get_libs_remote_source(lib=remote_lib_file):
+	check_connection()
 	libraries={}
 	libtfile=lib
 	with open(libtfile,'rt',encoding='utf8') as csvfile:
@@ -887,6 +897,7 @@ def get_libs_remote_source(lib=remote_lib_file):
 	return libraries				
 
 def update_console_from_gd(libraries="all",destiny="SD",exclude_xci=True,prioritize_nsz=True,tfile=None,verification=True,ch_medium=True,ch_other=False,autoupd_aut=True):	
+	check_connection()
 	if tfile==None:
 		tfile=os.path.join(NSCB_dir, 'MTP1.txt')
 	if os.path.exists(tfile):

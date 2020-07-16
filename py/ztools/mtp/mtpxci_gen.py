@@ -27,8 +27,9 @@ import csv
 from tqdm import tqdm
 import Print
 
-if not is_switch_connected():
-	sys.exit("Switch device isn't connected.\nCheck if mtp responder is running!!!")	
+def check_connection():
+	if not is_switch_connected():
+		sys.exit("Switch device isn't connected.\nCheck if mtp responder is running!!!")	
 
 bucketsize = 81920
 
@@ -179,6 +180,7 @@ def get_header_size(flist):
 	return outheader,properheadsize,keygeneration,sz,files,total_list
 	
 def transfer_xci_csv(filepath,destiny="SD",cachefolder=None,override=False,keypatch=False):
+	check_connection()
 	if destiny=="SD":
 		destiny="1: External SD Card\\"
 	if cachefolder==None:
@@ -359,6 +361,7 @@ def gen_xci_parts(filepath,cachefolder=None,keypatch=False):
 	return xciname					
 
 def transfer_mxci_csv(tfile=None,destiny="SD",cachefolder=None,override=False,keypatch=False,input_files=None):
+	check_connection()
 	if input_files==None and tfile==None:
 		sys.exit("Missing input!!!")
 	if destiny=="SD":

@@ -26,8 +26,9 @@ from secondary import clear_Screen
 from python_pick import pick
 from python_pick import Picker
 
-if not is_switch_connected():
-	sys.exit("Switch device isn't connected.\nCheck if mtp responder is running!!!")	
+def check_connection():
+	if not is_switch_connected():
+		sys.exit("Switch device isn't connected.\nCheck if mtp responder is running!!!")	
 	
 bucketsize = 81920
 
@@ -100,6 +101,7 @@ def libraries(tfile):
 		return False
 
 def retrieve_installed():	
+	check_connection()
 	try:			
 		for f in os.listdir(cachefolder):
 			fp = os.path.join(cachefolder, f)
@@ -117,6 +119,7 @@ def retrieve_installed():
 		print("    Success")	
 
 def retrieve_registered():	
+	check_connection()
 	try:			
 		for f in os.listdir(cachefolder):
 			fp = os.path.join(cachefolder, f)
@@ -149,6 +152,7 @@ def retrieve_registered():
 	return dbi_dict
 
 def retrieve_xci_paths():	
+	check_connection()
 	try:			
 		for f in os.listdir(cachefolder):
 			fp = os.path.join(cachefolder, f)
@@ -206,6 +210,7 @@ def pick_transfer_folder():
 	return path			
 	
 def transfer(filepath=None,destiny="SD",):	
+	check_connection()
 	if filepath=="":
 		filepath=None
 	if filepath==None:
@@ -232,6 +237,7 @@ def transfer(filepath=None,destiny="SD",):
 			process.terminate();	
 	
 def loop_transfer(tfile):		
+	check_connection()
 	if not os.path.exists(tfile):
 		sys.exit(f"Couldn't find {tfile}")			
 	destiny=pick_transfer_folder()	
@@ -242,6 +248,7 @@ def loop_transfer(tfile):
 		listmanager.striplines(tfile,counter=True)	
 		
 def gen_sx_autoloader_sd_files():
+	check_connection()
 	retrieve_xci_paths()
 	gamelist=get_gamelist(file=sd_xci_cache)
 	SD_folder=os.path.join(sx_autoloader_db, 'sd')
@@ -272,6 +279,7 @@ def gen_sx_autoloader_sd_files():
 			
 		
 def dump_content():
+	check_connection()
 	retrieve_installed()
 	installed=get_gamelist()
 	print("  * Entering File Picker")	
@@ -302,6 +310,7 @@ def dump_content():
 		print('...................................................') 						
 		
 def uninstall_content():	
+	check_connection()
 	retrieve_installed()
 	installed=get_gamelist()
 	print("  * Entering File Picker")
@@ -328,6 +337,7 @@ def uninstall_content():
 		print('...................................................') 		
 		
 def delete_archived():
+	check_connection()
 	retrieve_installed()
 	installed=get_gamelist()	
 	registered=retrieve_registered()
@@ -382,6 +392,7 @@ def delete_archived():
 		print('...................................................') 				
 		
 def back_up_saves(backup_all=False,inline=False,tidandver=True,romaji=True,outfolder=None):	
+	check_connection()
 	import zipfile 
 	from datetime import datetime
 	try:			

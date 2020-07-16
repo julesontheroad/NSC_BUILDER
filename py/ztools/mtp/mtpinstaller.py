@@ -26,8 +26,10 @@ from python_pick import pick
 from python_pick import Picker
 from secondary import clear_Screen
 from Interface import About
-if not is_switch_connected():
-	sys.exit("Switch device isn't connected.\nCheck if mtp responder is running!!!")	
+
+def check_connection():
+	if not is_switch_connected():
+		sys.exit("Switch device isn't connected.\nCheck if mtp responder is running!!!")	
 	
 bucketsize = 81920
 
@@ -238,6 +240,7 @@ def file_verification(filename,hash=False):
 	return verdict,isrestored,cnmt_is_patched
 		
 def install(filepath=None,destiny="SD",verification=True,outfolder=None,ch_medium=True,check_fw=True,patch_keygen=False,install_mode="spec1",st_crypto=False):	
+	check_connection()
 	if install_mode!="legacy":
 		from mtpnsp import install_nsp_csv
 	kgwarning=False;dopatch=False;keygeneration=0;tgkg=0
@@ -351,6 +354,7 @@ def install_conv_st1(filepath,outfolder,keypatch='false'):
 	f.close()	
 			
 def install_converted(filepath=None,outfolder=None,destiny="SD",kgpatch=False,tgkg=0):		
+	check_connection()
 	if filepath=="":
 		filepath=None	
 	if outfolder=="":
@@ -396,7 +400,8 @@ def install_converted(filepath=None,outfolder=None,destiny="SD",kgpatch=False,tg
 				os.remove(fp)	
 	except:pass				
 		
-def loop_install(tfile,destiny="SD",verification=True,outfolder=None,ch_medium=True,check_fw=True,patch_keygen=False,ch_base=False,ch_other=False,install_mode="spec1",st_crypto=False,checked=False):		
+def loop_install(tfile,destiny="SD",verification=True,outfolder=None,ch_medium=True,check_fw=True,patch_keygen=False,ch_base=False,ch_other=False,install_mode="spec1",st_crypto=False,checked=False):
+	check_connection()		
 	if not os.path.exists(tfile):
 		sys.exit(f"Couldn't find {tfile}")		
 	if ch_base==True or ch_other==True:
@@ -447,6 +452,7 @@ def loop_install(tfile,destiny="SD",verification=True,outfolder=None,ch_medium=T
 		listmanager.striplines(tfile,counter=True)
 		
 def retrieve_installed():	
+	check_connection()
 	print("  * Parsing games in device. Please Wait...")			
 	process=subprocess.Popen([nscb_mtp,"ShowInstalled","-tfile",games_installed_cache,"-show","false","-exci","true"],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
 	while process.poll()==None:
@@ -471,6 +477,7 @@ def parsedinstalled(exclude_xci=True):
 	
 		
 def get_installed_info(tfile=None,search_new=True,excludehb=True):
+	check_connection()
 	if not os.path.exists(cachefolder):
 		os.makedirs(cachefolder)
 	forecombo=Style.BRIGHT+Back.GREEN+Fore.WHITE
@@ -634,6 +641,7 @@ def get_installed_info(tfile=None,search_new=True,excludehb=True):
 					
 
 def get_archived_info(search_new=True,excludehb=True):	
+	check_connection()
 	forecombo=Style.BRIGHT+Back.GREEN+Fore.WHITE
 	if not os.path.exists(cachefolder):
 		os.makedirs(cachefolder)	
@@ -760,6 +768,7 @@ def get_archived_info(search_new=True,excludehb=True):
 			
 
 def update_console(libraries="all",destiny="SD",exclude_xci=True,prioritize_nsz=True,tfile=None,verification=True,ch_medium=True,ch_other=False,autoupd_aut=True):	
+	check_connection()
 	if tfile==None:
 		tfile=os.path.join(NSCB_dir, 'MTP1.txt')
 	if os.path.exists(tfile):
@@ -976,6 +985,7 @@ def get_dlc_baseid(titleid):
 	return baseid	
 
 def get_storage_info():
+	check_connection()
 	SD_ds=0;SD_fs=0;NAND_ds=0;NAND_fs=0;device='unknown';FW='unknown'
 	if os.path.exists(storage_info):
 		try:
