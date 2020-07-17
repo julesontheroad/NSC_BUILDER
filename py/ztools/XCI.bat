@@ -39,7 +39,7 @@ echo Repacking as xci
 echo -------------------------------
 if exist "%w_folder%\secure\*.dat" del "%w_folder%\secure\*.dat" >NUL 2>&1
 if exist "%w_folder%\secure\*.xml" del "%w_folder%\secure\*.xml" >NUL 2>&1
-%pycommand% "%nut%" %buffer% -ifo "%w_folder%" %fatype% --create_xci "%w_folder%\%filename%.xci"
+%pycommand% "%squirrel%" %buffer% -ifo "%w_folder%" %fatype% --create_xci "%w_folder%\%filename%.xci"
 exit /B
 
 :sp_xci_repack
@@ -76,7 +76,7 @@ echo f | xcopy /f /y "!tfolder!\secure\*.cnmt.nca" "!tfolder!\lc\"  >NUL 2>&1
 move  "!tfolder!\secure\*.tik"  "!tfolder!\lc" >NUL 2>&1
 move  "!tfolder!\secure\*.cert"  "!tfolder!\lc" >NUL 2>&1
 for /f "usebackq tokens=*" %%f in ("!tfolder!\nca_list.txt") do (
-%pycommand% "%nut%" --ncatype "!tfolder!\secure\%%f">"!tfolder!\nca_type.txt"
+%pycommand% "%squirrel%" --ncatype "!tfolder!\secure\%%f">"!tfolder!\nca_type.txt"
 set /p nca_type=<"!tfolder!\nca_type.txt"
 del "!tfolder!\nca_type.txt"
 if "!nca_type!" EQU "Content.CONTROL" ( set "ctrl_nca=%%f" )
@@ -86,7 +86,7 @@ del "!tfolder!\nca_list.txt"
 dir "!tfolder!\lc" /b  > "!tfolder!\lc_list.txt"
 set row=
 for /f "usebackq" %%x in ("!tfolder!\lc_list.txt") do set row="!tfolder!\lc\%%x" !row!
-%pycommand% "%nut%" -c "%w_folder%\output.nsp" %row% >NUL 2>&1
+%pycommand% "%squirrel%" -c "%w_folder%\output.nsp" %row% >NUL 2>&1
 ren "%w_folder%\output.nsp" "!fname![lc].nsp"
 del "!tfolder!\lc_list.txt"
 
@@ -96,7 +96,7 @@ echo Repacking as xci
 echo -------------------------------
 if exist "!tfolder!\secure\*.dat" del "!tfolder!\secure\*.dat" >NUL 2>&1
 if exist "!tfolder!\secure\*.xml" del "!tfolder!\secure\*.xml" >NUL 2>&1
-%pycommand% "%nut%" %buffer% -ifo "!tfolder!" %fatype% --create_xci "%w_folder%\!fname!.xci"
+%pycommand% "%squirrel%" %buffer% -ifo "!tfolder!" %fatype% --create_xci "%w_folder%\!fname!.xci"
 RD /S /Q  "!tfolder!" >NUL 2>&1
 exit /B
 

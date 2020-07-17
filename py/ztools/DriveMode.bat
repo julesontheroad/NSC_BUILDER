@@ -39,13 +39,13 @@ exit /B
 :DOWNLOADMODE
 cls
 call :program_logo
-%pycommand% "%nut%" -lib_call Drive.Download Interface
+%pycommand% "%squirrel%" -lib_call Drive.Download Interface
 goto MAIN
 
 :INFMODE
 cls
 call :program_logo
-%pycommand% "%nut%" -lib_call Drive.Info Interface
+%pycommand% "%squirrel%" -lib_call Drive.Info Interface
 goto MAIN
 
 ::///////////////////////////////////////////////////

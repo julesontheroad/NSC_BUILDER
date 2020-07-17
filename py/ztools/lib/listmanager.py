@@ -383,6 +383,65 @@ def folder_to_list(ifolder,extlist=['nsp'],filter=False,alfanumeric=False):
 		nutPrint.error('Exception: ' + str(e))													
 	return filelist
 
+def nextfolder_to_list(ifolder,extlist=['nsp'],filter=False,alfanumeric=False):	
+	ruta=ifolder
+	filelist=list()
+	if str(extlist)=='all' and os.path.isdir(ruta):
+		fname=""
+		binbin='RECYCLE.BIN'
+		dirpath=ruta
+		for filename in next(os.walk(ruta))[2]:			
+			fname=""
+			if filter != False:
+				if filter.lower() in filename.lower():
+					fname=filename
+			else:
+				fname=filename
+			if fname != "":
+				if binbin.lower() not in filename.lower():
+					filelist.append(os.path.join(dirpath, filename))		
+	try:
+		fname=""
+		binbin='RECYCLE.BIN'
+		for ext in extlist:
+			#print (ext)
+			if os.path.isdir(ruta):
+				dirpath=ruta
+				for filename in next(os.walk(ruta))[2]:	
+					if filename.endswith(ext.lower()) or filename.endswith(ext.upper()) or filename[:-1].endswith(ext.lower()) or filename[:-1].endswith(ext.lower()):
+						try:
+							fname=""
+							if filter != False:
+								if filter.lower() in filename.lower():
+									fname=filename
+							else:
+								fname=filename
+							if fname != "":
+								if binbin.lower() not in filename.lower():
+									filelist.append(os.path.join(dirpath, filename))
+						except:pass			
+			else:
+				try:
+					if ruta.endswith(ext.lower()) or ruta.endswith(ext.upper()) or ruta[:-1].endswith(ext.lower()) or ruta[:-1].endswith(ext.upper()):
+						filename = ruta
+						fname=""
+						if filter != False:
+							if filter.lower() in filename.lower():
+								fname=filename
+						else:
+							fname=filename
+						if fname != "":
+							if binbin.lower() not in filename.lower():
+								filelist.append(filename)
+				except:pass			
+		if alfanumeric==True:
+			nl=list([val for val in filelist if not val.isalnum()])
+			filelist=nl	
+	except BaseException as e:
+		nutPrint.error('Exception: ' + str(e))													
+	return filelist
+
+
 
 def selector2list(textfile,mode='folder',ext=False,filter=False,Print=False):	
 	root = tk.Tk()
@@ -541,6 +600,13 @@ def size_sorted_from_tfile(itfile,otfile=None,first='small'):
 			tfile.write(i[0]+"\n")
 	print('- List was ordered by size')
 	
+def move_all_ext_to_folder(ifolder,ofolder,extensions=['nca']):
+	import shutil
+	filelist=folder_to_list(ifolder,extlist=extensions)
+	for file in filelist:
+		destiny=os.path.join(ofolder, str(os.path.basename(os.path.abspath(file))))
+		shutil.move(file,destiny) 
+		
 def calculate_name(filelist,romanize=True,ext='.xci'):	
 	from Fs import Nsp as squirrelNSP
 	from Fs import Xci as squirrelXCI

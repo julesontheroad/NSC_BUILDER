@@ -1046,3 +1046,11 @@ def get_DB_dict(filepath):
 		f.flush()
 		f.close()		
 	return dict
+	
+def get_files_from_walk(tfile=None,extlist=['nsp','nsz','xci','xcz'],filter=False):
+	from picker_walker import get_files_from_walk
+	files=get_files_from_walk(tfile=tfile,extlist=extlist,filter=filter)
+	if files==False:
+		return False
+	elif tfile==None:
+		return files

@@ -1108,7 +1108,12 @@ def update_console_from_gd(libraries="all",destiny="SD",exclude_xci=True,priorit
 	else:
 		print("\n   --- DEVICE IS UP TO DATE ---")		
 	
-def select_from_walker(tfile):	
+def select_from_walker(tfile,types='all'):	
+	ext=[]
+	if types!='all':
+		items=types.split(' ')
+		for x in items:
+			ext.append(str(x).lower())	
 	folder,TeamDrive=DrivePrivate.folder_walker()	
 	if TeamDrive=="" or TeamDrive==False:
 		TeamDrive=None
@@ -1128,7 +1133,16 @@ def select_from_walker(tfile):
 	title = 'Select content to install or transfer: \n + Press space or right to select content \n + Press Enter to confirm selection \n + Press E to exit selection'
 	filenames=[]
 	for f in files:
-		filenames.append(f[0])
+		if types=='all':	
+			filenames.append(f[0])
+		else:
+			for x in ext:
+				if (str(f[0]).lower()).endswith(x):
+					filenames.append(f[0])
+					break
+	if filenames==[]:
+		print("  * Request didn't retrieve any files")
+		return False
 	options=filenames
 	picker = Picker(options, title, multi_select=True, min_selection_count=1)
 	def end_selection(picker):
