@@ -229,7 +229,7 @@ def select_from_libraries(tfile):
 		db[paths]={'path':paths,'TD_name':TDs}			
 		files=concurrent_scrapper(filter=filter,order=order,remotelib='all',db=db)	
 	print("  * Entering File Picker")	
-	title = 'Select content to install or transfer: \n + Press space or right to select content \n + Press E to finish selection'
+	title = 'Select content to install or transfer: \n + Press space or right to select content \n + Press Enter to confirm selection \n + Press E to exit selection'
 	filenames=[]
 	for f in files:
 		filenames.append(f[0])
@@ -263,7 +263,7 @@ def select_from_cache(tfile):
 		bname=os.path.basename(j) 
 		bname=bname.replace('.json','')
 		libnames.append(bname)
-	title = 'Select libraries to search:  \n + Press space or right to select content \n + Press E to finish selection \n + Press A to select all libraries'
+	title = 'Select libraries to search:  \n + Press space or right to select content \n + Press Enter to confirm selection \n + Press E to exit selection \n + Press A to select all libraries'
 	db=libraries(remote_lib_file)
 	options = libnames
 	picker = Picker(options, title,multi_select=True,min_selection_count=1)	
@@ -317,7 +317,7 @@ def select_from_cache(tfile):
 		options.reverse()	
 	options=interface_filter_local(options)	
 	print("  * Entering File Picker")	
-	title = 'Select content to install or transfer: \n + Press space or right to select content \n + Press E to finish selection'
+	title = 'Select content to install or transfer: \n + Press space or right to select content \n + Press Enter to confirm selection \n + Press E to exit selection'
 	picker = Picker(options, title, multi_select=True, min_selection_count=1)
 	def end_selection(picker):
 		return False,-1
@@ -358,13 +358,16 @@ def loop_install(tfile,destiny="SD",outfolder=None,ch_medium=True,check_fw=True,
 			print("Item is a local link. Skipping...")	
 		else:
 			test=item.split('|')
-			item=test[0]
-			lib,TD,libpath=get_library_from_path(remote_lib_file,item)			
-			if lib!=None:
-				print("Item is a remote library link. Redirecting...")
-				gdrive_install(item,destiny,outfolder=outfolder,ch_medium=ch_medium,check_fw=check_fw,patch_keygen=patch_keygen,ch_base=ch_base,ch_other=ch_other,checked=checked,installed_list=installed)
-			else:
-				print("Couldn't find file. Skipping...")
+			if len(test)<2:
+				item=test[0]
+				lib,TD,libpath=get_library_from_path(remote_lib_file,item)			
+				if lib!=None:
+					print("Item is a remote library link. Redirecting...")
+					gdrive_install(item,destiny,outfolder=outfolder,ch_medium=ch_medium,check_fw=check_fw,patch_keygen=patch_keygen,ch_base=ch_base,ch_other=ch_other,checked=checked,installed_list=installed)
+				else:
+					print("Couldn't find file. Skipping...")					
+			else:	
+				gdrive_install(item,destiny,outfolder=outfolder,ch_medium=ch_medium,check_fw=check_fw,patch_keygen=patch_keygen,ch_base=ch_base,ch_other=ch_other,checked=checked,installed_list=installed)			
 	
 def get_library_from_path(tfile=None,filename=None):
 	if tfile==None:
@@ -399,7 +402,15 @@ def get_library_from_path(tfile=None,filename=None):
 	
 def gdrive_install(filename,destiny="SD",outfolder=None,ch_medium=True,check_fw=True,patch_keygen=False,ch_base=False,ch_other=False,checked=False,installed_list=False):
 	check_connection()
-	lib,TD,libpath=get_library_from_path(remote_lib_file,filename)
+	test=filename.split('|')
+	if len(test)<2:
+		filename=test[0]		
+		lib,TD,libpath=get_library_from_path(remote_lib_file,filename)
+	else:
+		filename=test[0]	
+		TD=test[1]			
+		if str(TD).upper()=="NONE":
+			TD=None
 	ID,name,type,size,md5,remote=DrivePrivate.get_Data(filename,TD=TD,Print=False)
 	# header=DrivePrivate.get_html_header(remote.access_token)
 	token=remote.access_token
@@ -1053,7 +1064,7 @@ def update_console_from_gd(libraries="all",destiny="SD",exclude_xci=True,priorit
 				cstring=f"{g0} [{fileid}][{fileversion}] [{cctag}] - {(bname[-3:]).upper()}"
 				options.append(cstring)
 			if options:
-				title = 'Select content to install: \n + Press space or right to select entries \n + Press E to finish selection \n + Press A to select all entries'				
+				title = 'Select content to install: \n + Press space or right to select entries \n + Press Enter to confirm selection \n + Press E to exit selection \n + Press A to select all entries'				
 				picker = Picker(options, title, multi_select=True, min_selection_count=1)
 				def end_selection(picker):
 					return False,-1
@@ -1097,7 +1108,36 @@ def update_console_from_gd(libraries="all",destiny="SD",exclude_xci=True,priorit
 	else:
 		print("\n   --- DEVICE IS UP TO DATE ---")		
 	
-	
-	
-	
-	
+def select_from_walker(tfile):	
+	folder,TeamDrive=DrivePrivate.folder_walker()	
+	if TeamDrive=="" or TeamDrive==False:
+		TeamDrive=None
+	if folder==False:
+		return False
+	order=pick_order()
+	if order==False:
+		return False	
+	print(f"- Checking {folder}")
+	print("  * Parsing files from Google Drive. Please Wait...")		
+	db={}
+	db[folder]={'path':folder,'TD_name':TeamDrive}			
+	files=concurrent_scrapper(filter="",order=order,remotelib='all',db=db)			
+	if files==False:
+		return False			
+	print("  * Entering File Picker")	
+	title = 'Select content to install or transfer: \n + Press space or right to select content \n + Press Enter to confirm selection \n + Press E to exit selection'
+	filenames=[]
+	for f in files:
+		filenames.append(f[0])
+	options=filenames
+	picker = Picker(options, title, multi_select=True, min_selection_count=1)
+	def end_selection(picker):
+		return False,-1
+	picker.register_custom_handler(ord('e'),  end_selection);picker.register_custom_handler(ord('E'),  end_selection)
+	selected=picker.start()
+	if selected[0]==False:
+		print("    User didn't select any files")
+		return False
+	with open(tfile,'a') as  textfile:		
+		for f in selected:
+			textfile.write((files[f[1]])[2]+'/'+(files[f[1]])[0]+'|'+str(TeamDrive)+'\n')				
