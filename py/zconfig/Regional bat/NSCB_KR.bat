@@ -14,8 +14,8 @@ set "op_file=%~dp0zconfig\%ofile_name%"
 ::옵션 파일로부터 복사 옵션
 ::-----------------------------------------------------
 setlocal
-if exist "%op_file%" call "%op_file%" 	  
-endlocal & ( 
+if exist "%op_file%" call "%op_file%"
+endlocal & (
 REM VARIABLES
 set "safe_var=%safe_var%"
 set "vrepack=%vrepack%"
@@ -198,7 +198,7 @@ echo 완료
 call :thumbup
 )
 ECHO ---------------------------------------------------
-ECHO ********** 모든 파일이 처리되었습니다! ************ 
+ECHO ********** 모든 파일이 처리되었습니다! ************
 ECHO ---------------------------------------------------
 goto aut_exit_choice
 
@@ -269,7 +269,7 @@ MD "%w_folder%"
 MD "%w_folder%\secure"
 call :getname
 echo -------------------------------------
-echo xci에서 보안 파티션 추출하기 
+echo xci에서 보안 파티션 추출하기
 echo -------------------------------------
 %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -o "%w_folder%\secure" %nf_cleaner% "%%f"
 echo 완료
@@ -291,7 +291,7 @@ echo 완료
 call :thumbup
 )
 ECHO ---------------------------------------------------
-ECHO ********** 모든 파일이 처리되었습니다! ************ 
+ECHO ********** 모든 파일이 처리되었습니다! ************
 ECHO ---------------------------------------------------
 goto aut_exit_choice
 
@@ -349,7 +349,7 @@ if exist "%w_folder%\archfolder" ( %pycommand% "%nut%" -tfile "%w_folder%\filena
 endlocal
 RD /S /Q "%w_folder%" >NUL 2>&1
 ECHO ---------------------------------------------------
-ECHO ********** 모든 파일이 처리되었습니다! ************ 
+ECHO ********** 모든 파일이 처리되었습니다! ************
 ECHO ---------------------------------------------------
 call :thumbup
 goto aut_exit_choice
@@ -409,7 +409,7 @@ echo 완료
 call :thumbup
 )
 ECHO ---------------------------------------------------
-ECHO ********** 모든 파일이 처리되었습니다! ************ 
+ECHO ********** 모든 파일이 처리되었습니다! ************
 ECHO ---------------------------------------------------
 goto aut_exit_choice
 
@@ -586,7 +586,7 @@ MD "%w_folder%"
 MD "%w_folder%\secure"
 call :getname
 echo ------------------------------------
-echo xci에서 보안 파티션 추출하기 
+echo xci에서 보안 파티션 추출하기
 echo ------------------------------------
 %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% -o "%w_folder%\secure" %nf_cleaner% "%~1"
 echo 완료
@@ -630,7 +630,7 @@ call :program_logo
 echo ********************************
 echo 수동 모드로 진입했습니다.
 echo ********************************
-if "%manual_intro%" EQU "indiv" ( goto normalmode ) 
+if "%manual_intro%" EQU "indiv" ( goto normalmode )
 if "%manual_intro%" EQU "multi" ( goto multimode )
 if "%manual_intro%" EQU "split" ( goto SPLMODE )
 ::if "%manual_intro%" EQU "update" ( goto UPDMODE )
@@ -793,7 +793,7 @@ set string=
 :update_list1
 if !pos1! GTR !pos2! ( goto :update_list2 ) else ( set /a pos1+=1 )
 set string=%string%,%pos1%
-goto :update_list1 
+goto :update_list1
 :update_list2
 set string=%string%,
 set skiplist=%string%
@@ -813,7 +813,7 @@ echo -------------------------------------------------
 echo 개별적인 처리가 활성화되었습니다.
 echo -------------------------------------------------
 ECHO -------------------------------------------------
-ECHO                 처리 할 파일 
+ECHO                 처리 할 파일
 ECHO -------------------------------------------------
 for /f "tokens=*" %%f in (list.txt) do (
 echo %%f
@@ -876,7 +876,7 @@ if /i "%skipRSVprompt%"=="true" goto s_KeyChange_skip
 echo *******************************************************
 echo 필수 시스템 버전을 패치하고 싶습니까?
 echo *******************************************************
-echo 패치를 선택하면 nca 암호화와 일치하도록 설정되므로 
+echo 패치를 선택하면 nca 암호화와 일치하도록 설정되므로
 echo 필요할 경우 시스템을 업데이트하라는 메시지만 표시
 echo 됩니다.
 echo.
@@ -895,7 +895,7 @@ if /i "%bs%"=="0" set "patchRSV=-pv false"
 if /i "%bs%"=="1" set "patchRSV=-pv true"
 if /i "%patchRSV%"=="none" echo WRONG CHOICE
 if /i "%patchRSV%"=="none" goto s_RSV_wrongchoice
-if /i "%bs%"=="0" goto s_KeyChange_skip 
+if /i "%bs%"=="0" goto s_KeyChange_skip
 
 :s_KeyChange_wrongchoice
 echo *******************************************************
@@ -961,7 +961,7 @@ echo 암호 해독  - 읽을 수 있는 파일, 티켓이 정확함
 echo              파일이 없습니다.
 echo 서명       - 닌텐도 Sig1에 대한 검증의 헤더
 echo              NSCB 수정에 대한 원래 헤더를 계산
-echo 해쉬       - 파일의 현재 및 원래 해시를 확인하고 
+echo 해쉬       - 파일의 현재 및 원래 해시를 확인하고
 echo              파일 이름과 일치
 echo.
 echo 참고: 파일 스트림 방법을 통해 원격 서비스의 파일을 읽는 경우
@@ -993,7 +993,7 @@ for /f "tokens=*" %%f in (list.txt) do (
 set "name=%%~nf"
 set "filename=%%~nxf"
 set "orinput=%%f"
-set "ziptarget=%%f" 
+set "ziptarget=%%f"
 
 if "%%~nxf"=="%%~nf.nsp" call :nsp_manual
 if "%%~nxf"=="%%~nf.xci" call :xci_manual
@@ -1359,7 +1359,7 @@ call :program_logo
 echo -----------------------------------------------
 echo 멀티 리팩 모드 활성화되었습니다
 echo -----------------------------------------------
-if exist "mlist.txt" del "mlist.txt" 
+if exist "mlist.txt" del "mlist.txt"
 :multi_manual_INIT
 endlocal
 set skip_list_split="false"
@@ -1493,7 +1493,7 @@ set string=
 :multi_update_list1
 if !pos1! GTR !pos2! ( goto :multi_update_list2 ) else ( set /a pos1+=1 )
 set string=%string%,%pos1%
-goto :multi_update_list1 
+goto :multi_update_list1
 :multi_update_list2
 set string=%string%,
 set skiplist=%string%
@@ -1513,7 +1513,7 @@ echo -------------------------------------------------
 echo 멀티 리 팩 모드 활성화되었습니다
 echo -------------------------------------------------
 ECHO -------------------------------------------------
-ECHO                   처리할 파일 
+ECHO                   처리할 파일
 ECHO -------------------------------------------------
 for /f "tokens=*" %%f in (mlist.txt) do (
 echo %%f
@@ -1570,7 +1570,7 @@ if /i "%skipRSVprompt%"=="true" goto m_KeyChange_skip
 echo *******************************************************
 echo 필수 시스템 버전을 패치하고 싶습니까?
 echo *******************************************************
-echo 패치를 선택하면 nca 암호와 일치하도록 설정되므로 
+echo 패치를 선택하면 nca 암호와 일치하도록 설정되므로
 echo 필요할 경우 시스템을 업데이트하라는 메시지만 표시
 echo 됩니다.
 echo.
@@ -1590,7 +1590,7 @@ if /i "%bs%"=="0" set "vkey=-kp false"
 if /i "%bs%"=="1" set "patchRSV=-pv true"
 if /i "%patchRSV%"=="none" echo WRONG CHOICE
 if /i "%patchRSV%"=="none" goto m_RSV_wrongchoice
-if /i "%bs%"=="0" goto m_KeyChange_skip 
+if /i "%bs%"=="0" goto m_KeyChange_skip
 
 :m_KeyChange_wrongchoice
 echo *******************************************************
@@ -1686,7 +1686,7 @@ rem if "%fatype%" EQU "-fat fat32" goto m_process_jobs_fat32
 for /f "tokens=*" %%f in (mlist.txt) do (
 set "listname=%%f"
 if "%vrepack%" EQU "cnsp" call :program_logo
-if "%vrepack%" EQU "cnsp" call :m_split_merge_list_name 
+if "%vrepack%" EQU "cnsp" call :m_split_merge_list_name
 if "%vrepack%" EQU "cnsp" ( %pycommand% "%nut%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t cnsp -o "%w_folder%" -tfile "%mlistfol%\%%f" -roma %romaji% -dmul "calculate" )
 
 if "%vrepack%" EQU "xci" call :program_logo
@@ -1972,7 +1972,7 @@ call :program_logo
 echo ------------------------------------------
 echo 커스텀 로고 또는 주요한 게임 설정
 echo ------------------------------------------
-echo 멀티 게임 xci로 표시됩니다. 
+echo 멀티 게임 xci로 표시됩니다.
 echo 현재 커스텀 로고 및 이름은 nsp 또는 nca 제어를 드래그를 위해 설정됩니다.
 echo 그런 식으로 프로그램은 정상 파티션에서 nca 컨트롤을 복사합니다.
 echo 커스텀 로고를 추가하지 않으면 로고가 게임 중 하나에서 설정됩니다.
@@ -2163,7 +2163,7 @@ set string=
 :sp_update_list1
 if !pos1! GTR !pos2! ( goto :sp_update_list2 ) else ( set /a pos1+=1 )
 set string=%string%,%pos1%
-goto :sp_update_list1 
+goto :sp_update_list1
 :sp_update_list2
 set string=%string%,
 set skiplist=%string%
@@ -2183,7 +2183,7 @@ echo -------------------------------------------------
 echo 불할 모드가 활성화되었습니다
 echo -------------------------------------------------
 ECHO -------------------------------------------------
-ECHO                   처리할 파일 
+ECHO                   처리할 파일
 ECHO -------------------------------------------------
 for /f "tokens=*" %%f in (splist.txt) do (
 echo %%f
@@ -2464,7 +2464,7 @@ set string=
 :DBupdate_list1
 if !pos1! GTR !pos2! ( goto :DBupdate_list2 ) else ( set /a pos1+=1 )
 set string=%string%,%pos1%
-goto :DBupdate_list1 
+goto :DBupdate_list1
 :DBupdate_list2
 set string=%string%,
 set skiplist=%string%
@@ -2484,7 +2484,7 @@ echo -------------------------------------------------
 echo 개별적인 처리가 활성화되었습니다.
 echo -------------------------------------------------
 ECHO -------------------------------------------------
-ECHO                    처리할 파일 
+ECHO                    처리할 파일
 ECHO -------------------------------------------------
 for /f "tokens=*" %%f in (DBL.txt) do (
 echo %%f
@@ -2544,7 +2544,7 @@ for /f "tokens=*" %%f in (DBL.txt) do (
 set "name=%%~nf"
 set "filename=%%~nxf"
 set "orinput=%%f"
-set "ziptarget=%%f" 
+set "ziptarget=%%f"
 if "%vrepack%" EQU "zip" ( set "zip_restore=true" )
 if "%%~nxf"=="%%~nf.nsp" call :DBnsp_manual
 if "%%~nxf"=="%%~nf.nsx" call :DBnsp_manual
@@ -2617,7 +2617,7 @@ goto DBs_exit_choice
 
 :DBGeneration
 if not exist "%dbdir%" MD "%dbdir%">NUL 2>&1
-%pycommand% "%nut%" --dbformat "%dbformat%" -dbfile "%db_file%" -tfile "%prog_dir%DBL.txt" -nscdb "%orinput%" 
+%pycommand% "%nut%" --dbformat "%dbformat%" -dbfile "%db_file%" -tfile "%prog_dir%DBL.txt" -nscdb "%orinput%"
 exit /B
 
 :DBcontador_NF
@@ -2664,17 +2664,17 @@ echo          /_', "=. ';:;:;
 echo          @=:__,  \,;:;:'
 echo            _(\.=  ;:;;'
 echo           `"_(  _/="`
-echo            `"'		
+echo            `"'
 exit /B
 
 :program_logo
 
-ECHO                                        __          _ __    __         
+ECHO                                        __          _ __    __
 ECHO                  ____  _____ ____     / /_  __  __(_) /___/ /__  _____
 ECHO                 / __ \/ ___/ ___/    / __ \/ / / / / / __  / _ \/ ___/
-ECHO                / / / (__  ) /__     / /_/ / /_/ / / / /_/ /  __/ /    
-ECHO               /_/ /_/____/\___/____/_.___/\__,_/_/_/\__,_/\___/_/     
-ECHO                              /_____/                                  
+ECHO                / / / (__  ) /__     / /_/ / /_/ / / / /_/ /  __/ /
+ECHO               /_/ /_/____/\___/____/_.___/\__,_/_/_/\__,_/\___/_/
+ECHO                              /_____/
 ECHO -------------------------------------------------------------------------------------
 ECHO                             닌텐도 스위치 클리너 및 빌더
 ECHO                            (XCI 다중 콘텐츠 빌더 및 기타)
@@ -2684,10 +2684,9 @@ ECHO ---------------------------------------------------------------------------
 ECHO "                             다람쥐의 지원을 받는 NSCB                             "
 ECHO "                      BLAWAR 및 LUCA FRAGA 작업을 기반으로 작업                    "
 ECHO                                   버전 0.88 (신규)
-ECHO -------------------------------------------------------------------------------------                   
+ECHO -------------------------------------------------------------------------------------
 ECHO Program의 github: https://github.com/julesontheroad/NSC_BUILDER
 ECHO Blawar의 github:  https://github.com/blawar
-ECHO Blawar의 tinfoil: https://github.com/digableinc/tinfoil
 ECHO Luca Fraga의 github: https://github.com/LucaFraga
 ECHO -------------------------------------------------------------------------------------
 exit /B
@@ -2760,7 +2759,7 @@ del "%w_folder%\nspversion.txt" >NUL 2>&1
 if "%type%" EQU "BASE" ( set "ctag=" )
 if "%type%" EQU "UPDATE" ( set ctag=[UPD] )
 if "%type%" EQU "DLC" ( set ctag=[DLC] )
-%pycommand% "%nut%" -i "%ziptarget%">"%w_folder%\zip\fileinfo[%titleid%][%verID%]%ctag%.txt" 
+%pycommand% "%nut%" -i "%ziptarget%">"%w_folder%\zip\fileinfo[%titleid%][%verID%]%ctag%.txt"
 %pycommand% "%nut%" --filelist "%ziptarget%">"%w_folder%\zip\ORIGINAL_filelist[%titleid%][%verID%]%ctag%.txt"
 "%zip%" -ifo "%w_folder%\zip" -zippy "%w_folder%\%titleid%[%verID%]%ctag%.zip"
 RD /S /Q "%w_folder%\zip" >NUL 2>&1
@@ -2797,7 +2796,7 @@ exit /B
 :addtags_from_xci
 dir "%w_folder%\secure\*.cnmt.nca" /b  >"%w_folder%\ncameta.txt"
 set /p ncameta=<"%w_folder%\ncameta.txt"
-del "%w_folder%\ncameta.txt" >NUL 2>&1 
+del "%w_folder%\ncameta.txt" >NUL 2>&1
 set "ncameta=%w_folder%\secure\%ncameta%"
 %pycommand% "%nut%" --ncatitleid "%ncameta%" >"%w_folder%\ncaid.txt"
 set /p titleid=<"%w_folder%\ncaid.txt"
@@ -2815,8 +2814,8 @@ set ttag=[DLC]
 
 if [%titleid%] EQU %c_base% set ttag=[v0]
 if [%titleid%] EQU %c_update% set ttag=[UPD]
- 
-set filename=%filename%[%titleid%][%ttag%] 
+
+set filename=%filename%[%titleid%][%ttag%]
 del "%w_folder%\titleid.txt"
 exit /B
 

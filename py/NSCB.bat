@@ -17,8 +17,8 @@ set "opt_server=%~dp0zconfig\%opt_server%"
 ::COPY OPTIONS FROM OPTION FILE
 ::-----------------------------------------------------
 setlocal
-if exist "%op_file%" call "%op_file%" 	  
-endlocal & ( 
+if exist "%op_file%" call "%op_file%"
+endlocal & (
 REM VARIABLES
 set "safe_var=%safe_var%"
 set "vrepack=%vrepack%"
@@ -262,7 +262,7 @@ echo DONE
 call :thumbup
 )
 ECHO ---------------------------------------------------
-ECHO *********** ALL FILES WERE PROCESSED! ************* 
+ECHO *********** ALL FILES WERE PROCESSED! *************
 ECHO ---------------------------------------------------
 goto aut_exit_choice
 
@@ -296,7 +296,7 @@ echo DONE
 call :thumbup
 )
 ECHO ---------------------------------------------------
-ECHO *********** ALL FILES WERE PROCESSED! ************* 
+ECHO *********** ALL FILES WERE PROCESSED! *************
 ECHO ---------------------------------------------------
 goto aut_exit_choice
 
@@ -367,7 +367,7 @@ MD "%w_folder%"
 MD "%w_folder%\secure"
 call :getname
 echo -------------------------------------
-echo Extracting secure partition from xci 
+echo Extracting secure partition from xci
 echo -------------------------------------
 %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% -o "%w_folder%\secure" %nf_cleaner% "%%f"
 echo DONE
@@ -389,7 +389,7 @@ echo DONE
 call :thumbup
 )
 ECHO ---------------------------------------------------
-ECHO *********** ALL FILES WERE PROCESSED! ************* 
+ECHO *********** ALL FILES WERE PROCESSED! *************
 ECHO ---------------------------------------------------
 goto aut_exit_choice
 
@@ -447,7 +447,7 @@ if exist "%w_folder%\archfolder" ( %pycommand% "%squirrel%" -tfile "%w_folder%\f
 endlocal
 RD /S /Q "%w_folder%" >NUL 2>&1
 ECHO ---------------------------------------------------
-ECHO *********** ALL FILES WERE PROCESSED! ************* 
+ECHO *********** ALL FILES WERE PROCESSED! *************
 ECHO ---------------------------------------------------
 call :thumbup
 goto aut_exit_choice
@@ -507,7 +507,7 @@ echo DONE
 call :thumbup
 )
 ECHO ---------------------------------------------------
-ECHO *********** ALL FILES WERE PROCESSED! ************* 
+ECHO *********** ALL FILES WERE PROCESSED! *************
 ECHO ---------------------------------------------------
 goto aut_exit_choice
 
@@ -686,7 +686,7 @@ MD "%w_folder%"
 MD "%w_folder%\secure"
 call :getname
 echo ------------------------------------
-echo Extracting secure partition from xci 
+echo Extracting secure partition from xci
 echo ------------------------------------
 %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% -o "%w_folder%\secure" %nf_cleaner% "%~1"
 echo DONE
@@ -730,7 +730,7 @@ call :program_logo
 echo ********************************
 echo YOU'VE ENTERED INTO MANUAL MODE
 echo ********************************
-if "%manual_intro%" EQU "indiv" ( goto normalmode ) 
+if "%manual_intro%" EQU "indiv" ( goto normalmode )
 if "%manual_intro%" EQU "multi" ( goto multimode )
 if "%manual_intro%" EQU "split" ( goto SPLMODE )
 ::if "%manual_intro%" EQU "update" ( goto UPDMODE )
@@ -833,8 +833,8 @@ echo Input "1" to auto-start processing from the previous list
 echo Input "2" to erase list and make a new one.
 echo Input "3" to continue building the previous list
 echo .......................................................
-echo NOTE: By pressing 3 you'll see the previous list 
-echo before starting the processing the files and you will 
+echo NOTE: By pressing 3 you'll see the previous list
+echo before starting the processing the files and you will
 echo be able to add and delete items from the list
 echo.
 ECHO *************************************************
@@ -876,7 +876,7 @@ echo+ >"%uinput%"
 endlocal
 if /i "%eval%"=="0" goto manual_Reentry
 if /i "%eval%"=="1" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%list.txt" mode=folder ext="nsp xci nsz nsx xcz" ) 2>&1>NUL
-if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%list.txt" mode=file ext="nsp xci nsz nsx xcz" ) 2>&1>NUL  
+if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%list.txt" mode=file ext="nsp xci nsz nsx xcz" ) 2>&1>NUL
 goto checkagain
 echo.
 :checkagain
@@ -931,7 +931,7 @@ set string=
 :update_list1
 if !pos1! GTR !pos2! ( goto :update_list2 ) else ( set /a pos1+=1 )
 set string=%string%,%pos1%
-goto :update_list1 
+goto :update_list1
 :update_list2
 set string=%string%,
 set skiplist=%string%
@@ -951,7 +951,7 @@ echo -------------------------------------------------
 echo INDIVIDUAL PROCESSING ACTIVATED
 echo -------------------------------------------------
 ECHO -------------------------------------------------
-ECHO                 FILES TO PROCESS 
+ECHO                 FILES TO PROCESS
 ECHO -------------------------------------------------
 for /f "tokens=*" %%f in (list.txt) do (
 echo %%f
@@ -1013,7 +1013,7 @@ if /i "%skipRSVprompt%"=="true" goto s_KeyChange_skip
 echo *******************************************************
 echo DO YOU WANT TO PATCH THE REQUIRED-SYSTEM-VERSION
 echo *******************************************************
-echo If you choose to patch it will be set to match the 
+echo If you choose to patch it will be set to match the
 echo nca crypto so it'll only ask to update your system
 echo in the case it's necessary
 echo.
@@ -1032,7 +1032,7 @@ if /i "%bs%"=="0" set "patchRSV=-pv false"
 if /i "%bs%"=="1" set "patchRSV=-pv true"
 if /i "%patchRSV%"=="none" echo WRONG CHOICE
 if /i "%patchRSV%"=="none" goto s_RSV_wrongchoice
-if /i "%bs%"=="0" goto s_KeyChange_skip 
+if /i "%bs%"=="0" goto s_KeyChange_skip
 
 :s_KeyChange_wrongchoice
 echo *******************************************************
@@ -1101,10 +1101,10 @@ echo SUPERTRIMMING\TRIMMING\UNTRIMMING
 echo *******************************************************
 echo DESCRYPTION:
 echo - Supetrimming
-echo   Removes System Firmware update, empties update partition, 
+echo   Removes System Firmware update, empties update partition,
 echo   removes final and middle padding, removes logo partition
 echo   removes game update, keeps game certificate if exists
-echo   (Perfect for tinfoil installation)
+echo   (Perfect for installation)
 echo - Supetrimming  keeping game updates
 echo   Same as before but keeps game updates
 echo - Trimming
@@ -1141,7 +1141,7 @@ echo DECRYPTION - Files ar readable, ticket's correct
 echo              No file is missing
 echo SIGNATURE  - Check's header against Nintendo Sig1
 echo              Calculates original header for NSCB modifications
-echo HASH       - Check's current and original hash of files and 
+echo HASH       - Check's current and original hash of files and
 echo              matches them against name of the file
 echo.
 echo NOTE: If you read files on a remote service via a filestream
@@ -1175,7 +1175,7 @@ if "%vrepack%" EQU "xci_untrimmer" ( %pycommand% "%squirrel%" -lib_call listmana
 if "%vrepack%" EQU "rebuild" ( %pycommand% "%squirrel%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=nsp nsz","token=False",Print="False" )
 if "%vrepack%" EQU "nodelta" ( %pycommand% "%squirrel%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=nsp nsz","token=False",Print="False" )
 if "%fatype%" EQU "-fat fat32" echo Fat32 selected, removing nsz and xcz from input list
-if "%fatype%" EQU "-fat fat32" ( %pycommand% "%squirrel%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=nsp nsx xci","token=False",Print="False" ) 
+if "%fatype%" EQU "-fat fat32" ( %pycommand% "%squirrel%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=nsp nsx xci","token=False",Print="False" )
 cls
 call :program_logo
 
@@ -1183,7 +1183,7 @@ for /f "tokens=*" %%f in (list.txt) do (
 set "name=%%~nf"
 set "filename=%%~nxf"
 set "orinput=%%f"
-set "ziptarget=%%f" 
+set "ziptarget=%%f"
 
 if "%%~nxf"=="%%~nf.nsp" call :nsp_manual
 if "%%~nxf"=="%%~nf.nsz" call :nsp_manual
@@ -1603,7 +1603,7 @@ call :program_logo
 echo -----------------------------------------------
 echo MULTI-REPACK MODE ACTIVATED
 echo -----------------------------------------------
-if exist "mlist.txt" del "mlist.txt" 
+if exist "mlist.txt" del "mlist.txt"
 :multi_manual_INIT
 endlocal
 set skip_list_split="false"
@@ -1706,7 +1706,7 @@ goto multi_saved_for_later
 echo.
 echo CHOOSE NAME FOR THE JOB
 echo ......................................................................
-echo The list will be saved under the name of your choosing in the list's 
+echo The list will be saved under the name of your choosing in the list's
 echo folder ( Route is "program's folder\list\m_multi")
 echo.
 set /p lname="Input name for the list job: "
@@ -1746,7 +1746,7 @@ set string=
 :multi_update_list1
 if !pos1! GTR !pos2! ( goto :multi_update_list2 ) else ( set /a pos1+=1 )
 set string=%string%,%pos1%
-goto :multi_update_list1 
+goto :multi_update_list1
 :multi_update_list2
 set string=%string%,
 set skiplist=%string%
@@ -1766,7 +1766,7 @@ echo -------------------------------------------------
 echo MULTI-REPACK MODE ACTIVATED
 echo -------------------------------------------------
 ECHO -------------------------------------------------
-ECHO                FILES TO PROCESS 
+ECHO                FILES TO PROCESS
 ECHO -------------------------------------------------
 for /f "tokens=*" %%f in (mlist.txt) do (
 echo %%f
@@ -1823,7 +1823,7 @@ if /i "%skipRSVprompt%"=="true" goto m_KeyChange_skip
 echo *******************************************************
 echo DO YOU WANT TO PATCH THE REQUIRED-SYSTEM-VERSION
 echo *******************************************************
-echo If you choose to patch it will be set to match the 
+echo If you choose to patch it will be set to match the
 echo nca crypto so it'll only ask to update your system
 echo in the case it's necessary
 echo.
@@ -1843,7 +1843,7 @@ if /i "%bs%"=="0" set "vkey=-kp false"
 if /i "%bs%"=="1" set "patchRSV=-pv true"
 if /i "%patchRSV%"=="none" echo WRONG CHOICE
 if /i "%patchRSV%"=="none" goto m_RSV_wrongchoice
-if /i "%bs%"=="0" goto m_KeyChange_skip 
+if /i "%bs%"=="0" goto m_KeyChange_skip
 
 :m_KeyChange_wrongchoice
 echo *******************************************************
@@ -1933,14 +1933,14 @@ goto m_KeyChange_skip
 
 :m_split_merge
 if "%fatype%" EQU "-fat fat32" echo Fat32 selected, removing nsz and xcz from input list
-if "%fatype%" EQU "-fat fat32" ( %pycommand% "%squirrel%" -lib_call listmanager filter_list "%prog_dir%mlist.txt","ext=nsp nsx xci","token=False",Print="False" ) 
+if "%fatype%" EQU "-fat fat32" ( %pycommand% "%squirrel%" -lib_call listmanager filter_list "%prog_dir%mlist.txt","ext=nsp nsx xci","token=False",Print="False" )
 cls
 call :program_logo
 %pycommand% "%squirrel%" -splid "%mlistfol%" -tfile "%prog_dir%mlist.txt"
 goto m_process_jobs2
 :m_process_jobs
 if "%fatype%" EQU "-fat fat32" echo Fat32 selected, removing nsz and xcz from input list
-if "%fatype%" EQU "-fat fat32" ( %pycommand% "%squirrel%" -lib_call listmanager filter_list "%prog_dir%mlist.txt","ext=nsp nsx xci","token=False",Print="False" ) 
+if "%fatype%" EQU "-fat fat32" ( %pycommand% "%squirrel%" -lib_call listmanager filter_list "%prog_dir%mlist.txt","ext=nsp nsx xci","token=False",Print="False" )
 cls
 :m_process_jobs2
 dir "%mlistfol%\*.txt" /b  > "%prog_dir%mlist.txt"
@@ -1948,7 +1948,7 @@ rem if "%fatype%" EQU "-fat fat32" goto m_process_jobs_fat32
 for /f "tokens=*" %%f in (mlist.txt) do (
 set "listname=%%f"
 if "%vrepack%" EQU "cnsp" call :program_logo
-if "%vrepack%" EQU "cnsp" call :m_split_merge_list_name 
+if "%vrepack%" EQU "cnsp" call :m_split_merge_list_name
 if "%vrepack%" EQU "cnsp" ( %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t cnsp -o "%w_folder%" -tfile "%mlistfol%\%%f" -roma %romaji% -dmul "calculate" )
 
 if "%vrepack%" EQU "xci" call :program_logo
@@ -2234,7 +2234,7 @@ call :program_logo
 echo ------------------------------------------
 echo Set custom logo or predominant game
 echo ------------------------------------------
-echo Indicated for multi-game xci. 
+echo Indicated for multi-game xci.
 echo Currently custom logos and names are set dragging a nsp or control nca
 echo That way the program will copy the control nca in the normal partition
 echo If you don't add a custom logo the logo will be set from one of your games
@@ -2334,8 +2334,8 @@ echo Input "1" to auto-start processing from the previous list
 echo Input "2" to erase list and make a new one.
 echo Input "3" to continue building the previous list
 echo .......................................................
-echo NOTE: By pressing 3 you'll see the previous list 
-echo before starting the processing the files and you will 
+echo NOTE: By pressing 3 you'll see the previous list
+echo before starting the processing the files and you will
 echo be able to add and delete items from the list
 echo.
 ECHO *************************************************
@@ -2434,7 +2434,7 @@ set string=
 :sp_update_list1
 if !pos1! GTR !pos2! ( goto :sp_update_list2 ) else ( set /a pos1+=1 )
 set string=%string%,%pos1%
-goto :sp_update_list1 
+goto :sp_update_list1
 :sp_update_list2
 set string=%string%,
 set skiplist=%string%
@@ -2454,7 +2454,7 @@ echo -------------------------------------------------
 echo SPLITTER MODE ACTIVATED
 echo -------------------------------------------------
 ECHO -------------------------------------------------
-ECHO                FILES TO PROCESS 
+ECHO                FILES TO PROCESS
 ECHO -------------------------------------------------
 for /f "tokens=*" %%f in (splist.txt) do (
 echo %%f
@@ -2495,7 +2495,7 @@ if /i "%bs%"=="2" set "vrepack=xci"
 if /i "%bs%"=="3" set "vrepack=both"
 if %vrepack%=="none" goto sp_cl_wrongchoice
 if "%fatype%" EQU "-fat fat32" echo Fat32 selected, removing nsz and xcz from input list
-if "%fatype%" EQU "-fat fat32" ( %pycommand% "%squirrel%" -lib_call listmanager filter_list "%prog_dir%splist.txt","ext=nsp nsx xci","token=False",Print="False" ) 
+if "%fatype%" EQU "-fat fat32" ( %pycommand% "%squirrel%" -lib_call listmanager filter_list "%prog_dir%splist.txt","ext=nsp nsx xci","token=False",Print="False" )
 cls
 call :program_logo
 for /f "tokens=*" %%f in (splist.txt) do (
@@ -2646,8 +2646,8 @@ echo Input "1" to auto-start processing from the previous list
 echo Input "2" to erase list and make a new one.
 echo Input "3" to continue building the previous list
 echo .......................................................
-echo NOTE: By pressing 3 you'll see the previous list 
-echo before starting the processing the files and you will 
+echo NOTE: By pressing 3 you'll see the previous list
+echo before starting the processing the files and you will
 echo be able to add and delete items from the list
 echo.
 ECHO *************************************************
@@ -2741,7 +2741,7 @@ set string=
 :DBupdate_list1
 if !pos1! GTR !pos2! ( goto :DBupdate_list2 ) else ( set /a pos1+=1 )
 set string=%string%,%pos1%
-goto :DBupdate_list1 
+goto :DBupdate_list1
 :DBupdate_list2
 set string=%string%,
 set skiplist=%string%
@@ -2761,7 +2761,7 @@ echo -------------------------------------------------
 echo INDIVIDUAL PROCESSING ACTIVATED
 echo -------------------------------------------------
 ECHO -------------------------------------------------
-ECHO                 FILES TO PROCESS 
+ECHO                 FILES TO PROCESS
 ECHO -------------------------------------------------
 for /f "tokens=*" %%f in (DBL.txt) do (
 echo %%f
@@ -2821,7 +2821,7 @@ for /f "tokens=*" %%f in (DBL.txt) do (
 set "name=%%~nf"
 set "filename=%%~nxf"
 set "orinput=%%f"
-set "ziptarget=%%f" 
+set "ziptarget=%%f"
 if "%vrepack%" EQU "zip" ( set "zip_restore=true" )
 if "%%~nxf"=="%%~nf.nsp" call :DBnsp_manual
 if "%%~nxf"=="%%~nf.nsx" call :DBnsp_manual
@@ -2963,17 +2963,17 @@ echo          /_', "=. ';:;:;
 echo          @=:__,  \,;:;:'
 echo            _(\.=  ;:;;'
 echo           `"_(  _/="`
-echo            `"'		
+echo            `"'
 exit /B
 
 :program_logo
 
-ECHO                                        __          _ __    __         
+ECHO                                        __          _ __    __
 ECHO                  ____  _____ ____     / /_  __  __(_) /___/ /__  _____
 ECHO                 / __ \/ ___/ ___/    / __ \/ / / / / / __  / _ \/ ___/
-ECHO                / / / (__  ) /__     / /_/ / /_/ / / / /_/ /  __/ /    
-ECHO               /_/ /_/____/\___/____/_.___/\__,_/_/_/\__,_/\___/_/     
-ECHO                              /_____/                                  
+ECHO                / / / (__  ) /__     / /_/ / /_/ / / / /_/ /  __/ /
+ECHO               /_/ /_/____/\___/____/_.___/\__,_/_/_/\__,_/\___/_/
+ECHO                              /_____/
 ECHO -------------------------------------------------------------------------------------
 ECHO                         NINTENDO SWITCH CLEANER AND BUILDER
 ECHO                      (THE XCI MULTI CONTENT BUILDER AND MORE)
@@ -2983,10 +2983,9 @@ ECHO ---------------------------------------------------------------------------
 ECHO "                                POWERED BY SQUIRREL                                "
 ECHO "                    BASED ON THE WORK OF BLAWAR AND LUCA FRAGA                     "
 ECHO                                  VERSION 0.99 (NEW)
-ECHO -------------------------------------------------------------------------------------                   
+ECHO -------------------------------------------------------------------------------------
 ECHO Program's github: https://github.com/julesontheroad/NSC_BUILDER
 ECHO Blawar's github:  https://github.com/blawar
-ECHO Blawar's tinfoil: https://github.com/digableinc/tinfoil
 ECHO Luca Fraga's github: https://github.com/LucaFraga
 ECHO -------------------------------------------------------------------------------------
 exit /B
@@ -3058,7 +3057,7 @@ del "%w_folder%\nspversion.txt" >NUL 2>&1
 if "%type%" EQU "BASE" ( set "ctag=" )
 if "%type%" EQU "UPDATE" ( set ctag=[UPD] )
 if "%type%" EQU "DLC" ( set ctag=[DLC] )
-%pycommand% "%squirrel%" -i "%ziptarget%">"%w_folder%\zip\fileinfo[%titleid%][%verID%]%ctag%.txt" 
+%pycommand% "%squirrel%" -i "%ziptarget%">"%w_folder%\zip\fileinfo[%titleid%][%verID%]%ctag%.txt"
 %pycommand% "%squirrel%" --filelist "%ziptarget%">"%w_folder%\zip\ORIGINAL_filelist[%titleid%][%verID%]%ctag%.txt"
 "%zip%" -ifo "%w_folder%\zip" -zippy "%w_folder%\%titleid%[%verID%]%ctag%.zip"
 RD /S /Q "%w_folder%\zip" >NUL 2>&1
@@ -3095,7 +3094,7 @@ exit /B
 :addtags_from_xci
 dir "%w_folder%\secure\*.cnmt.nca" /b  >"%w_folder%\ncameta.txt"
 set /p ncameta=<"%w_folder%\ncameta.txt"
-del "%w_folder%\ncameta.txt" >NUL 2>&1 
+del "%w_folder%\ncameta.txt" >NUL 2>&1
 set "ncameta=%w_folder%\secure\%ncameta%"
 %pycommand% "%squirrel%" --ncatitleid "%ncameta%" >"%w_folder%\ncaid.txt"
 set /p titleid=<"%w_folder%\ncaid.txt"
@@ -3113,8 +3112,8 @@ set ttag=[DLC]
 
 if [%titleid%] EQU %c_base% set ttag=[v0]
 if [%titleid%] EQU %c_update% set ttag=[UPD]
- 
-set filename=%filename%[%titleid%][%ttag%] 
+
+set filename=%filename%[%titleid%][%ttag%]
 del "%w_folder%\titleid.txt"
 exit /B
 
@@ -3165,8 +3164,8 @@ set "opt_interface=%~dp0zconfig\%opt_interface%"
 ::COPY OPTIONS FROM OPTION FILE
 ::-----------------------------------------------------
 setlocal
-if exist "%op_file%" call "%op_file%" 	  
-endlocal & ( 
+if exist "%op_file%" call "%op_file%"
+endlocal & (
 REM VARIABLES
 set "safe_var=%safe_var%"
 set "vrepack=%vrepack%"
@@ -3405,7 +3404,7 @@ echo DONE
 call :thumbup
 )
 ECHO ---------------------------------------------------
-ECHO *********** ALL FILES WERE PROCESSED! ************* 
+ECHO *********** ALL FILES WERE PROCESSED! *************
 ECHO ---------------------------------------------------
 goto aut_exit_choice
 
@@ -3439,7 +3438,7 @@ echo DONE
 call :thumbup
 )
 ECHO ---------------------------------------------------
-ECHO *********** ALL FILES WERE PROCESSED! ************* 
+ECHO *********** ALL FILES WERE PROCESSED! *************
 ECHO ---------------------------------------------------
 goto aut_exit_choice
 
@@ -3510,7 +3509,7 @@ MD "%w_folder%"
 MD "%w_folder%\secure"
 call :getname
 echo -------------------------------------
-echo Extracting secure partition from xci 
+echo Extracting secure partition from xci
 echo -------------------------------------
 %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% -o "%w_folder%\secure" %nf_cleaner% "%%f"
 echo DONE
@@ -3532,7 +3531,7 @@ echo DONE
 call :thumbup
 )
 ECHO ---------------------------------------------------
-ECHO *********** ALL FILES WERE PROCESSED! ************* 
+ECHO *********** ALL FILES WERE PROCESSED! *************
 ECHO ---------------------------------------------------
 goto aut_exit_choice
 
@@ -3590,7 +3589,7 @@ if exist "%w_folder%\archfolder" ( %pycommand% "%squirrel%" -tfile "%w_folder%\f
 endlocal
 RD /S /Q "%w_folder%" >NUL 2>&1
 ECHO ---------------------------------------------------
-ECHO *********** ALL FILES WERE PROCESSED! ************* 
+ECHO *********** ALL FILES WERE PROCESSED! *************
 ECHO ---------------------------------------------------
 call :thumbup
 goto aut_exit_choice
@@ -3650,7 +3649,7 @@ echo DONE
 call :thumbup
 )
 ECHO ---------------------------------------------------
-ECHO *********** ALL FILES WERE PROCESSED! ************* 
+ECHO *********** ALL FILES WERE PROCESSED! *************
 ECHO ---------------------------------------------------
 goto aut_exit_choice
 
@@ -3829,7 +3828,7 @@ MD "%w_folder%"
 MD "%w_folder%\secure"
 call :getname
 echo ------------------------------------
-echo Extracting secure partition from xci 
+echo Extracting secure partition from xci
 echo ------------------------------------
 %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% -o "%w_folder%\secure" %nf_cleaner% "%~1"
 echo DONE
@@ -3873,7 +3872,7 @@ call :program_logo
 echo ********************************
 echo YOU'VE ENTERED INTO MANUAL MODE
 echo ********************************
-if "%manual_intro%" EQU "indiv" ( goto normalmode ) 
+if "%manual_intro%" EQU "indiv" ( goto normalmode )
 if "%manual_intro%" EQU "multi" ( goto multimode )
 if "%manual_intro%" EQU "split" ( goto SPLMODE )
 ::if "%manual_intro%" EQU "update" ( goto UPDMODE )
@@ -3976,8 +3975,8 @@ echo Input "1" to auto-start processing from the previous list
 echo Input "2" to erase list and make a new one.
 echo Input "3" to continue building the previous list
 echo .......................................................
-echo NOTE: By pressing 3 you'll see the previous list 
-echo before starting the processing the files and you will 
+echo NOTE: By pressing 3 you'll see the previous list
+echo before starting the processing the files and you will
 echo be able to add and delete items from the list
 echo.
 ECHO *************************************************
@@ -4019,7 +4018,7 @@ echo+ >"%uinput%"
 endlocal
 if /i "%eval%"=="0" goto manual_Reentry
 if /i "%eval%"=="1" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%list.txt" mode=folder ext="nsp xci nsz nsx xcz" ) 2>&1>NUL
-if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%list.txt" mode=file ext="nsp xci nsz nsx xcz" ) 2>&1>NUL  
+if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%list.txt" mode=file ext="nsp xci nsz nsx xcz" ) 2>&1>NUL
 goto checkagain
 echo.
 :checkagain
@@ -4074,7 +4073,7 @@ set string=
 :update_list1
 if !pos1! GTR !pos2! ( goto :update_list2 ) else ( set /a pos1+=1 )
 set string=%string%,%pos1%
-goto :update_list1 
+goto :update_list1
 :update_list2
 set string=%string%,
 set skiplist=%string%
@@ -4094,7 +4093,7 @@ echo -------------------------------------------------
 echo INDIVIDUAL PROCESSING ACTIVATED
 echo -------------------------------------------------
 ECHO -------------------------------------------------
-ECHO                 FILES TO PROCESS 
+ECHO                 FILES TO PROCESS
 ECHO -------------------------------------------------
 for /f "tokens=*" %%f in (list.txt) do (
 echo %%f
@@ -4156,7 +4155,7 @@ if /i "%skipRSVprompt%"=="true" goto s_KeyChange_skip
 echo *******************************************************
 echo DO YOU WANT TO PATCH THE REQUIRED-SYSTEM-VERSION
 echo *******************************************************
-echo If you choose to patch it will be set to match the 
+echo If you choose to patch it will be set to match the
 echo nca crypto so it'll only ask to update your system
 echo in the case it's necessary
 echo.
@@ -4175,7 +4174,7 @@ if /i "%bs%"=="0" set "patchRSV=-pv false"
 if /i "%bs%"=="1" set "patchRSV=-pv true"
 if /i "%patchRSV%"=="none" echo WRONG CHOICE
 if /i "%patchRSV%"=="none" goto s_RSV_wrongchoice
-if /i "%bs%"=="0" goto s_KeyChange_skip 
+if /i "%bs%"=="0" goto s_KeyChange_skip
 
 :s_KeyChange_wrongchoice
 echo *******************************************************
@@ -4244,7 +4243,7 @@ echo SUPERTRIMMING\TRIMMING\UNTRIMMING
 echo *******************************************************
 echo DESCRYPTION:
 echo - Supetrimming
-echo   Removes System Firmware update, empties update partition, 
+echo   Removes System Firmware update, empties update partition,
 echo   removes final and middle padding, removes logo partition
 echo   removes game update, keeps game certificate if exists
 echo   (Perfect for tinfoil installation)
@@ -4284,7 +4283,7 @@ echo DECRYPTION - Files ar readable, ticket's correct
 echo              No file is missing
 echo SIGNATURE  - Check's header against Nintendo Sig1
 echo              Calculates original header for NSCB modifications
-echo HASH       - Check's current and original hash of files and 
+echo HASH       - Check's current and original hash of files and
 echo              matches them against name of the file
 echo.
 echo NOTE: If you read files on a remote service via a filestream
@@ -4318,7 +4317,7 @@ if "%vrepack%" EQU "xci_untrimmer" ( %pycommand% "%squirrel%" -lib_call listmana
 if "%vrepack%" EQU "rebuild" ( %pycommand% "%squirrel%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=nsp nsz","token=False",Print="False" )
 if "%vrepack%" EQU "nodelta" ( %pycommand% "%squirrel%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=nsp nsz","token=False",Print="False" )
 if "%fatype%" EQU "-fat fat32" echo Fat32 selected, removing nsz and xcz from input list
-if "%fatype%" EQU "-fat fat32" ( %pycommand% "%squirrel%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=nsp nsx xci","token=False",Print="False" ) 
+if "%fatype%" EQU "-fat fat32" ( %pycommand% "%squirrel%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=nsp nsx xci","token=False",Print="False" )
 cls
 call :program_logo
 
@@ -4326,7 +4325,7 @@ for /f "tokens=*" %%f in (list.txt) do (
 set "name=%%~nf"
 set "filename=%%~nxf"
 set "orinput=%%f"
-set "ziptarget=%%f" 
+set "ziptarget=%%f"
 
 if "%%~nxf"=="%%~nf.nsp" call :nsp_manual
 if "%%~nxf"=="%%~nf.nsz" call :nsp_manual
@@ -4746,7 +4745,7 @@ call :program_logo
 echo -----------------------------------------------
 echo MULTI-REPACK MODE ACTIVATED
 echo -----------------------------------------------
-if exist "mlist.txt" del "mlist.txt" 
+if exist "mlist.txt" del "mlist.txt"
 :multi_manual_INIT
 endlocal
 set skip_list_split="false"
@@ -4849,7 +4848,7 @@ goto multi_saved_for_later
 echo.
 echo CHOOSE NAME FOR THE JOB
 echo ......................................................................
-echo The list will be saved under the name of your choosing in the list's 
+echo The list will be saved under the name of your choosing in the list's
 echo folder ( Route is "program's folder\list\m_multi")
 echo.
 set /p lname="Input name for the list job: "
@@ -4889,7 +4888,7 @@ set string=
 :multi_update_list1
 if !pos1! GTR !pos2! ( goto :multi_update_list2 ) else ( set /a pos1+=1 )
 set string=%string%,%pos1%
-goto :multi_update_list1 
+goto :multi_update_list1
 :multi_update_list2
 set string=%string%,
 set skiplist=%string%
@@ -4909,7 +4908,7 @@ echo -------------------------------------------------
 echo MULTI-REPACK MODE ACTIVATED
 echo -------------------------------------------------
 ECHO -------------------------------------------------
-ECHO                FILES TO PROCESS 
+ECHO                FILES TO PROCESS
 ECHO -------------------------------------------------
 for /f "tokens=*" %%f in (mlist.txt) do (
 echo %%f
@@ -4966,7 +4965,7 @@ if /i "%skipRSVprompt%"=="true" goto m_KeyChange_skip
 echo *******************************************************
 echo DO YOU WANT TO PATCH THE REQUIRED-SYSTEM-VERSION
 echo *******************************************************
-echo If you choose to patch it will be set to match the 
+echo If you choose to patch it will be set to match the
 echo nca crypto so it'll only ask to update your system
 echo in the case it's necessary
 echo.
@@ -4986,7 +4985,7 @@ if /i "%bs%"=="0" set "vkey=-kp false"
 if /i "%bs%"=="1" set "patchRSV=-pv true"
 if /i "%patchRSV%"=="none" echo WRONG CHOICE
 if /i "%patchRSV%"=="none" goto m_RSV_wrongchoice
-if /i "%bs%"=="0" goto m_KeyChange_skip 
+if /i "%bs%"=="0" goto m_KeyChange_skip
 
 :m_KeyChange_wrongchoice
 echo *******************************************************
@@ -5076,14 +5075,14 @@ goto m_KeyChange_skip
 
 :m_split_merge
 if "%fatype%" EQU "-fat fat32" echo Fat32 selected, removing nsz and xcz from input list
-if "%fatype%" EQU "-fat fat32" ( %pycommand% "%squirrel%" -lib_call listmanager filter_list "%prog_dir%mlist.txt","ext=nsp nsx xci","token=False",Print="False" ) 
+if "%fatype%" EQU "-fat fat32" ( %pycommand% "%squirrel%" -lib_call listmanager filter_list "%prog_dir%mlist.txt","ext=nsp nsx xci","token=False",Print="False" )
 cls
 call :program_logo
 %pycommand% "%squirrel%" -splid "%mlistfol%" -tfile "%prog_dir%mlist.txt"
 goto m_process_jobs2
 :m_process_jobs
 if "%fatype%" EQU "-fat fat32" echo Fat32 selected, removing nsz and xcz from input list
-if "%fatype%" EQU "-fat fat32" ( %pycommand% "%squirrel%" -lib_call listmanager filter_list "%prog_dir%mlist.txt","ext=nsp nsx xci","token=False",Print="False" ) 
+if "%fatype%" EQU "-fat fat32" ( %pycommand% "%squirrel%" -lib_call listmanager filter_list "%prog_dir%mlist.txt","ext=nsp nsx xci","token=False",Print="False" )
 cls
 :m_process_jobs2
 dir "%mlistfol%\*.txt" /b  > "%prog_dir%mlist.txt"
@@ -5091,7 +5090,7 @@ rem if "%fatype%" EQU "-fat fat32" goto m_process_jobs_fat32
 for /f "tokens=*" %%f in (mlist.txt) do (
 set "listname=%%f"
 if "%vrepack%" EQU "cnsp" call :program_logo
-if "%vrepack%" EQU "cnsp" call :m_split_merge_list_name 
+if "%vrepack%" EQU "cnsp" call :m_split_merge_list_name
 if "%vrepack%" EQU "cnsp" ( %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t cnsp -o "%w_folder%" -tfile "%mlistfol%\%%f" -roma %romaji% -dmul "calculate" )
 
 if "%vrepack%" EQU "xci" call :program_logo
@@ -5377,7 +5376,7 @@ call :program_logo
 echo ------------------------------------------
 echo Set custom logo or predominant game
 echo ------------------------------------------
-echo Indicated for multi-game xci. 
+echo Indicated for multi-game xci.
 echo Currently custom logos and names are set dragging a nsp or control nca
 echo That way the program will copy the control nca in the normal partition
 echo If you don't add a custom logo the logo will be set from one of your games
@@ -5477,8 +5476,8 @@ echo Input "1" to auto-start processing from the previous list
 echo Input "2" to erase list and make a new one.
 echo Input "3" to continue building the previous list
 echo .......................................................
-echo NOTE: By pressing 3 you'll see the previous list 
-echo before starting the processing the files and you will 
+echo NOTE: By pressing 3 you'll see the previous list
+echo before starting the processing the files and you will
 echo be able to add and delete items from the list
 echo.
 ECHO *************************************************
@@ -5577,7 +5576,7 @@ set string=
 :sp_update_list1
 if !pos1! GTR !pos2! ( goto :sp_update_list2 ) else ( set /a pos1+=1 )
 set string=%string%,%pos1%
-goto :sp_update_list1 
+goto :sp_update_list1
 :sp_update_list2
 set string=%string%,
 set skiplist=%string%
@@ -5597,7 +5596,7 @@ echo -------------------------------------------------
 echo SPLITTER MODE ACTIVATED
 echo -------------------------------------------------
 ECHO -------------------------------------------------
-ECHO                FILES TO PROCESS 
+ECHO                FILES TO PROCESS
 ECHO -------------------------------------------------
 for /f "tokens=*" %%f in (splist.txt) do (
 echo %%f
@@ -5638,7 +5637,7 @@ if /i "%bs%"=="2" set "vrepack=xci"
 if /i "%bs%"=="3" set "vrepack=both"
 if %vrepack%=="none" goto sp_cl_wrongchoice
 if "%fatype%" EQU "-fat fat32" echo Fat32 selected, removing nsz and xcz from input list
-if "%fatype%" EQU "-fat fat32" ( %pycommand% "%squirrel%" -lib_call listmanager filter_list "%prog_dir%splist.txt","ext=nsp nsx xci","token=False",Print="False" ) 
+if "%fatype%" EQU "-fat fat32" ( %pycommand% "%squirrel%" -lib_call listmanager filter_list "%prog_dir%splist.txt","ext=nsp nsx xci","token=False",Print="False" )
 cls
 call :program_logo
 for /f "tokens=*" %%f in (splist.txt) do (
@@ -5789,8 +5788,8 @@ echo Input "1" to auto-start processing from the previous list
 echo Input "2" to erase list and make a new one.
 echo Input "3" to continue building the previous list
 echo .......................................................
-echo NOTE: By pressing 3 you'll see the previous list 
-echo before starting the processing the files and you will 
+echo NOTE: By pressing 3 you'll see the previous list
+echo before starting the processing the files and you will
 echo be able to add and delete items from the list
 echo.
 ECHO *************************************************
@@ -5884,7 +5883,7 @@ set string=
 :DBupdate_list1
 if !pos1! GTR !pos2! ( goto :DBupdate_list2 ) else ( set /a pos1+=1 )
 set string=%string%,%pos1%
-goto :DBupdate_list1 
+goto :DBupdate_list1
 :DBupdate_list2
 set string=%string%,
 set skiplist=%string%
@@ -5904,7 +5903,7 @@ echo -------------------------------------------------
 echo INDIVIDUAL PROCESSING ACTIVATED
 echo -------------------------------------------------
 ECHO -------------------------------------------------
-ECHO                 FILES TO PROCESS 
+ECHO                 FILES TO PROCESS
 ECHO -------------------------------------------------
 for /f "tokens=*" %%f in (DBL.txt) do (
 echo %%f
@@ -5964,7 +5963,7 @@ for /f "tokens=*" %%f in (DBL.txt) do (
 set "name=%%~nf"
 set "filename=%%~nxf"
 set "orinput=%%f"
-set "ziptarget=%%f" 
+set "ziptarget=%%f"
 if "%vrepack%" EQU "zip" ( set "zip_restore=true" )
 if "%%~nxf"=="%%~nf.nsp" call :DBnsp_manual
 if "%%~nxf"=="%%~nf.nsx" call :DBnsp_manual
@@ -6106,17 +6105,17 @@ echo          /_', "=. ';:;:;
 echo          @=:__,  \,;:;:'
 echo            _(\.=  ;:;;'
 echo           `"_(  _/="`
-echo            `"'		
+echo            `"'
 exit /B
 
 :program_logo
 
-ECHO                                        __          _ __    __         
+ECHO                                        __          _ __    __
 ECHO                  ____  _____ ____     / /_  __  __(_) /___/ /__  _____
 ECHO                 / __ \/ ___/ ___/    / __ \/ / / / / / __  / _ \/ ___/
-ECHO                / / / (__  ) /__     / /_/ / /_/ / / / /_/ /  __/ /    
-ECHO               /_/ /_/____/\___/____/_.___/\__,_/_/_/\__,_/\___/_/     
-ECHO                              /_____/                                  
+ECHO                / / / (__  ) /__     / /_/ / /_/ / / / /_/ /  __/ /
+ECHO               /_/ /_/____/\___/____/_.___/\__,_/_/_/\__,_/\___/_/
+ECHO                              /_____/
 ECHO -------------------------------------------------------------------------------------
 ECHO                         NINTENDO SWITCH CLEANER AND BUILDER
 ECHO                      (THE XCI MULTI CONTENT BUILDER AND MORE)
@@ -6126,10 +6125,9 @@ ECHO ---------------------------------------------------------------------------
 ECHO "                                POWERED BY SQUIRREL                                "
 ECHO "                    BASED ON THE WORK OF BLAWAR AND LUCA FRAGA                     "
 ECHO                                  VERSION 0.99 (NEW)
-ECHO -------------------------------------------------------------------------------------                   
+ECHO -------------------------------------------------------------------------------------
 ECHO Program's github: https://github.com/julesontheroad/NSC_BUILDER
 ECHO Blawar's github:  https://github.com/blawar
-ECHO Blawar's tinfoil: https://github.com/digableinc/tinfoil
 ECHO Luca Fraga's github: https://github.com/LucaFraga
 ECHO -------------------------------------------------------------------------------------
 exit /B
@@ -6201,7 +6199,7 @@ del "%w_folder%\nspversion.txt" >NUL 2>&1
 if "%type%" EQU "BASE" ( set "ctag=" )
 if "%type%" EQU "UPDATE" ( set ctag=[UPD] )
 if "%type%" EQU "DLC" ( set ctag=[DLC] )
-%pycommand% "%squirrel%" -i "%ziptarget%">"%w_folder%\zip\fileinfo[%titleid%][%verID%]%ctag%.txt" 
+%pycommand% "%squirrel%" -i "%ziptarget%">"%w_folder%\zip\fileinfo[%titleid%][%verID%]%ctag%.txt"
 %pycommand% "%squirrel%" --filelist "%ziptarget%">"%w_folder%\zip\ORIGINAL_filelist[%titleid%][%verID%]%ctag%.txt"
 "%zip%" -ifo "%w_folder%\zip" -zippy "%w_folder%\%titleid%[%verID%]%ctag%.zip"
 RD /S /Q "%w_folder%\zip" >NUL 2>&1
@@ -6238,7 +6236,7 @@ exit /B
 :addtags_from_xci
 dir "%w_folder%\secure\*.cnmt.nca" /b  >"%w_folder%\ncameta.txt"
 set /p ncameta=<"%w_folder%\ncameta.txt"
-del "%w_folder%\ncameta.txt" >NUL 2>&1 
+del "%w_folder%\ncameta.txt" >NUL 2>&1
 set "ncameta=%w_folder%\secure\%ncameta%"
 %pycommand% "%squirrel%" --ncatitleid "%ncameta%" >"%w_folder%\ncaid.txt"
 set /p titleid=<"%w_folder%\ncaid.txt"
@@ -6256,8 +6254,8 @@ set ttag=[DLC]
 
 if [%titleid%] EQU %c_base% set ttag=[v0]
 if [%titleid%] EQU %c_update% set ttag=[UPD]
- 
-set filename=%filename%[%titleid%][%ttag%] 
+
+set filename=%filename%[%titleid%][%ttag%]
 del "%w_folder%\titleid.txt"
 exit /B
 

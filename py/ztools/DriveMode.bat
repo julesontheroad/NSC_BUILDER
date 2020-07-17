@@ -12,7 +12,9 @@ echo Input "1" to enter into DOWNLOAD mode
 echo Input "2" to enter into FILE-INFO mode
 echo Input "0"  to enter into CONFIGURATION mode
 echo.
-echo Input "N" to go to NEW MODES
+echo Input "N" to go to STANDARD MODES
+echo Input "M" to enter MTP MODE
+echo Input "D" to enter GOOGLE DRIVE MODES
 echo Input "L" to go to LEGACY MODES
 echo .......................................................
 echo.
@@ -20,13 +22,18 @@ set /p bs="Enter your choice: "
 set bs=%bs:"=%
 if /i "%bs%"=="1" goto DOWNLOADMODE
 if /i "%bs%"=="2" goto INFMODE
-if /i "%bs%"=="N" exit /B
+if /i "%bs%"=="N" goto call_main
 if /i "%bs%"=="L" goto LegacyMode
+if /i "%bs%"=="M" goto MTPMode
 if /i "%bs%"=="0" goto OPT_CONFIG
 goto MAIN
 
 :LegacyMode
 call "%prog_dir%ztools\LEGACY.bat"
+exit /B
+
+:MTPMode
+call "%prog_dir%ztools\MtpMode.bat"
 exit /B
 
 :DOWNLOADMODE
@@ -61,17 +68,17 @@ echo          /_', "=. ';:;:;
 echo          @=:__,  \,;:;:'
 echo            _(\.=  ;:;;'
 echo           `"_(  _/="`
-echo            `"'		
+echo            `"'
 exit /B
 
 :program_logo
 
-ECHO                                        __          _ __    __         
+ECHO                                        __          _ __    __
 ECHO                  ____  _____ ____     / /_  __  __(_) /___/ /__  _____
 ECHO                 / __ \/ ___/ ___/    / __ \/ / / / / / __  / _ \/ ___/
-ECHO                / / / (__  ) /__     / /_/ / /_/ / / / /_/ /  __/ /    
-ECHO               /_/ /_/____/\___/____/_.___/\__,_/_/_/\__,_/\___/_/     
-ECHO                              /_____/                                  
+ECHO                / / / (__  ) /__     / /_/ / /_/ / / / /_/ /  __/ /
+ECHO               /_/ /_/____/\___/____/_.___/\__,_/_/_/\__,_/\___/_/
+ECHO                              /_____/
 ECHO -------------------------------------------------------------------------------------
 ECHO                         NINTENDO SWITCH CLEANER AND BUILDER
 ECHO                      (THE XCI MULTI CONTENT BUILDER AND MORE)
@@ -81,10 +88,9 @@ ECHO ---------------------------------------------------------------------------
 ECHO "                                POWERED BY SQUIRREL                                "
 ECHO "                    BASED ON THE WORK OF BLAWAR AND LUCA FRAGA                     "
 ECHO                                  VERSION 0.99 (GDRIVE)
-ECHO -------------------------------------------------------------------------------------                   
+ECHO -------------------------------------------------------------------------------------
 ECHO Program's github: https://github.com/julesontheroad/NSC_BUILDER
 ECHO Blawar's github:  https://github.com/blawar
-ECHO Blawar's tinfoil: https://github.com/digableinc/tinfoil
 ECHO Luca Fraga's github: https://github.com/LucaFraga
 ECHO -------------------------------------------------------------------------------------
 exit /B
@@ -107,9 +113,10 @@ echo.
 echo HOPE YOU HAVE A FUN TIME
 exit /B
 
+:call_main
+call "%prog_dir%\NSCB.bat"
+exit /B
+
 :salida
 ::pause
 exit
-
-
-

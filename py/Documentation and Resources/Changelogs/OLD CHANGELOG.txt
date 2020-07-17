@@ -1,9 +1,9 @@
-                                      __          _ __    __         
+                                      __          _ __    __
                  ____  _____ ____     / /_  __  __(_) /___/ /__  _____
                 / __ \/ ___/ ___/    / __ \/ / / / / / __  / _ \/ ___/
-               / / / (__  ) /__     / /_/ / /_/ / / / /_/ /  __/ /    
-              /_/ /_/____/\___/____/_.___/\__,_/_/_/\__,_/\___/_/     
-                             /_____/                                  
+               / / / (__  ) /__     / /_/ / /_/ / / / /_/ /  __/ /
+              /_/ /_/____/\___/____/_.___/\__,_/_/_/\__,_/\___/_/
+                             /_____/
 -------------------------------------------------------------------------------------
                         NINTENDO SWITCH CLEANER AND BUILDER
                      (THE XCI MULTI CONTENT BUILDER AND MORE)
@@ -12,10 +12,9 @@
 -------------------------------------------------------------------------------------
 "                                POWERED BY SQUIRREL                                "
 "                    BASED IN THE WORK OF BLAWAR AND LUCA FRAGA                     "
--------------------------------------------------------------------------------------                   
+-------------------------------------------------------------------------------------
 Program's github: https://github.com/julesontheroad/NSC_BUILDER
 Blawar's github:  https://github.com/blawar
-Blawar's tinfoil: https://github.com/digableinc/tinfoil
 Luca Fraga's github: https://github.com/LucaFraga
 -------------------------------------------------------------------------------------
 ---------------
@@ -25,11 +24,11 @@ v0.98  - Initial Google Drive Support for some stuff
 	- Updated the locations of nutdb data(though the db method is bound to be changed
 	  on next release)
 	- Added Opencritic Data to the gui interface
-	- Metascores, Userscores and Opencritic scores are shown only if available. If the 
+	- Metascores, Userscores and Opencritic scores are shown only if available. If the
 	  openscore matches the metascore the openscore is hidden.
 	- Fixed the "Not packed" issue on ncz compression, thanks to blawar for the solution.
 	- Added initial Google Drive Support. Initial release covers:
-	  * Support for Public and Private google drive	
+	  * Support for Public and Private google drive
 	  * Search on drives and TeamDrives
 	  * Ability to add several accounts
 	  * Easy to use graphical console interface
@@ -40,16 +39,16 @@ v0.98  - Initial Google Drive Support for some stuff
 	  * Ability to make several google drive libraries and add several download locations for quick
 		access.
 	- To use google drive you need to:
-	  1.- Log in https://developers.google.com/drive/api/v3/quickstart/python 	
+	  1.- Log in https://developers.google.com/drive/api/v3/quickstart/python
 		  using your account, then press "Enable the Google Drive API" and download credentials.json
 	  2.- Add the credentials.json to zconfig\credentials
 		  Note: You can use this file to add any google drive account but it will show a
-				warning if you add a different one that the one used to download it. 
-				The credentials.json only need to be used once so you can download it again to add a 
+				warning if you add a different one that the one used to download it.
+				The credentials.json only need to be used once so you can download it again to add a
 				second account. Alternatively you can rename it as token_name.json
 				token_name is the name of your account in NSCB.
-	  3.- To use google drive with NSCB go to the CONFIGURATION mode and the Input "6" to enter into 
-	      GOOGLE DRIVE OPTIONS			
+	  3.- To use google drive with NSCB go to the CONFIGURATION mode and the Input "6" to enter into
+	      GOOGLE DRIVE OPTIONS
 	  4.- Add the token_name you wish and the browser will be launched for you to select your account
 		  Note: Headless systems can use:
 				squirrel.py -lib_call Drive.private create_token "token_name"
@@ -67,30 +66,30 @@ v0.98  - Initial Google Drive Support for some stuff
 			 Go to zconfig and use "download_libraries_example.txt" to create a "download_libraries.txt"
 			 Parameters are Library_Name, System Path to folder
 	  6.- Enter in NSCB and press "D" to enter in google drive mode.
-		  1.) Option 1 is the download option, it allows public links, direct file location paths, 
-		      direct folder locations paths, selection of a folder via folder walker or selection of 
+		  1.) Option 1 is the download option, it allows public links, direct file location paths,
+		      direct folder locations paths, selection of a folder via folder walker or selection of
 			  several libraries.
-			  * Folders and libraries allow for filter search and when needed the program will allow you 
+			  * Folders and libraries allow for filter search and when needed the program will allow you
 			    to select the TD for the account.
 			  * Folders and libraries allow for search using a name.
 			  * When a xci\xcz\nsz file is detected you will be prompt to select the options to handle it:
 				(uncompress\trimm\supertrimm ...)
 		  2.) Option 2 is the file info option. It can show several info of a file without downloading it.
 			  It still misses nut info, npdm info and verification. They will be added at a later time.
-	Hope you enjoy this update. It marks the beginning of some interesting stuff that will come later.	  
+	Hope you enjoy this update. It marks the beginning of some interesting stuff that will come later.
 v0.97  - Added support for keygeneration11\masterkey10\masterkey0a and inteface updates
 	- As some of you may have realized masterkey10 brings a split into people reading the
 	  numbers as int and people reading them as hex. NSCB has been updated to support both
-	  formats (mater_key_10 and master_key_0a), you can call it both ways in the keys.txt 
-	  file. In adition this update is required for when games start using that key, 
+	  formats (mater_key_10 and master_key_0a), you can call it both ways in the keys.txt
+	  file. In adition this update is required for when games start using that key,
 	  since previous versions won't load it properly unless you replace lib\Keys.py
 	- Several updates have been added to the information given by the interface.
 	  1.- It can detect the Firmware present in XCI files. To speed the parsing this is done
 	      via fw.json though in case a firmware is not added to the json the it will be read
-	      from the xci and added to the json to speed up the parsing in games including the 
+	      from the xci and added to the json to speed up the parsing in games including the
 	      same firmware. The json will be updated once a new firmware is detected but you can
 	      turn off autoupdates and it'll update using xcis.
-	  2.- New eshop data like product codes, game modes, cloud saves and online support has 
+	  2.- New eshop data like product codes, game modes, cloud saves and online support has
 	      been added
 	  3.- Metacritic scores have been added
 	  4.- Videos from Nintendo.com have been added
@@ -99,12 +98,12 @@ v0.97  - Added support for keygeneration11\masterkey10\masterkey0a and inteface 
 	            executable files or .lnk files
 	  Option 3: Ability to dissable the video player. This is meant for old computers that
 	  	    may hang when the HLS javascript video player loads the videos.
-	- Fixed Raw extraction for nsp files with big entry tables like the ones present in 
+	- Fixed Raw extraction for nsp files with big entry tables like the ones present in
 	  Firmware nsps.
 	- Small improvement to database retrival.
-	  If a json database is retrieved and it tests as corrupt the modification time will 
+	  If a json database is retrieved and it tests as corrupt the modification time will
 	  be updated to match the current time on the system. This will prevent the program
-	  from trying to retrieve the database before the next refresh cycle, stopping the 
+	  from trying to retrieve the database before the next refresh cycle, stopping the
 	  nagging every time nutdb is called.
 v0.96d - bugfixes:
 	- Fix keygeneration missmatch in nxdumptool tickets with elicense flag
@@ -116,7 +115,7 @@ v0.96d - bugfixes:
 	- Improved selector to list function.
 	- Added pararell compression as alternative to threads. Pararell compression compresses
 	  several files at the same time with a smaller cpu footprint.
-	  In tests i managed to compress 20 files at the same time while keeping a 2-3Mb\s speed 
+	  In tests i managed to compress 20 files at the same time while keeping a 2-3Mb\s speed
 	  ratio per file with level 22 compression.
 	  Note: Current implementation has this issues:
 	  1.- It compresses in batches so when one instance finishes it's place isn't taken by
@@ -145,7 +144,7 @@ v0.96 - nsz and xcz as input for most funtions:
 	  i'll recapitulate the current state of all functions regarding nsz\xcz support.
 	  * Mode 1: Individual Mode.
 		- Support to repack as nsp\xci with support for keygeneration and rsv patching.
-		- Support in erase deltas and rebuild functions. Rebuild will give the same 
+		- Support in erase deltas and rebuild functions. Rebuild will give the same
 		  output as the decompressor but add a xml if needed for nsz files.
 		- Support to rename of nsz\xcz which was already supported
 		- Support for nsz\xcz verification which was also already supported.
@@ -155,9 +154,9 @@ v0.96 - nsz and xcz as input for most funtions:
 		- Adds support to nsz\xcz as input. Mixed inputs of nsz\xcz\nsp\xci are supported
 		  to all multi options.
 	  * Mode 3: Splitter mode.
-		- Now allows to split in a decompressed state multi nsz\xcz as it does with 
+		- Now allows to split in a decompressed state multi nsz\xcz as it does with
 		  xci\nsp-rebuilder
-	  * Mode 4: Info mode.		
+	  * Mode 4: Info mode.
 		- All info functions except nut-info are currently supported.
 	  * Mode 5: Database mode.
 	    - Currently doesn't output the titlekey. It will be corrected in future releases
@@ -167,27 +166,27 @@ v0.96 - nsz and xcz as input for most funtions:
 		- Raw extractor will extract the nsz files uncompressed
 		- Plaintext and nca extraction operations aren't addapted yet.
 		- Linked account patcher will support nsz and xcz files.
-	- IMPORTANT: When FAT32 types are selected as output format	the nsz\xcz will be filtered from 
+	- IMPORTANT: When FAT32 types are selected as output format	the nsz\xcz will be filtered from
 	  list for modes that output fat32 files, this is due to not have added the fat32 output code
 	  yet. I'll due for next release since it always require more testing.
 	- XCZ and NSZ will be added as output formats too for modes 1,2 and 3 in next releases.
 	- Corrected issue where verification of keygeneration patch cnmts will show as correct and
       then show a second message as incorrect.
-	- Corrected issue where restoration mode won't restore the cnmt file under some conditions for 
+	- Corrected issue where restoration mode won't restore the cnmt file under some conditions for
 	  RSV patched cnmts
 	- Added mirror for nutdb database
 v0.95 - xcz format, fixes and other stuff:
 	- Added xcz format supertrimmed to compressor. This means that it won't pack the
 	  update partition (system firmware content), a lossless compressor that will
 	  compress that partion will be added at a later time.
-	- Added more compression presets  
+	- Added more compression presets
 	- Added nsz and xcz verification to both the file-info gui and the batch interface
 	- Added renaming for nsz and xcz.
 	- xcz and nsz support will be added slowly to all functions
 	- Added option to convert xci to nsz when compressing them in configuration. It
           is a highly unneeded thing to do since tinfoil would install xcz or nsz files but
           to each their own if you feel the need of converting at least do it in a restorable
-          and verifiable way.  
+          and verifiable way.
 	- Added more information options in the FILE-INFO mode for nsz\xcz
 	- Fixed user compression profile configuration.
 	- Added -1 threads as an option. This sets the threads depending on the cpu logic
@@ -203,20 +202,20 @@ v0.95 - xcz format, fixes and other stuff:
 	  Note: All the building processes and verification of unmodified files were unafected the
 	  issue was in header restoration to keygeneration10 since it must be specified in hex as
 	  0A instead of 10.
-	- Added RSV for 9.01 to the RSV check and restoration.  
+	- Added RSV for 9.01 to the RSV check and restoration.
 v0.94 - Improvements in compression support and restore mode:
-	- Compression\decompression is now tied to the buffer option which reduces 
+	- Compression\decompression is now tied to the buffer option which reduces
 	  hangups in the process
 	- Decompression is done in a single operation now which makes it faster and
 	  enables the progress bar to be equal to the size of the file
 	- Added verification for nsz compressed files. Notes:
 	  * Level 1 verification runs normally in nca objects
 	  * Level 1 verification works in ncz base games and dlc ncz objects
-	  * In the testing fase a level 1 verifcation failure in a ncz object will prompt 
+	  * In the testing fase a level 1 verifcation failure in a ncz object will prompt
 	    to hash the file. This is done to prevent false positives in this fase.
-	  * Ticket verification only works when there is nca with titlerights 
+	  * Ticket verification only works when there is nca with titlerights
 	    uncompressed in the nsz if not is ommited
-	  * Level 2 verification works normally as it does in nsp\xci files	
+	  * Level 2 verification works normally as it does in nsp\xci files
 	  * Level 3 verification aka hashing works normally without decompression to
 	    the disk
 	  * If all ncz files hash properly the ticket should be ok.
@@ -224,26 +223,26 @@ v0.94 - Improvements in compression support and restore mode:
 	  * The user is welcomed now with a screen where he can choose to set compression
 	    level and threads manually or to use 5 presets. A 6th preset can be setup in
 		the program CONFIGURATION MODE.
-	- Added file restoration for nsp and xci files as MODE 9. This can undo NSCB 
+	- Added file restoration for nsp and xci files as MODE 9. This can undo NSCB
 	  operations.
 	  * Can restore headers and detect if original file was xci or nsp
-	  * Can undo titlerights removal, keygeneration changes, RSV changes and 
+	  * Can undo titlerights removal, keygeneration changes, RSV changes and
 	    isgamecard changes
 	  * Linked account patched restoration is not supported yet
 	  * Basically if a file passes trough NSCB verification it can be restored
 	  * For now multifiles are blocked, the reason is the content must be splitted
-	    between origins in some occasions so the program should give xci and nsp 
-		files sometimes. This will be added in the future, for now use the 
+	    between origins in some occasions so the program should give xci and nsp
+		files sometimes. This will be added in the future, for now use the
 		multicontent splitter to separate the files before restoration.
-	  * Won't work with conversion methods that change the signature or create a 
+	  * Won't work with conversion methods that change the signature or create a
         nsp from files.
-	- Added option to NSCB config to start the Interface.bat minimized when starting 
+	- Added option to NSCB config to start the Interface.bat minimized when starting
 	  the File-Info Web Interface (GUI)
 	  * While the console is useful for debugging errors some people don't like how
-	    it starts on top. Just modify the variable in zconfig\Interface_options.cmd 
+	    it starts on top. Just modify the variable in zconfig\Interface_options.cmd
 	  * Alternatively an option was added in the NSCB.bat CONFIGURATION MODE. This
 	    option is kept separate from Auto and Global options and doesn't get modified
-		when restoring the defaults unless is from the option itself.		
+		when restoring the defaults unless is from the option itself.
 v0.93 - Adds update compression and decompression to NSCB:
 	- Added update compression and decompression by blawar to NSCB
 	- Added thread option (0-4) and timings for compression and decompression.
@@ -258,7 +257,7 @@ v0.92 - Adds compression and decompression of nsp files to NSCB:
 	  https://github.com/blawar/nsz
 	- For now it only supports base games and dlcs. Xcz implementation coming soon.
 	- Added reads for game info, cnmt and nacp in NSCB for nsz files
-	- Added reads in NSCB File_Info GUI for nsz files. Titles tab is currently 
+	- Added reads in NSCB File_Info GUI for nsz files. Titles tab is currently
 	  unsupported for nsz.
 	- Added slimjet portable as option for file_info gui. Just drop slimjet portable
 	  in ztools\Chromium
@@ -279,7 +278,7 @@ v0.91 - Introducing NSCB File_Info:
 	  * Verification from NSCB, till Level 2 so it's loaded fast. Use normal NSCB for
 		hashing for now.
 	- You'll notice some information like BuildIDs is added now, the cnmt was made more
-	  readable and I added detection for multiprogram games like Grandia and Hotline 
+	  readable and I added detection for multiprogram games like Grandia and Hotline
 	  Miami
 	- Known Issues:
 	  * CSS probably needs some work, specially for fullscreen.
@@ -287,43 +286,43 @@ v0.91 - Introducing NSCB File_Info:
 	  * NPDM decryption is failing in some games, is on my TODO list
 	  * Multicontent files (generally xci) may need some work to improve parsing speeds
 	  * Not reading yet splitted files (ns*,xc*,0*) but will add that soon
-	- TODO:	  	  
+	- TODO:
 	  * Output css to a file for theming
 	  * Language translations
 	  * Porting NSCB functions
 	  * Let user choose nutdb files
-	- How to use:	  
+	- How to use:
 	  * If you have Chrome or Chromium Installed you're good to go.
 	  * If you don't want to install those browsers you can use chromium portable.
 	    1. Get the last version for your system here: https://chromium.woolyss.com/
 		2. Create a folder in ztools called "Chromium"
-		3. Decompress the chromium files somewhere in your pc and execute 
+		3. Decompress the chromium files somewhere in your pc and execute
 		   "chrlauncher 2.5.6 (64-bit).exe" or whatever is called in your zip to get the
 		   needed files downloaded
 		4. Move all files to ztools\Chromium and rename "chrlauncher 2.5.6 (64-bit).exe"
 		   to "chrlauncher.exe". This takes priority over a chrome\chromium installation
 	  * Once you have all setup just execute "Interface.bat"
-        5. Rememeber you need to fill keys_template.txt in ztools but i imagine you 
+        5. Rememeber you need to fill keys_template.txt in ztools but i imagine you
 		   already know that
-	- I use python:		   
-	  * Just get latest python 3 and install these dependencies: 
-		urllib3 unidecode tqdm bs4 tqdm requests image pywin32 pycryptodome pykakasi 
+	- I use python:
+	  * Just get latest python 3 and install these dependencies:
+		urllib3 unidecode tqdm bs4 tqdm requests image pywin32 pycryptodome pykakasi
 		googletrans chardet eel bottle
 	  * Now the tricky part, I use the unreleased version of eel that isn't in pypy so go
-		here https://github.com/ChrisKnott/Eel Download the master, seek the folder where 
+		here https://github.com/ChrisKnott/Eel Download the master, seek the folder where
 		your eel installation is and overwrite the files with the ones in the master.
 		If you have trouble finding it try doing again pip install eel it'll tell you is
 		up to date and installed in 'X' folder.
-	  * Then execute "Interface.bat" 
-	- I use linux or mac:			  
-	  * Well i tested it on linux and i'll give you a build at a later time, have to admit 	
+	  * Then execute "Interface.bat"
+	- I use linux or mac:
+	  * Well i tested it on linux and i'll give you a build at a later time, have to admit
 	    I didn't test anything on mac though i imagine it works
 	  * Install python and:
-	  	urllib3 unidecode tqdm bs4 tqdm requests image pycryptodome pykakasi 
+	  	urllib3 unidecode tqdm bs4 tqdm requests image pycryptodome pykakasi
 		googletrans chardet eel bottle
 	  * Basically same as before ignoring pywin32 that NSCB uses to set the archive bit
-        in folders	
-	  * Replace the eel files for the ones in the master like explained above.	
+        in folders
+	  * Replace the eel files for the ones in the master like explained above.
 	  * Run squirrel with:
 		squirrel.py -lib_call Interface starting
 	  * Or wait a few days for a build if you don't like python
@@ -340,15 +339,15 @@ v0.91 - Introducing NSCB File_Info:
 	  * Added options in verification to check 9.0 RSV
 	  * Added keygeneration10 to the patch limit in all options
 	  * Probably something else that I don't remember.
-	  * Fixed times in not autoupdate zip.	  
+	  * Fixed times in not autoupdate zip.
 	  * Changed packed squirrel.exe system to onefolder. While less visually pleasing the gui
 	    made squirrel bigger which also increased the gui boot times. Onefolder doesn't have
 		the files compressed which gives it faster boot times
 	- Final Note: If you want support for cxci and titlerights removed files don't update to
-	  FW9.0 SX OS Beta9. I'll wait and see if they fix the several bugs the beta has before 
+	  FW9.0 SX OS Beta9. I'll wait and see if they fix the several bugs the beta has before
 	  I try some alternatives to make converted files run in 9.0.
-	- Big thanks to blawar for nutdb and nut of course, ChrisKnott for Eel and Metro4 for 
-	  their great css¦javascript library.	
+	- Big thanks to blawar for nutdb and nut of course, ChrisKnott for Eel and Metro4 for
+	  their great css¦javascript library.
 v0.90b- Bugfixes:
 	- Fixes issue with name detection for dlcs non listed in the nutdb json files
 	- Adds nsx format to allowed for the info functions. Except for the npdm reader
@@ -368,14 +367,14 @@ v0.90b- Bugfixes:
 	  folder. Overwrite the contents when asked by your system.
 v0.90- Several Bugfixes and aditions:
 	- Since i've been made aware of several bugs while i was on vacations I decided to
-	  release an early v0.90. Several experimental stuff has been added to squirrel 
+	  release an early v0.90. Several experimental stuff has been added to squirrel
 	  but is not available on NSCB yet.
 	- Bugfixes:
 	  * Fixed another error that prevented the creation of titlerights removed multi-nsps
 	  * Expanded xci trimming functions in indidual mode, after selecting trimming now
 	    there is these options:
 		- Supertrimmer. Removes ending padding, padding between partitions, logo partition,
-		  firmware from update partition and content from normal partition. Also removes 
+		  firmware from update partition and content from normal partition. Also removes
 		  game updates from the xci but keeps dlc. Respects certificates.
 		  Meant for xci installation on tinfoil while keeping file verification
 		- Supertrimmer respecting updates. Supertrimm that keeps game updates.
@@ -386,7 +385,7 @@ v0.90- Several Bugfixes and aditions:
 		controlled by "NUT_DB_TITLES_URL.txt" and "NUT_DB_REGIONS_URL.txt" in zconfig.
 		The refresh time has 3 parameters, representing hours, minutes and seconds. The defaulted
 		time is 24h for each json used.
-		Be aware that the json files are downloaded by demand. Titles json will be downloaded for 
+		Be aware that the json files are downloaded by demand. Titles json will be downloaded for
 		dlc renames and US region for descriptions, genres, etc... The json will only refresh themselves
 		when the refresh period is reached and the json is needed.
 	  * Fixed error in joiner mode
@@ -397,25 +396,25 @@ v0.90- Several Bugfixes and aditions:
     - Added more information to game-info using information from the nut json files
     - Added optional google translation for game descriptions. You can activate\deactivate this
 	  option on the program's configuration.
-	- Added removal of list objects and counters to squirrel to fix the too many 
+	- Added removal of list objects and counters to squirrel to fix the too many
 	  arguments in command line" issue that affected some users
 	- Added more characters to the banned lists on renames
-    - Added multi-threaded experimental option for renamer and database functions. 
-	  It increases significantly the speed of the renaming and database operations, 
-	  specially for vitual disks mounted from google drive (tested till 100 workers 
-	  using raidrive). 
+    - Added multi-threaded experimental option for renamer and database functions.
+	  It increases significantly the speed of the renaming and database operations,
+	  specially for vitual disks mounted from google drive (tested till 100 workers
+	  using raidrive).
 	  This option can be activated on the configuration.
-	  Note: Too many workers can mess a little the console prints and need a little work 
-	  for polished prints. 
+	  Note: Too many workers can mess a little the console prints and need a little work
+	  for polished prints.
 	  The writes to text files for the database operations are done on different files and
 	  joined after each cycle so they aren't affected.
-	  NOTE: Exe versions while they worked fine don't seem to have the advantage on speed 
+	  NOTE: Exe versions while they worked fine don't seem to have the advantage on speed
 	  the python versions get it will be analized if it's due to the pyinstaller options
 	  used.
     - UPCOMING: Next release will take some time, features i'm working on are:
-      Included permanent database for nsp and xci with search functions,library management 
+      Included permanent database for nsp and xci with search functions,library management
       functions, autoupdates,... and restore mode.
-	  
+
 v0.89b- Bugfix:
 	- Fixed error that prevented generation of titlerights removed multinsps
 	- If NSCB prompts the error "Too many arguments in command line" may be
@@ -434,7 +433,7 @@ v0.89- Adds patcher for linked account requirement:
 	    (StartupUserAccount==Required)
           * If "RequiredNetworkServiceLicenseOnLaunch" is enabled it will also patched
 	- Take into account that current verification will ping the control nca as modified
-        - For now files with this patch won't be included in the verification and upcoming 
+        - For now files with this patch won't be included in the verification and upcoming
 	  restore mode due to the small number of games with this patching requirement
 	- Fixed issue that impeded raw-extaction from working properly
 	- Added <,<>,> to the list of banned characters for filenames
@@ -447,38 +446,38 @@ v0.88- Bugfixes and new stuff
 	   2. MULTI-PACK MODE
 	   3. MULTI-CONTENT-SPLITTER MODE
 	- Added mode 7: FILE-JOINER mode to join fat32 .xc*,.ns* or *0
-	  > For *0 files drop the folder if you have several *0 files to join to not 
+	  > For *0 files drop the folder if you have several *0 files to join to not
           confuse the batch operations, for .xc* and .ns* files joins are grouped by filename
-	- Fixes bug in verification where RSV check bar stays after finishing RSV check on 
+	- Fixes bug in verification where RSV check bar stays after finishing RSV check on
 	  unlockers
 	- Fixes bug in verification where hash verification gives a really slow speed on some files.
-	- Fixes bug in some modes with files that use keygeneration 2  
+	- Fixes bug in some modes with files that use keygeneration 2
 	- Fixes bug where info mode 1 doesn't show the total size of deltas
 	- Fix nacp reader for xci files
-	- Fix Language and nacp offset detection in some games	
+	- Fix Language and nacp offset detection in some games
 	- Fixes titlekey verification on nsp and nsx dlcs
 	- Added main.npdm reader for nsp and xci files
-	- Add raw extraction option to advance mode so files with messed nca headers can be 
+	- Add raw extraction option to advance mode so files with messed nca headers can be
 	  extracted and verify the nca independently
 	- Added romaji option to db so outputting names in romaji can be turn off
-	- Added extraction of ncas in plaintext to advance mode 
-	- Added extraction of nca contents to advance mode	
+	- Added extraction of ncas in plaintext to advance mode
+	- Added extraction of nca contents to advance mode
 	NOTE: For now plaintext and extraction of ncas will skip program ncas in updates.
-	Process is done without extraction of ncas from nsp\xci with a fallback that 
+	Process is done without extraction of ncas from nsp\xci with a fallback that
 	pre-extracts the nca if the the sections are not correctly detected.
 	NOTE2: Consider extraction and plaintext options on early stages.
 
 v0.87c- Bugfixes
 	- Adds check for correct original titlekey for xci conversions from nsx files without
-	  a titlekey. 
+	  a titlekey.
 	- Fixes bug when RSV check progress bar multiplies when checking dlc unlockers
 	- Fixes message "needs RSV check" for non meta files in community-made nca files
           (They still won't verify in level2 since they won't have a proper signature1)
 	- Adds name sanitizing after romaji conversion
 	- Improves blankspace removal after romaji conversion
-	- Adds all roman numbers to the bad character list, they will be replaced by it's 
+	- Adds all roman numbers to the bad character list, they will be replaced by it's
 	  multicharacter equivalent.
-	  Example: Assasin's Creed 3 uses the Ⅲ character which corresponds to 1 character. 
+	  Example: Assasin's Creed 3 uses the Ⅲ character which corresponds to 1 character.
 	  This is replaced for III which corresponds for 3 characters
 	- Fixes message "master_key_08 is present but program doesn't have the hash to verify the key"
 v0.87- Sanitation of names, romaji convertion and improvements in verification
@@ -490,7 +489,7 @@ v0.87- Sanitation of names, romaji convertion and improvements in verification
 	  * Name sanitazion -> Removes bad characters on filenames.
 	  * Romanize -> Converts kanji\extended kanna\chinese to romaji (japanese romanization)
 	- Force romaji in prints in info functions for compatibility with windows CMD console
-	- Fix issue with info functions,database,renamer,... reading filenames when only 
+	- Fix issue with info functions,database,renamer,... reading filenames when only
 	  chinese language is present in the control nca file.
 	- Added RSV verification to the verifier.
       * If a meta file was modified by NSCB the program will be	able to detect the original
@@ -500,7 +499,7 @@ v0.87- Sanitation of names, romaji convertion and improvements in verification
 	  * Oppens the road to a soon to be implemented FILE RESTORATION MODE
 	- Improved verification prints
 	  * Better detection for isgamecard changes
-	  * Now the program will print the original keygeneration of the file and the new 
+	  * Now the program will print the original keygeneration of the file and the new
 	    keygeneration
 	  * Added check that will show if a ticket is missing when titlerights are present on a
         nca file. (For example a preload without the ticket)
@@ -508,7 +507,7 @@ v0.87- Sanitation of names, romaji convertion and improvements in verification
 	  * Some assumptions are taken to speed up verification with keygeneration and RSV changer
 	    These assumptions are made taken into account the way NSCB works and probabilities.
 	  * If squirrel is used by external programs verification times may change.
-	- Added NACP reader for control nca files without NSP\XCI extraction:	  
+	- Added NACP reader for control nca files without NSP\XCI extraction:
 	  * The implementation is based on 0Liam's NCAP reader and 90% his work
 	- Added fast prints for every info function instead of nut info by catching the screen prints
 	  * Nut info is planned to be refactored
@@ -520,7 +519,7 @@ v0.86d- Adds support for keygeneration 9\masterkey8
       nsp
 	- Added korean language via NSCB_KR by DDinghoya. This file is linked to the profile
 	  NSCB_KR_options.cmd
-	Note: I'm open to translations though for interested translators please wait a little 
+	Note: I'm open to translations though for interested translators please wait a little
 	and i'll implement tools to facilitate changes between versions.
 v0.86c- Fixes issue when new updates were detected as smaller versions than new updates
 	- For some reason it's value needed to be forced as integer again for detection to
@@ -538,12 +537,12 @@ v0.86- File Verification:
 	    Level 2: Signature test
 		  > Test files against Nintendo's fixed signature
 		  > Virtually restores header for titlerights removed files
-		  > Virtually restores header for isgamecard changed files	  
-		  > Virtually restores header for keygeneration changed files			  
+		  > Virtually restores header for isgamecard changed files
+		  > Virtually restores header for keygeneration changed files
 		  > Match restore or unrestored headers against Nintendo signature
 		  > Can accurately declare that a file was signed by Nintendo if modified
     		by NSCB which of course will serve to test safety of converts
-		  > If titlekey was removed it prints original titlekey		  
+		  > If titlekey was removed it prints original titlekey
 		  > Won't work when the files wasn't signed by Nintendo or other
 			convertion methods
 		  > For meta nca files with modified RSV, header restoration is pending
@@ -553,7 +552,7 @@ v0.86- File Verification:
 		  > Will used the restored header to build a hash for modified files if
 		    needed
 		  > Can accurately declare that a file is not corrupted
-	  * For file info the program will ask if you want to do a hash test afer 
+	  * For file info the program will ask if you want to do a hash test afer
 	    passing level1 and level2 verification
           > This helps when reading files from the cloud with filestream methods
             since level1 and level2 is pretty much instant while a hash check is
@@ -562,27 +561,27 @@ v0.86- File Verification:
 		    * Raidrive
 			* Google filestream
 			* Rclone mount
-	  * For file info the prints where catched so the text output is instant in 
-        the verification mode. Will be added to other info modes in the future	  
+	  * For file info the prints where catched so the text output is instant in
+        the verification mode. Will be added to other info modes in the future
 	  * Verification in individual mode allows for mass verification.
           > NSCB will ask the level of verification before starting the process
 		  > If a bad file is detected it will be write to badfiles.txt in root
 		  > The verification output for each file is added to INFO\VERIFY
-	  * Also compatible with filestream methods		  
+	  * Also compatible with filestream methods
 	- Add Advance mode to add extra functions regularly
 	  * For now only file extraction for nsp\xci was added
-	  * Extraction result is added to the "extract" folder	  
+	  * Extraction result is added to the "extract" folder
 	- Add SDK numbers in info modes with proper format
 	- Add SDK numbers to extended database
 	- Several other bugfixes
 v0.85b- Fixes several issues:
 	- Redo implementation of direct multi handler for asian names
 	- Solves issue with rebuilder were wrong argument was being used
-	- Solves issue with dlc keys retribal in database for titlerights crypto dlcs		
+	- Solves issue with dlc keys retribal in database for titlerights crypto dlcs
 v0.85- Middlestone update.
-	*Introduced ability to create multiple multixci or multinsp in both auto and 
+	*Introduced ability to create multiple multixci or multinsp in both auto and
 	  manual mode based on the base-titleid of games\updates\dlc
-	*Introduced ability to setup jobs for multimode so they can be build in one 
+	*Introduced ability to setup jobs for multimode so they can be build in one
 	 go later. This is useful specially if you want to add several games to xci\nsp
 	*Introduced ability to ignore setup jobs in favour of the current one.
 	*Setup folders for multibuild jobs. Main folder is "lists":
@@ -595,13 +594,13 @@ v0.85- Middlestone update.
 	 as nsp when the output was set to xci
 	*Added ability to output xci data on the databases
 	*Added simplified database option
-	*Added super-xci-trimmer to the individual modes. It'll take off paddings, 
+	*Added super-xci-trimmer to the individual modes. It'll take off paddings,
 	 update partition and game updates. It's meant to have minimun scene-xcis
-	 that can be verified with tinfoil which already ignored updates when 
+	 that can be verified with tinfoil which already ignored updates when
 	 installing these xci since they are normally outdated.
 	 NOTE: The card-ncas are not modified so the signature verifies on tinfoil
 	*Added file rebuilder on the individual modes. This rebuilds by cnmt order nsps,
-         doesn't ignore files without deltas, adds cnmt.xml files and erases deltas if 
+         doesn't ignore files without deltas, adds cnmt.xml files and erases deltas if
 	 selected in the config as the other modes
 	*Delta removal mode now rebuilds by cnmt order and create cnmt.xml files
 	*Delta removal mode now respects original names.
@@ -619,13 +618,13 @@ v0.83- Unify beta and stable build.
 	 -Option 4: Delete deltas from update nsps.
 	  This option creates a new update file when the update has deltas.
 	 -Option 5: File renamer.
-	  This option renames nsp or xci files in several formats accordingly with the 
+	  This option renames nsp or xci files in several formats accordingly with the
 	  options selected by the user.
 v0.82- Added direct generation for multi-pack processing and more.
 	*Added direct generation without nca extracting for multi pack processing (mode 2)
 	*Added name calculation for multi pack processing (mode 2)
 	*Added content calculation for for multi pack processing (This replaces update mode
-	 in a better and more efective way) 
+	 in a better and more efective way)
 	*Temporarly removed option to fix logo in multi-xci files
 	*Added option to generate multi-nsp including tickets without nca modification.
 	 This files will pass blawar's tinfoil signature check.
@@ -644,7 +643,7 @@ v0.82- Added direct generation for multi-pack processing and more.
 	 name [titleid] [game version] (number of games + number of updates + number of DLCs)
 	*Noticed issues in the fat32 splitter with the new direct building modes so it's disabled
 	in the beta.
-	*Since the splitter was disabled a slighty modified version of 0.80-c was included as 
+	*Since the splitter was disabled a slighty modified version of 0.80-c was included as
 	stable if you need to do fat32 splitting use that version.
 	NOTE: In future versions the fat32 splitter will get it's own mode along new trimming
 	functions to avoid interference with the current direct building modes.
@@ -655,8 +654,8 @@ v0.81- BETA 2 direct generation for individual processing and more.
 	*Fixed issues with special characters when building by parsing user inputs and lists
 	trough python. This also solves issues with japanese characters while building.
 	Note: this made the interface a little slower at some points.
-	Note2: Base input in update mode and in the info functions is yet to be modified so 
-	if you run into issues there please rename the file.	
+	Note2: Base input in update mode and in the info functions is yet to be modified so
+	if you run into issues there please rename the file.
 	*Since it was longed asked the Update Mode (Mode 4) was modified. Now titlerights are
 	removed from the base and the same patches (keygeneration, RSV ...) are applied
 	to the base content.
@@ -673,17 +672,17 @@ v0.81- BETA 2 direct generation for individual processing and more.
 		-It'll support pulling DLC names from nut json files in the future
 	*Added new info function that shows in a simple way the content ids from a multicontent
 	file
-	*Added option to verify keys.txt in the options configuration (Mode 0) 
-v0.80- BETA VERSION with a lot of important changes 
+	*Added option to verify keys.txt in the options configuration (Mode 0)
+v0.80- BETA VERSION with a lot of important changes
 	*Erased all external program dependencies. Current program is fully powered by
 	squirrel.exe or squirrel.py. (Beta will be based on squirrel.exe
-	*Added direct xci generation from nca files with new code. This increases the 
+	*Added direct xci generation from nca files with new code. This increases the
 	generation speed and makes it equal to nsp generation.
-	*Added progression bars	   
+	*Added progression bars
 	*Added direct generation to fat32 formats for nsp and xci
 		- FAT32 xci files (xc0,xc1,...)
 		- FAT32 compatible with SX rommenu (ns0,ns1,..)
-		- FAT32 compatble with all installers (00,01,..) in an archived folder. 
+		- FAT32 compatble with all installers (00,01,..) in an archived folder.
 		  Folder is set as archived authomatically
 	*Set zip generation to zip folder and deactivated it by default.
 	*Added option to organize files on subfolders or individually in the output
@@ -693,10 +692,10 @@ v0.80- BETA VERSION with a lot of important changes
 	*Change to false exit in auto-mode and linked it to the batch option that was
 	before only used in manual mode.
 	*Reduced "cls" calls in auto-mode"
-	*Added minimun keys template. NOTE: The xci_header_key is optional, if not 
+	*Added minimun keys template. NOTE: The xci_header_key is optional, if not
 	included the game-info will use default data already encrypted with a default
-	IV.	
-	   
+	IV.
+
 v0.79- Corrected detection for keygeneration 2 wich fixes the issue with the Xenoblade
        Chronicles 2 DLCs
        Added xml generation when repacking as NSP giving support to xci-explorer.
@@ -708,7 +707,7 @@ v0.79- Corrected detection for keygeneration 2 wich fixes the issue with the Xen
          2.- GAME-INFO and FW requirements eas expanded with more information for dlc,
              editor information, language information ...
          3.- Read the CNMT was expanded to include extended meta information.
-       Improved the naming in the spitter mode.  
+       Improved the naming in the spitter mode.
 v0.78- Fixed error with RSV patching were DLC's got it's UpdateRequiredNumber patched
 	Modified FW-requirements and CNMT-reader a little.
 v0.77- Added new option to global config to skip the RSV and keygeneration patching
@@ -724,7 +723,7 @@ v0.76- Corrected hash calcultion after RSV patching in games that had a lot of u
 v0.75- Added configuration from the bat, option to change keygeneration, corrected RSV
        readouts and more.
        1.- Added options to change keygeneration to help run games at lower firmwares.
-           Note it won't always work as the game can have other dependencies than the 
+           Note it won't always work as the game can have other dependencies than the
            firmware. 6.2 to 6.0 seems to work and 6.2 to 5.0 works if basegame is 5.0
        2.- Added "Mode 0" - Profile configuration from the bat.
        3.- Added auto-profile linking. A profile Bat will link with it's configuration
@@ -733,10 +732,10 @@ v0.75- Added configuration from the bat, option to change keygeneration, correct
            b) Profile in zconfig -> batname_options.cmd
            Where "batname" is a name of your choosing. You can add as many bats in the
            same folder as you want with different profiles this way.
-       4.- Corrected RequiredSystemVersion reads. It seems like our update XML read the 
+       4.- Corrected RequiredSystemVersion reads. It seems like our update XML read the
            value wrong and RSV is 4bytes long instead of 8bytes long.
            Thanks to Liam for the tip. ^_^
-       5.- Added better navigation from the bat and dissable auto-exit in manual-mode so 
+       5.- Added better navigation from the bat and dissable auto-exit in manual-mode so
            people can see the log. (Auto-Exit can be activated in the configuration)
        6.- Added "mode 5: file-info mode". Dragg a file and choose if you want to:
            a) See it's content
@@ -755,10 +754,10 @@ v0.70- Better RequiredSystemVersion patching, added Split Mode, added Update Mod
            xci or nsp to it's original content.
            Split mode is set to repack DLC and Updates always as nsp.
        5.- ADDED UPDATE MODE as option 4 in manual mode. This is a first and easy implementation.
-           You first set the base, which needs to be a multi-content file then make a list of things 
+           You first set the base, which needs to be a multi-content file then make a list of things
            to update\upgrade the content.
            Choose if you want to strip UPDATES\DLC or both from the base file, choose how you want
-           to repack the resulting content and if you want to patch the meta and the program will 
+           to repack the resulting content and if you want to patch the meta and the program will
            process the file.
        NOTE: IF A XCI DOESN'T WORK WITH RSV PATCHING TRY TO REDO IT WITHOUT PATCHING AND TELL ME
        IN GITHUB. SOME OLDER GAMES SEEM TO HAVE ISSUES WITH THE META PATCHING IN XCI FORM. I STILL
@@ -768,18 +767,18 @@ v0.65- Added option to patched RequiredSystemVersion in the meta nca (set by def
        Renamed "nut_RTR.py" to "squirrel" since it's deviating a lot from Nut's main line.
 v0.62- Added option to just make zips in "Manual Mode. Individual processing.
 v0.61- Mostly bugfixes.
-	   1.- Changed counter functions from "find /C" to other method for people with inverted 
+	   1.- Changed counter functions from "find /C" to other method for people with inverted
 	       bar routes.
 	   2.- Changed nca header check for xci extraction so it doesn't give issues in rev games.
 	   3.- Fixed naming issues in individual modes. Basically extension getting in final name.
 	   4.- Repacked again the dependencies bat since I forgot in last build.
 	   5.- Added optional example profiles for nsp and xci.
-	       1.- NSP: 
+	       1.- NSP:
 	        	auto-repack-> NSP
 	                extract with deltas
 			pack files in folders individually for auto mode
 			work folder -> NSCB_ntemp
-	       2.- XCI: 
+	       2.- XCI:
 	        	auto-repack-> XCI
 	                extract without deltas
 			pack files in folders authomatically for auto mode
@@ -807,7 +806,7 @@ v0.50- Changed name to NSC_Builder (Nintendo Switch Cleaner and Builder)
 	   5.- Removed old assistant bat files and replaced them with XCI.bat and NSP.bat
 	   6.- Changed options in option file.
 	   7.- Ability to link options files editing NSCB.bat header
-	   
+
 v0.41- Solved some issues with v0.4 and made new options in the filenaming solution.
        1.- Added "nstool.exe by jakcron" to ztools folder to be able to read data from
        meta and control nca files.
@@ -816,7 +815,7 @@ v0.41- Solved some issues with v0.4 and made new options in the filenaming solut
        a.) OPTION 9: Process files by temporarly renaming them to a safe name
            * false->don't rename files
            * true->rename temporarly to safename
-           * agro->"Agresive Output" rename temporarly to tempname and output as name 
+           * agro->"Agresive Output" rename temporarly to tempname and output as name
              set in nacp file.
            -- DEFAULT OPTION IS "true" --
        NOTE: DLCS DON'T HAVE NACP FILE SO AGRO WILL OUTPUT THEM AS [titleid]
@@ -824,7 +823,7 @@ v0.41- Solved some issues with v0.4 and made new options in the filenaming solut
            (If option 9 is set as "agro" it will allways output as the real name)
            * false->output as original name/or original name corrected with safe characters
            * true-> output as "real" name, stored in control nca.
-           * oinfo->"Only info"-> Use either original filename or safename and add only 
+           * oinfo->"Only info"-> Use either original filename or safename and add only
              titleid, version, content tag ...
            -- DEFAULT OPTION IS "oinfo" --
        NOTE: DLCS DON'T HAVE NACP FILE SO "true" IN THIS CASE WILL BE REPLACED BY THE "oinfo" OPTION
@@ -868,7 +867,7 @@ v0.2 - Added xci repacking. You can now repack as:
      - If xci repacking filenames with [UPD] tag are skipped
      - If with xci repacking an error is logged it activates a fallback and an
        xci + [lc].nsp are build.
-     - Now we support subfolders, thanks to MadScript77 for the advice on how to 
+     - Now we support subfolders, thanks to MadScript77 for the advice on how to
        set it as in the other great advices he gave about the code.
      - For manual mode you can allways choose what format to build from the current
        list.

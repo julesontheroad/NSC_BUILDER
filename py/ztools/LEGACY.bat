@@ -287,7 +287,10 @@ echo Input "5" to enter into FILE-INFO mode
 echo Input "6" to enter DATABASE building mode
 echo Input "0" to enter into CONFIGURATION mode
 echo.
-echo Input "N" to go to NEW MODES
+echo Input "N" to go to STANDARD MODES
+echo Input "M" to enter MTP MODE
+echo Input "D" to enter GOOGLE DRIVE MODES
+echo Input "L" to go to LEGACY MODES
 echo .......................................................
 echo.
 set /p bs="Enter your choice: "
@@ -299,8 +302,18 @@ if /i "%bs%"=="4" goto UPDMODE
 if /i "%bs%"=="5" goto INFMODE
 if /i "%bs%"=="6" goto DBMODE
 if /i "%bs%"=="0" goto OPT_CONFIG
-if /i "%bs%"=="N" exit /B
+if /i "%bs%"=="N" goto call_new
+if /i "%bs%"=="D" goto GDMode
+if /i "%bs%"=="M" goto MTPMode
 goto manual_Reentry
+
+:MTPMode
+call "%prog_dir%ztools\MtpMode.bat"
+exit /B
+
+:GDMode
+call "%prog_dir%ztools\DriveMode.bat"
+exit /B
 
 REM //////////////////////////////////////////////////
 REM /////////////////////////////////////////////////
@@ -2267,11 +2280,10 @@ ECHO =============================     BY JULESONTHEROAD     ===================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                                POWERED BY SQUIRREL                                "
 ECHO "                    BASED ON THE WORK OF BLAWAR AND LUCA FRAGA                     "
-ECHO                                  VERSION 0.96 (LEGACY)
+ECHO                                  VERSION 0.99 (LEGACY)
 ECHO -------------------------------------------------------------------------------------                   
 ECHO Program's github: https://github.com/julesontheroad/NSC_BUILDER
 ECHO Blawar's github:  https://github.com/blawar
-ECHO Blawar's tinfoil: https://github.com/digableinc/tinfoil
 ECHO Luca Fraga's github: https://github.com/LucaFraga
 ECHO -------------------------------------------------------------------------------------
 exit /B
@@ -2401,6 +2413,10 @@ if [%titleid%] EQU %c_update% set ttag=[UPD]
  
 set filename=%filename%[%titleid%][%ttag%] 
 del "%w_folder%\titleid.txt"
+exit /B
+
+:call_new
+call "%prog_dir%\NSCB.bat"
 exit /B
 
 :salida

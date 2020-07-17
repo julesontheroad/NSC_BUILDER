@@ -51,7 +51,7 @@ if "%Extension%" EQU ".nsx" ( goto snfi )
 if "%Extension%" EQU ".xci" ( goto snfi )
 if "%Extension%" EQU ".nsz" ( goto snfi2 )
 if "%Extension%" EQU ".xcz" ( goto snfi2 )
-if "%Extension%" EQU ".nca" ( goto snfi_nca ) 
+if "%Extension%" EQU ".nca" ( goto snfi_nca )
 
 if /i "%bs%"=="1" goto g_file_content
 if /i "%bs%"=="2" goto g_content_list
@@ -92,7 +92,7 @@ if "%Extension%" EQU ".nsx" ( goto snfi )
 if "%Extension%" EQU ".xci" ( goto snfi )
 if "%Extension%" EQU ".nsz" ( goto snfi2 )
 if "%Extension%" EQU ".xcz" ( goto snfi2 )
-if "%Extension%" EQU ".nca" ( goto snfi_nca ) 
+if "%Extension%" EQU ".nca" ( goto snfi_nca )
 
 if /i "%bs%"=="1" goto g_file_content2
 if /i "%bs%"=="2" goto g_content_list2
@@ -269,7 +269,7 @@ call :logo
 echo ********************************************************
 echo VERIFY A NSP\XCI\NCA
 echo ********************************************************
-%pycommand% "%nut%" %buffer% -o "%info_dir%" -v "%targt%" 
+%pycommand% "%nut%" %buffer% -o "%info_dir%" -v "%targt%"
 
 goto sc2
 
@@ -279,7 +279,7 @@ call :logo
 echo ********************************************************
 echo VERIFY A NSZ\XCZ FILE
 echo ********************************************************
-%pycommand% "%nut%" %buffer% -o "%info_dir%" -v "%targt%" 
+%pycommand% "%nut%" %buffer% -o "%info_dir%" -v "%targt%"
 
 goto sc2_1
 
@@ -391,7 +391,7 @@ call :logo
 echo ********************************************************
 echo VERIFY A NSP\XCI\NCA
 echo ********************************************************
-%pycommand% "%nut%" %buffer% -o "%info_dir%" -v "%targt%" 
+%pycommand% "%nut%" %buffer% -o "%info_dir%" -v "%targt%"
 goto sc3
 
 
@@ -399,12 +399,12 @@ goto sc3
 exit /B
 
 :logo
-ECHO                                        __          _ __    __         
+ECHO                                        __          _ __    __
 ECHO                  ____  _____ ____     / /_  __  __(_) /___/ /__  _____
 ECHO                 / __ \/ ___/ ___/    / __ \/ / / / / / __  / _ \/ ___/
-ECHO                / / / (__  ) /__     / /_/ / /_/ / / / /_/ /  __/ /    
-ECHO               /_/ /_/____/\___/____/_.___/\__,_/_/_/\__,_/\___/_/     
-ECHO                              /_____/                                  
+ECHO                / / / (__  ) /__     / /_/ / /_/ / / / /_/ /  __/ /
+ECHO               /_/ /_/____/\___/____/_.___/\__,_/_/_/\__,_/\___/_/
+ECHO                              /_____/
 ECHO -------------------------------------------------------------------------------------
 ECHO                         NINTENDO SWITCH CLEANER AND BUILDER
 ECHO                      (THE XCI MULTI CONTENT BUILDER AND MORE)
@@ -413,11 +413,10 @@ ECHO =============================     BY JULESONTHEROAD     ===================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                                POWERED BY SQUIRREL                                "
 ECHO "                    BASED ON THE WORK OF BLAWAR AND LUCA FRAGA                     "
-ECHO                                    VERSION 0.98
-ECHO -------------------------------------------------------------------------------------                   
+ECHO                                    VERSION 0.99
+ECHO -------------------------------------------------------------------------------------
 ECHO Program's github: https://github.com/julesontheroad/NSC_BUILDER
 ECHO Blawar's github:  https://github.com/blawar
-ECHO Blawar's tinfoil: https://github.com/digableinc/tinfoil
 ECHO Luca Fraga's github: https://github.com/LucaFraga
 ECHO -------------------------------------------------------------------------------------
 exit /B

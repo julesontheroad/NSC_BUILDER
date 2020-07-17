@@ -35,8 +35,8 @@ echo Input "1" to auto-start processing from the previous list
 echo Input "2" to erase list and make a new one.
 echo Input "3" to continue building the previous list
 echo .......................................................
-echo NOTE: By pressing 3 you'll see the previous list 
-echo before starting the processing the files and you will 
+echo NOTE: By pressing 3 you'll see the previous list
+echo before starting the processing the files and you will
 echo be able to add and delete items from the list
 echo.
 ECHO *************************************************
@@ -134,7 +134,7 @@ set string=
 :update_list1
 if !pos1! GTR !pos2! ( goto :update_list2 ) else ( set /a pos1+=1 )
 set string=%string%,%pos1%
-goto :update_list1 
+goto :update_list1
 :update_list2
 set string=%string%,
 set skiplist=%string%
@@ -154,7 +154,7 @@ echo -------------------------------------------------
 echo FILE MANAGEMENT ACTIVATED
 echo -------------------------------------------------
 ECHO -------------------------------------------------
-ECHO                 FILES TO PROCESS 
+ECHO                 FILES TO PROCESS
 ECHO -------------------------------------------------
 for /f "tokens=*" %%f in (mnglist.txt) do (
 echo %%f
@@ -245,17 +245,17 @@ echo          /_', "=. ';:;:;
 echo          @=:__,  \,;:;:'
 echo            _(\.=  ;:;;'
 echo           `"_(  _/="`
-echo            `"'		
+echo            `"'
 exit /B
 
 :program_logo
 
-ECHO                                        __          _ __    __         
+ECHO                                        __          _ __    __
 ECHO                  ____  _____ ____     / /_  __  __(_) /___/ /__  _____
 ECHO                 / __ \/ ___/ ___/    / __ \/ / / / / / __  / _ \/ ___/
-ECHO                / / / (__  ) /__     / /_/ / /_/ / / / /_/ /  __/ /    
-ECHO               /_/ /_/____/\___/____/_.___/\__,_/_/_/\__,_/\___/_/     
-ECHO                              /_____/                                  
+ECHO                / / / (__  ) /__     / /_/ / /_/ / / / /_/ /  __/ /
+ECHO               /_/ /_/____/\___/____/_.___/\__,_/_/_/\__,_/\___/_/
+ECHO                              /_____/
 ECHO -------------------------------------------------------------------------------------
 ECHO                         NINTENDO SWITCH CLEANER AND BUILDER
 ECHO                      (THE XCI MULTI CONTENT BUILDER AND MORE)
@@ -265,10 +265,9 @@ ECHO ---------------------------------------------------------------------------
 ECHO "                                POWERED BY SQUIRREL                                "
 ECHO "                    BASED ON THE WORK OF BLAWAR AND LUCA FRAGA                     "
 ECHO                                    VERSION 0.99
-ECHO -------------------------------------------------------------------------------------                   
+ECHO -------------------------------------------------------------------------------------
 ECHO Program's github: https://github.com/julesontheroad/NSC_BUILDER
 ECHO Blawar's github:  https://github.com/blawar
-ECHO Blawar's tinfoil: https://github.com/digableinc/tinfoil
 ECHO Luca Fraga's github: https://github.com/LucaFraga
 ECHO -------------------------------------------------------------------------------------
 exit /B
@@ -294,5 +293,3 @@ exit /B
 
 :salida
 exit /B
-
-

@@ -35,8 +35,8 @@ echo Input "1" to auto-start processing from the previous list
 echo Input "2" to erase list and make a new one.
 echo Input "3" to continue building the previous list
 echo .......................................................
-echo NOTE: By pressing 3 you'll see the previous list 
-echo before starting the processing the files and you will 
+echo NOTE: By pressing 3 you'll see the previous list
+echo before starting the processing the files and you will
 echo be able to add and delete items from the list
 echo.
 ECHO *************************************************
@@ -137,7 +137,7 @@ set string=
 :update_list1
 if !pos1! GTR !pos2! ( goto :update_list2 ) else ( set /a pos1+=1 )
 set string=%string%,%pos1%
-goto :update_list1 
+goto :update_list1
 :update_list2
 set string=%string%,
 set skiplist=%string%
@@ -156,7 +156,7 @@ call :program_logo
 echo -------------------------------------------------
 echo COMPRESS\DECOMPRESS MODE ACTIVATED
 echo -------------------------------------------------
-ECHO FILES TO PROCESS: 
+ECHO FILES TO PROCESS:
 for /f "tokens=*" %%f in (zzlist.txt) do (
 echo %%f
 )
@@ -216,7 +216,7 @@ echo 6. AVERAGE (UNTHREADED)      - LEVEL 17 _ no  threads
 echo 7. HARD    (UNTHREADED)      - LEVEL 22 _ no  threads
 echo 8. HARD    (THREADED)        - LEVEL 22 _ 1   threads
 echo 9. USER VALUE (SETUP IN CONFIG)
-echo. 
+echo.
 ECHO ******************************************
 echo Input "d" for default (level 17_no threads)
 echo Or Input "b" to return to the list options
@@ -290,7 +290,7 @@ echo INPUT NUMBER OF THREADS TO USE
 echo *******************************************************
 echo Input a number of threads to use between 0 and 4
 echo Notes:
-echo  + By using threads you may gain a little speed bump 
+echo  + By using threads you may gain a little speed bump
 echo    but you'll loose compression ratio
 echo  + Level 22 and 4 threads may run you out of memory
 echo  + For maximum threads level 17 compression is advised
@@ -323,7 +323,7 @@ CD /d "%prog_dir%"
 for /f "tokens=*" %%f in (zzlist.txt) do (
 
 %pycommand% "%nut%" %buffer% -o "%fold_output%" -tfile "%prog_dir%zzlist.txt" --compress "%level%" --threads "%workers%" --nodelta "%skdelta%" --fexport "%xci_export%"
-REM %pycommand% "%nut%" %buffer% -o "%fold_output%" -tfile "%prog_dir%zzlist.txt" --compress "%level%" --threads "%workers%" --nodelta "%skdelta%" --pararell "true" 
+REM %pycommand% "%nut%" %buffer% -o "%fold_output%" -tfile "%prog_dir%zzlist.txt" --compress "%level%" --threads "%workers%" --nodelta "%skdelta%" --pararell "true"
 
 %pycommand% "%nut%" --strip_lines "%prog_dir%zzlist.txt"
 call :contador_NF
@@ -345,13 +345,13 @@ echo Wrong values are converted to 2. 0 is converted to 1
 echo Notes:
 echo  + You'll create a number of compressed file equal to
 echo    the number of instances
-echo  + If you have enough disk space instances are more 
-echo    efective than threads and have a lower compute power 
-echo    fingerprint 
-echo  + If you have enough disk space and compute power 
+echo  + If you have enough disk space instances are more
+echo    efective than threads and have a lower compute power
+echo    fingerprint
+echo  + If you have enough disk space and compute power
 echo    don't be afraid to try using 10-20 instances
 echo  + tqdm is a little wonky when printing pararell bars
-echo    with threads some so the screen will refresh 
+echo    with threads some so the screen will refresh
 echo    each 3s in pararell mode to clear bad prints.
 echo.
 ECHO *********************************************
@@ -401,7 +401,7 @@ goto pcompress
 cls
 call :program_logo
 echo *******************************
-echo NSP\XCI PARARELL COMPRESSION 
+echo NSP\XCI PARARELL COMPRESSION
 echo *******************************
 CD /d "%prog_dir%"
 echo Filter extensions from list
@@ -479,17 +479,17 @@ echo          /_', "=. ';:;:;
 echo          @=:__,  \,;:;:'
 echo            _(\.=  ;:;;'
 echo           `"_(  _/="`
-echo            `"'		
+echo            `"'
 exit /B
 
 :program_logo
 
-ECHO                                        __          _ __    __         
+ECHO                                        __          _ __    __
 ECHO                  ____  _____ ____     / /_  __  __(_) /___/ /__  _____
 ECHO                 / __ \/ ___/ ___/    / __ \/ / / / / / __  / _ \/ ___/
-ECHO                / / / (__  ) /__     / /_/ / /_/ / / / /_/ /  __/ /    
-ECHO               /_/ /_/____/\___/____/_.___/\__,_/_/_/\__,_/\___/_/     
-ECHO                              /_____/                                  
+ECHO                / / / (__  ) /__     / /_/ / /_/ / / / /_/ /  __/ /
+ECHO               /_/ /_/____/\___/____/_.___/\__,_/_/_/\__,_/\___/_/
+ECHO                              /_____/
 ECHO -------------------------------------------------------------------------------------
 ECHO                         NINTENDO SWITCH CLEANER AND BUILDER
 ECHO                      (THE XCI MULTI CONTENT BUILDER AND MORE)
@@ -499,10 +499,9 @@ ECHO ---------------------------------------------------------------------------
 ECHO "                                POWERED BY SQUIRREL                                "
 ECHO "                    BASED ON THE WORK OF BLAWAR AND LUCA FRAGA                     "
 ECHO                                    VERSION 0.99
-ECHO -------------------------------------------------------------------------------------                   
+ECHO -------------------------------------------------------------------------------------
 ECHO Program's github: https://github.com/julesontheroad/NSC_BUILDER
 ECHO Blawar's github:  https://github.com/blawar
-ECHO Blawar's tinfoil: https://github.com/digableinc/tinfoil
 ECHO Luca Fraga's github: https://github.com/LucaFraga
 ECHO -------------------------------------------------------------------------------------
 exit /B
@@ -528,5 +527,3 @@ exit /B
 
 :salida
 exit /B
-
-

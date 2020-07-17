@@ -33,11 +33,16 @@ if /i "%bs%"=="6" goto DEV_INF
 if /i "%bs%"=="7" goto SX_AUTOLOADER
 if /i "%bs%"=="N" goto call_main
 if /i "%bs%"=="L" goto LegacyMode
+if /i "%bs%"=="D" goto GDMode
 if /i "%bs%"=="0" goto OPT_CONFIG
 goto MAIN
 
 :LegacyMode
 call "%prog_dir%ztools\LEGACY.bat"
+exit /B
+
+:GDMode
+call "%prog_dir%ztools\DriveMode.bat"
 exit /B
 
 :G_INST
