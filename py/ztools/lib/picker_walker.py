@@ -26,7 +26,21 @@ def get_disks():
 	if selected[0]==False:
 		return False
 	drive=selected[0]
-	return drive
+	return drive	
+		
+def pick_order():
+	title = 'Select order to list the files: \n + Press enter or intro to select \n + Press E to scape back to menu'
+	options = ['name_ascending','name_descending','size_ascending','size_descending','date_ascending','date_descending']
+	picker = Picker(options, title, min_selection_count=1)	
+	def end_selection(picker):
+		return False,-1	
+	picker.register_custom_handler(ord('e'),  end_selection)
+	picker.register_custom_handler(ord('E'),  end_selection)		
+	selected = picker.start()	
+	if selected[0]==False:
+		return False
+	order=selected[0]
+	return order				
 
 def pick_folder(folders,previous):
 	Recursive=False
@@ -101,10 +115,35 @@ def get_files_from_walk(tfile=None,extlist=['nsp','nsz','xci','xcz'],filter=Fals
 		files=listmanager.folder_to_list(folder,extlist=extlist,filter=filter)		
 	if not files:
 		sys.exit("Query didn't return any files")
-	options=[]
-	for i in sorted(files):
-		bname=os.path.basename(i) 
-		options.append(bname)
+	order=pick_order()
+	if order==False:
+		return False	
+	filedata={}
+	for file in files:
+		try:
+			fname=os.path.basename(file)
+			fsize=os.path.getsize(file)
+			fdate=os.path.getctime(file)
+			entry={'filepath':file,'filename':fname,'size':fsize,'date':fdate}
+			if not fname in filedata:
+				filedata[fname]=entry
+		except:pass		
+	options=[]	
+	if order=='name_ascending':
+		options=sorted(filedata,key=lambda x:filedata[x]['filename'])
+	elif order=='name_descending':	
+		options=sorted(filedata,key=lambda x:filedata[x]['filename'])
+		options.reverse()
+	elif order=='size_ascending':
+		options=sorted(filedata,key=lambda x:filedata[x]['size'])
+	elif order=='size_descending':	
+		options=sorted(filedata,key=lambda x:filedata[x]['size'])
+		options.reverse()	
+	elif order=='date_ascending':
+		options=sorted(filedata,key=lambda x:filedata[x]['date'])
+	elif order=='date_descending':	
+		options=sorted(filedata,key=lambda x:filedata[x]['date'])
+		options.reverse()	
 	title = 'Select content: \n + Press space or right to select entries \n + Press Enter to confirm selection \n + Press E to exit selection \n + Press A to select all entries'				
 	picker = Picker(options, title, multi_select=True, min_selection_count=1)
 	def end_selection(picker):
