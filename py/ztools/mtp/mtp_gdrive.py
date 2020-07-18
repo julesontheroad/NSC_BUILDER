@@ -1119,6 +1119,7 @@ def select_from_walker(tfile,types='all'):
 		TeamDrive=None
 	if folder==False:
 		return False
+	filt=interface_filter()			
 	order=pick_order()
 	if order==False:
 		return False	
@@ -1126,7 +1127,7 @@ def select_from_walker(tfile,types='all'):
 	print("  * Parsing files from Google Drive. Please Wait...")		
 	db={}
 	db[folder]={'path':folder,'TD_name':TeamDrive}			
-	files=concurrent_scrapper(filter="",order=order,remotelib='all',db=db)			
+	files=concurrent_scrapper(filter=filt,order=order,remotelib='all',db=db)			
 	if files==False:
 		return False			
 	print("  * Entering File Picker")	
