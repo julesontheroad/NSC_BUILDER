@@ -315,8 +315,8 @@ echo *******************************************************
 echo.
 echo 1. FILE TRANSFER FROM LOCAL FILES
 echo 2. FILE TRANSFER FROM REMOTE LIBRARIES (GDRIVE)
-echo 3. CREATE XCI AND TRANSFER
-echo 4. CREATE MULTI-XCI AND TRANSFER
+echo 3. CREATE XCI AND TRANSFER (LOCAL)
+echo 4. CREATE MULTI-XCI AND TRANSFER (LOCAL)
 echo.
 ECHO ******************************************
 echo Or Input "0" to return to the list options
