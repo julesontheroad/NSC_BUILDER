@@ -640,17 +640,6 @@ def gen_xci_parts_spec0(filepath,target_cnmt=None,cachefolder=None,keypatch=Fals
 	outf.write(outheader)	
 	written+=len(outheader)
 	movoffset=0
-	for nspF in xci.hfs0:
-		if str(nspF._path)=="secure":
-			for ticket in nspF:			
-				if type(ticket) == Ticket:
-					size=ticket.size			
-					size_pr=sq_tools.getSize(size)			
-					filename =  str(ticket._path)
-					tik=filename[:-20]				
-					if str(tik).upper() == str(titleid).upper():
-						titleKey = ticket.getTitleKeyBlock().to_bytes(16, byteorder='big')
-						break	
 	for fi in files:
 		for nspF in xci.hfs0:
 			if str(nspF._path)=="secure":
@@ -673,7 +662,11 @@ def gen_xci_parts_spec0(filepath,target_cnmt=None,cachefolder=None,keypatch=Fals
 							if crypto2>crypto1:
 								masterKeyRev=crypto2
 							if crypto2<=crypto1:	
-								masterKeyRev=crypto1								
+								masterKeyRev=crypto1	
+							from mtp_tools import get_nca_ticket
+								check,titleKey=get_nca_ticket(filepath,fi)
+								if check==False:
+									sys.exit("Can't verify titleckey")						
 							titleKeyDec = Keys.decryptTitleKey(titleKey, Keys.getMasterKeyIndex(int(masterKeyRev)))							
 							encKeyBlock = crypto.encrypt(titleKeyDec * 4)
 							if str(keypatch) != "False":
@@ -845,17 +838,6 @@ def gen_xci_parts_spec1(filepath,target_cnmt=None,cachefolder=None,keypatch=Fals
 	outf = open(outfile, 'w+b')		
 	outf.write(outheader)	
 	written=0
-	for nspF in xci.hfs0:
-		if str(nspF._path)=="secure":
-			for ticket in nspF:			
-				if type(ticket) == Ticket:
-					size=ticket.size			
-					size_pr=sq_tools.getSize(size)			
-					filename =  str(ticket._path)
-					tik=filename[:-20]				
-					if str(tik).upper() == str(titleid).upper():
-						titleKey = ticket.getTitleKeyBlock().to_bytes(16, byteorder='big')
-						break	
 	for fi in files:
 		for nspF in xci.hfs0:	
 			if str(nspF._path)=="secure":
@@ -878,7 +860,11 @@ def gen_xci_parts_spec1(filepath,target_cnmt=None,cachefolder=None,keypatch=Fals
 							if crypto2>crypto1:
 								masterKeyRev=crypto2
 							if crypto2<=crypto1:	
-								masterKeyRev=crypto1								
+								masterKeyRev=crypto1	
+							from mtp_tools import get_nca_ticket
+								check,titleKey=get_nca_ticket(filepath,fi)
+								if check==False:
+									sys.exit("Can't verify titleckey")				
 							titleKeyDec = Keys.decryptTitleKey(titleKey, Keys.getMasterKeyIndex(int(masterKeyRev)))							
 							encKeyBlock = crypto.encrypt(titleKeyDec * 4)
 							if str(keypatch) != "False":
