@@ -9,7 +9,7 @@ echo OPTION - CONFIGURATION
 echo ********************************************************
 echo Input "1" for AUTO-MODE OPTIONS
 echo Input "2" for GLOBAL AND MANUAL OPTIONS
-echo Input "3" to VERIFY KEYS.TXT 
+echo Input "3" to VERIFY KEYS.TXT
 echo Input "4" to UPDATE NUTDB
 echo Input "5" for INTERFACE OPTIONS
 echo Input "6" for SERVER OPTIONS
@@ -53,7 +53,7 @@ echo ********************************************************
 echo AUTO-MODE - CONFIGURATION
 echo ********************************************************
 echo Input "1" to change REPACK configuration
-echo Input "2" to change FOLDER'S TREATMENT 
+echo Input "2" to change FOLDER'S TREATMENT
 echo Input "3" to change RSV patching configuration
 echo Input "4" to change KEYGENERATION configuration
 echo.
@@ -161,7 +161,7 @@ if "%v_fold%"=="none" goto op_pfolder
 
 set v_fold="fi_rep=%v_fold%"
 set v_fold="%v_fold%"
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "61" -nl "set %v_fold%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "61" -nl "set %v_fold%"
 echo.
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "61" -nl "Line in config was changed to: "
 echo.
@@ -202,7 +202,7 @@ if "%v_RSV%"=="none" goto op_RSV
 
 set v_RSV="patchRSV=%v_RSV%"
 set v_RSV="%v_RSV%"
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "41" -nl "set %v_RSV%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "41" -nl "set %v_RSV%"
 echo.
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "41" -nl "Line in config was changed to: "
 echo.
@@ -217,7 +217,7 @@ echo PATCH IF KEYGENERATION IS BIGGER THAN
 echo ***************************************************************************
 echo CHANGE KEYGENERATION IF BIGGER THAN THE SET NUMBER(AUTO-MODE)
 echo ...........................................................................
-echo Changes the kegeneration and recalculates the keyblock to use a lower 
+echo Changes the kegeneration and recalculates the keyblock to use a lower
 echo masterkey to decrypt the nca.
 echo.
 echo Input "f" to not change the keygeneration
@@ -280,8 +280,8 @@ set v_KGEN="vkey=%v_KGEN%"
 set v_KGEN="%v_KGEN%"
 set v_CAPRSV="capRSV=%v_CAPRSV%"
 set v_CAPRSV="%v_CAPRSV%"
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "95" -nl "set %v_KGEN%" 
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "42" -nl "set %v_CAPRSV%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "95" -nl "set %v_KGEN%"
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "42" -nl "set %v_CAPRSV%"
 echo.
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "95" -nl "Line in config was changed to: "
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "42" -nl "Line in config was changed to: "
@@ -308,7 +308,7 @@ echo Input "10" to how to ORGANIZE output files
 echo Input "11" to set NEW MODE OR LEGACY MODE
 echo Input "12" to ROMANIZE names when using direct-multi
 echo Input "13" to TRANSLATE game description lines in file info
-echo Input "14" to change number of WORKERS IN THREADED OPERATIONS (TEMPORARLY DISABLED) 
+echo Input "14" to change number of WORKERS IN THREADED OPERATIONS (TEMPORARLY DISABLED)
 echo Input "15" to setup NSZ COMPRESSION USER PRESET
 echo Input "16" to setup COMPRESSED XCI EXPORT FORMAT
 echo.
@@ -356,10 +356,10 @@ goto sc3
 cls
 call :logo
 echo ********************************************************
-echo COLOR - CONFIGURATION                                
+echo COLOR - CONFIGURATION
 echo ********************************************************
 echo --------------------------------------------------------
-echo FOREGROUND COLOR (TEXT COLOR)                      
+echo FOREGROUND COLOR (TEXT COLOR)
 echo --------------------------------------------------------
 echo Input "1" to change text color to BRIGHT WHITE (DEFAULT)
 echo Input "2" to change text color to BLACK
@@ -499,7 +499,7 @@ if /i "%bs%"=="e" goto salida
 set v_wf="w_folder=%v_wf%"
 set v_wf="%v_wf%"
 
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "8" -nl "set %v_wf%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "8" -nl "set %v_wf%"
 echo.
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "8" -nl "Line in config was changed to: "
 echo.
@@ -530,7 +530,7 @@ if /i "%bs%"=="e" goto salida
 set v_of="fold_output=%v_of%"
 set v_of="%v_of%"
 
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "10" -nl "set %v_of%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "10" -nl "set %v_of%"
 echo.
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "10" -nl "Line in config was changed to: "
 echo.
@@ -580,11 +580,11 @@ set v_delta="%v_delta%"
 set v_delta2_="skdelta=%v_delta2_%"
 set v_delta2_="%v_delta2_%"
 
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "36" -nl "set %v_delta%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "36" -nl "set %v_delta%"
 echo.
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "36" -nl "Line in config was changed to: "
 echo.
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "37" -nl "set %v_delta2_%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "37" -nl "set %v_delta2_%"
 echo.
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "37" -nl "Line in config was changed to: "
 echo.
@@ -601,7 +601,7 @@ echo GENERATE ZIP FILES WITH KEYBLOCK AND FILE INFORMATION
 echo ...........................................................................
 echo.
 echo Input "1" to generate zip files
-echo Input "2" to not generate zip files (default configuration) 
+echo Input "2" to not generate zip files (default configuration)
 echo.
 echo Input "b" to return to GLOBAL OPTIONS
 echo Input "0" to return to CONFIG MENU
@@ -623,7 +623,7 @@ if "%v_gzip%"=="none" goto op_zip
 
 set v_gzip="zip_restore=%v_gzip%"
 set v_gzip="%v_gzip%"
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "78" -nl "set %v_gzip%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "78" -nl "set %v_gzip%"
 echo.
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "78" -nl "Line in config was changed to: "
 echo.
@@ -662,7 +662,7 @@ if "%v_exit%"=="none" goto op_aexit
 
 set v_exit="va_exit=%v_exit%"
 set v_exit="%v_exit%"
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "101" -nl "set %v_exit%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "101" -nl "set %v_exit%"
 echo.
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "101" -nl "Line in config was changed to: "
 echo.
@@ -699,7 +699,7 @@ if "%skipRSVprompt%"=="none" goto op_kgprompt
 
 set skipRSVprompt="skipRSVprompt=%skipRSVprompt%"
 set skipRSVprompt="%skipRSVprompt%"
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "108" -nl "set %skipRSVprompt%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "108" -nl "set %skipRSVprompt%"
 echo.
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "108" -nl "Line in config was changed to: "
 echo.
@@ -755,7 +755,7 @@ if "%v_buffer%"=="none" goto op_buffer
 
 set v_buffer="buffer=%v_buffer%"
 set v_buffer="%v_buffer%"
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "32" -nl "set %v_buffer%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "32" -nl "set %v_buffer%"
 echo.
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "32" -nl "Line in config was changed to: "
 echo.
@@ -775,7 +775,7 @@ echo Input "1" to change CARD FORMAT to exfat (Default)
 echo Input "2" to change CARD FORMAT to fat32 for SX OS (xc0 and ns0 files)
 echo Input "3" to change CARD FORMAT to fat32 for all CFW (archive folder)
 echo.
-echo Note: Archive folder option exports nsp files as folders and xci files 
+echo Note: Archive folder option exports nsp files as folders and xci files
 echo splitted files.
 echo.
 echo Input "b" to return to GLOBAL OPTIONS
@@ -806,13 +806,13 @@ if "%v_fat2%"=="none" goto op_fat
 
 set v_fat1="fatype=%v_fat1%"
 set v_fat1="%v_fat1%"
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "116" -nl "set %v_fat1%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "116" -nl "set %v_fat1%"
 echo.
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "116" -nl "Line in config was changed to: "
 echo.
 set v_fat2="fexport=%v_fat2%"
 set v_fat2="%v_fat2%"
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "117" -nl "set %v_fat2%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "117" -nl "set %v_fat2%"
 echo.
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "117" -nl "Line in config was changed to: "
 echo.
@@ -849,7 +849,7 @@ if "%v_oforg%"=="none" goto op_oforg
 
 set v_oforg="oforg=%v_oforg%"
 set v_oforg="%v_oforg%"
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "125" -nl "set %v_oforg%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "125" -nl "set %v_oforg%"
 echo.
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "125" -nl "Line in config was changed to: "
 echo.
@@ -886,7 +886,7 @@ if "%v_nscbmode%"=="none" goto op_nscbmode
 
 set v_nscbmode="NSBMODE=%v_nscbmode%"
 set v_nscbmode="%v_nscbmode%"
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "132" -nl "set %v_nscbmode%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "132" -nl "set %v_nscbmode%"
 echo.
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "132" -nl "Line in config was changed to: "
 echo.
@@ -923,7 +923,7 @@ if "%v_roma%"=="none" goto op_romanize
 
 set v_roma="romaji=%v_roma%"
 set v_roma="%v_roma%"
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "139" -nl "set %v_roma%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "139" -nl "set %v_roma%"
 echo.
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "139" -nl "Line in config was changed to: "
 echo.
@@ -962,7 +962,7 @@ if "%v_trans%"=="none" goto op_translate
 
 set v_trans="transnutdb=%v_trans%"
 set v_trans="%v_trans%"
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "147" -nl "set %v_trans%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "147" -nl "set %v_trans%"
 echo.
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "147" -nl "Line in config was changed to: "
 echo.
@@ -1021,7 +1021,7 @@ if "%v_workers%"=="none" goto op_threads
 
 set v_workers="workers=%v_workers%"
 set v_workers="%v_workers%"
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "153" -nl "set %v_workers%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "153" -nl "set %v_workers%"
 echo.
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "153" -nl "Line in config was changed to: "
 echo.
@@ -1061,7 +1061,7 @@ set v_nszlevels="%v_nszlevels%"
 if "%v_nszlevels%"=="none" echo WRONG CHOICE
 if "%v_nszlevels%"=="none" echo.
 if "%v_nszlevels%"=="none" goto op_NSZ1
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "158" -nl "set %v_nszlevels%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "158" -nl "set %v_nszlevels%"
 echo.
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "158" -nl "Line in config was changed to: "
 :op_NSZ2
@@ -1071,7 +1071,7 @@ echo INPUT NUMBER OF THREADS TO USE
 echo *******************************************************
 echo Input a number of threads to use between 0 and 4
 echo Notes:
-echo  + By using threads you may gain a little speed bump 
+echo  + By using threads you may gain a little speed bump
 echo    but you'll loose compression ratio
 echo  + Level 22 and 4 threads may run you out of memory
 echo  + For maximum threads level 17 compression is advised
@@ -1095,7 +1095,7 @@ set v_nszthreads="%v_nszthreads%"
 if "%v_nszthreads%"=="none" echo WRONG CHOICE
 if "%v_nszthreads%"=="none" echo.
 if "%v_nszthreads%"=="none" goto op_NSZ2
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "159" -nl "set %v_nszthreads%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "159" -nl "set %v_nszthreads%"
 echo.
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "159" -nl "Line in config was changed to: "
 pause
@@ -1136,7 +1136,7 @@ set v_xcz_export="%v_xcz_export%"
 if "%v_xcz_export%"=="none" echo WRONG CHOICE
 if "%v_xcz_export%"=="none" echo.
 if "%v_xcz_export%"=="none" goto op_NSZ3
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "160" -nl "set %v_xcz_export%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "160" -nl "set %v_xcz_export%"
 echo.
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "160" -nl "Line in config was changed to: "
 pause
@@ -1156,21 +1156,21 @@ REM fi_rep
 set "v_fold=multi"
 set v_fold="fi_rep=%v_fold%"
 set v_fold="%v_fold%"
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "61" -nl "set %v_fold%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "61" -nl "set %v_fold%"
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "61" -nl "Line in config was changed to: "
 
 REM v_RSV
 set "v_RSV=-pv false"
 set v_RSV="patchRSV=%v_RSV%"
 set v_RSV="%v_RSV%"
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "41" -nl "set %v_RSV%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "41" -nl "set %v_RSV%"
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "41" -nl "Line in config was changed to: "
 
 REM vkey
 set "v_KGEN=-kp false"
 set v_KGEN="vkey=%v_KGEN%"
 set v_KGEN="%v_KGEN%"
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "95" -nl "set %v_KGEN%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "95" -nl "set %v_KGEN%"
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "95" -nl "Line in config was changed to: "
 
 exit /B
@@ -1192,56 +1192,56 @@ REM w_folder
 set "v_wf=NSCB_temp"
 set v_wf="w_folder=%v_wf%"
 set v_wf="%v_wf%"
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "8" -nl "set %v_wf%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "8" -nl "set %v_wf%"
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "8" -nl "Line in config was changed to: "
 
 REM v_of
 set "v_of=NSCB_output"
 set v_of="fold_output=%v_of%"
 set v_of="%v_of%"
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "10" -nl "set %v_of%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "10" -nl "set %v_of%"
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "10" -nl "Line in config was changed to: "
 
 REM v_delta
 set "v_delta=--C_clean_ND"
 set v_delta="nf_cleaner=%v_delta%"
 set v_delta="%v_delta%"
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "36" -nl "set %v_delta%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "36" -nl "set %v_delta%"
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "36" -nl "Line in config was changed to: "
 
 REM v_delta2
 set "v_delta2_=-ND true"
 set v_delta2_="skdelta=%v_delta2_%"
 set v_delta2_="%v_delta2_%"
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "37" -nl "set %v_delta2_%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "37" -nl "set %v_delta2_%"
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "37" -nl "Line in config was changed to: "
 
 REM zip_restore
 set "v_gzip=false"
 set v_gzip="zip_restore=%v_gzip%"
 set v_gzip="%v_gzip%"
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "78" -nl "set %v_gzip%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "78" -nl "set %v_gzip%"
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "78" -nl "Line in config was changed to: "
 
 REM AUTO-EXIT
 set "v_exit=false"
 set v_exit="va_exit=%v_exit%"
 set v_exit="%v_exit%"
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "101" -nl "set %v_exit%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "101" -nl "set %v_exit%"
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "101" -nl "Line in config was changed to: "
 
 REM skipRSVprompt
 set "skipRSVprompt=false"
 set skipRSVprompt="skipRSVprompt=%skipRSVprompt%"
 set skipRSVprompt="%skipRSVprompt%"
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "108" -nl "set %skipRSVprompt%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "108" -nl "set %skipRSVprompt%"
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "108" -nl "Line in config was changed to: "
 
 REM buffer
 set "v_buffer=-b 65536"
 set v_buffer="buffer=%v_buffer%"
 set v_buffer="%v_buffer%"
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "32" -nl "set %v_buffer%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "32" -nl "set %v_buffer%"
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "32" -nl "Line in config was changed to: "
 
 
@@ -1249,61 +1249,61 @@ REM FAT format
 set "v_fat1=-fat exfat"
 set v_fat1="fatype=%v_fat1%"
 set v_fat1="%v_fat1%"
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "116" -nl "set %v_fat1%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "116" -nl "set %v_fat1%"
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "116" -nl "Line in config was changed to: "
 
 set "v_fat2=-fx files"
 set v_fat2="fexport=%v_fat2%"
 set v_fat2="%v_fat2%"
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "117" -nl "set %v_fat2%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "117" -nl "set %v_fat2%"
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "117" -nl "Line in config was changed to: "
 
 REM OUTPUT ORGANIZING format
 set "v_oforg=inline"
 set v_oforg="oforg=%v_oforg%"
 set v_oforg="%v_oforg%"
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "125" -nl "set %v_oforg%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "125" -nl "set %v_oforg%"
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "125" -nl "Line in config was changed to: "
 
 REM NSCB MODE
 set "v_nscbmode=new"
 set v_nscbmode="NSBMODE=%v_nscbmode%"
 set v_nscbmode="%v_nscbmode%"
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "132" -nl "set %v_nscbmode%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "132" -nl "set %v_nscbmode%"
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "132" -nl "Line in config was changed to: "
 
 REM ROMAJI
 set "v_roma=TRUE"
 set v_roma="romaji=%v_roma%"
 set v_roma="%v_roma%"
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "139" -nl "set %v_roma%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "139" -nl "set %v_roma%"
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "139" -nl "Line in config was changed to: "
 
 REM TRANSLATE
 set "v_trans=FALSE"
 set v_trans="transnutdb=%v_trans%"
 set v_trans="%v_trans%"
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "147" -nl "set %v_trans%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "147" -nl "set %v_trans%"
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "147" -nl "Line in config was changed to: "
 
 REM WORKERS
 set v_workers="workers=-threads 1"
 set v_workers="%v_workers%"
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "153" -nl "set %v_workers%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "153" -nl "set %v_workers%"
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "153" -nl "Line in config was changed to: "
 
 REM COMPRESSION
 set "v_nszlevels=17"
 set v_nszlevels="compression_lv=%v_nszlevels%"
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "158" -nl "set %v_nszlevels%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "158" -nl "set %v_nszlevels%"
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "158" -nl "Line in config was changed to: "
 set "v_nszlevels=0"
 set v_nszlevels="compression_threads=%v_nszlevels%"
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "159" -nl "set %v_nszlevels%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "159" -nl "set %v_nszlevels%"
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "159" -nl "Line in config was changed to: "
 set "v_xcz_export=xcz"
 set v_xcz_export="xci_export=%v_xcz_export%"
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "160" -nl "set %v_xcz_export%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "160" -nl "set %v_xcz_export%"
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "160" -nl "Line in config was changed to: "
 
 exit /B
@@ -1479,7 +1479,7 @@ echo ********************************************************
 echo INTERFACE - CONFIGURATION
 echo ********************************************************
 echo Input "1" to change STARTUP VISIBILITY configuration
-echo Input "2" to choose a BROWSER for the interface 
+echo Input "2" to choose a BROWSER for the interface
 echo Input "3" to deactivate VIDEO PLAYBACK
 echo Input "4" to setup PORT
 echo Input "5" to setup HOST
@@ -1538,7 +1538,7 @@ if "%v_interface%"=="none" goto op_interface_consolevisibility
 
 set v_interface="start_minimized=%v_interface%"
 set v_interface="%v_interface%"
-%pycommand% "%listmanager%" -cl "%opt_interface%" -ln "17" -nl "set %v_interface%" 
+%pycommand% "%listmanager%" -cl "%opt_interface%" -ln "17" -nl "set %v_interface%"
 echo.
 %pycommand% "%listmanager%" -rl "%opt_interface%" -ln "17" -nl "Line in config was changed to: "
 echo.
@@ -1553,7 +1553,7 @@ echo CHOOSE BROWSER TO STARTUP INTERFACE
 echo ***************************************************************************
 echo Selects the browser used to startup the interface:
 echo Options:
-echo 1. Auto. Order is set in base of ztools\chromium or browser installed in 
+echo 1. Auto. Order is set in base of ztools\chromium or browser installed in
 echo system. This is autoset by squirrel in the following order:
 echo    I.   ztools\chromium (Chromium portable\Slimjet portable)
 echo    II.  Chrome or Chromium installed on system
@@ -1563,8 +1563,8 @@ echo 3. Set a raw path to a pure chromium browser by one of the following method
 echo    I.   Absolute path to your browser, ending by .exe
 echo    II.  Absolute path to a .lnk file (windows shortcut)
 echo    III. Name of a .lnk file in ztools\chromium (ending by .lnk)
-echo         Example: brave.lnk 
-echo         This will read ztools\chromium\brave.lnk and redirect to the exe 
+echo         Example: brave.lnk
+echo         This will read ztools\chromium\brave.lnk and redirect to the exe
 echo         path launching brave browser
 echo.
 echo Input "1" or "d" to set variable to AUTO
@@ -1589,7 +1589,7 @@ if /i "%bs%"=="e" goto salida
 set v_interface_browser="browserpath=%v_interface_browser%"
 set v_interface_browser="%v_interface_browser%"
 
-%pycommand% "%listmanager%" -cl "%opt_interface%" -ln "31" -nl "set %v_interface_browser%" 
+%pycommand% "%listmanager%" -cl "%opt_interface%" -ln "31" -nl "set %v_interface_browser%"
 echo.
 %pycommand% "%listmanager%" -rl "%opt_interface%" -ln "31" -nl "Line in config was changed to: "
 echo.
@@ -1603,7 +1603,7 @@ echo ***************************************************************************
 echo DEACTIVATE VIDEO PLAYBACK
 echo ***************************************************************************
 echo Deactivates HLS player for Nintendo.com videos.
-echo This is meant for old computers that may freeze with the HLS javascript 
+echo This is meant for old computers that may freeze with the HLS javascript
 echo player
 echo.
 echo Input "1"  to ENABLE video playback
@@ -1630,7 +1630,7 @@ if "%v_video_playback%"=="none" goto op_interface_video_playback
 
 set v_video_playback="videoplayback=%v_video_playback%"
 set v_video_playback="%v_video_playback%"
-%pycommand% "%listmanager%" -cl "%opt_interface%" -ln "35" -nl "set %v_video_playback%" 
+%pycommand% "%listmanager%" -cl "%opt_interface%" -ln "35" -nl "set %v_video_playback%"
 echo.
 %pycommand% "%listmanager%" -rl "%opt_interface%" -ln "35" -nl "Line in config was changed to: "
 echo.
@@ -1643,7 +1643,7 @@ call :logo
 echo ***************************************************************************
 echo CHOOSE PORT FOR INSTERFACE
 echo ***************************************************************************
-echo. 
+echo.
 echo Note "rg8000" locates an open port between 8000 an 8999, it allows to open
 echo several inteface windows at the same time. This is the default parameter
 echo.
@@ -1666,7 +1666,7 @@ if /i "%bs%"=="e" goto salida
 set v_interface_port="port=%v_interface_port%"
 set v_interface_port="%v_interface_port%"
 
-%pycommand% "%listmanager%" -cl "%opt_interface%" -ln "48" -nl "set %v_interface_port%" 
+%pycommand% "%listmanager%" -cl "%opt_interface%" -ln "48" -nl "set %v_interface_port%"
 echo.
 %pycommand% "%listmanager%" -rl "%opt_interface%" -ln "48" -nl "Line in config was changed to: "
 echo.
@@ -1682,8 +1682,8 @@ echo ***************************************************************************
 echo Localhost. Interface is only visible locally (default)
 echo 0.0.0.0. Inteface can be visible on the same network
 echo.
-echo Input "1" or "D" to setup host as LOCALHOST 
-echo Input "2" to setup host as 0.0.0.0 
+echo Input "1" or "D" to setup host as LOCALHOST
+echo Input "2" to setup host as 0.0.0.0
 echo.
 echo Input "0" to return to CONFIG MENU
 echo Input "b" to return to INTERFACE MENU
@@ -1705,7 +1705,7 @@ if "%v_interface_host%"=="none" goto op_interface_host
 
 set v_interface_host="host=%v_interface_host%"
 set v_interface_host="%v_interface_host%"
-%pycommand% "%listmanager%" -cl "%opt_interface%" -ln "55" -nl "set %v_interface_host%" 
+%pycommand% "%listmanager%" -cl "%opt_interface%" -ln "55" -nl "set %v_interface_host%"
 echo.
 %pycommand% "%listmanager%" -rl "%opt_interface%" -ln "55" -nl "Line in config was changed to: "
 echo.
@@ -1745,7 +1745,7 @@ if "%v_interface_noconsole%"=="none" goto op_interface_noconsole
 
 set v_interface_noconsole="noconsole=%v_interface_noconsole%"
 set v_interface_noconsole="%v_interface_noconsole%"
-%pycommand% "%listmanager%" -cl "%opt_interface%" -ln "61" -nl "set %v_interface_noconsole%" 
+%pycommand% "%listmanager%" -cl "%opt_interface%" -ln "61" -nl "set %v_interface_noconsole%"
 echo.
 %pycommand% "%listmanager%" -rl "%opt_interface%" -ln "61" -nl "Line in config was changed to: "
 echo.
@@ -1758,35 +1758,35 @@ call :logo
 ::Startup
 set v_interface="start_minimized=no"
 set v_interface="%v_interface%"
-%pycommand% "%listmanager%" -cl "%opt_interface%" -ln "17" -nl "set %v_interface%" 
+%pycommand% "%listmanager%" -cl "%opt_interface%" -ln "17" -nl "set %v_interface%"
 %pycommand% "%listmanager%" -rl "%opt_interface%" -ln "17" -nl "Line in config was changed to: "
 echo.
 ::Browserpath
 set v_interface_browser="browserpath=auto"
 set v_interface_browser="%v_interface_browser%"
-%pycommand% "%listmanager%" -cl "%opt_interface%" -ln "31" -nl "set %v_interface_browser%" 
+%pycommand% "%listmanager%" -cl "%opt_interface%" -ln "31" -nl "set %v_interface_browser%"
 %pycommand% "%listmanager%" -rl "%opt_interface%" -ln "31" -nl "Line in config was changed to: "
 echo.
 ::Video playback
 set v_video_playback="videoplayback=true"
 set v_video_playback="%v_video_playback%"
-%pycommand% "%listmanager%" -cl "%opt_interface%" -ln "35" -nl "set %v_video_playback%" 
+%pycommand% "%listmanager%" -cl "%opt_interface%" -ln "35" -nl "set %v_video_playback%"
 %pycommand% "%listmanager%" -rl "%opt_interface%" -ln "35" -nl "Line in config was changed to: "
 ::Port
 set v_interface_port="port=rg8000"
 set v_interface_port="%v_interface_port%"
-%pycommand% "%listmanager%" -cl "%opt_interface%" -ln "48" -nl "set %v_interface_port%" 
+%pycommand% "%listmanager%" -cl "%opt_interface%" -ln "48" -nl "set %v_interface_port%"
 %pycommand% "%listmanager%" -rl "%opt_interface%" -ln "48" -nl "Line in config was changed to: "
 ::Host
 set v_interface_host="host=localhost"
 set v_interface_host="%v_interface_host%"
-%pycommand% "%listmanager%" -cl "%opt_interface%" -ln "55" -nl "set %v_interface_host%" 
+%pycommand% "%listmanager%" -cl "%opt_interface%" -ln "55" -nl "set %v_interface_host%"
 %pycommand% "%listmanager%" -rl "%opt_interface%" -ln "55" -nl "Line in config was changed to: "
 
 ::NoConsole
 set v_interface_noconsole="noconsole=true"
 set v_interface_noconsole="%v_interface_noconsole%"
-%pycommand% "%listmanager%" -cl "%opt_interface%" -ln "61" -nl "set %v_interface_noconsole%" 
+%pycommand% "%listmanager%" -cl "%opt_interface%" -ln "61" -nl "set %v_interface_noconsole%"
 %pycommand% "%listmanager%" -rl "%opt_interface%" -ln "61" -nl "Line in config was changed to: "
 pause
 goto sc1
@@ -1857,7 +1857,7 @@ if "%v_server_vis%"=="none" goto op_server_consolevisibility
 
 set v_server_vis="start_minimized=%v_server_vis%"
 set v_server_vis="%v_server_vis%"
-%pycommand% "%listmanager%" -cl "%opt_server%" -ln "17" -nl "set %v_server_vis%" 
+%pycommand% "%listmanager%" -cl "%opt_server%" -ln "17" -nl "set %v_server_vis%"
 echo.
 %pycommand% "%listmanager%" -rl "%opt_server%" -ln "17" -nl "Line in config was changed to: "
 echo.
@@ -1871,7 +1871,7 @@ echo ***************************************************************************
 echo DEACTIVATE VIDEO PLAYBACK
 echo ***************************************************************************
 echo Deactivates HLS player for Nintendo.com videos.
-echo This is meant for old computers that may freeze with the HLS javascript 
+echo This is meant for old computers that may freeze with the HLS javascript
 echo player
 echo.
 echo Input "1"  to ENABLE video playback
@@ -1898,7 +1898,7 @@ if "%v_video_playback%"=="none" goto op_server_video_playback
 
 set v_video_playback="videoplayback=%v_video_playback%"
 set v_video_playback="%v_video_playback%"
-%pycommand% "%listmanager%" -cl "%opt_server%" -ln "21" -nl "set %v_video_playback%" 
+%pycommand% "%listmanager%" -cl "%opt_server%" -ln "21" -nl "set %v_video_playback%"
 echo.
 %pycommand% "%listmanager%" -rl "%opt_server%" -ln "21" -nl "Line in config was changed to: "
 echo.
@@ -1911,7 +1911,7 @@ call :logo
 echo ***************************************************************************
 echo CHOOSE PORT FOR SERVER
 echo ***************************************************************************
-echo. 
+echo.
 echo Note "rg8000" locates an open port between 8000 an 8999, it allows to open
 echo several inteface windows at the same time. This is the default parameter
 echo.
@@ -1934,7 +1934,7 @@ if /i "%bs%"=="e" goto salida
 set v_server_port="port=%v_server_port%"
 set v_server_port="%v_server_port%"
 
-%pycommand% "%listmanager%" -cl "%opt_server%" -ln "29" -nl "set %v_server_port%" 
+%pycommand% "%listmanager%" -cl "%opt_server%" -ln "29" -nl "set %v_server_port%"
 echo.
 %pycommand% "%listmanager%" -rl "%opt_server%" -ln "29" -nl "Line in config was changed to: "
 echo.
@@ -1950,8 +1950,8 @@ echo ***************************************************************************
 echo Localhost. Server is only visible locally (default)
 echo 0.0.0.0. Inteface can be visible on the same network
 echo.
-echo Input "1" or "D" to setup host as LOCALHOST 
-echo Input "2" to setup host as 0.0.0.0 
+echo Input "1" or "D" to setup host as LOCALHOST
+echo Input "2" to setup host as 0.0.0.0
 echo.
 echo Input "0" to return to CONFIG MENU
 echo Input "b" to return to SERVER MENU
@@ -1973,7 +1973,7 @@ if "%v_server_host%"=="none" goto op_server_host
 
 set v_server_host="host=%v_server_host%"
 set v_server_host="%v_server_host%"
-%pycommand% "%listmanager%" -cl "%opt_server%" -ln "36" -nl "set %v_server_host%" 
+%pycommand% "%listmanager%" -cl "%opt_server%" -ln "36" -nl "set %v_server_host%"
 echo.
 %pycommand% "%listmanager%" -rl "%opt_server%" -ln "36" -nl "Line in config was changed to: "
 echo.
@@ -2013,7 +2013,7 @@ if "%v_server_noconsole%"=="none" goto op_server_noconsole
 
 set v_server_noconsole="noconsole=%v_server_noconsole%"
 set v_server_noconsole="%v_server_noconsole%"
-%pycommand% "%listmanager%" -cl "%opt_server%" -ln "42" -nl "set %v_server_noconsole%" 
+%pycommand% "%listmanager%" -cl "%opt_server%" -ln "42" -nl "set %v_server_noconsole%"
 echo.
 %pycommand% "%listmanager%" -rl "%opt_server%" -ln "42" -nl "Line in config was changed to: "
 echo.
@@ -2028,7 +2028,7 @@ echo SSL PROTOCOL
 echo ***************************************************************************
 echo If true the server will be serve via https: if there's a properly signed
 echo certificate.pem and key.pem file in zconfig. If those files are not found
-echo squirrel will fallback to http: 
+echo squirrel will fallback to http:
 echo.
 echo Input "1" or "D" to SSL OFF (DEFAULT)
 echo Input "2" to setup SSL ON
@@ -2053,7 +2053,7 @@ if "%v_server_SSL%"=="none" goto op_server_ssl
 
 set v_server_SSL="ssl=%v_server_SSL%"
 set v_server_SSL="%v_server_SSL%"
-%pycommand% "%listmanager%" -cl "%opt_server%" -ln "48" -nl "set %v_server_SSL%" 
+%pycommand% "%listmanager%" -cl "%opt_server%" -ln "48" -nl "set %v_server_SSL%"
 echo.
 %pycommand% "%listmanager%" -rl "%opt_server%" -ln "48" -nl "Line in config was changed to: "
 echo.
@@ -2066,33 +2066,33 @@ call :logo
 ::Startup
 set v_interface="start_minimized=no"
 set v_interface="%v_interface%"
-%pycommand% "%listmanager%" -cl "%opt_server%" -ln "17" -nl "set %v_interface%" 
+%pycommand% "%listmanager%" -cl "%opt_server%" -ln "17" -nl "set %v_interface%"
 %pycommand% "%listmanager%" -rl "%opt_server%" -ln "17" -nl "Line in config was changed to: "
 echo.
 ::Video playback
 set v_video_playback="videoplayback=true"
 set v_video_playback="%v_video_playback%"
-%pycommand% "%listmanager%" -cl "%opt_server%" -ln "21" -nl "set %v_video_playback%" 
+%pycommand% "%listmanager%" -cl "%opt_server%" -ln "21" -nl "set %v_video_playback%"
 %pycommand% "%listmanager%" -rl "%opt_server%" -ln "21" -nl "Line in config was changed to: "
 ::Port
 set v_interface_port="port=rg8000"
 set v_interface_port="%v_interface_port%"
-%pycommand% "%listmanager%" -cl "%opt_server%" -ln "29" -nl "set %v_interface_port%" 
+%pycommand% "%listmanager%" -cl "%opt_server%" -ln "29" -nl "set %v_interface_port%"
 %pycommand% "%listmanager%" -rl "%opt_server%" -ln "29" -nl "Line in config was changed to: "
 ::Host
 set v_interface_host="host=localhost"
 set v_interface_host="%v_interface_host%"
-%pycommand% "%listmanager%" -cl "%opt_server%" -ln "36" -nl "set %v_interface_host%" 
+%pycommand% "%listmanager%" -cl "%opt_server%" -ln "36" -nl "set %v_interface_host%"
 %pycommand% "%listmanager%" -rl "%opt_server%" -ln "36" -nl "Line in config was changed to: "
 ::NoConsole
 set v_interface_noconsole="noconsole=true"
 set v_interface_noconsole="%v_interface_noconsole%"
-%pycommand% "%listmanager%" -cl "%opt_server%" -ln "42" -nl "set %v_interface_noconsole%" 
+%pycommand% "%listmanager%" -cl "%opt_server%" -ln "42" -nl "set %v_interface_noconsole%"
 %pycommand% "%listmanager%" -rl "%opt_server%" -ln "42" -nl "Line in config was changed to: "
 ::SSL
 set v_server_SSL="ssl=false"
 set v_server_SSL="%v_server_SSL%"
-%pycommand% "%listmanager%" -cl "%opt_server%" -ln "48" -nl "set %v_server_SSL%" 
+%pycommand% "%listmanager%" -cl "%opt_server%" -ln "48" -nl "set %v_server_SSL%"
 %pycommand% "%listmanager%" -rl "%opt_server%" -ln "48" -nl "Line in config was changed to: "
 
 pause
@@ -2152,7 +2152,7 @@ echo ***************************************************************************
 echo ACTIVATE FILE VERIFICATION PRE-INSTALLATION
 echo ***************************************************************************
 echo False: Verification deactivated
-echo Level 2 verification: Nca are readable, no files missing, titlekey is 
+echo Level 2 verification: Nca are readable, no files missing, titlekey is
 echo correct and signature 1 is from a legit VERIFIABLE origin. (default)
 echo Hash: Level 2 verification + Hash verification
 echo.
@@ -2181,7 +2181,7 @@ if "%v_mtp_verification%"=="none" goto op_MTP_verification
 
 set v_mtp_verification="MTP_verification=%v_mtp_verification%"
 set v_mtp_verification="%v_mtp_verification%"
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "166" -nl "set %v_mtp_verification%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "166" -nl "set %v_mtp_verification%"
 echo.
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "166" -nl "Line in config was changed to: "
 echo.
@@ -2218,7 +2218,7 @@ if "%v_MTP_prioritize_NSZ%"=="none" goto op_MTP_prioritize_NSZ
 
 set v_MTP_prioritize_NSZ="MTP_prioritize_NSZ=%v_MTP_prioritize_NSZ%"
 set v_MTP_prioritize_NSZ="%v_MTP_prioritize_NSZ%"
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "167" -nl "set %v_MTP_prioritize_NSZ%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "167" -nl "set %v_MTP_prioritize_NSZ%"
 echo.
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "167" -nl "Line in config was changed to: "
 echo.
@@ -2255,7 +2255,7 @@ if "%v_MTP_exclude_xci_autinst%"=="none" goto op_MTP_exclude_xci_autinst
 
 set v_MTP_exclude_xci_autinst="MTP_exclude_xci_autinst=%v_MTP_exclude_xci_autinst%"
 set v_MTP_exclude_xci_autinst="%v_MTP_exclude_xci_autinst%"
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "168" -nl "set %v_MTP_exclude_xci_autinst%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "168" -nl "set %v_MTP_exclude_xci_autinst%"
 echo.
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "168" -nl "Line in config was changed to: "
 echo.
@@ -2269,7 +2269,7 @@ echo ***************************************************************************
 echo AUTOCHANGE MEDIUM ACCORDING TO SPACE ON DEVICE
 echo ***************************************************************************
 echo If true changes between SD and EMMC when the space is low in the selected
-echo medium. If false skips the intallation. 
+echo medium. If false skips the intallation.
 echo.
 echo Input "1" or "D" to CHANGE MEDIUM according to space on device
 echo Input "2" to NOT CHANGE MEDIUM according to space on device
@@ -2294,7 +2294,7 @@ if "%v_MTP_aut_ch_medium%"=="none" goto op_MTP_aut_ch_medium
 
 set v_MTP_aut_ch_medium="MTP_aut_ch_medium=%v_MTP_aut_ch_medium%"
 set v_MTP_aut_ch_medium="%v_MTP_aut_ch_medium%"
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "169" -nl "set %v_MTP_aut_ch_medium%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "169" -nl "set %v_MTP_aut_ch_medium%"
 echo.
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "169" -nl "Line in config was changed to: "
 echo.
@@ -2309,7 +2309,7 @@ echo CHECK FIRMWARE ON DEVICE AND ON FILE BEING PROCESSEDD
 echo ***************************************************************************
 echo.
 echo Input "1" or "D" to NOT CHECK FIRMWARE (default)
-echo Input "2" to CHECK FIRMWARE 
+echo Input "2" to CHECK FIRMWARE
 echo.
 echo Input "0" to return to CONFIG MENU
 echo Input "b" to return to MTP MENU
@@ -2331,7 +2331,7 @@ if "%v_MTP_chk_fw%"=="none" goto op_MTP_chk_fw
 
 set v_MTP_chk_fw="MTP_chk_fw=%v_MTP_chk_fw%"
 set v_MTP_chk_fw="%v_MTP_chk_fw%"
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "170" -nl "set %v_MTP_chk_fw%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "170" -nl "set %v_MTP_chk_fw%"
 echo.
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "170" -nl "Line in config was changed to: "
 echo.
@@ -2373,7 +2373,7 @@ if "%v_MTP_prepatch_kg%"=="none" goto op_MTP_prepatch_kg
 
 set v_MTP_prepatch_kg="MTP_chk_fw=%v_MTP_prepatch_kg%"
 set v_MTP_prepatch_kg="%v_MTP_prepatch_kg%"
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "171" -nl "set %v_MTP_prepatch_kg%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "171" -nl "set %v_MTP_prepatch_kg%"
 echo.
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "171" -nl "Line in config was changed to: "
 echo.
@@ -2390,7 +2390,7 @@ echo If activated if a base game is in the device the installation will be skipp
 echo If deactivated the installation will be overwritten.
 echo.
 echo Input "1" or "D" to CHECK AND SKIP GAMES ALREADY INSTALLED (default)
-echo Input "2" to NOT check and skip games already installed 
+echo Input "2" to NOT check and skip games already installed
 echo.
 echo Input "0" to return to CONFIG MENU
 echo Input "b" to return to MTP MENU
@@ -2412,7 +2412,7 @@ if "%v_MTP_prechk_Base%"=="none" goto op_MTP_prechk_Base
 
 set v_MTP_prechk_Base="MTP_prechk_Base=%v_MTP_prechk_Base%"
 set v_MTP_prechk_Base="%v_MTP_prechk_Base%"
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "173" -nl "set %v_MTP_prechk_Base%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "173" -nl "set %v_MTP_prechk_Base%"
 echo.
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "173" -nl "Line in config was changed to: "
 echo.
@@ -2425,7 +2425,7 @@ call :logo
 echo ***************************************************************************
 echo CHECK IF UPDATES AND ARE ALREADY INSTALLED IN DEVICE
 echo ***************************************************************************
-echo If activated checks if an update or dlc is already in the device if the 
+echo If activated checks if an update or dlc is already in the device if the
 echo version is lower to the one pushed it deletes the old one pre-installation
 echo to reclaim space before the installation process, if the version in the
 echo device is equal or higher installation is skipped.
@@ -2433,7 +2433,7 @@ echo If deactivated it allows to install order updates or dlc as well as overwri
 echo updates with the same version number.
 echo.
 echo Input "1" or "D" to NOT CHECK AND SKIP updates or dlc already installed (default)
-echo Input "2" to CHECK AND SKIP updates or dlc already installed 
+echo Input "2" to CHECK AND SKIP updates or dlc already installed
 echo.
 echo Input "0" to return to CONFIG MENU
 echo Input "b" to return to MTP MENU
@@ -2455,7 +2455,7 @@ if "%v_MTP_prechk_Upd%"=="none" goto op_MTP_prechk_Upd
 
 set v_MTP_prechk_Upd="MTP_prechk_Upd=%v_MTP_prechk_Upd%"
 set v_MTP_prechk_Upd="%v_MTP_prechk_Upd%"
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "174" -nl "set %v_MTP_prechk_Upd%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "174" -nl "set %v_MTP_prechk_Upd%"
 echo.
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "174" -nl "Line in config was changed to: "
 echo.
@@ -2492,7 +2492,7 @@ if "%v_MTP_saves_Inline%"=="none" goto op_MTP_saves_Inline
 
 set v_MTP_saves_Inline="MTP_saves_Inline=%v_MTP_saves_Inline%"
 set v_MTP_saves_Inline="%v_MTP_saves_Inline%"
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "176" -nl "set %v_MTP_saves_Inline%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "176" -nl "set %v_MTP_saves_Inline%"
 echo.
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "176" -nl "Line in config was changed to: "
 echo.
@@ -2531,7 +2531,7 @@ if "%v_MTP_saves_AddTIDandVer%"=="none" goto op_MTP_saves_AddTIDandVer
 
 set v_MTP_saves_AddTIDandVer="MTP_saves_AddTIDandVer=%v_MTP_saves_AddTIDandVer%"
 set v_MTP_saves_AddTIDandVer="%v_MTP_saves_AddTIDandVer%"
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "177" -nl "set %v_MTP_saves_AddTIDandVer%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "177" -nl "set %v_MTP_saves_AddTIDandVer%"
 echo.
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "177" -nl "Line in config was changed to: "
 echo.
@@ -2550,7 +2550,7 @@ echo better compatibility.
 echo.
 echo The game is copied gaining ownership to the cache folder, which also avoids
 echo quota issues if TRUECOPY is enabled.
-echo If TRUECOPY is disabled the game is added to the cache folder as symlink, 
+echo If TRUECOPY is disabled the game is added to the cache folder as symlink,
 echo this allows the file to be called with the auth token but can present quota
 echo issues if the link was shared.
 echo.
@@ -2577,7 +2577,7 @@ if "%v_op_MTP_pdrive_truecopy%"=="none" goto op_MTP_pdrive_truecopy
 
 set v_op_MTP_pdrive_truecopy="MTP_pdrive_truecopy=%v_op_MTP_pdrive_truecopy%"
 set v_op_MTP_pdrive_truecopy="%v_op_MTP_pdrive_truecopy%"
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "179" -nl "set %v_op_MTP_pdrive_truecopy%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "179" -nl "set %v_op_MTP_pdrive_truecopy%"
 echo.
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "179" -nl "Line in config was changed to: "
 echo.
@@ -2616,7 +2616,7 @@ if "%v_MTP_standard_crypto%"=="none" goto op_MTP_standard_crypto
 
 set v_MTP_standard_crypto="MTP_stc_installs=%v_MTP_standard_crypto%"
 set v_MTP_standard_crypto="%v_MTP_standard_crypto%"
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "181" -nl "set %v_MTP_standard_crypto%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "181" -nl "set %v_MTP_standard_crypto%"
 echo.
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "181" -nl "Line in config was changed to: "
 echo.
@@ -2657,7 +2657,7 @@ if "%v_MTP_ptch_install_spec%"=="none" goto op_MTP_ptch_install_spec
 
 set v_MTP_ptch_install_spec="MTP_ptch_inst_spec=%v_MTP_ptch_install_spec%"
 set v_MTP_ptch_install_spec="%v_MTP_ptch_install_spec%"
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "182" -nl "set %v_MTP_ptch_install_spec%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "182" -nl "set %v_MTP_ptch_install_spec%"
 echo.
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "182" -nl "Line in config was changed to: "
 echo.
@@ -2670,67 +2670,67 @@ call :logo
 ::MTP_verification
 set v_mtp_verification="MTP_verification=True"
 set v_mtp_verification="%v_mtp_verification%"
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "166" -nl "set %v_mtp_verification%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "166" -nl "set %v_mtp_verification%"
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "166" -nl "Line in config was changed to: "
 ::MTP_prioritize_NSZ
 set v_MTP_prioritize_NSZ="MTP_prioritize_NSZ=True"
 set v_MTP_prioritize_NSZ="%v_MTP_prioritize_NSZ%"
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "167" -nl "set %v_MTP_prioritize_NSZ%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "167" -nl "set %v_MTP_prioritize_NSZ%"
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "167" -nl "Line in config was changed to: "
 ::MTP_exclude_xci_autinst
 set v_MTP_exclude_xci_autinst="MTP_exclude_xci_autinst=True"
 set v_MTP_exclude_xci_autinst="%v_MTP_exclude_xci_autinst%"
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "168" -nl "set %v_MTP_exclude_xci_autinst%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "168" -nl "set %v_MTP_exclude_xci_autinst%"
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "168" -nl "Line in config was changed to: "
 ::MTP_aut_ch_medium
 set v_MTP_aut_ch_medium="MTP_aut_ch_medium=True"
 set v_MTP_aut_ch_medium="%v_MTP_aut_ch_medium%"
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "169" -nl "set %v_MTP_aut_ch_medium%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "169" -nl "set %v_MTP_aut_ch_medium%"
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "169" -nl "Line in config was changed to: "
 ::MTP_chk_fw
 set v_MTP_chk_fw="MTP_chk_fw=False"
 set v_MTP_chk_fw="%v_MTP_chk_fw%"
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "170" -nl "set %v_MTP_chk_fw%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "170" -nl "set %v_MTP_chk_fw%"
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "170" -nl "Line in config was changed to: "
 ::MTP_prepatch_kg
 set v_MTP_prepatch_kg="MTP_chk_fw=False"
 set v_MTP_prepatch_kg="%v_MTP_prepatch_kg%"
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "171" -nl "set %v_MTP_prepatch_kg%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "171" -nl "set %v_MTP_prepatch_kg%"
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "171" -nl "Line in config was changed to: "
 ::MTP_prechk_Base
 set v_MTP_prechk_Base="MTP_prechk_Base=True"
 set v_MTP_prechk_Base="%v_MTP_prechk_Base%"
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "173" -nl "set %v_MTP_prechk_Base%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "173" -nl "set %v_MTP_prechk_Base%"
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "173" -nl "Line in config was changed to: "
 ::MTP_prechk_Upd
 set v_MTP_prechk_Upd="MTP_prechk_Upd=False"
 set v_MTP_prechk_Upd="%v_MTP_prechk_Upd%"
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "174" -nl "set %v_MTP_prechk_Upd%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "174" -nl "set %v_MTP_prechk_Upd%"
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "174" -nl "Line in config was changed to: "
 ::MTP_saves_Inline
 set v_MTP_saves_Inline="MTP_saves_Inline=False"
 set v_MTP_saves_Inline="%v_MTP_saves_Inline%"
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "176" -nl "set %v_MTP_saves_Inline%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "176" -nl "set %v_MTP_saves_Inline%"
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "176" -nl "Line in config was changed to: "
 ::MTP_saves_AddTIDandVer
 set v_MTP_saves_AddTIDandVer="MTP_saves_AddTIDandVer=False"
 set v_MTP_saves_AddTIDandVer="%v_MTP_saves_AddTIDandVer%"
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "177" -nl "set %v_MTP_saves_AddTIDandVer%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "177" -nl "set %v_MTP_saves_AddTIDandVer%"
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "177" -nl "Line in config was changed to: "
 ::MTP_pdrive_truecopy
 set v_op_MTP_pdrive_truecopy="MTP_pdrive_truecopy=True"
 set v_op_MTP_pdrive_truecopy="%v_op_MTP_pdrive_truecopy%"
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "179" -nl "set %v_op_MTP_pdrive_truecopy%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "179" -nl "set %v_op_MTP_pdrive_truecopy%"
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "179" -nl "Line in config was changed to: "
 ::MTP_standard_crypto
 set v_MTP_standard_crypto="MTP_stc_installs=False"
 set v_MTP_standard_crypto="%v_MTP_standard_crypto%"
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "181" -nl "set %v_MTP_standard_crypto%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "181" -nl "set %v_MTP_standard_crypto%"
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "181" -nl "Line in config was changed to: "
 ::MTP_ptch_install_spec
 set v_MTP_ptch_install_spec="MTP_ptch_inst_spec=spec1"
 set v_MTP_ptch_install_spec="%v_MTP_ptch_install_spec%"
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "182" -nl "set %v_MTP_ptch_install_spec%" 
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "182" -nl "set %v_MTP_ptch_install_spec%"
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "182" -nl "Line in config was changed to: "
 pause
 goto sc1
@@ -2739,12 +2739,12 @@ goto sc1
 exit /B
 
 :logo
-ECHO                                        __          _ __    __         
+ECHO                                        __          _ __    __
 ECHO                  ____  _____ ____     / /_  __  __(_) /___/ /__  _____
 ECHO                 / __ \/ ___/ ___/    / __ \/ / / / / / __  / _ \/ ___/
-ECHO                / / / (__  ) /__     / /_/ / /_/ / / / /_/ /  __/ /    
-ECHO               /_/ /_/____/\___/____/_.___/\__,_/_/_/\__,_/\___/_/     
-ECHO                              /_____/                                  
+ECHO                / / / (__  ) /__     / /_/ / /_/ / / / /_/ /  __/ /
+ECHO               /_/ /_/____/\___/____/_.___/\__,_/_/_/\__,_/\___/_/
+ECHO                              /_____/
 ECHO -------------------------------------------------------------------------------------
 ECHO                         NINTENDO SWITCH CLEANER AND BUILDER
 ECHO                      (THE XCI MULTI CONTENT BUILDER AND MORE)
@@ -2753,8 +2753,8 @@ ECHO =============================     BY JULESONTHEROAD     ===================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                                POWERED BY SQUIRREL                                "
 ECHO "                    BASED IN THE WORK OF BLAWAR AND LUCA FRAGA                     "
-ECHO                                    VERSION 0.99
-ECHO -------------------------------------------------------------------------------------                   
+ECHO                                    VERSION 1.00
+ECHO -------------------------------------------------------------------------------------
 ECHO Program's github: https://github.com/julesontheroad/NSC_BUILDER
 ECHO Blawar's github:  https://github.com/blawar
 ECHO Luca Fraga's github: https://github.com/LucaFraga

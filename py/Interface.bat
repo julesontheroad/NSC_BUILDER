@@ -3,7 +3,7 @@
 set "prog_dir=%~dp0"
 set "bat_name=%~n0"
 set "ofile_name=%bat_name%_options.cmd"
-Title NSC_Builder v0.99 -- Profile: %ofile_name% -- by JulesOnTheRoad
+Title NSC_Builder v1.00 -- Profile: %ofile_name% -- by JulesOnTheRoad
 set "list_folder=%prog_dir%lists"
 ::-----------------------------------------------------
 ::EDIT THIS VARIABLE TO LINK OTHER OPTION FILE
@@ -14,8 +14,8 @@ set "op_file=%~dp0zconfig\%ofile_name%"
 ::COPY OPTIONS FROM OPTION FILE
 ::-----------------------------------------------------
 setlocal
-if exist "%op_file%" call "%op_file%" 	  
-endlocal & ( 
+if exist "%op_file%" call "%op_file%"
+endlocal & (
 REM environment
 set "pycommand=%pycommand%"
 set "start_minimized=%start_minimized%"
@@ -47,7 +47,7 @@ if not exist "%dec_keys%" ( goto missing_things )
 if "%start_minimized%" EQU "yes" ( goto minimize )
 goto start
 :minimize
-if not "%1" == "min" start /MIN cmd /c %0 min & exit/b >nul 2>&1 
+if not "%1" == "min" start /MIN cmd /c %0 min & exit/b >nul 2>&1
 :start
 if "%noconsole%" == "false" (%pycommand% "%squirrel%" -lib_call nutdb  check_files )
 if "%noconsole%" == "false" goto n1
@@ -75,4 +75,3 @@ goto salida
 :salida
 REM pause
 exit
-

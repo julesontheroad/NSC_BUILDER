@@ -9,7 +9,7 @@ Included is the tested 125 version of DBI + a nsp that includes the full romfs (
 
 ## 2. Why do you include this on your github?
 
-Since NSC_Builder 0.99 beta NSCB features a new "m" mode which is a mtp manager meant mainly for DBI though a couple of functions work with blawar's tinfoil.
+Since NSC_Builder v0.99, NSCB features a new "m" mode which is a mtp manager meant mainly for DBI though a couple of functions work with blawar's tinfoil.
 
 ## 3. Why make a mtp installer?
 
