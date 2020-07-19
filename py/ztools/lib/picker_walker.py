@@ -8,6 +8,33 @@ import os
 import shutil
 from secondary import clear_Screen
 from Interface import About
+import csv
+
+squirrel_dir=os.path.abspath(os.curdir)
+NSCB_dir=os.path.abspath('../'+(os.curdir))
+if os.path.exists(os.path.join(squirrel_dir,'ztools')):
+	NSCB_dir=squirrel_dir
+	zconfig_dir=os.path.join(NSCB_dir, 'zconfig')	  
+	ztools_dir=os.path.join(NSCB_dir,'ztools')
+	squirrel_dir=ztools_dir
+elif os.path.exists(os.path.join(NSCB_dir,'ztools')):
+	squirrel_dir=squirrel_dir
+	ztools_dir=os.path.join(NSCB_dir, 'ztools')
+	zconfig_dir=os.path.join(NSCB_dir, 'zconfig')
+else:	
+	ztools_dir=os.path.join(NSCB_dir, 'ztools')
+	zconfig_dir=os.path.join(NSCB_dir, 'zconfig')
+testroute1=os.path.join(squirrel_dir, "squirrel.py")
+testroute2=os.path.join(squirrel_dir, "squirrel.exe")
+urlconfig=os.path.join(zconfig_dir,'NUT_DB_URL.txt')
+isExe=False
+if os.path.exists(testroute1):
+	squirrel=testroute1
+	isExe=False
+elif os.path.exists(testroute2):	
+	squirrel=testroute2
+	isExe=True
+local_libraries=os.path.join(zconfig_dir,'local_libraries.txt')
 
 def get_disks():
 	available_drives = ['%s:' % d for d in string.ascii_uppercase if os.path.exists('%s:' % d)]
@@ -173,3 +200,148 @@ def get_files_from_walk(tfile=None,extlist=['nsp','nsz','xci','xcz'],filter=Fals
 		for i in newgpaths:
 			print(i)
 	return newgpaths
+	
+def get_libs(lib="local"):
+	libraries={}
+	if lib=="local":
+		libtfile=local_libraries
+	else:
+		libtfile=lib	
+	with open(libtfile,'rt',encoding='utf8') as csvfile:
+		readCSV = csv.reader(csvfile, delimiter='|')	
+		i=0;up=False	
+		for row in readCSV:
+			if i==0:
+				csvheader=row
+				i=1
+				if 'library_name' and 'path' and 'Update' in csvheader:
+					lb=csvheader.index('library_name')
+					pth=csvheader.index('path')	
+					up=csvheader.index('Update')	
+				else:
+					if 'library_name' and 'path' in csvheader:
+						lb=csvheader.index('library_name')
+						pth=csvheader.index('path')				
+					else:break	
+			else:	
+				try:
+					update=False
+					library=str(row[lb])
+					route=str(row[pth])			
+					if up!=False:
+						update=str(row[up])
+						if update.upper()=="TRUE":
+							update=True
+						else:
+							update=False
+					else:
+						update=False
+					libraries[library]=[route,update]
+				except:pass	
+	return libraries		
+	
+def search_with_filter(folder_paths,extlist=['nsp','nsz','xci','xcz']):
+	filepaths=[]
+	title = 'Add a search filter?: '
+	options = ['Yes','No']	
+	selected = pick(options, title, min_selection_count=1)
+	response=selected[0]
+	if response=='No':
+		for fo in folder_paths:
+			rlist=listmanager.folder_to_list(fo,extlist)
+			filepaths=[*filepaths,*rlist]
+		return filepaths
+	else:
+		clear_Screen()
+		About()
+		ck=input('INPUT SEARCH FILTER: ')
+		for fo in folder_paths:
+			rlist=listmanager.folder_to_list(fo,extlist,ck)
+			filepaths=[*filepaths,*rlist]		
+		return filepaths	
+	
+def select_from_local_libraries(tfile=None,extlist=['nsp','nsz','xci','xcz']):				
+	if not os.path.exists(local_libraries):
+		sys.exit("Missing local_libraries.txt")	
+	if not isinstance(extlist, list): 
+		if str(extlist).lower()!='all':
+			ext=extlist.split()
+			extlist=[]			
+			for x in ext:
+				extlist.append(x)		
+	db=get_libs()
+	title = 'Select libraries to search:  \n + Press space or right to select content \n + Press E to finish selection \n + Press A to select all libraries'
+	folder_paths= []
+	options=[]
+	for k in db:
+		options.append(k)
+	picker = Picker(options, title,multi_select=True,min_selection_count=1)	
+	def end_selection(picker):
+		return False,-1	
+	def select_all(picker):
+		return True,options
+	picker.register_custom_handler(ord('e'),  end_selection)
+	picker.register_custom_handler(ord('E'),  end_selection)	
+	picker.register_custom_handler(ord('a'),  select_all)
+	picker.register_custom_handler(ord('A'),  select_all)	
+	selected = picker.start()	
+	if selected[0]==False:
+		print("User didn't select any libraries")
+		return False,False		
+	if selected[0]==True:	
+		for k in db.keys():
+			folder_paths.append((db[k])[0])
+	else:
+		for entry in selected:
+			folder_paths.append((db[entry[0]])[0])
+	order=pick_order()
+	if order==False:
+		return False				
+	filepaths=search_with_filter(folder_paths,extlist)
+	filedata={}
+	for file in filepaths:
+		try:
+			fname=os.path.basename(file)
+			fsize=os.path.getsize(file)
+			fdate=os.path.getctime(file)
+			entry={'filepath':file,'filename':fname,'size':fsize,'date':fdate}
+			if not fname in filedata:
+				filedata[fname]=entry
+		except:pass		
+	options=[]	
+	if order=='name_ascending':
+		options=sorted(filedata,key=lambda x:filedata[x]['filename'])
+	elif order=='name_descending':	
+		options=sorted(filedata,key=lambda x:filedata[x]['filename'])
+		options.reverse()
+	elif order=='size_ascending':
+		options=sorted(filedata,key=lambda x:filedata[x]['size'])
+	elif order=='size_descending':	
+		options=sorted(filedata,key=lambda x:filedata[x]['size'])
+		options.reverse()	
+	elif order=='date_ascending':
+		options=sorted(filedata,key=lambda x:filedata[x]['date'])
+	elif order=='date_descending':	
+		options=sorted(filedata,key=lambda x:filedata[x]['date'])
+		options.reverse()	
+	print("  * Entering File Picker")	
+	title = 'Select content to install or transfer: \n + Press space or right to select content \n + Press E to finish selection'
+	picker = Picker(options, title, multi_select=True, min_selection_count=1)
+	def end_selection(picker):
+		return False,-1
+	picker.register_custom_handler(ord('e'),  end_selection);picker.register_custom_handler(ord('E'),  end_selection)
+	selected=picker.start()
+	if selected[0]==False:
+		print("    User didn't select any files")
+		return False
+	if tfile!=None:	
+		with open(tfile,'a') as  textfile:		
+			for f in selected:
+				fpath=(filedata[f[0]])['filepath']		
+				textfile.write(fpath+'\n')	
+	else:
+		filespaths=[]
+		for f in selected:
+			fpath=(filedata[f[0]])['filepath']		
+			filespaths.append(fpath)		
+		return filespaths
