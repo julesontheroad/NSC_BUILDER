@@ -69,7 +69,7 @@ ECHO ***********************************************
 echo Input "1" to add folder to list via selector
 echo Input "2" to add file to list via selector
 echo Input "3" to select files from local libraries
-echo Input "4" to to select files via folder-walker
+echo Input "4" to select files via folder-walker
 echo Input "0" to return to the MODE SELECTION MENU
 ECHO ***********************************************
 echo.

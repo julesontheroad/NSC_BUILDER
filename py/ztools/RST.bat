@@ -68,6 +68,8 @@ endlocal
 ECHO ***********************************************
 echo Input "1" to add folder to list via selector
 echo Input "2" to add file to list via selector
+echo Input "3" to select files via local libraries
+echo Input "4" to select files via folder-walker
 echo Input "0" to return to the MODE SELECTION MENU
 ECHO ***********************************************
 echo.
@@ -80,6 +82,8 @@ endlocal
 if /i "%eval%"=="0" exit /B
 if /i "%eval%"=="1" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%rstlist.txt" mode=folder ext="nsp xci" ) 2>&1>NUL
 if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%rstlist.txt" mode=file ext="nsp xci" ) 2>&1>NUL
+if /i "%eval%"=="3" ( %pycommand% "%squirrel%" -lib_call picker_walker select_from_local_libraries -xarg "%prog_dir%rstlist.txt" "extlist=nsp xci" )
+if /i "%eval%"=="4" ( %pycommand% "%squirrel%" -lib_call picker_walker get_files_from_walk -xarg "%prog_dir%rstlist.txt" "extlist=nsp xci" )
 goto checkagain
 echo.
 :checkagain
@@ -90,7 +94,8 @@ echo.
 echo Input "1" to start processing
 echo Input "2" to add another folder to list via selector
 echo Input "3" to add another file to list via selector
-echo Input "4" to to select files via folder-walker
+echo Input "4" to select files via local libraries
+echo Input "5" to select files via folder-walker
 echo Input "e" to exit
 echo Input "i" to see list of files to process
 echo Input "r" to remove some files (counting from bottom)
@@ -111,7 +116,8 @@ if /i "%eval%"=="0" exit /B
 if /i "%eval%"=="1" goto start_cleaning
 if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%rstlist.txt" mode=folder ext="nsp xci" ) 2>&1>NUL
 if /i "%eval%"=="3" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%rstlist.txt" mode=file ext="nsp xci" ) 2>&1>NUL
-if /i "%eval%"=="4" ( %pycommand% "%squirrel%" -lib_call picker_walker get_files_from_walk -xarg "%prog_dir%rstlist.txt" "extlist=nsp xci" )
+if /i "%eval%"=="4" ( %pycommand% "%squirrel%" -lib_call picker_walker select_from_local_libraries -xarg "%prog_dir%rstlist.txt" "extlist=nsp xci" )
+if /i "%eval%"=="5" ( %pycommand% "%squirrel%" -lib_call picker_walker get_files_from_walk -xarg "%prog_dir%rstlist.txt" "extlist=nsp xci" )
 if /i "%eval%"=="e" goto salida
 if /i "%eval%"=="i" goto showlist
 if /i "%eval%"=="r" goto r_files

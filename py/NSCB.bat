@@ -864,6 +864,8 @@ endlocal
 ECHO ***********************************************
 echo Input "1" to add folder to list via selector
 echo Input "2" to add file to list via selector
+echo Input "3" to add files to list via local libraries
+echo Input "4" to add files to list via folder-walker
 echo Input "0" to return to the MODE SELECTION MENU
 ECHO ***********************************************
 echo.
@@ -876,6 +878,8 @@ endlocal
 if /i "%eval%"=="0" goto manual_Reentry
 if /i "%eval%"=="1" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%list.txt" mode=folder ext="nsp xci nsz nsx xcz" ) 2>&1>NUL
 if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%list.txt" mode=file ext="nsp xci nsz nsx xcz" ) 2>&1>NUL
+if /i "%eval%"=="3" ( %pycommand% "%squirrel%" -lib_call picker_walker select_from_local_libraries -xarg "%prog_dir%list.txt" "extlist=nsp xci nsz nsx xcz" )
+if /i "%eval%"=="4" ( %pycommand% "%squirrel%" -lib_call picker_walker get_files_from_walk -xarg "%prog_dir%list.txt" "extlist=nsp xci nsz nsx xcz" )
 goto checkagain
 echo.
 :checkagain
@@ -886,6 +890,8 @@ echo.
 echo Input "1" to start processing
 echo Input "2" to add another folder to list via selector
 echo Input "3" to add another file to list via selector
+echo Input "4" to add files to list via local libraries
+echo Input "5" to add files to list via folder-walker
 echo Input "e" to exit
 echo Input "i" to see list of files to process
 echo Input "r" to remove some files (counting from bottom)
@@ -906,6 +912,8 @@ if /i "%eval%"=="0" goto manual_Reentry
 if /i "%eval%"=="1" goto start_cleaning
 if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg  "%prog_dir%list.txt" mode=folder ext="nsp xci nsz nsx xcz" ) 2>&1>NUL
 if /i "%eval%"=="3" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg  "%prog_dir%list.txt" mode=file ext="nsp xci nsz nsx xcz" )  2>&1>NUL
+if /i "%eval%"=="4" ( %pycommand% "%squirrel%" -lib_call picker_walker select_from_local_libraries -xarg "%prog_dir%list.txt" "extlist=nsp xci nsz nsx xcz" )
+if /i "%eval%"=="5" ( %pycommand% "%squirrel%" -lib_call picker_walker get_files_from_walk -xarg "%prog_dir%list.txt" "extlist=nsp xci nsz nsx xcz" )
 if /i "%eval%"=="e" goto salida
 if /i "%eval%"=="i" goto showlist
 if /i "%eval%"=="r" goto r_files
@@ -1614,6 +1622,8 @@ ECHO ***********************************************
 echo Input "1" to process PREVIOUSLY SAVED JOBS
 echo Input "2" to add another folder to list via selector
 echo Input "3" to add another file to list via selector
+echo Input "4" to add files to list via local libraries
+echo Input "5" to add files to list via folder-walker
 echo Input "0" to return to the MODE SELECTION MENU
 ECHO ***********************************************
 echo.
@@ -1628,6 +1638,8 @@ if /i "%eval%"=="1" set skip_list_split="true"
 if /i "%eval%"=="1" goto multi_start_cleaning
 if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%mlist.txt" mode=folder ext="nsp xci nsz xcz" ) 2>&1>NUL
 if /i "%eval%"=="3" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%mlist.txt" mode=file ext="nsp xci nsz xcz" ) 2>&1>NUL
+if /i "%eval%"=="4" ( %pycommand% "%squirrel%" -lib_call picker_walker select_from_local_libraries -xarg "%prog_dir%mlist.txt" "extlist=nsp xci nsz xcz" )
+if /i "%eval%"=="5" ( %pycommand% "%squirrel%" -lib_call picker_walker get_files_from_walk -xarg "%prog_dir%mlist.txt" "extlist=nsp xci nsz xcz" )
 
 goto multi_checkagain
 echo.
@@ -1642,7 +1654,8 @@ echo Input "2" to add to saved lists and process them
 echo Input "3" to save list for later
 echo Input "4" to add another folder to list via selector
 echo Input "5" to add another file to list via selector
-REM echo Input "2" to set a custom logo from a nsp/nca
+echo Input "6" to add files to list via local libraries
+echo Input "7" to add files to list via folder-walker
 echo.
 echo Input "e" to exit
 echo Input "i" to see list of files to process
@@ -1669,6 +1682,8 @@ if /i "%eval%"=="3" set "mlistfol=%list_folder%\m_multi"
 if /i "%eval%"=="3" goto multi_saved_for_later
 if /i "%eval%"=="4" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%mlist.txt" mode=folder ext="nsp xci nsz xcz" ) 2>&1>NUL
 if /i "%eval%"=="5" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%mlist.txt" mode=file ext="nsp xci nsz xcz" ) 2>&1>NUL
+if /i "%eval%"=="6" ( %pycommand% "%squirrel%" -lib_call picker_walker select_from_local_libraries -xarg "%prog_dir%mlist.txt" "extlist=nsp xci nsz xcz" )
+if /i "%eval%"=="7" ( %pycommand% "%squirrel%" -lib_call picker_walker get_files_from_walk -xarg "%prog_dir%mlist.txt" "extlist=nsp xci nsz xcz" )
 REM if /i "%eval%"=="2" goto multi_set_clogo
 if /i "%eval%"=="e" goto salida
 if /i "%eval%"=="i" goto multi_showlist
@@ -2365,6 +2380,8 @@ endlocal
 ECHO ***********************************************
 echo Input "1" to add folder to list via selector
 echo Input "2" to add file to list via selector
+echo Input "3" to add files to list via local libraries
+echo Input "4" to add files to list via folder-walker
 echo Input "0" to return to the MODE SELECTION MENU
 ECHO ***********************************************
 echo.
@@ -2378,6 +2395,8 @@ endlocal
 if /i "%eval%"=="0" goto manual_Reentry
 if /i "%eval%"=="1" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%splist.txt" mode=folder ext="nsp xci nsz xcz" ) 2>&1>NUL
 if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%splist.txt" mode=file ext="nsp xci nsz xcz" )  2>&1>NUL
+if /i "%eval%"=="3" ( %pycommand% "%squirrel%" -lib_call picker_walker select_from_local_libraries -xarg "%prog_dir%splist.txt" "extlist=nsp xci nsz xcz" )
+if /i "%eval%"=="4" ( %pycommand% "%squirrel%" -lib_call picker_walker get_files_from_walk -xarg "%prog_dir%splist.txt" "extlist=nsp xci nsz xcz" )
 
 echo.
 :sp_checkagain
@@ -2388,6 +2407,8 @@ echo.
 echo Input "1" to start processing
 echo Input "2" to add another folder to list via selector
 echo Input "3" to add another file to list via selector
+echo Input "4" to add files to list via local libraries
+echo Input "5" to add files to list via folder-walker
 echo Input "e" to exit
 echo Input "i" to see list of files to process
 echo Input "r" to remove some files (counting from bottom)
@@ -2408,6 +2429,8 @@ if /i "%eval%"=="0" goto manual_Reentry
 if /i "%eval%"=="1" goto sp_start_cleaning
 if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%splist.txt" mode=folder ext="nsp xci nsz xcz" ) 2>&1>NUL
 if /i "%eval%"=="3" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%splist.txt" mode=file ext="nsp xci nsz xcz" )  2>&1>NUL
+if /i "%eval%"=="4" ( %pycommand% "%squirrel%" -lib_call picker_walker select_from_local_libraries -xarg "%prog_dir%splist.txt" "extlist=nsp xci nsz xcz" )
+if /i "%eval%"=="5" ( %pycommand% "%squirrel%" -lib_call picker_walker get_files_from_walk -xarg "%prog_dir%splist.txt" "extlist=nsp xci nsz xcz" )
 
 if /i "%eval%"=="e" goto salida
 if /i "%eval%"=="i" goto sp_showlist
