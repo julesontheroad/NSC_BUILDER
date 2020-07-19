@@ -3060,24 +3060,31 @@ if __name__ == '__main__':
 						Print.error('Exception: ' + str(e))
 			else:
 				buffer = 65536
-			if args.ofolder:
-				for input in args.ofolder:
-					try:
-						ofolder = input
-					except BaseException as e:
-						Print.error('Exception: ' + str(e))
+			if args.text_file:
+				tfile=args.text_file
+				with open(tfile,"r+", encoding='utf8') as filelist:
+					filename = filelist.readline()
+					filename=os.path.abspath(filename.rstrip('\n'))
+					dir=os.path.dirname(os.path.abspath(filename))
+				if args.ofolder:
+					for input in args.ofolder:
+						try:
+							ofolder = input
+						except BaseException as e:
+							Print.error('Exception: ' + str(e))				
+				else:				
+					ofolder =os.path.join(dir, 'output')
 			else:
-				if args.text_file:
-					tfile=args.text_file
-					with open(tfile,"r+", encoding='utf8') as filelist:
-						filename = filelist.readline()
-						filename=os.path.abspath(filename.rstrip('\n'))
-						dir=os.path.dirname(os.path.abspath(filename))
-						ofolder =os.path.join(dir, 'output')
-				else:
-					for filename in args.xci_trim:
-						dir=os.path.dirname(os.path.abspath(filename))
-						ofolder =os.path.join(dir, 'output')
+				for filename in args.xci_trim:
+					dir=os.path.dirname(os.path.abspath(filename))
+				if args.ofolder:
+					for input in args.ofolder:
+						try:
+							ofolder = input
+						except BaseException as e:
+							Print.error('Exception: ' + str(e))				
+				else:				
+					ofolder =os.path.join(dir, 'output')
 			if not os.path.exists(ofolder):
 				os.makedirs(ofolder)
 			if args.fat:
@@ -3091,7 +3098,23 @@ if __name__ == '__main__':
 						Print.error('Exception: ' + str(e))
 			else:
 				fat="exfat"
-			for filepath in args.xci_trim:
+			if not args.text_file:	
+				for filepath in args.xci_trim:
+					if filepath.endswith('.xci'):
+						try:
+							f = Fs.factory(filepath)
+							filename=os.path.basename(os.path.abspath(filepath))
+							#print(filename)
+							outfile = os.path.join(ofolder, filename)
+							#print(f.path)
+							f.open(filepath, 'rb')
+							f.trim(buffer,outfile,ofolder,fat)
+							f.flush()
+							f.close()
+						except BaseException as e:
+							Print.error('Exception: ' + str(e))
+			else:
+				filepath=filename
 				if filepath.endswith('.xci'):
 					try:
 						f = Fs.factory(filepath)
@@ -3104,7 +3127,7 @@ if __name__ == '__main__':
 						f.flush()
 						f.close()
 					except BaseException as e:
-						Print.error('Exception: ' + str(e))
+						Print.error('Exception: ' + str(e))				
 			Status.close()
 		# ...................................................
 		# Untrimming for xci files
