@@ -111,7 +111,7 @@ def pick_order():
 def select_from_local_libraries(tfile,mode='installer'):	
 	if not os.path.exists(mtp_source_lib):
 		sys.exit("mtp_source_libraries.txt")
-	db=get_libs()
+	db=get_libs("source")
 	title = 'Select libraries to search:  \n + Press space or right to select content \n + Press E to finish selection \n + Press A to select all libraries'
 	folder_paths= []
 	options=[]
@@ -941,8 +941,10 @@ def get_libs(lib="source"):
 	libraries={}
 	if lib=="source":
 		libtfile=mtp_source_lib
+	elif lib=="internal":		
+		libtfile=mtp_internal_lib		
 	else:
-		libtfile=mtp_internal_lib	
+		libtfile=lib	
 	with open(libtfile,'rt',encoding='utf8') as csvfile:
 		readCSV = csv.reader(csvfile, delimiter='|')	
 		i=0;up=False	
