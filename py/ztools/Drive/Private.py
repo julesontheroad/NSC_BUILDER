@@ -479,6 +479,8 @@ def folder_walker(showfiles=False,Print=False):
 		folder=search_folder(path,TD=TD,mime='folders',pickmode='single',Print=False)
 		if folder==False:
 			break
+		if folder=="EXIT":
+			return False,False
 		path=folder
 	if Print==True:
 		print(path)
@@ -587,7 +589,7 @@ def search_folder(path,TD=None,ext=None,filter=None,order=None,mime='files',Pick
 		elif mime=="files":
 			title = 'Select result:'
 		else:
-			title = 'Select result:\n + Press space or right to select content \n + Press E to finish selection'
+			title = 'Select result:\n + Press space or right to select content \n + Press E to move to file selection fase \n + Press X to exit selection'
 		oplist=list();cleanlist=list()
 		if mime=='folders':
 			for item in file_list:
@@ -610,10 +612,17 @@ def search_folder(path,TD=None,ext=None,filter=None,order=None,mime='files',Pick
 			def end_selection(picker):
 				return False,-1
 			picker.register_custom_handler(ord('e'),  end_selection)
-			picker.register_custom_handler(ord('E'),  end_selection)			
+			picker.register_custom_handler(ord('E'),  end_selection)		
+			if mime!="files":		
+				def exit_selection(picker):
+					return "EXIT",-1
+				picker.register_custom_handler(ord('x'),  exit_selection)
+				picker.register_custom_handler(ord('X'),  exit_selection)			
 			selected=picker.start()
 			if selected[0]==False:
 				return False
+			if selected[0]=="EXIT":		
+				return "EXIT"
 		# print (selected)		
 		oplist=file_list;file_list=list()
 		if pickmode=='single':

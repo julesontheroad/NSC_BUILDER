@@ -329,14 +329,14 @@ To install multi-nsp you need a installer compatible with them. Reported compati
 - SX OS rom-menu
 - SX OS installer
 - Blawar’s tinfoil:
-https://github.com/digableinc/tinfoil
+http://tinfoil.io/Download
 - Blawar’s lithium:
-https://github.com/blawar/lithium
+http://tinfoil.io/Download
 
 To install ncz files you need:
 - SX OS installer
 - Blawar’s tinfoil:
-https://github.com/digableinc/tinfoil
+http://tinfoil.io/Download
 
 ## 10. Requirements
 

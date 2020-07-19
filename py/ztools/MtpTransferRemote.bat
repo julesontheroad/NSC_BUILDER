@@ -2,7 +2,7 @@
 :TOP_INIT
 CD /d "%prog_dir%"
 set "bat_name=%~n0"
-Title NSC_Builder v0.99 -- Profile: %ofile_name% -- by JulesOnTheRoad
+Title NSC_Builder v1.00 -- Profile: %ofile_name% -- by JulesOnTheRoad
 
 :MAIN
 if exist "MTP2GD.txt" goto prevlist
@@ -65,6 +65,7 @@ echo *******************************************************
 echo.
 echo Input "1" to PICK FILES FROM CACHE FILES
 echo Input "2" to PICK FILES FROM LIBRARIES
+echo Input "3" to PICK FILES FROM FOLDER WALKER
 echo Input "c" to regenerate the cache for remote libraries
 ECHO.
 echo --- Or INPUT GDRIVE PUBLIC_LINK or 1FICHIER LINK ---
@@ -82,6 +83,7 @@ endlocal
 if /i "%eval%"=="0" goto MAIN
 if /i "%eval%"=="1" ( %pycommand% "%squirrel%" -lib_call mtp.mtp_gdrive select_from_cache -xarg "%prog_dir%MTP2GD.txt" )
 if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call mtp.mtp_gdrive select_from_libraries -xarg "%prog_dir%MTP2GD.txt" )
+if /i "%eval%"=="3" ( %pycommand% "%squirrel%" -lib_call mtp.mtp_gdrive select_from_walker -xarg "%prog_dir%MTP2GD.txt" )
 if /i "%eval%"=="c" ( %pycommand% "%squirrel%" -lib_call workers concurrent_cache )
 echo.
 goto checkagain
@@ -94,6 +96,7 @@ echo.
 echo Input "1" to START TRANSFER
 echo Input "2" to PICK FILES FROM CACHE FILES
 echo Input "3" to PICK FILES FROM LIBRARIES
+echo Input "4" to PICK FILES FROM FOLDER WALKER
 echo Input "c" to regenerate the cache for remote libraries
 echo Input "e" to exit
 echo Input "i" to see list of files to process
@@ -116,6 +119,7 @@ if /i "%eval%"=="0" goto MAIN
 if /i "%eval%"=="1" goto START_TRANSFER
 if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call mtp.mtp_gdrive select_from_cache -xarg "%prog_dir%MTP2GD.txt" )
 if /i "%eval%"=="3" ( %pycommand% "%squirrel%" -lib_call mtp.mtp_gdrive select_from_libraries -xarg "%prog_dir%MTP2GD.txt" )
+if /i "%eval%"=="4" ( %pycommand% "%squirrel%" -lib_call mtp.mtp_gdrive select_from_walker -xarg "%prog_dir%MTP2GD.txt" )
 if /i "%eval%"=="c" ( %pycommand% "%squirrel%" -lib_call workers concurrent_cache )
 if /i "%eval%"=="e" goto salida
 if /i "%eval%"=="i" goto showlist
@@ -234,7 +238,7 @@ ECHO =============================     BY JULESONTHEROAD     ===================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                                POWERED BY SQUIRREL                                "
 ECHO "                         A MTP MANAGER FOR DBI INSTALLER                           "
-ECHO                                  VERSION 0.99 (MTP)
+ECHO                                  VERSION 1.00 (MTP)
 ECHO -------------------------------------------------------------------------------------
 ECHO DBI by DUCKBILL: https://github.com/rashevskyv/switch/releases
 ECHO Tested with v1.25: https://github.com/rashevskyv/switch/releases/tag/456

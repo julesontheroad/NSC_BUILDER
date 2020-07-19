@@ -2,7 +2,7 @@
 :TOP_INIT
 CD /d "%prog_dir%"
 set "bat_name=%~n0"
-Title NSC_Builder v0.99 -- Profile: %ofile_name% -- by JulesOnTheRoad
+Title NSC_Builder v1.00 -- Profile: %ofile_name% -- by JulesOnTheRoad
 
 ::///////////////////////////////////////////////////
 ::///////////////////////////////////////////////////
@@ -28,8 +28,10 @@ echo Note: Remember to press enter after each file\folder dragged
 echo.
 ECHO ***********************************************
 echo Input "1" to process PREVIOUSLY SAVED JOBS
-echo Input "2" to add another folder to list via selector
-echo Input "3" to add another file to list via selector
+echo Input "2" to add folder to list via selector
+echo Input "3" to add file to list via selector
+echo Input "4" to select files from local libraries
+echo Input "5" to add files to list via folder-walker
 echo Input "0" to return to the MODE SELECTION MENU
 ECHO ***********************************************
 echo.
@@ -44,6 +46,8 @@ if /i "%eval%"=="1" set skip_list_split="true"
 if /i "%eval%"=="1" goto m_patch_keygen
 if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%mlistMTP.txt" mode=folder ext="nsp xci nsz xcz" ) 2>&1>NUL
 if /i "%eval%"=="3" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%mlistMTP.txt" mode=file ext="nsp xci nsz xcz" ) 2>&1>NUL
+if /i "%eval%"=="4" ( %pycommand% "%squirrel%" -lib_call mtp.mtpinstaller select_from_local_libraries -xarg "%prog_dir%mlistMTP.txt" "mode=installer" )
+if /i "%eval%"=="5" ( %pycommand% "%squirrel%" -lib_call picker_walker get_files_from_walk -xarg "%prog_dir%mlistMTP.txt" "extlist=nsp xci nsz xcz" )
 
 goto multi_checkagain
 
@@ -59,7 +63,8 @@ echo Input "2" to add to saved lists and process them
 echo Input "3" to save list for later
 echo Input "4" to add another folder to list via selector
 echo Input "5" to add another file to list via selector
-REM echo Input "2" to set a custom logo from a nsp/nca
+echo Input "6" to select files from local libraries
+echo Input "7" to add another file to list via folder-walker
 echo.
 echo Input "e" to exit
 echo Input "i" to see list of files to process
@@ -86,6 +91,8 @@ if /i "%eval%"=="3" set "mlistfol=%list_folder%\m_multiMTP"
 if /i "%eval%"=="3" goto multi_saved_for_later
 if /i "%eval%"=="4" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%mlistMTP.txt" mode=folder ext="nsp xci nsz xcz" ) 2>&1>NUL
 if /i "%eval%"=="5" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%mlistMTP.txt" mode=file ext="nsp xci nsz xcz" ) 2>&1>NUL
+if /i "%eval%"=="6" ( %pycommand% "%squirrel%" -lib_call mtp.mtpinstaller select_from_local_libraries -xarg "%prog_dir%mlistMTP.txt" "mode=installer" )
+if /i "%eval%"=="7" ( %pycommand% "%squirrel%" -lib_call picker_walker get_files_from_walk -xarg "%prog_dir%mlistMTP.txt" "extlist=nsp xci nsz xcz" )
 REM if /i "%eval%"=="2" goto multi_set_clogo
 if /i "%eval%"=="e" goto salida
 if /i "%eval%"=="i" goto multi_showlist
@@ -326,7 +333,7 @@ ECHO =============================     BY JULESONTHEROAD     ===================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                                POWERED BY SQUIRREL                                "
 ECHO "                         A MTP MANAGER FOR DBI INSTALLER                           "
-ECHO                                  VERSION 0.99 (MTP)
+ECHO                                  VERSION 1.00 (MTP)
 ECHO -------------------------------------------------------------------------------------
 ECHO DBI by DUCKBILL: https://github.com/rashevskyv/switch/releases
 ECHO Tested with v1.25: https://github.com/rashevskyv/switch/releases/tag/456

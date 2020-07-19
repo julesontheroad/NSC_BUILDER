@@ -2,7 +2,7 @@
 :TOP_INIT
 CD /d "%prog_dir%"
 set "bat_name=%~n0"
-Title NSC_Builder v0.99 -- Profile: %ofile_name% -- by JulesOnTheRoad
+Title NSC_Builder v1.00 -- Profile: %ofile_name% -- by JulesOnTheRoad
 
 :MAIN
 cls
@@ -33,11 +33,16 @@ if /i "%bs%"=="6" goto DEV_INF
 if /i "%bs%"=="7" goto SX_AUTOLOADER
 if /i "%bs%"=="N" goto call_main
 if /i "%bs%"=="L" goto LegacyMode
+if /i "%bs%"=="D" goto GDMode
 if /i "%bs%"=="0" goto OPT_CONFIG
 goto MAIN
 
 :LegacyMode
 call "%prog_dir%ztools\LEGACY.bat"
+exit /B
+
+:GDMode
+call "%prog_dir%ztools\DriveMode.bat"
 exit /B
 
 :G_INST
@@ -132,6 +137,7 @@ ECHO ***********************************************
 echo Input "1" to add folder to list via selector
 echo Input "2" to add file to list via selector
 echo Input "3" to select files from local libraries
+echo Input "4" to select files via folder-walker
 echo Input "0" to return to the MODE SELECTION MENU
 ECHO ***********************************************
 echo.
@@ -142,9 +148,10 @@ setlocal enabledelayedexpansion
 echo+ >"%uinput%"
 endlocal
 if /i "%eval%"=="0" goto MAIN
-if /i "%eval%"=="1" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%MTP1.txt" mode=folder ext="nsp xci nsz" ) 2>&1>NUL
-if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%MTP1.txt" mode=file ext="nsp xci nsz" )  2>&1>NUL
+if /i "%eval%"=="1" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%MTP1.txt" mode=folder ext="nsp xci nsz xcz" ) 2>&1>NUL
+if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%MTP1.txt" mode=file ext="nsp xci nsz xcz" )  2>&1>NUL
 if /i "%eval%"=="3" ( %pycommand% "%squirrel%" -lib_call mtp.mtpinstaller select_from_local_libraries -xarg "%prog_dir%MTP1.txt" )
+if /i "%eval%"=="4" ( %pycommand% "%squirrel%" -lib_call picker_walker get_files_from_walk -xarg "%prog_dir%MTP1.txt" "extlist=nsp xci nsz xcz" )
 
 goto checkagain
 echo.
@@ -157,6 +164,7 @@ echo Input "1" to start processing
 echo Input "2" to add another folder to list via selector
 echo Input "3" to add another file to list via selector
 echo Input "4" to select files from local libraries
+echo Input "5" to select files via folder-walker
 echo Input "e" to exit
 echo Input "i" to see list of files to process
 echo Input "r" to remove some files (counting from bottom)
@@ -178,6 +186,7 @@ if /i "%eval%"=="1" goto start_1install
 if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%MTP1.txt" mode=folder ext="nsp xci nsz" ) 2>&1>NUL
 if /i "%eval%"=="3" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%MTP1.txt" mode=file ext="nsp xci nsz" )  2>&1>NUL
 if /i "%eval%"=="4" ( %pycommand% "%squirrel%" -lib_call mtp.mtpinstaller select_from_local_libraries -xarg "%prog_dir%MTP1.txt" )
+if /i "%eval%"=="5" ( %pycommand% "%squirrel%" -lib_call picker_walker get_files_from_walk -xarg "%prog_dir%MTP1.txt" "extlist=nsp xci nsz xcz" )
 if /i "%eval%"=="e" goto salida
 if /i "%eval%"=="i" goto showlist
 if /i "%eval%"=="r" goto r_files
@@ -306,8 +315,8 @@ echo *******************************************************
 echo.
 echo 1. FILE TRANSFER FROM LOCAL FILES
 echo 2. FILE TRANSFER FROM REMOTE LIBRARIES (GDRIVE)
-echo 3. CREATE XCI AND TRANSFER
-echo 4. CREATE MULTI-XCI AND TRANSFER
+echo 3. CREATE XCI AND TRANSFER (LOCAL)
+echo 4. CREATE MULTI-XCI AND TRANSFER (LOCAL)
 echo.
 ECHO ******************************************
 echo Or Input "0" to return to the list options
@@ -690,7 +699,7 @@ ECHO =============================     BY JULESONTHEROAD     ===================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                                POWERED BY SQUIRREL                                "
 ECHO "                         A MTP MANAGER FOR DBI INSTALLER                           "
-ECHO                                  VERSION 0.99 (MTP)
+ECHO                                  VERSION 1.00 (MTP)
 ECHO -------------------------------------------------------------------------------------
 ECHO DBI by DUCKBILL: https://github.com/rashevskyv/switch/releases
 ECHO Tested with v1.25: https://github.com/rashevskyv/switch/releases/tag/456

@@ -165,7 +165,9 @@ def Interface():
 			break
 		elif ck=="1":	
 			while True:
-				folder,TD=Private.folder_walker()		
+				folder,TD=Private.folder_walker()	
+				if folder==False:
+					return False
 				print(folder)
 				response=interface_file(folder,TD)
 				if response==False:

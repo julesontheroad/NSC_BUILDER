@@ -26,8 +26,9 @@ from python_pick import Picker
 import csv
 from tqdm import tqdm
 
-if not is_switch_connected():
-	sys.exit("Switch device isn't connected.\nCheck if mtp responder is running!!!")	
+def check_connection():
+	if not is_switch_connected():
+		sys.exit("Switch device isn't connected.\nCheck if mtp responder is running!!!")	
 
 bucketsize = 81920
 
@@ -72,6 +73,7 @@ download_lib_file = os.path.join(zconfig_dir, 'mtp_download_libraries.txt')
 
 	
 def install_nsp_csv(filepath,destiny="SD",cachefolder=None,override=False,keypatch=False):
+	check_connection()
 	if cachefolder==None:
 		cachefolder=os.path.join(ztools_dir, '_mtp_cache_')	
 	files_list=sq_tools.ret_nsp_offsets(filepath)
@@ -194,15 +196,6 @@ def gen_nsp_parts_spec1(filepath,target_cnmt=None,cachefolder=None,keypatch=Fals
 	outf = open(outfile, 'w+b')		
 	outf.write(outheader)	
 	written=0
-	for ticket in nsp:			
-		if type(ticket) == Ticket:
-			size=ticket.size			
-			size_pr=sq_tools.getSize(size)			
-			filename =  str(ticket._path)
-			tik=filename[:-20]				
-			if str(tik).upper() == str(titleid).upper():
-				titleKey = ticket.getTitleKeyBlock().to_bytes(16, byteorder='big')
-				break	
 	for fi in files:				
 		for nca in nsp:					
 			if nca._path==fi:
@@ -223,8 +216,12 @@ def gen_nsp_parts_spec1(filepath,target_cnmt=None,cachefolder=None,keypatch=Fals
 					if crypto2>crypto1:
 						masterKeyRev=crypto2
 					if crypto2<=crypto1:	
-						masterKeyRev=crypto1								
-					titleKeyDec = Keys.decryptTitleKey(titleKey, Keys.getMasterKeyIndex(int(masterKeyRev)))							
+						masterKeyRev=crypto1
+					from mtp_tools import get_nca_ticket
+						check,titleKey=get_nca_ticket(filepath,fi)
+						if check==False:
+							sys.exit("Can't verify titleckey")							
+					titleKeyDec = Keys.decryptTitleKey(titleKey, Keys.getMasterKeyIndex(int(masterKeyRev)))
 					encKeyBlock = crypto.encrypt(titleKeyDec * 4)
 					if str(keypatch) != "False":
 						t = tqdm(total=False, unit='B', unit_scale=False, leave=False)	

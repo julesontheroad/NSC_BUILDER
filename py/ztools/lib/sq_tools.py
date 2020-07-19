@@ -1627,4 +1627,24 @@ def delete_footer(filepath,cryptokey=None):
 				o.truncate()
 				print("Footer has been deleted from "+filepath)	
 			else:
-				print(filepath+" doesn't have a footer")					
+				print(filepath+" doesn't have a footer")		
+				
+def decompress_zip(filepath,ofolder,delete_after=False):
+	import zipfile
+	if not os.path.isdir(filepath):
+		with zipfile.ZipFile(filepath, 'r') as zipf:
+			zipf.extractall(ofolder)
+		if delete_after==True:
+			try:
+				os.remove(filepath)
+			except:pass
+	else:
+		from listmanager import folder_to_list
+		file_list=folder_to_list(filepath,['zip'])	
+		for filepath in file_list:
+			with zipfile.ZipFile(filepath, 'r') as zipf:
+				zipf.extractall(ofolder)
+			if delete_after==True:
+				try:
+					os.remove(filepath)
+				except:pass						

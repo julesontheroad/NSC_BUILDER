@@ -26,8 +26,9 @@ from python_pick import Picker
 import csv
 from tqdm import tqdm
 
-if not is_switch_connected():
-	sys.exit("Switch device isn't connected.\nCheck if mtp responder is running!!!")	
+def check_connection():
+	if not is_switch_connected():
+		sys.exit("Switch device isn't connected.\nCheck if mtp responder is running!!!")	
 
 bucketsize = 81920
 
@@ -179,6 +180,7 @@ def generate_and_transfer_st1(filepath,outfolder,keypatch='false'):
 	f.close()	
 			
 def generate_xci_and_transfer(filepath=None,outfolder=None,destiny="SD",kgpatch=False,verification=False):
+	check_connection()
 	if destiny=="SD":
 		destiny="1: External SD Card\\"
 	from mtpinstaller import get_storage_info,get_DB_dict
@@ -284,6 +286,7 @@ def generate_xci_and_transfer(filepath=None,outfolder=None,destiny="SD",kgpatch=
 		transfer_xci_csv(filepath,destiny,cachefolder=outfolder,keypatch=keypatch)	
 	
 def generate_multixci_and_transfer(tfile=None,outfolder=None,destiny="SD",kgpatch=False,verification=False):
+	check_connection()
 	if destiny==False or destiny=="pick" or destiny=="":
 		destiny=pick_transfer_folder()	
 	if destiny=="SD":
@@ -398,6 +401,7 @@ def generate_multixci_and_transfer(tfile=None,outfolder=None,destiny="SD",kgpatc
 		transfer_mxci_csv(tfile=tfile,destiny=destiny,cachefolder=outfolder,keypatch=keypatch,input_files=input_files)		
 
 def loop_xci_transfer(tfile,destiny=False,verification=True,outfolder=None,patch_keygen=False,mode="single"):
+	check_connection()
 	if destiny==False or destiny=="pick" or destiny=="":
 		destiny=pick_transfer_folder()	
 	if not os.path.exists(tfile):
@@ -498,6 +502,7 @@ def get_header_size(filepath):
 	return properheadsize,keygeneration,sz
 	
 def install_xci_csv(filepath,destiny="SD",cachefolder=None,override=False,keypatch=False):
+	check_connection()
 	if cachefolder==None:
 		cachefolder=os.path.join(ztools_dir, '_mtp_cache_')	
 	files_list=sq_tools.ret_xci_offsets(filepath)
@@ -635,17 +640,6 @@ def gen_xci_parts_spec0(filepath,target_cnmt=None,cachefolder=None,keypatch=Fals
 	outf.write(outheader)	
 	written+=len(outheader)
 	movoffset=0
-	for nspF in xci.hfs0:
-		if str(nspF._path)=="secure":
-			for ticket in nspF:			
-				if type(ticket) == Ticket:
-					size=ticket.size			
-					size_pr=sq_tools.getSize(size)			
-					filename =  str(ticket._path)
-					tik=filename[:-20]				
-					if str(tik).upper() == str(titleid).upper():
-						titleKey = ticket.getTitleKeyBlock().to_bytes(16, byteorder='big')
-						break	
 	for fi in files:
 		for nspF in xci.hfs0:
 			if str(nspF._path)=="secure":
@@ -668,7 +662,11 @@ def gen_xci_parts_spec0(filepath,target_cnmt=None,cachefolder=None,keypatch=Fals
 							if crypto2>crypto1:
 								masterKeyRev=crypto2
 							if crypto2<=crypto1:	
-								masterKeyRev=crypto1								
+								masterKeyRev=crypto1	
+							from mtp_tools import get_nca_ticket
+								check,titleKey=get_nca_ticket(filepath,fi)
+								if check==False:
+									sys.exit("Can't verify titleckey")						
 							titleKeyDec = Keys.decryptTitleKey(titleKey, Keys.getMasterKeyIndex(int(masterKeyRev)))							
 							encKeyBlock = crypto.encrypt(titleKeyDec * 4)
 							if str(keypatch) != "False":
@@ -840,17 +838,6 @@ def gen_xci_parts_spec1(filepath,target_cnmt=None,cachefolder=None,keypatch=Fals
 	outf = open(outfile, 'w+b')		
 	outf.write(outheader)	
 	written=0
-	for nspF in xci.hfs0:
-		if str(nspF._path)=="secure":
-			for ticket in nspF:			
-				if type(ticket) == Ticket:
-					size=ticket.size			
-					size_pr=sq_tools.getSize(size)			
-					filename =  str(ticket._path)
-					tik=filename[:-20]				
-					if str(tik).upper() == str(titleid).upper():
-						titleKey = ticket.getTitleKeyBlock().to_bytes(16, byteorder='big')
-						break	
 	for fi in files:
 		for nspF in xci.hfs0:	
 			if str(nspF._path)=="secure":
@@ -873,7 +860,11 @@ def gen_xci_parts_spec1(filepath,target_cnmt=None,cachefolder=None,keypatch=Fals
 							if crypto2>crypto1:
 								masterKeyRev=crypto2
 							if crypto2<=crypto1:	
-								masterKeyRev=crypto1								
+								masterKeyRev=crypto1	
+							from mtp_tools import get_nca_ticket
+								check,titleKey=get_nca_ticket(filepath,fi)
+								if check==False:
+									sys.exit("Can't verify titleckey")				
 							titleKeyDec = Keys.decryptTitleKey(titleKey, Keys.getMasterKeyIndex(int(masterKeyRev)))							
 							encKeyBlock = crypto.encrypt(titleKeyDec * 4)
 							if str(keypatch) != "False":

@@ -1,5 +1,5 @@
 # 닌텐도 스위치 클리너 및 빌더 (NSC_Builder)
-https://github.com/julesontheroad/NSC_BUILDER 
+https://github.com/julesontheroad/NSC_BUILDER
 
 ## 1. 설명
 
@@ -22,7 +22,7 @@ nsp 파일에서 titlerights 암호화를 제거하면 티켓을 필요로하지
 3.- "파티션 업데이트" 없이 xci 파일을 빌드하여 스토리지 공간을 적게 차지
 4.- 업데이트에서 델타 제거
 5.- 다중 컨텐츠를 xci 또는 nsp 파일로 다시 분할
-6.- xci와 nsp 사이의 콘텐츠 패킹 변경 
+6.- xci와 nsp 사이의 콘텐츠 패킹 변경
 7.- 필요한 시스템 버전을 실제 게임 암호화로 낮춤
 8.- 게임 해독에 필요한 마스터 키를 낮춤
 9.- xci 및 nsp에서 실행 가능한 펌웨어, 게임 정보, nca 콘텐츠의 크기 등의 정보를 확인
@@ -67,7 +67,7 @@ nsp 파일에서 titlerights 암호화를 제거하면 티켓을 필요로하지
 ## 6. 구성 모드:
 ### 자동 모드 옵션. (자동 모드에만 적용)
 #### 리팩 구성
-- NSP 
+- NSP
 - XCI
 - BOTH
 #### 폴더 처리
@@ -120,11 +120,11 @@ multi-nsp를 설치하려면 해당 설치 프로그램과 호환되는 설치 �
 - SX OS rom-menu
 - SX OS 설치 프로그램
 - Blawar의 tinfoil:
-https://github.com/digableinc/tinfoil
+http://tinfoil.io/Download
 - Blawar의 lithium:
-https://github.com/blawar/lithium
+http://tinfoil.io/Download
 
-## 8. 요구사항 
+## 8. 요구사항
 
 - 윈도우 OS가 설치된 컴퓨터가 필요합니다.
 - ztools 폴더에 keys_template.txt를 넣고 keys.txt로 이름을 바꿉니다.
@@ -133,7 +133,7 @@ https://github.com/blawar/lithium
   xci_header_key를 추가하려면 친구가 그것을 빌려줘야합니다.
   https://github.com/shchmue/Lockpick/releases
 
-## 9. 제한사항 
+## 9. 제한사항
 - 8 개 이상의 게임으로 다중 컨텐츠 xci 파일을 만들 수는 없습니다. 수평으로 로딩할 때 오류가 발생합니다. 그것이 qlauncher 제한일지도 모른다라고 생각해서 그것은 그것은 테마 mods와 함께 작동하지만 INTRO는 그것을 테스트하지 않았습니다.
 참고: 이는 "게임", 업데이트 및 dl car가 해당 제한사항을 지키지 않음을 의미합니다.
 - 타이틀 권한 제거 dlcs는 6.0 이후의 일부 게임에 대한 불완전한 내용의 메시지 프롬프트를 제공합니다. 이 메시지는 건너 뛸 수 있으며 dlcs는 프롬프트에도 불구하고 정상적으로 작동합니다.
