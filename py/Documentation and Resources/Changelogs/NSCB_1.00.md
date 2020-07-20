@@ -71,6 +71,8 @@ Al local modes will now use the local libraries if setup, With support for searc
 
 This function will only work properly if **run minimized** is activated. Both will work properly with the noconsole option too but **run minimized** is needed.
 
+Note: When moving from noconsole to console-attached versions of server and interface run the option twice, the first time after the change is possible that output doesn't show on the console, from the second time onwards you should be able to see output properly.
+
 ### 8. Bugfixing and small stuff
 
 - Fixed issues when launching the interface with custom browsers.
