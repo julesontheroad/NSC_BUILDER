@@ -755,6 +755,8 @@ echo.
 echo Input "D" to enter GOOGLE DRIVE MODES
 echo Input "M" to enter MTP MODES
 echo Input "L" to enter LEGACY MODES
+echo Input "I" to open INTERFACE
+echo Input "S" to open SERVER
 echo .......................................................
 echo.
 set /p bs="Enter your choice: "
@@ -772,6 +774,8 @@ REM if /i "%bs%"=="10" goto MNGmode
 if /i "%bs%"=="M" goto MTPMode
 if /i "%bs%"=="D" goto DriveMode
 if /i "%bs%"=="L" goto LegacyMode
+if /i "%bs%"=="I" goto InterfaceTrigger
+if /i "%bs%"=="S" goto ServerTrigger
 if /i "%bs%"=="0" goto OPT_CONFIG
 goto manual_Reentry
 
@@ -798,6 +802,12 @@ call "%prog_dir%ztools\MtpMode.bat"
 goto manual_Reentry
 :DriveMode
 call "%prog_dir%ztools\DriveMode.bat"
+goto manual_Reentry
+:InterfaceTrigger
+call Interface.bat
+goto manual_Reentry
+:ServerTrigger
+call Server.bat
 goto manual_Reentry
 REM //////////////////////////////////////////////////
 REM /////////////////////////////////////////////////
