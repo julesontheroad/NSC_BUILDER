@@ -1169,16 +1169,16 @@ def getverificationdata(filename,remotelocation=False):
 	return	
 
 def server(port='0.0.0.0',host='localhost',videoplayback=True,ssl=False,noconsole=False,overwrite=False):
+	ssl_cert= os.path.join(zconfig_dir, 'certificate.pem')
+	ssl_key= os.path.join(zconfig_dir, 'key.pem')
+	web_folder=os.path.join(ztools_dir,'web')
+	debug_folder=os.path.join(web_folder,'_debug_')
+	flag_file=os.path.join(debug_folder,'flag')	
+	debug_log=os.path.join(debug_folder,'log')	
 	if ssl==False:
 		ssl_cert=False
 		ssl_key=False
 	else:
-		ssl_cert= os.path.join(zconfig_dir, 'certificate.pem')
-		ssl_key= os.path.join(zconfig_dir, 'key.pem')
-		web_folder=os.path.join(ztools_dir,'web')
-		debug_folder=os.path.join(web_folder,'_debug_')
-		flag_file=os.path.join(debug_folder,'flag')	
-		debug_log=os.path.join(debug_folder,'log')	
 		if os.path.exists(ssl_cert) and os.path.exists(ssl_key):
 			pass
 		else:
@@ -1213,7 +1213,10 @@ def server(port='0.0.0.0',host='localhost',videoplayback=True,ssl=False,noconsol
 			port=8000
 	if noconsole==True:	
 		sys.stdout = open(os.path.join(debug_folder,'log_{}.txt'.format(str(port))), 'w')
-		sys.stderr = sys.stdout						
+		sys.stderr = sys.stdout		
+	else:
+		with open(os.path.join(debug_folder,'log_{}.txt'.format(str(port))), 'w') as tfile:
+			tfile.write("")		
 	About(noconsole)
 	if host=='0.0.0.0':
 		h_='serverdomain'
@@ -1228,7 +1231,7 @@ def server(port='0.0.0.0',host='localhost',videoplayback=True,ssl=False,noconsol
 		sys.stdout.flush()		
 	else:
 		print("Server launched in http://{}:{}/nscb.html".format(h_,port))
-		print("Local Interface in https://{}:{}/main.html".format(h_,port))			
+		print("Local Interface in http://{}:{}/main.html".format(h_,port))			
 		sys.stdout.flush()		
 	while True:
 		try:
@@ -1267,7 +1270,10 @@ def start(browserpath='auto',videoplayback=True,height=800,width=740,port=8000,h
 			port=8000
 	if noconsole==True:	
 		sys.stdout = open(os.path.join(debug_folder,'log_{}.txt'.format(str(port))), 'w')
-		sys.stderr = sys.stdout					
+		sys.stderr = sys.stdout			
+	else:
+		with open(os.path.join(debug_folder,'log_{}.txt'.format(str(port))), 'w') as tfile:
+			tfile.write("")			
 	try:
 		if browserpath == 'default':
 			print("Launched using default system browser")
