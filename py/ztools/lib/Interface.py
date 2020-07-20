@@ -1213,7 +1213,10 @@ def server(port='0.0.0.0',host='localhost',videoplayback=True,ssl=False,noconsol
 			port=8000
 	if noconsole==True:	
 		sys.stdout = open(os.path.join(debug_folder,'log_{}.txt'.format(str(port))), 'w')
-		sys.stderr = sys.stdout						
+		sys.stderr = sys.stdout		
+	else:
+		with open(os.path.join(debug_folder,'log_{}.txt'.format(str(port))), 'w') as tfile:
+			tfile.write("")		
 	About(noconsole)
 	if host=='0.0.0.0':
 		h_='serverdomain'
@@ -1267,7 +1270,10 @@ def start(browserpath='auto',videoplayback=True,height=800,width=740,port=8000,h
 			port=8000
 	if noconsole==True:	
 		sys.stdout = open(os.path.join(debug_folder,'log_{}.txt'.format(str(port))), 'w')
-		sys.stderr = sys.stdout					
+		sys.stderr = sys.stdout			
+	else:
+		with open(os.path.join(debug_folder,'log_{}.txt'.format(str(port))), 'w') as tfile:
+			tfile.write("")			
 	try:
 		if browserpath == 'default':
 			print("Launched using default system browser")

@@ -21,16 +21,6 @@
 		eel.get_libraries()(set_local_libraries)
 		eel.get_drive_libraries()(set_remote_libraries)
 		});
-		<!-- var slocalbox_input = document.getElementById("slocalbox"); -->
-		<!-- // Execute a function when the user releases a key on the keyboard -->
-		<!-- slocalbox_input.addEventListener("keyup", function(event) { -->
-		  <!-- // Number 13 is the "Enter" key on the keyboard -->
-		  <!-- if (event.keyCode === 13) { -->
-			<!-- // Cancel the default action, if needed -->
-			<!-- event.preventDefault(); -->
-			<!-- // Trigger the button element with a click -->
-			<!-- document.getElementById("slocalbox").getElementsByClassName("button input-search-button").click(); -->
-		  <!-- }			 -->
 	</script>
 </head>
 <body  class="bg-lightGray fg-white h-vh-100 m4-cloak">
@@ -135,6 +125,13 @@
 					<span class="caption fg-black" id="_ link_bar_but2">Direct Link</span>
 				</a>
 			</li>
+			<li class="item-header" style="margin-top: 2vh">Debug</li>
+			<li>
+				<a href="#_Information_" onclick="show_debug();set_debug()" class="enabled" id="_showdebug_bar_but">
+					<span class="icon"><span class="mif-description fg-black" id="_ showdebug_bar_but1"></span></span>
+					<span class="caption fg-black" id="_ showdebug_bar_but2">Console log</span>
+				</a>
+			</li>
 		</ul>
 	</nav>
 	<div class="navview-content pl-4-md pr-4-md bg-lightGray" id="_Info_">
@@ -203,13 +200,18 @@
 					<p style="font-size: 2vh;text-align: justify;text-justify: inter-word;white-space: pre-line;" id="cheat_data"></p>
 			</div></div></div>
 
-				<div class="cell" id="_LocalLibrary_" style="font-size: 1.84vh;display:none;overflow-z:auto;"><div><div style="width: 55vw;margin-left:0;margin-right:auto;">
-					<p style="margin-bottom: 2px;margin-top: 2px;font-size: 2.4vh"><strong>Local Libraries: </strong></p>
-					<div class="row" style="width:130vw">
-						<div class="cell"  style="width: 70vw">
+				<div class="cell" id="_Debug_" style="font-size: 1.86vh;display:none;overflow-z:auto;"><div><div style="width: 55vw;margin-left:0;margin-right:auto;">
+					<p style="margin-bottom: 2px;margin-top: 2px;font-size: 2vh"><strong>Console log: </strong></p>
+					<pre id="debug_data" style="width:90vw"></pre>
+			</div></div></div>
+
+				<div class="cell" id="_LocalLibrary_" style="font-size: 1.84vh;display:none;"><div><div style="width: 55vw;margin-left:0;margin-right:auto;">
+					<p style="margin-bottom: 2px;margin-top: 2px;font-size: 2.4vh;position: fixed; z-index: 1;"><strong>Local Libraries: </strong></p>
+					<div class="row bg-lightGray" style="width:130vw;position: fixed; z-index: 1;">
+						<div class="cell bg-lightGray"  style="width: 70vw">
 							<input type="text" data-role="input" data-search-button="true" data-search-button-click="custom" data-on-search-button-click="search_local_lib" id="slocalbox" onkeyup="search_table('slocalbox','_search_results_')">
 						</div>
-						<div class="cell" style="width:25vw" id="_local_lib_tags_">
+						<div class="cell bg-lightGray" style="width:25vw" id="_local_lib_tags_">
 							<select class="bg-cobalt fg-white" data-role="select" style="width:25vw" id="_local_lib_select_">
 							<option value="all" selected="selected">All</option>
 							</select>
@@ -217,17 +219,17 @@
 					<div class="row" style="width:100vw">
 						<div data-role="activity" data-type="metro" data-style="dark" id="local_activity" style="margin-top:200px;visibility:hidden;display:none"></div>
 					</div>
-					<div class="row" style="width:100vw;display:none;" id="_search_results_">
+					<div class="row" style="width:100vw;display:none;overflow-z:auto;margin-top: 50px;" id="_search_results_">
 					</div>
 			</div></div></div>
 
 				<div class="cell" id="_RemoteLibrary_" style="font-size: 2vh;display:none;overflow-z:auto;"><div><div style="width: 55vw;margin-left:0;margin-right:auto;">
-					<p style="margin-bottom: 2px;margin-top: 2px;font-size: 2.4vh"><strong>Cloud Libraries: </strong></p>
-					<div class="row" style="width:130vw">
-						<div class="cell"  style="width: 70vw">
+					<p style="margin-bottom: 2px;margin-top: 2px;font-size: 2.4vh;position: fixed; z-index: 1;"><strong>Cloud Libraries: </strong></p>
+					<div class="row  bg-lightGray" style="width:130vw;position: fixed; z-index: 1;">
+						<div class="cell  bg-lightGray"  style="width: 70vw">
 							<input type="text" data-role="input" data-search-button="true" data-search-button-click="custom" data-on-search-button-click="search_remote_lib" id="remotebox"  onkeyup="search_table('remotebox','_search_results2_')">
 						</div>
-						<div class="cell" style="width:25vw" id="_remote_lib_tags_">
+						<div class="cell bg-lightGray" style="width:25vw" id="_remote_lib_tags_">
 							<select class="bg-cobalt fg-white" data-role="select" style="width:25vw" id="_remote_lib_select_">
 							<option value="all" selected="selected">All</option>
 							</select>
@@ -235,7 +237,7 @@
 					<div class="row" style="width:100vw">
 						<div data-role="activity" data-type="metro" data-style="dark" id="remote_activity" style="margin-top:200px;visibility:hidden;display:none"></div>
 					</div>
-					<div class="row" style="width:100vw;display:none;" id="_search_results2_">
+					<div class="row" style="width:100vw;display:none;overflow-z:auto;margin-top: 50px;" id="_search_results2_">
 					</div>
 			</div></div></div>
 
@@ -280,11 +282,11 @@
 				<p style="margin-bottom: 2px;margin-top: 2px;font-size: 1.68vh"><strong>RatingTags: </strong><span  id="ratingtags">-</span></p>
 			</div></div></div>
 			<!-- <div class="row" style="margin-bottom: 2px;margin-top: 1px;height: 3vh;bottom:4vh; position:absolute;"> -->
-				<!-- <div class="cell" style='width:55vw;'></div>		 -->
+				<!-- <div class="cell" style='width:55vw;'></div> -->
 				<!-- <div class="cell" style="width:35vw;"> -->
 					<!-- <button class="button alert"  style="height: 40px; width:70px;left:auto;right:-1;margin-right:0;margin-left:80%; position:absolute;" onclick="start()" id="load_button"> -->
 					<!-- <span class="caption">Load</span></button></div> -->
-			<!-- </div>	 -->
+			<!-- </div> -->
 	</div>
 </div>
 
@@ -304,15 +306,15 @@ function sideviewclicks(){
 document.getElementById("collapse_toggle_2").click();
 }
 
-async function start(){
-	show_gameinfo()
-	var fname=await eel.getfname()();
-	if (fname!=null && fname!=""){
-		<!-- console.log(fname); -->
-		resetInfo()
-		start2(fname)
-	}
-}
+<!-- async function start(){ -->
+	<!-- show_gameinfo() -->
+	<!-- var fname=await eel.getfname()(); -->
+	<!-- if (fname!=null && fname!=""){ -->
+		<!-- <!-- console.log(fname); --> -->
+		<!-- resetInfo() -->
+		<!-- start2(fname) -->
+	<!-- } -->
+<!-- } -->
 
 async function start_from_link(){
 	var fname = prompt("Enter local path, gdrive path or public link",
@@ -321,7 +323,7 @@ async function start_from_link(){
 	if (fname!=null && fname!=""){
 		show_gameinfo()
 		resetInfo()
-		start2_remote(fname)
+		eel.addtodrive(fname)(start2_remote)
 	}
 }
 
@@ -355,13 +357,73 @@ async function start2(fname){
 	eel.call_get_verification_data(fname)
 }
 
+function onStartedDownload(id) {
+  console.log(`Started downloading: ${id}`);
+}
+
+function onFailed(error) {
+  console.log(`Download failed: ${error}`);
+}
+
+<!-- eel.expose(browser_download); -->
+<!-- function browser_download(url,token) { -->
+<!-- var xhr = new XMLHttpRequest(); -->
+<!-- xhr.open("GET", url, true); -->
+<!-- xhr.setRequestHeader('Authorization','Bearer '+token); -->
+<!-- xhr.responseType = 'arraybuffer' -->
+<!-- xhr.send(); -->
+<!-- } -->
+
+
+
+eel.expose(browser_download);
+function browser_download(url,token){
+	console.log(url)
+	console.log(token)
+    var xhr = new XMLHttpRequest();
+	xhr.onload = function () {
+		console.log(this.status)
+		if (this.status!=404){
+			var blob = xhr.response;
+			downloadFile(blob);
+		}
+	}
+	xhr.open('GET', url, true);
+	xhr.setRequestHeader('Authorization','Bearer '+token);
+	xhr.responseType = 'blob';
+	<!-- xhr.responseType = 'arraybuffer';	 -->
+	xhr.send();
+}
+
+function downloadFile(blob)
+{
+	console.log(blob)
+    var a = document.createElement("a");
+    document.body.appendChild(a);
+    a.style = "display: none";
+
+    var url = window.URL.createObjectURL(blob);
+    a.href = url;
+    a.download = 'test.nsp';
+    a.click();
+    window.URL.revokeObjectURL(url);
+}
+
+
+
+
+
+
+
 async function start2_remote(fname){
+	console.log(fname)
 	eel.call_showicon_remote(fname)
 	eel.call_getinfo(fname,"True")
 	eel.call_get_adv_filelist(fname,"True")
 	eel.call_get_nacp_data(fname,"True")
 	eel.call_get_npdm_data(fname,"True")
 	eel.call_get_cnmt_data(fname,"True")
+	<!-- eel.download(fname,"True")		 -->
 	<!-- get_verification_data_remote(fname) -->
 }
 
@@ -502,6 +564,20 @@ function set_cheats(data) {
 	document.getElementById("_cheats_bar_but2").setAttribute("class", "caption fg-black");
 }
 
+function set_debug() {
+	var str = window.location.href;
+	var res = str.split(":");var str =res[2]
+	var res = str.split("/");var port =res[0]
+	var tlog='_debug_/log_'+port+'.txt'
+	<!-- console.log(tlog); -->
+    var xhr = new XMLHttpRequest();
+    xhr.onload = function () {
+		document.getElementById("debug_data").textContent = this.responseText;
+    };
+    xhr.open('GET', tlog);
+    xhr.send();
+}
+
 function set_video(data) {
 	if(Hls.isSupported()) {
 	  var video = document.getElementById('video_container');
@@ -629,10 +705,11 @@ document.getElementById("_Nacp_").style.display = "none";
 document.getElementById("_Npdm_").style.display = "none";
 document.getElementById("_Cnmt_").style.display = "none";
 document.getElementById("_Verification_").style.display = "none";
+document.getElementById("_Debug_").style.display = "none";
 <!-- document.getElementById("load_button").style.display = "block"; -->
 document.getElementById("_GameInfo_").style.display = "block";
 document.getElementById("_imagebox_").style.display = "block";
-document.getElementById("_viewspace_").style.height = "100vh";
+document.getElementById("_viewspace_").style.height = "80vh";
 }
 function show_description(){
 if (navclicks>0){
@@ -652,10 +729,11 @@ document.getElementById("_Nacp_").style.display = "none";
 document.getElementById("_Npdm_").style.display = "none";
 document.getElementById("_Cnmt_").style.display = "none";
 document.getElementById("_Verification_").style.display = "none";
+document.getElementById("_Debug_").style.display = "none";
 <!-- document.getElementById("load_button").style.display = "block"; -->
 document.getElementById("_Description_").style.display = "block";
 document.getElementById("_imagebox_").style.display = "block";
-document.getElementById("_viewspace_").style.height = "100vh";
+document.getElementById("_viewspace_").style.height = "80vh";
 }
 function show_pictures(){
 if (navclicks>0){
@@ -675,9 +753,10 @@ document.getElementById("_Nacp_").style.display = "none";
 document.getElementById("_Npdm_").style.display = "none";
 document.getElementById("_Cnmt_").style.display = "none";
 document.getElementById("_Verification_").style.display = "none";
+document.getElementById("_Debug_").style.display = "none";
 <!-- document.getElementById("load_button").style.display = "block"; -->
 document.getElementById("_Pictures_").style.display = "block";
-document.getElementById("_viewspace_").style.height = "100vh";
+document.getElementById("_viewspace_").style.height = "80vh";
 }
 
 function show_video(){
@@ -699,9 +778,10 @@ document.getElementById("_Nacp_").style.display = "none";
 document.getElementById("_Npdm_").style.display = "none";
 document.getElementById("_Cnmt_").style.display = "none";
 document.getElementById("_Verification_").style.display = "none";
+document.getElementById("_Debug_").style.display = "none";
 <!-- document.getElementById("load_button").style.display = "block"; -->
 document.getElementById("_Video_").style.display = "block";
-document.getElementById("_viewspace_").style.height = "100vh";
+document.getElementById("_viewspace_").style.height = "80vh";
 }
 
 function show_gametree(){
@@ -722,10 +802,11 @@ document.getElementById("_Nacp_").style.display = "none";
 document.getElementById("_Npdm_").style.display = "none";
 document.getElementById("_Cnmt_").style.display = "none";
 document.getElementById("_Verification_").style.display = "none";
+document.getElementById("_Debug_").style.display = "none";
 <!-- document.getElementById("load_button").style.display = "block"; -->
 document.getElementById("_Gametree_").style.display = "block";
 document.getElementById("_imagebox_").style.display = "block";
-document.getElementById("_viewspace_").style.height = "100vh";
+document.getElementById("_viewspace_").style.height = "80vh";
 }
 
 function show_cheats(){
@@ -746,10 +827,36 @@ document.getElementById("_Cnmt_").style.display = "none";
 document.getElementById("_Verification_").style.display = "none";
 document.getElementById("_LocalLibrary_").style.display = "none";
 document.getElementById("_RemoteLibrary_").style.display = "none";
+document.getElementById("_Debug_").style.display = "none";
 <!-- document.getElementById("load_button").style.display = "block"; -->
 document.getElementById("_Cheats_").style.display = "block";
 document.getElementById("_imagebox_").style.display = "block";
-document.getElementById("_viewspace_").style.height = "100vh";
+document.getElementById("_viewspace_").style.height = "80vh";
+}
+
+function show_debug(){
+if (navclicks>0){
+document.getElementById("nav_view_but").click();
+}
+document.getElementById("info_tab").click();
+window.scrollTo(0,0);
+document.getElementById("_GameInfo_").style.display = "none";
+document.getElementById("_Pictures_").style.display = "none";
+document.getElementById("_Video_").style.display = "none";
+document.getElementById("_Gametree_").style.display = "none";
+document.getElementById("_Description_").style.display = "none";
+document.getElementById("_Files_").style.display = "none";
+document.getElementById("_Nacp_").style.display = "none";
+document.getElementById("_Npdm_").style.display = "none";
+document.getElementById("_Cnmt_").style.display = "none";
+document.getElementById("_Verification_").style.display = "none";
+document.getElementById("_LocalLibrary_").style.display = "none";
+document.getElementById("_RemoteLibrary_").style.display = "none";
+<!-- document.getElementById("load_button").style.display = "none"; -->
+document.getElementById("_Cheats_").style.display = "none";
+document.getElementById("_imagebox_").style.display = "none";
+document.getElementById("_Debug_").style.display = "block";
+document.getElementById("_viewspace_").style.height = "80vh";
 }
 
 <!-- ############################## -->
@@ -757,6 +864,8 @@ document.getElementById("_viewspace_").style.height = "100vh";
 function get_local_libraries(){
 	eel.get_libraries()(set_local_libraries)
 	show_local_libraries()
+	var selected = document.getElementById("_local_lib_select_").value
+	set_local_lib_cache(selected)
 }
 
 function set_local_libraries(data){
@@ -780,10 +889,11 @@ function show_local_libraries() {
 	document.getElementById("_Npdm_").style.display = "none";
 	document.getElementById("_Cnmt_").style.display = "none";
 	document.getElementById("_Verification_").style.display = "none";
+	document.getElementById("_Debug_").style.display = "none";
 	document.getElementById("_Pictures_").style.display = "none";
-	<!-- document.getElementById("load_button").style.display = "none";	 -->
+	<!-- document.getElementById("load_button").style.display = "none"; -->
 	document.getElementById("_LocalLibrary_").style.display = "block";
-	document.getElementById("_viewspace_").style.height = "100vh";
+	document.getElementById("_viewspace_").style.height = "80vh";
 }
 
 async  function search_local_lib(value){
@@ -794,6 +904,18 @@ async  function search_local_lib(value){
 	var selected = document.getElementById("_local_lib_select_").value
 	<!-- console.log(selected) -->
 	await eel.call_search_local_lib(value,selected)
+}
+
+function set_local_lib_cache(name) {
+	var lib='_cache_/_locallib_/'+name
+    var xhr = new XMLHttpRequest();
+    xhr.onload = function () {
+		if (this.status!=404){
+			load_local_results(this.responseText);
+		};
+    };
+    xhr.open('GET', lib);
+    xhr.send();
 }
 
 eel.expose(load_local_results)
@@ -811,6 +933,8 @@ function load_local_results(data){
 function get_remote_libraries(){
 	eel.get_drive_libraries()(set_remote_libraries)
 	show_remote_libraries()
+	var selected = document.getElementById("_remote_lib_select_").value
+	set_remote_lib_cache(selected)
 }
 
 function set_remote_libraries(data){
@@ -836,9 +960,10 @@ function show_remote_libraries() {
 	document.getElementById("_Verification_").style.display = "none";
 	document.getElementById("_Pictures_").style.display = "none";
 	document.getElementById("_LocalLibrary_").style.display = "none";
-	<!-- document.getElementById("load_button").style.display = "none";		 -->
+	document.getElementById("_Debug_").style.display = "none";
+	<!-- document.getElementById("load_button").style.display = "none"; -->
 	document.getElementById("_RemoteLibrary_").style.display = "block";
-	document.getElementById("_viewspace_").style.height = "100vh";
+	document.getElementById("_viewspace_").style.height = "80vh";
 }
 
 async function search_remote_lib(value){
@@ -849,6 +974,18 @@ async function search_remote_lib(value){
 	var selected = document.getElementById("_remote_lib_select_").value
 	<!-- console.log(selected) -->
 	eel.call_search_remote_lib(value,selected)
+}
+
+function set_remote_lib_cache(name) {
+	var lib='_cache_/_remotelib_/'+name
+    var xhr = new XMLHttpRequest();
+    xhr.onload = function () {
+		if (this.status!=404){
+			load_remote_results(this.responseText);
+		};
+    };
+    xhr.open('GET', lib);
+    xhr.send();
 }
 
 eel.expose(load_remote_results)
@@ -880,9 +1017,10 @@ document.getElementById("nav_view_but").click();
 	document.getElementById("_Npdm_").style.display = "none";
 	document.getElementById("_Cnmt_").style.display = "none";
 	document.getElementById("_Verification_").style.display = "none";
-	<!-- document.getElementById("load_button").style.display = "block";	 -->
+	document.getElementById("_Debug_").style.display = "none";
+	<!-- document.getElementById("load_button").style.display = "block"; -->
 	document.getElementById("_Files_").style.display = "block";
-	document.getElementById("_viewspace_").style.height = "100vh";
+	document.getElementById("_viewspace_").style.height = "80vh";
 }
 function show_nacpdata(){
 if (navclicks>0){
@@ -903,9 +1041,10 @@ document.getElementById("nav_view_but").click();
 	document.getElementById("_Npdm_").style.display = "none";
 	document.getElementById("_Cnmt_").style.display = "none";
 	document.getElementById("_Verification_").style.display = "none";
-	<!-- document.getElementById("load_button").style.display = "block";	 -->
+	document.getElementById("_Debug_").style.display = "none";
+	<!-- document.getElementById("load_button").style.display = "block"; -->
 	document.getElementById("_Nacp_").style.display = "block";
-	document.getElementById("_viewspace_").style.height = "100vh";
+	document.getElementById("_viewspace_").style.height = "80vh";
 }
 function show_npdmdata(){
 if (navclicks>0){
@@ -926,9 +1065,10 @@ document.getElementById("nav_view_but").click();
 	document.getElementById("_Nacp_").style.display = "none";
 	document.getElementById("_Cnmt_").style.display = "none";
 	document.getElementById("_Verification_").style.display = "none";
-	<!-- document.getElementById("load_button").style.display = "block";	 -->
+	document.getElementById("_Debug_").style.display = "none";
+	<!-- document.getElementById("load_button").style.display = "block"; -->
 	document.getElementById("_Npdm_").style.display = "block";
-	document.getElementById("_viewspace_").style.height = "100vh";
+	document.getElementById("_viewspace_").style.height = "80vh";
 }
 function show_cnmtdata(){
 if (navclicks>0){
@@ -949,9 +1089,10 @@ document.getElementById("nav_view_but").click();
 	document.getElementById("_Nacp_").style.display = "none";
 	document.getElementById("_Npdm_").style.display = "none";
 	document.getElementById("_Verification_").style.display = "none";
-	<!-- document.getElementById("load_button").style.display = "block";	 -->
+	document.getElementById("_Debug_").style.display = "none";
+	<!-- document.getElementById("load_button").style.display = "block"; -->
 	document.getElementById("_Cnmt_").style.display = "block";
-	document.getElementById("_viewspace_").style.height = "100vh";
+	document.getElementById("_viewspace_").style.height = "80vh";
 }
 function show_verdata(){
 if (navclicks>0){
@@ -972,9 +1113,10 @@ document.getElementById("nav_view_but").click();
 	document.getElementById("_Nacp_").style.display = "none";
 	document.getElementById("_Npdm_").style.display = "none";
 	document.getElementById("_Cnmt_").style.display = "none";
-	<!-- document.getElementById("load_button").style.display = "block";	 -->
+	document.getElementById("_Debug_").style.display = "none";
+	<!-- document.getElementById("load_button").style.display = "block"; -->
 	document.getElementById("_Verification_").style.display = "block";
-	document.getElementById("_viewspace_").style.height = "100vh";
+	document.getElementById("_viewspace_").style.height = "80vh";
 }
 function setmainimage(route){
 document.getElementById("mainpicture").src = route
