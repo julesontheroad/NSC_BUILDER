@@ -208,7 +208,6 @@ def interface_filter_local(filelist):
 	return filelist	
 	
 def eval_link(tfile,userfile):
-	print("here")
 	link=input("Enter your choice: ")
 	link=link.strip()
 	if '&' in link:
