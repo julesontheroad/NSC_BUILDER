@@ -288,6 +288,7 @@ if __name__ == '__main__':
 		parser.add_argument('-pos','--position', help=argparse.SUPPRESS)#tqdm position, aux argument for pararell	
 		parser.add_argument('-ninst','--n_instances', help=argparse.SUPPRESS)#number of instances, aux argument for pararell			
 		parser.add_argument('-xarg','--explicit_argument', nargs='+', help=argparse.SUPPRESS)#Explicit	arguments for lib_call for files with ","			
+		parser.add_argument('-mtpeval','--mtp_eval_link', nargs='+', help=argparse.SUPPRESS)#Explicit	arguments for lib_call for files with ","					
 		# -> parser.add_argument('-act', '--action', nargs='+', help=argparse.SUPPRESS)		
 		# -> parser.add_argument('-preverify', '--preverification', nargs='+', help=argparse.SUPPRESS)			
 		# -> parser.add_argument('-verDB', '--verificationDB', nargs='+', help=argparse.SUPPRESS) #verificationDB
@@ -314,6 +315,26 @@ if __name__ == '__main__':
 			else:
 				vret=secondary.call_library(args.library_call)
 			Status.close()
+			
+		if args.mtp_eval_link:
+			tfile=args.mtp_eval_link[0]
+			userfile=args.mtp_eval_link[1]			
+			link=input("Enter your choice: ")
+			link=link.strip()
+			if '&' in link:
+				varout='999'
+			elif len(link)<2:
+				varout=link
+			else:
+				varout='999'
+			with open(userfile,"w", encoding='utf8') as userinput:
+				userinput.write(varout)		
+			if link.startswith('https://1fichier.com'):
+				with open(tfile,"a", encoding='utf8') as textfile:
+					textfile.write(link+'\n')				
+			elif link.startswith('https://drive.google.com'):
+				with open(tfile,"a", encoding='utf8') as textfile:
+					textfile.write(link+'\n')						
 
 		if args.threads and not args.compress and not args.decompress:
 			import secondary

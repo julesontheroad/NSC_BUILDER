@@ -74,7 +74,7 @@ ECHO *************************************************
 echo Or Input "0" to return to the MODE SELECTION MENU
 ECHO *************************************************
 echo.
-%pycommand% "%squirrel%" -lib_call mtp.mtp_gdrive eval_link -xarg "%bs%" "%prog_dir%MTP2GD.txt" "%uinput%"
+%pycommand% "%squirrel%" --mtp_eval_link "%prog_dir%MTP2GD.txt" "%uinput%"
 set /p eval=<"%uinput%"
 set eval=%eval:"=%
 setlocal enabledelayedexpansion
@@ -109,7 +109,7 @@ ECHO *************************************************
 echo Or Input "0" to return to the MODE SELECTION MENU
 ECHO *************************************************
 echo.
-%pycommand% "%squirrel%" -lib_call mtp.mtp_gdrive eval_link -xarg "%bs%" "%prog_dir%MTP2GD.txt" "%uinput%"
+%pycommand% "%squirrel%" --mtp_eval_link "%prog_dir%MTP2GD.txt" "%uinput%"
 set /p eval=<"%uinput%"
 set eval=%eval:"=%
 setlocal enabledelayedexpansion
