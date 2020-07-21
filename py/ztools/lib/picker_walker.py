@@ -89,7 +89,7 @@ def pick_order():
 
 def pick_folder(folders,previous):
 	Recursive=False
-	title = 'Pick folder:\n + Press space or right to select content \n + Press E to move to file selection fase (Shows files in current folder) \n + Press R to move to file selection fase (Shows files recursevely including subfolders) \n + Press X to exit selection'
+	title = 'Pick folder:\n + Press space or right to select content \n + Press E to move to file selection phase (Shows files in current folder) \n + Press R to move to file selection phase (Shows files recursevely including subfolders) \n + Press X to exit selection'
 	options = folders
 	picker = Picker(options, title, min_selection_count=1)	
 	def end_selection(picker):

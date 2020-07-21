@@ -589,7 +589,7 @@ def search_folder(path,TD=None,ext=None,filter=None,order=None,mime='files',Pick
 		elif mime=="files":
 			title = 'Select result:'
 		else:
-			title = 'Select result:\n + Press space or right to select content \n + Press E to move to file selection fase \n + Press X to exit selection'
+			title = 'Select result:\n + Press space or right to select content \n + Press E to move to file selection phase \n + Press X to exit selection'
 		oplist=list();cleanlist=list()
 		if mime=='folders':
 			for item in file_list:
