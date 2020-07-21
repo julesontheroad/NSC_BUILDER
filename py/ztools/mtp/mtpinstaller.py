@@ -25,7 +25,6 @@ import time
 from python_pick import pick
 from python_pick import Picker
 from secondary import clear_Screen
-from Interface import About
 
 def check_connection():
 	if not is_switch_connected():
@@ -69,6 +68,25 @@ games_installed_cache=os.path.join(cachefolder, 'games_installed.txt')
 mtp_source_lib=os.path.join(zconfig_dir,'mtp_source_libraries.txt')
 mtp_internal_lib=os.path.join(zconfig_dir,'mtp_SD_libraries.txt')
 storage_info=os.path.join(cachefolder, 'storage.csv')
+
+def About():	
+	print('                                       __          _ __    __                         ')
+	print('                 ____  _____ ____     / /_  __  __(_) /___/ /__  _____                ')
+	print('                / __ \/ ___/ ___/    / __ \/ / / / / / __  / _ \/ ___/                ')
+	print('               / / / (__  ) /__     / /_/ / /_/ / / / /_/ /  __/ /                    ')
+	print('              /_/ /_/____/\___/____/_.___/\__,_/_/_/\__,_/\___/_/                     ')
+	print('                             /_____/                                                  ')
+	print('------------------------------------------------------------------------------------- ')
+	print('                        NINTENDO SWITCH CLEANER AND BUILDER                           ')
+	print('------------------------------------------------------------------------------------- ')
+	print('=============================     BY JULESONTHEROAD     ============================= ')
+	print('------------------------------------------------------------------------------------- ')
+	print('"                                POWERED BY SQUIRREL                                " ')
+	print('"                    BASED ON THE WORK OF BLAWAR AND LUCA FRAGA                     " ')
+	print('------------------------------------------------------------------------------------- ')                   
+	print("Program's github: https://github.com/julesontheroad/NSC_BUILDER                       ")
+	print('Cheats and Eshop information from nutdb and http://tinfoil.io                         ')
+	print('------------------------------------------------------------------------------------- ')	
 
 def search_with_filter(folder_paths,mode='installer'):
 	if mode=='installer':
