@@ -207,7 +207,8 @@ def interface_filter_local(filelist):
 		filelist=listmanager.filter_vlist(filelist,token=ck,Print=False)
 	return filelist	
 	
-def eval_link(link,tfile,userfile):	
+def eval_link(tfile,userfile):
+	print("here")
 	link=input("Enter your choice: ")
 	link=link.strip()
 	if '&' in link:
