@@ -702,7 +702,7 @@ ECHO "                         A MTP MANAGER FOR DBI INSTALLER                  
 ECHO                                  VERSION 1.00 (MTP)
 ECHO -------------------------------------------------------------------------------------
 ECHO DBI by DUCKBILL: https://github.com/rashevskyv/switch/releases
-ECHO Tested with v1.25: https://github.com/rashevskyv/switch/releases/tag/456
+ECHO Latest DBI: https://github.com/rashevskyv/switch/releases/tag/462
 ECHO -------------------------------------------------------------------------------------
 exit /B
 
