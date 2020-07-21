@@ -1,4 +1,4 @@
-# NSC_Builder v1.00 - Changelog
+# NSC_Builder v1.00b - Changelog
 
 ![DeviceTag](https://img.shields.io/badge/Device-SWITCH-e60012.svg)  ![LanguageTag](https://img.shields.io/badge/languages-python_batch_html5_javascript-blue.svg)
 
@@ -24,6 +24,14 @@ Here's also a little readme with some DBI information:
 https://github.com/julesontheroad/NSC_BUILDER/tree/master/py/Documentation%20and%20Resources/DBI
 
 ## *Changelog*
+
+### 1.00b Fixes
+
+Fixed issue where on some systems some search filters wouldn't show the message asking for an input.
+
+Fixed bug introduced by 1.00 that would stop the databases update in the middle of the process.
+
+If you already setup 1.00 just override ztools by the 1.00b version. There's no changes in the config files.
 
 ### 1. Added NSCB.exe
 

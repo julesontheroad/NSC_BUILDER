@@ -327,7 +327,7 @@ To install multi-nsp you need a installer compatible with them. Reported compati
 - Blawar’s tinfoil or Lithium:
 http://tinfoil.io/Download#download
 - DBI Installer from DuckBill
-https://github.com/rashevskyv/switch/releases/tag/456
+https://github.com/rashevskyv/switch/releases/
 - Awoo Installer
 https://github.com/Huntereb/Awoo-Installer
 
