@@ -520,7 +520,7 @@ def get_otherDB(dbfile,dbname,f,URL=None):
 def check_ver_not_missing(_dbfile_,force=False):
 	if force==True:
 		get_otherDB(urlconfig,'versions_txt','nutdb_versions.txt',URL='http://tinfoil.media/repo/db/versions.txt')	
-		get_otherDB(urlconfig,'versions')			
+		get_otherDB(urlconfig,'versions','nutdb_versions.json')			
 		return
 	try:	
 		with open(_dbfile_,'rt',encoding='utf8') as csvfile:
@@ -540,14 +540,14 @@ def check_ver_not_missing(_dbfile_,force=False):
 						if v_=='':
 							print("Version numbers missing falling back to tinfoil media")
 							get_otherDB(urlconfig,'versions_txt','nutdb_versions.txt',URL='http://tinfoil.media/repo/db/versions.txt')
-							get_otherDB(urlconfig,'versions')								
+							get_otherDB(urlconfig,'versions','nutdb_versions.json')								
 					except:
 						get_otherDB(urlconfig,'versions_txt','nutdb_versions.txt',URL='http://tinfoil.media/repo/db/versions.txt')
 						get_otherDB(urlconfig,'versions','nutdb_versions.json',URL='http://tinfoil.media/repo/db/versions.json')
 					break	
 	except:
 		get_otherDB(urlconfig,'versions_txt','nutdb_versions.txt',URL='http://tinfoil.media/repo/db/versions.txt')	
-		get_otherDB(urlconfig,'versions')			
+		get_otherDB(urlconfig,'versions','nutdb_versions.json')			
 	consolidate_versiondb()
 
 def consolidate_versiondb():
@@ -624,6 +624,141 @@ def consolidate_versiondb():
 		csvfile.write('id|version\n')
 		for i in sorted(ver_txt_dict.keys()):
 			csvfile.write(f"{i}|{ver_txt_dict[i]}\n")
+			
+def return_versiondb():
+	ver_txt=os.path.join(DATABASE_folder, 'nutdb_versions.txt')
+	ver_txt_dict={};data={}
+	if os.path.exists(ver_txt):	
+		with open(ver_txt,'rt',encoding='utf8') as csvfile:
+			readCSV = csv.reader(csvfile, delimiter='|')	
+			i=0			
+			for row in readCSV:
+				if i==0:
+					csvheader=row
+					i=1
+					if 'id' and 'version' in csvheader:
+						id=csvheader.index('id')
+						ver=csvheader.index('version')	
+					else:break	
+				else:	
+					tid=str(row[id]).upper() 
+					v_=str(row[ver])
+					if v_=="" and tid.endswith('800'):
+						v_=65536
+					elif v_=="":
+						v_=0					
+					ver_txt_dict[tid]=v_
+	return ver_txt_dict,ver_txt
+	
+def get_libs_remote_source(lib):
+	libraries={}
+	libtfile=lib
+	with open(libtfile,'rt',encoding='utf8') as csvfile:
+		readCSV = csv.reader(csvfile, delimiter='|')	
+		i=0;up=False;tdn=False;	
+		for row in readCSV:
+			if i==0:
+				csvheader=row
+				i=1
+				if 'library_name' and 'path' and 'TD_name' and 'Update' in csvheader:
+					lb=csvheader.index('library_name')
+					pth=csvheader.index('path')	
+					tdn=csvheader.index('TD_name')	
+					up=csvheader.index('Update')	
+				else:
+					if 'library_name' and 'path' and 'TD_name' in csvheader:
+						lb=csvheader.index('library_name')
+						tdn=csvheader.index('TD_name')
+						pth=csvheader.index('path')				
+					else:break	
+			else:	
+				try:
+					update=False
+					library=str(row[lb])
+					route=str(row[pth])		
+					if tdn!=False:
+						try:
+							TD=str(row[tdn])
+							if TD=='':
+								TD=None
+						except:
+							TD=None
+					else:	
+						TD=None					
+					if up!=False:
+						try:
+							update=str(row[up])
+							if update.upper()=="TRUE":
+								update=True
+							else:
+								update=False
+						except:	
+							update=True
+					else:
+						update=False
+					libraries[library]=[route,TD,update]
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))			
+					pass
+		if not libraries:
+			return False
+	return libraries					
+	
+def update_version_db_from_gd():	
+	from workers import concurrent_scrapper
+	remote_lib_file = os.path.join(zconfig_dir, 'remote_libraries.txt')		
+	ver_txt_dict,ver_txt=return_versiondb()
+	libdict=get_libs_remote_source(remote_lib_file)
+	if libdict==False:
+		sys.exit("No libraries set up")
+	pths={};TDs={};
+	for entry in libdict.keys():
+		pths[entry]=((libdict[entry])[0])
+		TDs[entry]=((libdict[entry])[1])
+	# print(pths);print(TDs);
+	print("1. Parsing files from Google Drive. Please Wait...")		
+	# print(pths)
+	if isinstance(pths, dict):
+		db={}
+		for i in pths.keys():
+			db[i]={'path':pths[i],'TD_name':TDs[i]}	
+		files=concurrent_scrapper(filter='',order='name_ascending',remotelib='all',db=db)
+	else:
+		db={}
+		db[pths]={'path':pths,'TD_name':TDs}			
+		files=concurrent_scrapper(filter=filter,order='name_ascending',remotelib='all',db=db)
+	remotelist=[]		
+	for f in files:
+		remotelist.append(f[0])
+	remotelist.reverse()
+	# for f in remotelist:
+		# print(f)
+	remotegames={}		
+	for g in remotelist:
+		entry=listmanager.parsetags(g)
+		entry=list(entry)
+		entry.append(g)		
+		if not entry[0] in remotegames:
+			remotegames[entry[0]]=entry
+		else:
+			v=(remotegames[entry[0]])[1]
+			if int(entry[1])>int(v):
+				remotegames[entry[0]]=entry		
+	print("2. Consolidating DB...")						
+	for tid in remotegames.keys():
+		if not tid in ver_txt_dict:				
+			ver_txt_dict[tid]=int((remotegames[tid])[1])
+		else:
+			# print(tid)		
+			# print((remotegames[tid])[1])
+			# print(ver_txt_dict[tid])			
+			if int((remotegames[tid])[1])>int(ver_txt_dict[tid]):
+				ver_txt_dict[tid]=int((remotegames[tid])[1])
+	with open(ver_txt,'wt',encoding='utf8') as csvfile:			
+		csvfile.write('id|version\n')
+		for i in sorted(ver_txt_dict.keys()):
+			csvfile.write(f"{i}|{ver_txt_dict[i]}\n")	
+	consolidate_versiondb()			
 	
 def get_regionDB(region):
 	url=regionurl(region)
@@ -700,7 +835,8 @@ def force_refresh():
 		get_otherDB(urlconfig,'fw','fw.json')
 		consolidate_versiondb()
 		return True
-	except:
+	except BaseException as e:
+		Print.error('Exception: ' + str(e))		
 		return False
 					
 def check_current():	
