@@ -869,9 +869,7 @@ def loop_transfer(tfile):
 				print("Item is a remote library link. Redirecting...")
 				gdrive_transfer(item,destiny)
 				
-
 def get_libs_remote_source(lib=remote_lib_file):
-	check_connection()
 	libraries={}
 	libtfile=lib
 	with open(libtfile,'rt',encoding='utf8') as csvfile:
