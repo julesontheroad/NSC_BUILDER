@@ -211,8 +211,8 @@ v0.94 - Improvements in compression support and restore mode:
 	- Added verification for nsz compressed files. Notes:
 	  * Level 1 verification runs normally in nca objects
 	  * Level 1 verification works in ncz base games and dlc ncz objects
-	  * In the testing fase a level 1 verifcation failure in a ncz object will prompt
-	    to hash the file. This is done to prevent false positives in this fase.
+	  * In the testing phase a level 1 verifcation failure in a ncz object will prompt
+	    to hash the file. This is done to prevent false positives in this phase.
 	  * Ticket verification only works when there is nca with titlerights
 	    uncompressed in the nsz if not is ommited
 	  * Level 2 verification works normally as it does in nsp\xci files
