@@ -7,7 +7,6 @@ import listmanager
 import os
 import shutil
 from secondary import clear_Screen
-from Interface import About
 import csv
 
 squirrel_dir=os.path.abspath(os.curdir)
@@ -35,6 +34,25 @@ elif os.path.exists(testroute2):
 	squirrel=testroute2
 	isExe=True
 local_libraries=os.path.join(zconfig_dir,'local_libraries.txt')
+
+def About():	
+	print('                                       __          _ __    __                         ')
+	print('                 ____  _____ ____     / /_  __  __(_) /___/ /__  _____                ')
+	print('                / __ \/ ___/ ___/    / __ \/ / / / / / __  / _ \/ ___/                ')
+	print('               / / / (__  ) /__     / /_/ / /_/ / / / /_/ /  __/ /                    ')
+	print('              /_/ /_/____/\___/____/_.___/\__,_/_/_/\__,_/\___/_/                     ')
+	print('                             /_____/                                                  ')
+	print('------------------------------------------------------------------------------------- ')
+	print('                        NINTENDO SWITCH CLEANER AND BUILDER                           ')
+	print('------------------------------------------------------------------------------------- ')
+	print('=============================     BY JULESONTHEROAD     ============================= ')
+	print('------------------------------------------------------------------------------------- ')
+	print('"                                POWERED BY SQUIRREL                                " ')
+	print('"                    BASED ON THE WORK OF BLAWAR AND LUCA FRAGA                     " ')
+	print('------------------------------------------------------------------------------------- ')                   
+	print("Program's github: https://github.com/julesontheroad/NSC_BUILDER                       ")
+	print('Cheats and Eshop information from nutdb and http://tinfoil.io                         ')
+	print('------------------------------------------------------------------------------------- ')
 
 def get_disks():
 	available_drives = ['%s:' % d for d in string.ascii_uppercase if os.path.exists('%s:' % d)]

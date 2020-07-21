@@ -30,13 +30,31 @@ from Drive import Public as DrivePublic
 from Drive import DriveTools
 import requests
 from Drive import Download as Drv
-from Interface import About
 from workers import concurrent_scrapper
 from mtpinstaller import get_storage_info
 try:
 	import ujson as json
 except:
 	import json
+	
+def About():	
+	print('                                       __          _ __    __                         ')
+	print('                 ____  _____ ____     / /_  __  __(_) /___/ /__  _____                ')
+	print('                / __ \/ ___/ ___/    / __ \/ / / / / / __  / _ \/ ___/                ')
+	print('               / / / (__  ) /__     / /_/ / /_/ / / / /_/ /  __/ /                    ')
+	print('              /_/ /_/____/\___/____/_.___/\__,_/_/_/\__,_/\___/_/                     ')
+	print('                             /_____/                                                  ')
+	print('------------------------------------------------------------------------------------- ')
+	print('                        NINTENDO SWITCH CLEANER AND BUILDER                           ')
+	print('------------------------------------------------------------------------------------- ')
+	print('=============================     BY JULESONTHEROAD     ============================= ')
+	print('------------------------------------------------------------------------------------- ')
+	print('"                                POWERED BY SQUIRREL                                " ')
+	print('"                    BASED ON THE WORK OF BLAWAR AND LUCA FRAGA                     " ')
+	print('------------------------------------------------------------------------------------- ')                   
+	print("Program's github: https://github.com/julesontheroad/NSC_BUILDER                       ")
+	print('Cheats and Eshop information from nutdb and http://tinfoil.io                         ')
+	print('------------------------------------------------------------------------------------- ')	
 
 def check_connection():
 	if not is_switch_connected():
