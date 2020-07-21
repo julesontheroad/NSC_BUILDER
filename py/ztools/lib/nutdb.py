@@ -520,7 +520,7 @@ def get_otherDB(dbfile,dbname,f,URL=None):
 def check_ver_not_missing(_dbfile_,force=False):
 	if force==True:
 		get_otherDB(urlconfig,'versions_txt','nutdb_versions.txt',URL='http://tinfoil.media/repo/db/versions.txt')	
-		get_otherDB(urlconfig,'versions')			
+		get_otherDB(urlconfig,'versions','nutdb_versions.json')			
 		return
 	try:	
 		with open(_dbfile_,'rt',encoding='utf8') as csvfile:
@@ -540,14 +540,14 @@ def check_ver_not_missing(_dbfile_,force=False):
 						if v_=='':
 							print("Version numbers missing falling back to tinfoil media")
 							get_otherDB(urlconfig,'versions_txt','nutdb_versions.txt',URL='http://tinfoil.media/repo/db/versions.txt')
-							get_otherDB(urlconfig,'versions')								
+							get_otherDB(urlconfig,'versions','nutdb_versions.json')								
 					except:
 						get_otherDB(urlconfig,'versions_txt','nutdb_versions.txt',URL='http://tinfoil.media/repo/db/versions.txt')
 						get_otherDB(urlconfig,'versions','nutdb_versions.json',URL='http://tinfoil.media/repo/db/versions.json')
 					break	
 	except:
 		get_otherDB(urlconfig,'versions_txt','nutdb_versions.txt',URL='http://tinfoil.media/repo/db/versions.txt')	
-		get_otherDB(urlconfig,'versions')			
+		get_otherDB(urlconfig,'versions','nutdb_versions.json')			
 	consolidate_versiondb()
 
 def consolidate_versiondb():
@@ -700,7 +700,8 @@ def force_refresh():
 		get_otherDB(urlconfig,'fw','fw.json')
 		consolidate_versiondb()
 		return True
-	except:
+	except BaseException as e:
+		Print.error('Exception: ' + str(e))		
 		return False
 					
 def check_current():	
