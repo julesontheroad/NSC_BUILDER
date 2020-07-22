@@ -617,7 +617,10 @@ def get_installed_info(tfile=None,search_new=True,excludehb=True):
 				if k in installed.keys() or k.endswith('000') or k.endswith('800'):
 					continue
 				else:
-					baseid=get_dlc_baseid(k)
+					try:
+						baseid=get_dlc_baseid(k)
+					except:
+						baseid=k
 					updid=baseid[:-3]+'800'
 					if baseid in installed.keys() or updid in installed.keys():
 						fileid,fileversion,cctag,nG,nU,nD,baseid,g0,g=installed[baseid]
@@ -775,20 +778,22 @@ def get_archived_info(search_new=True,excludehb=True):
 		print("NEW DLCS")
 		print("..........................................................")	
 		for k in versiondict.keys():
-			try:
-				if k in dbi_dict.keys() or k.endswith('000') or k.endswith('800'):
-					continue
-				else:
+			if k in dbi_dict.keys() or k.endswith('000') or k.endswith('800'):
+				continue
+			else:
+				try:
 					baseid=get_dlc_baseid(k)
-					updid=baseid[:-3]+'800'
-					if baseid in dbi_dict.keys() or updid in dbi_dict.keys():
-						fileid,fileversion,g0=dbi_dict[baseid]
-						if len(g0)>33:
-							g0=g0[0:30]+'...'	
-						else:
-							g0=g0+((33-len(g0))*' ')						
-						print(f"{g0} [{baseid}] -> "+forecombo+ f"[{k}] [v{versiondict[k]}]"+Style.RESET_ALL)	
-			except:pass			
+				except:
+					baseid=k
+				updid=baseid[:-3]+'800'
+				if baseid in dbi_dict.keys() or updid in dbi_dict.keys():
+					fileid,fileversion,g0=dbi_dict[baseid]
+					if len(g0)>33:
+						g0=g0[0:30]+'...'	
+					else:
+						g0=g0+((33-len(g0))*' ')						
+					print(f"{g0} [{baseid}] -> "+forecombo+ f"[{k}] [v{versiondict[k]}]"+Style.RESET_ALL)	
+		
 			
 def update_console(libraries="all",destiny="SD",exclude_xci=True,prioritize_nsz=True,tfile=None,verification=True,ch_medium=True,ch_other=False,autoupd_aut=True):	
 	check_connection()
