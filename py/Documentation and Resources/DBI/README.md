@@ -1,4 +1,5 @@
-# DBI 125 from DuckBill
+# DBI from DuckBill
+You can normally find the latest recommended DBI version on the current kefir pack. NSCB MTP support was tested from DBI version 125. 
 https://github.com/rashevskyv/switch/releases/tag/456
 
 ## 1. What's DBI?
