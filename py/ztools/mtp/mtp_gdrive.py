@@ -385,7 +385,8 @@ def loop_install(tfile,destiny="SD",outfolder=None,ch_medium=True,check_fw=True,
 				else:
 					print("Couldn't find file. Skipping...")					
 			else:	
-				gdrive_install(item,destiny,outfolder=outfolder,ch_medium=ch_medium,check_fw=check_fw,patch_keygen=patch_keygen,ch_base=ch_base,ch_other=ch_other,checked=checked,installed_list=installed)			
+				gdrive_install(item,destiny,outfolder=outfolder,ch_medium=ch_medium,check_fw=check_fw,patch_keygen=patch_keygen,ch_base=ch_base,ch_other=ch_other,checked=checked,installed_list=installed)	
+		print("")				
 	
 def get_library_from_path(tfile=None,filename=None):
 	if tfile==None:
@@ -868,6 +869,7 @@ def loop_transfer(tfile):
 			if lib!=None:
 				print("Item is a remote library link. Redirecting...")
 				gdrive_transfer(item,destiny)
+		print("")		
 				
 def get_libs_remote_source(lib=remote_lib_file):
 	libraries={}
