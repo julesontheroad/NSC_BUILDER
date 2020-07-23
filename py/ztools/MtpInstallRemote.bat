@@ -81,9 +81,9 @@ setlocal enabledelayedexpansion
 echo+ >"%uinput%"
 endlocal
 if /i "%eval%"=="0" goto MAIN
-if /i "%eval%"=="1" ( %pycommand% "%squirrel%" -lib_call mtp.mtp_gdrive select_from_cache -xarg "%prog_dir%MTP1GD.txt" )
-if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call mtp.mtp_gdrive select_from_libraries -xarg "%prog_dir%MTP1GD.txt" )
-if /i "%eval%"=="3" ( %pycommand% "%squirrel%" -lib_call mtp.mtp_gdrive select_from_walker -xarg "%prog_dir%MTP1GD.txt" "nsp nsz" )
+if /i "%eval%"=="1" ( %pycommand% "%squirrel%" -lib_call picker_walker remote_select_from_cache -xarg "%prog_dir%MTP1GD.txt" )
+if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call picker_walker remote_select_from_libraries -xarg "%prog_dir%MTP1GD.txt" )
+if /i "%eval%"=="3" ( %pycommand% "%squirrel%" -lib_call picker_walker remote_select_from_walker -xarg "%prog_dir%MTP1GD.txt" "nsp nsz" )
 if /i "%eval%"=="c" ( %pycommand% "%squirrel%" -lib_call workers concurrent_cache )
 echo.
 goto checkagain
@@ -117,9 +117,9 @@ echo+ >"%uinput%"
 endlocal
 if /i "%eval%"=="0" goto MAIN
 if /i "%eval%"=="1" goto select_medium
-if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call mtp.mtp_gdrive select_from_cache -xarg "%prog_dir%MTP1GD.txt" )
-if /i "%eval%"=="3" ( %pycommand% "%squirrel%" -lib_call mtp.mtp_gdrive select_from_libraries -xarg "%prog_dir%MTP1GD.txt" )
-if /i "%eval%"=="4" ( %pycommand% "%squirrel%" -lib_call mtp.mtp_gdrive select_from_walker -xarg "%prog_dir%MTP1GD.txt" "nsp nsz" )
+if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call picker_walker remote_select_from_cache -xarg "%prog_dir%MTP1GD.txt" )
+if /i "%eval%"=="3" ( %pycommand% "%squirrel%" -lib_call picker_walker remote_select_from_libraries -xarg "%prog_dir%MTP1GD.txt" )
+if /i "%eval%"=="4" ( %pycommand% "%squirrel%" -lib_call picker_walker remote_select_from_walker -xarg "%prog_dir%MTP1GD.txt" "nsp nsz" )
 if /i "%eval%"=="c" ( %pycommand% "%squirrel%" -lib_call workers concurrent_cache )
 if /i "%eval%"=="e" goto salida
 if /i "%eval%"=="i" goto showlist
