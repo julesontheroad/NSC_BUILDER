@@ -2,7 +2,7 @@
 :TOP_INIT
 CD /d "%prog_dir%"
 set "bat_name=%~n0"
-Title NSC_Builder v1.00b -- Profile: %ofile_name% -- by JulesOnTheRoad
+Title NSC_Builder v1.00c -- Profile: %ofile_name% -- by JulesOnTheRoad
 
 :MAIN
 if exist "MTP1GD.txt" goto prevlist
@@ -81,9 +81,9 @@ setlocal enabledelayedexpansion
 echo+ >"%uinput%"
 endlocal
 if /i "%eval%"=="0" goto MAIN
-if /i "%eval%"=="1" ( %pycommand% "%squirrel%" -lib_call mtp.mtp_gdrive select_from_cache -xarg "%prog_dir%MTP1GD.txt" )
-if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call mtp.mtp_gdrive select_from_libraries -xarg "%prog_dir%MTP1GD.txt" )
-if /i "%eval%"=="3" ( %pycommand% "%squirrel%" -lib_call mtp.mtp_gdrive select_from_walker -xarg "%prog_dir%MTP1GD.txt" "nsp nsz" )
+if /i "%eval%"=="1" ( %pycommand% "%squirrel%" -lib_call picker_walker remote_select_from_cache -xarg "%prog_dir%MTP1GD.txt" )
+if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call picker_walker remote_select_from_libraries -xarg "%prog_dir%MTP1GD.txt" )
+if /i "%eval%"=="3" ( %pycommand% "%squirrel%" -lib_call picker_walker remote_select_from_walker -xarg "%prog_dir%MTP1GD.txt" "nsp nsz" )
 if /i "%eval%"=="c" ( %pycommand% "%squirrel%" -lib_call workers concurrent_cache )
 echo.
 goto checkagain
@@ -117,9 +117,9 @@ echo+ >"%uinput%"
 endlocal
 if /i "%eval%"=="0" goto MAIN
 if /i "%eval%"=="1" goto select_medium
-if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call mtp.mtp_gdrive select_from_cache -xarg "%prog_dir%MTP1GD.txt" )
-if /i "%eval%"=="3" ( %pycommand% "%squirrel%" -lib_call mtp.mtp_gdrive select_from_libraries -xarg "%prog_dir%MTP1GD.txt" )
-if /i "%eval%"=="4" ( %pycommand% "%squirrel%" -lib_call mtp.mtp_gdrive select_from_walker -xarg "%prog_dir%MTP1GD.txt" "nsp nsz" )
+if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call picker_walker remote_select_from_cache -xarg "%prog_dir%MTP1GD.txt" )
+if /i "%eval%"=="3" ( %pycommand% "%squirrel%" -lib_call picker_walker remote_select_from_libraries -xarg "%prog_dir%MTP1GD.txt" )
+if /i "%eval%"=="4" ( %pycommand% "%squirrel%" -lib_call picker_walker remote_select_from_walker -xarg "%prog_dir%MTP1GD.txt" "nsp nsz" )
 if /i "%eval%"=="c" ( %pycommand% "%squirrel%" -lib_call workers concurrent_cache )
 if /i "%eval%"=="e" goto salida
 if /i "%eval%"=="i" goto showlist
@@ -260,7 +260,7 @@ ECHO =============================     BY JULESONTHEROAD     ===================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                                POWERED BY SQUIRREL                                "
 ECHO "                         A MTP MANAGER FOR DBI INSTALLER                           "
-ECHO                                  VERSION 1.00b (MTP)
+ECHO                                  VERSION 1.00c (MTP)
 ECHO -------------------------------------------------------------------------------------
 ECHO DBI by DUCKBILL: https://github.com/rashevskyv/switch/releases
 ECHO Latest DBI: https://github.com/rashevskyv/switch/releases/tag/462

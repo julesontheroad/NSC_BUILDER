@@ -8,7 +8,11 @@ import os
 import shutil
 from secondary import clear_Screen
 import csv
-
+try:
+	import ujson as json
+except:
+	import json
+	
 squirrel_dir=os.path.abspath(os.curdir)
 NSCB_dir=os.path.abspath('../'+(os.curdir))
 if os.path.exists(os.path.join(squirrel_dir,'ztools')):
@@ -34,6 +38,9 @@ elif os.path.exists(testroute2):
 	squirrel=testroute2
 	isExe=True
 local_libraries=os.path.join(zconfig_dir,'local_libraries.txt')
+remote_lib_file = os.path.join(zconfig_dir, 'remote_libraries.txt')
+remote_lib_cache=os.path.join(zconfig_dir, 'remote_lib_cache')	
+cache_lib_file= os.path.join(zconfig_dir, 'remote_cache_location.txt')
 
 def About():	
 	print('                                       __          _ __    __                         ')
@@ -53,6 +60,45 @@ def About():
 	print("Program's github: https://github.com/julesontheroad/NSC_BUILDER                       ")
 	print('Cheats and Eshop information from nutdb and http://tinfoil.io                         ')
 	print('------------------------------------------------------------------------------------- ')
+	
+def libraries(tfile):
+	db={}
+	try:
+		with open(tfile,'rt',encoding='utf8') as csvfile:
+			readCSV = csv.reader(csvfile, delimiter='|')	
+			i=0	
+			for row in readCSV:
+				if i==0:
+					csvheader=row
+					i=1
+				else:
+					dict_={}
+					for j in range(len(csvheader)):
+						try:
+							if row[j]==None or row[j]=='':
+								dict_[csvheader[j]]=None
+							else:	
+								dict_[csvheader[j]]=row[j]
+						except:
+							dict_[csvheader[j]]=None
+					db[row[0]]=dict_
+		return db			
+	except BaseException as e:
+		Print.error('Exception: ' + str(e))
+		return False	
+		
+def get_cache_lib():
+	db=libraries(cache_lib_file)
+	TD=None;lib=None;path="null";libpath=None
+	for entry in db:
+		path=db[entry]['path']
+		TD=db[entry]['TD_name']
+		lib=entry
+		libpath=path
+		break
+	if TD=='':
+		TD=None
+	return lib,TD,libpath				
 
 def get_disks():
 	available_drives = ['%s:' % d for d in string.ascii_uppercase if os.path.exists('%s:' % d)]
@@ -362,4 +408,255 @@ def select_from_local_libraries(tfile=None,extlist=['nsp','nsz','xci','xcz']):
 		for f in selected:
 			fpath=(filedata[f[0]])['filepath']		
 			filespaths.append(fpath)		
-		return filespaths
+		return filespaths	
+		
+def remote_interface_filter(path=None):
+	title = 'Add a search filter?: '
+	options = ['Yes','No']	
+	selected = pick(options, title, min_selection_count=1)
+	response=selected[0]
+	if response=='No':
+		return None
+	else:
+		clear_Screen()
+		About()
+		if path != None:
+			print("Filepath {}\n".format(str(path)))
+		ck=input('INPUT SEARCH FILTER: ')
+		return ck		
+		
+def remote_interface_filter_local(filelist):
+	title = 'Add a search filter?: '
+	options = ['Yes','No']	
+	selected = pick(options, title, min_selection_count=1)
+	response=selected[0]
+	if response=='No':
+		return filelist
+	else:
+		clear_Screen()
+		About()
+		ck=input('INPUT SEARCH FILTER: ')
+		filelist=listmanager.filter_vlist(filelist,token=ck,Print=False)
+	return filelist		
+
+def eval_link(tfile,userfile):
+	link=input("Enter your choice: ")
+	link=link.strip()
+	if '&' in link:
+		varout='999'
+	elif len(link)<2:
+		varout=link
+	else:
+		varout='999'
+	with open(userfile,"w", encoding='utf8') as userinput:
+		userinput.write(varout)		
+	if link.startswith('https://1fichier.com'):
+		with open(tfile,"a", encoding='utf8') as textfile:
+			textfile.write(link+'\n')				
+	elif link.startswith('https://drive.google.com'):
+		with open(tfile,"a", encoding='utf8') as textfile:
+			textfile.write(link+'\n')		
+			
+def drive_pick_libraries():
+	title = 'Select libraries to search:  \n + Press space or right to select content \n + Press E to finish selection'
+	db=libraries(remote_lib_file)
+	if db==False:
+		return False,False
+	options = [x for x in db.keys()]
+	picker = Picker(options, title,multi_select=True,min_selection_count=1)	
+	def end_selection(picker):
+		return False,-1		
+	picker.register_custom_handler(ord('e'),  end_selection)
+	picker.register_custom_handler(ord('E'),  end_selection)
+	selected = picker.start()	
+	if selected[0]==False:
+		return False,False	
+	# print(selected)
+	paths=list();TDs=list()
+	for entry in selected:
+		paths.append((db[entry[0]])['path'])
+		try:
+			TDs.append((db[entry[0]])['TD_name'])
+		except:
+			TDs.append(None)
+	# for p in range(len(paths)):
+		# print(paths[p])
+		# print(TDs[p])		
+	return paths,TDs				
+			
+def remote_select_from_libraries(tfile):	
+	from workers import concurrent_scrapper
+	db=libraries(remote_lib_file)
+	if db==False:
+		sys.exit(f"Missing {remote_lib_file}")
+	paths,TDs=drive_pick_libraries()
+	if paths==False:
+		return False	
+	order=pick_order()
+	if order==False:
+		return False		
+	filter=remote_interface_filter()	
+	print("  * Parsing files from Google Drive. Please Wait...")		
+	if isinstance(paths, list):
+		db={}
+		for i in range(len(paths)):
+			db[paths[i]]={'path':paths[i],'TD_name':TDs[i]}		
+		files=concurrent_scrapper(filter=filter,order=order,remotelib='all',db=db)
+	else:
+		db={}
+		db[paths]={'path':paths,'TD_name':TDs}			
+		files=concurrent_scrapper(filter=filter,order=order,remotelib='all',db=db)	
+	print("  * Entering File Picker")	
+	title = 'Select content to install or transfer: \n + Press space or right to select content \n + Press Enter to confirm selection \n + Press E to exit selection'
+	filenames=[]
+	for f in files:
+		filenames.append(f[0])
+	options=filenames
+	picker = Picker(options, title, multi_select=True, min_selection_count=1)
+	def end_selection(picker):
+		return False,-1
+	picker.register_custom_handler(ord('e'),  end_selection);picker.register_custom_handler(ord('E'),  end_selection)
+	selected=picker.start()
+	if selected[0]==False:
+		print("    User didn't select any files")
+		return False
+	with open(tfile,'a') as  textfile:		
+		for f in selected:
+			textfile.write((files[f[1]])[2]+'/'+(files[f[1]])[0]+'\n')		
+
+def remote_select_from_cache(tfile):	
+	from workers import concurrent_scrapper
+	cache_is_setup=False
+	if not os.path.exists(remote_lib_cache):
+		os.makedirs(remote_lib_cache)
+	jsonlist=listmanager.folder_to_list(remote_lib_cache,extlist=['json'])	
+	if not jsonlist:
+		print("Cache wasn't found. Generating cache up...")
+		from workers import concurrent_cache
+		concurrent_cache()
+	jsonlist=listmanager.folder_to_list(remote_lib_cache,extlist=['json'])			
+	if not jsonlist:
+		sys.exit("Can't setup remote cache. Are libraries set up?")
+	libnames=[]
+	for j in jsonlist:
+		bname=os.path.basename(j) 
+		bname=bname.replace('.json','')
+		libnames.append(bname)
+	title = 'Select libraries to search:  \n + Press space or right to select content \n + Press Enter to confirm selection \n + Press E to exit selection \n + Press A to select all libraries'
+	db=libraries(remote_lib_file)
+	options = libnames
+	picker = Picker(options, title,multi_select=True,min_selection_count=1)	
+	def end_selection(picker):
+		return False,-1	
+	def select_all(picker):
+		return True,libnames
+	picker.register_custom_handler(ord('e'),  end_selection)
+	picker.register_custom_handler(ord('E'),  end_selection)	
+	picker.register_custom_handler(ord('a'),  select_all)
+	picker.register_custom_handler(ord('A'),  select_all)	
+	selected = picker.start()	
+	if selected[0]==False:
+		print("User didn't select any libraries")
+		return False,False		
+	if selected[0]==True:	
+		cachefiles=jsonlist
+	else:
+		cachefiles=[]
+		for entry in selected:
+			fname=entry[0]+'.json'
+			fpath=os.path.join(remote_lib_cache,fname)
+			cachefiles.append(fpath)
+	cachedict={}
+	for cach in cachefiles:
+		with open(cach) as json_file:					
+			data = json.load(json_file)		
+		for entry in data:
+			if not entry in cachedict:
+				cachedict[entry]=data[entry]
+	# for k in cachedict.keys():
+		# print(k)
+	order=pick_order()
+	if order==False:
+		return False	
+	options=[]	
+	if order=='name_ascending':
+		options=sorted(cachedict,key=lambda x:cachedict[x]['filepath'])
+	elif order=='name_descending':	
+		options=sorted(cachedict,key=lambda x:cachedict[x]['filepath'])
+		options.reverse()
+	elif order=='size_ascending':
+		options=sorted(cachedict,key=lambda x:cachedict[x]['size'])
+	elif order=='size_descending':	
+		options=sorted(cachedict,key=lambda x:cachedict[x]['size'])
+		options.reverse()	
+	elif order=='date_ascending':
+		options=sorted(cachedict,key=lambda x:cachedict[x]['date'])
+	elif order=='date_descending':	
+		options=sorted(cachedict,key=lambda x:cachedict[x]['date'])
+		options.reverse()	
+	options=remote_interface_filter_local(options)	
+	print("  * Entering File Picker")	
+	title = 'Select content to install or transfer: \n + Press space or right to select content \n + Press Enter to confirm selection \n + Press E to exit selection'
+	picker = Picker(options, title, multi_select=True, min_selection_count=1)
+	def end_selection(picker):
+		return False,-1
+	picker.register_custom_handler(ord('e'),  end_selection);picker.register_custom_handler(ord('E'),  end_selection)
+	selected=picker.start()
+	if selected[0]==False:
+		print("    User didn't select any files")
+		return False
+	with open(tfile,'a') as  textfile:		
+		for f in selected:
+			fpath=(cachedict[f[0]])['filepath']
+			textfile.write(fpath+'\n')
+
+def remote_select_from_walker(tfile,types='all'):	
+	from workers import concurrent_scrapper	
+	from Drive import Private as DrivePrivate
+	ext=[]
+	if types!='all':
+		items=types.split(' ')
+		for x in items:
+			ext.append(str(x).lower())	
+	folder,TeamDrive=DrivePrivate.folder_walker()	
+	if TeamDrive=="" or TeamDrive==False:
+		TeamDrive=None
+	if folder==False:
+		return False
+	filt=remote_interface_filter()			
+	order=pick_order()
+	if order==False:
+		return False	
+	print(f"- Checking {folder}")
+	print("  * Parsing files from Google Drive. Please Wait...")		
+	db={}
+	db[folder]={'path':folder,'TD_name':TeamDrive}			
+	files=concurrent_scrapper(filter=filt,order=order,remotelib='all',db=db)			
+	if files==False:
+		return False			
+	print("  * Entering File Picker")	
+	title = 'Select content to install or transfer: \n + Press space or right to select content \n + Press Enter to confirm selection \n + Press E to exit selection'
+	filenames=[]
+	for f in files:
+		if types=='all':	
+			filenames.append(f[0])
+		else:
+			for x in ext:
+				if (str(f[0]).lower()).endswith(x):
+					filenames.append(f[0])
+					break
+	if filenames==[]:
+		print("  * Request didn't retrieve any files")
+		return False
+	options=filenames
+	picker = Picker(options, title, multi_select=True, min_selection_count=1)
+	def end_selection(picker):
+		return False,-1
+	picker.register_custom_handler(ord('e'),  end_selection);picker.register_custom_handler(ord('E'),  end_selection)
+	selected=picker.start()
+	if selected[0]==False:
+		print("    User didn't select any files")
+		return False
+	with open(tfile,'a') as  textfile:		
+		for f in selected:
+			textfile.write((files[f[1]])[2]+'/'+(files[f[1]])[0]+'|'+str(TeamDrive)+'\n')					
