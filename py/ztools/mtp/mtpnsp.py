@@ -218,9 +218,9 @@ def gen_nsp_parts_spec1(filepath,target_cnmt=None,cachefolder=None,keypatch=Fals
 					if crypto2<=crypto1:	
 						masterKeyRev=crypto1
 					from mtp_tools import get_nca_ticket
-						check,titleKey=get_nca_ticket(filepath,fi)
-						if check==False:
-							sys.exit("Can't verify titleckey")							
+					check,titleKey=get_nca_ticket(filepath,fi)
+					if check==False:
+						sys.exit("Can't verify titleckey")							
 					titleKeyDec = Keys.decryptTitleKey(titleKey, Keys.getMasterKeyIndex(int(masterKeyRev)))
 					encKeyBlock = crypto.encrypt(titleKeyDec * 4)
 					if str(keypatch) != "False":
