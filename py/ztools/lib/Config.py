@@ -177,7 +177,7 @@ def load(confFile):
 			pass
 		
 		try:
-			paths.titleDatabase = ['paths']['titledb']
+			paths.titleDatabase = j['paths']['titledb']
 		except:
 			pass
 	
