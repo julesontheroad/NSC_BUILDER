@@ -733,16 +733,18 @@ def gen_xci_parts_spec0(filepath,target_cnmt=None,cachefolder=None,keypatch=Fals
 				targetsize=j[3]-0xC00
 		tfile=os.path.join(cachefolder, "files.csv")
 		i=0;
-		with open(tfile,'w') as csvfile:
-			if i==0:
-				csvfile.write("{}|{}|{}|{}|{}|{}\n".format("step","filepath","size","targetsize","off1","off2"))
-				i+=1
-			if i==1:	
-				csvfile.write("{}|{}|{}|{}|{}|{}\n".format(0,outfile,( bucketsize*multiplier),( bucketsize*multiplier),0,( bucketsize*multiplier)))		
-				i+=1				
-			if i==2:	
-				csvfile.write("{}|{}|{}|{}|{}|{}".format(1,filepath,( os.path.getsize(filepath)),targetsize,off1,off2))		
-				i+=1
+		while True:
+			with open(tfile,'w') as csvfile:
+				if i==0:
+					csvfile.write("{}|{}|{}|{}|{}|{}\n".format("step","filepath","size","targetsize","off1","off2"))
+					i+=1
+				if i==1:	
+					csvfile.write("{}|{}|{}|{}|{}|{}\n".format(0,outfile,( bucketsize*multiplier),( bucketsize*multiplier),0,( bucketsize*multiplier)))		
+					i+=1				
+				if i==2:	
+					csvfile.write("{}|{}|{}|{}|{}|{}".format(1,filepath,( os.path.getsize(filepath)),targetsize,off1,off2))		
+					i+=1
+					break
 	nspname="test.nsp"				
 	try:
 		g=os.path.basename(filepath) 			
