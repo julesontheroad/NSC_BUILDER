@@ -1,35 +1,16 @@
-import aes128
 import Print
 import os
 import shutil
-import json
-from Fs import Nsp as squirrelNSP
-from Fs import Xci as squirrelXCI
-from Fs.Nca import NcaHeader
-from Fs.File import MemoryFile
 import sq_tools
 import io
-from Fs import Type as FsType
-from Fs import factory
-import Keys
-from binascii import hexlify as hx, unhexlify as uhx
-from DBmodule import Exchange as exchangefile
-import math
 import sys
 import subprocess
-from mtp.wpd import is_switch_connected
 import listmanager
 import csv
-from colorama import Fore, Back, Style
-import time
-from secondary import clear_Screen
-from python_pick import pick
-from python_pick import Picker
 from Drive import Private as DrivePrivate
 from Drive import Public as DrivePublic
 from Drive import DriveTools
 import requests
-from Drive import Download as Drv
 from workers import concurrent_scrapper
 from mtpinstaller import get_storage_info
 try:
@@ -37,26 +18,8 @@ try:
 except:
 	import json
 	
-def About():	
-	print('                                       __          _ __    __                         ')
-	print('                 ____  _____ ____     / /_  __  __(_) /___/ /__  _____                ')
-	print('                / __ \/ ___/ ___/    / __ \/ / / / / / __  / _ \/ ___/                ')
-	print('               / / / (__  ) /__     / /_/ / /_/ / / / /_/ /  __/ /                    ')
-	print('              /_/ /_/____/\___/____/_.___/\__,_/_/_/\__,_/\___/_/                     ')
-	print('                             /_____/                                                  ')
-	print('------------------------------------------------------------------------------------- ')
-	print('                        NINTENDO SWITCH CLEANER AND BUILDER                           ')
-	print('------------------------------------------------------------------------------------- ')
-	print('=============================     BY JULESONTHEROAD     ============================= ')
-	print('------------------------------------------------------------------------------------- ')
-	print('"                                POWERED BY SQUIRREL                                " ')
-	print('"                    BASED ON THE WORK OF BLAWAR AND LUCA FRAGA                     " ')
-	print('------------------------------------------------------------------------------------- ')                   
-	print("Program's github: https://github.com/julesontheroad/NSC_BUILDER                       ")
-	print('Cheats and Eshop information from nutdb and http://tinfoil.io                         ')
-	print('------------------------------------------------------------------------------------- ')	
-
 def check_connection():
+	from mtp.wpd import is_switch_connected
 	if not is_switch_connected():
 		sys.exit("Switch device isn't connected.\nCheck if mtp responder is running!!!")	
 	
@@ -895,6 +858,7 @@ def update_console_from_gd(libraries="all",destiny="SD",exclude_xci=True,priorit
 				cstring=f"{g0} [{fileid}][{fileversion}] [{cctag}] - {(bname[-3:]).upper()}"
 				options.append(cstring)
 			if options:
+				from python_pick import Picker
 				title = 'Select content to install: \n + Press space or right to select entries \n + Press Enter to confirm selection \n + Press E to exit selection \n + Press A to select all entries'				
 				picker = Picker(options, title, multi_select=True, min_selection_count=1)
 				def end_selection(picker):
