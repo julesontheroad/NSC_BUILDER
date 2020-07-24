@@ -466,12 +466,15 @@ def selector2list(textfile,mode='folder',ext=False,filter=False,Print=False):
 		extlist=['nsp','xci','nsx','xcz','nsz']	
 	if mode=='file':
 		filetypes=[]
-		for x in extlist:
-			if not x.startswith('.'):
-				x='.'+x
-			entry=("Filetypes",f"*{x}")	
-			filetypes.append(entry)
-		filepath = filedialog.askopenfilename(filetypes=filetypes)	
+		if not 'all' in extlist:
+			for x in extlist:
+				if not x.startswith('.'):
+					x='.'+x
+				entry=("Filetypes",f"*{x}")	
+				filetypes.append(entry)
+			filepath = filedialog.askopenfilename(filetypes=filetypes)	
+		else:
+			filepath = filedialog.askopenfilename()				
 		filelist=[]
 		filelist.append(filepath)	
 	else:
