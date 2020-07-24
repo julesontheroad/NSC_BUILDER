@@ -441,19 +441,10 @@ def nextfolder_to_list(ifolder,extlist=['nsp'],filter=False,alfanumeric=False):
 		nutPrint.error('Exception: ' + str(e))													
 	return filelist
 
-
-
-def selector2list(textfile,mode='folder',ext=False,filter=False,Print=False):	
+def selector2list(textfile,mode='folder',ext=False,filter=False,Print=False):
 	root = tk.Tk()
 	root.withdraw()
 	root.wm_attributes('-topmost', 1)
-	if mode=='file':
-		filepath = filedialog.askopenfilename()	
-		filelist=[]
-		filelist.append(filepath)		
-		return filelist
-	else:
-		filepath = filedialog.askdirectory()
 	extlist=list()
 	if ext!=False:
 		if isinstance(ext, list):	
@@ -472,20 +463,44 @@ def selector2list(textfile,mode='folder',ext=False,filter=False,Print=False):
 			except:		
 				extlist.append(ext)	
 	else:
-		extlist=['nsp','xci','nsx','xcz','nsz']
-		
-	ruta=filepath
-	filelist=list()
-	try:
-		fname=""
-		binbin='RECYCLE.BIN'
-		if ext!=False:
-			for ext in extlist:
-				ext=ext.strip()
-				# print (ext)
-				if os.path.isdir(ruta):
-					for dirpath, dirnames, filenames in os.walk(ruta):
-						for filename in [f for f in filenames if f.endswith(ext.lower()) or f.endswith(ext.upper()) or f[:-1].endswith(ext.lower()) or f[:-1].endswith(ext.lower())]:
+		extlist=['nsp','xci','nsx','xcz','nsz']	
+	if mode=='file':
+		filetypes=[]
+		for x in extlist:
+			if not x.startswith('.'):
+				x='.'+x
+			entry=("Filetypes",f"*{x}")	
+			filetypes.append(entry)
+		filepath = filedialog.askopenfilename(filetypes=filetypes)	
+		filelist=[]
+		filelist.append(filepath)	
+	else:
+		filepath = filedialog.askdirectory()
+	if mode!='file':		
+		ruta=filepath
+		filelist=list()
+		try:
+			fname=""
+			binbin='RECYCLE.BIN'
+			if ext!=False:
+				for ext in extlist:
+					ext=ext.strip()
+					# print (ext)
+					if os.path.isdir(ruta):
+						for dirpath, dirnames, filenames in os.walk(ruta):
+							for filename in [f for f in filenames if f.endswith(ext.lower()) or f.endswith(ext.upper()) or f[:-1].endswith(ext.lower()) or f[:-1].endswith(ext.lower())]:
+								fname=""
+								if filter != False:
+									if filter.lower() in filename.lower():
+										fname=filename
+								else:
+									fname=filename
+								if fname != "":
+									if binbin.lower() not in filename.lower():
+										filelist.append(os.path.join(dirpath, filename))
+					else:
+						if ruta.endswith(ext.lower()) or ruta.endswith(ext.upper()) or ruta[:-1].endswith(ext.lower()) or ruta[:-1].endswith(ext.upper()):
+							filename = ruta
 							fname=""
 							if filter != False:
 								if filter.lower() in filename.lower():
@@ -494,10 +509,10 @@ def selector2list(textfile,mode='folder',ext=False,filter=False,Print=False):
 								fname=filename
 							if fname != "":
 								if binbin.lower() not in filename.lower():
-									filelist.append(os.path.join(dirpath, filename))
-				else:
-					if ruta.endswith(ext.lower()) or ruta.endswith(ext.upper()) or ruta[:-1].endswith(ext.lower()) or ruta[:-1].endswith(ext.upper()):
-						filename = ruta
+									filelist.append(filename)
+			elif os.path.isdir(ruta):
+				for dirpath, dirnames, filenames in os.walk(ruta):
+					for filename in [f for f in filenames]:
 						fname=""
 						if filter != False:
 							if filter.lower() in filename.lower():
@@ -506,39 +521,27 @@ def selector2list(textfile,mode='folder',ext=False,filter=False,Print=False):
 							fname=filename
 						if fname != "":
 							if binbin.lower() not in filename.lower():
-								filelist.append(filename)
-		elif os.path.isdir(ruta):
-			for dirpath, dirnames, filenames in os.walk(ruta):
-				for filename in [f for f in filenames]:
-					fname=""
-					if filter != False:
-						if filter.lower() in filename.lower():
-							fname=filename
-					else:
+								filelist.append(os.path.join(dirpath, filename))
+			elif not os.path.isdir(ruta):	
+				filename = ruta
+				fname=""
+				if filter != False:
+					if filter.lower() in filename.lower():
 						fname=filename
-					if fname != "":
-						if binbin.lower() not in filename.lower():
-							filelist.append(os.path.join(dirpath, filename))
-		elif not os.path.isdir(ruta):	
-			filename = ruta
-			fname=""
-			if filter != False:
-				if filter.lower() in filename.lower():
+				else:
 					fname=filename
-			else:
-				fname=filename
-			if fname != "":
-				if binbin.lower() not in filename.lower():
-					filelist.append(filename)		
-							
+				if fname != "":
+					if binbin.lower() not in filename.lower():
+						filelist.append(filename)						
+		except BaseException as e:
+			nutPrint.error('Exception: ' + str(e))	
+	if filelist:		
 		with open(textfile,"a", encoding='utf8') as tfile:
 			for line in filelist:
 				try:
 					tfile.write(line+"\n")
 				except:
-					continue							
-	except BaseException as e:
-		nutPrint.error('Exception: ' + str(e))													
+					continue				
 	return filelist
 
 def size_sorted_from_json(jsonfile,tfile,first='small'):
