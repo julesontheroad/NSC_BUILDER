@@ -171,7 +171,7 @@ def install_xci_csv(filepath=None,remote=None,destiny="SD",cachefolder=None,over
 		cnmtfile=entry[0];
 		if cnmtfile.endswith('.cnmt.nca'):
 			target_cnmt=cnmtfile		
-			nspname=gen_xci_parts_spec1(remote=remote,target_cnmt=target_cnmt,cachefolder=cachefolder,keypatch=keypatch)
+			nspname=gen_xci_parts_spec0(remote=remote,target_cnmt=target_cnmt,cachefolder=cachefolder,keypatch=keypatch)
 			if (remote.name).endswith('xcz'):
 				nspname=nspname[:-1]+'z'		
 			files_csv=os.path.join(cachefolder, 'remote_files.csv')		
@@ -344,9 +344,12 @@ def gen_xci_parts_spec0(filepath=None,remote=None,target_cnmt=None,cachefolder=N
 				data=nca.read()
 				outf.write(data)
 				written+=len(data)	
+				# print(nca_name)			
+				# print(len(newheader)+len(data))				
 			else:
 				nca_program=nca_name
-			break					
+				# print(nca_name)			
+				# print(len(newheader))					
 		else:pass					
 	outf.flush()							
 	outf.close()	
@@ -355,8 +358,9 @@ def gen_xci_parts_spec0(filepath=None,remote=None,target_cnmt=None,cachefolder=N
 		csvfile.write("{}|{}|{}|{}|{}|{}|{}\n".format("step","filepath","size","targetsize","off1","off2","token"))	
 		csvfile.write("{}|{}|{}|{}|{}|{}|{}\n".format(0,outfile,os.path.getsize(outfile),os.path.getsize(outfile),0,os.path.getsize(outfile),"False"))	
 		k=0;
-		for j in files_list:
-			if j[0]==nca_name:	
+		for j in files_list:	
+			if j[0]==nca_program:	
+				# print(j[0])					
 				off1=j[1]+0xC00
 				off2=j[2]
 				targetsize=j[3]-0xC00				
@@ -370,8 +374,13 @@ def gen_xci_parts_spec0(filepath=None,remote=None,target_cnmt=None,cachefolder=N
 		g=remote.name			
 		g0=[pos for pos, char in enumerate(g) if char == '[']
 		g0=(g[0:g0[0]]).strip()			
+		titleid=metadict['titleid']
+		titleversion=metadict['version']
+		ctype=metadict['ctype']
 		nspname=f"{g0} [{titleid}] [v{titleversion}] [{ctype}].nsp"
-	except:pass
+	except BaseException as e:
+		Print.error('Exception: ' + str(e))
+		pass
 	return nspname										
 
 def gen_xci_parts_spec1(filepath=None,remote=None,target_cnmt=None,cachefolder=None,keypatch=False,files_list=None):
@@ -546,6 +555,9 @@ def gen_xci_parts_spec1(filepath=None,remote=None,target_cnmt=None,cachefolder=N
 		g=remote.name			
 		g0=[pos for pos, char in enumerate(g) if char == '[']
 		g0=(g[0:g0[0]]).strip()			
+		titleid=metadict['titleid']
+		titleversion=metadict['version']
+		ctype=metadict['ctype']
 		nspname=f"{g0} [{titleid}] [v{titleversion}] [{ctype}].nsp"
 	except:pass
 	return nspname						
