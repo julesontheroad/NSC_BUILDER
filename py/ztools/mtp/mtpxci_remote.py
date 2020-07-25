@@ -244,7 +244,7 @@ def gen_xci_parts_spec0(filepath=None,remote=None,target_cnmt=None,cachefolder=N
 			ncadata=metadict['ncadata']		
 			for j in range(len(ncadata)):		
 				row=ncadata[j]
-				if row['NCAtype']!='Meta' and row['NCAtype']!='Program':
+				if row['NCAtype']!='Meta' and row['NCAtype']!='Program' and row['NCAtype']!='DeltaFragment' and row['NCAtype']!='Data':
 					test1=str(row['NcaId'])+'.nca';test2=str(row['NcaId'])+'.ncz'
 					if test1 in fplist:
 						files.append(str(row['NcaId'])+'.nca')
@@ -265,7 +265,7 @@ def gen_xci_parts_spec0(filepath=None,remote=None,target_cnmt=None,cachefolder=N
 			for j in range(len(ncadata)):
 				row=ncadata[j]
 				# print(row)
-				if row['NCAtype']=='Program':
+				if row['NCAtype']=='Program' or row['NCAtype']!='Data':
 					test1=str(row['NcaId'])+'.nca';test2=str(row['NcaId'])+'.ncz'
 					if test1 in fplist:
 						files.append(str(row['NcaId'])+'.nca')
@@ -337,19 +337,15 @@ def gen_xci_parts_spec0(filepath=None,remote=None,target_cnmt=None,cachefolder=N
 			newheader=get_newheader(MemoryFile(remote.read_at(off1,0xC00)),encKeyBlock,crypto1,crypto2,hcrypto,gc_flag)	
 			outf.write(newheader)
 			written+=len(newheader)
-			if (str(ncaHeader.contentType) != 'Content.PROGRAM'):	
+			if (str(ncaHeader.contentType) != 'Content.PROGRAM') and (str(ncaHeader.contentType) != 'Content.PUBLIC_DATA'):	
 				nca = Nca()			
 				nca.open(MemoryFile(remote.read_at(off1,nca_size)))		
 				nca.seek(0xC00)
 				data=nca.read()
 				outf.write(data)
-				written+=len(data)	
-				# print(nca_name)			
-				# print(len(newheader)+len(data))				
+				written+=len(data)				
 			else:
-				nca_program=nca_name
-				# print(nca_name)			
-				# print(len(newheader))					
+				nca_program=nca_name			
 		else:pass					
 	outf.flush()							
 	outf.close()	
