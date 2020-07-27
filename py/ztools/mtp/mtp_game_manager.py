@@ -1,26 +1,16 @@
-import aes128
 import Print
 import os
 import shutil
 import json
 from Fs import Nsp as squirrelNSP
 from Fs import Xci as squirrelXCI
-from Fs.Nca import NcaHeader
-from Fs.File import MemoryFile
 import sq_tools
-import io
-from Fs import Type as FsType
-from Fs import factory
 import Keys
-from binascii import hexlify as hx, unhexlify as uhx
-from DBmodule import Exchange as exchangefile
-import math
 import sys
 import subprocess
 from mtp.wpd import is_switch_connected
 import listmanager
 import csv
-from colorama import Fore, Back, Style
 import time
 from secondary import clear_Screen
 from python_pick import pick

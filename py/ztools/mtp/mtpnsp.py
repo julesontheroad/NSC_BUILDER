@@ -6,18 +6,10 @@ import json
 import listmanager
 from Fs import Nsp as squirrelNSP
 from Fs import Xci as squirrelXCI
-from Fs import factory
-from Fs.Nca import NcaHeader
 from Fs import Nca
-from Fs.File import MemoryFile
-from Fs import Ticket
 import sq_tools
-import io
-from Fs import Type as FsType
 import Keys
 from binascii import hexlify as hx, unhexlify as uhx
-from DBmodule import Exchange as exchangefile
-import math
 import subprocess
 import sys
 from mtp.wpd import is_switch_connected

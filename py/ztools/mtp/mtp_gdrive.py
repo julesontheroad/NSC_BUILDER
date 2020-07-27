@@ -271,27 +271,30 @@ def gdrive_install(filename,destiny="SD",outfolder=None,ch_medium=True,check_fw=
 			print("File requires a higher firmware. Skipping...")
 			return False	
 	if installed_list!=False:
-		fileid,fileversion,cctag,nG,nU,nD,baseid=listmanager.parsetags(name)
-		fileversion=int(fileversion)
-		if fileid.endswith('000') and fileversion==0 and fileid in installed_list.keys() and ch_base==True:
-			print("Base game already installed. Skipping...")
-			return False	
-		elif fileid.endswith('000') and fileid in installed_list.keys() and ch_other==True:
-			updid=fileid[:-3]+'800'
-			if fileversion>((installed_list[fileid])[2]):
-				print("Asking DBI to delete previous content")
-				process=subprocess.Popen([nscb_mtp,"DeleteID","-ID",fileid])	
-				while process.poll()==None:
-					if process.poll()!=None:
-						process.terminate();					
-				process=subprocess.Popen([nscb_mtp,"DeleteID","-ID",updid])		
-				while process.poll()==None:
-					if process.poll()!=None:
-						process.terminate();					
-			else:
-				print("The update is a previous version than the installed on device.Skipping..")
-				listmanager.striplines(tfile,counter=True)
-				return False		
+		try:
+			fileid,fileversion,cctag,nG,nU,nD,baseid=listmanager.parsetags(name)
+			fileversion=int(fileversion)
+			if fileid.endswith('000') and fileversion==0 and fileid in installed_list.keys() and ch_base==True:
+				print("Base game already installed. Skipping...")
+				return False	
+			elif fileid.endswith('000') and fileid in installed_list.keys() and ch_other==True:
+				updid=fileid[:-3]+'800'
+				if fileversion>((installed_list[fileid])[2]):
+					print("Asking DBI to delete previous content")
+					process=subprocess.Popen([nscb_mtp,"DeleteID","-ID",fileid])	
+					while process.poll()==None:
+						if process.poll()!=None:
+							process.terminate();					
+					process=subprocess.Popen([nscb_mtp,"DeleteID","-ID",updid])		
+					while process.poll()==None:
+						if process.poll()!=None:
+							process.terminate();					
+				else:
+					print("The update is a previous version than the installed on device.Skipping..")
+					listmanager.striplines(tfile,counter=True)
+					return False	
+			except:
+				pass
 		elif ch_other==True	and fileid in installed_list.keys():
 			if fileversion>((installed_list[fileid])[2]):
 				print("Asking DBI to delete previous update")
@@ -378,38 +381,40 @@ def public_gdrive_install(filepath,destiny="SD",truecopy=True,outfolder=None,ch_
 			print("File requires a higher firmware. Skipping...")
 			return False		
 	if installed_list!=False:
-		fileid,fileversion,cctag,nG,nU,nD,baseid=listmanager.parsetags(name)
-		fileversion=int(fileversion)
-		if fileid.endswith('000') and fileversion==0 and fileid in installed_list.keys() and ch_base==True:
-			print("Base game already installed. Skipping...")
-			return False	
-		elif fileid.endswith('000') and fileid in installed_list.keys() and ch_other==True:
-			updid=fileid[:-3]+'800'
-			if fileversion>((installed_list[fileid])[2]):
-				print("Asking DBI to delete previous content")
-				process=subprocess.Popen([nscb_mtp,"DeleteID","-ID",fileid])	
-				while process.poll()==None:
-					if process.poll()!=None:
-						process.terminate();					
-				process=subprocess.Popen([nscb_mtp,"DeleteID","-ID",updid])		
-				while process.poll()==None:
-					if process.poll()!=None:
-						process.terminate();					
-			else:
-				print("The update is a previous version than the installed on device.Skipping..")
-				listmanager.striplines(tfile,counter=True)
-				return False		
-		elif ch_other==True	and fileid in installed_list.keys():
-			if fileversion>((installed_list[fileid])[2]):
-				print("Asking DBI to delete previous update")
-				process=subprocess.Popen([nscb_mtp,"DeleteID","-ID",fileid])					
-				while process.poll()==None:
-					if process.poll()!=None:
-						process.terminate();
-			else:
-				print("The update is a previous version than the installed on device.Skipping..")
-				listmanager.striplines(tfile,counter=True)
-				return False			
+		try:
+			fileid,fileversion,cctag,nG,nU,nD,baseid=listmanager.parsetags(name)
+			fileversion=int(fileversion)
+			if fileid.endswith('000') and fileversion==0 and fileid in installed_list.keys() and ch_base==True:
+				print("Base game already installed. Skipping...")
+				return False	
+			elif fileid.endswith('000') and fileid in installed_list.keys() and ch_other==True:
+				updid=fileid[:-3]+'800'
+				if fileversion>((installed_list[fileid])[2]):
+					print("Asking DBI to delete previous content")
+					process=subprocess.Popen([nscb_mtp,"DeleteID","-ID",fileid])	
+					while process.poll()==None:
+						if process.poll()!=None:
+							process.terminate();					
+					process=subprocess.Popen([nscb_mtp,"DeleteID","-ID",updid])		
+					while process.poll()==None:
+						if process.poll()!=None:
+							process.terminate();					
+				else:
+					print("The update is a previous version than the installed on device.Skipping..")
+					listmanager.striplines(tfile,counter=True)
+					return False		
+			elif ch_other==True	and fileid in installed_list.keys():
+				if fileversion>((installed_list[fileid])[2]):
+					print("Asking DBI to delete previous update")
+					process=subprocess.Popen([nscb_mtp,"DeleteID","-ID",fileid])					
+					while process.poll()==None:
+						if process.poll()!=None:
+							process.terminate();
+				else:
+					print("The update is a previous version than the installed on device.Skipping..")
+					listmanager.striplines(tfile,counter=True)
+					return False	
+		except:pass				
 	process=subprocess.Popen([nscb_mtp,"DriveInstall","-ori",URL,"-dst",destiny,"-name",name,"-size",sz,"-tk",token])
 	while process.poll()==None:
 		if process.poll()!=None:
@@ -480,38 +485,40 @@ def fichier_install(url,destiny="SD",ch_medium=True,ch_base=False,ch_other=False
 			else:
 				sys.exit("   NOT ENOUGH SPACE ON DEVICE")			
 	if installed_list!=False:
-		fileid,fileversion,cctag,nG,nU,nD,baseid=listmanager.parsetags(name)
-		fileversion=int(fileversion)
-		if fileid.endswith('000') and fileversion==0 and fileid in installed_list.keys() and ch_base==True:
-			print("Base game already installed. Skipping...")
-			return False	
-		elif fileid.endswith('000') and fileid in installed_list.keys() and ch_other==True:
-			updid=fileid[:-3]+'800'
-			if fileversion>((installed_list[fileid])[2]):
-				print("Asking DBI to delete previous content")
-				process=subprocess.Popen([nscb_mtp,"DeleteID","-ID",fileid])	
-				while process.poll()==None:
-					if process.poll()!=None:
-						process.terminate();					
-				process=subprocess.Popen([nscb_mtp,"DeleteID","-ID",updid])		
-				while process.poll()==None:
-					if process.poll()!=None:
-						process.terminate();					
-			else:
-				print("The update is a previous version than the installed on device.Skipping..")
-				listmanager.striplines(tfile,counter=True)
-				return False		
-		elif ch_other==True	and fileid in installed_list.keys():
-			if fileversion>((installed_list[fileid])[2]):
-				print("Asking DBI to delete previous update")
-				process=subprocess.Popen([nscb_mtp,"DeleteID","-ID",fileid])					
-				while process.poll()==None:
-					if process.poll()!=None:
-						process.terminate();
-			else:
-				print("The update is a previous version than the installed on device.Skipping..")
-				listmanager.striplines(tfile,counter=True)
-				return False				
+		try:
+			fileid,fileversion,cctag,nG,nU,nD,baseid=listmanager.parsetags(name)
+			fileversion=int(fileversion)
+			if fileid.endswith('000') and fileversion==0 and fileid in installed_list.keys() and ch_base==True:
+				print("Base game already installed. Skipping...")
+				return False	
+			elif fileid.endswith('000') and fileid in installed_list.keys() and ch_other==True:
+				updid=fileid[:-3]+'800'
+				if fileversion>((installed_list[fileid])[2]):
+					print("Asking DBI to delete previous content")
+					process=subprocess.Popen([nscb_mtp,"DeleteID","-ID",fileid])	
+					while process.poll()==None:
+						if process.poll()!=None:
+							process.terminate();					
+					process=subprocess.Popen([nscb_mtp,"DeleteID","-ID",updid])		
+					while process.poll()==None:
+						if process.poll()!=None:
+							process.terminate();					
+				else:
+					print("The update is a previous version than the installed on device.Skipping..")
+					listmanager.striplines(tfile,counter=True)
+					return False		
+			elif ch_other==True	and fileid in installed_list.keys():
+				if fileversion>((installed_list[fileid])[2]):
+					print("Asking DBI to delete previous update")
+					process=subprocess.Popen([nscb_mtp,"DeleteID","-ID",fileid])					
+					while process.poll()==None:
+						if process.poll()!=None:
+							process.terminate();
+				else:
+					print("The update is a previous version than the installed on device.Skipping..")
+					listmanager.striplines(tfile,counter=True)
+					return False	
+		except:pass				
 	process=subprocess.Popen([nscb_mtp,"fichierInstall","-ori",URL,"-dst",destiny,"-name",name,"-size",str(sz)])
 	while process.poll()==None:
 		if process.poll()!=None:
@@ -741,13 +748,15 @@ def update_console_from_gd(libraries="all",destiny="SD",exclude_xci=True,priorit
 	gamelist=listmanager.read_lines_to_list(games_installed_cache,all=True)
 	installed={}		
 	for g in gamelist:
-		if exclude_xci==True:
-			if g.endswith('xci') or g.endswith('xc0'):
-				continue
-		entry=listmanager.parsetags(g)
-		entry=list(entry)		
-		entry.append(g)
-		installed[entry[0]]=entry	
+		try:
+			if exclude_xci==True:
+				if g.endswith('xci') or g.endswith('xc0'):
+					continue
+			entry=listmanager.parsetags(g)
+			entry=list(entry)		
+			entry.append(g)
+			installed[entry[0]]=entry	
+		except:pass	
 	# for i in pths:
 		# print(i)
 	print("2. Parsing files from Google Drive. Please Wait...")		
@@ -773,15 +782,17 @@ def update_console_from_gd(libraries="all",destiny="SD",exclude_xci=True,priorit
 		# print(f)
 	remotegames={}		
 	for g in remotelist:
-		entry=listmanager.parsetags(g)
-		entry=list(entry)
-		entry.append(g)		
-		if not entry[0] in remotegames:
-			remotegames[entry[0]]=entry
-		else:
-			v=(remotegames[entry[0]])[1]
-			if int(entry[1])>int(v):
-				remotegames[entry[0]]=entry		
+		try:
+			entry=listmanager.parsetags(g)
+			entry=list(entry)
+			entry.append(g)		
+			if not entry[0] in remotegames:
+				remotegames[entry[0]]=entry
+			else:
+				v=(remotegames[entry[0]])[1]
+				if int(entry[1])>int(v):
+					remotegames[entry[0]]=entry		
+		except:pass							
 	print("3. Searching new updates. Please Wait...")						
 	gamestosend={}		
 	for g in installed.keys():
