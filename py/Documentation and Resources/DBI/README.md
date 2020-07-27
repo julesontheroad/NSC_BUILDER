@@ -1,11 +1,12 @@
-# DBI 125 from DuckBill
+# DBI from DuckBill
+You can normally find the latest recommended DBI version on the current kefir pack. NSCB MTP support was tested from DBI version 125. 
 https://github.com/rashevskyv/switch/releases/tag/456
 
 ## 1. What's DBI?
 
 DBI is a installer in a similar fashion as old tinfoil by Adubbz with extended functions and a MTP responder mode that allows access to the Nintendo Switch via the MTP protocol to transfer files between Switch and pc and to get several information from the switch like installed games, storage used, firmware on the Switch, etc...
 
-Included is the tested 125 version of DBI + a nsp that includes the full romfs (not a redirector), use what you prefer but the nsp allows going home without closing the install, is safer to the nand and can be overclocked with sys-clk to improve performance.
+Each folder represent a DBI version, included is the DBI .nro and a nsp that includes the full romfs (not a redirector), use what you prefer but the nsp allows going home without closing the install, is safer to the nand and can be overclocked with sys-clk to improve performance.
 
 ## 2. Why do you include this on your github?
 
