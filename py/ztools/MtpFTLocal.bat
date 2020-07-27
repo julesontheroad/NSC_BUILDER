@@ -2,7 +2,7 @@
 :TOP_INIT
 CD /d "%prog_dir%"
 set "bat_name=%~n0"
-Title NSC_Builder v1.00c -- Profile: %ofile_name% -- by JulesOnTheRoad
+Title NSC_Builder v1.00d -- Profile: %ofile_name% -- by JulesOnTheRoad
 
 :MAIN
 if exist "MTP2.txt" goto prevlist
@@ -258,7 +258,7 @@ ECHO =============================     BY JULESONTHEROAD     ===================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                                POWERED BY SQUIRREL                                "
 ECHO "                         A MTP MANAGER FOR DBI INSTALLER                           "
-ECHO                                  VERSION 1.00c (MTP)
+ECHO                                  VERSION 1.00d (MTP)
 ECHO -------------------------------------------------------------------------------------
 ECHO DBI by DUCKBILL: https://github.com/rashevskyv/switch/releases
 ECHO Latest DBI: https://github.com/rashevskyv/switch/releases/tag/462

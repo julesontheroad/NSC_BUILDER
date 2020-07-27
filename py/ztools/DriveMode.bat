@@ -2,7 +2,7 @@
 :TOP_INIT
 CD /d "%prog_dir%"
 set "bat_name=%~n0"
-Title NSC_Builder v1.00c -- Profile: %ofile_name% -- by JulesOnTheRoad
+Title NSC_Builder v1.00d -- Profile: %ofile_name% -- by JulesOnTheRoad
 
 :MAIN
 cls
@@ -87,7 +87,7 @@ ECHO =============================     BY JULESONTHEROAD     ===================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                                POWERED BY SQUIRREL                                "
 ECHO "                    BASED ON THE WORK OF BLAWAR AND LUCA FRAGA                     "
-ECHO                                  VERSION 1.00c (GDRIVE)
+ECHO                                  VERSION 1.00d (GDRIVE)
 ECHO -------------------------------------------------------------------------------------
 ECHO Program's github: https://github.com/julesontheroad/NSC_BUILDER
 ECHO Blawar's github:  https://github.com/blawar

@@ -34,7 +34,7 @@ Added exceptions to handle possible situations when parsing non tagged xci files
 
 Fixed issue where generating or updating cache libraries from google drive will except when the google api called doesn't return any data.
 
-### 1.00c Fixes
+### 1.00d Fixes
 
 Fixes to functions in mtp_gdrive.py where the use of curses prevented some prints on filters.
 
@@ -46,7 +46,7 @@ Fixed issue where on some systems some search filters wouldn't show the message 
 
 Fixed bug introduced by 1.00 that would stop the databases update in the middle of the process.
 
-If you already setup 1.00 just override ztools by the 1.00c version. There's no changes in the config files.
+If you already setup 1.00 just override ztools by the 1.00d version. There's no changes in the config files.
 
 ### 1. Added NSCB.exe
 
