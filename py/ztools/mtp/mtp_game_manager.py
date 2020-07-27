@@ -174,10 +174,12 @@ def parsedinstalled():
 	if os.path.exists(games_installed_cache):	
 		gamelist=listmanager.read_lines_to_list(games_installed_cache,all=True)	
 		for g in gamelist:
-			entry=listmanager.parsetags(g)
-			entry=list(entry)		
-			entry.append(g)
-			installed[entry[0]]=entry
+			try:
+				entry=listmanager.parsetags(g)
+				entry=list(entry)		
+				entry.append(g)
+				installed[entry[0]]=entry
+			except:pass			
 	return installed
 	
 def get_gamelist(dosort=True,file=games_installed_cache):	
@@ -264,12 +266,14 @@ def gen_sx_autoloader_sd_files():
 			os.remove(fp)	
 	print('  * Genereting autoloader files')
 	for g in gamelist:	
-		fileid,fileversion,cctag,nG,nU,nD,baseid=listmanager.parsetags(g)	
-		tfile=os.path.join(SD_folder,fileid)
-		new_path=g.replace('\\1: External SD Card\\','sdmc:/')
-		new_path=new_path.replace('\\','/')
-		with open(tfile,'w') as text_file:
-			text_file.write(new_path)
+		try:
+			fileid,fileversion,cctag,nG,nU,nD,baseid=listmanager.parsetags(g)	
+			tfile=os.path.join(SD_folder,fileid)
+			new_path=g.replace('\\1: External SD Card\\','sdmc:/')
+			new_path=new_path.replace('\\','/')
+			with open(tfile,'w') as text_file:
+				text_file.write(new_path)
+		except:pass		
 	print('  * Pushing autoloader files')			
 	destiny="1: External SD Card\\sxos\\titles\\00FF0012656180FF\\cach\\sd"
 	process=subprocess.Popen([nscb_mtp,"TransferFolder","-ori",SD_folder,"-dst",destiny,"-fbf","true"])
@@ -342,10 +346,12 @@ def delete_archived():
 	installed=get_gamelist()	
 	registered=retrieve_registered()
 	for game in installed:
-		fileid,fileversion,cctag,nG,nU,nD,baseid=listmanager.parsetags(game)
 		try:
-			del registered[fileid]
-		except:pass		
+			fileid,fileversion,cctag,nG,nU,nD,baseid=listmanager.parsetags(game)
+			try:
+				del registered[fileid]
+			except:pass		
+		except:pass					
 	games=[]
 	# Name [version][title]
 	for k in registered.keys():
