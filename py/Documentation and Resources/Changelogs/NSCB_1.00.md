@@ -1,4 +1,4 @@
-# NSC_Builder v1.00c - Changelog
+# NSC_Builder v1.00d - Changelog
 
 ![DeviceTag](https://img.shields.io/badge/Device-SWITCH-e60012.svg)  ![LanguageTag](https://img.shields.io/badge/languages-python_batch_html5_javascript-blue.svg)
 
@@ -24,6 +24,16 @@ Here's also a little readme with some DBI information:
 https://github.com/julesontheroad/NSC_BUILDER/tree/master/py/Documentation%20and%20Resources/DBI
 
 ## *Changelog*
+### 1.00d Fixes
+
+Fixed issue where autoupdater from google drive may not show messages in some system triggered by windows-curses.
+
+Fixed issue #183 where window selector wasn't working. Added file extension filter to window selector dependent of the mode it is called from.
+
+Added exceptions to handle possible situations when parsing non tagged xci files on SD. These files are ignored when id,version,etc.. can't be parsed correctly from name (missing tags).
+
+Fixed issue where generating or updating cache libraries from google drive will except when the google api called doesn't return any data.
+
 ### 1.00c Fixes
 
 Fixes to functions in mtp_gdrive.py where the use of curses prevented some prints on filters.
