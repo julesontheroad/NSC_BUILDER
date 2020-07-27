@@ -293,19 +293,18 @@ def gdrive_install(filename,destiny="SD",outfolder=None,ch_medium=True,check_fw=
 					print("The update is a previous version than the installed on device.Skipping..")
 					listmanager.striplines(tfile,counter=True)
 					return False	
-			except:
-				pass
-		elif ch_other==True	and fileid in installed_list.keys():
-			if fileversion>((installed_list[fileid])[2]):
-				print("Asking DBI to delete previous update")
-				process=subprocess.Popen([nscb_mtp,"DeleteID","-ID",fileid])					
-				while process.poll()==None:
-					if process.poll()!=None:
-						process.terminate();
-			else:
-				print("The update is a previous version than the installed on device.Skipping..")
-				listmanager.striplines(tfile,counter=True)
-				return False						
+			elif ch_other==True	and fileid in installed_list.keys():
+				if fileversion>((installed_list[fileid])[2]):
+					print("Asking DBI to delete previous update")
+					process=subprocess.Popen([nscb_mtp,"DeleteID","-ID",fileid])					
+					while process.poll()==None:
+						if process.poll()!=None:
+							process.terminate();
+				else:
+					print("The update is a previous version than the installed on device.Skipping..")
+					listmanager.striplines(tfile,counter=True)
+					return False	
+		except:pass				
 	process=subprocess.Popen([nscb_mtp,"DriveInstall","-ori",URL,"-dst",destiny,"-name",name,"-size",sz,"-tk",token])
 	while process.poll()==None:
 		if process.poll()!=None:
