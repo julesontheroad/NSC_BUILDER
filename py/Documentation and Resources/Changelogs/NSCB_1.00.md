@@ -34,7 +34,7 @@ Added exceptions to handle possible situations when parsing non tagged xci files
 
 Fixed issue where generating or updating cache libraries from google drive will except when the google api called doesn't return any data.
 
-### 1.00d Fixes
+### 1.00c Fixes
 
 Fixes to functions in mtp_gdrive.py where the use of curses prevented some prints on filters.
 
