@@ -221,7 +221,7 @@ def concurrent_scrapper(filter='',order='name_ascending',remotelib='all',db=Fals
 	return items
 
 def concurrent_cache():
-	filter='';
+	filter='';jlib=None
 	db=libraries(remote_lib_file)	
 	checks=db.keys()
 	with ThreadPoolExecutor(max_workers=8) as executor:
@@ -239,9 +239,10 @@ def concurrent_cache():
 				filepath=f"{res[2]}/{res[0]}"
 				entry={'library':lib,'TD':TD,'library_path':res[2],'filepath':filepath,'size':res[1],'date':res[3]}	
 				jdict[res[0]]=entry	
-			app_json = json.dumps(jdict, indent=2)					
-			with open(jlib, 'w') as json_file:
-			  json_file.write(app_json)	
+			if jlib!=None:	
+				app_json = json.dumps(jdict, indent=2)					
+				with open(jlib, 'w') as json_file:
+				  json_file.write(app_json)	
 
 	
 def kakashi_conv():
