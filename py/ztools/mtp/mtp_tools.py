@@ -101,18 +101,20 @@ def gen_sx_autoloader_files(folder,type='hdd',push=False,no_colide=False):
 	print('  * Generating autoloader files')
 	try:
 		for g in gamelist:	
-			fileid,fileversion,cctag,nG,nU,nD,baseid=parsetags(g)	
-			if fileid=='unknown':
-				continue
-			tfile=os.path.join(SD_folder,fileid)
-			fileparts=Path(g).parts
-			if type=='hdd':
-				new_path=g.replace(fileparts[0],'"usbhdd:/')
-			else:
-				new_path=g.replace(fileparts[0],'"sdmc:/')
-			new_path=new_path.replace('\\','/')
-			with open(tfile,'w') as text_file:
-				text_file.write(new_path)
+			try:
+				fileid,fileversion,cctag,nG,nU,nD,baseid=parsetags(g)	
+				if fileid=='unknown':
+					continue
+				tfile=os.path.join(SD_folder,fileid)
+				fileparts=Path(g).parts
+				if type=='hdd':
+					new_path=g.replace(fileparts[0],'"usbhdd:/')
+				else:
+					new_path=g.replace(fileparts[0],'"sdmc:/')
+				new_path=new_path.replace('\\','/')
+				with open(tfile,'w') as text_file:
+					text_file.write(new_path)
+			except:pass		
 		print('    DONE')
 		if push==True:	
 			if not is_switch_connected():
@@ -159,8 +161,10 @@ def cleanup_sx_autoloader_files():
 	autoloader_list=get_gamelist(file=autoloader_files_cache)	
 	sd_xci_ids=[]
 	for g in gamelist:
-		fileid,fileversion,cctag,nG,nU,nD,baseid=parsetags(g)	
-		sd_xci_ids.append(fileid)	
+		try:
+			fileid,fileversion,cctag,nG,nU,nD,baseid=parsetags(g)	
+			sd_xci_ids.append(fileid)	
+		except:pass	
 	files_to_remove=[]
 	for f in autoloader_list:
 		fileparts=Path(f).parts

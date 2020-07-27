@@ -1,27 +1,18 @@
-import aes128
 import Print
 import os
 import shutil
 import json
 from Fs import Nsp as squirrelNSP
 from Fs import Xci as squirrelXCI
-from Fs.Nca import NcaHeader
-from Fs.File import MemoryFile
 import sq_tools
-import io
-from Fs import Type as FsType
 from Fs import factory
-import Keys
 from binascii import hexlify as hx, unhexlify as uhx
-from DBmodule import Exchange as exchangefile
-import math
 import sys
 import subprocess
 from mtp.wpd import is_switch_connected
 import listmanager
 import csv
 from colorama import Fore, Back, Style
-import time
 from python_pick import pick
 from python_pick import Picker
 from secondary import clear_Screen
@@ -432,39 +423,41 @@ def loop_install(tfile,destiny="SD",verification=True,outfolder=None,ch_medium=T
 			installed=parsedinstalled()	
 	file_list=listmanager.read_lines_to_list(tfile,all=True)
 	for item in file_list:
-		if ch_base==True or ch_other==True:
-			fileid,fileversion,cctag,nG,nU,nD,baseid=listmanager.parsetags(item)
-			if fileid.endswith('000') and fileversion==0 and fileid in installed.keys() and ch_base==True:
-				print("Base game already installed. Skipping...")
-				listmanager.striplines(tfile,counter=True)
-				continue
-			elif fileid.endswith('000') and fileid in installed.keys() and ch_other==True:
-				updid=fileid[:-3]+'800'
-				if fileversion>((installed[fileid])[2]):
-					print("Asking DBI to delete previous content")
-					process=subprocess.Popen([nscb_mtp,"DeleteID","-ID",fileid])	
-					while process.poll()==None:
-						if process.poll()!=None:
-							process.terminate();					
-					process=subprocess.Popen([nscb_mtp,"DeleteID","-ID",updid])		
-					while process.poll()==None:
-						if process.poll()!=None:
-							process.terminate();					
-				else:
-					print("The update is a previous version than the installed on device.Skipping..")
+		try:
+			if ch_base==True or ch_other==True:
+				fileid,fileversion,cctag,nG,nU,nD,baseid=listmanager.parsetags(item)
+				if fileid.endswith('000') and fileversion==0 and fileid in installed.keys() and ch_base==True:
+					print("Base game already installed. Skipping...")
 					listmanager.striplines(tfile,counter=True)
-					continue				
-			elif ch_other==True	and fileid in installed.keys():
-				if fileversion>((installed[fileid])[2]):
-					print("Asking DBI to delete previous update")
-					process=subprocess.Popen([nscb_mtp,"DeleteID","-ID",fileid])					
-					while process.poll()==None:
-						if process.poll()!=None:
-							process.terminate();
-				else:
-					print("The update is a previous version than the installed on device.Skipping..")
-					listmanager.striplines(tfile,counter=True)
-					continue					
+					continue
+				elif fileid.endswith('000') and fileid in installed.keys() and ch_other==True:
+					updid=fileid[:-3]+'800'
+					if fileversion>((installed[fileid])[2]):
+						print("Asking DBI to delete previous content")
+						process=subprocess.Popen([nscb_mtp,"DeleteID","-ID",fileid])	
+						while process.poll()==None:
+							if process.poll()!=None:
+								process.terminate();					
+						process=subprocess.Popen([nscb_mtp,"DeleteID","-ID",updid])		
+						while process.poll()==None:
+							if process.poll()!=None:
+								process.terminate();					
+					else:
+						print("The update is a previous version than the installed on device.Skipping..")
+						listmanager.striplines(tfile,counter=True)
+						continue				
+				elif ch_other==True	and fileid in installed.keys():
+					if fileversion>((installed[fileid])[2]):
+						print("Asking DBI to delete previous update")
+						process=subprocess.Popen([nscb_mtp,"DeleteID","-ID",fileid])					
+						while process.poll()==None:
+							if process.poll()!=None:
+								process.terminate();
+					else:
+						print("The update is a previous version than the installed on device.Skipping..")
+						listmanager.striplines(tfile,counter=True)
+						continue	
+		except:pass				
 		install(filepath=item,destiny=destiny,verification=verification,outfolder=outfolder,ch_medium=ch_medium,check_fw=check_fw,patch_keygen=patch_keygen,install_mode=install_mode,st_crypto=st_crypto)
 		print("")
 		listmanager.striplines(tfile,counter=True)
@@ -484,13 +477,15 @@ def parsedinstalled(exclude_xci=True):
 	if os.path.exists(games_installed_cache):	
 		gamelist=listmanager.read_lines_to_list(games_installed_cache,all=True)	
 		for g in gamelist:
-			if exclude_xci==True:
-				if g.endswith('xci') or g.endswith('xc0'):
-					continue
-			entry=listmanager.parsetags(g)
-			entry=list(entry)		
-			entry.append(g)
-			installed[entry[0]]=entry
+			try:
+				if exclude_xci==True:
+					if g.endswith('xci') or g.endswith('xc0'):
+						continue		
+				entry=listmanager.parsetags(g)
+				entry=list(entry)		
+				entry.append(g)
+				installed[entry[0]]=entry
+			except:pass				
 	return installed	
 	
 		
@@ -525,28 +520,30 @@ def get_installed_info(tfile=None,search_new=True,excludehb=True):
 		print("..........................................................")		
 		installed={}
 		for g in gamelist:
-			fileid,fileversion,cctag,nG,nU,nD,baseid=listmanager.parsetags(g)
-			g0=[pos for pos, char in enumerate(g) if char == '[']
-			g0=(g[0:g0[0]]).strip()
-			installed[fileid]=[fileid,fileversion,cctag,nG,nU,nD,baseid,g0,g]
-			if len(g0)>33:
-				g0=g0[0:30]+'...'	
-			else:
-				g0=g0+((33-len(g0))*' ')
-			verprint=str(fileversion)
-			if len(verprint)<9:
-				verprint=verprint+((9-len(verprint))*' ')					
-			if excludehb==True:
-				if not fileid.startswith('05') and not fileid.startswith('04')  and not str(fileid).lower()=='unknown':
+			try:
+				fileid,fileversion,cctag,nG,nU,nD,baseid=listmanager.parsetags(g)
+				g0=[pos for pos, char in enumerate(g) if char == '[']
+				g0=(g[0:g0[0]]).strip()
+				installed[fileid]=[fileid,fileversion,cctag,nG,nU,nD,baseid,g0,g]
+				if len(g0)>33:
+					g0=g0[0:30]+'...'	
+				else:
+					g0=g0+((33-len(g0))*' ')
+				verprint=str(fileversion)
+				if len(verprint)<9:
+					verprint=verprint+((9-len(verprint))*' ')					
+				if excludehb==True:
+					if not fileid.startswith('05') and not fileid.startswith('04')  and not str(fileid).lower()=='unknown':
+						if g.endswith('.xci') or g.endswith('.xc0'):
+							print(f"{g0}|{fileid}|{verprint}|XCI|{nG}G|{nU}U|{nD}D")
+						else:
+							print(f"{g0}|{fileid}|{verprint}|{cctag}")
+				else:
 					if g.endswith('.xci') or g.endswith('.xc0'):
-						print(f"{g0}|{fileid}|{verprint}|XCI|{nG}G|{nU}U|{nD}D")
-					else:
+						print(f"{g0}|{fileid}|{verprint}|XCI|{nG}G|{nU}U|{nD}D")	
+					else:	
 						print(f"{g0}|{fileid}|{verprint}|{cctag}")
-			else:
-				if g.endswith('.xci') or g.endswith('.xc0'):
-					print(f"{g0}|{fileid}|{verprint}|XCI|{nG}G|{nU}U|{nD}D")	
-				else:	
-					print(f"{g0}|{fileid}|{verprint}|{cctag}")
+			except:pass
 		if search_new==True:			
 			import nutdb
 			nutdb.check_other_file(urlconfig,'versions_txt')
@@ -830,13 +827,15 @@ def update_console(libraries="all",destiny="SD",exclude_xci=True,prioritize_nsz=
 	gamelist=listmanager.read_lines_to_list(games_installed_cache,all=True)
 	installed={}		
 	for g in gamelist:
-		if exclude_xci==True:
-			if g.endswith('xci') or g.endswith('xc0'):
-				continue
-		entry=listmanager.parsetags(g)
-		entry=list(entry)		
-		entry.append(g)
-		installed[entry[0]]=entry	
+		try:
+			if exclude_xci==True:
+				if g.endswith('xci') or g.endswith('xc0'):
+					continue
+			entry=listmanager.parsetags(g)
+			entry=list(entry)		
+			entry.append(g)
+			installed[entry[0]]=entry	
+		except:pass
 	print("2. Parsing local libraries. Please Wait...")				
 	locallist=[]
 	for p in pths.keys():
@@ -847,15 +846,17 @@ def update_console(libraries="all",destiny="SD",exclude_xci=True,prioritize_nsz=
 		locallist.reverse()
 	localgames={}		
 	for g in locallist:
-		entry=listmanager.parsetags(g)
-		entry=list(entry)
-		entry.append(g)		
-		if not entry[0] in localgames:
-			localgames[entry[0]]=entry
-		else:
-			v=(localgames[entry[0]])[1]
-			if int(entry[1])>int(v):
-				localgames[entry[0]]=entry		
+		try:
+			entry=listmanager.parsetags(g)
+			entry=list(entry)
+			entry.append(g)		
+			if not entry[0] in localgames:
+				localgames[entry[0]]=entry
+			else:
+				v=(localgames[entry[0]])[1]
+				if int(entry[1])>int(v):
+					localgames[entry[0]]=entry		
+		except:pass					
 	print("3. Searching new updates. Please Wait...")						
 	gamestosend={}		
 	for g in installed.keys():
