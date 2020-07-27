@@ -5,15 +5,15 @@
 ## *Further improvements over the MTP features*
 **Resources**
 
-DBI 135 was launched, you can get it directly from the kefir pack:
+DBI 138 was launched, you can get it directly from the kefir pack:
 
 https://github.com/rashevskyv/switch/releases/tag/462
 
 It can also be downloaded individually as nro or nsp here.
 
-[DBI_1.35.nsp](https://github.com/julesontheroad/NSC_BUILDER/raw/master/py/Documentation%20and%20Resources/DBI/135/DBI_0591703820420000.nsp)
+[DBI_138.nsp](https://github.com/julesontheroad/NSC_BUILDER/raw/master/py/Documentation%20and%20Resources/DBI/138/DBI_0591703820420000.nsp)
 
-[DBI_1.35.nro](https://github.com/julesontheroad/NSC_BUILDER/raw/master/py/Documentation%20and%20Resources/DBI/135/DBI.nro)
+[DBI_138.nro](https://github.com/julesontheroad/NSC_BUILDER/raw/master/py/Documentation%20and%20Resources/DBI/138/DBI.nro)
 
 You can find information on how to setup NSCB libraries, google drive auth tokens and 1 fichier auth tokens here:
 
