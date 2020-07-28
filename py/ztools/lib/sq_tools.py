@@ -198,7 +198,7 @@ def getFWRangeKG(keygeneration):
 	if keygeneration == 10:
 		return "(9.0.0 - 9.0.1)"
 	if keygeneration == 11:
-		return "(9.1.0 - >10.1.0)"		
+		return "(9.1.0 - >10.1.1)"		
 	else:
 		return "UNKNOWN"		
 
