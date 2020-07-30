@@ -148,12 +148,12 @@ def install_xci_csv(filepath=None,remote=None,destiny="SD",cachefolder=None,over
 	check_connection()
 	if cachefolder==None:
 		cachefolder=os.path.join(ztools_dir, '_mtp_cache_')	
-		files_list=DriveTools.get_files_from_head(remote,remote.name)		
-		remote.rewind()		
-		print(f"Installing {remote.name} by content")		
-		print('- Parsing headers...')
-		files=list();filesizes=list()
-		fplist=list()	
+	files_list=DriveTools.get_files_from_head(remote,remote.name)		
+	remote.rewind()		
+	print(f"Installing {remote.name} by content")		
+	print('- Parsing headers...')
+	files=list();filesizes=list()
+	fplist=list()	
 	counter=0		
 	for k in range(len(files_list)):
 		entry=files_list[k]
