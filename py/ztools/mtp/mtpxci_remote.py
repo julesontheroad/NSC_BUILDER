@@ -306,13 +306,14 @@ def gen_xci_parts_spec0(filepath=None,remote=None,target_cnmt=None,cachefolder=N
 			gc_flag='00'*0x01					
 			crypto1=ncaHeader.getCryptoType()
 			crypto2=ncaHeader.getCryptoType2()					
-			if ncaHeader.getRightsId() != 0:					
+			if ncaHeader.getRightsId() != 0:	
 				ncaHeader.rewind()	
 				if crypto2>crypto1:
 					masterKeyRev=crypto2
 				if crypto2<=crypto1:	
-					masterKeyRev=crypto1								
-				titleKeyDec = Keys.decryptTitleKey(titleKey, Keys.getMasterKeyIndex(int(masterKeyRev)))							
+					masterKeyRev=crypto1		
+				rightsId=metadict['rightsId']							
+				titleKeyDec = DriveTools.get_titlekey(remote,rightsId,masterKeyRev,files_list=files_list)	
 				encKeyBlock = crypto.encrypt(titleKeyDec * 4)
 				if str(keypatch) != "False":
 					t = tqdm(total=False, unit='B', unit_scale=False, leave=False)	

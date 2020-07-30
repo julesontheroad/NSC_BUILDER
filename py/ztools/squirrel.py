@@ -134,8 +134,8 @@ if __name__ == '__main__':
 		parser.add_argument('-rst', '--restore', nargs='+', help='Restore a xci or nsp file')
 
 		# nca/nsp identification
-		parser.add_argument('--ncatitleid', nargs='+', help='Returns titleid from a nca input')
-		parser.add_argument('--ncatype', nargs='+', help='Returns type of a nca file')
+		parser.add_argument('--ncatitleid', nargs='+', help='Returns titleid from an nca input')
+		parser.add_argument('--ncatype', nargs='+', help='Returns type of an nca file')
 		parser.add_argument('--nsptitleid', nargs='+', help='Returns titleid for a nsp file')
 		parser.add_argument('--nsptype', nargs='+', help='Returns type for a nsp file')
 		parser.add_argument('--ReadversionID', nargs='+', help='Returns version number for nsp Oorxci')
@@ -160,7 +160,7 @@ if __name__ == '__main__':
 		parser.add_argument('-x', '--extract', nargs='+', help='Extracts all files from nsp or xci')
 		parser.add_argument('-raw_x', '--raw_extraction', nargs='+', help='Extracts files without checking readability, useful when there is bad files')
 		parser.add_argument('-nfx', '--nca_file_extraction', nargs='+', help='Extracts files files within nca files from nsp/xci\nca file')
-		parser.add_argument('-plx', '--extract_plain_nca', nargs='+', help='Extracts nca files as plaintext or generate a plaintext file from a nca file')
+		parser.add_argument('-plx', '--extract_plain_nca', nargs='+', help='Extracts nca files as plaintext or generate a plaintext file from an nca file')
 		parser.add_argument('--NSP_copy_ticket', nargs='+', help='Extracts ticket from target nsp')
 		parser.add_argument('--NSP_copy_nca', nargs='+', help='Extracts all nca files from target nsp')
 		parser.add_argument('--NSP_copy_other', nargs='+', help='Extracts all kinds of files different from nca or ticket from target nsp')
@@ -5787,7 +5787,7 @@ if __name__ == '__main__':
 					Print.error('Exception: ' + str(e))
 			Status.close()
 		# ...................................................
-		# Change Required System Version in a nca file
+		# Change Required System Version in an nca file
 		# ...................................................
 		if args.patchversion:
 			for input in args.patchversion:

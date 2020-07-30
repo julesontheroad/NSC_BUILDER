@@ -473,7 +473,36 @@ def cnmt_data(cnmt,nca,nca_name):
 		rightsId=str(titleid2).lower()+'000000000000000'+kg_
 	elif len(str(kg_))==2:
 		rightsId=str(titleid2)+'00000000000000'+kg_	
-	return 	titleid,titleversion,base_ID,keygeneration,rightsId,RSV,RGV,ctype,metasdkversion,exesdkversion,hasHtmlManual,Installedsize,DeltaSize,ncadata						
+	return 	titleid,titleversion,base_ID,keygeneration,rightsId,RSV,RGV,ctype,metasdkversion,exesdkversion,hasHtmlManual,Installedsize,DeltaSize,ncadata		
+
+def get_titlekey(remote,rightsId,keygeneration,files_list=None):
+	if files_list==None:	
+		files_list=get_files_from_head(remote,remote.name)
+	hasticket=False
+	for i in range(len(files_list)):
+		if (files_list[i][0]).endswith('.tik'):
+			off1=files_list[i][1]
+			off2=files_list[i][2]
+			sz=files_list[i][3]
+			trights=((files_list[i][0])[:-4]).upper()
+			if str(trights).upper()==str(rightsId).upper():
+				hasticket=True
+				break	
+	if hasticket==False:
+		return False
+	remote.rewind()
+	remote.seek(off1,sz)	
+	buf=int(sz)
+	try:
+		data=remote.read(buf)
+		tk=str(hx(data[0x180:0x190]))
+		tk=tk[2:-1]
+		encKey=bytes.fromhex(tk)	
+		titleKeyDec = Keys.decryptTitleKey(encKey, Keys.getMasterKeyIndex(keygeneration))		
+		return titleKeyDec
+	except IOError as e:
+		print(e, file=sys.stderr)	
+		return False	
 
 def nacp_data(file,ncadata,files_list,ctype):
 	ncaname=None;dict={}

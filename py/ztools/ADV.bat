@@ -187,7 +187,7 @@ echo *******************************************************
 echo CHOOSE HOW TO PROCESS THE FILES
 echo *******************************************************
 echo Input "1" to extract all files from nsp\xci
-echo Input "2" for raw extraction (Use in case a nca gives magic error)
+echo Input "2" for raw extraction (Use in case an nca gives magic error)
 echo Input "3" to extract all nca files as plaintext
 echo Input "4" to extract nca contents from nsp\xci
 echo Input "5" to patch a linked account requirement
