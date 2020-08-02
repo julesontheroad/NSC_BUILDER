@@ -1,0 +1,2 @@
+URL|REFRESH(h)|REFRESH(m)|REFRESH(s)
+https://raw.githubusercontent.com/blawar/nut/master/titledb/titles.US.en.json|24|0|0
