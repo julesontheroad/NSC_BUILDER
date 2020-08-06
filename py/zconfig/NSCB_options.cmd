@@ -30,17 +30,17 @@ set "pycommand=py -3"
 ::Buffer for the copy functions. 
 ::Change the number for the number of bytes that works best for you
 ::32768=32kB ; 65536=64kB
-set "buffer=-b 65536"
+set "buffer=65536"
 ::Copy function with or without deltas
 ::--C_clean -> Copy and remove titlerights. Don't skips deltas
 ::--C_clean_ND-> Copy and remove titlerights skipping deltas
 set "nf_cleaner=--C_clean_ND"
-set "skdelta=-ND true"
+set "skdelta=true"
 ::than the required FW to decypher the crypto
 ::true -> Patch required system version in the meta nca
 ::false-> Don't patch required system version in the meta nca
-set "patchRSV=-pv false"
-set "capRSV=--RSVcap 268435656"
+set "patchRSV=false"
+set "capRSV=268435656"
 ::--------------------------------------------------------------
 ::OPTION 4: IMPORTANT FILES
 ::--------------------------------------------------------------
@@ -93,7 +93,7 @@ set "zip_restore=false"
 :: "6.2.0"	    	 	   -> vkey = 7
 :: "7.0.0 - 8.01"	  	   -> vkey = 8
 :: "8.1.0 "	  	           -> vkey = 9
-set "vkey=-kp false"
+set "vkey=false"
 
 ::--------------------------------------------------------------
 ::OPTION 10: AUTO-EXIT
@@ -114,8 +114,8 @@ set "skipRSVprompt=false"
 :: Choose to pack xci or for exfat cards or fat32 cards
 ::fatype can be fat32 or exfat
 ::fexport pack split nsp as files (sxos rommenu) or as folder (other installers)
-set "fatype=-fat exfat"
-set "fexport=-fx files"
+set "fatype=exfat"
+set "fexport=files"
 
 ::--------------------------------------------------------------
 ::OPTION 13: END FOLDER ORGANIZATION

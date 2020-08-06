@@ -199,7 +199,7 @@ if /i "%bs%"=="3" set "vrepack=both"
 if %vrepack%=="none" goto s_cl_wrongchoice
 
 :s_RSV_wrongchoice
-if /i "%skipRSVprompt%"=="true" set "patchRSV=-pv false"
+if /i "%skipRSVprompt%"=="true" set "patchRSV=false"
 if /i "%skipRSVprompt%"=="true" goto s_KeyChange_skip
 echo *******************************************************
 echo DO YOU WANT TO PATCH THE REQUIRED-SYSTEM-VERSION
@@ -219,8 +219,8 @@ set /p bs="Enter your choice: "
 set bs=%bs:"=%
 set "patchRSV=none"
 if /i "%bs%"=="b" goto checkagain
-if /i "%bs%"=="0" set "patchRSV=-pv false"
-if /i "%bs%"=="1" set "patchRSV=-pv true"
+if /i "%bs%"=="0" set "patchRSV=false"
+if /i "%bs%"=="1" set "patchRSV=true"
 if /i "%patchRSV%"=="none" echo WRONG CHOICE
 if /i "%patchRSV%"=="none" goto s_RSV_wrongchoice
 if /i "%bs%"=="0" goto s_KeyChange_skip
@@ -257,31 +257,31 @@ set /p bs="Enter your choice: "
 set bs=%bs:"=%
 set "vkey=none"
 if /i "%bs%"=="b" goto checkagain
-if /i "%bs%"=="f" set "vkey=-kp false"
-if /i "%bs%"=="0" set "vkey=-kp 0"
-if /i "%bs%"=="0" set "capRSV=--RSVcap 0"
-if /i "%bs%"=="1" set "vkey=-kp 1"
-if /i "%bs%"=="1" set "capRSV=--RSVcap 65796"
-if /i "%bs%"=="2" set "vkey=-kp 2"
-if /i "%bs%"=="2" set "capRSV=--RSVcap 201327002"
-if /i "%bs%"=="3" set "vkey=-kp 3"
-if /i "%bs%"=="3" set "capRSV=--RSVcap 201392178"
-if /i "%bs%"=="4" set "vkey=-kp 4"
-if /i "%bs%"=="4" set "capRSV=--RSVcap 268435656"
-if /i "%bs%"=="5" set "vkey=-kp 5"
-if /i "%bs%"=="5" set "capRSV=--RSVcap 335544750"
-if /i "%bs%"=="6" set "vkey=-kp 6"
-if /i "%bs%"=="6" set "capRSV=--RSVcap 402653494"
-if /i "%bs%"=="7" set "vkey=-kp 7"
-if /i "%bs%"=="7" set "capRSV=--RSVcap 404750336"
-if /i "%bs%"=="8" set "vkey=-kp 8"
-if /i "%bs%"=="8" set "capRSV=--RSVcap 469762048"
-if /i "%bs%"=="9" set "vkey=-kp 9"
-if /i "%bs%"=="9" set "capRSV=--RSVcap 537919488"
-if /i "%bs%"=="10" set "vkey=-kp 10"
-if /i "%bs%"=="10" set "capRSV=--RSVcap 603979776"
-if /i "%bs%"=="11" set "vkey=-kp 11"
-if /i "%bs%"=="11" set "capRSV=--RSVcap 605028352"
+if /i "%bs%"=="f" set "vkey=false"
+if /i "%bs%"=="0" set "vkey=0"
+if /i "%bs%"=="0" set "capRSV=0"
+if /i "%bs%"=="1" set "vkey=1"
+if /i "%bs%"=="1" set "capRSV=65796"
+if /i "%bs%"=="2" set "vkey=2"
+if /i "%bs%"=="2" set "capRSV=201327002"
+if /i "%bs%"=="3" set "vkey=3"
+if /i "%bs%"=="3" set "capRSV=201392178"
+if /i "%bs%"=="4" set "vkey=4"
+if /i "%bs%"=="4" set "capRSV=268435656"
+if /i "%bs%"=="5" set "vkey=5"
+if /i "%bs%"=="5" set "capRSV=335544750"
+if /i "%bs%"=="6" set "vkey=6"
+if /i "%bs%"=="6" set "capRSV=402653494"
+if /i "%bs%"=="7" set "vkey=7"
+if /i "%bs%"=="7" set "capRSV=404750336"
+if /i "%bs%"=="8" set "vkey=8"
+if /i "%bs%"=="8" set "capRSV=469762048"
+if /i "%bs%"=="9" set "vkey=9"
+if /i "%bs%"=="9" set "capRSV=537919488"
+if /i "%bs%"=="10" set "vkey=10"
+if /i "%bs%"=="10" set "capRSV=603979776"
+if /i "%bs%"=="11" set "vkey=11"
+if /i "%bs%"=="11" set "capRSV=605028352"
 if /i "%vkey%"=="none" echo WRONG CHOICE
 if /i "%vkey%"=="none" goto s_KeyChange_wrongchoice
 goto s_KeyChange_skip
@@ -290,180 +290,17 @@ goto s_KeyChange_skip
 echo Filtering extensions from list according to options chosen
 if "%fatype%" EQU "-fat fat32" echo Fat32 selected, removing nsz and xcz from input list
 if "%fatype%" EQU "-fat fat32" ( %pycommand% "%squirrel%" -lib_call listmanager filter_list "%list_folder%\1_1list.txt","ext=nsp nsx xci","token=False",Print="False" )
-cls
-call "%nscb_logos%" "program_logo"
 
-for /f "tokens=*" %%f in (lists/1_1list.txt) do (
-set "name=%%~nf"
-set "filename=%%~nxf"
-set "orinput=%%f"
-set "ziptarget=%%f"
+echo %pycommand% "%squirrel%" -lib_call cmd.cmd_batchprocess loop_repack -xarg "%list_folder%\1_1list.txt" "%buffer%" "%patchRSV%" "%vkey%" "%capRSV%" "%fatype%" "%fexport%" "%skdelta%" "%w_folder%" "%vrepack%"
 
-if "%%~nxf"=="%%~nf.nsp" call :nsp_manual
-if "%%~nxf"=="%%~nf.nsz" call :nsp_manual
-if "%%~nxf"=="%%~nf.xci" call :xci_manual
-if "%%~nxf"=="%%~nf.xcz" call :xci_manual
-%pycommand% "%squirrel%" --strip_lines "%list_folder%\1_1list.txt" "1" "true"
-rem call :contador_NF
-)
+%pycommand% "%squirrel%" -lib_call cmd.cmd_batchprocess loop_repack -xarg "%list_folder%\1_1list.txt" "%buffer%" "%patchRSV%" "%vkey%" "%capRSV%" "%fatype%" "%fexport%" "%skdelta%" "%w_folder%" "%vrepack%"
+
 ECHO ---------------------------------------------------
 ECHO *********** ALL FILES WERE PROCESSED! *************
 ECHO ---------------------------------------------------
 goto s_exit_choice
 
-
-:nsp_manual
-if exist "%w_folder%" rmdir /s /q "%w_folder%" >NUL 2>&1
-MD "%w_folder%" >NUL 2>&1
-call "%nscb_logos%" "squirrell"
-
-if "%vrename%" EQU "true" call :addtags_from_nsp
-
-if "%vrepack%" EQU "nsp" ( %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "nsp" -dc "%orinput%" -tfile "%list_folder%\1_1list.txt")
-if "%vrepack%" EQU "xci" ( %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "xci" -dc "%orinput%" -tfile "%list_folder%\1_1list.txt")
-if "%vrepack%" EQU "both" ( %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "both" -dc "%orinput%" -tfile "%list_folder%\1_1list.txt")
-if "%vrepack%" EQU "nodelta" ( %pycommand% "%squirrel%" %buffer% --xml_gen "true" -o "%w_folder%" -tfile "%list_folder%\1_1list.txt" --erase_deltas "")
-if "%vrepack%" EQU "rebuild" ( %pycommand% "%squirrel%" %buffer% %skdelta% --xml_gen "true" -o "%w_folder%" -tfile "%list_folder%\1_1list.txt" --rebuild_nsp "")
-if "%vrepack%" EQU "verify" ( %pycommand% "%squirrel%" %buffer% -vt "%verif%" -tfile "%list_folder%\1_1list.txt" -v "")
-if "%vrepack%" EQU "verify" ( goto end_nsp_manual )
-
-move "%w_folder%\*.xci" "%fold_output%" >NUL 2>&1
-move  "%w_folder%\*.xc*" "%fold_output%" >NUL 2>&1
-move "%w_folder%\*.nsp" "%fold_output%" >NUL 2>&1
-move "%w_folder%\*.ns*" "%fold_output%" >NUL 2>&1
-if exist "%w_folder%\archfolder" ( %pycommand% "%squirrel%" -ifo "%w_folder%\archfolder" -archive "%fold_output%\%filename%.nsp" )
-
-RD /S /Q "%w_folder%" >NUL 2>&1
-echo DONE
-call "%nscb_logos%" "thumbupl"
-call "%nscb_logos%" "delay"
-goto end_nsp_manual
-
-:nsp_manual_fat32
-CD /d "%prog_dir%"
-set "filename=%name%"
-set "showname=%orinput%"
-call :processing_message
-
-if exist "%w_folder%" rmdir /s /q "%w_folder%" >NUL 2>&1
-call "%nscb_logos%" "squirrell"
-
-%pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% -o "%w_folder%\secure" %nf_cleaner% "%orinput%"
-
-:nsp_just_zip
-if "%zip_restore%" EQU "true" ( call :makezip )
-call :getname
-if "%vrename%" EQU "true" call :addtags_from_nsp
-if "%vrepack%" EQU "nsp" ( call "%nsp_lib%" "repack" "%w_folder%" "%%f")
-if "%vrepack%" EQU "xci" ( call "%xci_lib%" "repack" "%w_folder%" "%%f")
-if "%vrepack%" EQU "both" ( call "%nsp_lib%" "repack" "%w_folder%" "%%f")
-if "%vrepack%" EQU "both" ( call "%xci_lib%" "repack" "%w_folder%" "%%f")
-setlocal enabledelayedexpansion
-if "%zip_restore%" EQU "true" ( goto :nsp_just_zip2 )
-if exist "%fold_output%\!end_folder!" RD /S /Q "%fold_output%\!end_folder!" >NUL 2>&1
-:nsp_just_zip2
-if not exist "%fold_output%" MD "%fold_output%" >NUL 2>&1
-set "gefolder=%fold_output%\!end_folder!"
-if "%oforg%" EQU "inline" ( set "gefolder=%fold_output%" )
-MD "%gefolder%" >NUL 2>&1
-move "%w_folder%\*.xci" "%gefolder%" >NUL 2>&1
-move  "%w_folder%\*.xc*" "%gefolder%" >NUL 2>&1
-move "%w_folder%\*.nsp" "%gefolder%" >NUL 2>&1
-move "%w_folder%\*.ns*" "%gefolder%" >NUL 2>&1
-if exist "%w_folder%\archfolder" ( %pycommand% "%squirrel%" -ifo "%w_folder%\archfolder" -archive "%gefolder%\%filename%.nsp" )
-endlocal
-RD /S /Q "%w_folder%" >NUL 2>&1
-echo DONE
-call "%nscb_logos%" "thumbupl"
-call "%nscb_logos%" "delay"
-goto end_nsp_manual
-
-:end_nsp_manual
-exit /B
-
-:xci_manual
-rem if "%fatype%" EQU "-fat fat32" goto xci_manual_fat32
-::FOR XCI FILES
-if exist "%w_folder%" rmdir /s /q "%w_folder%" >NUL 2>&1
-MD "%w_folder%"
-
-set "filename=%name%"
-set "showname=%orinput%"
-
-if "%vrepack%" EQU "nsp" ( %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "nsp" -dc "%orinput%" -tfile "%list_folder%\1_1list.txt")
-if "%vrepack%" EQU "xci" ( %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "xci" -dc "%orinput%" -tfile "%list_folder%\1_1list.txt")
-if "%vrepack%" EQU "both" ( %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -o "%w_folder%" -t "both" -dc "%orinput%" -tfile "%list_folder%\1_1list.txt")
-
-if not exist "%fold_output%" MD "%fold_output%" >NUL 2>&1
-
-move "%w_folder%\*.xci" "%fold_output%" >NUL 2>&1
-move  "%w_folder%\*.xc*" "%fold_output%" >NUL 2>&1
-move "%w_folder%\*.nsp" "%fold_output%" >NUL 2>&1
-move "%w_folder%\*.ns*" "%fold_output%" >NUL 2>&1
-if exist "%w_folder%\archfolder" ( %pycommand% "%squirrel%" -ifo "%w_folder%\archfolder" -archive "%fold_output%\%filename%.nsp" )
-
-RD /S /Q "%w_folder%" >NUL 2>&1
-echo DONE
-call "%nscb_logos%" "thumbupl"
-call "%nscb_logos%" "delay"
-goto end_xci_manual
-
-:xci_manual_fat32
-CD /d "%prog_dir%"
-::FOR XCI FILES
-cls
-set "filename=%name%"
-call "%nscb_logos%" "program_logo"
-set "showname=%orinput%"
-call :processing_message
-if exist "%w_folder%" rmdir /s /q "%w_folder%" >NUL 2>&1
-MD "%w_folder%"
-MD "%w_folder%\secure"
-call :getname
-echo ------------------------------------
-echo Extracting secure partition from xci
-echo ------------------------------------
-%pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% -o "%w_folder%\secure" %nf_cleaner% "%orinput%"
-echo DONE
-if "%vrename%" EQU "true" call :addtags_from_xci
-if "%vrepack%" EQU "nsp" ( call "%nsp_lib%" "convert" "%w_folder%" )
-if "%vrepack%" EQU "xci" ( call "%xci_lib%" "repack" "%w_folder%" )
-if "%vrepack%" EQU "both" ( call "%nsp_lib%" "convert" "%w_folder%" )
-if "%vrepack%" EQU "both" ( call "%xci_lib%" "repack" "%w_folder%" )
-setlocal enabledelayedexpansion
-if exist "%fold_output%\!end_folder!" RD /S /Q "%fold_output%\!end_folder!" >NUL 2>&1
-MD "%fold_output%\!end_folder!" >NUL 2>&1
-move  "%w_folder%\*.xci"  "%fold_output%\!end_folder!" >NUL 2>&1
-move  "%w_folder%\*.xc*"  "%fold_output%\!end_folder!" >NUL 2>&1
-move  "%w_folder%\*.nsp"  "%fold_output%\!end_folder!" >NUL 2>&1
-move "%w_folder%\*.ns*" "%fold_output%\!end_folder!" >NUL 2>&1
-if exist "%w_folder%\archfolder" ( %pycommand% "%squirrel%" -ifo "%w_folder%\archfolder" -archive "%fold_output%\!end_folder!\%filename%.nsp" )
-endlocal
-RD /S /Q "%w_folder%" >NUL 2>&1
-echo DONE
-call "%nscb_logos%" "thumbupl"
-call "%nscb_logos%" "delay"
-goto end_xci_manual
-
-:end_xci_manual
-exit /B
-
-:contador_NF
-setlocal enabledelayedexpansion
-set /a conta=0
-for /f "tokens=*" %%f in (lists/1_1list.txt) do (
-set /a conta=!conta! + 1
-)
-echo ...................................................
-echo STILL !conta! FILES TO PROCESS
-echo ...................................................
-PING -n 2 127.0.0.1 >NUL 2>&1
-set /a conta=0
-endlocal
-exit /B
-
 :s_exit_choice
-if exist lists/1_1list.txt del lists/1_1list.txt
 if /i "%va_exit%"=="true" echo PROGRAM WILL CLOSE NOW
 if /i "%va_exit%"=="true" ( PING -n 2 127.0.0.1 >NUL 2>&1 )
 if /i "%va_exit%"=="true" goto salida
@@ -476,39 +313,6 @@ set bs=%bs:"=%
 if /i "%bs%"=="0" call "%main_program%"
 if /i "%bs%"=="1" goto salida
 goto s_exit_choice
-
-:processing_message
-echo Processing %showname%
-echo.
-exit /B
-
-:getname
-
-if not exist %w_folder% MD %w_folder% >NUL 2>&1
-
-set filename=%filename:[nap]=%
-set filename=%filename:[xc]=%
-set filename=%filename:[nc]=%
-set filename=%filename:[rr]=%
-set filename=%filename:[xcib]=%
-set filename=%filename:[nxt]=%
-set filename=%filename:[Trimmed]=%
-echo %filename% >"%w_folder%\fname.txt"
-
-::deletebrackets
-for /f "usebackq tokens=1* delims=[" %%a in ("%w_folder%\fname.txt") do (
-    set end_folder=%%a)
-echo %end_folder%>"%w_folder%\fname.txt"
-::deleteparenthesis
-for /f "usebackq tokens=1* delims=(" %%a in ("%w_folder%\fname.txt") do (
-    set end_folder=%%a)
-echo %end_folder%>"%w_folder%\fname.txt"
-::I also wanted to remove_(
-set end_folder=%end_folder:_= %
-set end_folder=%end_folder:~0,-1%
-del "%w_folder%\fname.txt" >NUL 2>&1
-if "%vrename%" EQU "true" ( set "filename=%end_folder%" )
-exit /B
 
 :salida
 ::pause
