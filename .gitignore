@@ -47,7 +47,6 @@ py/rstlist.txt
 py/zconfig/api.txt
 py/lists/
 py/ztools/private/
-py/ztools/cmd/
 py/zconfig/credentials
 py/testurl.txt
 py/ztools/Drive/Retriever.py
