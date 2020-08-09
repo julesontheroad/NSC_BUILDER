@@ -45,7 +45,7 @@ if /i "%eval%"=="0" goto MAIN
 if /i "%eval%"=="1" set skip_list_split="true"
 if /i "%eval%"=="1" goto m_patch_keygen
 if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%mlistMTP.txt" mode=folder ext="nsp xci nsz xcz" ) 2>&1>NUL
-if /i "%eval%"=="3" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%mlistMTP.txt" mode=file ext="nsp xci nsz xcz" ) 2>&1>NUL
+if /i "%eval%"=="3" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%mlistMTP.txt" mode=file ext="nsp xci nsz xcz" False False True ) 2>&1>NUL
 if /i "%eval%"=="4" ( %pycommand% "%squirrel%" -lib_call mtp.mtpinstaller select_from_local_libraries -xarg "%prog_dir%mlistMTP.txt" "mode=installer" )
 if /i "%eval%"=="5" ( %pycommand% "%squirrel%" -lib_call picker_walker get_files_from_walk -xarg "%prog_dir%mlistMTP.txt" "extlist=nsp xci nsz xcz" )
 
@@ -90,7 +90,7 @@ if /i "%eval%"=="2" goto m_patch_keygen
 if /i "%eval%"=="3" set "mlistfol=%list_folder%\m_multiMTP"
 if /i "%eval%"=="3" goto multi_saved_for_later
 if /i "%eval%"=="4" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%mlistMTP.txt" mode=folder ext="nsp xci nsz xcz" ) 2>&1>NUL
-if /i "%eval%"=="5" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%mlistMTP.txt" mode=file ext="nsp xci nsz xcz" ) 2>&1>NUL
+if /i "%eval%"=="5" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%mlistMTP.txt" mode=file ext="nsp xci nsz xcz" False False True ) 2>&1>NUL
 if /i "%eval%"=="6" ( %pycommand% "%squirrel%" -lib_call mtp.mtpinstaller select_from_local_libraries -xarg "%prog_dir%mlistMTP.txt" "mode=installer" )
 if /i "%eval%"=="7" ( %pycommand% "%squirrel%" -lib_call picker_walker get_files_from_walk -xarg "%prog_dir%mlistMTP.txt" "extlist=nsp xci nsz xcz" )
 REM if /i "%eval%"=="2" goto multi_set_clogo

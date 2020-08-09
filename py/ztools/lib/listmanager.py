@@ -441,7 +441,7 @@ def nextfolder_to_list(ifolder,extlist=['nsp'],filter=False,alfanumeric=False):
 		nutPrint.error('Exception: ' + str(e))													
 	return filelist
 
-def selector2list(textfile,mode='folder',ext=False,filter=False,Print=False):
+def selector2list(textfile,mode='folder',ext=False,filter=False,Print=False,multiselect=False):
 	root = tk.Tk()
 	root.withdraw()
 	root.wm_attributes('-topmost', 1)
@@ -472,11 +472,20 @@ def selector2list(textfile,mode='folder',ext=False,filter=False,Print=False):
 					x='.'+x
 				entry=("Filetypes",f"*{x}")	
 				filetypes.append(entry)
-			filepath = filedialog.askopenfilename(filetypes=filetypes)	
+			if multiselect==False:
+				filepath = filedialog.askopenfilename(filetypes=filetypes)				
+			else:	
+				filepath = filedialog.askopenfilenames(filetypes=filetypes)	
 		else:
-			filepath = filedialog.askopenfilename()				
-		filelist=[]
-		filelist.append(filepath)	
+			if multiselect==False:	
+				filepath = filedialog.askopenfilename()					
+			else:				
+				filepath = filedialog.askopenfilenames()		
+		if multiselect==False:					
+			filelist=[]
+			filelist.append(filepath)
+		else:
+			filelist=list(filepath)
 	else:
 		filepath = filedialog.askdirectory()
 	if mode!='file':		

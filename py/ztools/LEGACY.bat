@@ -1597,7 +1597,7 @@ set /p eval=<"%uinput%"
 set eval=%eval:"=%
 if /i "%eval%"=="0" goto manual_Reentry
 if /i "%eval%"=="1" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%UPDlist.txt" mode=folder ext="nsp xci" ) 2>&1>NUL
-if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%UPDlist.txt" mode=file ext="nsp xci" )  2>&1>NUL
+if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%UPDlist.txt" mode=file ext="nsp xci" False False True )  2>&1>NUL
 if /i "%eval%"=="3" ( %pycommand% "%squirrel%" -lib_call picker_walker select_from_local_libraries -xarg "%prog_dir%UPDlist.txt" "extlist=nsp xci" )
 if /i "%eval%"=="4" ( %pycommand% "%squirrel%" -lib_call picker_walker get_files_from_walk -xarg "%prog_dir%UPDlist.txt" "extlist=nsp xci" )
 
@@ -1636,7 +1636,7 @@ endlocal
 if /i "%eval%"=="0" goto manual_Reentry
 if /i "%eval%"=="1" goto upd_starts
 if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%UPDlist.txt" mode=folder ext="nsp xci" ) 2>&1>NUL
-if /i "%eval%"=="3" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%UPDlist.txt" mode=file ext="nsp xci" )  2>&1>NUL
+if /i "%eval%"=="3" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%UPDlist.txt" mode=file ext="nsp xci" False False True )  2>&1>NUL
 if /i "%eval%"=="4" ( %pycommand% "%squirrel%" -lib_call picker_walker select_from_local_libraries -xarg "%prog_dir%UPDlist.txt" "extlist=nsp xci" )
 if /i "%eval%"=="5" ( %pycommand% "%squirrel%" -lib_call picker_walker get_files_from_walk -xarg "%prog_dir%UPDlist.txt" "extlist=nsp xci" )
 if /i "%eval%"=="6" goto upd_ADD_BASE

@@ -353,10 +353,10 @@ def install(filepath=None,destiny="SD",verification=True,outfolder=None,ch_mediu
 def install_conv_st1(filepath,outfolder,keypatch='false'):
 	tname=str(os.path.basename(filepath))[:-3]+'nsp'
 	tmpfile=os.path.join(outfolder,tname)
-	if filepath.endswith('xci'):
+	if filepath.endswith('xci') or filepath.endswith('xcz'):
 		f = factory(filepath)
 		f.open(filepath, 'rb')
-	elif filepath.endswith('nsp'):	
+	elif filepath.endswith('nsp') or filepath.endswith('nsz'):	
 		f = squirrelNSP(filepath, 'rb')	
 	f.c_nsp_direct(65536,tmpfile,outfolder,keypatch=keypatch)
 	f.flush()
