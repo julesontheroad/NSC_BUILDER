@@ -277,17 +277,29 @@ def parsetags(filepath):
 		tid2=list()
 		tid1=[pos for pos, char in enumerate(filepath) if char == '(']
 		tid2=[pos for pos, char in enumerate(filepath) if char == ')']
-		if len(tid1)>=len(tid2):
+		if not tid1 or not tid2:
+			lentlist=0
+		elif len(tid1)>=len(tid2):
 			lentlist=len(tid1)					
 		elif len(tid1)<len(tid2):
 			lentlist=len(tid2)				
 		for i in range(lentlist):	
 			try:
-				i1=tid1[i]
-				i2=tid2[i]+1					
-				t=filepath[i1:i2]
-				#print(t)
-				if 'G+' in t or 'G)' in t:
+				try:
+					i1=tid1[i]
+				except:
+					i1=tid1[-1]
+				try:					
+					i2=tid2[i]+1	
+				except:
+					i2=tid2[-1]+1				
+				t=filepath[i1:i2]		
+				endertest=''
+				try:
+					endertest=t[-2:]
+				except:
+					pass			
+				if 'G+' in t or 'G)' in t or 'G)'==endertest:
 					x_= t.find('G')-1
 					nG=t[x_]
 					for i in range(len(t)):
@@ -297,9 +309,9 @@ def parsetags(filepath):
 							int(test)
 							nG=test
 						except:pass	
-				else:
+				elif nG<2:
 					nG=1
-				if 'U+' in t or 'U)' in t:					
+				if 'U+' in t or 'U)' in t or 'U)'==endertest:					
 					y_= t.find('U')-1
 					nU=t[y_]
 					for i in range(len(t)):
@@ -309,7 +321,7 @@ def parsetags(filepath):
 							int(test)
 							nU=test
 						except:pass						
-				if 'D)' in t:			
+				if 'D)' in t or 'D)'==endertest:			
 					z_= t.find('D')
 					nD=t[z_]	
 					for i in range(len(t)):
@@ -323,9 +335,11 @@ def parsetags(filepath):
 		# if int(nG)>0 or int(nU)>0 or int(nD)>0:
 			# print(fileid+' '+str(fileversion)+' '+cctag+' '+str(nG)+'G+'+str(nU)+'U+'+str(nD)+'D')			
 		# else:
-			# print(fileid+' '+str(fileversion)+' '+cctag)		
+			# print(fileid+' '+str(fileversion)+' '+cctag)	
+	if int(nG)==0 and int(nU)==0 and int(nD)==0:
+		nG=1
 	return str(fileid),str(fileversion),cctag,int(nG),int(nU),int(nD),baseid
-	
+
 def folder_to_list(ifolder,extlist=['nsp'],filter=False,alfanumeric=False):	
 	ruta=ifolder
 	filelist=list()
@@ -818,3 +832,92 @@ def calculate_name(filelist,romanize=True,ext='.xci'):
 		endname=endname[:-1]
 	endname=endname+ext
 	return endname,prlist
+
+def blk_txt_fromtxt(textfile1,textfile2,Print=True):
+	filelist=[]
+	with open(textfile1,'r', encoding='utf8') as f:
+		for line in f:			
+			fp=line.strip()	
+			filelist.append(fp)	
+	filelist2=[]
+	with open(textfile2,'r', encoding='utf8') as f:
+		for line in f:			
+			fp=line.strip()	
+			filelist2.append(fp)	
+	newitems=[]		
+	for item in filelist:
+		delete_it=False
+		for k in filelist2:	
+			if os.path.splitext(item)[0]==os.path.splitext(k)[0]:
+				delete_it=True
+		if delete_it==False:
+			newitems.append(item)
+	with open(textfile1,'w', encoding='utf8') as f:			
+		for it in newitems:
+			f.write(it+'\n')	
+			
+def check_tfile_4missing(tfile1,tfile2,output,compare='right',include_parsed=False):
+	file_list1=read_lines_to_list(tfile1,all=True)
+	file_list2=read_lines_to_list(tfile2,all=True)	
+	if os.path.exists(output):
+		try:
+			os.remove(output)
+		except:pass			
+	titledb1={};titledb2={}
+	for file in file_list1:
+		print(f"Parsing {file}")
+		fileid,fileversion,cctag,nG,nU,nD,baseid=parsetags(file)
+		ky=f"{str(fileid).upper()}|{str(fileversion)}|{str(nG)}|{str(nU)}|{str(nD)}"
+		ky=ky.strip()		
+		print(ky)
+		if not str(ky) in titledb1.keys():
+			titledb1[str(ky)]=file	
+	for file in file_list2:
+		print(f"Parsing {file}")	
+		fileid,fileversion,cctag,nG,nU,nD,baseid=parsetags(file)
+		ky=f"{str(fileid).upper()}|{str(fileversion)}|{str(nG)}|{str(nU)}|{str(nD)}"
+		ky=ky.strip()
+		print(ky)			
+		if not str(ky) in titledb2.keys():
+			titledb2[str(ky)]=file			
+	counter=0			
+	if compare=='right':
+		for entry in titledb1.keys():
+			if not entry in titledb2.keys():
+				with open(output,'a', encoding='utf8') as f: 
+					if include_parsed==False:				
+						f.write(titledb1[entry]+'\n')	
+					else:
+						f.write(entry+'|'+titledb1[entry]+'\n')							
+					counter+=1
+	else:
+		for entry in titledb2.keys():	
+			if not entry in titledb1.keys():
+				with open(output,'a', encoding='utf8') as f: 
+					if include_parsed==False:					
+						f.write(titledb2[entry]+'\n')
+					else:
+						f.write(entry+'|'+titledb2[entry]+'\n')								
+					counter+=1					
+	print("Done")		
+	print(f"Detected {counter} files missing")
+
+def append_parsed_to_tfile(tfile1,output):
+	file_list1=read_lines_to_list(tfile1,all=True)
+	if os.path.exists(output):
+		try:
+			os.remove(output)
+		except:pass			
+	titledb1={};
+	for file in file_list1:
+		print(f"Parsing {file}")
+		fileid,fileversion,cctag,nG,nU,nD,baseid=parsetags(file)
+		ky=f"{str(fileid).upper()}|{str(fileversion)}|{str(nG)}|{str(nU)}|{str(nD)}"
+		ky=ky.strip()		
+		print(ky)
+		if not str(ky) in titledb1.keys():
+			titledb1[str(ky)]=file	
+	for entry in titledb1.keys():
+		with open(output,'a', encoding='utf8') as f: 
+			f.write(entry+'|'+titledb1[entry]+'\n')									
+	print("Done")		
