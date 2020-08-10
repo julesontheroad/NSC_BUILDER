@@ -309,8 +309,6 @@ def parsetags(filepath):
 							int(test)
 							nG=test
 						except:pass	
-				elif nG<2:
-					nG=1
 				if 'U+' in t or 'U)' in t or 'U)'==endertest:					
 					y_= t.find('U')-1
 					nU=t[y_]
