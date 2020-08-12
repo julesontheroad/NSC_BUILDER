@@ -7458,6 +7458,12 @@ if __name__ == '__main__':
 			if isinstance(args.verify_key, list):
 				filepath=args.verify_key[0]
 				userkey=args.verify_key[1]
+				print(args.verify_key[2])
+				if args.verify_key[2]:
+					if str(args.verify_key[2]).lower()=="true":
+						unlock=True
+				else:
+					unlock=False
 				userkey=str(userkey).upper()
 				if filepath.endswith('.nsp') or filepath.endswith('.nsx'):
 					basename=str(os.path.basename(os.path.abspath(filepath)))
@@ -7468,7 +7474,15 @@ if __name__ == '__main__':
 						f.close()
 						if check==True:
 							print(('\nTitlekey {} is correct for '.format(userkey)).upper()+('"{}"').format(basename))
-							print("-- YOU CAN UNLOCK AND ENJOY THE GAME --")	
+							print("-- YOU CAN UNLOCK AND ENJOY THE GAME --")
+							if unlock==True:
+								print("--> UNLOCKING...")		
+								f = Fs.Nsp(filepath, 'r+b')
+								f.unlock(userkey)
+								try:
+									f.flush()
+									f.close()	
+								except:pass	
 						else:
 							print(('\nTitlekey {} is incorrect for '.format(userkey)).upper()+('"{}"').format(basename))
 							print("-- BETTER LUCK NEXT TIME --")	
