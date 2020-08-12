@@ -6526,6 +6526,7 @@ if __name__ == '__main__':
 
 		if args.renamef:
 			import nutdb
+			languetag=''
 			if args.romanize:
 				for input in args.romanize:
 					roman=str(input).upper()
@@ -6940,22 +6941,28 @@ if __name__ == '__main__':
 						if ccount == '(1G)' or ccount == '(1U)' or ccount == '(1D)':
 							ccount=''
 						basename=str(os.path.basename(os.path.abspath(filepath)))
+						if onaddid=='idtag':
+							from pathlib import Path
+							g=Path(basename).stem	
+							try:
+								g0=[pos for pos, char in enumerate(g) if char == '[']							
+								ctitl=(g[0:g0[0]]).strip()	
+							except:
+								ctitl=g.strip()	
+							if languetag!='':
+								ctitl+=' '+languetag
+							renmode="force"
+							onaddid=False
 						if baseid != "" and baseid != "[]":
 							if updver != "":
 								if onaddid==True:
 									endname=basename[:-4]+' '+baseid
-								elif onaddid=='idtag':
-									endname=basename[:-4]+' '+baseid+' '+updver+' '+ccount+' '+mgame
 								elif nover == True and (ccount==''):
 									endname=ctitl+' '+baseid
 								else:
 									endname=ctitl+' '+baseid+' '+updver+' '+ccount+' '+mgame
 							else:
 								if onaddid==True:
-									endname=basename[:-4]+' '+baseid
-								elif onaddid=='idtag' and (ccount!=''):
-									endname=basename[:-4]+' '+baseid+' '+ccount+' '+mgame
-								elif onaddid=='idtag':
 									endname=basename[:-4]+' '+baseid
 								elif nover == True and (ccount==''):
 									endname=ctitl+' '+baseid
@@ -6971,10 +6978,6 @@ if __name__ == '__main__':
 						elif updid !="" and updid != "[]":
 							if onaddid==True:
 								endname=basename[:-4]+' '+updid
-							elif onaddid=='idtag' and (ccount!=''):
-								endname=basename+' '+updid+' '+updver+' '+ccount+' '+mgame
-							elif onaddid=='idtag' and (ccount==''):
-								endname=basename+' '+updid
 							elif nover == True and (ccount==''):
 								endname=ctitl+' '+updid
 							else:

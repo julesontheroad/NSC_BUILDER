@@ -1225,7 +1225,7 @@ echo Input "1" to ALWAYS rename
 echo Input "2" to NOT RENAME IF [TITLEID] is present
 echo Input "3" to NOT RENAME IF [TITLEID] is equal to the one calculated
 echo Input "4" to ONLY ADD ID
-echo Input "5" to ADD ID + TAGS AND KEEP NAME TILL [
+echo Input "5" to keep original name ADD ID + SELECTED TAGS
 echo.
 echo Sanitize:
 echo Input "6" to REMOVE BAD characters from the file name
@@ -1254,7 +1254,7 @@ if /i "%bs%"=="3" set "renmode=skip_if_tid"
 if /i "%bs%"=="3" set "oaid=false"
 if /i "%bs%"=="4" set "renmode=skip_corr_tid"
 if /i "%bs%"=="4" set "oaid=true"
-if /i "%bs%"=="5" set "renmode=skip_corr_tid"
+if /i "%bs%"=="5" set "renmode=force"
 if /i "%bs%"=="5" set "oaid=idtag"
 if /i "%bs%"=="6" goto sanitize
 if /i "%bs%"=="7" goto romaji
