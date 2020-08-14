@@ -146,8 +146,10 @@ class Ticket(File):
 					if filename[0]=='0':
 						filename=filename[-1] 				
 						self.masterKeyRevision = int(filename,16) 
-					else:			
-						self.masterKeyRevision = int(filename,16) 						
+					else:
+						try:
+							self.masterKeyRevision = int(filename,16)
+						except:pass	
 				else:self.masterKeyRevision=0
 			elif self.masterKeyRevision >2:	
 				filename = str(self._path)		
@@ -175,8 +177,10 @@ class Ticket(File):
 						filename=filename[-1] 	
 						if int(filename,16) ==test:
 							self.masterKeyRevision==test
-					else:			
-						self.masterKeyRevision = int(filename,16)							
+					else:
+						try:					
+							self.masterKeyRevision = int(filename,16)	
+						except:pass								
 		return self.masterKeyRevision
 
 	def setMasterKeyRevision(self, value):
