@@ -516,10 +516,11 @@ class Nsp(Pfs0):
 
 		for nca in self:
 			if type(nca) == Nca:
-				if nca.header.getCryptoType2() != masterKeyRev:
-					pass
-					raise IOError('Mismatched masterKeyRevs!')
-
+				if nca.header.getRightsId() != 0:			
+					if nca.header.masterKeyRev != masterKeyRev:
+						print('WARNING!!! Mismatched masterKeyRevs!')
+						print(f"{str(nca._path)} - {nca.header.masterKeyRev}")	
+						print(f"{str(ticket._path)} - {masterKeyRev}")
 		for nca in self:
 			if type(nca) == Nca:
 				if nca.header.getRightsId() != 0:
@@ -597,9 +598,11 @@ class Nsp(Pfs0):
 
 		for nca in self:
 			if type(nca) == Nca:
-				if nca.header.getCryptoType2() != masterKeyRev:
-					pass
-					raise IOError('Mismatched masterKeyRevs!')
+				if nca.header.getRightsId() != 0:				
+					if nca.header.masterKeyRev != masterKeyRev:
+						print('WARNING!!! Mismatched masterKeyRevs!')
+						print(f"{str(nca._path)} - {nca.header.masterKeyRev}")	
+						print(f"{str(ticket._path)} - {masterKeyRev}")		
 
 		for nca in self:
 			if type(nca) == Nca:
@@ -1566,9 +1569,11 @@ class Nsp(Pfs0):
 
 		for nca in self:
 			if type(nca) == Nca:
-				if nca.header.getCryptoType2() != masterKeyRev:
-					pass
-					raise IOError('Mismatched masterKeyRevs!')
+				if nca.header.getRightsId() != 0:				
+					if nca.header.masterKeyRev != masterKeyRev:
+						print('WARNING!!! Mismatched masterKeyRevs!')
+						print(f"{str(nca._path)} - {nca.header.masterKeyRev}")	
+						print(f"{str(ticket._path)} - {masterKeyRev}")			
 
 		for nca in self:
 			if type(nca) == Nca:
@@ -2714,9 +2719,11 @@ class Nsp(Pfs0):
 		
 		for nca in self:
 			if type(nca) == Nca:
-				if nca.header.getCryptoType2() != masterKeyRev:
-					pass
-					raise IOError('Mismatched masterKeyRevs!')
+				if nca.header.getRightsId() != 0:				
+					if nca.header.masterKeyRev != masterKeyRev:
+						print('WARNING!!! Mismatched masterKeyRevs!')
+						print(f"{str(nca._path)} - {nca.header.masterKeyRev}")	
+						print(f"{str(ticket._path)} - {masterKeyRev}")		
 
 		for nca in self:
 			if type(nca) == Nca:
@@ -2820,9 +2827,11 @@ class Nsp(Pfs0):
 		
 		for nca in self:
 			if type(nca) == Nca:
-				if nca.header.getCryptoType2() != masterKeyRev:
-					pass
-					raise IOError('Mismatched masterKeyRevs!')		
+				if nca.header.getRightsId() != 0:				
+					if nca.header.masterKeyRev != masterKeyRev:
+						print('WARNING!!! Mismatched masterKeyRevs!')
+						print(f"{str(nca._path)} - {nca.header.masterKeyRev}")	
+						print(f"{str(ticket._path)} - {masterKeyRev}")			
 		
 		for nca in self:
 			if type(nca) == Nca:
@@ -3603,9 +3612,10 @@ class Nsp(Pfs0):
 		for file in self:				
 			if type(file) == Nca:
 				if file.header.getRightsId() != 0:
-					if file.header.getCryptoType2() != masterKeyRev:
-						pass
-						raise IOError('Mismatched masterKeyRevs!')
+					if file.header.masterKeyRev != masterKeyRev:
+						print('WARNING!!! Mismatched masterKeyRevs!')
+						print(f"{str(file._path)} - {file.header.masterKeyRev}")	
+						print(f"{str(ticket._path)} - {masterKeyRev}")		
 		for file in self:	
 			if type(file) == Nca:	
 				if file.header.getRightsId() != 0:		
@@ -4135,18 +4145,20 @@ class Nsp(Pfs0):
 				titleKeyDec = Keys.decryptTitleKey(file.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(masterKeyRev))
 				rightsId = file.getRightsId()
 		for nca in self:
-			if type(nca) == Nca:
-				if nca.header.getRightsId() != 0:			
-					if nca.header.getCryptoType2() != masterKeyRev:
-						pass
-						raise IOError('Mismatched masterKeyRevs!')
+			if type(nca) == Nca:		
+				if nca.header.getRightsId() != 0:
+					if nca.header.masterKeyRev != masterKeyRev:
+						print('WARNING!!! Mismatched masterKeyRevs!')
+						print(f"{str(nca._path)} - {nca.header.masterKeyRev}")	
+						print(f"{str(ticket._path)} - {masterKeyRev}")		
 			elif str(nca._path).endswith('.ncz'):						
 				ncztype=Nca(nca)
 				ncztype._path=nca._path			
 				if ncztype.header.getRightsId() != 0:			
-					if ncztype.header.getCryptoType2() != masterKeyRev:
-						pass
-						raise IOError('Mismatched masterKeyRevs!')									
+					if ncztype.header.masterKeyRev != masterKeyRev:
+						print('WARNING!!! Mismatched masterKeyRevs!')
+						print(f"{str(ncztype._path)} - {ncztype.header.masterKeyRev}")	
+						print(f"{str(ticket._path)} - {masterKeyRev}")						
 		for nca in self:	
 			if type(nca) == Nca:		
 				if nca.header.getRightsId() != 0:
@@ -5002,16 +5014,18 @@ class Nsp(Pfs0):
 		for file in self:				
 			if type(file) == Nca:
 				if file.header.getRightsId() != 0:
-					if file.header.getCryptoType2() != masterKeyRev:
-						pass
-						raise IOError('Mismatched masterKeyRevs!')
+					if file.header.masterKeyRev != masterKeyRev:
+						print('WARNING!!! Mismatched masterKeyRevs!')
+						print(f"{str(file._path)} - {file.header.masterKeyRev}")	
+						print(f"{str(ticket._path)} - {masterKeyRev}")	
 			elif str(file._path).endswith('.ncz'):						
 				ncztype=Nca(file)
 				ncztype._path=file._path			
 				if ncztype.header.getRightsId() != 0:			
-					if ncztype.header.getCryptoType2() != masterKeyRev:
-						pass
-						raise IOError('Mismatched masterKeyRevs!')							
+					if ncztype.header.masterKeyRev != masterKeyRev:
+						print('WARNING!!! Mismatched masterKeyRevs!')
+						print(f"{str(ncztype._path)} - {ncztype.header.masterKeyRev}")	
+						print(f"{str(ticket._path)} - {masterKeyRev}")						
 		for file in self:	
 			if type(file) == Nca:	
 				if file.header.getRightsId() != 0:		
@@ -7649,19 +7663,20 @@ class Nsp(Pfs0):
 		for file in self:				
 			if type(file) == Nca and file._path in filelist:
 				if file.header.getRightsId() != 0:
-					if file.header.getCryptoType2() != masterKeyRev:
-						pass
-						raise IOError('Mismatched masterKeyRevs!')
+					if file.header.masterKeyRev != masterKeyRev:
+						print('WARNING!!! Mismatched masterKeyRevs!')
+						print(f"{str(file._path)} - {file.header.masterKeyRev}")	
+						print(f"{str(ticket._path)} - {masterKeyRev}")	
 			elif str(file._path).endswith('.ncz'):	
 				ncapath=str(file._path)[:-1]+'a'	
 				if ncapath in filelist:				
 					ncztype=Nca(file)
 					ncztype._path=file._path			
 					if ncztype.header.getRightsId() != 0:
-						if ncztype.header.getCryptoType2() != masterKeyRev:
-							pass
-							raise IOError('Mismatched masterKeyRevs!')					
-											
+						if ncztype.header.masterKeyRev != masterKeyRev:
+							print('WARNING!!! Mismatched masterKeyRevs!')
+							print(f"{str(ncztype._path)} - {ncztype.header.masterKeyRev}")	
+							print(f"{str(ticket._path)} - {masterKeyRev}")
 		for file in self:	
 			if type(file) == Nca and file._path in filelist:	
 				if file.header.getRightsId() != 0:		

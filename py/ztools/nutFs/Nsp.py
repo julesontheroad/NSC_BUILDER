@@ -397,13 +397,13 @@ class Nsp(Pfs0):
 		Print.info('newTitleKey =\t' + str(hx(newTitleKey)))
 		Print.info('masterKeyRev =\t' + hex(masterKeyRev))
 
-
-
 		for nca in self:
 			if type(nca) == Nca:
-				if nca.header.getCryptoType2() != masterKeyRev:
-					pass
-					raise IOError('Mismatched masterKeyRevs!')
+				if nca.header.getRightsId() != 0:
+					if nca.header.masterKeyRev != masterKeyRev:
+						print('WARNING!!! Mismatched masterKeyRevs!')
+						print(f"{str(nca._path)} - {nca.header.masterKeyRev}")	
+						print(f"{str(ticket._path)} - {masterKeyRev}")
 
 		ticket.setMasterKeyRevision(newMasterKeyRev)
 		ticket.setRightsId((ticket.getRightsId() & 0xFFFFFFFFFFFFFFFF0000000000000000) + newMasterKeyRev)
@@ -455,10 +455,11 @@ class Nsp(Pfs0):
 
 		for nca in self:
 			if type(nca) == Nca:
-				if nca.header.getCryptoType2() != masterKeyRev:
-					pass
-					raise IOError('Mismatched masterKeyRevs!')
-
+				if nca.header.getRightsId() != 0:
+					if nca.header.masterKeyRev != masterKeyRev:
+						print('WARNING!!! Mismatched masterKeyRevs!')
+						print(f"{str(nca._path)} - {nca.header.masterKeyRev}")	
+						print(f"{str(ticket._path)} - {masterKeyRev}")
 
 		ticket.setRightsId(0)
 
