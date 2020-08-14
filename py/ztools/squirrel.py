@@ -308,7 +308,10 @@ if __name__ == '__main__':
 				args.library_call[0]=str(args.library_call[0]).replace("Drive.", "")
 			if (args.library_call[0]).startswith('mtp.'):
 				sys.path.insert(0, 'mtp')
-				args.library_call[0]=str(args.library_call[0]).replace("mtp.", "")				
+				args.library_call[0]=str(args.library_call[0]).replace("mtp.", "")		
+			if (args.library_call[0]).startswith('cmd.'):
+				sys.path.insert(0, 'cmd')
+				args.library_call[0]=str(args.library_call[0]).replace("cmd.", "")					
 			import secondary
 			if args.explicit_argument:
 				vret=secondary.call_library(args.library_call,args.explicit_argument)
