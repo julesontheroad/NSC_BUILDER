@@ -68,7 +68,7 @@ echo Input "4" to add files to list via folder-walker
 echo Input "0" to return to the MODE SELECTION MENU
 ECHO ***********************************************
 echo.
-%pycommand% "%squirrel%" -t xci -tfile "%list_folder%\1_4list.txt" -uin "%uinput%" -ff "uinput"
+%pycommand% "%sq_lc%" -lib_call cmd.cmd_tools userinput -xarg "%list_folder%\1_4list.txt" ext="xci" userfile="%uinput%"   
 set /p eval=<"%uinput%"
 set eval=%eval:"=%
 setlocal enabledelayedexpansion
@@ -100,7 +100,7 @@ ECHO *************************************************
 echo Or Input "0" to return to the MODE SELECTION MENU
 ECHO *************************************************
 echo.
-%pycommand% "%squirrel%" -t xci -tfile "%list_folder%\1_4list.txt" -uin "%uinput%" -ff "uinput"
+%pycommand% "%sq_lc%" -lib_call cmd.cmd_tools userinput -xarg "%list_folder%\1_4list.txt" ext="xci" userfile="%uinput%"
 set /p eval=<"%uinput%"
 set eval=%eval:"=%
 setlocal enabledelayedexpansion
