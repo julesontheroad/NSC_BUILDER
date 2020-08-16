@@ -9,7 +9,7 @@ REM /////////////////////////////////////////////////
 REM ////////////////////////////////////////////////
 :normalmode
 cls
-call :program_logo
+call "%nscb_logos%" "program_logo"
 echo -------------------------------------------------
 echo FILE RESTORATION ACTIVATED
 echo -------------------------------------------------
@@ -55,7 +55,7 @@ goto prevlist0
 :delist
 del rstlist.txt
 cls
-call :program_logo
+call "%nscb_logos%" "program_logo"
 echo -------------------------------------------------
 echo FILE RESTORATION ACTIVATED
 echo -------------------------------------------------
@@ -157,7 +157,7 @@ endlocal
 
 :showlist
 cls
-call :program_logo
+call "%nscb_logos%" "program_logo"
 echo -------------------------------------------------
 echo FILE RESTORATION ACTIVATED
 echo -------------------------------------------------
@@ -214,7 +214,7 @@ if %vrepack%=="none" goto s_cl_wrongchoice
 
 :restorefiles
 cls
-call :program_logo
+call "%nscb_logos%" "program_logo"
 CD /d "%prog_dir%"
 MD "%fold_output%" >NUL 2>&1
 for /f "tokens=*" %%f in (rstlist.txt) do (

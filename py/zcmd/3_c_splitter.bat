@@ -6,7 +6,7 @@
 
 :SPLMODE
 cls
-call :program_logo
+call "%nscb_logos%" "program_logo"
 if exist %w_folder% RD /S /Q "%w_folder%" >NUL 2>&1
 echo -----------------------------------------------
 echo SPLITTER MODE ACTIVATED
@@ -53,7 +53,7 @@ goto sp_prevlist0
 :sp_delist
 del splist.txt
 cls
-call :program_logo
+call "%nscb_logos%" "program_logo"
 echo -----------------------------------------------
 echo SPLITTER MODE ACTIVATED
 echo -----------------------------------------------
@@ -156,7 +156,7 @@ endlocal
 
 :sp_showlist
 cls
-call :program_logo
+call "%nscb_logos%" "program_logo"
 echo -------------------------------------------------
 echo SPLITTER MODE ACTIVATED
 echo -------------------------------------------------
@@ -204,7 +204,7 @@ if %vrepack%=="none" goto sp_cl_wrongchoice
 if "%fatype%" EQU "-fat fat32" echo Fat32 selected, removing nsz and xcz from input list
 if "%fatype%" EQU "-fat fat32" ( %pycommand% "%squirrel%" -lib_call listmanager filter_list "%prog_dir%splist.txt","ext=nsp nsx xci","token=False",Print="False" )
 cls
-call :program_logo
+call "%nscb_logos%" "program_logo"
 for /f "tokens=*" %%f in (splist.txt) do (
 set "name=%%~nf"
 set "filename=%%~nxf"

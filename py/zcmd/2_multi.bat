@@ -8,7 +8,7 @@
 if exist %w_folder% RD /S /Q "%w_folder%" >NUL 2>&1
 if exist "%list_folder%\a_multi" RD /S /Q "%list_folder%\a_multi" >NUL 2>&1
 cls
-call :program_logo
+call "%nscb_logos%" "program_logo"
 echo -----------------------------------------------
 echo MULTI-REPACK MODE ACTIVATED
 echo -----------------------------------------------
@@ -177,7 +177,7 @@ endlocal
 
 :multi_showlist
 cls
-call :program_logo
+call "%nscb_logos%" "program_logo"
 echo -------------------------------------------------
 echo MULTI-REPACK MODE ACTIVATED
 echo -------------------------------------------------
@@ -351,7 +351,7 @@ goto m_KeyChange_skip
 if "%fatype%" EQU "-fat fat32" echo Fat32 selected, removing nsz and xcz from input list
 if "%fatype%" EQU "-fat fat32" ( %pycommand% "%squirrel%" -lib_call listmanager filter_list "%prog_dir%mlist.txt","ext=nsp nsx xci","token=False",Print="False" )
 cls
-call :program_logo
+call "%nscb_logos%" "program_logo"
 %pycommand% "%squirrel%" -splid "%mlistfol%" -tfile "%prog_dir%mlist.txt"
 goto m_process_jobs2
 :m_process_jobs
@@ -363,29 +363,29 @@ dir "%mlistfol%\*.txt" /b  > "%prog_dir%mlist.txt"
 rem if "%fatype%" EQU "-fat fat32" goto m_process_jobs_fat32
 for /f "tokens=*" %%f in (mlist.txt) do (
 set "listname=%%f"
-if "%vrepack%" EQU "cnsp" call :program_logo
+if "%vrepack%" EQU "cnsp" call "%nscb_logos%" "program_logo"
 if "%vrepack%" EQU "cnsp" call :m_split_merge_list_name
 if "%vrepack%" EQU "cnsp" ( %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t cnsp -o "%w_folder%" -tfile "%mlistfol%\%%f" -roma %romaji% -dmul "calculate" )
 
-if "%vrepack%" EQU "xci" call :program_logo
+if "%vrepack%" EQU "xci" call "%nscb_logos%" "program_logo"
 if "%vrepack%" EQU "xci" call :m_split_merge_list_name
 if "%vrepack%" EQU "xci" ( %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t xci -o "%w_folder%" -tfile "%mlistfol%\%%f" -roma %romaji% -dmul "calculate" )
 
-if "%vrepack%" EQU "nsp" call :program_logo
+if "%vrepack%" EQU "nsp" call "%nscb_logos%" "program_logo"
 if "%vrepack%" EQU "nsp" call :m_split_merge_list_name
 if "%vrepack%" EQU "nsp" ( %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t nsp -o "%w_folder%" -tfile "%mlistfol%\%%f" -roma %romaji% -dmul "calculate" )
 
-if "%vrepack%" EQU "cboth" call :program_logo
+if "%vrepack%" EQU "cboth" call "%nscb_logos%" "program_logo"
 if "%vrepack%" EQU "cboth" call :m_split_merge_list_name
 if "%vrepack%" EQU "cboth" ( %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t xci -o "%w_folder%" -tfile "%mlistfol%\%%f" -roma %romaji% -dmul "calculate" )
-if "%vrepack%" EQU "cboth" call :program_logo
+if "%vrepack%" EQU "cboth" call "%nscb_logos%" "program_logo"
 if "%vrepack%" EQU "cboth" call :m_split_merge_list_name
 if "%vrepack%" EQU "cboth" ( %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t cnsp -o "%w_folder%" -tfile "%mlistfol%\%%f" -roma %romaji% -dmul "calculate" )
 
-if "%vrepack%" EQU "both" call :program_logo
+if "%vrepack%" EQU "both" call "%nscb_logos%" "program_logo"
 if "%vrepack%" EQU "both" call :m_split_merge_list_name
 if "%vrepack%" EQU "both" ( %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t nsp -o "%w_folder%" -tfile "%mlistfol%\%%f" -roma %romaji% -dmul "calculate" )
-if "%vrepack%" EQU "both" call :program_logo
+if "%vrepack%" EQU "both" call "%nscb_logos%" "program_logo"
 if "%vrepack%" EQU "both" call :m_split_merge_list_name
 if "%vrepack%" EQU "both" ( %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t xci -o "%w_folder%" -tfile "%mlistfol%\%%f" -roma %romaji% -dmul "calculate" )
 %pycommand% "%squirrel%" --strip_lines "%prog_dir%mlist.txt" "1" "true"
@@ -411,7 +411,7 @@ goto m_exit_choice
 CD /d "%prog_dir%"
 set "finalname=tempname"
 cls
-call :program_logo
+call "%nscb_logos%" "program_logo"
 for /f "tokens=*" %%f in (mlist.txt) do (
 set "listname=%%f"
 set "list=%mlistfol%\%%f"
@@ -498,23 +498,23 @@ rem set finalname=%bs:"=%
 rem if /i "%finalname%"=="b" goto multi_checkagain
 
 cls
-if "%vrepack%" EQU "cnsp" call :program_logo
+if "%vrepack%" EQU "cnsp" call "%nscb_logos%" "program_logo"
 if "%vrepack%" EQU "cnsp" ( %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t cnsp -o "%w_folder%" -tfile "%prog_dir%mlist.txt" -roma %romaji% -dmul "calculate" )
 
-if "%vrepack%" EQU "xci" call :program_logo
+if "%vrepack%" EQU "xci" call "%nscb_logos%" "program_logo"
 if "%vrepack%" EQU "xci" ( %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t xci -o "%w_folder%" -tfile "%prog_dir%mlist.txt" -roma %romaji% -dmul "calculate" )
 
-if "%vrepack%" EQU "nsp" call :program_logo
+if "%vrepack%" EQU "nsp" call "%nscb_logos%" "program_logo"
 if "%vrepack%" EQU "nsp" ( %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t nsp -o "%w_folder%" -tfile "%prog_dir%mlist.txt" -roma %romaji% -dmul "calculate" )
 
-if "%vrepack%" EQU "cboth" call :program_logo
+if "%vrepack%" EQU "cboth" call "%nscb_logos%" "program_logo"
 if "%vrepack%" EQU "cboth" ( %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t xci -o "%w_folder%" -tfile "%prog_dir%mlist.txt" -roma %romaji% -dmul "calculate" )
-if "%vrepack%" EQU "cboth" call :program_logo
+if "%vrepack%" EQU "cboth" call "%nscb_logos%" "program_logo"
 if "%vrepack%" EQU "cboth" ( %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t cnsp -o "%w_folder%" -tfile "%prog_dir%mlist.txt" -roma %romaji% -dmul "calculate" )
 
-if "%vrepack%" EQU "both" call :program_logo
+if "%vrepack%" EQU "both" call "%nscb_logos%" "program_logo"
 if "%vrepack%" EQU "both" ( %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t nsp -o "%w_folder%" -tfile "%prog_dir%mlist.txt" -roma %romaji% -dmul "calculate" )
-if "%vrepack%" EQU "both" call :program_logo
+if "%vrepack%" EQU "both" call "%nscb_logos%" "program_logo"
 if "%vrepack%" EQU "both" ( %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t xci -o "%w_folder%" -tfile "%prog_dir%mlist.txt" -roma %romaji% -dmul "calculate" )
 
 setlocal enabledelayedexpansion
@@ -546,7 +546,7 @@ set finalname=%bs:"=%
 if /i "%finalname%"=="b" goto multi_checkagain
 
 cls
-call :program_logo
+call "%nscb_logos%" "program_logo"
 for /f "tokens=*" %%f in (mlist.txt) do (
 set "name=%%~nf"
 set "filename=%%~nxf"
@@ -646,7 +646,7 @@ REM the logo function has been disabled temporarly for the current beta, the cod
 REM unaccessed for future modification and reintegration
 :multi_set_clogo
 cls
-call :program_logo
+call "%nscb_logos%" "program_logo"
 echo ------------------------------------------
 echo Set custom logo or predominant game
 echo ------------------------------------------

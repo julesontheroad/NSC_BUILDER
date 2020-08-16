@@ -17,7 +17,7 @@ goto folder_ind_mode
 
 ::AUTO MODE. INDIVIDUAL REPACK PROCESSING OPTION.
 :folder_ind_mode
-call :program_logo
+call "%nscb_logos%" "program_logo"
 echo --------------------------------------
 echo Auto-Mode. Individual repacking is set
 echo --------------------------------------
@@ -110,7 +110,7 @@ goto aut_exit_choice
 
 ::AUTO MODE. MULTIREPACK PROCESSING OPTION.
 :folder_mult_mode
-call :program_logo
+call "%nscb_logos%" "program_logo"
 echo --------------------------------------
 echo Auto-Mode. Multi-repacking is set
 echo --------------------------------------
@@ -168,7 +168,7 @@ ECHO ---------------------------------------------------
 goto aut_exit_choice
 
 :file
-call :program_logo
+call "%nscb_logos%" "program_logo"
 if "%~x1"==".nsp" ( goto nsp )
 if "%~x1"==".xci" ( goto xci )
 if "%~x1"==".*" ( goto other )
@@ -264,7 +264,7 @@ exit
 :manual
 endlocal
 cls
-call :program_logo
+call "%nscb_logos%" "program_logo"
 echo ********************************
 echo YOU'VE ENTERED INTO MANUAL MODE
 echo ********************************
@@ -277,7 +277,7 @@ goto manual_Reentry
 
 :manual_Reentry
 cls
-call :program_logo
+call "%nscb_logos%" "program_logo"
 ECHO .......................................................
 echo Input "1" to process files INDIVIDUALLY (legacy)
 echo Input "2" to enter into MULTI-PACK mode (legacy)
@@ -322,7 +322,7 @@ REM /////////////////////////////////////////////////
 REM ////////////////////////////////////////////////
 :normalmode
 cls
-call :program_logo
+call "%nscb_logos%" "program_logo"
 echo -----------------------------------------------
 echo INDIVIDUAL PROCESSING ACTIVATED
 echo -----------------------------------------------
@@ -368,7 +368,7 @@ goto prevlist0
 :delist
 del list.txt
 cls
-call :program_logo
+call "%nscb_logos%" "program_logo"
 echo -----------------------------------------------
 echo INDIVIDUAL PROCESSING ACTIVATED
 echo -----------------------------------------------
@@ -468,7 +468,7 @@ endlocal
 
 :showlist
 cls
-call :program_logo
+call "%nscb_logos%" "program_logo"
 echo -------------------------------------------------
 echo INDIVIDUAL PROCESSING ACTIVATED
 echo -------------------------------------------------
@@ -605,7 +605,7 @@ if /i "%vkey%"=="none" goto s_KeyChange_wrongchoice
 
 :s_KeyChange_skip
 cls
-call :program_logo
+call "%nscb_logos%" "program_logo"
 for /f "tokens=*" %%f in (list.txt) do (
 set "name=%%~nf"
 set "filename=%%~nxf"
@@ -685,7 +685,7 @@ exit /B
 cls
 if "%vrepack%" EQU "zip" ( goto end_xci_manual )
 set "filename=%name%"
-call :program_logo
+call "%nscb_logos%" "program_logo"
 set "showname=%orinput%"
 call :processing_message
 if exist "%w_folder%" rmdir /s /q "%w_folder%" >NUL 2>&1
@@ -741,7 +741,7 @@ exit /B
 :multimode
 if exist %w_folder% RD /S /Q "%w_folder%" >NUL 2>&1
 cls
-call :program_logo
+call "%nscb_logos%" "program_logo"
 echo -----------------------------------------------
 echo MULTI-REPACK MODE ACTIVATED
 echo -----------------------------------------------
@@ -787,7 +787,7 @@ goto multi_prevlist0
 :multi_delist
 del mlist.txt
 cls
-call :program_logo
+call "%nscb_logos%" "program_logo"
 echo -----------------------------------------------
 echo MULTI-REPACK MODE ACTIVATED
 echo -----------------------------------------------
@@ -887,7 +887,7 @@ endlocal
 
 :multi_showlist
 cls
-call :program_logo
+call "%nscb_logos%" "program_logo"
 echo -------------------------------------------------
 echo MULTI-REPACK MODE ACTIVATED
 echo -------------------------------------------------
@@ -1031,7 +1031,7 @@ set finalname=%bs:"=%
 if /i "%finalname%"=="b" goto multi_checkagain
 
 cls
-call :program_logo
+call "%nscb_logos%" "program_logo"
 for /f "tokens=*" %%f in (mlist.txt) do (
 set "name=%%~nf"
 set "filename=%%~nxf"
@@ -1130,7 +1130,7 @@ exit /B
 
 :multi_set_clogo
 cls
-call :program_logo
+call "%nscb_logos%" "program_logo"
 echo ------------------------------------------
 echo Set custom logo or predominant game
 echo ------------------------------------------
@@ -1207,7 +1207,7 @@ exit
 
 :SPLMODE
 cls
-call :program_logo
+call "%nscb_logos%" "program_logo"
 if exist %w_folder% RD /S /Q "%w_folder%" >NUL 2>&1
 echo -----------------------------------------------
 echo SPLITTER MODE ACTIVATED
@@ -1254,7 +1254,7 @@ goto sp_prevlist0
 :sp_delist
 del splist.txt
 cls
-call :program_logo
+call "%nscb_logos%" "program_logo"
 echo -----------------------------------------------
 echo SPLITTER MODE ACTIVATED
 echo -----------------------------------------------
@@ -1352,7 +1352,7 @@ endlocal
 
 :sp_showlist
 cls
-call :program_logo
+call "%nscb_logos%" "program_logo"
 echo -------------------------------------------------
 echo SPLITTER MODE ACTIVATED
 echo -------------------------------------------------
@@ -1398,7 +1398,7 @@ if /i "%bs%"=="2" set "vrepack=xci"
 if /i "%bs%"=="3" set "vrepack=both"
 if %vrepack%=="none" goto sp_cl_wrongchoice
 cls
-call :program_logo
+call "%nscb_logos%" "program_logo"
 for /f "tokens=*" %%f in (splist.txt) do (
 set "name=%%~nf"
 set "filename=%%~nxf"
@@ -1499,7 +1499,7 @@ exit /B
 
 :UPDMODE
 cls
-call :program_logo
+call "%nscb_logos%" "program_logo"
 if exist %w_folder% RD /S /Q "%w_folder%" >NUL 2>&1
 echo -------------------------------------------------------------------
 echo                      UPDATE MODE ACTIVATED
@@ -1573,7 +1573,7 @@ goto upd_prevlist0
 :upd_delist
 del UPDlist.txt
 cls
-call :program_logo
+call "%nscb_logos%" "program_logo"
 echo -------------------------------------------------------------------
 echo                      UPDATE MODE ACTIVATED
 echo -------------------------------------------------------------------
@@ -1650,7 +1650,7 @@ goto upd_checkagain
 
 :upd_showbase
 cls
-call :program_logo
+call "%nscb_logos%" "program_logo"
 ECHO -------------------------------------------------
 ECHO                BASE CONTENT
 ECHO -------------------------------------------------
@@ -1689,7 +1689,7 @@ endlocal
 
 :upd_showlist
 cls
-call :program_logo
+call "%nscb_logos%" "program_logo"
 echo -------------------------------------------------
 echo              UPDATE MODE ACTIVATED
 echo -------------------------------------------------
@@ -1845,7 +1845,7 @@ if /i "%vkey%"=="none" goto m_KeyChange_wrongchoice
 
 :upd_KeyChange_skip
 cls
-call :program_logo
+call "%nscb_logos%" "program_logo"
 
 if exist "%w_folder%" RD /S /Q "%w_folder%" >NUL 2>&1
 MD "%w_folder%" >NUL 2>&1
@@ -1952,7 +1952,7 @@ exit /B
 ::///////////////////////////////////////////////////
 :DBMODE
 cls
-call :program_logo
+call "%nscb_logos%" "program_logo"
 echo -----------------------------------------------
 echo DATABASE GENERATION MODE ACTIVATED
 echo -----------------------------------------------
@@ -1998,7 +1998,7 @@ goto DBprevlist0
 :DBdelist
 del DBL.txt
 cls
-call :program_logo
+call "%nscb_logos%" "program_logo"
 echo -----------------------------------------------
 echo INDIVIDUAL PROCESSING ACTIVATED
 echo -----------------------------------------------
@@ -2090,7 +2090,7 @@ endlocal
 
 :DBshowlist
 cls
-call :program_logo
+call "%nscb_logos%" "program_logo"
 echo -------------------------------------------------
 echo INDIVIDUAL PROCESSING ACTIVATED
 echo -------------------------------------------------
@@ -2147,7 +2147,7 @@ if %vrepack%=="none" goto DBs_cl_wrongchoice
 
 :DBs_start
 cls
-call :program_logo
+call "%nscb_logos%" "program_logo"
 for /f "tokens=*" %%f in (DBL.txt) do (
 set "name=%%~nf"
 set "filename=%%~nxf"

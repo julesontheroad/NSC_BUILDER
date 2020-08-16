@@ -6,7 +6,6 @@ set "ofile_name=%bat_name%_options.cmd"
 set "opt_interface=Interface_options.cmd"
 set "opt_server=Server_options.cmd"
 Title NSC_Builder v1.00d -- Profile: %ofile_name% -- by JulesOnTheRoad
-set "list_folder=%prog_dir%lists"
 set "cmdfolder=%prog_dir%zcmd"
 set "nscb_logos=%cmdfolder%\nscb_logos"
 set "nscb_tools=%cmdfolder%\nscb_tools"
@@ -65,7 +64,7 @@ set "fatype=%fatype%"
 set "fexport=%fexport%"
 set "skdelta=%skdelta%"
 REM PROGRAMS
-set "squirrel=%nut%"
+set "squirrel=%squirrel%"
 set "MTP=%MTP%"
 set "xci_lib=%xci_lib%"
 set "nsp_lib=%nsp_lib%"
@@ -81,7 +80,7 @@ set "dec_keys=%dec_keys%"
 REM FOLDERS
 set "w_folder=%~dp0%w_folder%"
 set "fold_output=%fold_output%"
-set "zip_fold=%~dp0%zip_fold%"
+set "list_folder=%prog_dir%lists"
 )
 ::-----------------------------------------------------
 ::SET ABSOLUTE ROUTES
@@ -105,21 +104,14 @@ CD /d "%~dp0"
 if not exist "%fold_output%" MD "%fold_output%"
 if not exist "%fold_output%" MD "%~dp0%fold_output%"
 if exist "%~dp0%fold_output%"  set "fold_output=%~dp0%fold_output%"
+if not exist "%list_folder%" MD "%list_folder%"
 ::-----------------------------------------------------
-::A LOT OF CHECKS
+::CHECKS
 ::-----------------------------------------------------
 ::Option file check
 if not exist "%op_file%" ( goto missing_things )
 ::Program checks
 if not exist "%squirrel%" ( goto missing_things )
-if not exist "%xci_lib%" ( goto missing_things )
-if not exist "%nsp_lib%" ( goto missing_things )
-if not exist "%zip%" ( goto missing_things )
-
-if not exist "%hacbuild%" ( goto missing_things )
-if not exist "%listmanager%" ( goto missing_things )
-if not exist "%batconfig%" ( goto missing_things )
-if not exist "%infobat%" ( goto missing_things )
 ::Important files check
 if not exist "%dec_keys%" ( goto missing_things )
 ::-----------------------------------------------------
@@ -131,8 +123,8 @@ call "%cmdfolder%\0_auto" %*
 
 :manual
 cls
-if "%NSBMODE%" EQU "legacy" call "%prog_dir%ztools\LEGACY.bat"
-call :program_logo
+if "%NSBMODE%" EQU "legacy" call "%cmdfolder%\L_0_LEGACY.bat"
+call "%nscb_logos%" "program_logo"
 ECHO .......................................................
 echo Input "1"  to process files INDIVIDUALLY
 echo Input "2"  to enter into MULTI-PACK mode
@@ -222,7 +214,7 @@ goto manual_Reentry
 call "%cmdfolder%\nscb_config.bat"
 
 :missing_things
-call :program_logo
+call "%nscb_logos%" "program_logo"
 echo ....................................
 echo You're missing the following things:
 echo ....................................

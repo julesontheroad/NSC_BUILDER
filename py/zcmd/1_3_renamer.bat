@@ -115,67 +115,20 @@ if /i "%eval%"=="5" ( %pycommand% "%squirrel%" -lib_call picker_walker get_files
 if /i "%eval%"=="e" goto salida
 if /i "%eval%"=="i" goto showlist
 if /i "%eval%"=="r" goto r_files
-if /i "%eval%"=="z" del ("%list_folder%\1_3list.txt") 2>&1>NUL
+if /i "%eval%"=="z" ( del "%list_folder%\1_3list.txt" ) 2>&1>NUL
 
 goto checkagain
 
 :r_files
 set /p bs="Input the number of files you want to remove (from bottom): "
 set bs=%bs:"=%
-
-setlocal enabledelayedexpansion
-set conta=
-for /f "tokens=*" %%f in (lists/1_3list.txt) do (
-set /a conta=!conta! + 1
-)
-
-set /a pos1=!conta!-!bs!
-set /a pos2=!conta!
-set string=
-
-:update_list1
-if !pos1! GTR !pos2! ( goto :update_list2 ) else ( set /a pos1+=1 )
-set string=%string%,%pos1%
-goto :update_list1
-:update_list2
-set string=%string%,
-set skiplist=%string%
-Set "skip=%skiplist%"
-setlocal DisableDelayedExpansion
-(for /f "tokens=1,*delims=:" %%a in (' findstr /n "^" ^<lists/1_3list.txt'
-) do Echo=%skip%|findstr ",%%a," 2>&1>NUL ||Echo=%%b
-)>lists/1_3list.txt.new
-endlocal
-move /y "lists/1_3list.txt.new" "lists/1_3list.txt" >nul
-endlocal
+%pycommand% "%squirrel%" -lib_call listmanager remove_from_botton -xarg  "%list_folder%\1_1list.txt" "%bs%"
 
 :showlist
 cls
 call "%nscb_logos%" "program_logo"
-echo -------------------------------------------------
-echo INDIVIDUAL PROCESSING ACTIVATED
-echo -------------------------------------------------
-ECHO -------------------------------------------------
-ECHO                 FILES TO PROCESS
-ECHO -------------------------------------------------
-for /f "tokens=*" %%f in (lists/1_3list.txt) do (
-echo %%f
-)
-setlocal enabledelayedexpansion
-set conta=
-for /f "tokens=*" %%f in (lists/1_3list.txt) do (
-set /a conta=!conta! + 1
-)
-echo .................................................
-echo YOU'VE ADDED !conta! FILES TO PROCESS
-echo .................................................
-endlocal
-
+%pycommand% "%squirrel%" -lib_call listmanager printcurrent -xarg  "%list_folder%\1_1list.txt" "all" "counter=True"
 goto checkagain
-
-:s_cl_wrongchoice
-echo wrong choice
-echo ............
 
 :rename
 :s_rename_wrongchoice1

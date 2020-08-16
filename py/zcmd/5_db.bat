@@ -5,7 +5,7 @@
 ::///////////////////////////////////////////////////
 :DBMODE
 cls
-call :program_logo
+call "%nscb_logos%" "program_logo"
 echo -----------------------------------------------
 echo DATABASE GENERATION MODE ACTIVATED
 echo -----------------------------------------------
@@ -51,7 +51,7 @@ goto DBprevlist0
 :DBdelist
 del DBL.txt
 cls
-call :program_logo
+call "%nscb_logos%" "program_logo"
 echo -----------------------------------------------
 echo INDIVIDUAL PROCESSING ACTIVATED
 echo -----------------------------------------------
@@ -141,7 +141,7 @@ endlocal
 
 :DBshowlist
 cls
-call :program_logo
+call "%nscb_logos%" "program_logo"
 echo -------------------------------------------------
 echo INDIVIDUAL PROCESSING ACTIVATED
 echo -------------------------------------------------
@@ -201,7 +201,7 @@ if %vrepack%=="none" goto DBs_cl_wrongchoice
 
 :DBs_start
 cls
-call :program_logo
+call "%nscb_logos%" "program_logo"
 for /f "tokens=*" %%f in (DBL.txt) do (
 set "name=%%~nf"
 set "filename=%%~nxf"

@@ -30,6 +30,25 @@ def striplines(textfile,number=1,counter=False):
 		print('...................................................')
 		print('STILL '+str(c)+' FILES TO PROCESS')
 		print('...................................................')
+		
+def remove_from_botton(textfile,number=1):
+	#print(textfile)
+	number=int(number)
+	filelist=list()
+	c=0;
+	with open(textfile,'r', encoding='utf8') as f:
+		for line in f:		
+			fp=line.strip()
+			filelist.append(fp)	
+			c+=1
+	c=c-number
+	if c<0:
+		c=0
+	with open(textfile,"w", encoding='utf8') as f:
+		for ln in filelist:
+			while c>0:
+				f.write(ln+'\n')
+				c-=1	
 			
 def counter(textfile,doprint=False):	
 	counter=0
@@ -44,14 +63,22 @@ def counter(textfile,doprint=False):
 
 def printcurrent(textfile,number=1,counter=False):
 	currentline=''
-	number=int(number)
+	if number!='all':
+		number=int(number)
 	with open(textfile,'r', encoding='utf8') as f:
 		i=0
 		for line in f:
 			i+=1
 			print(line.strip())
-			if i==number:
-				break
+			if str(number)!='all':
+				if i==number:
+					break
+	c=i				
+	if counter!=False:			
+		print('...................................................')
+		print(f'{c} FILES ADDED TO LIST')
+		print('...................................................') 		
+	return c				
 			
 def read_lines_to_list(textfile,number=1,all=False):
 	#print(textfile)

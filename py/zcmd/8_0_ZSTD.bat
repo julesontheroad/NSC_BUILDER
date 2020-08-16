@@ -9,7 +9,7 @@ REM /////////////////////////////////////////////////
 REM ////////////////////////////////////////////////
 :normalmode
 cls
-call :program_logo
+call "%nscb_logos%" "program_logo"
 echo -------------------------------------------------
 echo COMPRESS\DECOMPRESS MODE ACTIVATED
 echo -------------------------------------------------
@@ -55,7 +55,7 @@ goto prevlist0
 :delist
 del zzlist.txt
 cls
-call :program_logo
+call "%nscb_logos%" "program_logo"
 echo -------------------------------------------------
 echo COMPRESS\DECOMPRESS MODE ACTIVATED
 echo -------------------------------------------------
@@ -160,7 +160,7 @@ endlocal
 
 :showlist
 cls
-call :program_logo
+call "%nscb_logos%" "program_logo"
 echo -------------------------------------------------
 echo COMPRESS\DECOMPRESS MODE ACTIVATED
 echo -------------------------------------------------
@@ -322,7 +322,7 @@ if %choice%=="none" goto threads_wrongchoice
 
 :compress
 cls
-call :program_logo
+call "%nscb_logos%" "program_logo"
 echo *******************************
 echo COMPRESS A NSP\XCI
 echo *******************************
@@ -407,7 +407,7 @@ if %choice%=="none" goto pararell_levels_wrongchoice
 goto pcompress
 :pcompress
 cls
-call :program_logo
+call "%nscb_logos%" "program_logo"
 echo *******************************
 echo NSP\XCI PARARELL COMPRESSION
 echo *******************************
@@ -426,7 +426,7 @@ goto s_exit_choice
 
 :decompress
 cls
-call :program_logo
+call "%nscb_logos%" "program_logo"
 echo **************************
 echo DECOMPRESS A NSZ\XCZ
 echo **************************

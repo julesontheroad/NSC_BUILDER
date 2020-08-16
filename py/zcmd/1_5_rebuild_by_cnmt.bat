@@ -115,125 +115,30 @@ if /i "%eval%"=="5" ( %pycommand% "%squirrel%" -lib_call picker_walker get_files
 if /i "%eval%"=="e" goto salida
 if /i "%eval%"=="i" goto showlist
 if /i "%eval%"=="r" goto r_files
-if /i "%eval%"=="z" del ("%list_folder%\1_5list.txt") 2>&1>NUL
+if /i "%eval%"=="z" ( del "%list_folder%\1_5list.txt") 2>&1>NUL
 
 goto checkagain
 
 :r_files
 set /p bs="Input the number of files you want to remove (from bottom): "
 set bs=%bs:"=%
-
-setlocal enabledelayedexpansion
-set conta=
-for /f "tokens=*" %%f in (lists/1_5list.txt) do (
-set /a conta=!conta! + 1
-)
-
-set /a pos1=!conta!-!bs!
-set /a pos2=!conta!
-set string=
-
-:update_list1
-if !pos1! GTR !pos2! ( goto :update_list2 ) else ( set /a pos1+=1 )
-set string=%string%,%pos1%
-goto :update_list1
-:update_list2
-set string=%string%,
-set skiplist=%string%
-Set "skip=%skiplist%"
-setlocal DisableDelayedExpansion
-(for /f "tokens=1,*delims=:" %%a in (' findstr /n "^" ^<lists/1_5list.txt'
-) do Echo=%skip%|findstr ",%%a," 2>&1>NUL ||Echo=%%b
-)>lists/1_5list.txt.new
-endlocal
-move /y "lists/1_5list.txt.new" "lists/1_5list.txt" >nul
-endlocal
+%pycommand% "%squirrel%" -lib_call listmanager remove_from_botton -xarg  "%list_folder%\1_1list.txt" "%bs%"
 
 :showlist
 cls
 call "%nscb_logos%" "program_logo"
-echo -------------------------------------------------
-echo INDIVIDUAL PROCESSING ACTIVATED
-echo -------------------------------------------------
-ECHO -------------------------------------------------
-ECHO                 FILES TO PROCESS
-ECHO -------------------------------------------------
-for /f "tokens=*" %%f in (lists/1_5list.txt) do (
-echo %%f
-)
-setlocal enabledelayedexpansion
-set conta=
-for /f "tokens=*" %%f in (lists/1_5list.txt) do (
-set /a conta=!conta! + 1
-)
-echo .................................................
-echo YOU'VE ADDED !conta! FILES TO PROCESS
-echo .................................................
-endlocal
-
+%pycommand% "%squirrel%" -lib_call listmanager printcurrent -xarg  "%list_folder%\1_1list.txt" "all" "counter=True"
 goto checkagain
 
-:s_cl_wrongchoice
-echo wrong choice
-echo ............
-
 :dostart
-:s_KeyChange_skip
-cls
-call "%nscb_logos%" "program_logo"
+%pycommand% "%squirrel%" -lib_call cmd.cmd_batchprocess loop_rebuild -xarg "%list_folder%\1_2list.txt" "%buffer%" "delta=%skdelta%" "ndskip=False" "xml_gen=True" "%fold_output%"
 
-for /f "tokens=*" %%f in (lists/1_5list.txt) do (
-set "name=%%~nf"
-set "filename=%%~nxf"
-set "orinput=%%f"
-
-if "%%~nxf"=="%%~nf.nsp" call :nsp_manual
-if "%%~nxf"=="%%~nf.nsz" call :nsp_manual
-%pycommand% "%squirrel%" --strip_lines "%prog_dir%lists/1_5list.txt" "1" "true"
-rem call :contador_NF
-)
 ECHO ---------------------------------------------------
 ECHO *********** ALL FILES WERE PROCESSED! *************
 ECHO ---------------------------------------------------
 goto s_exit_choice
 
-:nsp_manual
-if exist "%w_folder%" rmdir /s /q "%w_folder%" >NUL 2>&1
-MD "%w_folder%" >NUL 2>&1
-call "%nscb_logos%" "squirrell"
-
-%pycommand% "%squirrel%" %buffer% %skdelta% --xml_gen "true" -o "%w_folder%" -tfile "%list_folder%\1_1list.txt" --rebuild_nsp ""
-
-move "%w_folder%\*.xci" "%fold_output%" >NUL 2>&1
-move  "%w_folder%\*.xc*" "%fold_output%" >NUL 2>&1
-move "%w_folder%\*.nsp" "%fold_output%" >NUL 2>&1
-move "%w_folder%\*.ns*" "%fold_output%" >NUL 2>&1
-
-RD /S /Q "%w_folder%" >NUL 2>&1
-echo DONE
-call "%nscb_logos%" "thumbupl"
-call "%nscb_logos%" "delay"
-goto end_nsp_manual
-
-:end_nsp_manual
-exit /B
-
-:contador_NF
-setlocal enabledelayedexpansion
-set /a conta=0
-for /f "tokens=*" %%f in (lists/1_5list.txt) do (
-set /a conta=!conta! + 1
-)
-echo ...................................................
-echo STILL !conta! FILES TO PROCESS
-echo ...................................................
-PING -n 2 127.0.0.1 >NUL 2>&1
-set /a conta=0
-endlocal
-exit /B
-
 :s_exit_choice
-if exist lists/1_5list.txt del lists/1_5list.txt
 if /i "%va_exit%"=="true" echo PROGRAM WILL CLOSE NOW
 if /i "%va_exit%"=="true" ( PING -n 2 127.0.0.1 >NUL 2>&1 )
 if /i "%va_exit%"=="true" goto salida
@@ -246,11 +151,6 @@ set bs=%bs:"=%
 if /i "%bs%"=="0" call "%main_program%"
 if /i "%bs%"=="1" goto salida
 goto s_exit_choice
-
-:processing_message
-echo Processing %showname%
-echo.
-exit /B
 
 :salida
 ::pause

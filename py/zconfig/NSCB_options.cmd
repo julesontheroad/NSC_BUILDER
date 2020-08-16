@@ -9,19 +9,19 @@ color 1F
 set "w_folder=NSCB_temp"
 ::output folder
 set "fold_output=NSCB_output"
-::zip folder
-set "zip_fold=NSCB_zips"
+ 
+ 
 ::--------------------------------------------------------------
 ::OPTION 2: PROGRAM ROUTES
 ::--------------------------------------------------------------
-set "nut=ztools\squirrel.py"
-set "xci_lib=ztools\XCI.bat"
-set "nsp_lib=ztools\NSP.bat"
-set "zip=ztools\squirrel.py"
-set "listmanager=ztools\squirrel.py"
+set "squirrel=ztools\squirrel.py"
+ 
+ 
+ 
+ 
 set "batconfig=ztools\NSCB_config.bat"
 set "batdepend=ztools\install_dependencies.bat"
-set "infobat=ztools\info.bat"
+ 
 ::--------------------------------------------------------------
 ::OPTION 3: SQUIRREL OPTIONS
 ::--------------------------------------------------------------
@@ -181,3 +181,5 @@ set "MTP_pdrive_truecopy=True"
 :: Advanced installation options
 set "MTP_stc_installs=False"
 set "MTP_ptch_inst_spec=spec1"
+
+set "xml_gen=True"

@@ -4,29 +4,29 @@ CD /d "%prog_dir%"
 
 REM //////////////////////////////////////////////////
 REM /////////////////////////////////////////////////
-REM FILE MANAGEMENT
+REM FILE JOINER
 REM /////////////////////////////////////////////////
 REM ////////////////////////////////////////////////
 :normalmode
 cls
-call "%nscb_logos%" "program_logo"
+call :program_logo
 echo -------------------------------------------------
-echo FILE MANAGEMENT ACTIVATED
+echo FILE JOINER ACTIVATED
 echo -------------------------------------------------
-if exist "mnglist.txt" goto prevlist
+if exist "joinlist.txt" goto prevlist
 goto manual_INIT
 :prevlist
 set conta=0
-for /f "tokens=*" %%f in (mnglist.txt) do (
+for /f "tokens=*" %%f in (joinlist.txt) do (
 echo %%f
 ) >NUL 2>&1
 setlocal enabledelayedexpansion
-for /f "tokens=*" %%f in (mnglist.txt) do (
+for /f "tokens=*" %%f in (joinlist.txt) do (
 set /a conta=!conta! + 1
 ) >NUL 2>&1
-if !conta! LEQ 0 ( del mnglist.txt )
+if !conta! LEQ 0 ( del joinlist.txt )
 endlocal
-if not exist "mnglist.txt" goto manual_INIT
+if not exist "joinlist.txt" goto manual_INIT
 ECHO .......................................................
 ECHO A PREVIOUS LIST WAS FOUND. WHAT DO YOU WANT TO DO?
 :prevlist0
@@ -47,17 +47,17 @@ set /p bs="Enter your choice: "
 set bs=%bs:"=%
 if /i "%bs%"=="3" goto showlist
 if /i "%bs%"=="2" goto delist
-if /i "%bs%"=="1" goto start_cleaning
+if /i "%bs%"=="1" goto start
 if /i "%bs%"=="0" exit /B
 echo.
 echo BAD CHOICE
 goto prevlist0
 :delist
-del mnglist.txt
+del joinlist.txt
 cls
-call "%nscb_logos%" "program_logo"
+call :program_logo
 echo -------------------------------------------------
-echo FILE MANAGEMENT ACTIVATED
+echo FILE JOINER ACTIVATED
 echo -------------------------------------------------
 echo ..................................
 echo YOU'VE DECIDED TO START A NEW LIST
@@ -73,17 +73,17 @@ echo Input "4" to select files via folder-walker
 echo Input "0" to return to the MODE SELECTION MENU
 ECHO ***********************************************
 echo.
-%pycommand% "%squirrel%" -t nsp nsx -tfile "%prog_dir%mnglist.txt" -uin "%uinput%" -ff "uinput"
+%pycommand% "%squirrel%" -t ns0 xc0 00 -tfile "%prog_dir%joinlist.txt" -uin "%uinput%" -ff "uinput"
 set /p eval=<"%uinput%"
 set eval=%eval:"=%
 setlocal enabledelayedexpansion
 echo+ >"%uinput%"
 endlocal
 if /i "%eval%"=="0" exit /B
-if /i "%eval%"=="1" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%mnglist.txt" mode=folder ext="nsp nsx" ) 2>&1>NUL
-if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%mnglist.txt" mode=file ext="nsp nsx" )  2>&1>NUL
-if /i "%eval%"=="3" ( %pycommand% "%squirrel%" -lib_call picker_walker select_from_local_libraries -xarg "%prog_dir%mnglist.txt" "extlist=nsp nsx" )
-if /i "%eval%"=="4" ( %pycommand% "%squirrel%" -lib_call picker_walker get_files_from_walk -xarg "%prog_dir%mnglist.txt" "extlist=nsp nsx" )
+if /i "%eval%"=="1" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%joinlist.txt" mode=folder ext="ns0 xc0 00" ) 2>&1>NUL
+if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%joinlist.txt" mode=file ext="ns0 xc0 00" ) 2>&1>NUL
+if /i "%eval%"=="3" ( %pycommand% "%squirrel%" -lib_call picker_walker select_from_local_libraries -xarg "%prog_dir%joinlist.txt" "extlist=ns0 xc0 00" )
+if /i "%eval%"=="4" ( %pycommand% "%squirrel%" -lib_call picker_walker get_files_from_walk -xarg "%prog_dir%joinlist.txt" "extlist=ns0 xc0 00" )
 goto checkagain
 echo.
 :checkagain
@@ -105,7 +105,7 @@ ECHO *************************************************
 echo Or Input "0" to return to the MODE SELECTION MENU
 ECHO *************************************************
 echo.
-%pycommand% "%squirrel%" -t nsp nsx -tfile "%prog_dir%mnglist.txt" -uin "%uinput%" -ff "uinput"
+%pycommand% "%squirrel%" -t ns0 xc0 00 -tfile "%prog_dir%joinlist.txt" -uin "%uinput%" -ff "uinput"
 set /p eval=<"%uinput%"
 set eval=%eval:"=%
 setlocal enabledelayedexpansion
@@ -113,15 +113,15 @@ echo+ >"%uinput%"
 endlocal
 
 if /i "%eval%"=="0" exit /B
-if /i "%eval%"=="1" goto start_cleaning
-if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%mnglist.txt" mode=folder ext="nsp nsx" ) 2>&1>NUL
-if /i "%eval%"=="3" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%mnglist.txt" mode=file ext="nsp nsx" )  2>&1>NUL
-if /i "%eval%"=="4" ( %pycommand% "%squirrel%" -lib_call picker_walker select_from_local_libraries -xarg "%prog_dir%mnglist.txt" "extlist=nsp nsx" )
-if /i "%eval%"=="5" ( %pycommand% "%squirrel%" -lib_call picker_walker get_files_from_walk -xarg "%prog_dir%mnglist.txt" "extlist=nsp nsx" )
+if /i "%eval%"=="1" goto start
+if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%joinlist.txt" mode=folder ext="ns0 xc0 00" ) 2>&1>NUL
+if /i "%eval%"=="3" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%joinlist.txt" mode=file ext="ns0 xc0 00" ) 2>&1>NUL
+if /i "%eval%"=="4" ( %pycommand% "%squirrel%" -lib_call picker_walker select_from_local_libraries -xarg "%prog_dir%joinlist.txt" "extlist=ns0 xc0 00" )
+if /i "%eval%"=="5" ( %pycommand% "%squirrel%" -lib_call picker_walker get_files_from_walk -xarg "%prog_dir%joinlist.txt" "extlist=ns0 xc0 00" )
 if /i "%eval%"=="e" goto salida
 if /i "%eval%"=="i" goto showlist
 if /i "%eval%"=="r" goto r_files
-if /i "%eval%"=="z" del mnglist.txt
+if /i "%eval%"=="z" del joinlist.txt
 
 goto checkagain
 
@@ -131,7 +131,7 @@ set bs=%bs:"=%
 
 setlocal enabledelayedexpansion
 set conta=
-for /f "tokens=*" %%f in (mnglist.txt) do (
+for /f "tokens=*" %%f in (joinlist.txt) do (
 set /a conta=!conta! + 1
 )
 
@@ -148,28 +148,28 @@ set string=%string%,
 set skiplist=%string%
 Set "skip=%skiplist%"
 setlocal DisableDelayedExpansion
-(for /f "tokens=1,*delims=:" %%a in (' findstr /n "^" ^<mnglist.txt'
+(for /f "tokens=1,*delims=:" %%a in (' findstr /n "^" ^<joinlist.txt'
 ) do Echo=%skip%|findstr ",%%a," 2>&1>NUL ||Echo=%%b
-)>mnglist.txt.new
+)>joinlist.txt.new
 endlocal
-move /y "mnglist.txt.new" "mnglist.txt" >nul
+move /y "joinlist.txt.new" "joinlist.txt" >nul
 endlocal
 
 :showlist
 cls
-call "%nscb_logos%" "program_logo"
+call :program_logo
 echo -------------------------------------------------
-echo FILE MANAGEMENT ACTIVATED
+echo FILE JOINER ACTIVATED
 echo -------------------------------------------------
 ECHO -------------------------------------------------
 ECHO                 FILES TO PROCESS
 ECHO -------------------------------------------------
-for /f "tokens=*" %%f in (mnglist.txt) do (
+for /f "tokens=*" %%f in (joinlist.txt) do (
 echo %%f
 )
 setlocal enabledelayedexpansion
 set conta=
-for /f "tokens=*" %%f in (mnglist.txt) do (
+for /f "tokens=*" %%f in (joinlist.txt) do (
 set /a conta=!conta! + 1
 )
 echo .................................................
@@ -182,12 +182,11 @@ goto checkagain
 :s_cl_wrongchoice
 echo wrong choice
 echo ............
-:start_cleaning
+:start
 echo *******************************************************
 echo CHOOSE HOW TO PROCESS THE FILES
 echo *******************************************************
-echo.
-echo Input "1" to check nsp\nsx extension depending on tk
+echo Input "1" to join .xc*,.ns*,.0* files
 echo.
 ECHO ******************************************
 echo Or Input "b" to return to the list options
@@ -197,22 +196,29 @@ set /p bs="Enter your choice: "
 set bs=%bs:"=%
 set vrepack=none
 if /i "%bs%"=="b" goto checkagain
-if /i "%bs%"=="1" goto renamensx
+if /i "%bs%"=="1" goto joinfiles
 if %vrepack%=="none" goto s_cl_wrongchoice
 
-:renamensx
+:joinfiles
 cls
-call "%nscb_logos%" "program_logo"
+call :program_logo
 CD /d "%prog_dir%"
-%pycommand% "%squirrel%" -lib_call management rename_nsx "%prog_dir%mnglist.txt"
+for /f "tokens=*" %%f in (joinlist.txt) do (
 
+%pycommand% "%squirrel%" %buffer% -o "%fold_output%" -tfile "%prog_dir%joinlist.txt" --joinfile ""
+if exist "%fold_output%\output.nsp" ( %pycommand% "%squirrel%" -t nsp -renf "%fold_output%\output.nsp" >NUL 2>&1)
+if exist "%fold_output%\output.xci" ( %pycommand% "%squirrel%" -t xci -renf "%fold_output%\output.xci" >NUL 2>&1)
+
+%pycommand% "%squirrel%" --strip_lines "%prog_dir%joinlist.txt"
+call :contador_NF
+)
 ECHO ---------------------------------------------------
 ECHO *********** ALL FILES WERE PROCESSED! *************
 ECHO ---------------------------------------------------
 goto s_exit_choice
 
 :s_exit_choice
-if exist mnglist.txt del mnglist.txt
+if exist joinlist.txt del joinlist.txt
 if /i "%va_exit%"=="true" echo PROGRAM WILL CLOSE NOW
 if /i "%va_exit%"=="true" ( PING -n 2 127.0.0.1 >NUL 2>&1 )
 if /i "%va_exit%"=="true" goto salida
@@ -229,7 +235,7 @@ goto s_exit_choice
 :contador_NF
 setlocal enabledelayedexpansion
 set /a conta=0
-for /f "tokens=*" %%f in (mnglist.txt) do (
+for /f "tokens=*" %%f in (joinlist.txt) do (
 set /a conta=!conta! + 1
 )
 echo ...................................................

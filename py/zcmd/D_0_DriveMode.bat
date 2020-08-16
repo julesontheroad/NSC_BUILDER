@@ -6,7 +6,7 @@ Title NSC_Builder v1.00d -- Profile: %ofile_name% -- by JulesOnTheRoad
 
 :MAIN
 cls
-call :program_logo
+call "%nscb_logos%" "program_logo"
 ECHO .......................................................
 echo Input "1" to enter into DOWNLOAD mode
 echo Input "2" to enter into FILE-INFO mode
@@ -38,13 +38,13 @@ exit /B
 
 :DOWNLOADMODE
 cls
-call :program_logo
+call "%nscb_logos%" "program_logo"
 %pycommand% "%squirrel%" -lib_call Drive.Download Interface
 goto MAIN
 
 :INFMODE
 cls
-call :program_logo
+call "%nscb_logos%" "program_logo"
 %pycommand% "%squirrel%" -lib_call Drive.Info Interface
 goto MAIN
 
