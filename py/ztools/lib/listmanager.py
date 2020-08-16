@@ -63,19 +63,22 @@ def counter(textfile,doprint=False):
 
 def printcurrent(textfile,number=1,counter=False):
 	currentline=''
-	number=int(number)
+	if number!='all':
+		number=int(number)
 	with open(textfile,'r', encoding='utf8') as f:
 		i=0
 		for line in f:
 			i+=1
 			print(line.strip())
-			if i==number:
-				break
+			if str(number)!='all':
+				if i==number:
+					break
+	c=i				
 	if counter!=False:			
 		print('...................................................')
-		print(f'{counter} ADDED TO LIST')
+		print(f'{c} FILES ADDED TO LIST')
 		print('...................................................') 		
-	return counter				
+	return c				
 			
 def read_lines_to_list(textfile,number=1,all=False):
 	#print(textfile)
