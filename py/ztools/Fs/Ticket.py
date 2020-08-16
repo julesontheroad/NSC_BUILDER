@@ -261,7 +261,7 @@ class Ticket(File):
 
 
 class PublicTik():
-	def generate(self,titleid,titlekey,keygeneration,outfolder=None):
+	def generate(self,titleid,titlekey,keygeneration,outfolder=None,Signature=None,signaturePadding=None,RSA_magic='04000100',issuer=None):
 		if int(keygeneration,16)>9:
 			keygeneration=str(hex(int(keygeneration,16)))[2:]
 		try:
@@ -274,10 +274,22 @@ class PublicTik():
 			if outfolder != None:
 				tikpath=os.path.join(outfolder, tikname)	
 			chain=''	
-			RSA_2048_SHA256 ='04000100';chain+=RSA_2048_SHA256
-			fake_sig='FF'*0x100;chain+=fake_sig
-			padding='00'*0x3C;chain+=padding
-			issuer='526F6F742D434130303030303030332D58533030303030303230';chain+=issuer
+			if RSA_magic=='04000100':
+				RSA_2048_SHA256 ='04000100';chain+=RSA_2048_SHA256
+			else:
+				chain+=RSA_magic
+			if Signature==None:
+				fake_sig='FF'*0x100;chain+=fake_sig
+			else:
+				chain+=Signature
+			if signaturePadding==None:				
+				padding='00'*0x3C;chain+=padding
+			else:				
+				chain+=signaturePadding
+			if issuer==None:
+				issuer='526F6F742D434130303030303030332D58533030303030303230';chain+=issuer
+			else:
+				chain+=issuer
 			padding2='00'*0x26;chain+=padding2
 			titlekey=str(titlekey).upper();chain+=titlekey
 			padding3='00'*0xF0;chain+=padding3
