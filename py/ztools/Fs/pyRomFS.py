@@ -142,7 +142,7 @@ class RomFS:
 
 	def _parse(self):
 		if read_u64(self.f, 0x0) != 0x50:
-			print('[WARN] RomFS haader size isn\'t 0x50')
+			print('[WARN] RomFS header size isn\'t 0x50')
 		self.dir_table   = io.BytesIO(read_at(self.f, read_u64(self.f, 0x18), read_u64(self.f, 0x20)))
 		self.file_table  = io.BytesIO(read_at(self.f, read_u64(self.f, 0x38), read_u64(self.f, 0x40)))
 		self.data_offset = read_u64(self.f, 0x48)

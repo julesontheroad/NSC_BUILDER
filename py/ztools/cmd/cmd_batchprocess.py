@@ -7,6 +7,7 @@ from Fs import Xci as squirrelXCI
 from Fs import factory
 import Print
 from secondary import clear_Screen
+import shutil
 
 # SET ENVIRONMENT
 squirrel_dir=os.path.abspath(os.curdir)
@@ -100,6 +101,7 @@ def create_nsp_direct(filepath,outfolder,buffer=65536,fat="exfat",fx="files",del
 	tname=str(os.path.basename(filepath))[:-3]+'nsp'
 	tempfolder=os.path.join(outfolder,'temp')
 	tmpfile=os.path.join(tempfolder,tname)
+	endfile=os.path.join(outfolder,tname)	
 	if not os.path.exists(tempfolder):
 		os.makedirs(tempfolder)		
 	if filepath.endswith('xci'):
@@ -110,11 +112,13 @@ def create_nsp_direct(filepath,outfolder,buffer=65536,fat="exfat",fx="files",del
 	f.c_nsp_direct(buffer,tmpfile,outfolder,fat,fx,delta,metapatch,RSV_cap,keypatch)
 	f.flush()
 	f.close()	
+	shutil.move(tmpfile,endfile)
 	
 def create_xci_direct(filepath,outfolder,buffer=65536,fat="exfat",fx="files",delta=False,metapatch='false',RSV_cap=268435656,keypatch='false'):
 	tname=str(os.path.basename(filepath))[:-3]+'xci'
 	tempfolder=os.path.join(outfolder,'temp')
 	tmpfile=os.path.join(tempfolder,tname)
+	endfile=os.path.join(outfolder,tname)		
 	if not os.path.exists(tempfolder):
 		os.makedirs(tempfolder)			
 	if filepath.endswith('xci'):
@@ -122,8 +126,8 @@ def create_xci_direct(filepath,outfolder,buffer=65536,fat="exfat",fx="files",del
 		f.open(filepath, 'rb')
 	elif filepath.endswith('nsp'):	
 		f = squirrelNSP(filepath, 'rb')	
-
-	temp=f.c_xci_direct(buffer,tmpfile,outfolder,fat,fx,delta,metapatch,RSV_cap,keypatch)
+	f.c_xci_direct(buffer,tmpfile,outfolder,fat,fx,delta,metapatch,RSV_cap,keypatch)
+	shutil.move(tmpfile,endfile)	
 	
 def loop_repack(tfile=None,buffer=65536,pv='false',kp='false',RSVcap=268435656,fat="exfat",fx='files',skdelta="true",ofolder=default_output,type="both",verify=False):
 	if tfile==None:
@@ -150,6 +154,7 @@ def loop_repack(tfile=None,buffer=65536,pv='false',kp='false',RSVcap=268435656,f
 	else:
 		delta=True
 	c=0	
+	tempfolder=os.path.join(ofolder,'temp')
 	for fp in file_list:
 		if c==0:
 			clear_Screen()
@@ -158,17 +163,87 @@ def loop_repack(tfile=None,buffer=65536,pv='false',kp='false',RSVcap=268435656,f
 		processing(fp)
 		if type=='nsp' or type=='both':
 			try:
-				create_nsp_direct(fp,ofolder,buffer=buffer,fat=fat,fx=fx,delta=delta,metapatch=pv,RSV_cap=RSV_cap,keypatch=kp)
+				create_nsp_direct(fp,ofolder,buffer=buffer,fat=fat,fx=fx,delta=delta,metapatch=pv,RSV_cap=RSV_cap,keypatch=kp)			
 				print("")				
 			except BaseException as e:
-				Print.error('Exception: ' + str(e))	
+				Print.error('Exception: ' + str(e))
+			shutil.rmtree(tempfolder, ignore_errors=True)					
 		if type=='xci' or type=='both':
 			try:
-				create_xci_direct(fp,ofolder,buffer=buffer,fat=fat,fx=fx,delta=delta,metapatch=pv,RSV_cap=RSV_cap,keypatch=kp)
+				create_xci_direct(fp,ofolder,buffer=buffer,fat=fat,fx=fx,delta=delta,metapatch=pv,RSV_cap=RSV_cap,keypatch=kp)			
 				print("")
 			except BaseException as e:
 				Print.error('Exception: ' + str(e))	
+			shutil.rmtree(tempfolder, ignore_errors=True)					
 		listmanager.striplines(tfile,number=1,counter=True)	
+		
+def loop_rebuild(tfile=None,buffer=65536,delta=False,ndskip=False,xml_gen=True,ofolder=default_output):
+	if tfile==None:
+		sys.exit("Didn't get a text file input")	
+	if not os.path.exists(tfile):
+		sys.exit(f"Can't locate {tfile}")
+	file_list=listmanager.read_lines_to_list(tfile,all=True)
+	if not file_list:
+		sys.exit(f"{tfile} doesn't have entries")		
+	if not os.path.exists(ofolder):
+		os.makedirs(ofolder)	
+	c=0	
+	tempfolder=os.path.join(ofolder,'temp')
+	for fp in file_list:
+		if c==0:
+			clear_Screen()
+			c+=1
+		About()
+		processing(fp)
+		if fp.endswith('nsp') or fp.endswith('ns<') or fp.endswith('nsx') :
+			try:
+				tname=str(os.path.basename(fp))
+				tempfolder=os.path.join(ofolder,'temp')
+				tmpfile=os.path.join(tempfolder,tname)
+				endfile=os.path.join(ofolder,tname)			
+				f = squirrelNSP(fp, 'rb')				
+				f.rebuild(buffer,tmpfile,delta,ndskip,xml_gen)
+				f.flush()
+				f.close()	
+				shutil.move(tmpfile,endfile)			
+				print("")				
+			except BaseException as e:
+				Print.error('Exception: ' + str(e))
+			shutil.rmtree(tempfolder, ignore_errors=True)
+		else:
+			print("File isn't nsp. Skipping...")				
+		listmanager.striplines(tfile,number=1,counter=True)		
+		
+		
+		
+def create_nsp_direct(filepath,outfolder,buffer=65536,fat="exfat",fx="files",delta=False,metapatch='false',RSV_cap=268435656,keypatch='false'):
+	tname=str(os.path.basename(filepath))[:-3]+'nsp'
+	tempfolder=os.path.join(outfolder,'temp')
+	tmpfile=os.path.join(tempfolder,tname)
+	endfile=os.path.join(outfolder,tname)	
+	if not os.path.exists(tempfolder):
+		os.makedirs(tempfolder)		
+	if filepath.endswith('xci'):
+		f = factory(filepath)
+		f.open(filepath, 'rb')
+	elif filepath.endswith('nsp'):	
+		f = squirrelNSP(filepath, 'rb')		
+	f.c_nsp_direct(buffer,tmpfile,outfolder,fat,fx,delta,metapatch,RSV_cap,keypatch)
+	f.flush()
+	f.close()	
+	shutil.move(tmpfile,endfile)		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
 		
 def processing(input):
 	name=os.path.basename(input)

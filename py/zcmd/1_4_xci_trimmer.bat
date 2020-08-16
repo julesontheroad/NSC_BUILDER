@@ -269,7 +269,7 @@ if "%vrepack%" EQU "zip" ( goto end_xci_manual )
 set "filename=%name%"
 call "%nscb_logos%" "program_logo"
 set "showname=%orinput%"
-call :processing_message
+call "%nscb_tools%" "processing_message" "%showname%"
 if exist "%w_folder%" rmdir /s /q "%w_folder%" >NUL 2>&1
 MD "%w_folder%"
 MD "%w_folder%\secure"
@@ -302,22 +302,8 @@ goto end_xci_manual
 :end_xci_manual
 exit /B
 
-:contador_NF
-setlocal enabledelayedexpansion
-set /a conta=0
-for /f "tokens=*" %%f in (lists/list.txt) do (
-set /a conta=!conta! + 1
-)
-echo ...................................................
-echo STILL !conta! FILES TO PROCESS
-echo ...................................................
-PING -n 2 127.0.0.1 >NUL 2>&1
-set /a conta=0
-endlocal
-exit /B
-
 :s_exit_choice
-if exist lists/1_4list.txt del lists/1_4list.txt
+call "%nscb_tools%" "delete_if_empty" "1_4list.txt"
 if /i "%va_exit%"=="true" echo PROGRAM WILL CLOSE NOW
 if /i "%va_exit%"=="true" ( PING -n 2 127.0.0.1 >NUL 2>&1 )
 if /i "%va_exit%"=="true" goto salida
@@ -330,11 +316,6 @@ set bs=%bs:"=%
 if /i "%bs%"=="0" call "%main_program%"
 if /i "%bs%"=="1" goto salida
 goto s_exit_choice
-
-:processing_message
-echo Processing %showname%
-echo.
-exit /B
 
 :salida
 ::pause

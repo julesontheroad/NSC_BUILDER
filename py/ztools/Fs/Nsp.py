@@ -391,21 +391,40 @@ class Nsp(Pfs0):
 	def isUnlockable(self):
 		return (not self.hasValidTicket) and self.titleId and Titles.contains(self.titleId) and Titles.get(self.titleId).key
 		
-	def unlock(self):
-		#if not self.isOpen():
-		#	self.open('r+b')
-
-		if not Titles.contains(self.titleId):
-			raise IOError('No title key found in database!')
-
-		self.ticket().setTitleKeyBlock(int(Titles.get(self.titleId).key, 16))
-		Print.info('setting title key to ' + Titles.get(self.titleId).key)
-		self.ticket().flush()
-		self.close()
-		self.hasValidTicket = True
-		self.move()
-
-
+	def unlock(self,userkey):
+		from Fs.Ticket import PublicTik	
+		titleid=None;keygeneration=None
+		files_list=sq_tools.ret_nsp_offsets(self.path)
+		for i in range(len(files_list)):	
+			if files_list[i][0].endswith('.tik'):
+				name=files_list[i][0]
+				offset=files_list[i][1]
+				offset2=files_list[i][2]				
+				sz=int(files_list[i][3])			
+				# print(offset)
+				break	
+		for nca in self:		
+			if type(nca) == Fs.Nca and str(nca.header.contentType) == 'Content.META':
+				crypto1=nca.header.getCryptoType()
+				crypto2=nca.header.getCryptoType2()	
+				if crypto2>crypto1:
+					keygeneration=crypto2
+				if crypto2<=crypto1:	
+					keygeneration=crypto1	
+				titleid=str(nca.header.titleId)	
+				break
+		if titleid!=None and keygeneration!=None:
+			print("* Generating Ticket")
+			ticket=PublicTik()
+			chain=ticket.generate(titleid,userkey,str(keygeneration))
+			self.seek(offset)
+			print("* Writing Ticket")			
+			self.write(chain)
+			newPath=(self.path)[:-1]+'p'
+			self.close()		
+			print("* Renaming to nsp")				
+			os.rename(self.path, newPath)		
+			print("* DONE")	
 	# ...................................................						
 	# Patch requrements for network account
 	# ...................................................

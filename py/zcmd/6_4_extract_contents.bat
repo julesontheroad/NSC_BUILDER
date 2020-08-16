@@ -1,27 +1,27 @@
 REM //////////////////////////////////////////////////
 REM /////////////////////////////////////////////////
-REM REMOVE DELTAS
+REM extract all files from nsp\xci
 REM /////////////////////////////////////////////////
 REM ////////////////////////////////////////////////
 cls
 call "%nscb_logos%" "program_logo"
 echo -----------------------------------------------
-echo REMOVE DELTAS FROM UPDATE FILES
+echo EXTRACT FILES FROM NSP\XCI
 echo -----------------------------------------------
-if exist "%list_folder%\1_2list.txt" goto prevlist
+if exist "%list_folder%\6_4list.txt" goto prevlist
 goto manual_INIT
 :prevlist
 set conta=0
-for /f "tokens=*" %%f in (lists/1_2list.txt) do (
+for /f "tokens=*" %%f in (lists/6_4list.txt) do (
 echo %%f
 ) >NUL 2>&1
 setlocal enabledelayedexpansion
-for /f "tokens=*" %%f in (lists/1_2list.txt) do (
+for /f "tokens=*" %%f in (lists/6_4list.txt) do (
 set /a conta=!conta! + 1
 ) >NUL 2>&1
-if !conta! LEQ 0 ( del "%list_folder%\1_2list.txt" )
+if !conta! LEQ 0 ( del "%list_folder%\6_4list.txt" )
 endlocal
-if not exist "%list_folder%\1_2list.txt" goto manual_INIT
+if not exist "%list_folder%\6_4list.txt" goto manual_INIT
 ECHO .......................................................
 ECHO A PREVIOUS LIST WAS FOUND. WHAT DO YOU WANT TO DO?
 :prevlist0
@@ -48,7 +48,7 @@ echo.
 echo BAD CHOICE
 goto prevlist0
 :delist
-del "%list_folder%\1_2list.txt" 2>&1>NUL
+del "%list_folder%\6_4list.txt" 2>&1>NUL
 cls
 call "%nscb_logos%" "program_logo"
 echo -----------------------------------------------
@@ -67,17 +67,17 @@ echo Input "4" to add files to list via folder-walker
 echo Input "0" to return to the MODE SELECTION MENU
 ECHO ***********************************************
 echo.
-%pycommand% "%squirrel%" -t nsp nsz -tfile "%list_folder%\1_2list.txt" -uin "%uinput%" -ff "uinput"
+%pycommand% "%squirrel%" -t nsp xci -tfile "%list_folder%\6_4list.txt" -uin "%uinput%" -ff "uinput"
 set /p eval=<"%uinput%"
 set eval=%eval:"=%
 setlocal enabledelayedexpansion
 echo+ >"%uinput%"
 endlocal
 if /i "%eval%"=="0" goto manual_Reentry
-if /i "%eval%"=="1" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%list_folder%\1_2list.txt" mode=folder ext="nsp nsz" ) 2>&1>NUL
-if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%list_folder%\1_2list.txt" mode=file ext="nsp nsz" ) 2>&1>NUL
-if /i "%eval%"=="3" ( %pycommand% "%squirrel%" -lib_call picker_walker select_from_local_libraries -xarg "%list_folder%\1_2list.txt" "extlist=nsp nsz" )
-if /i "%eval%"=="4" ( %pycommand% "%squirrel%" -lib_call picker_walker get_files_from_walk -xarg "%list_folder%\1_2list.txt" "extlist=nsp nsz" )
+if /i "%eval%"=="1" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%list_folder%\6_4list.txt" mode=folder ext="nsp xci" ) 2>&1>NUL
+if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%list_folder%\6_4list.txt" mode=file ext="nsp xci" ) 2>&1>NUL
+if /i "%eval%"=="3" ( %pycommand% "%squirrel%" -lib_call picker_walker select_from_local_libraries -xarg "%list_folder%\6_4list.txt" "extlist=nsp xci" )
+if /i "%eval%"=="4" ( %pycommand% "%squirrel%" -lib_call picker_walker get_files_from_walk -xarg "%list_folder%\6_4list.txt" "extlist=nsp xci" )
 goto checkagain
 echo.
 :checkagain
@@ -99,7 +99,7 @@ ECHO *************************************************
 echo Or Input "0" to return to the MODE SELECTION MENU
 ECHO *************************************************
 echo.
-%pycommand% "%squirrel%" -t nsp nsz -tfile "%list_folder%\1_2list.txt" -uin "%uinput%" -ff "uinput"
+%pycommand% "%squirrel%" -t nsp xci -tfile "%list_folder%\6_4list.txt" -uin "%uinput%" -ff "uinput"
 set /p eval=<"%uinput%"
 set eval=%eval:"=%
 setlocal enabledelayedexpansion
@@ -108,14 +108,14 @@ endlocal
 
 if /i "%eval%"=="0" goto manual_Reentry
 if /i "%eval%"=="1" goto dostart
-if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg  "%list_folder%\1_2list.txt" mode=folder ext="nsp nsz" ) 2>&1>NUL
-if /i "%eval%"=="3" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg  "%list_folder%\1_2list.txt" mode=file ext="nsp nsz" )  2>&1>NUL
-if /i "%eval%"=="4" ( %pycommand% "%squirrel%" -lib_call picker_walker select_from_local_libraries -xarg "%list_folder%\1_2list.txt" "extlist=nsp nsz" )
-if /i "%eval%"=="5" ( %pycommand% "%squirrel%" -lib_call picker_walker get_files_from_walk -xarg "%list_folder%\1_2list.txt" "extlist=nsp nsz" )
+if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg  "%list_folder%\6_4list.txt" mode=folder ext="nsp xci" ) 2>&1>NUL
+if /i "%eval%"=="3" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg  "%list_folder%\6_4list.txt" mode=file ext="nsp xci" )  2>&1>NUL
+if /i "%eval%"=="4" ( %pycommand% "%squirrel%" -lib_call picker_walker select_from_local_libraries -xarg "%list_folder%\6_4list.txt" "extlist=nsp xci" )
+if /i "%eval%"=="5" ( %pycommand% "%squirrel%" -lib_call picker_walker get_files_from_walk -xarg "%list_folder%\6_4list.txt" "extlist=nsp xci" )
 if /i "%eval%"=="e" goto salida
 if /i "%eval%"=="i" goto showlist
 if /i "%eval%"=="r" goto r_files
-if /i "%eval%"=="z" del ("%list_folder%\1_2list.txt") 2>&1>NUL
+if /i "%eval%"=="z" del ("%list_folder%\6_4list.txt") 2>&1>NUL
 
 goto checkagain
 
@@ -125,7 +125,7 @@ set bs=%bs:"=%
 
 setlocal enabledelayedexpansion
 set conta=
-for /f "tokens=*" %%f in (lists/1_2list.txt) do (
+for /f "tokens=*" %%f in (lists/6_4list.txt) do (
 set /a conta=!conta! + 1
 )
 
@@ -142,28 +142,25 @@ set string=%string%,
 set skiplist=%string%
 Set "skip=%skiplist%"
 setlocal DisableDelayedExpansion
-(for /f "tokens=1,*delims=:" %%a in (' findstr /n "^" ^<lists/1_2list.txt'
+(for /f "tokens=1,*delims=:" %%a in (' findstr /n "^" ^<lists/6_4list.txt'
 ) do Echo=%skip%|findstr ",%%a," 2>&1>NUL ||Echo=%%b
-)>lists/1_2list.txt.new
+)>lists/6_4list.txt.new
 endlocal
-move /y "lists/1_2list.txt.new" "lists/1_2list.txt" >nul
+move /y "lists/6_4list.txt.new" "lists/6_4list.txt" >nul
 endlocal
 
 :showlist
 cls
 call "%nscb_logos%" "program_logo"
-echo -------------------------------------------------
-echo INDIVIDUAL PROCESSING ACTIVATED
-echo -------------------------------------------------
 ECHO -------------------------------------------------
 ECHO                 FILES TO PROCESS
 ECHO -------------------------------------------------
-for /f "tokens=*" %%f in (lists/1_2list.txt) do (
+for /f "tokens=*" %%f in (lists/6_4list.txt) do (
 echo %%f
 )
 setlocal enabledelayedexpansion
 set conta=
-for /f "tokens=*" %%f in (lists/1_2list.txt) do (
+for /f "tokens=*" %%f in (lists/6_4list.txt) do (
 set /a conta=!conta! + 1
 )
 echo .................................................
@@ -178,14 +175,21 @@ echo wrong choice
 echo ............
 
 :dostart
-%pycommand% "%squirrel%" -lib_call cmd.cmd_batchprocess loop_rebuild -xarg "%list_folder%\1_2list.txt" "%buffer%" "delta=False" "ndskip=True" "xml_gen=True" "%fatype%" "%fexport%" "%skdelta%" "%fold_output%"
-
+cls
+call "%nscb_logos%" "program_logo"
+CD /d "%prog_dir%"
+for /f "tokens=*" %%f in (lists/6_4list.txt) do (
+%pycommand% "%squirrel%" %buffer% -o "%prog_dir%NSCB_extracted" -tfile "%prog_dir%lists/6_4list.txt" -nfx ""
+%pycommand% "%squirrel%" --strip_lines "%prog_dir%lists/6_4list.txt"
+call "%nscb_tools%" "contador"
+)
 ECHO ---------------------------------------------------
 ECHO *********** ALL FILES WERE PROCESSED! *************
 ECHO ---------------------------------------------------
 goto s_exit_choice
 
 :s_exit_choice
+call "%nscb_tools%" "delete_if_empty" "6_4list.txt"
 if /i "%va_exit%"=="true" echo PROGRAM WILL CLOSE NOW
 if /i "%va_exit%"=="true" ( PING -n 2 127.0.0.1 >NUL 2>&1 )
 if /i "%va_exit%"=="true" goto salida

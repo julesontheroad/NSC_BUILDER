@@ -291,9 +291,7 @@ echo Filtering extensions from list according to options chosen
 if "%fatype%" EQU "-fat fat32" echo Fat32 selected, removing nsz and xcz from input list
 if "%fatype%" EQU "-fat fat32" ( %pycommand% "%squirrel%" -lib_call listmanager filter_list "%list_folder%\1_1list.txt","ext=nsp nsx xci","token=False",Print="False" )
 
-echo %pycommand% "%squirrel%" -lib_call cmd.cmd_batchprocess loop_repack -xarg "%list_folder%\1_1list.txt" "%buffer%" "%patchRSV%" "%vkey%" "%capRSV%" "%fatype%" "%fexport%" "%skdelta%" "%w_folder%" "%vrepack%"
-
-%pycommand% "%squirrel%" -lib_call cmd.cmd_batchprocess loop_repack -xarg "%list_folder%\1_1list.txt" "%buffer%" "%patchRSV%" "%vkey%" "%capRSV%" "%fatype%" "%fexport%" "%skdelta%" "%w_folder%" "%vrepack%"
+%pycommand% "%squirrel%" -lib_call cmd.cmd_batchprocess loop_repack -xarg "%list_folder%\1_1list.txt" "%buffer%" "%patchRSV%" "%vkey%" "%capRSV%" "%fatype%" "%fexport%" "%skdelta%" "%fold_output%" "%vrepack%"
 
 ECHO ---------------------------------------------------
 ECHO *********** ALL FILES WERE PROCESSED! *************

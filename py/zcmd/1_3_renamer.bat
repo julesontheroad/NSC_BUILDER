@@ -371,7 +371,6 @@ ECHO *********** ALL FILES WERE PROCESSED! *************
 ECHO ---------------------------------------------------
 goto s_exit_choice
 
-
 :filecleantags
 cls
 call "%nscb_logos%" "program_logo"
@@ -386,7 +385,7 @@ ECHO ---------------------------------------------------
 goto s_exit_choice
 
 :s_exit_choice
-if exist lists/1_3list.txt del lists/1_3list.txt
+call "%nscb_tools%" "delete_if_empty" "1_3list.txt"
 if /i "%va_exit%"=="true" echo PROGRAM WILL CLOSE NOW
 if /i "%va_exit%"=="true" ( PING -n 2 127.0.0.1 >NUL 2>&1 )
 if /i "%va_exit%"=="true" goto salida
