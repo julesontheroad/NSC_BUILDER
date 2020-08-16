@@ -74,10 +74,10 @@ setlocal enabledelayedexpansion
 echo+ >"%uinput%"
 endlocal
 if /i "%eval%"=="0" goto manual_Reentry
-if /i "%eval%"=="1" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%list_folder%\1_4list.txt" mode=folder ext="xci" ) 2>&1>NUL
-if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%list_folder%\1_4list.txt" mode=file ext="xci" ) 2>&1>NUL
-if /i "%eval%"=="3" ( %pycommand% "%squirrel%" -lib_call picker_walker select_from_local_libraries -xarg "%list_folder%\1_4list.txt" "extlist=xci" )
-if /i "%eval%"=="4" ( %pycommand% "%squirrel%" -lib_call picker_walker get_files_from_walk -xarg "%list_folder%\1_4list.txt" "extlist=xci" )
+if /i "%eval%"=="1" ( %pycommand% "%sq_lc%" -lib_call listmanager selector2list -xarg "%list_folder%\1_4list.txt" mode=folder ext="xci" ) 2>&1>NUL
+if /i "%eval%"=="2" ( %pycommand% "%sq_lc%" -lib_call listmanager selector2list -xarg "%list_folder%\1_4list.txt" mode=file ext="xci" ) 2>&1>NUL
+if /i "%eval%"=="3" ( %pycommand% "%sq_lc%" -lib_call picker_walker select_from_local_libraries -xarg "%list_folder%\1_4list.txt" "extlist=xci" )
+if /i "%eval%"=="4" ( %pycommand% "%sq_lc%" -lib_call picker_walker get_files_from_walk -xarg "%list_folder%\1_4list.txt" "extlist=xci" )
 goto checkagain
 echo.
 :checkagain
@@ -108,10 +108,10 @@ endlocal
 
 if /i "%eval%"=="0" goto manual_Reentry
 if /i "%eval%"=="1" goto s_trimmer_selection
-if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg  "%list_folder%\1_4list.txt" mode=folder ext="xci" ) 2>&1>NUL
-if /i "%eval%"=="3" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg  "%list_folder%\1_4list.txt" mode=file ext="xci" )  2>&1>NUL
-if /i "%eval%"=="4" ( %pycommand% "%squirrel%" -lib_call picker_walker select_from_local_libraries -xarg "%list_folder%\1_4list.txt" "extlist=xci" )
-if /i "%eval%"=="5" ( %pycommand% "%squirrel%" -lib_call picker_walker get_files_from_walk -xarg "%list_folder%\1_4list.txt" "extlist=xci" )
+if /i "%eval%"=="2" ( %pycommand% "%sq_lc%" -lib_call listmanager selector2list -xarg  "%list_folder%\1_4list.txt" mode=folder ext="xci" ) 2>&1>NUL
+if /i "%eval%"=="3" ( %pycommand% "%sq_lc%" -lib_call listmanager selector2list -xarg  "%list_folder%\1_4list.txt" mode=file ext="xci" )  2>&1>NUL
+if /i "%eval%"=="4" ( %pycommand% "%sq_lc%" -lib_call picker_walker select_from_local_libraries -xarg "%list_folder%\1_4list.txt" "extlist=xci" )
+if /i "%eval%"=="5" ( %pycommand% "%sq_lc%" -lib_call picker_walker get_files_from_walk -xarg "%list_folder%\1_4list.txt" "extlist=xci" )
 if /i "%eval%"=="e" goto salida
 if /i "%eval%"=="i" goto showlist
 if /i "%eval%"=="r" goto r_files
@@ -122,12 +122,12 @@ goto checkagain
 :r_files
 set /p bs="Input the number of files you want to remove (from bottom): "
 set bs=%bs:"=%
-%pycommand% "%squirrel%" -lib_call listmanager remove_from_botton -xarg  "%list_folder%\1_1list.txt" "%bs%"
+%pycommand% "%sq_lc%" -lib_call listmanager remove_from_botton -xarg  "%list_folder%\1_4list.txt" "%bs%"
 
 :showlist
 cls
 call "%nscb_logos%" "program_logo"
-%pycommand% "%squirrel%" -lib_call listmanager printcurrent -xarg  "%list_folder%\1_1list.txt" "all" "counter=True"
+%pycommand% "%sq_lc%" -lib_call listmanager printcurrent -xarg  "%list_folder%\1_4list.txt" "all" "counter=True"
 goto checkagain
 
 :s_trimmer_selection
@@ -177,7 +177,7 @@ set "filename=%%~nxf"
 set "orinput=%%f"
 
 if "%%~nxf"=="%%~nf.xci" call :xci_manual
-%pycommand% "%squirrel%" --strip_lines "%prog_dir%lists/1_4list.txt" "1" "true"
+%pycommand% "%squirrel%" --strip_lines "%prog_dir%lists\1_4list.txt" "1" "true"
 )
 ECHO ---------------------------------------------------
 ECHO *********** ALL FILES WERE PROCESSED! *************
@@ -193,10 +193,10 @@ MD "%w_folder%"
 set "filename=%name%"
 set "showname=%orinput%"
 
-if "%vrepack%" EQU "xci_supertrimmer" ( %pycommand% "%squirrel%" %buffer% -o "%w_folder%" -tfile "%prog_dir%lists/list.txt" -xci_st "%orinput%")
-if "%vrepack%" EQU "xci_supertrimmer_keep_upd" ( %pycommand% "%squirrel%" %buffer% -o "%w_folder%" -t "xci" -dc "%orinput%" -tfile "%prog_dir%lists/list.txt" )
-if "%vrepack%" EQU "xci_trimmer" ( %pycommand% "%squirrel%" %buffer% -o "%w_folder%" -tfile "%prog_dir%lists/list.txt" -xci_tr "%orinput%")
-if "%vrepack%" EQU "xci_untrimmer" ( %pycommand% "%squirrel%" %buffer% -o "%w_folder%" -tfile "%prog_dir%lists/list.txt" -xci_untr "%orinput%" )
+if "%vrepack%" EQU "xci_supertrimmer" ( %pycommand% "%squirrel%" %buffer% -o "%w_folder%" -tfile "%prog_dir%lists\1_4list.txt" -xci_st "%orinput%")
+if "%vrepack%" EQU "xci_supertrimmer_keep_upd" ( %pycommand% "%squirrel%" %buffer% -o "%w_folder%" -t "xci" -dc "%orinput%" -tfile "%prog_dir%lists\1_4list.txt" )
+if "%vrepack%" EQU "xci_trimmer" ( %pycommand% "%squirrel%" %buffer% -o "%w_folder%" -tfile "%prog_dir%lists\1_4list.txt" -xci_tr "%orinput%")
+if "%vrepack%" EQU "xci_untrimmer" ( %pycommand% "%squirrel%" %buffer% -o "%w_folder%" -tfile "%prog_dir%lists\1_4list.txt" -xci_untr "%orinput%" )
 
 if not exist "%fold_output%" MD "%fold_output%" >NUL 2>&1
 
@@ -210,8 +210,8 @@ if exist "%w_folder%\archfolder" ( %pycommand% "%squirrel%" -ifo "%w_folder%\arc
 
 RD /S /Q "%w_folder%" >NUL 2>&1
 echo DONE
-call :thumbup
-call :delay
+call "%nscb_logos%" "thumbup"
+call "%nscb_logos%" "delay"
 goto end_xci_manual
 
 :xci_manual_fat32
@@ -248,15 +248,15 @@ if exist "%w_folder%\archfolder" ( %pycommand% "%squirrel%" -ifo "%w_folder%\arc
 endlocal
 RD /S /Q "%w_folder%" >NUL 2>&1
 echo DONE
-call :thumbup
-call :delay
+call "%nscb_logos%" "thumbup"
+call "%nscb_logos%" "delay"
 goto end_xci_manual
 
 :end_xci_manual
 exit /B
 
 :s_exit_choice
-call "%nscb_tools%" "delete_if_empty" "1_4list.txt"
+if exist "%prog_dir%lists\1_4list.txt" ( call "%nscb_tools%" "delete_if_empty" "1_4list.txt" )
 if /i "%va_exit%"=="true" echo PROGRAM WILL CLOSE NOW
 if /i "%va_exit%"=="true" ( PING -n 2 127.0.0.1 >NUL 2>&1 )
 if /i "%va_exit%"=="true" goto salida
@@ -273,3 +273,6 @@ goto s_exit_choice
 :salida
 ::pause
 exit
+
+:manual_Reentry
+call "%main_program%"

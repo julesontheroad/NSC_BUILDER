@@ -74,10 +74,10 @@ setlocal enabledelayedexpansion
 echo+ >"%uinput%"
 endlocal
 if /i "%eval%"=="0" goto manual_Reentry
-if /i "%eval%"=="1" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%list_folder%\6_5list.txt" mode=folder ext="nsp xci" ) 2>&1>NUL
-if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%list_folder%\6_5list.txt" mode=file ext="nsp xci" ) 2>&1>NUL
-if /i "%eval%"=="3" ( %pycommand% "%squirrel%" -lib_call picker_walker select_from_local_libraries -xarg "%list_folder%\6_5list.txt" "extlist=nsp xci" )
-if /i "%eval%"=="4" ( %pycommand% "%squirrel%" -lib_call picker_walker get_files_from_walk -xarg "%list_folder%\6_5list.txt" "extlist=nsp xci" )
+if /i "%eval%"=="1" ( %pycommand% "%sq_lc%" -lib_call listmanager selector2list -xarg "%list_folder%\6_5list.txt" mode=folder ext="nsp xci" ) 2>&1>NUL
+if /i "%eval%"=="2" ( %pycommand% "%sq_lc%" -lib_call listmanager selector2list -xarg "%list_folder%\6_5list.txt" mode=file ext="nsp xci" ) 2>&1>NUL
+if /i "%eval%"=="3" ( %pycommand% "%sq_lc%" -lib_call picker_walker select_from_local_libraries -xarg "%list_folder%\6_5list.txt" "extlist=nsp xci" )
+if /i "%eval%"=="4" ( %pycommand% "%sq_lc%" -lib_call picker_walker get_files_from_walk -xarg "%list_folder%\6_5list.txt" "extlist=nsp xci" )
 goto checkagain
 echo.
 :checkagain
@@ -108,10 +108,10 @@ endlocal
 
 if /i "%eval%"=="0" goto manual_Reentry
 if /i "%eval%"=="1" goto dostart
-if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg  "%list_folder%\6_5list.txt" mode=folder ext="nsp xci" ) 2>&1>NUL
-if /i "%eval%"=="3" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg  "%list_folder%\6_5list.txt" mode=file ext="nsp xci" )  2>&1>NUL
-if /i "%eval%"=="4" ( %pycommand% "%squirrel%" -lib_call picker_walker select_from_local_libraries -xarg "%list_folder%\6_5list.txt" "extlist=nsp xci" )
-if /i "%eval%"=="5" ( %pycommand% "%squirrel%" -lib_call picker_walker get_files_from_walk -xarg "%list_folder%\6_5list.txt" "extlist=nsp xci" )
+if /i "%eval%"=="2" ( %pycommand% "%sq_lc%" -lib_call listmanager selector2list -xarg  "%list_folder%\6_5list.txt" mode=folder ext="nsp xci" ) 2>&1>NUL
+if /i "%eval%"=="3" ( %pycommand% "%sq_lc%" -lib_call listmanager selector2list -xarg  "%list_folder%\6_5list.txt" mode=file ext="nsp xci" )  2>&1>NUL
+if /i "%eval%"=="4" ( %pycommand% "%sq_lc%" -lib_call picker_walker select_from_local_libraries -xarg "%list_folder%\6_5list.txt" "extlist=nsp xci" )
+if /i "%eval%"=="5" ( %pycommand% "%sq_lc%" -lib_call picker_walker get_files_from_walk -xarg "%list_folder%\6_5list.txt" "extlist=nsp xci" )
 if /i "%eval%"=="e" goto salida
 if /i "%eval%"=="i" goto showlist
 if /i "%eval%"=="r" goto r_files

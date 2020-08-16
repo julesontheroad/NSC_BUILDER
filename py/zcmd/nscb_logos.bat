@@ -1,8 +1,8 @@
-if "%~1" EQU "program_logo" call :program_logo
-if "%~1" EQU "squirrell" call :squirrell
-if "%~1" EQU "thumbup" call :thumbup
-if "%~1" EQU "delay" call :delay
-if "%~1" EQU "salida" call :salida
+if "%~1" EQU "program_logo" goto :program_logo
+if "%~1" EQU "squirrell" goto :squirrell
+if "%~1" EQU "thumbup" goto :thumbup
+if "%~1" EQU "delay" goto :delay
+if "%~1" EQU "salida" goto :salida
 exit /B
 
 :program_logo

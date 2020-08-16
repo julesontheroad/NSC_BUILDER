@@ -1,9 +1,9 @@
-if "%~1" EQU "delete_if_empty" call :delete_if_empty
-if "%~1" EQU "contador" call :contador
-if "%~1" EQU "processing_message" call :processing_message
+if "%~1" EQU "delete_if_empty" goto :delete_if_empty
+if "%~1" EQU "contador" goto :contador
+if "%~1" EQU "processing_message" goto :processing_message
 exit /B
 
-:check_if_empty
+:delete_if_empty
 set conta=0
 for /f "tokens=*" %%f in (lists/%~2) do (
 echo %%f

@@ -65,6 +65,7 @@ set "fexport=%fexport%"
 set "skdelta=%skdelta%"
 REM PROGRAMS
 set "squirrel=%squirrel%"
+set "sq_lc=%sq_lc%"
 set "MTP=%MTP%"
 set "xci_lib=%xci_lib%"
 set "nsp_lib=%nsp_lib%"
@@ -87,15 +88,8 @@ set "list_folder=%prog_dir%lists"
 ::-----------------------------------------------------
 ::Program full route
 if exist "%~dp0%squirrel%" set "squirrel=%~dp0%squirrel%"
-if exist "%~dp0%xci_lib%"  set "xci_lib=%~dp0%xci_lib%"
-if exist "%~dp0%nsp_lib%"  set "nsp_lib=%~dp0%nsp_lib%"
-if exist "%~dp0%zip%"  set "zip=%~dp0%zip%"
+if exist "%~dp0%sq_lc%" set "sq_lc=%~dp0%sq_lc%"
 
-if exist "%~dp0%hacbuild%"  set "hacbuild=%~dp0%hacbuild%"
-if exist "%~dp0%listmanager%"  set "listmanager=%~dp0%listmanager%"
-if exist "%~dp0%batconfig%"  set "batconfig=%~dp0%batconfig%"
-if exist "%~dp0%batdepend%"  set "batdepend=%~dp0%batdepend%"
-if exist "%~dp0%infobat%"  set "infobat=%~dp0%infobat%"
 ::Important files full route
 if exist "%~dp0%uinput%"  set "uinput=%~dp0%uinput%"
 if exist "%~dp0%dec_keys%"  set "dec_keys=%~dp0%dec_keys%"
@@ -231,3 +225,6 @@ goto salida
 :salida
 ::pause
 exit
+
+:manual_Reentry
+call "%main_program%"

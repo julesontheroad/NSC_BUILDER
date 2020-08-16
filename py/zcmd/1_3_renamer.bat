@@ -74,10 +74,10 @@ setlocal enabledelayedexpansion
 echo+ >"%uinput%"
 endlocal
 if /i "%eval%"=="0" goto manual_Reentry
-if /i "%eval%"=="1" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%list_folder%\1_3list.txt" mode=folder ext="nsp xci nsx nsz xcz" ) 2>&1>NUL
-if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%list_folder%\1_3list.txt" mode=file ext="nsp xci nsx nsz xcz" ) 2>&1>NUL
-if /i "%eval%"=="3" ( %pycommand% "%squirrel%" -lib_call picker_walker select_from_local_libraries -xarg "%list_folder%\1_3list.txt" "extlist=nsp xci nsx nsz xcz" )
-if /i "%eval%"=="4" ( %pycommand% "%squirrel%" -lib_call picker_walker get_files_from_walk -xarg "%list_folder%\1_3list.txt" "extlist=nsp xci nsx nsz xcz" )
+if /i "%eval%"=="1" ( %pycommand% "%sq_lc%" -lib_call listmanager selector2list -xarg "%list_folder%\1_3list.txt" mode=folder ext="nsp xci nsx nsz xcz" ) 2>&1>NUL
+if /i "%eval%"=="2" ( %pycommand% "%sq_lc%" -lib_call listmanager selector2list -xarg "%list_folder%\1_3list.txt" mode=file ext="nsp xci nsx nsz xcz" ) 2>&1>NUL
+if /i "%eval%"=="3" ( %pycommand% "%sq_lc%" -lib_call picker_walker select_from_local_libraries -xarg "%list_folder%\1_3list.txt" "extlist=nsp xci nsx nsz xcz" )
+if /i "%eval%"=="4" ( %pycommand% "%sq_lc%" -lib_call picker_walker get_files_from_walk -xarg "%list_folder%\1_3list.txt" "extlist=nsp xci nsx nsz xcz" )
 goto checkagain
 echo.
 :checkagain
@@ -108,10 +108,10 @@ endlocal
 
 if /i "%eval%"=="0" goto manual_Reentry
 if /i "%eval%"=="1" goto rename
-if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg  "%list_folder%\1_3list.txt" mode=folder ext="nsp xci nsx nsz xcz" ) 2>&1>NUL
-if /i "%eval%"=="3" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg  "%list_folder%\1_3list.txt" mode=file ext="nsp xci nsx nsz xcz" )  2>&1>NUL
-if /i "%eval%"=="4" ( %pycommand% "%squirrel%" -lib_call picker_walker select_from_local_libraries -xarg "%list_folder%\1_3list.txt" "extlist=nsp xci nsx nsz xcz" )
-if /i "%eval%"=="5" ( %pycommand% "%squirrel%" -lib_call picker_walker get_files_from_walk -xarg "%list_folder%\1_3list.txt" "extlist=nsp xci nsx nsz xcz" )
+if /i "%eval%"=="2" ( %pycommand% "%sq_lc%" -lib_call listmanager selector2list -xarg  "%list_folder%\1_3list.txt" mode=folder ext="nsp xci nsx nsz xcz" ) 2>&1>NUL
+if /i "%eval%"=="3" ( %pycommand% "%sq_lc%" -lib_call listmanager selector2list -xarg  "%list_folder%\1_3list.txt" mode=file ext="nsp xci nsx nsz xcz" )  2>&1>NUL
+if /i "%eval%"=="4" ( %pycommand% "%sq_lc%" -lib_call picker_walker select_from_local_libraries -xarg "%list_folder%\1_3list.txt" "extlist=nsp xci nsx nsz xcz" )
+if /i "%eval%"=="5" ( %pycommand% "%sq_lc%" -lib_call picker_walker get_files_from_walk -xarg "%list_folder%\1_3list.txt" "extlist=nsp xci nsx nsz xcz" )
 if /i "%eval%"=="e" goto salida
 if /i "%eval%"=="i" goto showlist
 if /i "%eval%"=="r" goto r_files
@@ -122,12 +122,12 @@ goto checkagain
 :r_files
 set /p bs="Input the number of files you want to remove (from bottom): "
 set bs=%bs:"=%
-%pycommand% "%squirrel%" -lib_call listmanager remove_from_botton -xarg  "%list_folder%\1_1list.txt" "%bs%"
+%pycommand% "%sq_lc%" -lib_call listmanager remove_from_botton -xarg  "%list_folder%\1_3list.txt" "%bs%"
 
 :showlist
 cls
 call "%nscb_logos%" "program_logo"
-%pycommand% "%squirrel%" -lib_call listmanager printcurrent -xarg  "%list_folder%\1_1list.txt" "all" "counter=True"
+%pycommand% "%sq_lc%" -lib_call listmanager printcurrent -xarg  "%list_folder%\1_3list.txt" "all" "counter=True"
 goto checkagain
 
 :rename
@@ -277,8 +277,8 @@ cls
 call "%nscb_logos%" "program_logo"
 set "workers=-threads 1"
 for /f "tokens=*" %%f in (lists/1_3list.txt) do (
-%pycommand% "%squirrel%" -renf "single" -tfile "%prog_dir%lists/1_3list.txt" -t nsp xci nsx nsz xcz -renm %renmode% -nover %nover% -oaid %oaid% -addl %addlangue% -roma %romaji% -dlcrn %dlcrname% %workers%
-if "%workers%" EQU "-threads 1" ( %pycommand% "%squirrel%" --strip_lines "%prog_dir%lists/1_3list.txt" "1" "true" )
+%pycommand% "%squirrel%" -renf "single" -tfile "%prog_dir%lists\1_3list.txt" -t nsp xci nsx nsz xcz -renm %renmode% -nover %nover% -oaid %oaid% -addl %addlangue% -roma %romaji% -dlcrn %dlcrname% %workers%
+if "%workers%" EQU "-threads 1" ( %pycommand% "%squirrel%" --strip_lines "%prog_dir%lists\1_3list.txt" "1" "true" )
 if "%workers%" NEQ "-threads 1" ( call :renamecheck )
 rem call :contador_NF
 )
@@ -295,15 +295,15 @@ set /a conta=!conta! + 1
 )
 if !conta! LEQ 0 ( del lists/1_3list.txt )
 endlocal
-if not exist "lists/1_3list.txt" goto s_exit_choice
+if not exist "%prog_dir%lists\1_3list.txt" goto s_exit_choice
 exit /B
 
 :sanitize
 cls
 call "%nscb_logos%" "program_logo"
 for /f "tokens=*" %%f in (lists/1_3list.txt) do (
-%pycommand% "%squirrel%" -snz "single" -tfile "%prog_dir%lists/1_3list.txt" -t nsp xci nsx nsz xcz
-%pycommand% "%squirrel%" --strip_lines "%prog_dir%lists/1_3list.txt" "1" "true"
+%pycommand% "%squirrel%" -snz "single" -tfile "%prog_dir%lists\1_3list.txt" -t nsp xci nsx nsz xcz
+%pycommand% "%squirrel%" --strip_lines "%prog_dir%lists\1_3list.txt" "1" "true"
 rem call :contador_NF
 )
 ECHO ---------------------------------------------------
@@ -315,8 +315,8 @@ goto s_exit_choice
 cls
 call "%nscb_logos%" "program_logo"
 for /f "tokens=*" %%f in (lists/1_3list.txt) do (
-%pycommand% "%squirrel%" -roma "single" -tfile "%prog_dir%lists/1_3list.txt" -t nsp xci nsx nsz xcz
-%pycommand% "%squirrel%" --strip_lines "%prog_dir%lists/1_3list.txt" "1" "true"
+%pycommand% "%squirrel%" -roma "single" -tfile "%prog_dir%lists\1_3list.txt" -t nsp xci nsx nsz xcz
+%pycommand% "%squirrel%" --strip_lines "%prog_dir%lists\1_3list.txt" "1" "true"
 rem call :contador_NF
 )
 ECHO ---------------------------------------------------
@@ -328,8 +328,8 @@ goto s_exit_choice
 cls
 call "%nscb_logos%" "program_logo"
 for /f "tokens=*" %%f in (lists/1_3list.txt) do (
-%pycommand% "%squirrel%" -cltg "single" -tfile "%prog_dir%lists/1_3list.txt" -t nsp xci nsx nsz xcz -tgtype "%tagtype%"
-%pycommand% "%squirrel%" --strip_lines "%prog_dir%lists/1_3list.txt" "1" "true"
+%pycommand% "%squirrel%" -cltg "single" -tfile "%prog_dir%lists\1_3list.txt" -t nsp xci nsx nsz xcz -tgtype "%tagtype%"
+%pycommand% "%squirrel%" --strip_lines "%prog_dir%lists\1_3list.txt" "1" "true"
 rem call :contador_NF
 )
 ECHO ---------------------------------------------------
@@ -338,7 +338,7 @@ ECHO ---------------------------------------------------
 goto s_exit_choice
 
 :s_exit_choice
-call "%nscb_tools%" "delete_if_empty" "1_3list.txt"
+if exist "%prog_dir%lists\1_3list.txt" ( call "%nscb_tools%" "delete_if_empty" "1_3list.txt" )
 if /i "%va_exit%"=="true" echo PROGRAM WILL CLOSE NOW
 if /i "%va_exit%"=="true" ( PING -n 2 127.0.0.1 >NUL 2>&1 )
 if /i "%va_exit%"=="true" goto salida
@@ -351,3 +351,6 @@ set bs=%bs:"=%
 if /i "%bs%"=="0" goto manual_Reentry
 if /i "%bs%"=="1" goto salida
 goto s_exit_choice
+
+:manual_Reentry
+call "%main_program%"

@@ -15,7 +15,7 @@ set "fold_output=NSCB_output"
 ::OPTION 2: PROGRAM ROUTES
 ::--------------------------------------------------------------
 set "squirrel=ztools\squirrel.py"
- 
+set "sq_lc=ztools\squirrel_lib_call.py" 
  
  
  
