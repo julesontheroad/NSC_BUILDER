@@ -35,7 +35,7 @@ set eval=%eval:"=%
 setlocal enabledelayedexpansion
 echo+ >"%uinput%"
 endlocal
-if /i "%eval%"=="0" goto manual_Reentry
+if /i "%eval%"=="0" call "%main_program%"
 if /i "%eval%"=="1" set skip_list_split="true"
 if /i "%eval%"=="1" goto multi_start_cleaning
 if /i "%eval%"=="2" ( %pycommand% "%sq_lc%" -lib_call listmanager selector2list -xarg "%prog_dir%mlist.txt" mode=folder ext="nsp xci nsz xcz" ) 2>&1>NUL
@@ -75,7 +75,7 @@ setlocal enabledelayedexpansion
 echo+ >"%uinput%"
 endlocal
 
-if /i "%eval%"=="0" goto manual_Reentry
+if /i "%eval%"=="0" call "%main_program%"
 if /i "%eval%"=="1" set "mlistfol=%list_folder%\a_multi"
 if /i "%eval%"=="1" goto multi_start_cleaning
 if /i "%eval%"=="2" set "mlistfol=%list_folder%\m_multi"
@@ -111,7 +111,7 @@ set /p bs="Enter your choice: "
 set bs=%bs:"=%
 set vrepack=none
 if /i "%bs%"=="b" goto multi_checkagain
-if /i "%bs%"=="0" goto manual_Reentry
+if /i "%bs%"=="0" call "%main_program%"
 if /i "%bs%"=="1" goto multi_saved_for_later1
 if /i "%bs%"=="2" ( %pycommand% "%squirrel%" -splid "%mlistfol%" -tfile "%prog_dir%mlist.txt" )
 if /i "%bs%"=="2" del "%prog_dir%mlist.txt"
@@ -138,7 +138,7 @@ echo Input "2" to exit the program
 echo.
 set /p bs="Enter your choice: "
 set bs=%bs:"=%
-if /i "%bs%"=="0" goto manual_Reentry
+if /i "%bs%"=="0" call "%main_program%"
 if /i "%bs%"=="1" echo.
 if /i "%bs%"=="1" echo CREATE ANOTHER JOB
 if /i "%bs%"=="1" goto multi_manual_INIT
@@ -595,7 +595,7 @@ echo Input "1" to exit the program
 echo.
 set /p bs="Enter your choice: "
 set bs=%bs:"=%
-if /i "%bs%"=="0" goto manual_Reentry
+if /i "%bs%"=="0" call "%main_program%"
 if /i "%bs%"=="1" goto salida
 goto m_exit_choice
 

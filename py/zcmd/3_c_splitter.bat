@@ -46,7 +46,7 @@ set bs=%bs:"=%
 if /i "%bs%"=="3" goto sp_showlist
 if /i "%bs%"=="2" goto sp_delist
 if /i "%bs%"=="1" goto sp_start_cleaning
-if /i "%bs%"=="0" goto manual_Reentry
+if /i "%bs%"=="0" call "%main_program%"
 echo.
 echo BAD CHOICE
 goto sp_prevlist0
@@ -77,7 +77,7 @@ setlocal enabledelayedexpansion
 echo+ >"%uinput%"
 endlocal
 
-if /i "%eval%"=="0" goto manual_Reentry
+if /i "%eval%"=="0" call "%main_program%"
 if /i "%eval%"=="1" ( %pycommand% "%sq_lc%" -lib_call listmanager selector2list -xarg "%prog_dir%splist.txt" mode=folder ext="nsp xci nsz xcz" ) 2>&1>NUL
 if /i "%eval%"=="2" ( %pycommand% "%sq_lc%" -lib_call listmanager selector2list -xarg "%prog_dir%splist.txt" mode=file ext="nsp xci nsz xcz" )  2>&1>NUL
 if /i "%eval%"=="3" ( %pycommand% "%sq_lc%" -lib_call picker_walker select_from_local_libraries -xarg "%prog_dir%splist.txt" "extlist=nsp xci nsz xcz" )
@@ -110,7 +110,7 @@ setlocal enabledelayedexpansion
 echo+ >"%uinput%"
 endlocal
 
-if /i "%eval%"=="0" goto manual_Reentry
+if /i "%eval%"=="0" call "%main_program%"
 if /i "%eval%"=="1" goto sp_start_cleaning
 if /i "%eval%"=="2" ( %pycommand% "%sq_lc%" -lib_call listmanager selector2list -xarg "%prog_dir%splist.txt" mode=folder ext="nsp xci nsz xcz" ) 2>&1>NUL
 if /i "%eval%"=="3" ( %pycommand% "%sq_lc%" -lib_call listmanager selector2list -xarg "%prog_dir%splist.txt" mode=file ext="nsp xci nsz xcz" )  2>&1>NUL
@@ -245,7 +245,7 @@ echo Input "1" to exit the program
 echo.
 set /p bs="Enter your choice: "
 set bs=%bs:"=%
-if /i "%bs%"=="0" goto manual_Reentry
+if /i "%bs%"=="0" call "%main_program%"
 if /i "%bs%"=="1" goto salida
 goto SPLIT_exit_choice
 

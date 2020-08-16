@@ -44,7 +44,7 @@ set bs=%bs:"=%
 if /i "%bs%"=="3" goto DBshowlist
 if /i "%bs%"=="2" goto DBdelist
 if /i "%bs%"=="1" goto DBstart_cleaning
-if /i "%bs%"=="0" goto manual_Reentry
+if /i "%bs%"=="0" call "%main_program%"
 echo.
 echo BAD CHOICE
 goto DBprevlist0
@@ -66,7 +66,7 @@ ECHO ***********************************************
 echo.
 set /p bs="PLEASE DRAG A FILE OR FOLDER OVER THE WINDOW AND PRESS ENTER: "
 set bs=%bs:"=%
-if /i "%bs%"=="0" goto manual_Reentry
+if /i "%bs%"=="0" call "%main_program%"
 set "targt=%bs%"
 dir "%bs%\" >nul 2>nul
 if not errorlevel 1 goto DBcheckfolder
@@ -96,7 +96,7 @@ ECHO *************************************************
 echo.
 set /p bs="Drag file/folder or set option: "
 set bs=%bs:"=%
-if /i "%bs%"=="0" goto manual_Reentry
+if /i "%bs%"=="0" call "%main_program%"
 if /i "%bs%"=="1" goto DBstart_cleaning
 if /i "%bs%"=="e" goto DBsalida
 if /i "%bs%"=="i" goto DBshowlist
@@ -235,7 +235,7 @@ echo Input "1" to exit the program
 echo.
 set /p bs="Enter your choice: "
 set bs=%bs:"=%
-if /i "%bs%"=="0" goto manual_Reentry
+if /i "%bs%"=="0" call "%main_program%"
 if /i "%bs%"=="1" goto salida
 goto s_exit_choice
 

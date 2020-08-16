@@ -43,7 +43,7 @@ set bs=%bs:"=%
 if /i "%bs%"=="3" goto showlist
 if /i "%bs%"=="2" goto delist
 if /i "%bs%"=="1" goto dostart
-if /i "%bs%"=="0" goto manual_Reentry
+if /i "%bs%"=="0" call "%main_program%"
 echo.
 echo BAD CHOICE
 goto prevlist0
@@ -73,7 +73,7 @@ set eval=%eval:"=%
 setlocal enabledelayedexpansion
 echo+ >"%uinput%"
 endlocal
-if /i "%eval%"=="0" goto manual_Reentry
+if /i "%eval%"=="0" call "%main_program%"
 if /i "%eval%"=="1" ( %pycommand% "%sq_lc%" -lib_call listmanager selector2list -xarg "%list_folder%\6_2list.txt" mode=folder ext="nsp xci nsz xcz nsx" ) 2>&1>NUL
 if /i "%eval%"=="2" ( %pycommand% "%sq_lc%" -lib_call listmanager selector2list -xarg "%list_folder%\6_2list.txt" mode=file ext="nsp xci nsz xcz nsx" ) 2>&1>NUL
 if /i "%eval%"=="3" ( %pycommand% "%sq_lc%" -lib_call picker_walker select_from_local_libraries -xarg "%list_folder%\6_2list.txt" "extlist=nsp xci nsz xcz nsx" )
@@ -106,7 +106,7 @@ setlocal enabledelayedexpansion
 echo+ >"%uinput%"
 endlocal
 
-if /i "%eval%"=="0" goto manual_Reentry
+if /i "%eval%"=="0" call "%main_program%"
 if /i "%eval%"=="1" goto dostart
 if /i "%eval%"=="2" ( %pycommand% "%sq_lc%" -lib_call listmanager selector2list -xarg  "%list_folder%\6_2list.txt" mode=folder ext="nsp xci nsz xcz nsx" ) 2>&1>NUL
 if /i "%eval%"=="3" ( %pycommand% "%sq_lc%" -lib_call listmanager selector2list -xarg  "%list_folder%\6_2list.txt" mode=file ext="nsp xci nsz xcz nsx" )  2>&1>NUL

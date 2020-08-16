@@ -247,7 +247,7 @@ echo Input "1" to exit the program
 echo.
 set /p bs="Enter your choice: "
 set bs=%bs:"=%
-if /i "%bs%"=="0" goto manual_Reentry
+if /i "%bs%"=="0" call "%main_program%"
 if /i "%bs%"=="1" goto salida
 goto s_exit_choice
 
