@@ -3,12 +3,11 @@
 :: MULTI-MODE
 ::///////////////////////////////////////////////////
 ::///////////////////////////////////////////////////
-
-:multimode
-if exist %w_folder% RD /S /Q "%w_folder%" >NUL 2>&1
-if exist "%list_folder%\a_multi" RD /S /Q "%list_folder%\a_multi" >NUL 2>&1
+CD /d "%prog_dir%"
 cls
 call "%nscb_logos%" "program_logo"
+if exist %w_folder% RD /S /Q "%w_folder%" >NUL 2>&1
+if exist "%list_folder%\a_multi" RD /S /Q "%list_folder%\a_multi" >NUL 2>&1
 echo -----------------------------------------------
 echo MULTI-REPACK MODE ACTIVATED
 echo -----------------------------------------------
@@ -152,7 +151,7 @@ set bs=%bs:"=%
 :showlist
 cls
 call "%nscb_logos%" "program_logo"
-%pycommand% "%sq_lc%" -lib_call listmanager printcurrent -xarg  "%list_folder%\1_1list.txt" "all" "counter=True"
+%pycommand% "%sq_lc%" -lib_call listmanager printcurrent -xarg  "%list_folder%\2_0list.txt" "all" "counter=True"
 goto checkagain
 
 :m_cl_wrongchoice

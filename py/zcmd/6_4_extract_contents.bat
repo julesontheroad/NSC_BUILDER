@@ -67,7 +67,7 @@ echo Input "4" to add files to list via folder-walker
 echo Input "0" to return to the MODE SELECTION MENU
 ECHO ***********************************************
 echo.
-%pycommand% "%squirrel%" -t nsp xci -tfile "%list_folder%\6_4list.txt" -uin "%uinput%" -ff "uinput"
+%pycommand% "%sq_lc%" -lib_call cmd.cmd_tools userinput -xarg "%list_folder%\6_4list.txt" ext="nsp xci" userfile="%uinput%"
 set /p eval=<"%uinput%"
 set eval=%eval:"=%
 setlocal enabledelayedexpansion
@@ -99,7 +99,7 @@ ECHO *************************************************
 echo Or Input "0" to return to the MODE SELECTION MENU
 ECHO *************************************************
 echo.
-%pycommand% "%squirrel%" -t nsp xci -tfile "%list_folder%\6_4list.txt" -uin "%uinput%" -ff "uinput"
+%pycommand% "%sq_lc%" -lib_call cmd.cmd_tools userinput -xarg "%list_folder%\6_4list.txt" ext="nsp xci" userfile="%uinput%"
 set /p eval=<"%uinput%"
 set eval=%eval:"=%
 setlocal enabledelayedexpansion
@@ -115,59 +115,19 @@ if /i "%eval%"=="5" ( %pycommand% "%sq_lc%" -lib_call picker_walker get_files_fr
 if /i "%eval%"=="e" goto salida
 if /i "%eval%"=="i" goto showlist
 if /i "%eval%"=="r" goto r_files
-if /i "%eval%"=="z" del ("%list_folder%\6_4list.txt") 2>&1>NUL
+if /i "%eval%"=="z" ( del "%list_folder%\6_4list.txt" ) 2>&1>NUL
 
 goto checkagain
 
 :r_files
 set /p bs="Input the number of files you want to remove (from bottom): "
 set bs=%bs:"=%
-
-setlocal enabledelayedexpansion
-set conta=
-for /f "tokens=*" %%f in (lists/6_4list.txt) do (
-set /a conta=!conta! + 1
-)
-
-set /a pos1=!conta!-!bs!
-set /a pos2=!conta!
-set string=
-
-:update_list1
-if !pos1! GTR !pos2! ( goto :update_list2 ) else ( set /a pos1+=1 )
-set string=%string%,%pos1%
-goto :update_list1
-:update_list2
-set string=%string%,
-set skiplist=%string%
-Set "skip=%skiplist%"
-setlocal DisableDelayedExpansion
-(for /f "tokens=1,*delims=:" %%a in (' findstr /n "^" ^<lists/6_4list.txt'
-) do Echo=%skip%|findstr ",%%a," 2>&1>NUL ||Echo=%%b
-)>lists/6_4list.txt.new
-endlocal
-move /y "lists/6_4list.txt.new" "lists/6_4list.txt" >nul
-endlocal
+%pycommand% "%sq_lc%" -lib_call listmanager remove_from_botton -xarg  "%list_folder%\6_4list.txt" "%bs%"
 
 :showlist
 cls
 call "%nscb_logos%" "program_logo"
-ECHO -------------------------------------------------
-ECHO                 FILES TO PROCESS
-ECHO -------------------------------------------------
-for /f "tokens=*" %%f in (lists/6_4list.txt) do (
-echo %%f
-)
-setlocal enabledelayedexpansion
-set conta=
-for /f "tokens=*" %%f in (lists/6_4list.txt) do (
-set /a conta=!conta! + 1
-)
-echo .................................................
-echo YOU'VE ADDED !conta! FILES TO PROCESS
-echo .................................................
-endlocal
-
+%pycommand% "%sq_lc%" -lib_call listmanager printcurrent -xarg  "%list_folder%\6_4list.txt" "all" "counter=True"
 goto checkagain
 
 :s_cl_wrongchoice
