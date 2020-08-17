@@ -189,19 +189,6 @@ endlocal
 ECHO ---------------------------------------------------
 ECHO *********** ALL FILES WERE PROCESSED! *************
 ECHO ---------------------------------------------------
-:SPLIT_exit_choice
-if exist "%list_folder%\3_0list.txt" del "%list_folder%\3_0list.txt"
-if /i "%va_exit%"=="true" echo PROGRAM WILL CLOSE NOW
-if /i "%va_exit%"=="true" ( PING -n 2 127.0.0.1 >NUL 2>&1 )
-if /i "%va_exit%"=="true" goto salida
-echo.
-echo Input "0" to go back to the mode selection
-echo Input "1" to exit the program
-echo.
-set /p bs="Enter your choice: "
-set bs=%bs:"=%
-if /i "%bs%"=="0" call "%main_program%"
-if /i "%bs%"=="1" goto salida
 goto SPLIT_exit_choice
 
 :split_content
@@ -220,4 +207,17 @@ call "%nscb_logos%" "thumbup"
 call "%nscb_logos%" "delay"
 exit /B
 
-
+:SPLIT_exit_choice
+if exist "%prog_dir%lists\3_0list.txt" ( call "%nscb_tools%" "delete_if_empty" "3_0list.txt" )
+if /i "%va_exit%"=="true" echo PROGRAM WILL CLOSE NOW
+if /i "%va_exit%"=="true" ( PING -n 2 127.0.0.1 >NUL 2>&1 )
+if /i "%va_exit%"=="true" goto salida
+echo.
+echo Input "0" to go back to the mode selection
+echo Input "1" to exit the program
+echo.
+set /p bs="Enter your choice: "
+set bs=%bs:"=%
+if /i "%bs%"=="0" call "%main_program%"
+if /i "%bs%"=="1" goto salida
+goto SPLIT_exit_choice

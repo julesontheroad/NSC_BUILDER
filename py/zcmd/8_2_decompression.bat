@@ -1,28 +1,28 @@
 REM //////////////////////////////////////////////////
 REM /////////////////////////////////////////////////
-REM FILE RESTORATION
+REM DECOMPRESSION MODE
 REM /////////////////////////////////////////////////
 REM ////////////////////////////////////////////////
 CD /d "%prog_dir%"
 cls
 call "%nscb_logos%" "program_logo"
 echo -------------------------------------------------
-echo FILE RESTORATION ACTIVATED
+echo ZSTANDARD DECOMPRESSOR ACTIVATED
 echo -------------------------------------------------
-if exist "%list_folder%\9_1list.txt" goto prevlist
+if exist "%list_folder%\8_2list.txt" goto prevlist
 goto manual_INIT
 :prevlist
 set conta=0
-for /f "tokens=*" %%f in ( lists/9_1list.txt ) do (
+for /f "tokens=*" %%f in ( lists/8_2list.txt ) do (
 echo %%f
 ) >NUL 2>&1
 setlocal enabledelayedexpansion
-for /f "tokens=*" %%f in ( lists/9_1list.txt ) do (
+for /f "tokens=*" %%f in ( lists/8_2list.txt ) do (
 set /a conta=!conta! + 1
 ) >NUL 2>&1
-if !conta! LEQ 0 ( del "%list_folder%\9_1list.txt" )
+if !conta! LEQ 0 ( del "%list_folder%\8_2list.txt" )
 endlocal
-if not exist "%list_folder%\9_1list.txt" goto manual_INIT
+if not exist "%list_folder%\8_2list.txt" goto manual_INIT
 ECHO .......................................................
 ECHO A PREVIOUS LIST WAS FOUND. WHAT DO YOU WANT TO DO?
 :prevlist0
@@ -49,11 +49,11 @@ echo.
 echo BAD CHOICE
 goto prevlist0
 :delist
-del "%list_folder%\9_1list.txt"
+del "%list_folder%\8_2list.txt"
 cls
 call "%nscb_logos%" "program_logo"
 echo -------------------------------------------------
-echo FILE RESTORATION ACTIVATED
+echo ZSTANDARD DECOMPRESSOR ACTIVATED
 echo -------------------------------------------------
 echo ..................................
 echo YOU'VE DECIDED TO START A NEW LIST
@@ -69,17 +69,17 @@ echo Input "4" to select files via folder-walker
 echo Input "0" to return to the MODE SELECTION MENU
 ECHO ***********************************************
 echo.
-%pycommand% "%sq_lc%" -lib_call cmd.cmd_tools userinput -xarg "%list_folder%\9_1list.txt" ext="nsp xci" userfile="%uinput%"    
+%pycommand% "%sq_lc%" -lib_call cmd.cmd_tools userinput -xarg "%list_folder%\8_2list.txt" ext="nsz xcz" userfile="%uinput%"    
 set /p eval=<"%uinput%"
 set eval=%eval:"=%
 setlocal enabledelayedexpansion
 echo+ >"%uinput%"
 endlocal
 if /i "%eval%"=="0" exit /B
-if /i "%eval%"=="1" ( %pycommand% "%sq_lc%" -lib_call listmanager selector2list -xarg "%list_folder%\9_1list.txt" mode=folder ext="nsp xci" ) 2>&1>NUL
-if /i "%eval%"=="2" ( %pycommand% "%sq_lc%" -lib_call listmanager selector2list -xarg "%list_folder%\9_1list.txt" mode=file ext="nsp xci" ) 2>&1>NUL
-if /i "%eval%"=="3" ( %pycommand% "%sq_lc%" -lib_call picker_walker select_from_local_libraries -xarg "%list_folder%\9_1list.txt" "extlist=nsp xci" )
-if /i "%eval%"=="4" ( %pycommand% "%sq_lc%" -lib_call picker_walker get_files_from_walk -xarg "%list_folder%\9_1list.txt" "extlist=nsp xci" )
+if /i "%eval%"=="1" ( %pycommand% "%sq_lc%" -lib_call listmanager selector2list -xarg "%list_folder%\8_2list.txt" mode=folder ext="nsz xcz" ) 2>&1>NUL
+if /i "%eval%"=="2" ( %pycommand% "%sq_lc%" -lib_call listmanager selector2list -xarg "%list_folder%\8_2list.txt" mode=file ext="nsz xcz" ) 2>&1>NUL
+if /i "%eval%"=="3" ( %pycommand% "%sq_lc%" -lib_call picker_walker select_from_local_libraries -xarg "%list_folder%\8_2list.txt" "extlist=nsz xcz" )
+if /i "%eval%"=="4" ( %pycommand% "%sq_lc%" -lib_call picker_walker get_files_from_walk -xarg "%list_folder%\8_2list.txt" "extlist=nsz xcz" )
 goto checkagain
 echo.
 :checkagain
@@ -101,7 +101,7 @@ ECHO *************************************************
 echo Or Input "0" to return to the MODE SELECTION MENU
 ECHO *************************************************
 echo.
-%pycommand% "%sq_lc%" -lib_call cmd.cmd_tools userinput -xarg "%list_folder%\9_1list.txt" ext="nsp xci" userfile="%uinput%"    
+%pycommand% "%sq_lc%" -lib_call cmd.cmd_tools userinput -xarg "%list_folder%\8_2list.txt" ext="nsz xcz" userfile="%uinput%"    
 set /p eval=<"%uinput%"
 set eval=%eval:"=%
 setlocal enabledelayedexpansion
@@ -110,78 +110,43 @@ endlocal
 
 if /i "%eval%"=="0" exit /B
 if /i "%eval%"=="1" goto start
-if /i "%eval%"=="2" ( %pycommand% "%sq_lc%" -lib_call listmanager selector2list -xarg "%list_folder%\9_1list.txt" mode=folder ext="nsp xci" ) 2>&1>NUL
-if /i "%eval%"=="3" ( %pycommand% "%sq_lc%" -lib_call listmanager selector2list -xarg "%list_folder%\9_1list.txt" mode=file ext="nsp xci" ) 2>&1>NUL
-if /i "%eval%"=="4" ( %pycommand% "%sq_lc%" -lib_call picker_walker select_from_local_libraries -xarg "%list_folder%\9_1list.txt" "extlist=nsp xci" )
-if /i "%eval%"=="5" ( %pycommand% "%sq_lc%" -lib_call picker_walker get_files_from_walk -xarg "%list_folder%\9_1list.txt" "extlist=nsp xci" )
+if /i "%eval%"=="2" ( %pycommand% "%sq_lc%" -lib_call listmanager selector2list -xarg "%list_folder%\8_2list.txt" mode=folder ext="nsz xcz" ) 2>&1>NUL
+if /i "%eval%"=="3" ( %pycommand% "%sq_lc%" -lib_call listmanager selector2list -xarg "%list_folder%\8_2list.txt" mode=file ext="nsz xcz" ) 2>&1>NUL
+if /i "%eval%"=="4" ( %pycommand% "%sq_lc%" -lib_call picker_walker select_from_local_libraries -xarg "%list_folder%\8_2list.txt" "extlist=nsz xcz" )
+if /i "%eval%"=="5" ( %pycommand% "%sq_lc%" -lib_call picker_walker get_files_from_walk -xarg "%list_folder%\8_2list.txt" "extlist=nsz xcz" )
 if /i "%eval%"=="e" goto salida
 if /i "%eval%"=="i" goto showlist
 if /i "%eval%"=="r" goto r_files
-if /i "%eval%"=="z" ( del "%list_folder%\9_1list.txt" )
+if /i "%eval%"=="z" ( del "%list_folder%\8_2list.txt" )
 
 goto checkagain
 
 :r_files
 set /p bs="Input the number of files you want to remove (from bottom): "
 set bs=%bs:"=%
-%pycommand% "%sq_lc%" -lib_call listmanager remove_from_botton -xarg  "%list_folder%\9_1list.txt" "%bs%"
+%pycommand% "%sq_lc%" -lib_call listmanager remove_from_botton -xarg  "%list_folder%\8_2list.txt" "%bs%"
 
 :showlist
 cls
 call "%nscb_logos%" "program_logo"
-%pycommand% "%sq_lc%" -lib_call listmanager printcurrent -xarg  "%list_folder%\9_1list.txt" "all" "counter=True"
+%pycommand% "%sq_lc%" -lib_call listmanager printcurrent -xarg  "%list_folder%\8_2list.txt" "all" "counter=True"
 goto checkagain
 
 :s_cl_wrongchoice
 echo wrong choice
 echo ............
 :start
-echo *******************************************************
-echo CHOOSE HOW TO PROCESS THE FILES
-echo *******************************************************
-echo If the files where modified with NSCB from legit sources
-echo their nca files are restorable, if not you're not in luck
-echo.
-echo This mode will restore:
-echo   - Conversions between xci\nsp (done by NSCB)
-echo   - Titlerights removal operations
-echo   - Keygeneration and RSV changes
-echo.
-echo + Restoration of the link account patcher is not supported yet
-echo + Multicontent files need to be processed by the multicontent
-echo   splitter first in this first implementation.
-echo.
-echo ------------------------------------------
-echo Input "1" to process the files
-echo.
-ECHO ******************************************
-echo Or Input "b" to return to the list options
-ECHO ******************************************
-echo.
-set /p bs="Enter your choice: "
-set bs=%bs:"=%
-set vrepack=none
-if /i "%bs%"=="b" goto checkagain
-if /i "%bs%"=="1" goto restorefiles
-if %vrepack%=="none" goto s_cl_wrongchoice
-
-:restorefiles
 cls
 call "%nscb_logos%" "program_logo"
+echo **************************
+echo DECOMPRESS A NSZ\XCZ
+echo **************************
 CD /d "%prog_dir%"
-MD "%fold_output%" >NUL 2>&1
-for /f "tokens=*" %%f in ( lists/9_1list.txt ) do (
-MD "%w_folder%" >NUL 2>&1
+for /f "tokens=*" %%f in ( lists/8_2list.txt ) do (
 
-%pycommand% "%squirrel%" %buffer% -o "%w_folder%" %buffer% -tfile "%prog_dir%lists\9_1list.txt" --restore ""
-%pycommand% "%squirrel%" --strip_lines "%prog_dir%lists\9_1list.txt" "1" "true"
+%pycommand% "%squirrel%" -o "%fold_output%" -tfile "%list_folder%\8_2list.txt" --decompress "auto"
 
-move "%w_folder%\*.xci" "%fold_output%" >NUL 2>&1
-move  "%w_folder%\*.xc*" "%fold_output%" >NUL 2>&1
-move "%w_folder%\*.nsp" "%fold_output%" >NUL 2>&1
-move "%w_folder%\*.ns*" "%fold_output%" >NUL 2>&1
-
-RD /S /Q "%w_folder%" >NUL 2>&1
+%pycommand% "%squirrel%" --strip_lines "%list_folder%\8_2list.txt" "1" "true"
 )
 ECHO ---------------------------------------------------
 ECHO *********** ALL FILES WERE PROCESSED! *************
@@ -189,7 +154,7 @@ ECHO ---------------------------------------------------
 goto s_exit_choice
 
 :s_exit_choice
-if exist "%prog_dir%lists\9_1list.txt" ( call "%nscb_tools%" "delete_if_empty" "9_1list.txt" )
+if exist "%prog_dir%lists\8_2list.txt" ( call "%nscb_tools%" "delete_if_empty" "8_2list.txt" )
 if /i "%va_exit%"=="true" echo PROGRAM WILL CLOSE NOW
 if /i "%va_exit%"=="true" ( PING -n 2 127.0.0.1 >NUL 2>&1 )
 if /i "%va_exit%"=="true" goto salida
@@ -202,6 +167,3 @@ set bs=%bs:"=%
 if /i "%bs%"=="0" call "%main_program%"
 if /i "%bs%"=="1" goto salida
 goto s_exit_choice
-
-:salida
-exit /B

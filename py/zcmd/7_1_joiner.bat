@@ -1,32 +1,28 @@
-@ECHO OFF
-:TOP_INIT
-CD /d "%prog_dir%"
-
 REM //////////////////////////////////////////////////
 REM /////////////////////////////////////////////////
 REM FILE JOINER
 REM /////////////////////////////////////////////////
 REM ////////////////////////////////////////////////
-:normalmode
+CD /d "%prog_dir%"
 cls
-call :program_logo
+call "%nscb_logos%" "program_logo"
 echo -------------------------------------------------
 echo FILE JOINER ACTIVATED
 echo -------------------------------------------------
-if exist "joinlist.txt" goto prevlist
+if exist "%list_folder%\7_1list.txt" goto prevlist
 goto manual_INIT
 :prevlist
 set conta=0
-for /f "tokens=*" %%f in (joinlist.txt) do (
+for /f "tokens=*" %%f in ( lists/7_1list.txt ) do (
 echo %%f
 ) >NUL 2>&1
 setlocal enabledelayedexpansion
-for /f "tokens=*" %%f in (joinlist.txt) do (
+for /f "tokens=*" %%f in ( lists/7_1list.txt ) do (
 set /a conta=!conta! + 1
 ) >NUL 2>&1
-if !conta! LEQ 0 ( del joinlist.txt )
+if !conta! LEQ 0 ( del "%list_folder%\7_1list.txt" )
 endlocal
-if not exist "joinlist.txt" goto manual_INIT
+if not exist "%list_folder%\7_1list.txt" goto manual_INIT
 ECHO .......................................................
 ECHO A PREVIOUS LIST WAS FOUND. WHAT DO YOU WANT TO DO?
 :prevlist0
@@ -53,7 +49,7 @@ echo.
 echo BAD CHOICE
 goto prevlist0
 :delist
-del joinlist.txt
+del "%list_folder%\7_1list.txt"
 cls
 call :program_logo
 echo -------------------------------------------------
@@ -73,17 +69,17 @@ echo Input "4" to select files via folder-walker
 echo Input "0" to return to the MODE SELECTION MENU
 ECHO ***********************************************
 echo.
-%pycommand% "%squirrel%" -t ns0 xc0 00 -tfile "%prog_dir%joinlist.txt" -uin "%uinput%" -ff "uinput"
+%pycommand% "%sq_lc%" -lib_call cmd.cmd_tools userinput -xarg "%list_folder%\7_1list.txt" ext="ns0 xc0 00" userfile="%uinput%"    
 set /p eval=<"%uinput%"
 set eval=%eval:"=%
 setlocal enabledelayedexpansion
 echo+ >"%uinput%"
 endlocal
 if /i "%eval%"=="0" exit /B
-if /i "%eval%"=="1" ( %pycommand% "%sq_lc%" -lib_call listmanager selector2list -xarg "%prog_dir%joinlist.txt" mode=folder ext="ns0 xc0 00" ) 2>&1>NUL
-if /i "%eval%"=="2" ( %pycommand% "%sq_lc%" -lib_call listmanager selector2list -xarg "%prog_dir%joinlist.txt" mode=file ext="ns0 xc0 00" ) 2>&1>NUL
-if /i "%eval%"=="3" ( %pycommand% "%sq_lc%" -lib_call picker_walker select_from_local_libraries -xarg "%prog_dir%joinlist.txt" "extlist=ns0 xc0 00" )
-if /i "%eval%"=="4" ( %pycommand% "%sq_lc%" -lib_call picker_walker get_files_from_walk -xarg "%prog_dir%joinlist.txt" "extlist=ns0 xc0 00" )
+if /i "%eval%"=="1" ( %pycommand% "%sq_lc%" -lib_call listmanager selector2list -xarg "%list_folder%\7_1list.txt" mode=folder ext="ns0 xc0 00" ) 2>&1>NUL
+if /i "%eval%"=="2" ( %pycommand% "%sq_lc%" -lib_call listmanager selector2list -xarg "%list_folder%\7_1list.txt" mode=file ext="ns0 xc0 00" ) 2>&1>NUL
+if /i "%eval%"=="3" ( %pycommand% "%sq_lc%" -lib_call picker_walker select_from_local_libraries -xarg "%list_folder%\7_1list.txt" "extlist=ns0 xc0 00" )
+if /i "%eval%"=="4" ( %pycommand% "%sq_lc%" -lib_call picker_walker get_files_from_walk -xarg "%list_folder%\7_1list.txt" "extlist=ns0 xc0 00" )
 goto checkagain
 echo.
 :checkagain
@@ -105,7 +101,7 @@ ECHO *************************************************
 echo Or Input "0" to return to the MODE SELECTION MENU
 ECHO *************************************************
 echo.
-%pycommand% "%squirrel%" -t ns0 xc0 00 -tfile "%prog_dir%joinlist.txt" -uin "%uinput%" -ff "uinput"
+%pycommand% "%sq_lc%" -lib_call cmd.cmd_tools userinput -xarg "%list_folder%\7_1list.txt" ext="ns0 xc0 00" userfile="%uinput%"    
 set /p eval=<"%uinput%"
 set eval=%eval:"=%
 setlocal enabledelayedexpansion
@@ -114,69 +110,26 @@ endlocal
 
 if /i "%eval%"=="0" exit /B
 if /i "%eval%"=="1" goto start
-if /i "%eval%"=="2" ( %pycommand% "%sq_lc%" -lib_call listmanager selector2list -xarg "%prog_dir%joinlist.txt" mode=folder ext="ns0 xc0 00" ) 2>&1>NUL
-if /i "%eval%"=="3" ( %pycommand% "%sq_lc%" -lib_call listmanager selector2list -xarg "%prog_dir%joinlist.txt" mode=file ext="ns0 xc0 00" ) 2>&1>NUL
-if /i "%eval%"=="4" ( %pycommand% "%sq_lc%" -lib_call picker_walker select_from_local_libraries -xarg "%prog_dir%joinlist.txt" "extlist=ns0 xc0 00" )
-if /i "%eval%"=="5" ( %pycommand% "%sq_lc%" -lib_call picker_walker get_files_from_walk -xarg "%prog_dir%joinlist.txt" "extlist=ns0 xc0 00" )
+if /i "%eval%"=="2" ( %pycommand% "%sq_lc%" -lib_call listmanager selector2list -xarg "%list_folder%\7_1list.txt" mode=folder ext="ns0 xc0 00" ) 2>&1>NUL
+if /i "%eval%"=="3" ( %pycommand% "%sq_lc%" -lib_call listmanager selector2list -xarg "%list_folder%\7_1list.txt" mode=file ext="ns0 xc0 00" ) 2>&1>NUL
+if /i "%eval%"=="4" ( %pycommand% "%sq_lc%" -lib_call picker_walker select_from_local_libraries -xarg "%list_folder%\7_1list.txt" "extlist=ns0 xc0 00" )
+if /i "%eval%"=="5" ( %pycommand% "%sq_lc%" -lib_call picker_walker get_files_from_walk -xarg "%list_folder%\7_1list.txt" "extlist=ns0 xc0 00" )
 if /i "%eval%"=="e" goto salida
 if /i "%eval%"=="i" goto showlist
 if /i "%eval%"=="r" goto r_files
-if /i "%eval%"=="z" del joinlist.txt
+if /i "%eval%"=="z" ( del "%list_folder%\7_1list.txt" )
 
 goto checkagain
 
 :r_files
 set /p bs="Input the number of files you want to remove (from bottom): "
 set bs=%bs:"=%
-
-setlocal enabledelayedexpansion
-set conta=
-for /f "tokens=*" %%f in (joinlist.txt) do (
-set /a conta=!conta! + 1
-)
-
-set /a pos1=!conta!-!bs!
-set /a pos2=!conta!
-set string=
-
-:update_list1
-if !pos1! GTR !pos2! ( goto :update_list2 ) else ( set /a pos1+=1 )
-set string=%string%,%pos1%
-goto :update_list1
-:update_list2
-set string=%string%,
-set skiplist=%string%
-Set "skip=%skiplist%"
-setlocal DisableDelayedExpansion
-(for /f "tokens=1,*delims=:" %%a in (' findstr /n "^" ^<joinlist.txt'
-) do Echo=%skip%|findstr ",%%a," 2>&1>NUL ||Echo=%%b
-)>joinlist.txt.new
-endlocal
-move /y "joinlist.txt.new" "joinlist.txt" >nul
-endlocal
+%pycommand% "%sq_lc%" -lib_call listmanager remove_from_botton -xarg  "%list_folder%\7_1list.txt" "%bs%"
 
 :showlist
 cls
-call :program_logo
-echo -------------------------------------------------
-echo FILE JOINER ACTIVATED
-echo -------------------------------------------------
-ECHO -------------------------------------------------
-ECHO                 FILES TO PROCESS
-ECHO -------------------------------------------------
-for /f "tokens=*" %%f in (joinlist.txt) do (
-echo %%f
-)
-setlocal enabledelayedexpansion
-set conta=
-for /f "tokens=*" %%f in (joinlist.txt) do (
-set /a conta=!conta! + 1
-)
-echo .................................................
-echo YOU'VE ADDED !conta! FILES TO PROCESS
-echo .................................................
-endlocal
-
+call "%nscb_logos%" "program_logo"
+%pycommand% "%sq_lc%" -lib_call listmanager printcurrent -xarg  "%list_folder%\7_1list.txt" "all" "counter=True"
 goto checkagain
 
 :s_cl_wrongchoice
@@ -201,16 +154,15 @@ if %vrepack%=="none" goto s_cl_wrongchoice
 
 :joinfiles
 cls
-call :program_logo
+call "%nscb_logos%" "program_logo"
 CD /d "%prog_dir%"
-for /f "tokens=*" %%f in (joinlist.txt) do (
+for /f "tokens=*" %%f in ( lists/7_1list.txt ) do (
 
-%pycommand% "%squirrel%" %buffer% -o "%fold_output%" -tfile "%prog_dir%joinlist.txt" --joinfile ""
+%pycommand% "%squirrel%" %buffer% -o "%fold_output%" -tfile "%list_folder%\7_1list.txt" --joinfile ""
 if exist "%fold_output%\output.nsp" ( %pycommand% "%squirrel%" -t nsp -renf "%fold_output%\output.nsp" >NUL 2>&1)
 if exist "%fold_output%\output.xci" ( %pycommand% "%squirrel%" -t xci -renf "%fold_output%\output.xci" >NUL 2>&1)
 
-%pycommand% "%squirrel%" --strip_lines "%prog_dir%joinlist.txt"
-call :contador_NF
+%pycommand% "%squirrel%" --strip_lines "%list_folder%\7_1list.txt" "1" "true"
 )
 ECHO ---------------------------------------------------
 ECHO *********** ALL FILES WERE PROCESSED! *************
@@ -218,7 +170,7 @@ ECHO ---------------------------------------------------
 goto s_exit_choice
 
 :s_exit_choice
-if exist joinlist.txt del joinlist.txt
+if exist "%prog_dir%lists\7_1list.txt" ( call "%nscb_tools%" "delete_if_empty" "7_1list.txt" )
 if /i "%va_exit%"=="true" echo PROGRAM WILL CLOSE NOW
 if /i "%va_exit%"=="true" ( PING -n 2 127.0.0.1 >NUL 2>&1 )
 if /i "%va_exit%"=="true" goto salida
@@ -231,79 +183,6 @@ set bs=%bs:"=%
 if /i "%bs%"=="0" call "%main_program%"
 if /i "%bs%"=="1" goto salida
 goto s_exit_choice
-
-:contador_NF
-setlocal enabledelayedexpansion
-set /a conta=0
-for /f "tokens=*" %%f in (joinlist.txt) do (
-set /a conta=!conta! + 1
-)
-echo ...................................................
-echo STILL !conta! FILES TO PROCESS
-echo ...................................................
-PING -n 2 127.0.0.1 >NUL 2>&1
-set /a conta=0
-endlocal
-exit /B
-
-
-::///////////////////////////////////////////////////
-::SUBROUTINES
-::///////////////////////////////////////////////////
-
-:squirrell
-echo                    ,;:;;,
-echo                   ;;;;;
-echo           .=',    ;:;;:,
-echo          /_', "=. ';:;:;
-echo          @=:__,  \,;:;:'
-echo            _(\.=  ;:;;'
-echo           `"_(  _/="`
-echo            `"'
-exit /B
-
-:program_logo
-
-ECHO                                        __          _ __    __
-ECHO                  ____  _____ ____     / /_  __  __(_) /___/ /__  _____
-ECHO                 / __ \/ ___/ ___/    / __ \/ / / / / / __  / _ \/ ___/
-ECHO                / / / (__  ) /__     / /_/ / /_/ / / / /_/ /  __/ /
-ECHO               /_/ /_/____/\___/____/_.___/\__,_/_/_/\__,_/\___/_/
-ECHO                              /_____/
-ECHO -------------------------------------------------------------------------------------
-ECHO                         NINTENDO SWITCH CLEANER AND BUILDER
-ECHO                      (THE XCI MULTI CONTENT BUILDER AND MORE)
-ECHO -------------------------------------------------------------------------------------
-ECHO =============================     BY JULESONTHEROAD     =============================
-ECHO -------------------------------------------------------------------------------------
-ECHO "                                POWERED BY SQUIRREL                                "
-ECHO "                    BASED ON THE WORK OF BLAWAR AND LUCA FRAGA                     "
-ECHO                                    VERSION 1.00d
-ECHO -------------------------------------------------------------------------------------
-ECHO Program's github: https://github.com/julesontheroad/NSC_BUILDER
-ECHO Blawar's github:  https://github.com/blawar
-ECHO Luca Fraga's github: https://github.com/LucaFraga
-ECHO -------------------------------------------------------------------------------------
-exit /B
-
-:delay
-PING -n 2 127.0.0.1 >NUL 2>&1
-exit /B
-
-:thumbup
-echo.
-echo    /@
-echo    \ \
-echo  ___\ \
-echo (__O)  \
-echo (____@) \
-echo (____@)  \
-echo (__o)_    \
-echo       \    \
-echo.
-echo HOPE YOU HAVE A FUN TIME
-exit /B
-
 
 :salida
 exit /B

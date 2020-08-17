@@ -212,7 +212,7 @@ ECHO ---------------------------------------------------
 goto s_exit_choice
 
 :s_exit_choice
-call "%nscb_tools%" "delete_if_empty" "6_6list.txt"
+if exist "%prog_dir%lists\6_6list.txt" ( call "%nscb_tools%" "delete_if_empty" "6_6list.txt" )
 if /i "%va_exit%"=="true" echo PROGRAM WILL CLOSE NOW
 if /i "%va_exit%"=="true" ( PING -n 2 127.0.0.1 >NUL 2>&1 )
 if /i "%va_exit%"=="true" goto salida
