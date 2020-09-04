@@ -2166,7 +2166,7 @@ class Nca(File):
 		nca_id=self.header.titleId	
 		cr2=str(hex(crypto2))[2:]
 		trstart=str(nca_id)
-		if str(self.header.contentType) == 'Content.PROGRAM':
+		if str(self.header.contentType) == 'Content.PROGRAM' or str(self.header.contentType) == 'Content.MANUAL':
 			trstart=nca_id[:-3]+'000'
 		if len(str(cr2))==1:
 			tr=trstart+'000000000000000'+str(cr2) 	
