@@ -1851,6 +1851,23 @@ class Nca(File):
 	def get_sdkversion(self):		
 		sdkversion=str(self.header.sdkVersion4)+'.'+str(self.header.sdkVersion3)+'.'+str(self.header.sdkVersion2)+'.'+str(self.header.sdkVersion1)	
 		return sdkversion
+		
+	def simple_sig_check(self):	
+		self.rewind()
+		sign1 = self.header.signature1
+		hcrypto = aes128.AESXTS(uhx(Keys.get('header_key')))
+		self.header.rewind()
+		orig_header= self.header.read(0xC00)
+		self.header.seek(0x200)	
+		headdata = self.header.read(0x200)
+		if self.header.getSigKeyGen() == 0:
+			pubkey=RSA.RsaKey(n=nca_header_fixed_key_modulus_00, e=RSA_PUBLIC_EXPONENT)
+		else:
+			pubkey=RSA.RsaKey(n=nca_header_fixed_key_modulus_01, e=RSA_PUBLIC_EXPONENT)
+		rsapss = PKCS1_PSS.new(pubkey)
+		digest = SHA256.new(headdata)			
+		verification=rsapss.verify(digest, sign1)
+		return verification		
 
 	def verify(self,feed,targetkg=False,endcheck=False,progress=False,bar=False):	
 		if feed == False:

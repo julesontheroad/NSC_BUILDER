@@ -7025,18 +7025,25 @@ class Xci(File):
 					if str(file._path) == target:
 						if type(file) == Nca:
 							gc_flag=file.header.getgamecard()
-							if gc_flag != 0:
-								if gamecard==False:
-									gc_flag='00'*0x01								
+							unmod=file.simple_sig_check()
+							if not unmod:
+								if gc_flag != 0:
+									if gamecard==False:
+										gc_flag='00'*0x01								
+									else:
+										gc_flag='01'*0x01
+								elif gc_flag == 0:
+									if gamecard==True:
+										gc_flag='01'*0x01								
+									else:
+										gc_flag='00'*0x01							
 								else:
-									gc_flag='01'*0x01
-							elif gc_flag == 0:
-								if gamecard==True:
-									gc_flag='01'*0x01								
-								else:
-									gc_flag='00'*0x01							
+									gc_flag='00'*0x01
 							else:
-								gc_flag='00'*0x01					
+								if gc_flag==0:
+									gc_flag='00'*0x01
+								else:
+									gc_flag='01'*0x01							
 							file.rewind()			
 							crypto1=file.header.getCryptoType()
 							crypto2=file.header.getCryptoType2()	
@@ -7045,7 +7052,9 @@ class Xci(File):
 								masterKeyRev=crypto2
 							if crypto2<=crypto1:	
 								masterKeyRev=crypto1						
-							if file.header.getRightsId() != 0:	
+							if file.header.getRightsId() != 0:
+								if not unmod:
+									gc_flag='00'*0x01							
 								for i in range(len(ticketlist)):			
 									#print(str(file.header.rightsId))	
 									#print(ticketlist[i][1])								
