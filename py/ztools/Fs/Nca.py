@@ -136,8 +136,13 @@ class NcaHeader(File):
 			
 		for i in range(4):
 			self.sectionHashes.append(self.sectionTables[i])
+			
+		if self.cryptoType > self.cryptoType2:								
+			self.masterKeyRev=self.cryptoType
+		else:			
+			self.masterKeyRev=self.cryptoType2				
 
-		self.masterKey = (self.cryptoType if self.cryptoType > self.cryptoType2 else self.cryptoType2)-1
+		self.masterKey = self.masterKeyRev-1
 
 		if self.masterKey < 0:
 			self.masterKey = 0
@@ -1846,6 +1851,23 @@ class Nca(File):
 	def get_sdkversion(self):		
 		sdkversion=str(self.header.sdkVersion4)+'.'+str(self.header.sdkVersion3)+'.'+str(self.header.sdkVersion2)+'.'+str(self.header.sdkVersion1)	
 		return sdkversion
+		
+	def simple_sig_check(self):	
+		self.rewind()
+		sign1 = self.header.signature1
+		hcrypto = aes128.AESXTS(uhx(Keys.get('header_key')))
+		self.header.rewind()
+		orig_header= self.header.read(0xC00)
+		self.header.seek(0x200)	
+		headdata = self.header.read(0x200)
+		if self.header.getSigKeyGen() == 0:
+			pubkey=RSA.RsaKey(n=nca_header_fixed_key_modulus_00, e=RSA_PUBLIC_EXPONENT)
+		else:
+			pubkey=RSA.RsaKey(n=nca_header_fixed_key_modulus_01, e=RSA_PUBLIC_EXPONENT)
+		rsapss = PKCS1_PSS.new(pubkey)
+		digest = SHA256.new(headdata)			
+		verification=rsapss.verify(digest, sign1)
+		return verification		
 
 	def verify(self,feed,targetkg=False,endcheck=False,progress=False,bar=False):	
 		if feed == False:
@@ -2161,7 +2183,7 @@ class Nca(File):
 		nca_id=self.header.titleId	
 		cr2=str(hex(crypto2))[2:]
 		trstart=str(nca_id)
-		if str(self.header.contentType) == 'Content.PROGRAM':
+		if str(self.header.contentType) == 'Content.PROGRAM' or str(self.header.contentType) == 'Content.MANUAL':
 			trstart=nca_id[:-3]+'000'
 		if len(str(cr2))==1:
 			tr=trstart+'000000000000000'+str(cr2) 	

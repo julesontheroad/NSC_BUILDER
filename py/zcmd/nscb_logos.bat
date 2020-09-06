@@ -3,6 +3,7 @@ if "%~1" EQU "squirrell" goto :squirrell
 if "%~1" EQU "thumbup" goto :thumbup
 if "%~1" EQU "delay" goto :delay
 if "%~1" EQU "salida" goto :salida
+if "%~1" EQU "setup_title" goto :setup_title
 exit /B
 
 :program_logo
@@ -57,6 +58,11 @@ exit /B
 PING -n 2 127.0.0.1 >NUL 2>&1
 exit /B
 
+:setup_title
+Title NSC_Builder v1.00d -- Profile: %ofile_name% -- by JulesOnTheRoad
+exit /B
+
 :salida
 ::pause
 exit
+

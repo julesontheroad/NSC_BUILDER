@@ -24,17 +24,17 @@ echo .............................................................
 echo.
 set /p bs="Enter your choice: "
 set bs=%bs:"=%
-if /i "%bs%"=="1" goto G_INST
-if /i "%bs%"=="2" goto F_TR
-if /i "%bs%"=="3" goto AUTOUPDATE
-if /i "%bs%"=="4" goto INSTALLED
-if /i "%bs%"=="5" goto SAVES
-if /i "%bs%"=="6" goto DEV_INF
-if /i "%bs%"=="7" goto SX_AUTOLOADER
-if /i "%bs%"=="N" goto call_main
-if /i "%bs%"=="L" goto LegacyMode
-if /i "%bs%"=="D" goto GDMode
-if /i "%bs%"=="0" goto OPT_CONFIG
+if /i "%bs%"=="1" call "%cmdfolder%\M_1_0_mtpinstaller.bat"
+if /i "%bs%"=="2" call "%cmdfolder%\M_2_0_mtptransfer.bat"
+if /i "%bs%"=="3" call "%cmdfolder%\M_3_0_autoupdate.bat.bat"
+if /i "%bs%"=="4" call "%cmdfolder%\M_4_0_dump_uninstall.bat"
+if /i "%bs%"=="5" call "%cmdfolder%\M_5_0_saves.bat"
+if /i "%bs%"=="6" call "%cmdfolder%\M_6_0_information.bat"
+if /i "%bs%"=="7" call "%cmdfolder%\M_7_0_sx_autoloader.bat"
+if /i "%bs%"=="N" call "%main_program%"
+if /i "%bs%"=="L" call "%cmdfolder%\L_0_LEGACY.bat"
+if /i "%bs%"=="D" call "%cmdfolder%\D_0_DriveMode.bat"
+if /i "%bs%"=="0" call "%cmdfolder%\nscb_config.bat"
 goto MAIN
 
 :LegacyMode
@@ -49,7 +49,7 @@ exit /B
 cls
 call :program_logo
 echo -------------------------------------------------
-echo MTP - FILE TRANFER MODE ACTIVATED
+echo MTP - GAME INSTALLATION MODE ACTIVATED
 echo -------------------------------------------------
 echo *******************************************************
 echo SELECT FUNCTION

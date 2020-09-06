@@ -57,7 +57,7 @@ if __name__ == '__main__':
 		parser = argparse.ArgumentParser()
 		parser.add_argument('file',nargs='*')		
 		parser.add_argument('-lib_call','--library_call', nargs='+',  help="Call a library function within squirrel")
-		parser.add_argument('-xarg','--explicit_argument', nargs='+', help=argparse.SUPPRESS)#Explicit	arguments for lib_call for files with ","			
+		parser.add_argument('-xarg','--explicit_argument', nargs='+', help=argparse.SUPPRESS)	parser.add_argument('-mtpeval','--mtp_eval_link', nargs='+', help=argparse.SUPPRESS)
 		
 		args = parser.parse_args()
 
@@ -79,5 +79,26 @@ if __name__ == '__main__':
 				vret=secondary.call_library(args.library_call,args.explicit_argument)
 			else:
 				vret=secondary.call_library(args.library_call)
+				
+		if args.mtp_eval_link:
+			tfile=args.mtp_eval_link[0]
+			userfile=args.mtp_eval_link[1]			
+			link=input("Enter your choice: ")
+			link=link.strip()
+			if '&' in link:
+				varout='999'
+			elif len(link)<2:
+				varout=link
+			else:
+				varout='999'
+			with open(userfile,"w", encoding='utf8') as userinput:
+				userinput.write(varout)		
+			if link.startswith('https://1fichier.com'):
+				with open(tfile,"a", encoding='utf8') as textfile:
+					textfile.write(link+'\n')				
+			elif link.startswith('https://drive.google.com'):
+				with open(tfile,"a", encoding='utf8') as textfile:
+					textfile.write(link+'\n')	
+					
 	except BaseException as e:
 		print(e)
