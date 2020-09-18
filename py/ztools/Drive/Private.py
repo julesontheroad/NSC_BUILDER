@@ -886,14 +886,14 @@ def move(origin,destiny,originTD,destinyTD):
 def rename(filepath=None,newname=None,TD=None,remote=None):	
 	if remote==None:
 		if 	TD!= None:
-			remote=location(route=path,TD_Name=TD)
+			remote=location(route=filepath,TD_Name=TD)
 		else:
-			remote=location(route=path)
+			remote=location(route=filepath)
 	fileId=remote.ID
 	name=remote.name
 	file = remote.drive_service.files().update(fileId=fileId,
-										oldTitle=name,
-										newTitle=newname,
+										supportsAllDrives='true',
+										body={'name': newname},
 										fields='id, name').execute()		
 	finalname=file.get('name')
 	print("{} renamed to {}".format(name,finalname))
