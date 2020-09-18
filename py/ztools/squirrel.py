@@ -5869,6 +5869,7 @@ if __name__ == '__main__':
 					############################
 					f = Fs.Nca(filename, 'r+b')
 					f.write_cnmt_titleid(value)
+					f.write_cnmt_updid(value[:-4]+'80'+value[-1])
 					#print(hx(f.get_cnmt_titleid()))
 					f.flush()
 					f.close()
