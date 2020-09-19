@@ -3158,6 +3158,7 @@ if __name__ == '__main__':
 		# ...................................................
 		#parser.add_argument('-xci_untr', '--xci_untrim', nargs='+', help='Untrims xci')
 		if args.xci_untrim:
+			filename=None
 			if args.buffer:
 				for input in args.buffer:
 					try:
@@ -3172,18 +3173,20 @@ if __name__ == '__main__':
 						ofolder = input
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
-			else:
-				if args.text_file:
-					tfile=args.text_file
-					with open(tfile,"r+", encoding='utf8') as filelist:
-						filename = filelist.readline()
-						filename=os.path.abspath(filename.rstrip('\n'))
+			if args.text_file:
+				tfile=args.text_file
+				with open(tfile,"r+", encoding='utf8') as filelist:
+					filename = filelist.readline()
+					filename=os.path.abspath(filename.rstrip('\n'))
+					if not args.ofolder:
 						dir=os.path.dirname(os.path.abspath(filename))
 						ofolder =os.path.join(dir, 'output')
-				else:
-					for filename in args.xci_untrim:
+			elif not args.ofolder:
+				for filename in args.xci_untrim:
+					if filename.endswith('.xci'):
 						dir=os.path.dirname(os.path.abspath(filename))
 						ofolder =os.path.join(dir, 'output')
+						break
 			if not os.path.exists(ofolder):
 				os.makedirs(ofolder)
 			if args.fat:
@@ -3197,20 +3200,23 @@ if __name__ == '__main__':
 						Print.error('Exception: ' + str(e))
 			else:
 				fat="exfat"
-			for filepath in args.xci_untrim:
-				if filepath.endswith('.xci'):
-					try:
-						f = Fs.factory(filepath)
-						filename=os.path.basename(os.path.abspath(filepath))
-						#print(filename)
-						outfile = os.path.join(ofolder, filename)
-						#print(f.path)
-						f.open(filepath, 'rb')
-						f.untrim(buffer,outfile,ofolder,fat)
-						f.flush()
-						f.close()
-					except BaseException as e:
-						Print.error('Exception: ' + str(e))
+			if filename==None:	
+				for filepath in args.xci_untrim:
+					if filepath.endswith('.xci'):
+						filename=filepath
+			filepath=filename			
+			try:
+				f = Fs.factory(filepath)
+				filename=os.path.basename(os.path.abspath(filepath))
+				#print(filename)
+				outfile = os.path.join(ofolder, filename)
+				#print(f.path)
+				f.open(filepath, 'rb')
+				f.untrim(buffer,outfile,ofolder,fat)
+				f.flush()
+				f.close()
+			except BaseException as e:
+				Print.error('Exception: ' + str(e))
 			Status.close()
 		# ...................................................
 		# Take off deltas
