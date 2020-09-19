@@ -505,6 +505,7 @@ ECHO ******************************************
 echo.
 echo 1. DUMP ALL SAVES
 echo 2. SELECT WHAT SAVES TO DUMP
+echo 3. BACKUP ONLY CURRENTLY INSTALLED (DBI 155 or newer)
 echo.
 ECHO ******************************************
 echo Or Input "0" to return to the list options
@@ -513,13 +514,17 @@ echo.
 set /p bs="Enter your choice: "
 set bs=%bs:"=%
 set backup_all=none
+set onlyinstalled=none
 if /i "%bs%"=="0" goto MAIN
 if /i "%bs%"=="1" set "backup_all=True"
+if /i "%bs%"=="1" set "onlyinstalled=False"
 if /i "%bs%"=="2" set "backup_all=False"
-if /i "%bs%"=="3" goto delete_archived
+if /i "%bs%"=="2" set "onlyinstalled=False"
+if /i "%bs%"=="3" set "backup_all=True"
+if /i "%bs%"=="3" set "onlyinstalled=True"
 if %backup_all%=="none" goto SAVES_wrongchoice
 
-%pycommand% "%squirrel_lb%" -lib_call mtp.mtp_game_manager back_up_saves -xarg  %backup_all% %MTP_saves_Inline% %MTP_saves_AddTIDandVer% %romaji%
+%pycommand% "%squirrel_lb%" -lib_call mtp.mtp_game_manager back_up_saves -xarg  %backup_all% %MTP_saves_Inline% %MTP_saves_AddTIDandVer% %romaji% "" %onlyinstalled%
 echo.
 ECHO ---------------------------------------------------
 ECHO *********** ALL FILES WERE PROCESSED! *************
