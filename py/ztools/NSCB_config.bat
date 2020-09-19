@@ -1410,7 +1410,7 @@ echo ***************************************************************************
 echo FORCING NUT_DB UPDATE
 echo ***************************************************************************
 
-%pycommand% "%squirrel%" -lib_call nutdb force_refresh
+%pycommand% "%squirrel_lb%" -lib_call nutdb force_refresh
 
 echo ...........................................................................
 echo Input "0" to return to CONFIG MENU
@@ -1438,7 +1438,7 @@ echo .......................................................
 echo.
 set /p bs="Enter your choice: "
 if /i "%bs%"=="1" goto op_google_drive_account
-if /i "%bs%"=="2" ( %pycommand% "%squirrel%" -lib_call workers concurrent_cache )
+if /i "%bs%"=="2" ( %pycommand% "%squirrel_lb%" -lib_call workers concurrent_cache )
 if /i "%bs%"=="2" goto google_drive
 
 if /i "%bs%"=="0" goto sc1
@@ -1468,7 +1468,7 @@ echo.
 set /p bs="Enter the drive name: "
 set "token=%bs%"
 echo.
-%pycommand% "%squirrel%" -lib_call Drive.Private create_token -xarg "%token%" headless="False"
+%pycommand% "%squirrel_lb%" -lib_call Drive.Private create_token -xarg "%token%" headless="False"
 pause
 goto google_drive
 

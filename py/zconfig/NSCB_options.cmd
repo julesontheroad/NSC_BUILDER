@@ -181,3 +181,7 @@ set "MTP_pdrive_truecopy=True"
 :: Advanced installation options
 set "MTP_stc_installs=False"
 set "MTP_ptch_inst_spec=spec1"
+::--------------------------------------------------------------
+::Lib_call
+::--------------------------------------------------------------
+set "squirrel_lb=ztools\squirrel_lib_call.py"
