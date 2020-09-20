@@ -4,3 +4,4 @@ This is used by DBI since version 130, it will only work on atmosphere. You need
 This sysmodule is being developped by Xortroll and is also supported by goldleaf beta.
 
 https://github.com/XorTroll/fsp-usb
+https://github.com/XorTroll/Atmosphere/tree/fspusb
