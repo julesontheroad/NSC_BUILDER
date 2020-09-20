@@ -66,6 +66,7 @@ remote_lib_file = os.path.join(zconfig_dir, 'remote_libraries.txt')
 cache_lib_file= os.path.join(zconfig_dir, 'remote_cache_location.txt')
 _1fichier_token=os.path.join((os.path.join(zconfig_dir, 'credentials')),'_1fichier_token.tk')
 remote_lib_cache=os.path.join(zconfig_dir, 'remote_lib_cache')	
+xci_locations=os.path.join(zconfig_dir, 'mtp_xci_locations.txt')
 
 def libraries(tfile):
 	db={}
@@ -214,8 +215,9 @@ def gdrive_install(filename,destiny="SD",outfolder=None,ch_medium=True,check_fw=
 	URL='https://www.googleapis.com/drive/v3/files/'+remote.ID+'?alt=media'	
 	ext=name.split('.')
 	ext=ext[-1]
-	if not name.endswith('nsp') and not name.endswith('nsz'):
-		sys.exit(f"Extension not supported for direct instalation {ext} in {name}")	
+	if not name.endswith('nsp') and not name.endswith('nsz') and not  name.endswith('xci') and not name.endswith('xcz') :
+		print(f"Extension not supported for direct instalation {ext} in {name}")
+		return False
 	print("- Retrieving Space on device")
 	SD_ds,SD_fs,NAND_ds,NAND_fs,FW,device=get_storage_info()
 	print("- Calculating Installed size")	
@@ -304,11 +306,15 @@ def gdrive_install(filename,destiny="SD",outfolder=None,ch_medium=True,check_fw=
 					print("The update is a previous version than the installed on device.Skipping..")
 					listmanager.striplines(tfile,counter=True)
 					return False	
-		except:pass				
-	process=subprocess.Popen([nscb_mtp,"DriveInstall","-ori",URL,"-dst",destiny,"-name",name,"-size",sz,"-tk",token])
-	while process.poll()==None:
-		if process.poll()!=None:
-			process.terminate();	
+		except:pass			
+	if name.endswith('xci') or name.endswith('xcz'):
+		from mtpxci_remote import install_xci_csv
+		install_xci_csv(remote=remote,destiny=destiny,cachefolder=outfolder)
+	else:	
+		process=subprocess.Popen([nscb_mtp,"DriveInstall","-ori",URL,"-dst",destiny,"-name",name,"-size",sz,"-tk",token])
+		while process.poll()==None:
+			if process.poll()!=None:
+				process.terminate();	
 
 def public_gdrive_install(filepath,destiny="SD",truecopy=True,outfolder=None,ch_medium=True,check_fw=True,patch_keygen=False,ch_base=False,ch_other=False,installed_list=False):
 	check_connection()
@@ -323,8 +329,9 @@ def public_gdrive_install(filepath,destiny="SD",truecopy=True,outfolder=None,ch_
 	URL='https://www.googleapis.com/drive/v3/files/'+remote.ID+'?alt=media'	
 	ext=name.split('.')
 	ext=ext[-1]
-	if not name.endswith('nsp') and not name.endswith('nsz'):
-		sys.exit(f"Extension not supported for direct instalation {ext} in {name}")
+	if not name.endswith('nsp') and not name.endswith('nsz') and not  name.endswith('xci') and not name.endswith('xcz'):
+		print(f"Extension not supported for direct instalation {ext} in {name}")
+		return False
 	print("- Retrieving Space on device")
 	SD_ds,SD_fs,NAND_ds,NAND_fs,FW,device=get_storage_info()
 	print("- Calculating Installed size")	
@@ -413,11 +420,15 @@ def public_gdrive_install(filepath,destiny="SD",truecopy=True,outfolder=None,ch_
 					print("The update is a previous version than the installed on device.Skipping..")
 					listmanager.striplines(tfile,counter=True)
 					return False	
-		except:pass				
-	process=subprocess.Popen([nscb_mtp,"DriveInstall","-ori",URL,"-dst",destiny,"-name",name,"-size",sz,"-tk",token])
-	while process.poll()==None:
-		if process.poll()!=None:
-			process.terminate();		
+		except:pass			
+	if name.endswith('xci') or name.endswith('xcz'):
+		from mtpxci_remote import install_xci_csv
+		install_xci_csv(remote=remote,destiny=destiny,cachefolder=outfolder)
+	else:			
+		process=subprocess.Popen([nscb_mtp,"DriveInstall","-ori",URL,"-dst",destiny,"-name",name,"-size",sz,"-tk",token])
+		while process.poll()==None:
+			if process.poll()!=None:
+				process.terminate();		
 	
 def fichier_install(url,destiny="SD",ch_medium=True,ch_base=False,ch_other=False,installed_list=False):
 	check_connection()
@@ -738,7 +749,10 @@ def update_console_from_gd(libraries="all",destiny="SD",exclude_xci=True,priorit
 		except OSError:
 			os.remove(fp)	
 	print("1. Parsing games in device. Please Wait...")			
-	process=subprocess.Popen([nscb_mtp,"ShowInstalled","-tfile",games_installed_cache,"-show","false"],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+	if exclude_xci==True:
+		process=subprocess.Popen([nscb_mtp,"ShowInstalled","-tfile",games_installed_cache,"-show","false","-exci","true"],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+	else:	
+		process=subprocess.Popen([nscb_mtp,"ShowInstalled","-tfile",games_installed_cache,"-show","false","-exci","false","-xci_lc",xci_locations],stdout=subprocess.PIPE,stderr=subprocess.PIPE)	
 	while process.poll()==None:
 		if process.poll()!=None:
 			process.terminate();	

@@ -5,6 +5,8 @@
 *.xci
 *.ns*
 *.xc*
+*.nca
+*.ncz
 00
 0*
 *.7z
@@ -74,3 +76,4 @@ py/ztools/_mtp_cache_/sd_xci.txt
 py/MTP1.txt
 py/zconfig/_playlog_/*
 py/mtpxci.txt
+py/MTP2GD.txt

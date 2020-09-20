@@ -62,6 +62,7 @@ mtp_internal_lib=os.path.join(zconfig_dir,'mtp_SD_libraries.txt')
 storage_info=os.path.join(cachefolder, 'storage.csv')
 download_lib_file = os.path.join(zconfig_dir, 'mtp_download_libraries.txt')
 sx_autoloader_db=os.path.join(zconfig_dir, 'sx_autoloader_db')
+xci_locations=os.path.join(zconfig_dir, 'mtp_xci_locations.txt')
 
 def libraries(tfile):
 	db={}
@@ -120,7 +121,7 @@ def retrieve_registered():
 	except:pass		
 	print("1. Retrieving registered...")			
 	dbicsv=os.path.join(cachefolder,"registered.csv")
-	process=subprocess.Popen([nscb_mtp,"Download","-ori","4: Installed games\\InstalledApplications.csv","-dst",dbicsv],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+	process=subprocess.Popen([nscb_mtp,"Download","-ori","4: Installed gamesInstalledApplications.csv","-dst",dbicsv],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
 	while process.poll()==None:
 		if process.poll()!=None:
 			process.terminate();
@@ -152,7 +153,7 @@ def retrieve_xci_paths():
 				os.remove(fp)	
 	except:pass		
 	print("  * Parsing games in device. Please Wait...")			
-	process=subprocess.Popen([nscb_mtp,"Retrieve_XCI_paths","-tfile",sd_xci_cache,"-show","false"],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+	process=subprocess.Popen([nscb_mtp,"Retrieve_XCI_paths","-tfile",sd_xci_cache,"-show","false","-exci","false","-xci_lc",xci_locations],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
 	while process.poll()==None:
 		if process.poll()!=None:
 			process.terminate();	
@@ -387,10 +388,12 @@ def delete_archived():
 		print('STILL '+str(counter)+' FILES TO PROCESS')
 		print('...................................................') 				
 		
-def back_up_saves(backup_all=False,inline=False,tidandver=True,romaji=True,outfolder=None):	
+def back_up_saves(backup_all=False,inline=False,tidandver=True,romaji=True,outfolder=None,onlyInstalled=False):	
 	check_connection()
 	import zipfile 
 	from datetime import datetime
+	if outfolder=="":
+		outfolder=None
 	try:			
 		for f in os.listdir(cachefolder):
 			fp = os.path.join(cachefolder, f)
@@ -403,19 +406,27 @@ def back_up_saves(backup_all=False,inline=False,tidandver=True,romaji=True,outfo
 		outfolder=pick_download_folder()
 	if not os.path.exists(outfolder):	
 		os.makedirs(outfolder)		
-	process=subprocess.Popen([nscb_mtp,"ShowSaveGames","-saves",valid_saves_cache,"-show","False"])				
+	if onlyInstalled==True:	
+		process=subprocess.Popen([nscb_mtp,"ShowSaveGames","-saves",valid_saves_cache,"-show","False","-oinst","True"])
+	else:
+		process=subprocess.Popen([nscb_mtp,"ShowSaveGames","-saves",valid_saves_cache,"-show","False","-oinst","False"])	
 	while process.poll()==None:
 		if process.poll()!=None:
 			process.terminate();	
 	if not os.path.exists(valid_saves_cache):
 		sys.exit("Savegames couldn't be retrieved")		
-	valid_saves=[]		
+	valid_saves=[];options=[]		
 	with open(valid_saves_cache,'rt',encoding='utf8') as tfile:		
 		for line in tfile:			
 			valid_saves.append(line.strip())
+			if line.startswith("Installed games\\"):
+				line=line.replace("Installed games\\","")
+				options.append(line.strip())
+			elif line.startswith("Uninstalled games\\"):
+				line=line.replace("Uninstalled games\\","")	
+				options.append(line.strip())				
 	if backup_all==False:		
 		title = 'Select saves to backup: \n + Press space or right to select content \n + Press E to finish selection'
-		options=valid_saves
 		picker = Picker(options, title, multi_select=True, min_selection_count=1)
 		def end_selection(picker):
 			return False,-1
@@ -430,7 +441,7 @@ def back_up_saves(backup_all=False,inline=False,tidandver=True,romaji=True,outfo
 			selected.append([valid_saves[i],i])
 	print("- Retrieving registered to get TitleIDs...")			
 	dbicsv=os.path.join(cachefolder,"registered.csv")
-	process=subprocess.Popen([nscb_mtp,"Download","-ori","4: Installed games\\InstalledApplications.csv","-dst",dbicsv],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+	process=subprocess.Popen([nscb_mtp,"Download","-ori","4: Installed gamesInstalledApplications.csv","-dst",dbicsv],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
 	while process.poll()==None:
 		if process.poll()!=None:
 			process.terminate();
@@ -447,7 +458,7 @@ def back_up_saves(backup_all=False,inline=False,tidandver=True,romaji=True,outfo
 					tid=(str(row[id]).upper())[2:]
 					tid=tid[:-3]+'000'
 					version=int(row[ver])
-					name=str(row[tname])
+					name=str(row[tname])					
 					if name in dbi_dict:
 						if version<((dbi_dict[name])['version']):
 							continue		
@@ -459,10 +470,14 @@ def back_up_saves(backup_all=False,inline=False,tidandver=True,romaji=True,outfo
 	for file in selected:	
 		if tidandver==True:		
 			print(f'- Searching "{file[0]}" in registered data')
-			titleid="";version=""
+			titleid="";version=""		
 			name=file[0]
+			if name.startswith("Installed games\\"):
+				name=name.replace("Installed games\\","")
+			elif name.startswith("Uninstalled games\\"):
+				name=name.replace("Uninstalled games\\","")					
 			try:
-				titleid=((dbi_dict[file[0]])['tid'])
+				titleid=((dbi_dict[name])['tid'])
 				titleid=f'[{titleid}]'
 				version=str((dbi_dict[file[0]])['version'])
 				version=f'[v{version}]'
@@ -471,6 +486,10 @@ def back_up_saves(backup_all=False,inline=False,tidandver=True,romaji=True,outfo
 			game=f"{name} {titleid}{version}"	
 		else:
 			name=file[0]		
+			if name.startswith("Installed games\\"):
+				name=name.replace("Installed games\\","")
+			elif name.startswith("Uninstalled games\\"):
+				name=name.replace("Uninstalled games\\","")			
 			game=f"{name}"			
 		game=sanitize(game,romaji)
 		if inline==False:

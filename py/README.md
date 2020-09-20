@@ -120,8 +120,8 @@ The behavior of the auto-mode is configured trough the “Configuration menu in 
   * Extracts all contents from a nsp\xci
   * Extracts all contents from a nsp\xci in raw mode
   * Extracts all contents from a nsp\xci in plaintext
-  * Extracts files from nca inside a nsp\xci  
-  * Patches a game that requires s link sccount
+  * Extracts files from nca files inside nsp\xci
+  * Patches a game that requires a linked account
 - **MODE 7: File joiner mode.** Joins fat32 splitted files  
 - **MODE 8: Compression\Decompression**
   * Compress nsp files into nsz format

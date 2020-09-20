@@ -391,21 +391,40 @@ class Nsp(Pfs0):
 	def isUnlockable(self):
 		return (not self.hasValidTicket) and self.titleId and Titles.contains(self.titleId) and Titles.get(self.titleId).key
 		
-	def unlock(self):
-		#if not self.isOpen():
-		#	self.open('r+b')
-
-		if not Titles.contains(self.titleId):
-			raise IOError('No title key found in database!')
-
-		self.ticket().setTitleKeyBlock(int(Titles.get(self.titleId).key, 16))
-		Print.info('setting title key to ' + Titles.get(self.titleId).key)
-		self.ticket().flush()
-		self.close()
-		self.hasValidTicket = True
-		self.move()
-
-
+	def unlock(self,userkey):
+		from Fs.Ticket import PublicTik	
+		titleid=None;keygeneration=None
+		files_list=sq_tools.ret_nsp_offsets(self.path)
+		for i in range(len(files_list)):	
+			if files_list[i][0].endswith('.tik'):
+				name=files_list[i][0]
+				offset=files_list[i][1]
+				offset2=files_list[i][2]				
+				sz=int(files_list[i][3])			
+				# print(offset)
+				break	
+		for nca in self:		
+			if type(nca) == Fs.Nca and str(nca.header.contentType) == 'Content.META':
+				crypto1=nca.header.getCryptoType()
+				crypto2=nca.header.getCryptoType2()	
+				if crypto2>crypto1:
+					keygeneration=crypto2
+				if crypto2<=crypto1:	
+					keygeneration=crypto1	
+				titleid=str(nca.header.titleId)	
+				break
+		if titleid!=None and keygeneration!=None:
+			print("* Generating Ticket")
+			ticket=PublicTik()
+			chain=ticket.generate(titleid,userkey,str(keygeneration))
+			self.seek(offset)
+			print("* Writing Ticket")			
+			self.write(chain)
+			newPath=(self.path)[:-1]+'p'
+			self.close()		
+			print("* Renaming to nsp")				
+			os.rename(self.path, newPath)		
+			print("* DONE")	
 	# ...................................................						
 	# Patch requrements for network account
 	# ...................................................
@@ -497,10 +516,11 @@ class Nsp(Pfs0):
 
 		for nca in self:
 			if type(nca) == Nca:
-				if nca.header.getCryptoType2() != masterKeyRev:
-					pass
-					raise IOError('Mismatched masterKeyRevs!')
-
+				if nca.header.getRightsId() != 0:			
+					if nca.header.masterKeyRev != masterKeyRev:
+						print('WARNING!!! Mismatched masterKeyRevs!')
+						print(f"{str(nca._path)} - {nca.header.masterKeyRev}")	
+						print(f"{str(ticket._path)} - {masterKeyRev}")
 		for nca in self:
 			if type(nca) == Nca:
 				if nca.header.getRightsId() != 0:
@@ -578,9 +598,11 @@ class Nsp(Pfs0):
 
 		for nca in self:
 			if type(nca) == Nca:
-				if nca.header.getCryptoType2() != masterKeyRev:
-					pass
-					raise IOError('Mismatched masterKeyRevs!')
+				if nca.header.getRightsId() != 0:				
+					if nca.header.masterKeyRev != masterKeyRev:
+						print('WARNING!!! Mismatched masterKeyRevs!')
+						print(f"{str(nca._path)} - {nca.header.masterKeyRev}")	
+						print(f"{str(ticket._path)} - {masterKeyRev}")		
 
 		for nca in self:
 			if type(nca) == Nca:
@@ -1547,9 +1569,11 @@ class Nsp(Pfs0):
 
 		for nca in self:
 			if type(nca) == Nca:
-				if nca.header.getCryptoType2() != masterKeyRev:
-					pass
-					raise IOError('Mismatched masterKeyRevs!')
+				if nca.header.getRightsId() != 0:				
+					if nca.header.masterKeyRev != masterKeyRev:
+						print('WARNING!!! Mismatched masterKeyRevs!')
+						print(f"{str(nca._path)} - {nca.header.masterKeyRev}")	
+						print(f"{str(ticket._path)} - {masterKeyRev}")			
 
 		for nca in self:
 			if type(nca) == Nca:
@@ -2695,9 +2719,11 @@ class Nsp(Pfs0):
 		
 		for nca in self:
 			if type(nca) == Nca:
-				if nca.header.getCryptoType2() != masterKeyRev:
-					pass
-					raise IOError('Mismatched masterKeyRevs!')
+				if nca.header.getRightsId() != 0:				
+					if nca.header.masterKeyRev != masterKeyRev:
+						print('WARNING!!! Mismatched masterKeyRevs!')
+						print(f"{str(nca._path)} - {nca.header.masterKeyRev}")	
+						print(f"{str(ticket._path)} - {masterKeyRev}")		
 
 		for nca in self:
 			if type(nca) == Nca:
@@ -2801,9 +2827,11 @@ class Nsp(Pfs0):
 		
 		for nca in self:
 			if type(nca) == Nca:
-				if nca.header.getCryptoType2() != masterKeyRev:
-					pass
-					raise IOError('Mismatched masterKeyRevs!')		
+				if nca.header.getRightsId() != 0:				
+					if nca.header.masterKeyRev != masterKeyRev:
+						print('WARNING!!! Mismatched masterKeyRevs!')
+						print(f"{str(nca._path)} - {nca.header.masterKeyRev}")	
+						print(f"{str(ticket._path)} - {masterKeyRev}")			
 		
 		for nca in self:
 			if type(nca) == Nca:
@@ -3584,9 +3612,10 @@ class Nsp(Pfs0):
 		for file in self:				
 			if type(file) == Nca:
 				if file.header.getRightsId() != 0:
-					if file.header.getCryptoType2() != masterKeyRev:
-						pass
-						raise IOError('Mismatched masterKeyRevs!')
+					if file.header.masterKeyRev != masterKeyRev:
+						print('WARNING!!! Mismatched masterKeyRevs!')
+						print(f"{str(file._path)} - {file.header.masterKeyRev}")	
+						print(f"{str(ticket._path)} - {masterKeyRev}")		
 		for file in self:	
 			if type(file) == Nca:	
 				if file.header.getRightsId() != 0:		
@@ -4116,18 +4145,20 @@ class Nsp(Pfs0):
 				titleKeyDec = Keys.decryptTitleKey(file.getTitleKeyBlock().to_bytes(16, byteorder='big'), Keys.getMasterKeyIndex(masterKeyRev))
 				rightsId = file.getRightsId()
 		for nca in self:
-			if type(nca) == Nca:
-				if nca.header.getRightsId() != 0:			
-					if nca.header.getCryptoType2() != masterKeyRev:
-						pass
-						raise IOError('Mismatched masterKeyRevs!')
+			if type(nca) == Nca:		
+				if nca.header.getRightsId() != 0:
+					if nca.header.masterKeyRev != masterKeyRev:
+						print('WARNING!!! Mismatched masterKeyRevs!')
+						print(f"{str(nca._path)} - {nca.header.masterKeyRev}")	
+						print(f"{str(ticket._path)} - {masterKeyRev}")		
 			elif str(nca._path).endswith('.ncz'):						
 				ncztype=Nca(nca)
 				ncztype._path=nca._path			
 				if ncztype.header.getRightsId() != 0:			
-					if ncztype.header.getCryptoType2() != masterKeyRev:
-						pass
-						raise IOError('Mismatched masterKeyRevs!')									
+					if ncztype.header.masterKeyRev != masterKeyRev:
+						print('WARNING!!! Mismatched masterKeyRevs!')
+						print(f"{str(ncztype._path)} - {ncztype.header.masterKeyRev}")	
+						print(f"{str(ticket._path)} - {masterKeyRev}")						
 		for nca in self:	
 			if type(nca) == Nca:		
 				if nca.header.getRightsId() != 0:
@@ -4983,16 +5014,18 @@ class Nsp(Pfs0):
 		for file in self:				
 			if type(file) == Nca:
 				if file.header.getRightsId() != 0:
-					if file.header.getCryptoType2() != masterKeyRev:
-						pass
-						raise IOError('Mismatched masterKeyRevs!')
+					if file.header.masterKeyRev != masterKeyRev:
+						print('WARNING!!! Mismatched masterKeyRevs!')
+						print(f"{str(file._path)} - {file.header.masterKeyRev}")	
+						print(f"{str(ticket._path)} - {masterKeyRev}")	
 			elif str(file._path).endswith('.ncz'):						
 				ncztype=Nca(file)
 				ncztype._path=file._path			
 				if ncztype.header.getRightsId() != 0:			
-					if ncztype.header.getCryptoType2() != masterKeyRev:
-						pass
-						raise IOError('Mismatched masterKeyRevs!')							
+					if ncztype.header.masterKeyRev != masterKeyRev:
+						print('WARNING!!! Mismatched masterKeyRevs!')
+						print(f"{str(ncztype._path)} - {ncztype.header.masterKeyRev}")	
+						print(f"{str(ticket._path)} - {masterKeyRev}")						
 		for file in self:	
 			if type(file) == Nca:	
 				if file.header.getRightsId() != 0:		
@@ -6692,18 +6725,25 @@ class Nsp(Pfs0):
 			if str(file._path) == target:
 				if type(file) == Nca:
 					gc_flag=file.header.getgamecard()
-					if gc_flag != 0:
-						if gamecard==False:
-							gc_flag='00'*0x01								
+					unmod=file.simple_sig_check()
+					if not unmod:
+						if gc_flag != 0:
+							if gamecard==False:
+								gc_flag='00'*0x01								
+							else:
+								gc_flag='01'*0x01
+						elif gc_flag == 0:
+							if gamecard==True:
+								gc_flag='01'*0x01								
+							else:
+								gc_flag='00'*0x01							
 						else:
-							gc_flag='01'*0x01
-					elif gc_flag == 0:
-						if gamecard==True:
-							gc_flag='01'*0x01								
-						else:
-							gc_flag='00'*0x01							
+							gc_flag='00'*0x01		
 					else:
-						gc_flag='00'*0x01					
+						if gc_flag==0:
+							gc_flag='00'*0x01
+						else:
+							gc_flag='01'*0x01							
 					file.rewind()			
 					crypto1=file.header.getCryptoType()
 					crypto2=file.header.getCryptoType2()	
@@ -6713,6 +6753,8 @@ class Nsp(Pfs0):
 					if crypto2<=crypto1:	
 						masterKeyRev=crypto1						
 					if file.header.getRightsId() != 0:	
+						if not unmod:
+							gc_flag='00'*0x01	
 						for i in range(len(ticketlist)):			
 							#print(str(file.header.rightsId))	
 							#print(ticketlist[i][1])								
@@ -7630,19 +7672,20 @@ class Nsp(Pfs0):
 		for file in self:				
 			if type(file) == Nca and file._path in filelist:
 				if file.header.getRightsId() != 0:
-					if file.header.getCryptoType2() != masterKeyRev:
-						pass
-						raise IOError('Mismatched masterKeyRevs!')
+					if file.header.masterKeyRev != masterKeyRev:
+						print('WARNING!!! Mismatched masterKeyRevs!')
+						print(f"{str(file._path)} - {file.header.masterKeyRev}")	
+						print(f"{str(ticket._path)} - {masterKeyRev}")	
 			elif str(file._path).endswith('.ncz'):	
 				ncapath=str(file._path)[:-1]+'a'	
 				if ncapath in filelist:				
 					ncztype=Nca(file)
 					ncztype._path=file._path			
 					if ncztype.header.getRightsId() != 0:
-						if ncztype.header.getCryptoType2() != masterKeyRev:
-							pass
-							raise IOError('Mismatched masterKeyRevs!')					
-											
+						if ncztype.header.masterKeyRev != masterKeyRev:
+							print('WARNING!!! Mismatched masterKeyRevs!')
+							print(f"{str(ncztype._path)} - {ncztype.header.masterKeyRev}")	
+							print(f"{str(ticket._path)} - {masterKeyRev}")
 		for file in self:	
 			if type(file) == Nca and file._path in filelist:	
 				if file.header.getRightsId() != 0:		

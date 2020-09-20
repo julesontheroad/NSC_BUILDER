@@ -148,12 +148,12 @@ def install_xci_csv(filepath=None,remote=None,destiny="SD",cachefolder=None,over
 	check_connection()
 	if cachefolder==None:
 		cachefolder=os.path.join(ztools_dir, '_mtp_cache_')	
-		files_list=DriveTools.get_files_from_head(remote,remote.name)		
-		remote.rewind()		
-		print(f"Installing {remote.name} by content")		
-		print('- Parsing headers...')
-		files=list();filesizes=list()
-		fplist=list()	
+	files_list=DriveTools.get_files_from_head(remote,remote.name)		
+	remote.rewind()		
+	print(f"Installing {remote.name} by content")		
+	print('- Parsing headers...')
+	files=list();filesizes=list()
+	fplist=list()	
 	counter=0		
 	for k in range(len(files_list)):
 		entry=files_list[k]
@@ -237,41 +237,79 @@ def gen_xci_parts_spec0(filepath=None,remote=None,target_cnmt=None,cachefolder=N
 		if cnmtfile.endswith('.cnmt.nca') and target_cnmt==cnmtfile:
 			metadict,d1,d2=DriveTools.get_cnmt_data(target=cnmtfile,file=remote)
 			ncadata=metadict['ncadata']		
-			for j in range(len(ncadata)):		
-				row=ncadata[j]
-				if row['NCAtype']!='Meta' and row['NCAtype']!='Program' and row['NCAtype']!='DeltaFragment':
-					test1=str(row['NcaId'])+'.nca';test2=str(row['NcaId'])+'.ncz'
-					if test1 in fplist:
-						files.append(str(row['NcaId'])+'.nca')
-						filesizes.append(int(row['Size']))
-					elif test2 in fplist:	
-						files.append(str(row['NcaId'])+'.ncz')
-						for k in range(len(files_list)):
-							entry=files_list[k]
-							if entry[0]==test2:				
-								filesizes.append(int(entry[3]))	
-								break						
-			for j in range(len(ncadata)):
-				row=ncadata[j]						
-				if row['NCAtype']=='Meta':
-					# print(str(row['NcaId'])+'.cnmt.nca')
-					files.append(str(row['NcaId'])+'.cnmt.nca')
-					filesizes.append(int(row['Size']))	
-			for j in range(len(ncadata)):
-				row=ncadata[j]
-				# print(row)
-				if row['NCAtype']=='Program':
-					test1=str(row['NcaId'])+'.nca';test2=str(row['NcaId'])+'.ncz'
-					if test1 in fplist:
-						files.append(str(row['NcaId'])+'.nca')
-						filesizes.append(int(row['Size']))
-					elif test2 in fplist:	
-						files.append(str(row['NcaId'])+'.ncz')
-						for k in range(len(files_list)):
-							entry=files_list[k]
-							if entry[0]==test2:				
-								filesizes.append(int(entry[3]))	
-								break				
+			content_type=metadict['ctype']	
+			if content_type!="DLC":
+				for j in range(len(ncadata)):		
+					row=ncadata[j]
+					if row['NCAtype']!='Meta' and row['NCAtype']!='Program' and row['NCAtype']!='DeltaFragment':
+						test1=str(row['NcaId'])+'.nca';test2=str(row['NcaId'])+'.ncz'
+						if test1 in fplist:
+							files.append(str(row['NcaId'])+'.nca')
+							filesizes.append(int(row['Size']))
+						elif test2 in fplist:	
+							files.append(str(row['NcaId'])+'.ncz')
+							for k in range(len(files_list)):
+								entry=files_list[k]
+								if entry[0]==test2:				
+									filesizes.append(int(entry[3]))	
+									break						
+				for j in range(len(ncadata)):
+					row=ncadata[j]						
+					if row['NCAtype']=='Meta':
+						# print(str(row['NcaId'])+'.cnmt.nca')
+						files.append(str(row['NcaId'])+'.cnmt.nca')
+						filesizes.append(int(row['Size']))	
+				for j in range(len(ncadata)):
+					row=ncadata[j]
+					# print(row)
+					if row['NCAtype']=='Program':
+						test1=str(row['NcaId'])+'.nca';test2=str(row['NcaId'])+'.ncz'
+						if test1 in fplist:
+							files.append(str(row['NcaId'])+'.nca')
+							filesizes.append(int(row['Size']))
+						elif test2 in fplist:	
+							files.append(str(row['NcaId'])+'.ncz')
+							for k in range(len(files_list)):
+								entry=files_list[k]
+								if entry[0]==test2:				
+									filesizes.append(int(entry[3]))	
+									break		
+			else:
+				for j in range(len(ncadata)):		
+					row=ncadata[j]				
+					if row['NCAtype']!='Meta' and row['NCAtype']!='Data':
+						test1=str(row['NcaId'])+'.nca';test2=str(row['NcaId'])+'.ncz'
+						if test1 in fplist:
+							files.append(str(row['NcaId'])+'.nca')
+							filesizes.append(int(row['Size']))
+						elif test2 in fplist:	
+							files.append(str(row['NcaId'])+'.ncz')
+							for k in range(len(files_list)):
+								entry=files_list[k]
+								if entry[0]==test2:				
+									filesizes.append(int(entry[3]))	
+									break						
+				for j in range(len(ncadata)):
+					row=ncadata[j]						
+					if row['NCAtype']=='Meta':
+						# print(str(row['NcaId'])+'.cnmt.nca')
+						files.append(str(row['NcaId'])+'.cnmt.nca')
+						filesizes.append(int(row['Size']))	
+				for j in range(len(ncadata)):
+					row=ncadata[j]
+					# print(row)
+					if row['NCAtype']=='Data':
+						test1=str(row['NcaId'])+'.nca';test2=str(row['NcaId'])+'.ncz'
+						if test1 in fplist:
+							files.append(str(row['NcaId'])+'.nca')
+							filesizes.append(int(row['Size']))
+						elif test2 in fplist:	
+							files.append(str(row['NcaId'])+'.ncz')
+							for k in range(len(files_list)):
+								entry=files_list[k]
+								if entry[0]==test2:				
+									filesizes.append(int(entry[3]))	
+									break					
 			break				
 	remote.rewind()				
 	outheader = sq_tools.gen_nsp_header(files,filesizes)	
@@ -306,13 +344,14 @@ def gen_xci_parts_spec0(filepath=None,remote=None,target_cnmt=None,cachefolder=N
 			gc_flag='00'*0x01					
 			crypto1=ncaHeader.getCryptoType()
 			crypto2=ncaHeader.getCryptoType2()					
-			if ncaHeader.getRightsId() != 0:					
+			if ncaHeader.getRightsId() != 0:	
 				ncaHeader.rewind()	
 				if crypto2>crypto1:
 					masterKeyRev=crypto2
 				if crypto2<=crypto1:	
-					masterKeyRev=crypto1								
-				titleKeyDec = Keys.decryptTitleKey(titleKey, Keys.getMasterKeyIndex(int(masterKeyRev)))							
+					masterKeyRev=crypto1		
+				rightsId=metadict['rightsId']							
+				titleKeyDec = DriveTools.get_titlekey(remote,rightsId,masterKeyRev,files_list=files_list)	
 				encKeyBlock = crypto.encrypt(titleKeyDec * 4)
 				if str(keypatch) != "False":
 					t = tqdm(total=False, unit='B', unit_scale=False, leave=False)	
@@ -332,19 +371,34 @@ def gen_xci_parts_spec0(filepath=None,remote=None,target_cnmt=None,cachefolder=N
 			newheader=get_newheader(MemoryFile(remote.read_at(off1,0xC00)),encKeyBlock,crypto1,crypto2,hcrypto,gc_flag)	
 			outf.write(newheader)
 			written+=len(newheader)
-			if (str(ncaHeader.contentType) != 'Content.PROGRAM'):	
-				nca = Nca()			
-				nca.open(MemoryFile(remote.read_at(off1,nca_size)))		
-				nca.seek(0xC00)
-				data=nca.read()
-				outf.write(data)
-				written+=len(data)	
-				# print(nca_name)			
-				# print(len(newheader)+len(data))				
+			if content_type!="DLC":			
+				if (str(ncaHeader.contentType) != 'Content.PROGRAM'):	
+					nca = Nca()			
+					nca.open(MemoryFile(remote.read_at(off1,nca_size)))		
+					nca.seek(0xC00)
+					data=nca.read()
+					outf.write(data)
+					written+=len(data)	
+					# print(nca_name)			
+					# print(len(newheader)+len(data))				
+				else:
+					nca_program=nca_name
+					# print(nca_name)			
+					# print(len(newheader))		
 			else:
-				nca_program=nca_name
-				# print(nca_name)			
-				# print(len(newheader))					
+				if (str(ncaHeader.contentType) != 'Content.PUBLIC_DATA'):	
+					nca = Nca()			
+					nca.open(MemoryFile(remote.read_at(off1,nca_size)))		
+					nca.seek(0xC00)
+					data=nca.read()
+					outf.write(data)
+					written+=len(data)	
+					# print(nca_name)			
+					# print(len(newheader)+len(data))				
+				else:
+					nca_program=nca_name
+					# print(nca_name)			
+					# print(len(newheader))					
 		else:pass					
 	outf.flush()							
 	outf.close()	

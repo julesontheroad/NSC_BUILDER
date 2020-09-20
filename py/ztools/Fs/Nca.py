@@ -136,8 +136,13 @@ class NcaHeader(File):
 			
 		for i in range(4):
 			self.sectionHashes.append(self.sectionTables[i])
+			
+		if self.cryptoType > self.cryptoType2:								
+			self.masterKeyRev=self.cryptoType
+		else:			
+			self.masterKeyRev=self.cryptoType2				
 
-		self.masterKey = (self.cryptoType if self.cryptoType > self.cryptoType2 else self.cryptoType2)-1
+		self.masterKey = self.masterKeyRev-1
 
 		if self.masterKey < 0:
 			self.masterKey = 0
@@ -581,6 +586,22 @@ class Nca(File):
 		titleid=self.read(8)[::-1]
 		return titleid								
 						
+	def get_cnmt_updateid(self, file = None, mode = 'rb'):	
+		indent = 1
+		tabs = '\t' * indent
+		for f in self:
+			cryptoType=f.get_cryptoType()
+			cryptoKey=f.get_cryptoKey()	
+			cryptoCounter=f.get_cryptoCounter()		
+		pfs0_offset=0xC00+self.header.get_htable_offset()+self.header.get_pfs0_offset()
+		super(Nca, self).open(file, mode, cryptoType, cryptoKey, cryptoCounter)
+		self.seek(pfs0_offset+0x8)
+		pfs0_table_size=self.readInt32()
+		cmt_offset=pfs0_offset+0x28+pfs0_table_size
+		self.seek(cmt_offset+0x20)		
+		updtitleid=self.read(8)[::-1]
+		return updtitleid									
+						
 	def write_cnmt_titleid(self, value,file = None, mode = 'rb'):	
 		indent = 1
 		tabs = '\t' * indent
@@ -597,10 +618,65 @@ class Nca(File):
 		titleid=bytes.fromhex(value)[::-1]
 		self.write(titleid)		
 		return(titleid)
-								
-						
-						
-	
+		
+	def exchange_idoffset(self,old,new,file = None, mode = 'rb'):
+		indent = 1
+		tabs = '\t' * indent
+		for f in self:
+			cryptoType=f.get_cryptoType()
+			cryptoKey=f.get_cryptoKey()	
+			cryptoCounter=f.get_cryptoCounter()		
+		pfs0_offset=0xC00+self.header.get_htable_offset()+self.header.get_pfs0_offset()
+		super(Nca, self).open(file, mode, cryptoType, cryptoKey, cryptoCounter)
+		self.seek(pfs0_offset+0x8)
+		pfs0_table_size=self.readInt32()
+		cmt_offset=pfs0_offset+0x28+pfs0_table_size
+		self.seek(cmt_offset+0xE)
+		offset=self.readInt16()
+		content_entries=self.readInt16()
+		self.seek(cmt_offset+offset+0x20)
+		for i in range(content_entries):
+			cc=i+1
+			vhash = self.read(0x20)
+			NcaId = self.read(0x10)
+			size = self.read(0x6)
+			ncatype = self.read(0x1)
+			IdOffset = self.read(0x1)
+			IdOffset=int.from_bytes(IdOffset, byteorder='little', signed=True)
+			print(IdOffset)			
+			# print(self.tell())
+			if IdOffset==int(old):
+				print(IdOffset)
+				self.seek(self.tell()-0x1)
+				try:
+					self.write(bytes.fromhex(str(new))[::-1])
+				except:	
+					self.write(bytes.fromhex('0'+str(new))[::-1])				
+			elif IdOffset==int(new):
+				self.seek(self.tell()-0x1)
+				print(IdOffset)
+				try:
+					self.write(bytes.fromhex(str(old))[::-1])
+				except:	
+					self.write(bytes.fromhex('0'+str(old))[::-1])
+				
+	def write_cnmt_updid(self,value,file = None, mode = 'rb'):	
+		indent = 1
+		tabs = '\t' * indent
+		for f in self:
+			cryptoType=f.get_cryptoType()
+			cryptoKey=f.get_cryptoKey()	
+			cryptoCounter=f.get_cryptoCounter()		
+		pfs0_offset=0xC00+self.header.get_htable_offset()+self.header.get_pfs0_offset()
+		super(Nca, self).open(file, mode, cryptoType, cryptoKey, cryptoCounter)
+		self.seek(pfs0_offset+0x8)
+		pfs0_table_size=self.readInt32()
+		cmt_offset=pfs0_offset+0x28+pfs0_table_size
+		self.seek(cmt_offset+0x20)		
+		updid=bytes.fromhex(value)[::-1]
+		self.write(updid)		
+		return(updid)		
+									
 	def get_req_system(self, file = None, mode = 'rb'):	
 		indent = 1
 		tabs = '\t' * indent
@@ -762,7 +838,8 @@ class Nca(File):
 			message='Size =\t' + str(int.from_bytes(size, byteorder='little', signed=True));print(message);feed+=message+'\n'								
 			ncatype = self.read(0x1)
 			message='Ncatype = ' + str(int.from_bytes(ncatype, byteorder='little', signed=True));print(message);feed+=message+'\n'								
-			unknown = self.read(0x1)	
+			IdOffset = self.read(0x1)	
+			message='IdOffset = ' + str(int.from_bytes(IdOffset, byteorder='little', signed=True));print(message);feed+=message+'\n'			
 			
 		self.seek(pfs0_offset+pfs0_size-0x20)			
 		digest = self.read(0x20)
@@ -1846,6 +1923,23 @@ class Nca(File):
 	def get_sdkversion(self):		
 		sdkversion=str(self.header.sdkVersion4)+'.'+str(self.header.sdkVersion3)+'.'+str(self.header.sdkVersion2)+'.'+str(self.header.sdkVersion1)	
 		return sdkversion
+		
+	def simple_sig_check(self):	
+		self.rewind()
+		sign1 = self.header.signature1
+		hcrypto = aes128.AESXTS(uhx(Keys.get('header_key')))
+		self.header.rewind()
+		orig_header= self.header.read(0xC00)
+		self.header.seek(0x200)	
+		headdata = self.header.read(0x200)
+		if self.header.getSigKeyGen() == 0:
+			pubkey=RSA.RsaKey(n=nca_header_fixed_key_modulus_00, e=RSA_PUBLIC_EXPONENT)
+		else:
+			pubkey=RSA.RsaKey(n=nca_header_fixed_key_modulus_01, e=RSA_PUBLIC_EXPONENT)
+		rsapss = PKCS1_PSS.new(pubkey)
+		digest = SHA256.new(headdata)			
+		verification=rsapss.verify(digest, sign1)
+		return verification		
 
 	def verify(self,feed,targetkg=False,endcheck=False,progress=False,bar=False):	
 		if feed == False:
@@ -2161,7 +2255,7 @@ class Nca(File):
 		nca_id=self.header.titleId	
 		cr2=str(hex(crypto2))[2:]
 		trstart=str(nca_id)
-		if str(self.header.contentType) == 'Content.PROGRAM':
+		if str(self.header.contentType) == 'Content.PROGRAM' or str(self.header.contentType) == 'Content.MANUAL':
 			trstart=nca_id[:-3]+'000'
 		if len(str(cr2))==1:
 			tr=trstart+'000000000000000'+str(cr2) 	

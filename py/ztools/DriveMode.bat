@@ -2,7 +2,7 @@
 :TOP_INIT
 CD /d "%prog_dir%"
 set "bat_name=%~n0"
-Title NSC_Builder v1.00d -- Profile: %ofile_name% -- by JulesOnTheRoad
+Title NSC_Builder v1.01 -- Profile: %ofile_name% -- by JulesOnTheRoad
 
 :MAIN
 cls
@@ -39,13 +39,13 @@ exit /B
 :DOWNLOADMODE
 cls
 call :program_logo
-%pycommand% "%squirrel%" -lib_call Drive.Download Interface
+%pycommand% "%squirrel_lb%" -lib_call Drive.Download Interface
 goto MAIN
 
 :INFMODE
 cls
 call :program_logo
-%pycommand% "%squirrel%" -lib_call Drive.Info Interface
+%pycommand% "%squirrel_lb%" -lib_call Drive.Info Interface
 goto MAIN
 
 ::///////////////////////////////////////////////////
@@ -87,7 +87,7 @@ ECHO =============================     BY JULESONTHEROAD     ===================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                                POWERED BY SQUIRREL                                "
 ECHO "                    BASED ON THE WORK OF BLAWAR AND LUCA FRAGA                     "
-ECHO                                  VERSION 1.00d (GDRIVE)
+ECHO                                  VERSION 1.01 (GDRIVE)
 ECHO -------------------------------------------------------------------------------------
 ECHO Program's github: https://github.com/julesontheroad/NSC_BUILDER
 ECHO Blawar's github:  https://github.com/blawar

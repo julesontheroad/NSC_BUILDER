@@ -2,7 +2,7 @@
 :TOP_INIT
 CD /d "%prog_dir%"
 set "bat_name=%~n0"
-Title NSC_Builder v1.00d -- Profile: %ofile_name% -- by JulesOnTheRoad
+Title NSC_Builder v1.01 -- Profile: %ofile_name% -- by JulesOnTheRoad
 
 :MAIN
 cls
@@ -141,17 +141,17 @@ echo Input "4" to select files via folder-walker
 echo Input "0" to return to the MODE SELECTION MENU
 ECHO ***********************************************
 echo.
-%pycommand% "%squirrel%" -t nsp nsz xci -tfile "%prog_dir%MTP1.txt" -uin "%uinput%" -ff "uinput"
+%pycommand% "%squirrel%" -t nsp nsz xci xcz -tfile "%prog_dir%MTP1.txt" -uin "%uinput%" -ff "uinput"
 set /p eval=<"%uinput%"
 set eval=%eval:"=%
 setlocal enabledelayedexpansion
 echo+ >"%uinput%"
 endlocal
 if /i "%eval%"=="0" goto MAIN
-if /i "%eval%"=="1" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%MTP1.txt" mode=folder ext="nsp xci nsz xcz" ) 2>&1>NUL
-if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%MTP1.txt" mode=file ext="nsp xci nsz xcz" )  2>&1>NUL
-if /i "%eval%"=="3" ( %pycommand% "%squirrel%" -lib_call mtp.mtpinstaller select_from_local_libraries -xarg "%prog_dir%MTP1.txt" )
-if /i "%eval%"=="4" ( %pycommand% "%squirrel%" -lib_call picker_walker get_files_from_walk -xarg "%prog_dir%MTP1.txt" "extlist=nsp xci nsz xcz" )
+if /i "%eval%"=="1" ( %pycommand% "%squirrel_lb%" -lib_call listmanager selector2list -xarg "%prog_dir%MTP1.txt" mode=folder ext="nsp xci nsz xcz" ) 2>&1>NUL
+if /i "%eval%"=="2" ( %pycommand% "%squirrel_lb%" -lib_call listmanager selector2list -xarg "%prog_dir%MTP1.txt" mode=file ext="nsp xci nsz xcz" False False True )  2>&1>NUL
+if /i "%eval%"=="3" ( %pycommand% "%squirrel_lb%" -lib_call mtp.mtpinstaller select_from_local_libraries -xarg "%prog_dir%MTP1.txt" )
+if /i "%eval%"=="4" ( %pycommand% "%squirrel_lb%" -lib_call picker_walker get_files_from_walk -xarg "%prog_dir%MTP1.txt" "extlist=nsp xci nsz xcz" )
 
 goto checkagain
 echo.
@@ -174,7 +174,7 @@ ECHO *************************************************
 echo Or Input "0" to return to the MODE SELECTION MENU
 ECHO *************************************************
 echo.
-%pycommand% "%squirrel%" -t nsp nsz xci -tfile "%prog_dir%MTP1.txt" -uin "%uinput%" -ff "uinput"
+%pycommand% "%squirrel%" -t nsp nsz xci xcz -tfile "%prog_dir%MTP1.txt" -uin "%uinput%" -ff "uinput"
 set /p eval=<"%uinput%"
 set eval=%eval:"=%
 setlocal enabledelayedexpansion
@@ -183,10 +183,10 @@ endlocal
 
 if /i "%eval%"=="0" goto MAIN
 if /i "%eval%"=="1" goto start_1install
-if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%MTP1.txt" mode=folder ext="nsp xci nsz" ) 2>&1>NUL
-if /i "%eval%"=="3" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%MTP1.txt" mode=file ext="nsp xci nsz" )  2>&1>NUL
-if /i "%eval%"=="4" ( %pycommand% "%squirrel%" -lib_call mtp.mtpinstaller select_from_local_libraries -xarg "%prog_dir%MTP1.txt" )
-if /i "%eval%"=="5" ( %pycommand% "%squirrel%" -lib_call picker_walker get_files_from_walk -xarg "%prog_dir%MTP1.txt" "extlist=nsp xci nsz xcz" )
+if /i "%eval%"=="2" ( %pycommand% "%squirrel_lb%" -lib_call listmanager selector2list -xarg "%prog_dir%MTP1.txt" mode=folder ext="nsp xci nsz xcz" ) 2>&1>NUL
+if /i "%eval%"=="3" ( %pycommand% "%squirrel_lb%" -lib_call listmanager selector2list -xarg "%prog_dir%MTP1.txt" mode=file ext="nsp xci nsz xcz" False False True )  2>&1>NUL
+if /i "%eval%"=="4" ( %pycommand% "%squirrel_lb%" -lib_call mtp.mtpinstaller select_from_local_libraries -xarg "%prog_dir%MTP1.txt" )
+if /i "%eval%"=="5" ( %pycommand% "%squirrel_lb%" -lib_call picker_walker get_files_from_walk -xarg "%prog_dir%MTP1.txt" "extlist=nsp xci nsz xcz" )
 if /i "%eval%"=="e" goto salida
 if /i "%eval%"=="i" goto showlist
 if /i "%eval%"=="r" goto r_files
@@ -295,8 +295,8 @@ cls
 call :program_logo
 CD /d "%prog_dir%"
 
-%pycommand% "%squirrel%" -lib_call listmanager filter_list "%prog_dir%MTP1.txt","ext=nsp xci nsz","token=False",Print="False"
-%pycommand% "%squirrel%" -lib_call mtp.mtpinstaller loop_install -xarg "%prog_dir%MTP1.txt" "destiny=%medium%" "verification=%MTP_verification%" "%w_folder%" "ch_medium=%MTP_aut_ch_medium%" "check_fw=%MTP_chk_fw%" "patch_keygen=%MTP_prepatch_kg%" "ch_base=%MTP_prechk_Base%" "ch_other=%MTP_prechk_Upd%" "install_mode=%MTP_ptch_inst_spec%" "st_crypto=%MTP_stc_installs%"
+%pycommand% "%squirrel_lb%" -lib_call listmanager filter_list "%prog_dir%MTP1.txt","ext=nsp xci nsz","token=False",Print="False"
+%pycommand% "%squirrel_lb%" -lib_call mtp.mtpinstaller loop_install -xarg "%prog_dir%MTP1.txt" "destiny=%medium%" "verification=%MTP_verification%" "%w_folder%" "ch_medium=%MTP_aut_ch_medium%" "check_fw=%MTP_chk_fw%" "patch_keygen=%MTP_prepatch_kg%" "ch_base=%MTP_prechk_Base%" "ch_other=%MTP_prechk_Upd%" "install_mode=%MTP_ptch_inst_spec%" "st_crypto=%MTP_stc_installs%"
 
 ECHO ---------------------------------------------------
 ECHO *********** ALL FILES WERE PROCESSED! *************
@@ -415,7 +415,7 @@ if %autoupd_aut%=="none" goto set_auto_AUTOUPDATE
 :AUTOUPDATE_GD
 CD /d "%prog_dir%"
 echo.
-%pycommand% "%squirrel%" -lib_call mtp.mtp_gdrive update_console_from_gd -xarg "libraries=update" "destiny=%medium%" "exclude_xci=%MTP_exclude_xci_autinst%" "prioritize_nsz=%MTP_prioritize_NSZ%" "%prog_dir%MTP1GD.txt" "verification=%MTP_verification%" "ch_medium=%MTP_aut_ch_medium%" "ch_other=%MTP_prechk_Upd%" "autoupd_aut=%autoupd_aut%"
+%pycommand% "%squirrel_lb%" -lib_call mtp.mtp_gdrive update_console_from_gd -xarg "libraries=update" "destiny=%medium%" "exclude_xci=%MTP_exclude_xci_autinst%" "prioritize_nsz=%MTP_prioritize_NSZ%" "%prog_dir%MTP1GD.txt" "verification=%MTP_verification%" "ch_medium=%MTP_aut_ch_medium%" "ch_other=%MTP_prechk_Upd%" "autoupd_aut=%autoupd_aut%"
 echo.
 ECHO ---------------------------------------------------
 ECHO *********** ALL FILES WERE PROCESSED! *************
@@ -425,7 +425,7 @@ goto s_exit_choice
 :AUTOUPDATE_LOCAL
 CD /d "%prog_dir%"
 echo.
-%pycommand% "%squirrel%" -lib_call mtp.mtpinstaller update_console -xarg "libraries=all" "destiny=%medium%" "exclude_xci=%MTP_exclude_xci_autinst%" "prioritize_nsz=%MTP_prioritize_NSZ%" "%prog_dir%MTP1.txt" "verification=%MTP_verification%" "ch_medium=%MTP_aut_ch_medium%" "ch_other=%MTP_prechk_Upd%" "autoupd_aut=%autoupd_aut%"
+%pycommand% "%squirrel_lb%" -lib_call mtp.mtpinstaller update_console -xarg "libraries=all" "destiny=%medium%" "exclude_xci=%MTP_exclude_xci_autinst%" "prioritize_nsz=%MTP_prioritize_NSZ%" "%prog_dir%MTP1.txt" "verification=%MTP_verification%" "ch_medium=%MTP_aut_ch_medium%" "ch_other=%MTP_prechk_Upd%" "autoupd_aut=%autoupd_aut%"
 
 echo.
 ECHO ---------------------------------------------------
@@ -459,7 +459,7 @@ ECHO ******************************************
 echo CONTENT DUMPER
 ECHO ******************************************
 echo.
-%pycommand% "%squirrel%" -lib_call mtp.mtp_game_manager dump_content
+%pycommand% "%squirrel_lb%" -lib_call mtp.mtp_game_manager dump_content
 echo.
 ECHO ---------------------------------------------------
 ECHO *********** ALL FILES WERE PROCESSED! *************
@@ -472,7 +472,7 @@ ECHO ******************************************
 echo CONTENT UNINSTALLER
 ECHO ******************************************
 echo.
-%pycommand% "%squirrel%" -lib_call mtp.mtp_game_manager uninstall_content
+%pycommand% "%squirrel_lb%" -lib_call mtp.mtp_game_manager uninstall_content
 echo.
 ECHO ---------------------------------------------------
 ECHO *********** ALL FILES WERE PROCESSED! *************
@@ -485,7 +485,7 @@ ECHO ******************************************
 echo DELETE ARCHIVED_GAMES
 ECHO ******************************************
 echo.
-%pycommand% "%squirrel%" -lib_call mtp.mtp_game_manager delete_archived
+%pycommand% "%squirrel_lb%" -lib_call mtp.mtp_game_manager delete_archived
 echo.
 ECHO ---------------------------------------------------
 ECHO *********** ALL FILES WERE PROCESSED! *************
@@ -505,6 +505,7 @@ ECHO ******************************************
 echo.
 echo 1. DUMP ALL SAVES
 echo 2. SELECT WHAT SAVES TO DUMP
+echo 3. BACKUP ONLY CURRENTLY INSTALLED (DBI 155 or newer)
 echo.
 ECHO ******************************************
 echo Or Input "0" to return to the list options
@@ -513,13 +514,17 @@ echo.
 set /p bs="Enter your choice: "
 set bs=%bs:"=%
 set backup_all=none
+set onlyinstalled=none
 if /i "%bs%"=="0" goto MAIN
 if /i "%bs%"=="1" set "backup_all=True"
+if /i "%bs%"=="1" set "onlyinstalled=False"
 if /i "%bs%"=="2" set "backup_all=False"
-if /i "%bs%"=="3" goto delete_archived
+if /i "%bs%"=="2" set "onlyinstalled=False"
+if /i "%bs%"=="3" set "backup_all=True"
+if /i "%bs%"=="3" set "onlyinstalled=True"
 if %backup_all%=="none" goto SAVES_wrongchoice
 
-%pycommand% "%squirrel%" -lib_call mtp.mtp_game_manager back_up_saves -xarg  %backup_all% %MTP_saves_Inline% %MTP_saves_AddTIDandVer% %romaji%
+%pycommand% "%squirrel_lb%" -lib_call mtp.mtp_game_manager back_up_saves -xarg  %backup_all% %MTP_saves_Inline% %MTP_saves_AddTIDandVer% %romaji% "" %onlyinstalled%
 echo.
 ECHO ---------------------------------------------------
 ECHO *********** ALL FILES WERE PROCESSED! *************
@@ -547,13 +552,13 @@ set /p bs="Enter your choice: "
 set bs=%bs:"=%
 set backup_all=none
 if /i "%bs%"=="0" goto MAIN
-if /i "%bs%"=="1" ( %pycommand% "%squirrel%" -lib_call mtp.mtp_game_manager gen_sx_autoloader_sd_files )
+if /i "%bs%"=="1" ( %pycommand% "%squirrel_lb%" -lib_call mtp.mtp_game_manager gen_sx_autoloader_sd_files )
 if /i "%bs%"=="1" goto s_exit_choice
-if /i "%bs%"=="2" ( %pycommand% "%squirrel%" -lib_call mtp.mtp_tools gen_sx_autoloader_files_menu )
+if /i "%bs%"=="2" ( %pycommand% "%squirrel_lb%" -lib_call mtp.mtp_tools gen_sx_autoloader_files_menu )
 if /i "%bs%"=="2" goto s_exit_choice
-if /i "%bs%"=="3" ( %pycommand% "%squirrel%" -lib_call mtp.mtp_tools push_sx_autoloader_libraries )
+if /i "%bs%"=="3" ( %pycommand% "%squirrel_lb%" -lib_call mtp.mtp_tools push_sx_autoloader_libraries )
 if /i "%bs%"=="3" goto s_exit_choice
-if /i "%bs%"=="4" ( %pycommand% "%squirrel%" -lib_call mtp.mtp_tools cleanup_sx_autoloader_files )
+if /i "%bs%"=="4" ( %pycommand% "%squirrel_lb%" -lib_call mtp.mtp_tools cleanup_sx_autoloader_files )
 if /i "%bs%"=="4" goto s_exit_choice
 goto SX_AUTOLOADER
 
@@ -614,7 +619,7 @@ goto DEV_INF
 cls
 call :program_logo
 echo.
-%pycommand% "%squirrel%" -lib_call mtp.mtpinstaller get_installed_info -xarg "" False
+%pycommand% "%squirrel_lb%" -lib_call mtp.mtpinstaller get_installed_info -xarg "" False "exclude_homebrew=True" "exclude_xci=False"
 echo.
 PAUSE
 goto DEV_INF
@@ -623,7 +628,7 @@ goto DEV_INF
 cls
 call :program_logo
 echo.
-%pycommand% "%squirrel%" -lib_call mtp.mtpinstaller get_installed_info -xarg "" True
+%pycommand% "%squirrel_lb%" -lib_call mtp.mtpinstaller get_installed_info -xarg "" True "exclude_homebrew=True" "exclude_xci=False"
 echo.
 PAUSE
 goto DEV_INF
@@ -632,7 +637,7 @@ goto DEV_INF
 cls
 call :program_logo
 echo.
-%pycommand% "%squirrel%" -lib_call mtp.mtpinstaller get_archived_info -xarg False
+%pycommand% "%squirrel_lb%" -lib_call mtp.mtpinstaller get_archived_info -xarg False "exclude_homebrew=True" "exclude_xci=False"
 echo.
 PAUSE
 goto DEV_INF
@@ -641,7 +646,7 @@ goto DEV_INF
 cls
 call :program_logo
 echo.
-%pycommand% "%squirrel%" -lib_call mtp.mtpinstaller get_archived_info -xarg True
+%pycommand% "%squirrel_lb%" -lib_call mtp.mtpinstaller get_archived_info -xarg True "exclude_homebrew=True" "exclude_xci=False"
 echo.
 PAUSE
 goto DEV_INF
@@ -699,10 +704,10 @@ ECHO =============================     BY JULESONTHEROAD     ===================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                                POWERED BY SQUIRREL                                "
 ECHO "                         A MTP MANAGER FOR DBI INSTALLER                           "
-ECHO                                  VERSION 1.00d (MTP)
+ECHO                                  VERSION 1.01 (MTP)
 ECHO -------------------------------------------------------------------------------------
 ECHO DBI by DUCKBILL: https://github.com/rashevskyv/switch/releases
-ECHO Latest DBI: https://github.com/rashevskyv/switch/releases/tag/462
+ECHO Latest DBI: https://github.com/rashevskyv/switch/releases
 ECHO -------------------------------------------------------------------------------------
 exit /B
 

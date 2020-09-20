@@ -59,6 +59,7 @@ games_installed_cache=os.path.join(cachefolder, 'games_installed.txt')
 mtp_source_lib=os.path.join(zconfig_dir,'mtp_source_libraries.txt')
 mtp_internal_lib=os.path.join(zconfig_dir,'mtp_SD_libraries.txt')
 storage_info=os.path.join(cachefolder, 'storage.csv')
+xci_locations=os.path.join(zconfig_dir, 'mtp_xci_locations.txt')
 
 def About():	
 	print('                                       __          _ __    __                         ')
@@ -353,10 +354,10 @@ def install(filepath=None,destiny="SD",verification=True,outfolder=None,ch_mediu
 def install_conv_st1(filepath,outfolder,keypatch='false'):
 	tname=str(os.path.basename(filepath))[:-3]+'nsp'
 	tmpfile=os.path.join(outfolder,tname)
-	if filepath.endswith('xci'):
+	if filepath.endswith('xci') or filepath.endswith('xcz'):
 		f = factory(filepath)
 		f.open(filepath, 'rb')
-	elif filepath.endswith('nsp'):	
+	elif filepath.endswith('nsp') or filepath.endswith('nsz'):	
 		f = squirrelNSP(filepath, 'rb')	
 	f.c_nsp_direct(65536,tmpfile,outfolder,keypatch=keypatch)
 	f.flush()
@@ -489,7 +490,7 @@ def parsedinstalled(exclude_xci=True):
 	return installed	
 	
 		
-def get_installed_info(tfile=None,search_new=True,excludehb=True):
+def get_installed_info(tfile=None,search_new=True,excludehb=True,exclude_xci=False):
 	check_connection()
 	if not os.path.exists(cachefolder):
 		os.makedirs(cachefolder)
@@ -507,7 +508,10 @@ def get_installed_info(tfile=None,search_new=True,excludehb=True):
 				shutil.rmtree(fp)
 			except OSError:
 				os.remove(fp)	
-		process=subprocess.Popen([nscb_mtp,"ShowInstalled","-tfile",games_installed_cache,"-show","false"],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+		if exclude_xci==True:
+			process=subprocess.Popen([nscb_mtp,"ShowInstalled","-tfile",games_installed_cache,"-show","false","-exci","true"],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+		else:	
+			process=subprocess.Popen([nscb_mtp,"ShowInstalled","-tfile",games_installed_cache,"-show","false","-exci","false","-xci_lc",xci_locations],stdout=subprocess.PIPE,stderr=subprocess.PIPE)					
 		print("Parsing games in device. Please Wait...")
 		while process.poll()==None:
 			if process.poll()!=None:
@@ -658,7 +662,7 @@ def get_installed_info(tfile=None,search_new=True,excludehb=True):
 							print(f"{g0} [{baseid}] -> "+forecombo+ f"[{k}] [v{versiondict[k]}]"+Style.RESET_ALL)						
 					
 
-def get_archived_info(search_new=True,excludehb=True):	
+def get_archived_info(search_new=True,excludehb=True,exclude_xci=False):	
 	check_connection()
 	forecombo=Style.BRIGHT+Back.GREEN+Fore.WHITE
 	if not os.path.exists(cachefolder):
@@ -678,7 +682,10 @@ def get_archived_info(search_new=True,excludehb=True):
 	if os.path.exists(dbicsv):	
 		print("   Success")			
 	print("2. Checking Installed...")
-	process=subprocess.Popen([nscb_mtp,"ShowInstalled","-tfile",games_installed_cache,"-show","false"],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+	if exclude_xci==True:
+		process=subprocess.Popen([nscb_mtp,"ShowInstalled","-tfile",games_installed_cache,"-show","false","-exci","true"],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+	else:	
+		process=subprocess.Popen([nscb_mtp,"ShowInstalled","-tfile",games_installed_cache,"-show","false","-exci","false","-xci_lc",xci_locations],stdout=subprocess.PIPE,stderr=subprocess.PIPE)		
 	while process.poll()==None:
 		if process.poll()!=None:
 			process.terminate();	
@@ -818,7 +825,10 @@ def update_console(libraries="all",destiny="SD",exclude_xci=True,prioritize_nsz=
 		except OSError:
 			os.remove(fp)	
 	print("1. Parsing games in device. Please Wait...")			
-	process=subprocess.Popen([nscb_mtp,"ShowInstalled","-tfile",games_installed_cache,"-show","false"],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+	if exclude_xci==True:
+		process=subprocess.Popen([nscb_mtp,"ShowInstalled","-tfile",games_installed_cache,"-show","false","-exci","true"],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+	else:	
+		process=subprocess.Popen([nscb_mtp,"ShowInstalled","-tfile",games_installed_cache,"-show","false","-exci","false","-xci_lc",xci_locations],stdout=subprocess.PIPE,stderr=subprocess.PIPE)	
 	while process.poll()==None:
 		if process.poll()!=None:
 			process.terminate();	

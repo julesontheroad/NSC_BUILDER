@@ -2,7 +2,7 @@
 :TOP_INIT
 CD /d "%prog_dir%"
 set "bat_name=%~n0"
-Title NSC_Builder v1.00d -- Profile: %ofile_name% -- by JulesOnTheRoad
+Title NSC_Builder v1.01 -- Profile: %ofile_name% -- by JulesOnTheRoad
 
 ::Check if user is dragging a folder or a file
 if "%~1"=="" goto manual
@@ -565,7 +565,7 @@ echo Input "7" to change top keygeneration to 7 (FW 6.2.0)
 echo Input "8" to change top keygeneration to 8 (FW 7.0.0-8.0.1)
 echo Input "9" to change top keygeneration to 9 (FW 8.1.0)
 echo Input "10" to change top keygeneration to 10 (FW 9.0.0-9.01)
-echo Input "11" to change top keygeneration to 11 (FW 9.1.0)
+echo Input "11" to change top keygeneration to 11 (FW 9.1.0-10.2.0)
 echo.
 ECHO ******************************************
 echo Or Input "b" to return to the list options
@@ -981,7 +981,7 @@ echo Input "7" to change top keygeneration to 7 (FW 6.2.0)
 echo Input "8" to change top keygeneration to 8 (FW 7.0.0-8.0.1)
 echo Input "9" to change top keygeneration to 9 (FW 8.1.0)
 echo Input "10" to change top keygeneration to 10 (FW 9.0.0-9.01)
-echo Input "11" to change top keygeneration to 11 (FW 9.1.0)
+echo Input "11" to change top keygeneration to 11 (FW 9.1.0-10.2.0)
 echo.
 ECHO *****************************************
 echo Or Input "b" to return to the option list
@@ -1596,10 +1596,10 @@ ECHO.
 set /p eval=<"%uinput%"
 set eval=%eval:"=%
 if /i "%eval%"=="0" goto manual_Reentry
-if /i "%eval%"=="1" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%UPDlist.txt" mode=folder ext="nsp xci" ) 2>&1>NUL
-if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%UPDlist.txt" mode=file ext="nsp xci" )  2>&1>NUL
-if /i "%eval%"=="3" ( %pycommand% "%squirrel%" -lib_call picker_walker select_from_local_libraries -xarg "%prog_dir%UPDlist.txt" "extlist=nsp xci" )
-if /i "%eval%"=="4" ( %pycommand% "%squirrel%" -lib_call picker_walker get_files_from_walk -xarg "%prog_dir%UPDlist.txt" "extlist=nsp xci" )
+if /i "%eval%"=="1" ( %pycommand% "%squirrel_lb%" -lib_call listmanager selector2list -xarg "%prog_dir%UPDlist.txt" mode=folder ext="nsp xci" ) 2>&1>NUL
+if /i "%eval%"=="2" ( %pycommand% "%squirrel_lb%" -lib_call listmanager selector2list -xarg "%prog_dir%UPDlist.txt" mode=file ext="nsp xci" False False True )  2>&1>NUL
+if /i "%eval%"=="3" ( %pycommand% "%squirrel_lb%" -lib_call picker_walker select_from_local_libraries -xarg "%prog_dir%UPDlist.txt" "extlist=nsp xci" )
+if /i "%eval%"=="4" ( %pycommand% "%squirrel_lb%" -lib_call picker_walker get_files_from_walk -xarg "%prog_dir%UPDlist.txt" "extlist=nsp xci" )
 
 goto upd_checkagain
 
@@ -1635,10 +1635,10 @@ endlocal
 
 if /i "%eval%"=="0" goto manual_Reentry
 if /i "%eval%"=="1" goto upd_starts
-if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%UPDlist.txt" mode=folder ext="nsp xci" ) 2>&1>NUL
-if /i "%eval%"=="3" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%UPDlist.txt" mode=file ext="nsp xci" )  2>&1>NUL
-if /i "%eval%"=="4" ( %pycommand% "%squirrel%" -lib_call picker_walker select_from_local_libraries -xarg "%prog_dir%UPDlist.txt" "extlist=nsp xci" )
-if /i "%eval%"=="5" ( %pycommand% "%squirrel%" -lib_call picker_walker get_files_from_walk -xarg "%prog_dir%UPDlist.txt" "extlist=nsp xci" )
+if /i "%eval%"=="2" ( %pycommand% "%squirrel_lb%" -lib_call listmanager selector2list -xarg "%prog_dir%UPDlist.txt" mode=folder ext="nsp xci" ) 2>&1>NUL
+if /i "%eval%"=="3" ( %pycommand% "%squirrel_lb%" -lib_call listmanager selector2list -xarg "%prog_dir%UPDlist.txt" mode=file ext="nsp xci" False False True )  2>&1>NUL
+if /i "%eval%"=="4" ( %pycommand% "%squirrel_lb%" -lib_call picker_walker select_from_local_libraries -xarg "%prog_dir%UPDlist.txt" "extlist=nsp xci" )
+if /i "%eval%"=="5" ( %pycommand% "%squirrel_lb%" -lib_call picker_walker get_files_from_walk -xarg "%prog_dir%UPDlist.txt" "extlist=nsp xci" )
 if /i "%eval%"=="6" goto upd_ADD_BASE
 if /i "%eval%"=="e" goto salida
 if /i "%eval%"=="i" goto upd_showlist
@@ -1805,7 +1805,7 @@ echo Input "7" to change top keygeneration to 7 (FW 6.2.0)
 echo Input "8" to change top keygeneration to 8 (FW 7.0.0-8.0.1)
 echo Input "9" to change top keygeneration to 9 (FW 8.1.0)
 echo Input "10" to change top keygeneration to 10 (FW 9.0.0-9.01)
-echo Input "11" to change top keygeneration to 11 (FW 9.1.0)
+echo Input "11" to change top keygeneration to 11 (FW 9.1.0-10.2.0)
 echo.
 ECHO ******************************************
 echo Or Input "b" to return to the list options
@@ -2288,7 +2288,7 @@ ECHO =============================     BY JULESONTHEROAD     ===================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                                POWERED BY SQUIRREL                                "
 ECHO "                    BASED ON THE WORK OF BLAWAR AND LUCA FRAGA                     "
-ECHO                                  VERSION 1.00d (LEGACY)
+ECHO                                  VERSION 1.01 (LEGACY)
 ECHO -------------------------------------------------------------------------------------
 ECHO Program's github: https://github.com/julesontheroad/NSC_BUILDER
 ECHO Blawar's github:  https://github.com/blawar

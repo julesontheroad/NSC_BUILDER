@@ -80,10 +80,10 @@ setlocal enabledelayedexpansion
 echo+ >"%uinput%"
 endlocal
 if /i "%eval%"=="0" exit /B
-if /i "%eval%"=="1" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%advlist.txt" mode=folder ext="nsp xci nsx nsz xcz" ) 2>&1>NUL
-if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%advlist.txt" mode=file ext="nsp xci nsx nsz xcz" )  2>&1>NUL
-if /i "%eval%"=="3" ( %pycommand% "%squirrel%" -lib_call picker_walker select_from_local_libraries -xarg "%prog_dir%advlist.txt" "extlist=nsp xci nsx nsz xcz" )
-if /i "%eval%"=="4" ( %pycommand% "%squirrel%" -lib_call picker_walker get_files_from_walk -xarg "%prog_dir%advlist.txt" "extlist=nsp xci nsx nsz xcz" )
+if /i "%eval%"=="1" ( %pycommand% "%squirrel_lb%" -lib_call listmanager selector2list -xarg "%prog_dir%advlist.txt" mode=folder ext="nsp xci nsx nsz xcz" ) 2>&1>NUL
+if /i "%eval%"=="2" ( %pycommand% "%squirrel_lb%" -lib_call listmanager selector2list -xarg "%prog_dir%advlist.txt" mode=file ext="nsp xci nsx nsz xcz" False False True )  2>&1>NUL
+if /i "%eval%"=="3" ( %pycommand% "%squirrel_lb%" -lib_call picker_walker select_from_local_libraries -xarg "%prog_dir%advlist.txt" "extlist=nsp xci nsx nsz xcz" )
+if /i "%eval%"=="4" ( %pycommand% "%squirrel_lb%" -lib_call picker_walker get_files_from_walk -xarg "%prog_dir%advlist.txt" "extlist=nsp xci nsx nsz xcz" )
 goto checkagain
 echo.
 :checkagain
@@ -114,10 +114,10 @@ endlocal
 
 if /i "%eval%"=="0" exit /B
 if /i "%eval%"=="1" goto start
-if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%advlist.txt" mode=folder ext="nsp xci nsx nsz xcz" ) 2>&1>NUL
-if /i "%eval%"=="3" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%advlist.txt" mode=file ext="nsp xci nsx nsz xcz" ) 2>&1>NUL
-if /i "%eval%"=="4" ( %pycommand% "%squirrel%" -lib_call picker_walker select_from_local_libraries -xarg "%prog_dir%advlist.txt" "extlist=nsp xci nsx nsz xcz" )
-if /i "%eval%"=="5" ( %pycommand% "%squirrel%" -lib_call picker_walker get_files_from_walk -xarg "%prog_dir%advlist.txt" "extlist=nsp xci nsx nsz xcz" )
+if /i "%eval%"=="2" ( %pycommand% "%squirrel_lb%" -lib_call listmanager selector2list -xarg "%prog_dir%advlist.txt" mode=folder ext="nsp xci nsx nsz xcz" ) 2>&1>NUL
+if /i "%eval%"=="3" ( %pycommand% "%squirrel_lb%" -lib_call listmanager selector2list -xarg "%prog_dir%advlist.txt" mode=file ext="nsp xci nsx nsz xcz" False False True ) 2>&1>NUL
+if /i "%eval%"=="4" ( %pycommand% "%squirrel_lb%" -lib_call picker_walker select_from_local_libraries -xarg "%prog_dir%advlist.txt" "extlist=nsp xci nsx nsz xcz" )
+if /i "%eval%"=="5" ( %pycommand% "%squirrel_lb%" -lib_call picker_walker get_files_from_walk -xarg "%prog_dir%advlist.txt" "extlist=nsp xci nsx nsz xcz" )
 if /i "%eval%"=="e" goto salida
 if /i "%eval%"=="i" goto showlist
 if /i "%eval%"=="r" goto r_files
@@ -187,7 +187,7 @@ echo *******************************************************
 echo CHOOSE HOW TO PROCESS THE FILES
 echo *******************************************************
 echo Input "1" to extract all files from nsp\xci
-echo Input "2" for raw extraction (Use in case a nca gives magic error)
+echo Input "2" for raw extraction (Use in case an nca gives magic error)
 echo Input "3" to extract all nca files as plaintext
 echo Input "4" to extract nca contents from nsp\xci
 echo Input "5" to patch a linked account requirement
@@ -424,7 +424,7 @@ ECHO =============================     BY JULESONTHEROAD     ===================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                                POWERED BY SQUIRREL                                "
 ECHO "                    BASED ON THE WORK OF BLAWAR AND LUCA FRAGA                     "
-ECHO                                    VERSION 1.00d
+ECHO                                    VERSION 1.01
 ECHO -------------------------------------------------------------------------------------
 ECHO Program's github: https://github.com/julesontheroad/NSC_BUILDER
 ECHO Blawar's github:  https://github.com/blawar

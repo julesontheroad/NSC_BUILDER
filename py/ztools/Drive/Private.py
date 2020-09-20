@@ -883,6 +883,21 @@ def move(origin,destiny,originTD,destinyTD):
 										addParents=folderID,
 										fields='id, parents').execute()		
 
+def rename(filepath=None,newname=None,TD=None,remote=None):	
+	if remote==None:
+		if 	TD!= None:
+			remote=location(route=filepath,TD_Name=TD)
+		else:
+			remote=location(route=filepath)
+	fileId=remote.ID
+	name=remote.name
+	file = remote.drive_service.files().update(fileId=fileId,
+										supportsAllDrives='true',
+										body={'name': newname},
+										fields='id, name').execute()		
+	finalname=file.get('name')
+	print("{} renamed to {}".format(name,finalname))
+
 def create_folder(filepath):
 	c=0;parent='root';endID=False
 	try:

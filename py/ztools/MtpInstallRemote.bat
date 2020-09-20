@@ -2,7 +2,7 @@
 :TOP_INIT
 CD /d "%prog_dir%"
 set "bat_name=%~n0"
-Title NSC_Builder v1.00d -- Profile: %ofile_name% -- by JulesOnTheRoad
+Title NSC_Builder v1.01 -- Profile: %ofile_name% -- by JulesOnTheRoad
 
 :MAIN
 if exist "MTP1GD.txt" goto prevlist
@@ -81,10 +81,10 @@ setlocal enabledelayedexpansion
 echo+ >"%uinput%"
 endlocal
 if /i "%eval%"=="0" goto MAIN
-if /i "%eval%"=="1" ( %pycommand% "%squirrel%" -lib_call picker_walker remote_select_from_cache -xarg "%prog_dir%MTP1GD.txt" )
-if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call picker_walker remote_select_from_libraries -xarg "%prog_dir%MTP1GD.txt" )
-if /i "%eval%"=="3" ( %pycommand% "%squirrel%" -lib_call picker_walker remote_select_from_walker -xarg "%prog_dir%MTP1GD.txt" "nsp nsz" )
-if /i "%eval%"=="c" ( %pycommand% "%squirrel%" -lib_call workers concurrent_cache )
+if /i "%eval%"=="1" ( %pycommand% "%squirrel_lb%" -lib_call picker_walker remote_select_from_cache -xarg "%prog_dir%MTP1GD.txt" )
+if /i "%eval%"=="2" ( %pycommand% "%squirrel_lb%" -lib_call picker_walker remote_select_from_libraries -xarg "%prog_dir%MTP1GD.txt" )
+if /i "%eval%"=="3" ( %pycommand% "%squirrel_lb%" -lib_call picker_walker remote_select_from_walker -xarg "%prog_dir%MTP1GD.txt" "nsp nsz xci xcz" )
+if /i "%eval%"=="c" ( %pycommand% "%squirrel_lb%" -lib_call workers concurrent_cache )
 echo.
 goto checkagain
 
@@ -117,10 +117,10 @@ echo+ >"%uinput%"
 endlocal
 if /i "%eval%"=="0" goto MAIN
 if /i "%eval%"=="1" goto select_medium
-if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call picker_walker remote_select_from_cache -xarg "%prog_dir%MTP1GD.txt" )
-if /i "%eval%"=="3" ( %pycommand% "%squirrel%" -lib_call picker_walker remote_select_from_libraries -xarg "%prog_dir%MTP1GD.txt" )
-if /i "%eval%"=="4" ( %pycommand% "%squirrel%" -lib_call picker_walker remote_select_from_walker -xarg "%prog_dir%MTP1GD.txt" "nsp nsz" )
-if /i "%eval%"=="c" ( %pycommand% "%squirrel%" -lib_call workers concurrent_cache )
+if /i "%eval%"=="2" ( %pycommand% "%squirrel_lb%" -lib_call picker_walker remote_select_from_cache -xarg "%prog_dir%MTP1GD.txt" )
+if /i "%eval%"=="3" ( %pycommand% "%squirrel_lb%" -lib_call picker_walker remote_select_from_libraries -xarg "%prog_dir%MTP1GD.txt" )
+if /i "%eval%"=="4" ( %pycommand% "%squirrel_lb%" -lib_call picker_walker remote_select_from_walker -xarg "%prog_dir%MTP1GD.txt" "nsp nsz xci xcz" )
+if /i "%eval%"=="c" ( %pycommand% "%squirrel_lb%" -lib_call workers concurrent_cache )
 if /i "%eval%"=="e" goto salida
 if /i "%eval%"=="i" goto showlist
 if /i "%eval%"=="r" goto r_files
@@ -206,7 +206,7 @@ if %medium%=="none" goto select_medium_wrongchoice
 cls
 call :program_logo
 CD /d "%prog_dir%"
-%pycommand% "%squirrel%" -lib_call mtp.mtp_gdrive loop_install -xarg "%prog_dir%MTP1GD.txt" "destiny=%medium%" "%w_folder%" "ch_medium=%MTP_aut_ch_medium%" "check_fw=%MTP_chk_fw%" "patch_keygen=%MTP_prepatch_kg%" "ch_base=%MTP_prechk_Base%" "ch_other=%MTP_prechk_Upd%" "truecopy=%MTP_pdrive_truecopy%"
+%pycommand% "%squirrel_lb%" -lib_call mtp.mtp_gdrive loop_install -xarg "%prog_dir%MTP1GD.txt" "destiny=%medium%" "%w_folder%" "ch_medium=%MTP_aut_ch_medium%" "check_fw=%MTP_chk_fw%" "patch_keygen=%MTP_prepatch_kg%" "ch_base=%MTP_prechk_Base%" "ch_other=%MTP_prechk_Upd%" "truecopy=%MTP_pdrive_truecopy%"
 echo.
 ECHO ---------------------------------------------------
 ECHO *********** ALL FILES WERE PROCESSED! *************
@@ -260,10 +260,10 @@ ECHO =============================     BY JULESONTHEROAD     ===================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                                POWERED BY SQUIRREL                                "
 ECHO "                         A MTP MANAGER FOR DBI INSTALLER                           "
-ECHO                                  VERSION 1.00d (MTP)
+ECHO                                  VERSION 1.01 (MTP)
 ECHO -------------------------------------------------------------------------------------
 ECHO DBI by DUCKBILL: https://github.com/rashevskyv/switch/releases
-ECHO Latest DBI: https://github.com/rashevskyv/switch/releases/tag/462
+ECHO Latest DBI: https://github.com/rashevskyv/switch/releases
 ECHO -------------------------------------------------------------------------------------
 exit /B
 

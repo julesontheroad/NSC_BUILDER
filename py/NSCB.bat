@@ -5,7 +5,7 @@ set "bat_name=%~n0"
 set "ofile_name=%bat_name%_options.cmd"
 set "opt_interface=Interface_options.cmd"
 set "opt_server=Server_options.cmd"
-Title NSC_Builder v1.00d -- Profile: %ofile_name% -- by JulesOnTheRoad
+Title NSC_Builder v1.01 -- Profile: %ofile_name% -- by JulesOnTheRoad
 set "list_folder=%prog_dir%lists"
 ::-----------------------------------------------------
 ::EDIT THIS VARIABLE TO LINK OTHER OPTION FILE
@@ -62,6 +62,7 @@ set "fexport=%fexport%"
 set "skdelta=%skdelta%"
 REM PROGRAMS
 set "squirrel=%nut%"
+set "squirrel_lb=%squirrel_lb%"
 set "MTP=%MTP%"
 set "xci_lib=%xci_lib%"
 set "nsp_lib=%nsp_lib%"
@@ -84,6 +85,7 @@ set "zip_fold=%~dp0%zip_fold%"
 ::-----------------------------------------------------
 ::Program full route
 if exist "%~dp0%squirrel%" set "squirrel=%~dp0%squirrel%"
+if exist "%~dp0%squirrel_lb%" set "squirrel_lb=%~dp0%squirrel_lb%"
 if exist "%~dp0%xci_lib%"  set "xci_lib=%~dp0%xci_lib%"
 if exist "%~dp0%nsp_lib%"  set "nsp_lib=%~dp0%nsp_lib%"
 if exist "%~dp0%zip%"  set "zip=%~dp0%zip%"
@@ -886,10 +888,10 @@ setlocal enabledelayedexpansion
 echo+ >"%uinput%"
 endlocal
 if /i "%eval%"=="0" goto manual_Reentry
-if /i "%eval%"=="1" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%list.txt" mode=folder ext="nsp xci nsz nsx xcz" ) 2>&1>NUL
-if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%list.txt" mode=file ext="nsp xci nsz nsx xcz" ) 2>&1>NUL
-if /i "%eval%"=="3" ( %pycommand% "%squirrel%" -lib_call picker_walker select_from_local_libraries -xarg "%prog_dir%list.txt" "extlist=nsp xci nsz nsx xcz" )
-if /i "%eval%"=="4" ( %pycommand% "%squirrel%" -lib_call picker_walker get_files_from_walk -xarg "%prog_dir%list.txt" "extlist=nsp xci nsz nsx xcz" )
+if /i "%eval%"=="1" ( %pycommand% "%squirrel_lb%" -lib_call listmanager selector2list -xarg "%prog_dir%list.txt" mode=folder ext="nsp xci nsz nsx xcz" ) 2>&1>NUL
+if /i "%eval%"=="2" ( %pycommand% "%squirrel_lb%" -lib_call listmanager selector2list -xarg "%prog_dir%list.txt" mode=file ext="nsp xci nsz nsx xcz" False False True ) 2>&1>NUL
+if /i "%eval%"=="3" ( %pycommand% "%squirrel_lb%" -lib_call picker_walker select_from_local_libraries -xarg "%prog_dir%list.txt" "extlist=nsp xci nsz nsx xcz" )
+if /i "%eval%"=="4" ( %pycommand% "%squirrel_lb%" -lib_call picker_walker get_files_from_walk -xarg "%prog_dir%list.txt" "extlist=nsp xci nsz nsx xcz" )
 goto checkagain
 echo.
 :checkagain
@@ -920,10 +922,10 @@ endlocal
 
 if /i "%eval%"=="0" goto manual_Reentry
 if /i "%eval%"=="1" goto start_cleaning
-if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg  "%prog_dir%list.txt" mode=folder ext="nsp xci nsz nsx xcz" ) 2>&1>NUL
-if /i "%eval%"=="3" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg  "%prog_dir%list.txt" mode=file ext="nsp xci nsz nsx xcz" )  2>&1>NUL
-if /i "%eval%"=="4" ( %pycommand% "%squirrel%" -lib_call picker_walker select_from_local_libraries -xarg "%prog_dir%list.txt" "extlist=nsp xci nsz nsx xcz" )
-if /i "%eval%"=="5" ( %pycommand% "%squirrel%" -lib_call picker_walker get_files_from_walk -xarg "%prog_dir%list.txt" "extlist=nsp xci nsz nsx xcz" )
+if /i "%eval%"=="2" ( %pycommand% "%squirrel_lb%" -lib_call listmanager selector2list -xarg  "%prog_dir%list.txt" mode=folder ext="nsp xci nsz nsx xcz" ) 2>&1>NUL
+if /i "%eval%"=="3" ( %pycommand% "%squirrel_lb%" -lib_call listmanager selector2list -xarg  "%prog_dir%list.txt" mode=file ext="nsp xci nsz nsx xcz" False False True )  2>&1>NUL
+if /i "%eval%"=="4" ( %pycommand% "%squirrel_lb%" -lib_call picker_walker select_from_local_libraries -xarg "%prog_dir%list.txt" "extlist=nsp xci nsz nsx xcz" )
+if /i "%eval%"=="5" ( %pycommand% "%squirrel_lb%" -lib_call picker_walker get_files_from_walk -xarg "%prog_dir%list.txt" "extlist=nsp xci nsz nsx xcz" )
 if /i "%eval%"=="e" goto salida
 if /i "%eval%"=="i" goto showlist
 if /i "%eval%"=="r" goto r_files
@@ -1073,7 +1075,7 @@ echo Input "7" to change top keygeneration to 7 (FW 6.2.0)
 echo Input "8" to change top keygeneration to 8 (FW 7.0.0-8.0.1)
 echo Input "9" to change top keygeneration to 9 (FW 8.1.0)
 echo Input "10" to change top keygeneration to 10 (FW 9.0.0-9.01)
-echo Input "11" to change top keygeneration to 11 (FW 9.1.0)
+echo Input "11" to change top keygeneration to 11 (FW 9.1.0-10.2.0)
 echo.
 ECHO ******************************************
 echo Or Input "b" to return to the list options
@@ -1185,14 +1187,14 @@ if /i "%verif%"=="none" goto s_vertype
 
 :s_KeyChange_skip
 echo Filtering extensions from list according to options chosen
-if "%vrepack%" EQU "xci_supertrimmer" ( %pycommand% "%squirrel%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=xci","token=False",Print="False" )
-if "%vrepack%" EQU "xci_supertrimmer_keep_upd" ( %pycommand% "%squirrel%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=xci","token=False",Print="False" )
-if "%vrepack%" EQU "xci_trimmer" ( %pycommand% "%squirrel%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=xci","token=False",Print="False" )
-if "%vrepack%" EQU "xci_untrimmer" ( %pycommand% "%squirrel%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=xci","token=False",Print="False" )
-if "%vrepack%" EQU "rebuild" ( %pycommand% "%squirrel%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=nsp nsz","token=False",Print="False" )
-if "%vrepack%" EQU "nodelta" ( %pycommand% "%squirrel%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=nsp nsz","token=False",Print="False" )
+if "%vrepack%" EQU "xci_supertrimmer" ( %pycommand% "%squirrel_lb%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=xci","token=False",Print="False" )
+if "%vrepack%" EQU "xci_supertrimmer_keep_upd" ( %pycommand% "%squirrel_lb%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=xci","token=False",Print="False" )
+if "%vrepack%" EQU "xci_trimmer" ( %pycommand% "%squirrel_lb%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=xci","token=False",Print="False" )
+if "%vrepack%" EQU "xci_untrimmer" ( %pycommand% "%squirrel_lb%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=xci","token=False",Print="False" )
+if "%vrepack%" EQU "rebuild" ( %pycommand% "%squirrel_lb%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=nsp nsz","token=False",Print="False" )
+if "%vrepack%" EQU "nodelta" ( %pycommand% "%squirrel_lb%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=nsp nsz","token=False",Print="False" )
 if "%fatype%" EQU "-fat fat32" echo Fat32 selected, removing nsz and xcz from input list
-if "%fatype%" EQU "-fat fat32" ( %pycommand% "%squirrel%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=nsp nsx xci","token=False",Print="False" )
+if "%fatype%" EQU "-fat fat32" ( %pycommand% "%squirrel_lb%" -lib_call listmanager filter_list "%prog_dir%list.txt","ext=nsp nsx xci","token=False",Print="False" )
 cls
 call :program_logo
 
@@ -1225,7 +1227,7 @@ echo Input "1" to ALWAYS rename
 echo Input "2" to NOT RENAME IF [TITLEID] is present
 echo Input "3" to NOT RENAME IF [TITLEID] is equal to the one calculated
 echo Input "4" to ONLY ADD ID
-echo Input "5" to ADD ID + TAGS AND KEEP NAME TILL [
+echo Input "5" to keep original name ADD ID + SELECTED TAGS
 echo.
 echo Sanitize:
 echo Input "6" to REMOVE BAD characters from the file name
@@ -1254,7 +1256,7 @@ if /i "%bs%"=="3" set "renmode=skip_if_tid"
 if /i "%bs%"=="3" set "oaid=false"
 if /i "%bs%"=="4" set "renmode=skip_corr_tid"
 if /i "%bs%"=="4" set "oaid=true"
-if /i "%bs%"=="5" set "renmode=skip_corr_tid"
+if /i "%bs%"=="5" set "renmode=force"
 if /i "%bs%"=="5" set "oaid=idtag"
 if /i "%bs%"=="6" goto sanitize
 if /i "%bs%"=="7" goto romaji
@@ -1646,10 +1648,10 @@ endlocal
 if /i "%eval%"=="0" goto manual_Reentry
 if /i "%eval%"=="1" set skip_list_split="true"
 if /i "%eval%"=="1" goto multi_start_cleaning
-if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%mlist.txt" mode=folder ext="nsp xci nsz xcz" ) 2>&1>NUL
-if /i "%eval%"=="3" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%mlist.txt" mode=file ext="nsp xci nsz xcz" ) 2>&1>NUL
-if /i "%eval%"=="4" ( %pycommand% "%squirrel%" -lib_call picker_walker select_from_local_libraries -xarg "%prog_dir%mlist.txt" "extlist=nsp xci nsz xcz" )
-if /i "%eval%"=="5" ( %pycommand% "%squirrel%" -lib_call picker_walker get_files_from_walk -xarg "%prog_dir%mlist.txt" "extlist=nsp xci nsz xcz" )
+if /i "%eval%"=="2" ( %pycommand% "%squirrel_lb%" -lib_call listmanager selector2list -xarg "%prog_dir%mlist.txt" mode=folder ext="nsp xci nsz xcz" ) 2>&1>NUL
+if /i "%eval%"=="3" ( %pycommand% "%squirrel_lb%" -lib_call listmanager selector2list -xarg "%prog_dir%mlist.txt" mode=file ext="nsp xci nsz xcz" False False True ) 2>&1>NUL
+if /i "%eval%"=="4" ( %pycommand% "%squirrel_lb%" -lib_call picker_walker select_from_local_libraries -xarg "%prog_dir%mlist.txt" "extlist=nsp xci nsz xcz" )
+if /i "%eval%"=="5" ( %pycommand% "%squirrel_lb%" -lib_call picker_walker get_files_from_walk -xarg "%prog_dir%mlist.txt" "extlist=nsp xci nsz xcz" )
 
 goto multi_checkagain
 echo.
@@ -1690,10 +1692,10 @@ if /i "%eval%"=="2" set "mlistfol=%list_folder%\m_multi"
 if /i "%eval%"=="2" goto multi_start_cleaning
 if /i "%eval%"=="3" set "mlistfol=%list_folder%\m_multi"
 if /i "%eval%"=="3" goto multi_saved_for_later
-if /i "%eval%"=="4" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%mlist.txt" mode=folder ext="nsp xci nsz xcz" ) 2>&1>NUL
-if /i "%eval%"=="5" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%mlist.txt" mode=file ext="nsp xci nsz xcz" ) 2>&1>NUL
-if /i "%eval%"=="6" ( %pycommand% "%squirrel%" -lib_call picker_walker select_from_local_libraries -xarg "%prog_dir%mlist.txt" "extlist=nsp xci nsz xcz" )
-if /i "%eval%"=="7" ( %pycommand% "%squirrel%" -lib_call picker_walker get_files_from_walk -xarg "%prog_dir%mlist.txt" "extlist=nsp xci nsz xcz" )
+if /i "%eval%"=="4" ( %pycommand% "%squirrel_lb%" -lib_call listmanager selector2list -xarg "%prog_dir%mlist.txt" mode=folder ext="nsp xci nsz xcz" ) 2>&1>NUL
+if /i "%eval%"=="5" ( %pycommand% "%squirrel_lb%" -lib_call listmanager selector2list -xarg "%prog_dir%mlist.txt" mode=file ext="nsp xci nsz xcz" False False True ) 2>&1>NUL
+if /i "%eval%"=="6" ( %pycommand% "%squirrel_lb%" -lib_call picker_walker select_from_local_libraries -xarg "%prog_dir%mlist.txt" "extlist=nsp xci nsz xcz" )
+if /i "%eval%"=="7" ( %pycommand% "%squirrel_lb%" -lib_call picker_walker get_files_from_walk -xarg "%prog_dir%mlist.txt" "extlist=nsp xci nsz xcz" )
 REM if /i "%eval%"=="2" goto multi_set_clogo
 if /i "%eval%"=="e" goto salida
 if /i "%eval%"=="i" goto multi_showlist
@@ -1891,7 +1893,7 @@ echo Input "7" to change top keygeneration to 7 (FW 6.2.0)
 echo Input "8" to change top keygeneration to 8 (FW 7.0.0-8.0.1)
 echo Input "9" to change top keygeneration to 9 (FW 8.1.0)
 echo Input "10" to change top keygeneration to 10 (FW 9.0.0-9.01)
-echo Input "11" to change top keygeneration to 11 (FW 9.1.0)
+echo Input "11" to change top keygeneration to 11 (FW 9.1.0-10.2.0)
 echo.
 ECHO *****************************************
 echo Or Input "b" to return to the option list
@@ -1957,14 +1959,14 @@ goto m_KeyChange_skip
 
 :m_split_merge
 if "%fatype%" EQU "-fat fat32" echo Fat32 selected, removing nsz and xcz from input list
-if "%fatype%" EQU "-fat fat32" ( %pycommand% "%squirrel%" -lib_call listmanager filter_list "%prog_dir%mlist.txt","ext=nsp nsx xci","token=False",Print="False" )
+if "%fatype%" EQU "-fat fat32" ( %pycommand% "%squirrel_lb%" -lib_call listmanager filter_list "%prog_dir%mlist.txt","ext=nsp nsx xci","token=False",Print="False" )
 cls
 call :program_logo
 %pycommand% "%squirrel%" -splid "%mlistfol%" -tfile "%prog_dir%mlist.txt"
 goto m_process_jobs2
 :m_process_jobs
 if "%fatype%" EQU "-fat fat32" echo Fat32 selected, removing nsz and xcz from input list
-if "%fatype%" EQU "-fat fat32" ( %pycommand% "%squirrel%" -lib_call listmanager filter_list "%prog_dir%mlist.txt","ext=nsp nsx xci","token=False",Print="False" )
+if "%fatype%" EQU "-fat fat32" ( %pycommand% "%squirrel_lb%" -lib_call listmanager filter_list "%prog_dir%mlist.txt","ext=nsp nsx xci","token=False",Print="False" )
 cls
 :m_process_jobs2
 dir "%mlistfol%\*.txt" /b  > "%prog_dir%mlist.txt"
@@ -2403,10 +2405,10 @@ echo+ >"%uinput%"
 endlocal
 
 if /i "%eval%"=="0" goto manual_Reentry
-if /i "%eval%"=="1" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%splist.txt" mode=folder ext="nsp xci nsz xcz" ) 2>&1>NUL
-if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%splist.txt" mode=file ext="nsp xci nsz xcz" )  2>&1>NUL
-if /i "%eval%"=="3" ( %pycommand% "%squirrel%" -lib_call picker_walker select_from_local_libraries -xarg "%prog_dir%splist.txt" "extlist=nsp xci nsz xcz" )
-if /i "%eval%"=="4" ( %pycommand% "%squirrel%" -lib_call picker_walker get_files_from_walk -xarg "%prog_dir%splist.txt" "extlist=nsp xci nsz xcz" )
+if /i "%eval%"=="1" ( %pycommand% "%squirrel_lb%" -lib_call listmanager selector2list -xarg "%prog_dir%splist.txt" mode=folder ext="nsp xci nsz xcz" ) 2>&1>NUL
+if /i "%eval%"=="2" ( %pycommand% "%squirrel_lb%" -lib_call listmanager selector2list -xarg "%prog_dir%splist.txt" mode=file ext="nsp xci nsz xcz" False False True )  2>&1>NUL
+if /i "%eval%"=="3" ( %pycommand% "%squirrel_lb%" -lib_call picker_walker select_from_local_libraries -xarg "%prog_dir%splist.txt" "extlist=nsp xci nsz xcz" )
+if /i "%eval%"=="4" ( %pycommand% "%squirrel_lb%" -lib_call picker_walker get_files_from_walk -xarg "%prog_dir%splist.txt" "extlist=nsp xci nsz xcz" )
 
 echo.
 :sp_checkagain
@@ -2437,10 +2439,10 @@ endlocal
 
 if /i "%eval%"=="0" goto manual_Reentry
 if /i "%eval%"=="1" goto sp_start_cleaning
-if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%splist.txt" mode=folder ext="nsp xci nsz xcz" ) 2>&1>NUL
-if /i "%eval%"=="3" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%splist.txt" mode=file ext="nsp xci nsz xcz" )  2>&1>NUL
-if /i "%eval%"=="4" ( %pycommand% "%squirrel%" -lib_call picker_walker select_from_local_libraries -xarg "%prog_dir%splist.txt" "extlist=nsp xci nsz xcz" )
-if /i "%eval%"=="5" ( %pycommand% "%squirrel%" -lib_call picker_walker get_files_from_walk -xarg "%prog_dir%splist.txt" "extlist=nsp xci nsz xcz" )
+if /i "%eval%"=="2" ( %pycommand% "%squirrel_lb%" -lib_call listmanager selector2list -xarg "%prog_dir%splist.txt" mode=folder ext="nsp xci nsz xcz" ) 2>&1>NUL
+if /i "%eval%"=="3" ( %pycommand% "%squirrel_lb%" -lib_call listmanager selector2list -xarg "%prog_dir%splist.txt" mode=file ext="nsp xci nsz xcz" False False True )  2>&1>NUL
+if /i "%eval%"=="4" ( %pycommand% "%squirrel_lb%" -lib_call picker_walker select_from_local_libraries -xarg "%prog_dir%splist.txt" "extlist=nsp xci nsz xcz" )
+if /i "%eval%"=="5" ( %pycommand% "%squirrel_lb%" -lib_call picker_walker get_files_from_walk -xarg "%prog_dir%splist.txt" "extlist=nsp xci nsz xcz" )
 
 if /i "%eval%"=="e" goto salida
 if /i "%eval%"=="i" goto sp_showlist
@@ -2527,7 +2529,7 @@ if /i "%bs%"=="2" set "vrepack=xci"
 if /i "%bs%"=="3" set "vrepack=both"
 if %vrepack%=="none" goto sp_cl_wrongchoice
 if "%fatype%" EQU "-fat fat32" echo Fat32 selected, removing nsz and xcz from input list
-if "%fatype%" EQU "-fat fat32" ( %pycommand% "%squirrel%" -lib_call listmanager filter_list "%prog_dir%splist.txt","ext=nsp nsx xci","token=False",Print="False" )
+if "%fatype%" EQU "-fat fat32" ( %pycommand% "%squirrel_lb%" -lib_call listmanager filter_list "%prog_dir%splist.txt","ext=nsp nsx xci","token=False",Print="False" )
 cls
 call :program_logo
 for /f "tokens=*" %%f in (splist.txt) do (
@@ -3014,7 +3016,7 @@ ECHO =============================     BY JULESONTHEROAD     ===================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                                POWERED BY SQUIRREL                                "
 ECHO "                    BASED ON THE WORK OF BLAWAR AND LUCA FRAGA                     "
-ECHO                                  VERSION 1.00d (NEW)
+ECHO                                  VERSION 1.01 (NEW)
 ECHO -------------------------------------------------------------------------------------
 ECHO Program's github: https://github.com/julesontheroad/NSC_BUILDER
 ECHO Blawar's github:  https://github.com/blawar

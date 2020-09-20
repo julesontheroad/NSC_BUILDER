@@ -232,7 +232,7 @@ echo Input "7" to change top keygeneration to 7 (FW 6.2.0)
 echo Input "8" to change top keygeneration to 8 (FW 7.0.0-8.0.1)
 echo Input "9" to change top keygeneration to 9 (FW 8.1.0)
 echo Input "10" to change top keygeneration to 10 (FW 9.0.0-9.01)
-echo Input "11" to change top keygeneration to 11 (FW 9.1.0)
+echo Input "11" to change top keygeneration to 11 (FW 9.1.0-10.2.0)
 echo.
 echo Input "b" to return to AUTO-MODE - CONFIGURATION
 echo Input "c" to return to CONFIG MENU
@@ -1410,7 +1410,7 @@ echo ***************************************************************************
 echo FORCING NUT_DB UPDATE
 echo ***************************************************************************
 
-%pycommand% "%squirrel%" -lib_call nutdb force_refresh
+%pycommand% "%squirrel_lb%" -lib_call nutdb force_refresh
 
 echo ...........................................................................
 echo Input "0" to return to CONFIG MENU
@@ -1438,7 +1438,7 @@ echo .......................................................
 echo.
 set /p bs="Enter your choice: "
 if /i "%bs%"=="1" goto op_google_drive_account
-if /i "%bs%"=="2" ( %pycommand% "%squirrel%" -lib_call workers concurrent_cache )
+if /i "%bs%"=="2" ( %pycommand% "%squirrel_lb%" -lib_call workers concurrent_cache )
 if /i "%bs%"=="2" goto google_drive
 
 if /i "%bs%"=="0" goto sc1
@@ -1468,7 +1468,7 @@ echo.
 set /p bs="Enter the drive name: "
 set "token=%bs%"
 echo.
-%pycommand% "%squirrel%" -lib_call Drive.Private create_token -xarg "%token%" headless="False"
+%pycommand% "%squirrel_lb%" -lib_call Drive.Private create_token -xarg "%token%" headless="False"
 pause
 goto google_drive
 
@@ -2753,7 +2753,7 @@ ECHO =============================     BY JULESONTHEROAD     ===================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                                POWERED BY SQUIRREL                                "
 ECHO "                    BASED IN THE WORK OF BLAWAR AND LUCA FRAGA                     "
-ECHO                                    VERSION 1.00d
+ECHO                                    VERSION 1.01
 ECHO -------------------------------------------------------------------------------------
 ECHO Program's github: https://github.com/julesontheroad/NSC_BUILDER
 ECHO Blawar's github:  https://github.com/blawar

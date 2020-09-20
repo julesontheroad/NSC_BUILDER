@@ -498,9 +498,11 @@ class ChromeNsp(Pfs0):
 
 		for nca in self:
 			if type(nca) == Nca:
-				if nca.header.getCryptoType2() != masterKeyRev:
-					pass
-					raise IOError('Mismatched masterKeyRevs!')
+				if nca.header.getRightsId() != 0:				
+					if nca.header.masterKeyRev != masterKeyRev:
+						print('WARNING!!! Mismatched masterKeyRevs!')
+						print(f"{str(nca._path)} - {nca.header.masterKeyRev}")	
+						print(f"{str(ticket._path)} - {masterKeyRev}")	
 
 		for nca in self:
 			if type(nca) == Nca:
@@ -576,9 +578,11 @@ class ChromeNsp(Pfs0):
 
 		for nca in self:
 			if type(nca) == Nca:
-				if nca.header.getCryptoType2() != masterKeyRev:
-					pass
-					raise IOError('Mismatched masterKeyRevs!')
+				if nca.header.getRightsId() != 0:				
+					if nca.header.masterKeyRev != masterKeyRev:
+						print('WARNING!!! Mismatched masterKeyRevs!')
+						print(f"{str(nca._path)} - {nca.header.masterKeyRev}")	
+						print(f"{str(ticket._path)} - {masterKeyRev}")	
 
 		for nca in self:
 			if type(nca) == Nca:
@@ -1506,9 +1510,11 @@ class ChromeNsp(Pfs0):
 
 		for nca in self:
 			if type(nca) == Nca:
-				if nca.header.getCryptoType2() != masterKeyRev:
-					pass
-					raise IOError('Mismatched masterKeyRevs!')
+				if nca.header.getRightsId() != 0:				
+					if nca.header.masterKeyRev != masterKeyRev:
+						print('WARNING!!! Mismatched masterKeyRevs!')
+						print(f"{str(nca._path)} - {nca.header.masterKeyRev}")	
+						print(f"{str(ticket._path)} - {masterKeyRev}")	
 
 		for nca in self:
 			if type(nca) == Nca:
@@ -2633,9 +2639,11 @@ class ChromeNsp(Pfs0):
 		
 		for nca in self:
 			if type(nca) == Nca:
-				if nca.header.getCryptoType2() != masterKeyRev:
-					pass
-					raise IOError('Mismatched masterKeyRevs!')
+				if nca.header.getRightsId() != 0:				
+					if nca.header.masterKeyRev != masterKeyRev:
+						print('WARNING!!! Mismatched masterKeyRevs!')
+						print(f"{str(nca._path)} - {nca.header.masterKeyRev}")	
+						print(f"{str(ticket._path)} - {masterKeyRev}")	
 
 		for nca in self:
 			if type(nca) == Nca:
@@ -2739,9 +2747,11 @@ class ChromeNsp(Pfs0):
 		
 		for nca in self:
 			if type(nca) == Nca:
-				if nca.header.getCryptoType2() != masterKeyRev:
-					pass
-					raise IOError('Mismatched masterKeyRevs!')		
+				if nca.header.getRightsId() != 0:				
+					if nca.header.masterKeyRev != masterKeyRev:
+						print('WARNING!!! Mismatched masterKeyRevs!')
+						print(f"{str(nca._path)} - {nca.header.masterKeyRev}")	
+						print(f"{str(ticket._path)} - {masterKeyRev}")			
 		
 		for nca in self:
 			if type(nca) == Nca:
@@ -3523,9 +3533,10 @@ class ChromeNsp(Pfs0):
 		for file in self:				
 			if type(file) == Nca:
 				if file.header.getRightsId() != 0:
-					if file.header.getCryptoType2() != masterKeyRev:
-						pass
-						raise IOError('Mismatched masterKeyRevs!')
+					if file.header.masterKeyRev != masterKeyRev:
+						print('WARNING!!! Mismatched masterKeyRevs!')
+						print(f"{str(file._path)} - {file.header.masterKeyRev}")	
+						print(f"{str(ticket._path)} - {masterKeyRev}")	
 		for file in self:	
 			if type(file) == Nca:	
 				if file.header.getRightsId() != 0:		
@@ -4052,9 +4063,10 @@ class ChromeNsp(Pfs0):
 		for nca in self:
 			if type(nca) == Nca:
 				if nca.header.getRightsId() != 0:			
-					if nca.header.getCryptoType2() != masterKeyRev:
-						pass
-						raise IOError('Mismatched masterKeyRevs!')
+					if nca.header.masterKeyRev != masterKeyRev:
+						print('WARNING!!! Mismatched masterKeyRevs!')
+						print(f"{str(nca._path)} - {nca.header.masterKeyRev}")	
+						print(f"{str(ticket._path)} - {masterKeyRev}")		
 		for nca in self:	
 			if type(nca) == Nca:		
 				if nca.header.getRightsId() != 0:
@@ -4791,9 +4803,10 @@ class ChromeNsp(Pfs0):
 		for file in self:				
 			if type(file) == Nca:
 				if file.header.getRightsId() != 0:
-					if file.header.getCryptoType2() != masterKeyRev:
-						pass
-						raise IOError('Mismatched masterKeyRevs!')
+					if file.header.masterKeyRev != masterKeyRev:
+						print('WARNING!!! Mismatched masterKeyRevs!')
+						print(f"{str(file._path)} - {file.header.masterKeyRev}")	
+						print(f"{str(ticket._path)} - {masterKeyRev}")	
 		for file in self:	
 			if type(file) == Nca:	
 				if file.header.getRightsId() != 0:		
@@ -6971,9 +6984,10 @@ class ChromeNsp(Pfs0):
 		for file in self:				
 			if type(file) == Nca and file._path in filelist:
 				if file.header.getRightsId() != 0:
-					if file.header.getCryptoType2() != masterKeyRev:
-						pass
-						raise IOError('Mismatched masterKeyRevs!')
+					if file.header.masterKeyRev != masterKeyRev:
+						print('WARNING!!! Mismatched masterKeyRevs!')
+						print(f"{str(file._path)} - {file.header.masterKeyRev}")	
+						print(f"{str(ticket._path)} - {masterKeyRev}")	
 		for file in self:	
 			if type(file) == Nca and file._path in filelist:	
 				if file.header.getRightsId() != 0:		

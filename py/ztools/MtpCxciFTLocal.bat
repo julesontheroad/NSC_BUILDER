@@ -2,7 +2,7 @@
 :TOP_INIT
 CD /d "%prog_dir%"
 set "bat_name=%~n0"
-Title NSC_Builder v1.00d -- Profile: %ofile_name% -- by JulesOnTheRoad
+Title NSC_Builder v1.01 -- Profile: %ofile_name% -- by JulesOnTheRoad
 REM //////////////////////////////////////////////////
 REM /////////////////////////////////////////////////
 REM START OF MANUAL MODE. INDIVIDUAL PROCESSING
@@ -80,10 +80,10 @@ setlocal enabledelayedexpansion
 echo+ >"%uinput%"
 endlocal
 if /i "%eval%"=="0" goto MAIN
-if /i "%eval%"=="1" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%mtpxci.txt" mode=folder ext="nsp xci nsz nsx xcz" ) 2>&1>NUL
-if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg "%prog_dir%mtpxci.txt" mode=file ext="nsp xci nsz nsx xcz" ) 2>&1>NUL
-if /i "%eval%"=="3" ( %pycommand% "%squirrel%" -lib_call mtp.mtpinstaller select_from_local_libraries -xarg "%prog_dir%mtpxci.txt" "mode=installer" )
-if /i "%eval%"=="4" ( %pycommand% "%squirrel%" -lib_call picker_walker get_files_from_walk -xarg "%prog_dir%mtpxci.txt" "extlist=nsp xci nsz xcz" )
+if /i "%eval%"=="1" ( %pycommand% "%squirrel_lb%" -lib_call listmanager selector2list -xarg "%prog_dir%mtpxci.txt" mode=folder ext="nsp xci nsz nsx xcz" ) 2>&1>NUL
+if /i "%eval%"=="2" ( %pycommand% "%squirrel_lb%" -lib_call listmanager selector2list -xarg "%prog_dir%mtpxci.txt" mode=file ext="nsp xci nsz nsx xcz" False False True ) 2>&1>NUL
+if /i "%eval%"=="3" ( %pycommand% "%squirrel_lb%" -lib_call mtp.mtpinstaller select_from_local_libraries -xarg "%prog_dir%mtpxci.txt" "mode=installer" )
+if /i "%eval%"=="4" ( %pycommand% "%squirrel_lb%" -lib_call picker_walker get_files_from_walk -xarg "%prog_dir%mtpxci.txt" "extlist=nsp xci nsz xcz" )
 goto checkagain
 echo.
 :checkagain
@@ -114,10 +114,10 @@ endlocal
 
 if /i "%eval%"=="0" goto MAIN
 if /i "%eval%"=="1" goto patch_keygen
-if /i "%eval%"=="2" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg  "%prog_dir%mtpxci.txt" mode=folder ext="nsp xci nsz nsx xcz" ) 2>&1>NUL
-if /i "%eval%"=="3" ( %pycommand% "%squirrel%" -lib_call listmanager selector2list -xarg  "%prog_dir%mtpxci.txt" mode=file ext="nsp xci nsz nsx xcz" )  2>&1>NUL
-if /i "%eval%"=="4" ( %pycommand% "%squirrel%" -lib_call mtp.mtpinstaller select_from_local_libraries -xarg "%prog_dir%mtpxci.txt" "mode=installer" )
-if /i "%eval%"=="5" ( %pycommand% "%squirrel%" -lib_call picker_walker get_files_from_walk -xarg "%prog_dir%mtpxci.txt" "extlist=nsp xci nsz xcz" )
+if /i "%eval%"=="2" ( %pycommand% "%squirrel_lb%" -lib_call listmanager selector2list -xarg  "%prog_dir%mtpxci.txt" mode=folder ext="nsp xci nsz nsx xcz" ) 2>&1>NUL
+if /i "%eval%"=="3" ( %pycommand% "%squirrel_lb%" -lib_call listmanager selector2list -xarg  "%prog_dir%mtpxci.txt" mode=file ext="nsp xci nsz nsx xcz" False False True )  2>&1>NUL
+if /i "%eval%"=="4" ( %pycommand% "%squirrel_lb%" -lib_call mtp.mtpinstaller select_from_local_libraries -xarg "%prog_dir%mtpxci.txt" "mode=installer" )
+if /i "%eval%"=="5" ( %pycommand% "%squirrel_lb%" -lib_call picker_walker get_files_from_walk -xarg "%prog_dir%mtpxci.txt" "extlist=nsp xci nsz xcz" )
 if /i "%eval%"=="e" goto salida
 if /i "%eval%"=="i" goto showlist
 if /i "%eval%"=="r" goto r_files
@@ -204,7 +204,7 @@ if /i "%bs%"=="2" set "dopatchkg=False"
 if %dopatchkg%=="none" goto patch_keygen_wrongchoice
 
 :start_xci_process
-%pycommand% "%squirrel%" -lib_call mtp.mtpxci loop_xci_transfer -xarg "%prog_dir%mtpxci.txt" "destiny=False" "verification=%MTP_verification%" "%w_folder%" "patch_keygen=%dopatchkg%" "mode=single"
+%pycommand% "%squirrel_lb%" -lib_call mtp.mtpxci loop_xci_transfer -xarg "%prog_dir%mtpxci.txt" "destiny=False" "verification=%MTP_verification%" "%w_folder%" "patch_keygen=%dopatchkg%" "mode=single"
 
 ECHO ---------------------------------------------------
 ECHO *********** ALL FILES WERE PROCESSED! *************
@@ -264,10 +264,10 @@ ECHO =============================     BY JULESONTHEROAD     ===================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                                POWERED BY SQUIRREL                                "
 ECHO "                         A MTP MANAGER FOR DBI INSTALLER                           "
-ECHO                                  VERSION 1.00d (MTP)
+ECHO                                  VERSION 1.01 (MTP)
 ECHO -------------------------------------------------------------------------------------
 ECHO DBI by DUCKBILL: https://github.com/rashevskyv/switch/releases
-ECHO Latest DBI: https://github.com/rashevskyv/switch/releases/tag/462
+ECHO Latest DBI: https://github.com/rashevskyv/switch/releases
 ECHO -------------------------------------------------------------------------------------
 exit /B
 
