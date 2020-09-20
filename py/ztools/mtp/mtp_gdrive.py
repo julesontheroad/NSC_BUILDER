@@ -66,6 +66,7 @@ remote_lib_file = os.path.join(zconfig_dir, 'remote_libraries.txt')
 cache_lib_file= os.path.join(zconfig_dir, 'remote_cache_location.txt')
 _1fichier_token=os.path.join((os.path.join(zconfig_dir, 'credentials')),'_1fichier_token.tk')
 remote_lib_cache=os.path.join(zconfig_dir, 'remote_lib_cache')	
+xci_locations=os.path.join(zconfig_dir, 'mtp_xci_locations.txt')
 
 def libraries(tfile):
 	db={}
@@ -748,7 +749,10 @@ def update_console_from_gd(libraries="all",destiny="SD",exclude_xci=True,priorit
 		except OSError:
 			os.remove(fp)	
 	print("1. Parsing games in device. Please Wait...")			
-	process=subprocess.Popen([nscb_mtp,"ShowInstalled","-tfile",games_installed_cache,"-show","false"],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+	if exclude_xci==True:
+		process=subprocess.Popen([nscb_mtp,"ShowInstalled","-tfile",games_installed_cache,"-show","false","-exci","true"],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+	else:	
+		process=subprocess.Popen([nscb_mtp,"ShowInstalled","-tfile",games_installed_cache,"-show","false","-exci","false","-xci_lc",xci_locations],stdout=subprocess.PIPE,stderr=subprocess.PIPE)	
 	while process.poll()==None:
 		if process.poll()!=None:
 			process.terminate();	

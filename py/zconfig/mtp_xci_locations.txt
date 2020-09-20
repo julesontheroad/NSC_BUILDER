@@ -1,0 +1,6 @@
+1: External SD Card\
+1: External SD Card\sxos\
+1: External SD Card\sxos\xci\
+1: External SD Card\sxos\games\
+1: External SD Card\switch\xci\
+1: External SD Card\switch\

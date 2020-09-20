@@ -2,7 +2,7 @@
 :TOP_INIT
 CD /d "%prog_dir%"
 set "bat_name=%~n0"
-Title NSC_Builder v1.00d -- Profile: %ofile_name% -- by JulesOnTheRoad
+Title NSC_Builder v1.01 -- Profile: %ofile_name% -- by JulesOnTheRoad
 
 :MAIN
 cls
@@ -619,7 +619,7 @@ goto DEV_INF
 cls
 call :program_logo
 echo.
-%pycommand% "%squirrel_lb%" -lib_call mtp.mtpinstaller get_installed_info -xarg "" False
+%pycommand% "%squirrel_lb%" -lib_call mtp.mtpinstaller get_installed_info -xarg "" False "exclude_homebrew=True" "exclude_xci=False"
 echo.
 PAUSE
 goto DEV_INF
@@ -628,7 +628,7 @@ goto DEV_INF
 cls
 call :program_logo
 echo.
-%pycommand% "%squirrel_lb%" -lib_call mtp.mtpinstaller get_installed_info -xarg "" True
+%pycommand% "%squirrel_lb%" -lib_call mtp.mtpinstaller get_installed_info -xarg "" True "exclude_homebrew=True" "exclude_xci=False"
 echo.
 PAUSE
 goto DEV_INF
@@ -637,7 +637,7 @@ goto DEV_INF
 cls
 call :program_logo
 echo.
-%pycommand% "%squirrel_lb%" -lib_call mtp.mtpinstaller get_archived_info -xarg False
+%pycommand% "%squirrel_lb%" -lib_call mtp.mtpinstaller get_archived_info -xarg False "exclude_homebrew=True" "exclude_xci=False"
 echo.
 PAUSE
 goto DEV_INF
@@ -646,7 +646,7 @@ goto DEV_INF
 cls
 call :program_logo
 echo.
-%pycommand% "%squirrel_lb%" -lib_call mtp.mtpinstaller get_archived_info -xarg True
+%pycommand% "%squirrel_lb%" -lib_call mtp.mtpinstaller get_archived_info -xarg True "exclude_homebrew=True" "exclude_xci=False"
 echo.
 PAUSE
 goto DEV_INF
@@ -704,10 +704,10 @@ ECHO =============================     BY JULESONTHEROAD     ===================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                                POWERED BY SQUIRREL                                "
 ECHO "                         A MTP MANAGER FOR DBI INSTALLER                           "
-ECHO                                  VERSION 1.00d (MTP)
+ECHO                                  VERSION 1.01 (MTP)
 ECHO -------------------------------------------------------------------------------------
 ECHO DBI by DUCKBILL: https://github.com/rashevskyv/switch/releases
-ECHO Latest DBI: https://github.com/rashevskyv/switch/releases/tag/462
+ECHO Latest DBI: https://github.com/rashevskyv/switch/releases
 ECHO -------------------------------------------------------------------------------------
 exit /B
 

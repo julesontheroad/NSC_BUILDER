@@ -2,7 +2,7 @@
 :TOP_INIT
 CD /d "%prog_dir%"
 set "bat_name=%~n0"
-Title NSC_Builder v1.00d -- Profile: %ofile_name% -- by JulesOnTheRoad
+Title NSC_Builder v1.01 -- Profile: %ofile_name% -- by JulesOnTheRoad
 
 ::///////////////////////////////////////////////////
 ::///////////////////////////////////////////////////
@@ -333,10 +333,10 @@ ECHO =============================     BY JULESONTHEROAD     ===================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                                POWERED BY SQUIRREL                                "
 ECHO "                         A MTP MANAGER FOR DBI INSTALLER                           "
-ECHO                                  VERSION 1.00d (MTP)
+ECHO                                  VERSION 1.01 (MTP)
 ECHO -------------------------------------------------------------------------------------
 ECHO DBI by DUCKBILL: https://github.com/rashevskyv/switch/releases
-ECHO Latest DBI: https://github.com/rashevskyv/switch/releases/tag/462
+ECHO Latest DBI: https://github.com/rashevskyv/switch/releases
 ECHO -------------------------------------------------------------------------------------
 exit /B
 

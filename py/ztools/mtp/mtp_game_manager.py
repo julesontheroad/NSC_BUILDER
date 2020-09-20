@@ -62,6 +62,7 @@ mtp_internal_lib=os.path.join(zconfig_dir,'mtp_SD_libraries.txt')
 storage_info=os.path.join(cachefolder, 'storage.csv')
 download_lib_file = os.path.join(zconfig_dir, 'mtp_download_libraries.txt')
 sx_autoloader_db=os.path.join(zconfig_dir, 'sx_autoloader_db')
+xci_locations=os.path.join(zconfig_dir, 'mtp_xci_locations.txt')
 
 def libraries(tfile):
 	db={}
@@ -152,7 +153,7 @@ def retrieve_xci_paths():
 				os.remove(fp)	
 	except:pass		
 	print("  * Parsing games in device. Please Wait...")			
-	process=subprocess.Popen([nscb_mtp,"Retrieve_XCI_paths","-tfile",sd_xci_cache,"-show","false"],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+	process=subprocess.Popen([nscb_mtp,"Retrieve_XCI_paths","-tfile",sd_xci_cache,"-show","false","-exci","false","-xci_lc",xci_locations],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
 	while process.poll()==None:
 		if process.poll()!=None:
 			process.terminate();	
