@@ -710,9 +710,10 @@ def getinfo(filename,remotelocation=False):
 		dict=DriveHtmlInfo.getDBdict(file=globalremote)
 	if remotelocation == False:		
 		try:
-			ModuleId,BuildID8,BuildID16=f.read_buildid()	
+			ModuleId,BuildID8,BuildID16=f.read_buildid()
 			ModuleId=sq_tools.trimm_module_id(ModuleId)
-		except:
+		except BaseException as e:
+			Print.error("Can't read buildID: " + str(e))
 			ModuleId="-";BuildID8="-";BuildID16="-";
 	else:
 		try:	
