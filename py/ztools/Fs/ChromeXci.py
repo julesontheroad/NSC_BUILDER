@@ -1081,6 +1081,9 @@ class ChromeXci(File):
 											stringEndOffset = st_size
 											headerSize = 0x10 + 0x18 * n_files + st_size
 											#print(head)
+											if head!=b'PFS0':
+												feed=self.html_feed(feed,2,message=str('- Error decrypting npdm'))
+												break											
 											#print(str(n_files))
 											#print(str(st_size))	
 											#print(str((stringTable)))		
@@ -1185,6 +1188,8 @@ class ChromeXci(File):
 										stringEndOffset = st_size
 										headerSize = 0x10 + 0x18 * n_files + st_size
 										#print(head)
+										if head!=b'PFS0':
+											break										
 										#print(str(n_files))
 										#print(str(st_size))	
 										#print(str((stringTable)))		
@@ -2188,6 +2193,10 @@ class ChromeXci(File):
 						Print.info(str(filename))									
 
 	def html_feed(self,feed='',style=1,message=''):	
+		if feed==None:
+			feed=''
+		if message==None:
+			message=''			
 		if style==1:
 			feed+='<p style="font-size: 14px; justify;text-justify: inter-word;"><strong>{}</strong></p>'.format(message)	
 			return feed

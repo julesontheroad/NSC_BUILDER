@@ -1055,7 +1055,7 @@ class Nsp(Pfs0):
 								pfs0Header = nca.read(0x10*30)
 								mem = MemoryFile(pfs0Header, Type.Crypto.CTR, decKey, pfs0.cryptoCounter, offset = pfs0Offset)
 								data = mem.read();
-								#Hex.dump(data)	
+								Hex.dump(data)	
 								head=data[0:4]
 								n_files=(data[4:8])
 								n_files=int.from_bytes(n_files, byteorder='little')		
@@ -1066,10 +1066,12 @@ class Nsp(Pfs0):
 								stringTable=(data[offset:offset+st_size])
 								stringEndOffset = st_size
 								headerSize = 0x10 + 0x18 * n_files + st_size
-								#print(head)
-								#print(str(n_files))
-								#print(str(st_size))	
-								#print(str((stringTable)))		
+								# print(head)						
+								# print(str(n_files))
+								# print(str(st_size))	
+								# print(str((stringTable)))		
+								if head!=b'PFS0':
+									break										
 								files_list=list()
 								for i in range(n_files):
 									i = n_files - i - 1
@@ -1148,7 +1150,7 @@ class Nsp(Pfs0):
 							pfs0Header = nca.read(0x10*30)
 							mem = MemoryFile(pfs0Header, Type.Crypto.CTR, decKey, pfs0.cryptoCounter, offset = pfs0Offset)
 							data = mem.read();
-							#Hex.dump(data)	
+							# Hex.dump(data)	
 							head=data[0:4]
 							n_files=(data[4:8])
 							n_files=int.from_bytes(n_files, byteorder='little')		
@@ -1159,29 +1161,35 @@ class Nsp(Pfs0):
 							stringTable=(data[offset:offset+st_size])
 							stringEndOffset = st_size
 							headerSize = 0x10 + 0x18 * n_files + st_size
-							#print(head)
-							#print(str(n_files))
-							#print(str(st_size))	
-							#print(str((stringTable)))		
+							# print(head)
+							# print(str(n_files))
+							# print(str(st_size))	
+							# print(str((stringTable)))
+							if head!=b'PFS0':
+								break							
 							files_list=list()
-							for i in range(n_files):
-								i = n_files - i - 1
-								pos=0x10 + i * 0x18
-								offset = data[pos:pos+8]
-								offset=int.from_bytes(offset, byteorder='little')			
-								size = data[pos+8:pos+16]
-								size=int.from_bytes(size, byteorder='little')			
-								nameOffset = data[pos+16:pos+20] # just the offset
-								nameOffset=int.from_bytes(nameOffset, byteorder='little')			
-								name = stringTable[nameOffset:stringEndOffset].decode('utf-8').rstrip(' \t\r\n\0')
-								stringEndOffset = nameOffset
-								junk2 = data[pos+20:pos+24] # junk data
-								#print(name)
-								#print(offset)	
-								#print(size)	
-								files_list.append([name,offset,size])	
+							try:
+								for i in range(n_files):
+									i = n_files - i - 1
+									pos=0x10 + i * 0x18
+									offset = data[pos:pos+8]
+									offset=int.from_bytes(offset, byteorder='little')			
+									size = data[pos+8:pos+16]
+									size=int.from_bytes(size, byteorder='little')			
+									nameOffset = data[pos+16:pos+20] # just the offset
+									nameOffset=int.from_bytes(nameOffset, byteorder='little')			
+									name = stringTable[nameOffset:stringEndOffset].decode('utf-8').rstrip(' \t\r\n\0')
+									stringEndOffset = nameOffset
+									junk2 = data[pos+20:pos+24] # junk data
+									#print(name)
+									#print(offset)	
+									#print(size)	
+									files_list.append([name,offset,size])	
+							except BaseException as e:
+								Print.error('Exception: ' + str(e))									
 							files_list.reverse()	
-							#print(files_list)								
+							# print("")
+							# print(files_list)								
 							for i in range(len(files_list)):
 								if files_list[i][0] == 'main':
 									off1=files_list[i][1]+pfs0Offset+headerSize
@@ -1189,6 +1197,7 @@ class Nsp(Pfs0):
 									np=nca.read(0x60)
 									mem = MemoryFile(np, Type.Crypto.CTR, decKey, pfs0.cryptoCounter, offset = off1)
 									magic=mem.read(0x4)
+									print(magic)
 									if magic==b'NSO0':
 										mem.seek(0x40)
 										data = mem.read(0x20);
@@ -1204,6 +1213,7 @@ class Nsp(Pfs0):
 				for nca in self:								
 					if type(nca) == Fs.Nca:
 						if 	str(nca.header.contentType) == 'Content.PROGRAM':
+							print("here2")
 							nca3type=Nca(nca)
 							nca3type._path=nca._path							
 							ModuleId=str(nca3type.buildId)

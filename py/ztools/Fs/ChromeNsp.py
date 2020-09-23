@@ -975,6 +975,9 @@ class ChromeNsp(Pfs0):
 									stringEndOffset = st_size
 									headerSize = 0x10 + 0x18 * n_files + st_size
 									#print(head)
+									if head!=b'PFS0':
+										feed=self.html_feed(feed,2,message=str('- Error decrypting npdm'))
+										break									
 									#print(str(n_files))
 									#print(str(st_size))	
 									#print(str((stringTable)))		
@@ -1076,6 +1079,8 @@ class ChromeNsp(Pfs0):
 								stringEndOffset = st_size
 								headerSize = 0x10 + 0x18 * n_files + st_size
 								#print(head)
+								if head!=b'PFS0':
+									break								
 								#print(str(n_files))
 								#print(str(st_size))	
 								#print(str((stringTable)))		
@@ -1742,7 +1747,9 @@ class ChromeNsp(Pfs0):
 				filename =  str(file._path)
 				Print.info(str(filename))
 
-	def  html_feed(self,feed='',style=1,message=''):
+	def html_feed(self,feed='',style=1,message=''):
+		if feed==None:
+			feed=''
 		if message==None:
 			message=''
 		if style==1:
