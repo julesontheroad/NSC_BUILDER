@@ -1155,7 +1155,7 @@ class Xci(File):
 										headerSize = 0x10 + 0x18 * n_files + st_size
 										#print(head)
 										if head!=b'PFS0':
-											break
+											continue
 										#print(str(n_files))
 										#print(str(st_size))	
 										#print(str((stringTable)))		
@@ -1252,7 +1252,7 @@ class Xci(File):
 									headerSize = 0x10 + 0x18 * n_files + st_size
 									#print(head)
 									if head!=b'PFS0':
-										break
+										continue
 									#print(str(n_files))
 									#print(str(st_size))	
 									#print(str((stringTable)))		

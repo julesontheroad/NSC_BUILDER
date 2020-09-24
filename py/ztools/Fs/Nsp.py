@@ -1071,7 +1071,7 @@ class Nsp(Pfs0):
 								# print(str(st_size))	
 								# print(str((stringTable)))		
 								if head!=b'PFS0':
-									break										
+									continue										
 								files_list=list()
 								for i in range(n_files):
 									i = n_files - i - 1
@@ -1135,8 +1135,10 @@ class Nsp(Pfs0):
 							break						
 					nca.rewind()
 					for fs in nca.sectionFilesystems:
-						#print(fs.fsType)
-						#print(fs.cryptoType)						
+						# print(fs.fsType)
+						# print(fs.cryptoType)		
+						# print(fs.offset)
+						# print(fs.sectionStart)								
 						if fs.fsType == Type.Fs.PFS0 and fs.cryptoType == Type.Crypto.CTR:
 							nca.seek(0)
 							ncaHeader = NcaHeader()
@@ -1166,7 +1168,7 @@ class Nsp(Pfs0):
 							# print(str(st_size))	
 							# print(str((stringTable)))
 							if head!=b'PFS0':
-								break							
+								continue							
 							files_list=list()
 							try:
 								for i in range(n_files):
@@ -1197,7 +1199,7 @@ class Nsp(Pfs0):
 									np=nca.read(0x60)
 									mem = MemoryFile(np, Type.Crypto.CTR, decKey, pfs0.cryptoCounter, offset = off1)
 									magic=mem.read(0x4)
-									print(magic)
+									# print(magic)
 									if magic==b'NSO0':
 										mem.seek(0x40)
 										data = mem.read(0x20);
@@ -1209,17 +1211,21 @@ class Nsp(Pfs0):
 						break	
 		if iscorrect==False:
 			try:
-				from nutFS.Nca import Nca as nca3type
+				# from nutFs.Nca import Nca as nca3type
 				for nca in self:								
 					if type(nca) == Fs.Nca:
 						if 	str(nca.header.contentType) == 'Content.PROGRAM':
-							print("here2")
+							# sections = []
+							# for i in range(2):
+								# sections.append(Section(nca))		
+							# print(sections)							
 							nca3type=Nca(nca)
 							nca3type._path=nca._path							
 							ModuleId=str(nca3type.buildId)
 							BuildID8=ModuleId[:8]
 							BuildID16=ModuleId[:16]
-			except:
+			except BaseException as e:
+				# Print.error('Exception: ' + str(e))
 				ModuleId='';BuildID8='';BuildID16='';
 		return ModuleId,BuildID8,BuildID16					
 		
@@ -1819,7 +1825,7 @@ class Nsp(Pfs0):
 #ADVANCED FILE-LIST			
 	def  adv_file_list(self):		
 		contentlist=list()	
-		feed=''
+		feed='';ncadb={};finalsize=0
 		for nca in self:
 			size1=0;size2=0;size3=0	
 			if type(nca) == Nca:	
@@ -1874,6 +1880,8 @@ class Nsp(Pfs0):
 							cnmt.seek(0x20+offset)
 							titleid2 = str(hx(titleid.to_bytes(8, byteorder='big'))) 	
 							titleid2 = titleid2[2:-1]
+							original_ID2 = str(hx(original_ID.to_bytes(8, byteorder='big'))) 
+							original_ID2 = original_ID2[2:-1]							
 							version=str(int.from_bytes(titleversion, byteorder='little'))
 							v_number=int(int(version)/65536)
 							RS_number=int(min_sversion/65536)
@@ -1947,12 +1955,21 @@ class Nsp(Pfs0):
 								size = cnmt.read(0x6)
 								ncatype = cnmt.read(0x1)
 								ncatype = int.from_bytes(ncatype, byteorder='little')	
-								unknown = cnmt.read(0x1)
+								IdOffset = cnmt.read(0x1)
+								IdOffset = int.from_bytes(IdOffset, byteorder='little', signed=True)
 								#Print.info(str(ncatype))
 								if ncatype != 6:									
 									nca_name=str(hx(NcaId))
 									nca_name=nca_name[2:-1]+'.nca'
-									s1=0;s1,feed=self.print_nca_by_title(nca_name,ncatype,feed)
+									if titleid2.endswith('800'):
+										showID=str(original_ID2).upper()
+									else:
+										showID=str(titleid2).upper()
+									if IdOffset>0:		
+										showID=showID[:-1]+str(IdOffset)
+									ncadb[nca_name]=[showID,version,v_number]
+									showID=showID+' v'+version									
+									s1=0;s1,feed=self.print_nca_by_title(nca_name,ncatype,showID,feed)
 									ncasize=ncasize+s1
 									ncalist.append(nca_name[:-4])
 									contentlist.append(nca_name)									
@@ -1964,7 +1981,10 @@ class Nsp(Pfs0):
 							nca_meta=str(nca._path)
 							ncalist.append(nca_meta[:-4])	
 							contentlist.append(nca_meta)
-							s1=0;s1,feed=self.print_nca_by_title(nca_meta,0,feed)							
+							showID=str(titleid2).upper()
+							ncadb[nca_name]=[showID,version,v_number]
+							showID=showID+' v'+version							
+							s1=0;s1,feed=self.print_nca_by_title(nca_meta,0,showID,feed)							
 							ncasize=ncasize+s1
 							size1=ncasize
 							size_pr=sq_tools.getSize(ncasize)		
@@ -1980,7 +2000,8 @@ class Nsp(Pfs0):
 									size = cnmt.read(0x6)
 									ncatype = cnmt.read(0x1)
 									ncatype = int.from_bytes(ncatype, byteorder='little')		
-									unknown = cnmt.read(0x1)								
+									IdOffset = cnmt.read(0x1)
+									IdOffset = int.from_bytes(IdOffset, byteorder='little', signed=True)								
 									if ncatype == 6:	
 										message=('......................');print(message);feed+=message+'\n'
 										message=('NCA FILES (DELTAS)');print(message);feed+=message+'\n'										
@@ -1995,11 +2016,20 @@ class Nsp(Pfs0):
 									size = cnmt.read(0x6)
 									ncatype = cnmt.read(0x1)
 									ncatype = int.from_bytes(ncatype, byteorder='little')	
-									unknown = cnmt.read(0x1)	
+									IdOffset = cnmt.read(0x1)
+									IdOffset = int.from_bytes(IdOffset, byteorder='little', signed=True)
 									if ncatype == 6:
 										nca_name=str(hx(NcaId))
 										nca_name=nca_name[2:-1]+'.nca'
-										s1=0;s1,feed=self.print_nca_by_title(nca_name,ncatype,feed)
+										if titleid2.endswith('800'):
+											showID=str(original_ID2).upper()
+										else:
+											showID=str(titleid2).upper()
+										if IdOffset>0:		
+											showID=showID[:-1]+str(IdOffset)
+										ncadb[nca_name]=[showID,version,v_number]
+										showID=showID+' v'+version
+										s1=0;s1,feed=self.print_nca_by_title(nca_name,ncatype,showID,feed)
 										ncasize=ncasize+s1
 								size2=ncasize
 								size_pr=sq_tools.getSize(ncasize)		
@@ -2029,7 +2059,7 @@ class Nsp(Pfs0):
 		return feed
 					
 																				
-	def print_nca_by_title(self,nca_name,ncatype,feed=''):	
+	def print_nca_by_title(self,nca_name,ncatype,showID,feed):	
 		tab="\t";
 		size=0
 		ncz_name=nca_name[:-1]+'z'
@@ -2043,9 +2073,13 @@ class Nsp(Pfs0):
 					content=content[8:]+": "
 					ncatype=sq_tools.getTypeFromCNMT(ncatype)	
 					if ncatype != "Meta: ":
-						message=("- "+ncatype+tab+str(filename)+tab+tab+"Size: "+size_pr);print(message);feed+=message+'\n'						
+						message=(f"- {ncatype}{tab}{str(filename)}{tab}{tab}Size: {size_pr}");print(message);feed+=message+'\n'						
 					else:
-						message=("- "+ncatype+tab+str(filename)+tab+"Size: "+size_pr);print(message);feed+=message+'\n'					
+						message=(f"- {ncatype}{tab}{str(filename)}{tab}Size: {size_pr}");print(message);feed+=message+'\n'				
+					# if ncatype != "Meta: ":
+						# message=(f"- [{showID}] {ncatype}{tab}{str(filename)}{tab}{tab}Size: {size_pr}");print(message);feed+=message+'\n'						
+					# else:
+						# message=(f"- [{showID}] {ncatype}{tab}{str(filename)}{tab}Size: {size_pr}");print(message);feed+=message+'\n'						
 					return size,feed
 			elif filename == ncz_name:
 				ncztype=Nca(nca)

@@ -977,7 +977,7 @@ class ChromeNsp(Pfs0):
 									#print(head)
 									if head!=b'PFS0':
 										feed=self.html_feed(feed,2,message=str('- Error decrypting npdm'))
-										break									
+										continue									
 									#print(str(n_files))
 									#print(str(st_size))	
 									#print(str((stringTable)))		
@@ -1080,7 +1080,7 @@ class ChromeNsp(Pfs0):
 								headerSize = 0x10 + 0x18 * n_files + st_size
 								#print(head)
 								if head!=b'PFS0':
-									break								
+									continue								
 								#print(str(n_files))
 								#print(str(st_size))	
 								#print(str((stringTable)))		
@@ -1926,8 +1926,9 @@ class ChromeNsp(Pfs0):
 									if titleid2.endswith('800'):
 										showID=str(original_ID2).upper()
 									else:
-										showID=str(titleid2).upper()											
-									showID=showID[:-1]+str(IdOffset)
+										showID=str(titleid2).upper()	
+									if IdOffset>0:
+										showID=showID[:-1]+str(IdOffset)
 									ncadb[nca_name]=[showID,version,v_number]
 									showID=showID+' v'+version
 									s1=0;s1,feed=self.print_nca_by_title(nca_name,ncatype,showID,feed)
@@ -1982,9 +1983,9 @@ class ChromeNsp(Pfs0):
 										if titleid2.endswith('800'):
 											showID=str(original_ID2).upper()
 										else:
-											showID=str(titleid2).upper()											
-										showID=showID[:-1]+str(IdOffset)												
-										showID=showID[:-1]+str(IdOffset)
+											showID=str(titleid2).upper()			
+										if IdOffset>0:
+											showID=showID[:-1]+str(IdOffset)												
 										ncadb[nca_name]=[showID,version,v_number]
 										showID=showID+' v'+version
 										s1=0;s1,feed=self.print_nca_by_title(nca_name,ncatype,showID,feed)
