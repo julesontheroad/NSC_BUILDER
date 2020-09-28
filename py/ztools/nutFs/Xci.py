@@ -70,9 +70,12 @@ class GamecardCertificate(File):
 		super(GamecardCertificate, self).__init__()
 		self.signature = None
 		self.magic = None
-		self.unknown1 = None
+		self.unknown1 = None		
+		self.KekIndex  = None		
 		self.unknown2 = None
-		self.data = None
+		self.DeviceID = None
+		self.unknown3 = None
+		self.data = None	
 		
 		if file:
 			self.open(file)
@@ -82,9 +85,12 @@ class GamecardCertificate(File):
 		self.rewind()
 		self.signature = self.read(0x100)
 		self.magic = self.read(0x4)
-		self.unknown1 = self.read(0x10)
-		self.unknown2 = self.read(0xA)
-		self.data = self.read(0xD6)
+		self.unknown1 = self.read(0x4)		
+		self.KekIndex  = self.read(0x1)				
+		self.unknown2 = self.read(0x7)	
+		self.DeviceID = self.read(0x10)	
+		self.unknown3 = self.read(0x10)	
+		self.data = self.read(0xD0)	
 			
 class Xci(File):
 	def __init__(self, file = None):
@@ -184,7 +190,7 @@ class Xci(File):
 		Print.info(tabs + 'magic = ' + str(self.magic))
 		Print.info(tabs + 'titleKekIndex = ' + str(self.titleKekIndex))
 		
-		Print.info(tabs + 'gamecardCert = ' + str(hx(self.gamecardCert.magic + self.gamecardCert.unknown1 + self.gamecardCert.unknown2 + self.gamecardCert.data)))
+		Print.info(tabs + 'gamecardCert = ' + str(hx(self.gamecardCert.magic + self.gamecardCert.unknown1 +self.gamecardCert.KekIndex + self.gamecardCert.unknown2 +self.gamecardCert.DeviceID +self.gamecardCert.unknown3 + self.gamecardCert.data)))	
 
 		self.hfs0.printInfo(maxDepth, indent)
 

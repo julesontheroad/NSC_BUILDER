@@ -396,6 +396,8 @@ def check_region_file(region,nutdb=True):
 			return True		
 		except:
 			return False
+	elif (th*60*60+tm*60+ts)>=(9999*60*60):
+		return True			
 	elif (time.time() - os.path.getmtime(regionfile)) > (th*60*60+tm*60+ts):
 		try:
 			get_regionDB(region)	
@@ -436,6 +438,8 @@ def check_other_file(dbfile,dbname,nutdb=True):
 			return True
 		except:
 			return False
+	elif (th*60*60+tm*60+ts)>=(9999*60*60):
+		return True						
 	elif (time.time() - os.path.getmtime(_dbfile_)) > (th*60*60+tm*60+ts):
 		try:
 			get_otherDB(dbfile,dbname,f)	
@@ -846,7 +850,9 @@ def check_current():
 		th=24;tm=0;ts=0	
 	if not os.path.exists(nutdbfile):
 		getnutdb()
-		return True			
+		return True		
+	elif (th*60*60+tm*60+ts)>=(9999*60*60):
+		return True					
 	elif (time.time() - os.path.getmtime(nutdbfile)) > (th*60*60+tm*60+ts):
 		try:
 			getnutdb()		

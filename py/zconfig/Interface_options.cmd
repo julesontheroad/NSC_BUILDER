@@ -15,7 +15,7 @@ set "pycommandw=pyw -3"
 ::**************************************************************
 ::START console minimized with GUI yes\no
 ::**************************************************************
-set "start_minimized=yes"
+set "start_minimized=no"
 ::**************************************************************
 ::PATH TO BROWSER. USE AUTO, DEFAULT, ADD A PATH
 ::**************************************************************
@@ -59,4 +59,4 @@ set "host=localhost"
 ::**************************************************************
 ::true -> Dettach gui from console
 ::false -> Attach gui to console
-set "noconsole=true"
+set "noconsole=false"

@@ -55,3 +55,39 @@ def file_verification(filename,hash=False):
 		except BaseException as e:
 			Print.error('Exception: ' + str(e))
 	return verdict,isrestored,cnmt_is_patched
+	
+def check_xci_certs(ifolder,tfile,tfile2):
+	from listmanager import folder_to_list,striplines,read_lines_to_list
+	from Fs import Xci
+	import os
+	if not os.path.exists(tfile):		
+		xci_files=folder_to_list(ifolder,['xci'])
+		with open(tfile,"w", encoding='utf8') as t:
+			for file in xci_files:
+				t.write(file+'\n')
+	else:
+		xci_files=read_lines_to_list(tfile,all=True)
+	counter=len(xci_files)
+	for file in xci_files:
+		try:
+			xci=Xci(file)
+			if not xci.gamecardCert.Cert_is_fake:
+				print(f"{file} has personalized certificate")
+				with open(tfile2,"a", encoding='utf8') as t:
+					t.write(file+'\n')
+			else:
+				print(f"{file} has a wiped certificate")			
+			xci.close()
+			counter-=1
+			striplines(tfile,1,True)
+		except:
+			try:
+				with open(tfile2,"a", encoding='utf8') as t:
+					t.write("Error:"+file+'\n')			
+			except:pass
+			counter-=1
+			striplines(tfile,1,True)	
+	try:			
+		os.remove(tfile)
+	except:pass		
+	

@@ -111,9 +111,12 @@ class GamecardCertificate(File):
 		super(GamecardCertificate, self).__init__()
 		self.signature = None
 		self.magic = None
-		self.unknown1 = None
+		self.unknown1 = None		
+		self.KekIndex  = None		
 		self.unknown2 = None
-		self.data = None
+		self.DeviceID = None
+		self.unknown3 = None
+		self.data = None	
 		
 		if file:
 			self.open(file)
@@ -123,9 +126,12 @@ class GamecardCertificate(File):
 		self.rewind()
 		self.signature = self.read(0x100)
 		self.magic = self.read(0x4)
-		self.unknown1 = self.read(0x10)
-		self.unknown2 = self.read(0xA)
-		self.data = self.read(0xD6)
+		self.unknown1 = self.read(0x4)		
+		self.KekIndex  = self.read(0x1)				
+		self.unknown2 = self.read(0x7)	
+		self.DeviceID = self.read(0x10)	
+		self.unknown3 = self.read(0x10)	
+		self.data = self.read(0xD0)	
 			
 class ChromeXci(File):
 	def __init__(self, file = None):
@@ -228,7 +234,8 @@ class ChromeXci(File):
 		Print.info(tabs + 'magic = ' + str(self.magic))
 		Print.info(tabs + 'titleKekIndex = ' + str(self.titleKekIndex))
 		
-		Print.info(tabs + 'gamecardCert = ' + str(hx(self.gamecardCert.magic + self.gamecardCert.unknown1 + self.gamecardCert.unknown2 + self.gamecardCert.data)))
+		Print.info(tabs + 'gamecardCert = ' + str(hx(self.gamecardCert.magic + self.gamecardCert.unknown1 +self.gamecardCert.KekIndex + self.gamecardCert.unknown2 +self.gamecardCert.DeviceID +self.gamecardCert.unknown3 + self.gamecardCert.data)))	
+		
 		self.hfs0.printInfo( indent)
 	
 	def getxciid(self):
@@ -1081,6 +1088,9 @@ class ChromeXci(File):
 											stringEndOffset = st_size
 											headerSize = 0x10 + 0x18 * n_files + st_size
 											#print(head)
+											if head!=b'PFS0':
+												feed=self.html_feed(feed,2,message=str('- Error decrypting npdm'))
+												continue											
 											#print(str(n_files))
 											#print(str(st_size))	
 											#print(str((stringTable)))		
@@ -1123,7 +1133,8 @@ class ChromeXci(File):
 			feed=self.html_feed(feed,2,message=str('- Error decrypting npdm'))
 		return feed					
 									
-	def read_buildid(self):
+	def read_buildid(self,target=None):
+		iscorrect=False
 		ModuleId='';BuildID8='';BuildID16=''
 		files_list=sq_tools.ret_xci_offsets(self._path)
 		# print(files_list)
@@ -1132,92 +1143,100 @@ class ChromeXci(File):
 				for nca in nspF:							
 					if type(nca) == Fs.Nca:
 						if 	str(nca.header.contentType) == 'Content.PROGRAM':
-							if nca.header.getRightsId() == 0:						
-								decKey=nca.header.titleKeyDec
-							if nca.header.getRightsId() != 0:
-								correct, tkey = self.verify_nca_key(str(nca._path))		
-								if correct == True:
-									crypto1=nca.header.getCryptoType()
-									crypto2=nca.header.getCryptoType2()	
-									if crypto2>crypto1:
-										masterKeyRev=crypto2
-									if crypto2<=crypto1:	
-										masterKeyRev=crypto1	
-									decKey = Keys.decryptTitleKey(tkey, Keys.getMasterKeyIndex(int(masterKeyRev)))
-							for i in range(len(files_list)):	
-								if str(nca._path) == files_list[i][0]:
-									offset=files_list[i][1]
-									# print(offset)
-									break						
-							nca.rewind()
-							for fs in nca.sectionFilesystems:
-								#print(fs.fsType)
-								#print(fs.cryptoType)						
-								if fs.fsType == Type.Fs.PFS0 and fs.cryptoType == Type.Crypto.CTR:
-									nca.seek(0)
-									ncaHeader = NcaHeader()
-									ncaHeader.open(MemoryFile(nca.read(0x400), Type.Crypto.XTS, uhx(Keys.get('header_key'))))	
-									ncaHeader.seek(0)
-									fs.rewind()
-									pfs0=fs
-									sectionHeaderBlock = fs.buffer
-									nca.seek(fs.offset)	
-									pfs0Offset=fs.offset
-									pfs0Header = nca.read(0x10*30)
-									mem = MemoryFile(pfs0Header, Type.Crypto.CTR, decKey, pfs0.cryptoCounter, offset = pfs0Offset)
-									data = mem.read();
-									#Hex.dump(data)	
-									head=data[0:4]
-									n_files=(data[4:8])
-									n_files=int.from_bytes(n_files, byteorder='little')		
-									st_size=(data[8:12])
-									st_size=int.from_bytes(st_size, byteorder='little')		
-									junk=(data[12:16])
-									offset=(0x10 + n_files * 0x18)
-									stringTable=(data[offset:offset+st_size])
-									stringEndOffset = st_size
-									headerSize = 0x10 + 0x18 * n_files + st_size
-									#print(head)
-									#print(str(n_files))
-									#print(str(st_size))	
-									#print(str((stringTable)))		
-									files_list=list()
-									for i in range(n_files):
-										i = n_files - i - 1
-										pos=0x10 + i * 0x18
-										offset = data[pos:pos+8]
-										offset=int.from_bytes(offset, byteorder='little')			
-										size = data[pos+8:pos+16]
-										size=int.from_bytes(size, byteorder='little')			
-										nameOffset = data[pos+16:pos+20] # just the offset
-										nameOffset=int.from_bytes(nameOffset, byteorder='little')			
-										name = stringTable[nameOffset:stringEndOffset].decode('utf-8').rstrip(' \t\r\n\0')
-										stringEndOffset = nameOffset
-										junk2 = data[pos+20:pos+24] # junk data
-										#print(name)
-										#print(offset)	
-										#print(size)	
-										files_list.append([name,offset,size])	
-									files_list.reverse()	
-									print(files_list)								
-									for i in range(len(files_list)):
-										if files_list[i][0] == 'main':
-											off1=files_list[i][1]+pfs0Offset+headerSize
-											nca.seek(off1)
-											np=nca.read(0x60)
-											mem = MemoryFile(np, Type.Crypto.CTR, decKey, pfs0.cryptoCounter, offset = off1)
-											magic=mem.read(0x4)
-											mem.rewind()
-											Hex.dump(mem.read())
-											if magic==b'NSO0':
-												mem.seek(0x40)
-												data = mem.read(0x20);
-												ModuleId=(str(hx(data)).upper())[2:-1]
-												BuildID8=(str(hx(data[:8])).upper())[2:-1]
-												BuildID16=(str(hx(data[:16])).upper())[2:-1]
-												iscorrect=True;
-											break
-								break	
+							if target==None:
+								target=str(nca._path)							
+							if str(nca._path)==target:	
+								if nca.header.getRightsId() == 0:						
+									decKey=nca.header.titleKeyDec
+								if nca.header.getRightsId() != 0:
+									correct, tkey = self.verify_nca_key(str(nca._path))		
+									if correct == True:
+										crypto1=nca.header.getCryptoType()
+										crypto2=nca.header.getCryptoType2()	
+										if crypto2>crypto1:
+											masterKeyRev=crypto2
+										if crypto2<=crypto1:	
+											masterKeyRev=crypto1	
+										decKey = Keys.decryptTitleKey(tkey, Keys.getMasterKeyIndex(int(masterKeyRev)))
+									else:
+										decKey=nca.header.titleKeyDec												
+										
+								for i in range(len(files_list)):	
+									if str(nca._path) == files_list[i][0]:
+										offset=files_list[i][1]
+										# print(offset)
+										break						
+								nca.rewind()
+								for fs in nca.sectionFilesystems:
+									#print(fs.fsType)
+									#print(fs.cryptoType)						
+									if fs.fsType == Type.Fs.PFS0 and fs.cryptoType == Type.Crypto.CTR:
+										nca.seek(0)
+										ncaHeader = NcaHeader()
+										ncaHeader.open(MemoryFile(nca.read(0x400), Type.Crypto.XTS, uhx(Keys.get('header_key'))))	
+										ncaHeader.seek(0)
+										fs.rewind()
+										pfs0=fs
+										sectionHeaderBlock = fs.buffer
+										nca.seek(fs.offset)	
+										pfs0Offset=fs.offset
+										pfs0Header = nca.read(0x10*30)
+										mem = MemoryFile(pfs0Header, Type.Crypto.CTR, decKey, pfs0.cryptoCounter, offset = pfs0Offset)
+										data = mem.read();
+										#Hex.dump(data)	
+										head=data[0:4]
+										n_files=(data[4:8])
+										n_files=int.from_bytes(n_files, byteorder='little')		
+										st_size=(data[8:12])
+										st_size=int.from_bytes(st_size, byteorder='little')		
+										junk=(data[12:16])
+										offset=(0x10 + n_files * 0x18)
+										stringTable=(data[offset:offset+st_size])
+										stringEndOffset = st_size
+										headerSize = 0x10 + 0x18 * n_files + st_size
+										#print(head)
+										if head!=b'PFS0':
+											continue										
+										#print(str(n_files))
+										#print(str(st_size))	
+										#print(str((stringTable)))		
+										files_list=list()
+										for i in range(n_files):
+											i = n_files - i - 1
+											pos=0x10 + i * 0x18
+											offset = data[pos:pos+8]
+											offset=int.from_bytes(offset, byteorder='little')			
+											size = data[pos+8:pos+16]
+											size=int.from_bytes(size, byteorder='little')			
+											nameOffset = data[pos+16:pos+20] # just the offset
+											nameOffset=int.from_bytes(nameOffset, byteorder='little')			
+											name = stringTable[nameOffset:stringEndOffset].decode('utf-8').rstrip(' \t\r\n\0')
+											stringEndOffset = nameOffset
+											junk2 = data[pos+20:pos+24] # junk data
+											#print(name)
+											#print(offset)	
+											#print(size)	
+											files_list.append([name,offset,size])	
+										files_list.reverse()	
+										# print(files_list)								
+										for i in range(len(files_list)):
+											if files_list[i][0] == 'main':
+												off1=files_list[i][1]+pfs0Offset+headerSize
+												nca.seek(off1)
+												np=nca.read(0x60)
+												mem = MemoryFile(np, Type.Crypto.CTR, decKey, pfs0.cryptoCounter, offset = off1)
+												magic=mem.read(0x4)
+												mem.rewind()
+												Hex.dump(mem.read())
+												if magic==b'NSO0':
+													mem.seek(0x40)
+													data = mem.read(0x20);
+													ModuleId=(str(hx(data)).upper())[2:-1]
+													BuildID8=(str(hx(data[:8])).upper())[2:-1]
+													BuildID16=(str(hx(data[:16])).upper())[2:-1]
+													iscorrect=True;
+												break
+									break	
 		if iscorrect==False:
 			try:
 				from nutFS.Nca import Nca as nca3type
@@ -1226,11 +1245,12 @@ class ChromeXci(File):
 						for nca in nspF:										
 							if type(nca) == Fs.Nca:
 								if 	str(nca.header.contentType) == 'Content.PROGRAM':
-									nca3type=Nca(nca)
-									nca3type._path=nca._path							
-									ModuleId=str(nca3type.buildId)
-									BuildID8=ModuleId[:8]
-									BuildID16=ModuleId[:16]
+									if target==None or str(nca._path)==target:								
+										nca3type=Nca(nca)
+										nca3type._path=nca._path							
+										ModuleId=str(nca3type.buildId)
+										BuildID8=ModuleId[:8]
+										BuildID16=ModuleId[:16]
 			except:
 				ModuleId='';BuildID8='';BuildID16='';
 		return ModuleId,BuildID8,BuildID16									
@@ -2180,6 +2200,10 @@ class ChromeXci(File):
 						Print.info(str(filename))									
 
 	def html_feed(self,feed='',style=1,message=''):	
+		if feed==None:
+			feed=''
+		if message==None:
+			message=''			
 		if style==1:
 			feed+='<p style="font-size: 14px; justify;text-justify: inter-word;"><strong>{}</strong></p>'.format(message)	
 			return feed
@@ -2201,11 +2225,14 @@ class ChromeXci(File):
 		if style==7:			
 			feed+='<p style="margin-bottom: 2px;margin-top: 2px;font-size: 1.8vh;";><strong>{}</strong>{}</p>'.format(message[0],message[1])
 			return feed		
+		if style==8:				
+			feed+='<li style="margin-bottom: 2px;margin-top: 3px"><strong>[{}] {} </strong><span>{}. </span><strong>{} </strong><strong>{}</strong></li>'.format(message[3],message[0],message[1],message[4],message[5])				
+			return feed				
 			
 #ADVANCED FILE-LIST			
 	def  adv_file_list(self):				
 		contentlist=list()	
-		feed=''
+		feed='';ncadb={};finalsize=0
 		for nspF in self.hfs0:
 			if str(nspF._path)=="secure":
 				for nca in nspF:
@@ -2262,6 +2289,8 @@ class ChromeXci(File):
 									cnmt.seek(0x20+offset)
 									titleid2 = str(hx(titleid.to_bytes(8, byteorder='big'))) 	
 									titleid2 = titleid2[2:-1]
+									original_ID2 = str(hx(original_ID.to_bytes(8, byteorder='big'))) 
+									original_ID2 = original_ID2[2:-1]
 									version=str(int.from_bytes(titleversion, byteorder='little'))
 									v_number=int(int(version)/65536)
 									RS_number=int(min_sversion/65536)
@@ -2342,13 +2371,22 @@ class ChromeXci(File):
 										NcaId = cnmt.read(0x10)
 										size = cnmt.read(0x6)
 										ncatype = cnmt.read(0x1)
-										ncatype = int.from_bytes(ncatype, byteorder='little')	
-										unknown = cnmt.read(0x1)
+										ncatype = int.from_bytes(ncatype, byteorder='little')
+										IdOffset = cnmt.read(0x1)
+										IdOffset = int.from_bytes(IdOffset, byteorder='little', signed=True)										
 										#Print.info(str(ncatype))
 										if ncatype != 6:									
 											nca_name=str(hx(NcaId))
 											nca_name=nca_name[2:-1]+'.nca'
-											s1=0;s1,feed=self.print_nca_by_title(nca_name,ncatype,feed)
+											if titleid2.endswith('800'):
+												showID=str(original_ID2).upper()
+											else:
+												showID=str(titleid2).upper()
+											if IdOffset>0:
+												showID=showID[:-1]+str(IdOffset)
+											ncadb[nca_name]=[showID,version,v_number]
+											showID=showID+' v'+version
+											s1=0;s1,feed=self.print_nca_by_title(nca_name,ncatype,showID,feed)
 											ncasize=ncasize+s1
 											ncalist.append(nca_name[:-4])
 											contentlist.append(nca_name)									
@@ -2360,7 +2398,10 @@ class ChromeXci(File):
 									nca_meta=str(nca._path)
 									ncalist.append(nca_meta[:-4])	
 									contentlist.append(nca_meta)
-									s1=0;s1,feed=self.print_nca_by_title(nca_meta,0,feed)							
+									showID=str(titleid2).upper()
+									ncadb[nca_name]=[showID,version,v_number]		
+									showID=showID+' v'+version									
+									s1=0;s1,feed=self.print_nca_by_title(nca_meta,0,showID,feed)							
 									ncasize=ncasize+s1
 									size1=ncasize
 									size_pr=sq_tools.getSize(ncasize)		
@@ -2389,11 +2430,20 @@ class ChromeXci(File):
 											size = cnmt.read(0x6)
 											ncatype = cnmt.read(0x1)
 											ncatype = int.from_bytes(ncatype, byteorder='little')	
-											unknown = cnmt.read(0x1)	
+											IdOffset = cnmt.read(0x1)
+											IdOffset = int.from_bytes(IdOffset, byteorder='little', signed=True)
 											if ncatype == 6:
 												nca_name=str(hx(NcaId))
 												nca_name=nca_name[2:-1]+'.nca'
-												s1=0;s1,feed=self.print_nca_by_title(nca_name,ncatype,feed)
+												if titleid2.endswith('800'):
+													showID=str(original_ID2).upper()
+												else:
+													showID=str(titleid2).upper()
+												if IdOffset>0:		
+													showID=showID[:-1]+str(IdOffset)
+												ncadb[nca_name]=[showID,version,v_number]
+												showID=showID+' v'+version
+												s1=0;s1,feed=self.print_nca_by_title(nca_name,ncatype,showID,feed)
 												ncasize=ncasize+s1
 										size2=ncasize
 										size_pr=sq_tools.getSize(ncasize)		
@@ -2411,13 +2461,14 @@ class ChromeXci(File):
 										size_pr=sq_tools.getSize(othersize)							
 										feed+='</ul>'
 										feed=self.html_feed(feed,5,message=('TOTAL SIZE: '+size_pr))										
-							finalsize=size1+size2+size3	
-							size_pr=sq_tools.getSize(finalsize)	
-							feed=self.html_feed(feed,2,message=('FULL CONTENT TOTAL SIZE: '+size_pr))	
-		self.printnonlisted(contentlist,feed)
+							finalsize+=size1+size2+size3	
+		size_pr=sq_tools.getSize(finalsize)	
+		feed=self.html_feed(feed,2,message=('FULL CONTENT TOTAL SIZE: '+size_pr))	
+		feed=self.printnonlisted(contentlist,feed)
+		feed=self.print_BuildIDs(ncadb,feed)
 		return feed			
 																				
-	def print_nca_by_title(self,nca_name,ncatype,feed):	
+	def print_nca_by_title(self,nca_name,ncatype,showID,feed):	
 		tab="\t"
 		size=0
 		ncz_name=nca_name[:-1]+'z'			
@@ -2433,9 +2484,9 @@ class ChromeXci(File):
 							content=content[8:]+": "
 							ncatype=sq_tools.getTypeFromCNMT(ncatype)	
 							if ncatype != "Meta: ":
-								message=[ncatype,str(filename),'Size:',size_pr];feed=self.html_feed(feed,4,message)						
+								message=[ncatype,str(filename),'TitleID:',showID,'Size',size_pr];feed=self.html_feed(feed,8,message)						
 							else:
-								message=[ncatype,str(filename),'Size:',size_pr];feed=self.html_feed(feed,4,message)					
+								message=[ncatype,str(filename),'TitleID:',showID,'Size',size_pr];feed=self.html_feed(feed,8,message)					
 							return size,feed		
 					elif filename == ncz_name:
 						ncztype=Nca(nca)
@@ -2446,9 +2497,9 @@ class ChromeXci(File):
 						content=content[8:]+": "
 						ncatype=sq_tools.getTypeFromCNMT(ncatype)	
 						if ncatype != "Meta: ":
-							message=[ncatype,str(filename),'Size:',size_pr];feed=self.html_feed(feed,4,message)						
+							message=[ncatype,str(filename),'Size:',size_pr];feed=self.html_feed(feed,8,message)						
 						else:
-							message=[ncatype,str(filename),'Size:',size_pr];feed=self.html_feed(feed,4,message)					
+							message=[ncatype,str(filename),'Size:',size_pr];feed=self.html_feed(feed,8,message)					
 						return size,feed		
 		return size,feed							
 	def print_xml_by_title(self,ncalist,contentlist,feed):	
@@ -2580,6 +2631,27 @@ class ChromeXci(File):
 			feed=self.html_feed(feed,5,message=('TOTAL SIZE: '+size_pr))	
 		return feed		
 		
+	def print_BuildIDs(self,ncadb,feed=''):	
+		c=0
+		for nspF in self.hfs0:
+			if str(nspF._path)=="secure":
+				for nca in nspF:
+					size1=0;size2=0;size3=0	
+					if type(nca) == Nca:	
+						if 	str(nca.header.contentType) == 'Content.PROGRAM':	
+							target=str(nca._path)
+							tit=str(nca.header.titleId).upper()		
+							entry=ncadb[target]							
+							ModuleId,BuildID8,BuildID16=self.read_buildid(target)	
+							if ModuleId!="":
+								if c==0:
+									feed=self.html_feed(feed,2,'EXEFS DATA:')
+									c+=1	
+								feed=self.html_feed(feed,2,f'[Title: {tit} v{entry[1]}]')
+								ModuleId=sq_tools.trimm_module_id(ModuleId)
+								message=[f'BuildID8:',str(BuildID8)];feed=self.html_feed(feed,3,message)	
+								message=[f'BuildID:',str(ModuleId)];feed=self.html_feed(feed,3,message)								
+		return feed			
 #ADVANCED FILE-LIST			
 	def adv_content_list(self):
 		feed=''
@@ -3841,14 +3913,17 @@ class ChromeXci(File):
 		sig_padding=bytes.fromhex(sig_padding)		
 		#print (hx(sig_padding))	
 		#gamecardCert
-		CERT_padding='FF'*0x7E0C
+		CERT_padding='FF'*0x7E00
 		CERT_padding=bytes.fromhex(CERT_padding)				
 		#print (hx(fake_CERT))
 		CERT = b''
 		CERT += self.gamecardCert.signature
 		CERT += self.gamecardCert.magic
 		CERT += self.gamecardCert.unknown1
-		CERT += self.gamecardCert.unknown2		
+		CERT += self.gamecardCert.KekIndex
+		CERT += self.gamecardCert.unknown2
+		CERT += self.gamecardCert.DeviceID
+		CERT += self.gamecardCert.unknown3			
 		CERT += self.gamecardCert.data
 		CERT += CERT_padding			
 		#print (hx(CERT))	
@@ -3941,14 +4016,17 @@ class ChromeXci(File):
 		sig_padding=bytes.fromhex(sig_padding)		
 		#print (hx(sig_padding))	
 		#gamecardCert
-		CERT_padding='FF'*0x7E0C
+		CERT_padding='FF'*0x7E00
 		CERT_padding=bytes.fromhex(CERT_padding)				
 		#print (hx(fake_CERT))
 		CERT = b''
 		CERT += self.gamecardCert.signature
 		CERT += self.gamecardCert.magic
 		CERT += self.gamecardCert.unknown1
-		CERT += self.gamecardCert.unknown2		
+		CERT += self.gamecardCert.KekIndex
+		CERT += self.gamecardCert.unknown2
+		CERT += self.gamecardCert.DeviceID
+		CERT += self.gamecardCert.unknown3			
 		CERT += self.gamecardCert.data
 		CERT += CERT_padding			
 		#print (hx(CERT))	
@@ -8188,6 +8266,23 @@ class ChromeXci(File):
 			else:
 				DBdict['Type']="MULTICONTENT"
 			DBdict['InstalledSize']=sq_tools.get_mc_isize(self._path)
+		ProgramIDS=[]			
+		# if ctype=='MultiProgram' or ctype=='MultiProgram UPD' or DBdict['Type']="MULTIGAME":
+			# idoffsets=[]
+			# for ent in ncadata:
+				# idoff=ent[4]
+				# if not idoff in idoffsets:
+					# idoffsets.append[idoff]
+					# ProgramIDS.append(str(titleid[:-2])+str(idoff))
+		# DBdict['ProgramIDS']=ProgramIDS
+			
+		# # if content_number>1 or DBdict['Type']=="MultiProgram" or DBdict['Type']=="MultiProgram UPD":	
+		# # DBdict['IDS']=[titleid]
+		# # if DBdict['Type']=="MULTIGAME" or DBdict['Type']=="MULTICONTENT":
+
+		# # elif DBdict['Type']=="MultiProgram":	
+			
+		# # elif DBdict['Type']=="MultiProgram UPD":				
 			
 		DBdict['nsuId']='-'	
 		DBdict['genretags']='-'	
@@ -8380,6 +8475,7 @@ class ChromeXci(File):
 										cnmtdata['NCAtype']='Meta'
 										cnmtdata['Size']=str(nca.header.size)	
 										cnmtdata['Hash']=str(nsha)
+										cnmtdata['IdOffset']=IdOffset
 										ncadata.append(cnmtdata)
 								rightsId=titleid+'000000000000000'+str(crypto2)	
 								return 	titleid,titleversion,base_ID,keygeneration,rightsId,RSV,RGV,ctype,metasdkversion,exesdkversion,hasHtmlManual,Installedsize,DeltaSize,ncadata							
