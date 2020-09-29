@@ -74,4 +74,5 @@ If database configuration is setup to a number higher than **9999 hours** the au
 - Fixed hang on interface when a buildid is not readable on certain situations.
 - Added better representation of xci certificates on nut info.
 - Faster library calls on python version which should speed up the batch menus.
+- Fix for #169 where some language combinations break correct language tag addition due to change on python semantics.
 - Other small bugfixes
