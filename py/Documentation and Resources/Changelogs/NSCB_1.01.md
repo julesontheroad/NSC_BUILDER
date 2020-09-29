@@ -48,26 +48,32 @@ Known multiprogram files are Super Mario 3D All-Stars, Grandia Collection, Hotli
 
 User can now setup the locations DBI will scan on the SD card to find xci files on the **zconfig\mtp_xci_locations.txt**, this file already includes standard xci locations. If this file is removed DBI will scan the whole SDCard so it's not recommended to remove it but to add or delete locations to it if needed.
 
-### 5. File Selector now allows to select multiple files at once
+### 5. Added option to MTP - AUTOUPDATE DEVICE FROM LIBRARY to check from game registry instead of installed
+
+When selection from game registry is activated the autostart is set to false and user will be asked to manually select what games to update via the file picker.
+
+This function won't check which games are installed or xci on the SDCard, instead it will use the game registry that includes archived games and registered xci files, independently of their location. This will show files that are on a HDD for example.
+
+### 6. File Selector now allows to select multiple files at once
 
 The tkinter file selector that uses windows browser now allows to select multiple files at once if they are on the same folder.
 
-### 6. Added additional information on the "Files" tab on the interface
+### 7. Added additional information on the "Files" tab on the interface
 
 - Added ability to show multiple the titleid for each nca file for local files on the web Interface on the "Files tab"
 - Added ability to show multiple the buildid for each program file for local files on the web Interface on the "Files tab". This is showned in a section at the bottom of the "Files" tab
 
 ![Picture](https://i.ibb.co/6WR2hnq/exefs.png)
 
-### 7. Corrected patched multiprogram files VERIFICATION
+### 8. Corrected patched multiprogram files VERIFICATION
 
 Multiprogram files with removed titlerights will give a false corruption positive for html manual files, this issue has been corrected. A patched file is a file with titlerights removed or keygeneration changes
 
-### 8. Ability to not autoupdate DATABASES
+### 9. Ability to not autoupdate DATABASES
 
 If database configuration is setup to a number higher than **9999 hours** the autoupdate function is turned off. No autoupdate zip already includes this setup.
 
-### 9. Other changes and bugfixes:
+### 10. Other changes and bugfixes:
 
 - Updated keygeneration strings to **FW 10.2.0**
 - Tickets that don't follow the proper standard now issue a warning instead of preventing titlerights removal on some functions.

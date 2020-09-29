@@ -718,8 +718,10 @@ def get_libs_remote_source(lib=remote_lib_file):
 			return False
 	return libraries				
 
-def update_console_from_gd(libraries="all",destiny="SD",exclude_xci=True,prioritize_nsz=True,tfile=None,verification=True,ch_medium=True,ch_other=False,autoupd_aut=True):	
+def update_console_from_gd(libraries="all",destiny="SD",exclude_xci=True,prioritize_nsz=True,tfile=None,verification=True,ch_medium=True,ch_other=False,autoupd_aut=True,use_archived=False):	
 	check_connection()
+	if use_archived==True:
+		autoupd_aut=False	
 	if tfile==None:
 		tfile=os.path.join(NSCB_dir, 'MTP1.txt')
 	if os.path.exists(tfile):
@@ -748,30 +750,55 @@ def update_console_from_gd(libraries="all",destiny="SD",exclude_xci=True,priorit
 			shutil.rmtree(fp)
 		except OSError:
 			os.remove(fp)	
-	print("1. Parsing games in device. Please Wait...")			
-	if exclude_xci==True:
-		process=subprocess.Popen([nscb_mtp,"ShowInstalled","-tfile",games_installed_cache,"-show","false","-exci","true"],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-	else:	
-		process=subprocess.Popen([nscb_mtp,"ShowInstalled","-tfile",games_installed_cache,"-show","false","-exci","false","-xci_lc",xci_locations],stdout=subprocess.PIPE,stderr=subprocess.PIPE)	
-	while process.poll()==None:
-		if process.poll()!=None:
-			process.terminate();	
-	if os.path.exists(games_installed_cache):	
-		print("   Success")
-	gamelist=listmanager.read_lines_to_list(games_installed_cache,all=True)
-	installed={}		
-	for g in gamelist:
-		try:
-			if exclude_xci==True:
-				if g.endswith('xci') or g.endswith('xc0'):
-					continue
-			entry=listmanager.parsetags(g)
-			entry=list(entry)		
-			entry.append(g)
-			installed[entry[0]]=entry	
-		except:pass	
-	# for i in pths:
-		# print(i)
+	if use_archived!=True:				
+		print("1. Parsing games in device. Please Wait...")			
+		if exclude_xci==True:
+			process=subprocess.Popen([nscb_mtp,"ShowInstalled","-tfile",games_installed_cache,"-show","false","-exci","true"],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+		else:	
+			process=subprocess.Popen([nscb_mtp,"ShowInstalled","-tfile",games_installed_cache,"-show","false","-exci","false","-xci_lc",xci_locations],stdout=subprocess.PIPE,stderr=subprocess.PIPE)	
+		while process.poll()==None:
+			if process.poll()!=None:
+				process.terminate();	
+		if os.path.exists(games_installed_cache):	
+			print("   Success")
+		gamelist=listmanager.read_lines_to_list(games_installed_cache,all=True)
+		installed={}		
+		for g in gamelist:
+			try:
+				if exclude_xci==True:
+					if g.endswith('xci') or g.endswith('xc0'):
+						continue
+				entry=listmanager.parsetags(g)
+				entry=list(entry)		
+				entry.append(g)
+				installed[entry[0]]=entry	
+			except:pass	
+		# for i in pths:
+			# print(i)
+	else:
+		print("1. Retrieving registered...")			
+		dbicsv=os.path.join(cachefolder,"registered.csv")
+		process=subprocess.Popen([nscb_mtp,"Download","-ori","4: Installed games\\InstalledApplications.csv","-dst",dbicsv],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+		while process.poll()==None:
+			if process.poll()!=None:
+				process.terminate();
+		if os.path.exists(dbicsv):	
+			print("   Success")					
+			installed={}
+			with open(dbicsv,'rt',encoding='utf8') as csvfile:
+				readCSV = csv.reader(csvfile, delimiter=',')
+				id=0;ver=1;tname=2;
+				for row in readCSV:		
+					try:
+						tid=(str(row[id]).upper())[2:]
+						version=int(row[ver])
+						name=str(row[tname])
+						g=f"{name} [{tid}][{version}].nsp"
+						entry=listmanager.parsetags(g)
+						entry=list(entry)		
+						entry.append(g)
+						installed[entry[0]]=entry							
+					except:pass		
 	print("2. Parsing files from Google Drive. Please Wait...")		
 	# print(pths)
 	if isinstance(pths, dict):
