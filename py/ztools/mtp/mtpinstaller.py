@@ -866,12 +866,18 @@ def update_console(libraries="all",destiny="SD",exclude_xci=True,prioritize_nsz=
 					try:
 						tid=(str(row[id]).upper())[2:]
 						version=int(row[ver])
+						if version>0 and tid.endswith('000'):
+							tid=tid[:-3]+'800'
 						name=str(row[tname])
-						g=f"{name} [{tid}][{version}].nsp"
+						g=f"{name} [{tid}][v{version}].nsp"
 						entry=listmanager.parsetags(g)
 						entry=list(entry)		
 						entry.append(g)
-						installed[entry[0]]=entry							
+						if entry[0] in installed.keys():
+							if int((intalled[entry[0]])[1])<version:
+								installed[entry[0]]=entry
+						else:
+							installed[entry[0]]=entry							
 					except:pass						
 	print("2. Parsing local libraries. Please Wait...")				
 	locallist=[]
