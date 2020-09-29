@@ -6183,19 +6183,19 @@ class ChromeXci(File):
 						if 	str(nca.header.contentType) == 'Content.CONTROL':
 							title,editor,ediver,SupLg,regionstr,isdemo=nca.get_langueblock(title)
 							languetag='('
-							if ("US (eng)" or "UK (eng)") in SupLg:
+							if ("US (eng)" in SupLg) or ("UK (eng)" in SupLg):
 								languetag=languetag+'En,'
 							if "JP" in SupLg:
 								languetag=languetag+'Jp,'				
-							if ("CAD (fr)" or "FR") in SupLg:
+							if ("CAD (fr)" in SupLg) or ("FR" in SupLg):
 								languetag=languetag+'Fr,'
-							elif ("CAD (fr)") in SupLg:	
+							elif ("CAD (fr)" in SupLg):	
 								languetag=languetag+'CADFr,'		
 							elif ("FR") in SupLg:	
 								languetag=languetag+'Fr,'								
 							if "DE" in SupLg:
 								languetag=languetag+'De,'							
-							if ("LAT (spa)" and "SPA") in SupLg:
+							if ("LAT (spa)" in SupLg) and ("SPA" in SupLg):
 								languetag=languetag+'Es,'
 							elif "LAT (spa)" in SupLg:
 								languetag=languetag+'LatEs,'
@@ -6214,10 +6214,10 @@ class ChromeXci(File):
 							if "TAI" in SupLg:
 								languetag=languetag+'Tw,'	
 							if "CH" in SupLg:
-								languetag=languetag+'Ch,'
+								languetag=languetag+'Ch,'				
 							languetag=languetag[:-1]
-							languetag=languetag+')'			
-							return(languetag)										
+							languetag=languetag+')'								
+							return(languetag)											
 						
 	def file_hash(self,target):		
 		indent = 1

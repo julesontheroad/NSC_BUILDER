@@ -372,8 +372,9 @@ echo *******************************************************
 echo AUTOSTART INSTALLATION?
 echo *******************************************************
 echo.
-echo 1. START INSTALLATION AFTER DETECTING NEW CONTENT
-echo 2. SELECT CONTENT TO INSTALL
+echo 1. START INSTALLATION AFTER DETECTING NEW CONTENT (CHECKS INSTALLED)
+echo 2. SELECT CONTENT TO INSTALL (CHECKS INSTALLED)
+echo 3. SELECT CONTENT TO INSTALL (USE REGISTRY, INCL. ARCHIVED AND REG. XCI)
 echo.
 ECHO ******************************************
 echo Input "0" to return to the list options
@@ -383,9 +384,12 @@ echo.
 set /p bs="Enter your choice: "
 set bs=%bs:"=%
 set autoupd_aut=none
+set "use_archived=False"
 if /i "%bs%"=="0" goto MAIN
 if /i "%bs%"=="1" set "autoupd_aut=True"
 if /i "%bs%"=="2" set "autoupd_aut=False"
+if /i "%bs%"=="3" set "autoupd_aut=False"
+if /i "%bs%"=="3" set "use_archived=True"
 if /i "%bs%"=="b" goto select_medium_AUTOUPDATE
 
 if %autoupd_aut%=="none" goto set_auto_AUTOUPDATE
@@ -415,7 +419,7 @@ if %autoupd_aut%=="none" goto set_auto_AUTOUPDATE
 :AUTOUPDATE_GD
 CD /d "%prog_dir%"
 echo.
-%pycommand% "%squirrel_lb%" -lib_call mtp.mtp_gdrive update_console_from_gd -xarg "libraries=update" "destiny=%medium%" "exclude_xci=%MTP_exclude_xci_autinst%" "prioritize_nsz=%MTP_prioritize_NSZ%" "%prog_dir%MTP1GD.txt" "verification=%MTP_verification%" "ch_medium=%MTP_aut_ch_medium%" "ch_other=%MTP_prechk_Upd%" "autoupd_aut=%autoupd_aut%"
+%pycommand% "%squirrel_lb%" -lib_call mtp.mtp_gdrive update_console_from_gd -xarg "libraries=update" "destiny=%medium%" "exclude_xci=%MTP_exclude_xci_autinst%" "prioritize_nsz=%MTP_prioritize_NSZ%" "%prog_dir%MTP1GD.txt" "verification=%MTP_verification%" "ch_medium=%MTP_aut_ch_medium%" "ch_other=%MTP_prechk_Upd%" "autoupd_aut=%autoupd_aut%" "archived=%use_archived%"
 echo.
 ECHO ---------------------------------------------------
 ECHO *********** ALL FILES WERE PROCESSED! *************
@@ -425,7 +429,7 @@ goto s_exit_choice
 :AUTOUPDATE_LOCAL
 CD /d "%prog_dir%"
 echo.
-%pycommand% "%squirrel_lb%" -lib_call mtp.mtpinstaller update_console -xarg "libraries=all" "destiny=%medium%" "exclude_xci=%MTP_exclude_xci_autinst%" "prioritize_nsz=%MTP_prioritize_NSZ%" "%prog_dir%MTP1.txt" "verification=%MTP_verification%" "ch_medium=%MTP_aut_ch_medium%" "ch_other=%MTP_prechk_Upd%" "autoupd_aut=%autoupd_aut%"
+%pycommand% "%squirrel_lb%" -lib_call mtp.mtpinstaller update_console -xarg "libraries=all" "destiny=%medium%" "exclude_xci=%MTP_exclude_xci_autinst%" "prioritize_nsz=%MTP_prioritize_NSZ%" "%prog_dir%MTP1.txt" "verification=%MTP_verification%" "ch_medium=%MTP_aut_ch_medium%" "ch_other=%MTP_prechk_Upd%" "autoupd_aut=%autoupd_aut%" "archived=%use_archived%"
 
 echo.
 ECHO ---------------------------------------------------
