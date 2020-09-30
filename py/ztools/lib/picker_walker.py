@@ -87,6 +87,37 @@ def libraries(tfile):
 		Print.error('Exception: ' + str(e))
 		return False	
 		
+def get_library_from_path(tfile=None,filename=None):
+	if tfile==None:
+		db=libraries(remote_lib_file)
+	else:
+		db=libraries(tfile)		
+	TD=None;lib=None;path="null"
+	for entry in db:
+		path=db[entry]['path']
+		if filename.startswith(path):
+			TD=db[entry]['TD_name']
+			lib=entry
+			libpath=path
+			break
+		else:
+			pass
+	if lib==None:
+		db=libraries(cache_lib_file)
+		TD=None;lib=None;path="null"
+		for entry in db:
+			path=db[entry]['path']
+			if filename.startswith(path):
+				TD=db[entry]['TD_name']
+				lib=entry
+				libpath=path
+				break
+			else:
+				pass		
+	if TD=='':
+		TD=None			
+	return lib,TD,libpath		
+		
 def get_cache_lib():
 	db=libraries(cache_lib_file)
 	TD=None;lib=None;path="null";libpath=None
@@ -522,7 +553,13 @@ def remote_select_from_libraries(tfile):
 		return False
 	with open(tfile,'a') as  textfile:		
 		for f in selected:
-			textfile.write((files[f[1]])[2]+'/'+(files[f[1]])[0]+'\n')		
+			fpath=(files[f[1]])[2]+'/'+(files[f[1]])[0]
+			lib,TD,libpath=get_library_from_path(remote_lib_file,fpath)		
+			try:
+				ID=(files[f[1]])[4]
+				textfile.write(f"{fpath}|{TD}|{ID}\n")
+			except:	
+				textfile.write(f"{fpath}|{TD}\n")
 
 def remote_select_from_cache(tfile):	
 	from workers import concurrent_scrapper
@@ -608,7 +645,12 @@ def remote_select_from_cache(tfile):
 	with open(tfile,'a') as  textfile:		
 		for f in selected:
 			fpath=(cachedict[f[0]])['filepath']
-			textfile.write(fpath+'\n')
+			TD=(cachedict[f[0]])['TD']
+			try:
+				ID=(cachedict[f[0]])['id']
+				textfile.write(f"{fpath}|{TD}|{ID}\n")		
+			except:
+				textfile.write(f"{fpath}|{TD}\n")				
 
 def remote_select_from_walker(tfile,types='all'):	
 	from workers import concurrent_scrapper	
@@ -659,4 +701,10 @@ def remote_select_from_walker(tfile,types='all'):
 		return False
 	with open(tfile,'a') as  textfile:		
 		for f in selected:
-			textfile.write((files[f[1]])[2]+'/'+(files[f[1]])[0]+'|'+str(TeamDrive)+'\n')					
+			fpath=(files[f[1]])[2]+'/'+(files[f[1]])[0]
+			TD=str(TeamDrive)
+			try:
+				ID=(files[f[1]])[4]
+				textfile.write(f"{fpath}|{TD}|{ID}\n")
+			except:	
+				textfile.write(f"{fpath}|{TD}\n")

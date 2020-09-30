@@ -54,26 +54,30 @@ When selection from game registry is activated the autostart is set to false and
 
 This function won't check which games are installed or xci on the SDCard, instead it will use the game registry that includes archived games and registered xci files, independently of their location. This will show files that are on a HDD for example.
 
-### 6. File Selector now allows to select multiple files at once
+### 6. Fix issues installing certain files from google drive because of special characters
+
+File id is now added to text file, also files ids are now stored in json files on cache mode.
+
+### 7. File Selector now allows to select multiple files at once
 
 The tkinter file selector that uses windows browser now allows to select multiple files at once if they are on the same folder.
 
-### 7. Added additional information on the "Files" tab on the interface
+### 8. Added additional information on the "Files" tab on the interface
 
 - Added ability to show multiple the titleid for each nca file for local files on the web Interface on the "Files tab"
 - Added ability to show multiple the buildid for each program file for local files on the web Interface on the "Files tab". This is showned in a section at the bottom of the "Files" tab
 
 ![Picture](https://i.ibb.co/6WR2hnq/exefs.png)
 
-### 8. Corrected patched multiprogram files VERIFICATION
+### 9. Corrected patched multiprogram files VERIFICATION
 
 Multiprogram files with removed titlerights will give a false corruption positive for html manual files, this issue has been corrected. A patched file is a file with titlerights removed or keygeneration changes
 
-### 9. Ability to not autoupdate DATABASES
+### 10. Ability to not autoupdate DATABASES
 
 If database configuration is setup to a number higher than **9999 hours** the autoupdate function is turned off. No autoupdate zip already includes this setup.
 
-### 10. Other changes and bugfixes:
+### 11. Other changes and bugfixes:
 
 - Updated keygeneration strings to **FW 10.2.0**
 - Tickets that don't follow the proper standard now issue a warning instead of preventing titlerights removal on some functions.
