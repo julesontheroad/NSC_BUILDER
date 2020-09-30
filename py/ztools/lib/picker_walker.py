@@ -522,7 +522,13 @@ def remote_select_from_libraries(tfile):
 		return False
 	with open(tfile,'a') as  textfile:		
 		for f in selected:
-			textfile.write((files[f[1]])[2]+'/'+(files[f[1]])[0]+'\n')		
+			fpath=(files[f[1]])[2]+'/'+(files[f[1]])[0]
+			TD=(files[f[1]])[1]
+			try:
+				ID=(files[f[1]])[4]
+				textfile.write(f"{fpath}|{TD}|{ID}\n")
+			except:	
+				textfile.write(f"{fpath}|{TD}\n")
 
 def remote_select_from_cache(tfile):	
 	from workers import concurrent_scrapper
@@ -608,7 +614,12 @@ def remote_select_from_cache(tfile):
 	with open(tfile,'a') as  textfile:		
 		for f in selected:
 			fpath=(cachedict[f[0]])['filepath']
-			textfile.write(fpath+'\n')
+			TD=(cachedict[f[0]])['TD']
+			try:
+				ID=(cachedict[f[0]])['id']
+				textfile.write(f"{fpath}|{TD}|{ID}\n")		
+			except:
+				textfile.write(f"{fpath}|{TD}\n")				
 
 def remote_select_from_walker(tfile,types='all'):	
 	from workers import concurrent_scrapper	
@@ -659,4 +670,10 @@ def remote_select_from_walker(tfile,types='all'):
 		return False
 	with open(tfile,'a') as  textfile:		
 		for f in selected:
-			textfile.write((files[f[1]])[2]+'/'+(files[f[1]])[0]+'|'+str(TeamDrive)+'\n')					
+			fpath=(files[f[1]])[2]+'/'+(files[f[1]])[0]
+			TD=str(TeamDrive)
+			try:
+				ID=(files[f[1]])[4]
+				textfile.write(f"{fpath}|{TD}|{ID}\n")
+			except:	
+				textfile.write(f"{fpath}|{TD}\n")

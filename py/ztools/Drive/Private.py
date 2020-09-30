@@ -548,7 +548,7 @@ def search_folder(path,TD=None,ext=None,filter=None,order=None,mime='files',Pick
 					except:pass
 					for file in items:
 						try:
-							file_list.append([file['name'],file['size'],path,file['createdTime']])
+							file_list.append([file['name'],file['size'],path,file['createdTime'],file['id']])
 						except:pass	
 					if Print==True:
 						print(f'- {path}: Total Retrieved '+str(len(file_list)))	
@@ -678,11 +678,17 @@ def get_TeamDrives(token='drive:',Print=False):
 	# print(remote.ID)
 	# print(remote.name)
 	
-def get_Data(path,TD=None,get_hash=False,Print=True):
-	if 	TD!= None:
-		remote=location(route=path,TD_Name=TD)
+def get_Data(path,TD=None,get_hash=False,Print=True,ID=None):
+	if ID==None:
+		if 	TD!= None:
+			remote=location(route=path,TD_Name=TD)
+		else:
+			remote=location(route=path)
 	else:
-		remote=location(route=path)
+		if 	TD!= None:
+			remote=location(route=path,TD_Name=TD,ID=ID)
+		else:
+			remote=location(route=path,ID=ID)	
 	ID=remote.ID
 	type=remote.filetype
 	name=remote.name

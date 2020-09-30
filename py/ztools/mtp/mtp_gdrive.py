@@ -197,17 +197,28 @@ def get_library_from_path(tfile=None,filename=None):
 	return lib,TD,libpath	
 	
 def gdrive_install(filename,destiny="SD",outfolder=None,ch_medium=True,check_fw=True,patch_keygen=False,ch_base=False,ch_other=False,checked=False,installed_list=False):
-	check_connection()
+	check_connection();ID=None	
 	test=filename.split('|')
 	if len(test)<2:
 		filename=test[0]		
 		lib,TD,libpath=get_library_from_path(remote_lib_file,filename)
+	elif len(test)<3:
+		filename=test[0]	
+		TD=test[1]			
+		if str(TD).upper()=="NONE":
+			TD=None
 	else:
 		filename=test[0]	
 		TD=test[1]			
 		if str(TD).upper()=="NONE":
 			TD=None
-	ID,name,type,size,md5,remote=DrivePrivate.get_Data(filename,TD=TD,Print=False)
+		ID=test[2]			
+		if str(ID).upper()=="NONE":
+			ID=None		
+	if ID==None:			
+		ID,name,type,size,md5,remote=DrivePrivate.get_Data(filename,TD=TD,Print=False)
+	else:
+		ID,name,type,size,md5,remote=DrivePrivate.get_Data(filename,TD=TD,Print=False,ID=ID)		
 	# header=DrivePrivate.get_html_header(remote.access_token)
 	token=remote.access_token
 	name=remote.name

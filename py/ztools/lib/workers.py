@@ -237,14 +237,13 @@ def concurrent_cache():
 					c+=1	
 					print(f"- Writing {lib} to {jlib}")
 				filepath=f"{res[2]}/{res[0]}"
-				entry={'library':lib,'TD':TD,'library_path':res[2],'filepath':filepath,'size':res[1],'date':res[3]}	
+				entry={'library':lib,'TD':TD,'library_path':res[2],'filepath':filepath,'size':res[1],'date':res[3],'id':res[4]}	
 				jdict[res[0]]=entry	
 			if jlib!=None:	
 				app_json = json.dumps(jdict, indent=2)					
 				with open(jlib, 'w') as json_file:
 				  json_file.write(app_json)	
 
-	
 def kakashi_conv():
 	import pykakasi
 	kakasi = pykakasi.kakasi()
