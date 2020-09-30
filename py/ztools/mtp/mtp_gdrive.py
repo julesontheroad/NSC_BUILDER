@@ -949,7 +949,6 @@ def update_console_from_gd(libraries="all",destiny="SD",exclude_xci=True,priorit
 					g=game[1]
 					g0=gamepaths[g]
 					newgpaths.append(g0)
-					break
 				gamepaths=newgpaths					
 		print("6. Generating text file...")		
 		with open(tfile,'w', encoding='utf8') as textfile:
@@ -957,14 +956,23 @@ def update_console_from_gd(libraries="all",destiny="SD",exclude_xci=True,priorit
 			for i in gamepaths:
 				location=None
 				for f in files:
+					TD=None;ID=None
 					if f[0]==i:	
 						location=f[2]
+						TD=f[1]
+						try:
+							ID=f[4]
+						except:pass	
 						break
 				if location==None:
 					print(f"Can't find location for {i}")
 					continue
 				wpath=f"{location}/{i}"
-				textfile.write((wpath).strip()+"\n")	
+				if ID==None:
+					textfile.write(f"{(wpath).strip()}|{TD}\n")
+				else:		
+					textfile.write(f"{(wpath).strip()}|{TD}|{ID}\n")	
+		sys.exit()
 		print("7. Triggering installer on loop mode.")
 		print("   Note:If you interrupt the list use normal install mode to continue list")	
 		loop_install(tfile,destiny=destiny,outfolder=None,ch_medium=ch_medium,check_fw=True,patch_keygen=False,ch_base=False,ch_other=False,checked=True)
