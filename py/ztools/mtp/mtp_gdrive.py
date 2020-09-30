@@ -964,7 +964,6 @@ def update_console_from_gd(libraries="all",destiny="SD",exclude_xci=True,priorit
 				location=None
 				for f in files:
 					TD=None;ID=None
-					# print(f)
 					if f[0]==i:	
 						location=f[2]
 						try:
