@@ -972,7 +972,6 @@ def update_console_from_gd(libraries="all",destiny="SD",exclude_xci=True,priorit
 					textfile.write(f"{(wpath).strip()}|{TD}\n")
 				else:		
 					textfile.write(f"{(wpath).strip()}|{TD}|{ID}\n")	
-		sys.exit()
 		print("7. Triggering installer on loop mode.")
 		print("   Note:If you interrupt the list use normal install mode to continue list")	
 		loop_install(tfile,destiny=destiny,outfolder=None,ch_medium=ch_medium,check_fw=True,patch_keygen=False,ch_base=False,ch_other=False,checked=True)
