@@ -152,18 +152,22 @@ def loop_install(tfile,destiny="SD",outfolder=None,ch_medium=True,check_fw=True,
 		elif os.path.exists(item):
 			print("Item is a local link. Skipping...")	
 		else:
-			test=item.split('|')
-			if len(test)<2:
-				item=test[0]
-				lib,TD,libpath=get_library_from_path(remote_lib_file,item)			
-				if lib!=None:
-					print("Item is a remote library link. Redirecting...")
-					gdrive_install(item,destiny,outfolder=outfolder,ch_medium=ch_medium,check_fw=check_fw,patch_keygen=patch_keygen,ch_base=ch_base,ch_other=ch_other,checked=checked,installed_list=installed)
-				else:
-					print("Couldn't find file. Skipping...")					
-			else:	
-				gdrive_install(item,destiny,outfolder=outfolder,ch_medium=ch_medium,check_fw=check_fw,patch_keygen=patch_keygen,ch_base=ch_base,ch_other=ch_other,checked=checked,installed_list=installed)	
-		print("")				
+			try:
+				test=item.split('|')
+				if len(test)<2:
+					item=test[0]
+					lib,TD,libpath=get_library_from_path(remote_lib_file,item)			
+					if lib!=None:
+						print("Item is a remote library link. Redirecting...")
+						gdrive_install(item,destiny,outfolder=outfolder,ch_medium=ch_medium,check_fw=check_fw,patch_keygen=patch_keygen,ch_base=ch_base,ch_other=ch_other,checked=checked,installed_list=installed)
+					else:
+						print("Couldn't find file. Skipping...")					
+				else:	
+					gdrive_install(item,destiny,outfolder=outfolder,ch_medium=ch_medium,check_fw=check_fw,patch_keygen=patch_keygen,ch_base=ch_base,ch_other=ch_other,checked=checked,installed_list=installed)	
+			except:
+				print(f"Couldn't find {test[0]}. Skipping...")
+		print("")					
+		listmanager.striplines(tfile,1,True)						
 	
 def get_library_from_path(tfile=None,filename=None):
 	if tfile==None:
@@ -218,7 +222,10 @@ def gdrive_install(filename,destiny="SD",outfolder=None,ch_medium=True,check_fw=
 	if ID==None:			
 		ID,name,type,size,md5,remote=DrivePrivate.get_Data(filename,TD=TD,Print=False)
 	else:
-		ID,name,type,size,md5,remote=DrivePrivate.get_Data(filename,TD=TD,Print=False,ID=ID)		
+		try:
+			ID,name,type,size,md5,remote=DrivePrivate.get_Data(filename,TD=TD,Print=False,ID=ID)	
+		except:
+			ID,name,type,size,md5,remote=DrivePrivate.get_Data(filename,TD=TD,Print=False)
 	# header=DrivePrivate.get_html_header(remote.access_token)
 	token=remote.access_token
 	name=remote.name
@@ -957,9 +964,9 @@ def update_console_from_gd(libraries="all",destiny="SD",exclude_xci=True,priorit
 				location=None
 				for f in files:
 					TD=None;ID=None
+					# print(f)
 					if f[0]==i:	
 						location=f[2]
-						TD=f[1]
 						try:
 							ID=f[4]
 						except:pass	
@@ -968,6 +975,7 @@ def update_console_from_gd(libraries="all",destiny="SD",exclude_xci=True,priorit
 					print(f"Can't find location for {i}")
 					continue
 				wpath=f"{location}/{i}"
+				lib,TD,libpath=get_library_from_path(filename=wpath)
 				if ID==None:
 					textfile.write(f"{(wpath).strip()}|{TD}\n")
 				else:		
