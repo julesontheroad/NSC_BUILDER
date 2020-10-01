@@ -386,21 +386,27 @@ def folder_to_list(ifolder,extlist=['nsp'],filter=False,alfanumeric=False):
 		fname=""
 		binbin='RECYCLE.BIN'
 		for ext in extlist:
-			#print (ext)
+			# print (ext)
 			if os.path.isdir(ruta):
 				for dirpath, dirnames, filenames in os.walk(ruta):
-					for filename in [f for f in filenames if f.endswith(ext.lower()) or f.endswith(ext.upper()) or f[:-1].endswith(ext.lower()) or f[:-1].endswith(ext.lower())]:
-						try:
-							fname=""
-							if filter != False:
-								if filter.lower() in filename.lower():
+					try:
+						for filename in [f for f in filenames if f.endswith(ext.lower()) or f.endswith(ext.upper()) or f[:-1].endswith(ext.lower()) or f[:-1].endswith(ext.lower())]:
+							try:
+								fname=""
+								if filter != False:
+									if filter.lower() in filename.lower():
+										fname=filename
+								else:
 									fname=filename
-							else:
-								fname=filename
-							if fname != "":
-								if binbin.lower() not in filename.lower():
-									filelist.append(os.path.join(dirpath, filename))
-						except:pass			
+								if fname != "":
+									if binbin.lower() not in filename.lower():
+										filelist.append(os.path.join(dirpath, filename))
+							except BaseException as e:
+								# nutPrint.error('Exception: ' + str(e))					
+								pass	
+					except BaseException as e:
+						# nutPrint.error('Exception: ' + str(e))					
+						pass							
 			else:
 				try:
 					if ruta.endswith(ext.lower()) or ruta.endswith(ext.upper()) or ruta[:-1].endswith(ext.lower()) or ruta[:-1].endswith(ext.upper()):
@@ -413,13 +419,15 @@ def folder_to_list(ifolder,extlist=['nsp'],filter=False,alfanumeric=False):
 							fname=filename
 						if fname != "":
 							if binbin.lower() not in filename.lower():
-								filelist.append(filename)
-				except:pass			
+								filelist.append(filename)							
+				except BaseException as e:
+					# nutPrint.error('Exception: ' + str(e))					
+					pass
 		if alfanumeric==True:
 			nl=list([val for val in filelist if not val.isalnum()])
 			filelist=nl	
 	except BaseException as e:
-		nutPrint.error('Exception: ' + str(e))													
+		nutPrint.error('Exception: ' + str(e))	
 	return filelist
 
 def nextfolder_to_list(ifolder,extlist=['nsp'],filter=False,alfanumeric=False):	
@@ -447,8 +455,8 @@ def nextfolder_to_list(ifolder,extlist=['nsp'],filter=False,alfanumeric=False):
 			if os.path.isdir(ruta):
 				dirpath=ruta
 				for filename in next(os.walk(ruta))[2]:	
-					if filename.endswith(ext.lower()) or filename.endswith(ext.upper()) or filename[:-1].endswith(ext.lower()) or filename[:-1].endswith(ext.lower()):
-						try:
+					try:				
+						if filename.endswith(ext.lower()) or filename.endswith(ext.upper()) or filename[:-1].endswith(ext.lower()) or filename[:-1].endswith(ext.lower()):
 							fname=""
 							if filter != False:
 								if filter.lower() in filename.lower():
@@ -458,7 +466,7 @@ def nextfolder_to_list(ifolder,extlist=['nsp'],filter=False,alfanumeric=False):
 							if fname != "":
 								if binbin.lower() not in filename.lower():
 									filelist.append(os.path.join(dirpath, filename))
-						except:pass			
+					except:pass			
 			else:
 				try:
 					if ruta.endswith(ext.lower()) or ruta.endswith(ext.upper()) or ruta[:-1].endswith(ext.lower()) or ruta[:-1].endswith(ext.upper()):

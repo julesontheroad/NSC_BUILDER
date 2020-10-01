@@ -498,9 +498,11 @@ class ChromeNsp(Pfs0):
 
 		for nca in self:
 			if type(nca) == Nca:
-				if nca.header.getCryptoType2() != masterKeyRev:
-					pass
-					raise IOError('Mismatched masterKeyRevs!')
+				if nca.header.getRightsId() != 0:				
+					if nca.header.masterKeyRev != masterKeyRev:
+						print('WARNING!!! Mismatched masterKeyRevs!')
+						print(f"{str(nca._path)} - {nca.header.masterKeyRev}")	
+						print(f"{str(ticket._path)} - {masterKeyRev}")	
 
 		for nca in self:
 			if type(nca) == Nca:
@@ -576,9 +578,11 @@ class ChromeNsp(Pfs0):
 
 		for nca in self:
 			if type(nca) == Nca:
-				if nca.header.getCryptoType2() != masterKeyRev:
-					pass
-					raise IOError('Mismatched masterKeyRevs!')
+				if nca.header.getRightsId() != 0:				
+					if nca.header.masterKeyRev != masterKeyRev:
+						print('WARNING!!! Mismatched masterKeyRevs!')
+						print(f"{str(nca._path)} - {nca.header.masterKeyRev}")	
+						print(f"{str(ticket._path)} - {masterKeyRev}")	
 
 		for nca in self:
 			if type(nca) == Nca:
@@ -971,6 +975,9 @@ class ChromeNsp(Pfs0):
 									stringEndOffset = st_size
 									headerSize = 0x10 + 0x18 * n_files + st_size
 									#print(head)
+									if head!=b'PFS0':
+										feed=self.html_feed(feed,2,message=str('- Error decrypting npdm'))
+										continue									
 									#print(str(n_files))
 									#print(str(st_size))	
 									#print(str((stringTable)))		
@@ -1013,108 +1020,117 @@ class ChromeNsp(Pfs0):
 			feed=self.html_feed(feed,2,message=str('- Error decrypting npdm'))
 		return feed									
 		
-	def read_buildid(self):
-		ModuleId='';BuildID8='';BuildID16='';iscorrect=False;
+	def read_buildid(self,target=None):
+		iscorrect=False;
+		ModuleId='';BuildID8='';BuildID16=''
 		files_list=sq_tools.ret_nsp_offsets(self._path)
 		# print(files_list)
 		for nca in self:								
 			if type(nca) == Fs.Nca:
 				if 	str(nca.header.contentType) == 'Content.PROGRAM':
-					if nca.header.getRightsId() == 0:						
-						decKey=nca.header.titleKeyDec
-					if nca.header.getRightsId() != 0:
-						correct, tkey = self.verify_nca_key(str(nca._path))		
-						if correct == True:
-							crypto1=nca.header.getCryptoType()
-							crypto2=nca.header.getCryptoType2()	
-							if crypto2>crypto1:
-								masterKeyRev=crypto2
-							if crypto2<=crypto1:	
-								masterKeyRev=crypto1	
-							decKey = Keys.decryptTitleKey(tkey, Keys.getMasterKeyIndex(int(masterKeyRev)))
-					for i in range(len(files_list)):	
-						if str(nca._path) == files_list[i][0]:
-							offset=files_list[i][1]
-							# print(offset)
-							break						
-					nca.rewind()
-					for fs in nca.sectionFilesystems:
-						#print(fs.fsType)
-						#print(fs.cryptoType)						
-						if fs.fsType == Type.Fs.PFS0 and fs.cryptoType == Type.Crypto.CTR:
-							nca.seek(0)
-							ncaHeader = NcaHeader()
-							ncaHeader.open(MemoryFile(nca.read(0x400), Type.Crypto.XTS, uhx(Keys.get('header_key'))))	
-							ncaHeader.seek(0)
-							fs.rewind()
-							pfs0=fs
-							sectionHeaderBlock = fs.buffer
-							nca.seek(fs.offset)	
-							pfs0Offset=fs.offset
-							pfs0Header = nca.read(0x10*30)
-							mem = MemoryFile(pfs0Header, Type.Crypto.CTR, decKey, pfs0.cryptoCounter, offset = pfs0Offset)
-							data = mem.read();
-							#Hex.dump(data)	
-							head=data[0:4]
-							n_files=(data[4:8])
-							n_files=int.from_bytes(n_files, byteorder='little')		
-							st_size=(data[8:12])
-							st_size=int.from_bytes(st_size, byteorder='little')		
-							junk=(data[12:16])
-							offset=(0x10 + n_files * 0x18)
-							stringTable=(data[offset:offset+st_size])
-							stringEndOffset = st_size
-							headerSize = 0x10 + 0x18 * n_files + st_size
-							#print(head)
-							#print(str(n_files))
-							#print(str(st_size))	
-							#print(str((stringTable)))		
-							files_list=list()
-							for i in range(n_files):
-								i = n_files - i - 1
-								pos=0x10 + i * 0x18
-								offset = data[pos:pos+8]
-								offset=int.from_bytes(offset, byteorder='little')			
-								size = data[pos+8:pos+16]
-								size=int.from_bytes(size, byteorder='little')			
-								nameOffset = data[pos+16:pos+20] # just the offset
-								nameOffset=int.from_bytes(nameOffset, byteorder='little')			
-								name = stringTable[nameOffset:stringEndOffset].decode('utf-8').rstrip(' \t\r\n\0')
-								stringEndOffset = nameOffset
-								junk2 = data[pos+20:pos+24] # junk data
-								#print(name)
-								#print(offset)	
-								#print(size)	
-								files_list.append([name,offset,size])	
-							files_list.reverse()	
-							#print(files_list)								
-							for i in range(len(files_list)):
-								if files_list[i][0] == 'main':
-									off1=files_list[i][1]+pfs0Offset+headerSize
-									nca.seek(off1)
-									np=nca.read(0x60)
-									mem = MemoryFile(np, Type.Crypto.CTR, decKey, pfs0.cryptoCounter, offset = off1)
-									magic=mem.read(0x4)
-									if magic==b'NSO0':
-										mem.seek(0x40)
-										data = mem.read(0x20);
-										ModuleId=(str(hx(data)).upper())[2:-1]
-										BuildID8=(str(hx(data[:8])).upper())[2:-1]
-										BuildID16=(str(hx(data[:16])).upper())[2:-1]
-										iscorrect=True;
-									break			
-						break	
+					if target==None:
+						target=str(nca._path)
+					if str(nca._path)==target:	
+						if nca.header.getRightsId() == 0:						
+							decKey=nca.header.titleKeyDec
+						if nca.header.getRightsId() != 0:
+							correct, tkey = self.verify_nca_key(str(nca._path))		
+							if correct == True:
+								crypto1=nca.header.getCryptoType()
+								crypto2=nca.header.getCryptoType2()	
+								if crypto2>crypto1:
+									masterKeyRev=crypto2
+								if crypto2<=crypto1:	
+									masterKeyRev=crypto1	
+								decKey = Keys.decryptTitleKey(tkey, Keys.getMasterKeyIndex(int(masterKeyRev)))
+							else:
+								decKey=nca.header.titleKeyDec
+						for i in range(len(files_list)):	
+							if str(nca._path) == files_list[i][0]:
+								offset=files_list[i][1]
+								# print(offset)
+								break						
+						nca.rewind()
+						for fs in nca.sectionFilesystems:
+							#print(fs.fsType)
+							#print(fs.cryptoType)						
+							if fs.fsType == Type.Fs.PFS0 and fs.cryptoType == Type.Crypto.CTR:
+								nca.seek(0)
+								ncaHeader = NcaHeader()
+								ncaHeader.open(MemoryFile(nca.read(0x400), Type.Crypto.XTS, uhx(Keys.get('header_key'))))	
+								ncaHeader.seek(0)
+								fs.rewind()
+								pfs0=fs
+								sectionHeaderBlock = fs.buffer
+								nca.seek(fs.offset)	
+								pfs0Offset=fs.offset
+								pfs0Header = nca.read(0x10*30)
+								mem = MemoryFile(pfs0Header, Type.Crypto.CTR, decKey, pfs0.cryptoCounter, offset = pfs0Offset)
+								data = mem.read();
+								#Hex.dump(data)	
+								head=data[0:4]
+								n_files=(data[4:8])
+								n_files=int.from_bytes(n_files, byteorder='little')		
+								st_size=(data[8:12])
+								st_size=int.from_bytes(st_size, byteorder='little')		
+								junk=(data[12:16])
+								offset=(0x10 + n_files * 0x18)
+								stringTable=(data[offset:offset+st_size])
+								stringEndOffset = st_size
+								headerSize = 0x10 + 0x18 * n_files + st_size
+								#print(head)
+								if head!=b'PFS0':
+									continue								
+								#print(str(n_files))
+								#print(str(st_size))	
+								#print(str((stringTable)))		
+								files_list=list()
+								for i in range(n_files):
+									i = n_files - i - 1
+									pos=0x10 + i * 0x18
+									offset = data[pos:pos+8]
+									offset=int.from_bytes(offset, byteorder='little')			
+									size = data[pos+8:pos+16]
+									size=int.from_bytes(size, byteorder='little')			
+									nameOffset = data[pos+16:pos+20] # just the offset
+									nameOffset=int.from_bytes(nameOffset, byteorder='little')			
+									name = stringTable[nameOffset:stringEndOffset].decode('utf-8').rstrip(' \t\r\n\0')
+									stringEndOffset = nameOffset
+									junk2 = data[pos+20:pos+24] # junk data
+									#print(name)
+									#print(offset)	
+									#print(size)	
+									files_list.append([name,offset,size])	
+								files_list.reverse()	
+								#print(files_list)								
+								for i in range(len(files_list)):
+									if files_list[i][0] == 'main':
+										off1=files_list[i][1]+pfs0Offset+headerSize
+										nca.seek(off1)
+										np=nca.read(0x60)
+										mem = MemoryFile(np, Type.Crypto.CTR, decKey, pfs0.cryptoCounter, offset = off1)
+										magic=mem.read(0x4)
+										if magic==b'NSO0':
+											mem.seek(0x40)
+											data = mem.read(0x20);
+											ModuleId=(str(hx(data)).upper())[2:-1]
+											BuildID8=(str(hx(data[:8])).upper())[2:-1]
+											BuildID16=(str(hx(data[:16])).upper())[2:-1]
+											iscorrect=True;
+										break			
+							break	
 		if iscorrect==False:
 			try:
 				from nutFS.Nca import Nca as nca3type
 				for nca in self:								
 					if type(nca) == Fs.Nca:
 						if 	str(nca.header.contentType) == 'Content.PROGRAM':
-							nca3type=Nca(nca)
-							nca3type._path=nca._path							
-							ModuleId=str(nca3type.buildId)
-							BuildID8=ModuleId[:8]
-							BuildID16=ModuleId[:16]
+							if target==None or str(nca._path)==target:				
+								nca3type=Nca(nca)
+								nca3type._path=nca._path							
+								ModuleId=str(nca3type.buildId)
+								BuildID8=ModuleId[:8]
+								BuildID16=ModuleId[:16]
 			except:
 				ModuleId='';BuildID8='';BuildID16='';
 		return ModuleId,BuildID8,BuildID16				
@@ -1506,9 +1522,11 @@ class ChromeNsp(Pfs0):
 
 		for nca in self:
 			if type(nca) == Nca:
-				if nca.header.getCryptoType2() != masterKeyRev:
-					pass
-					raise IOError('Mismatched masterKeyRevs!')
+				if nca.header.getRightsId() != 0:				
+					if nca.header.masterKeyRev != masterKeyRev:
+						print('WARNING!!! Mismatched masterKeyRevs!')
+						print(f"{str(nca._path)} - {nca.header.masterKeyRev}")	
+						print(f"{str(ticket._path)} - {masterKeyRev}")	
 
 		for nca in self:
 			if type(nca) == Nca:
@@ -1729,7 +1747,11 @@ class ChromeNsp(Pfs0):
 				filename =  str(file._path)
 				Print.info(str(filename))
 
-	def  html_feed(self,feed='',style=1,message=''):	
+	def html_feed(self,feed='',style=1,message=''):
+		if feed==None:
+			feed=''
+		if message==None:
+			message=''
 		if style==1:
 			feed+='<p style="font-size: 14px; justify;text-justify: inter-word;"><strong>{}</strong></p>'.format(message)	
 			return feed
@@ -1750,12 +1772,14 @@ class ChromeNsp(Pfs0):
 			return feed		
 		if style==7:			
 			feed+='<p style="margin-bottom: 2px;margin-top: 2px;font-size: 1.8vh;";><strong>{}</strong>{}</p>'.format(message[0],message[1])
+		if style==8:				
+			feed+='<li style="margin-bottom: 2px;margin-top: 3px"><strong>[{}] {} </strong><span>{}. </span><strong>{} </strong><strong>{}</strong></li>'.format(message[3],message[0],message[1],message[4],message[5])						
 			return feed					
 			
 #ADVANCED FILE-LIST			
 	def  adv_file_list(self):		
 		contentlist=list()	
-		feed=''
+		feed='';ncadb={};size_pr=0
 		for nca in self:
 			size1=0;size2=0;size3=0	
 			if type(nca) == Nca:	
@@ -1810,6 +1834,8 @@ class ChromeNsp(Pfs0):
 							cnmt.seek(0x20+offset)
 							titleid2 = str(hx(titleid.to_bytes(8, byteorder='big'))) 	
 							titleid2 = titleid2[2:-1]
+							original_ID2 = str(hx(original_ID.to_bytes(8, byteorder='big'))) 
+							original_ID2 = original_ID2[2:-1]
 							version=str(int.from_bytes(titleversion, byteorder='little'))
 							v_number=int(int(version)/65536)
 							RS_number=int(min_sversion/65536)
@@ -1862,7 +1888,9 @@ class ChromeNsp(Pfs0):
 									message=["Supported Languages:",suplangue];feed=self.html_feed(feed,3,message)
 							feed+='</ul>'	
 							feed=self.html_feed(feed,2,message=str("- Required Firmware:"))	
-							feed+='<ul style="margin-bottom: 2px;margin-top: 3px">'								
+							incl_Firm=DBmodule.FWDB.detect_xci_fw(self._path,False)									
+							feed+='<ul style="margin-bottom: 2px;margin-top: 3px">'	
+							message=["Included Firmware:",str(str(incl_Firm))];feed=self.html_feed(feed,3,message)									
 							if content_type_cnmt == 'AddOnContent':
 								if v_number == 0:
 									message=["Required game version:",str(str(min_sversion)+' -> '+"Application"+' ('+str(RS_number)+')')];feed=self.html_feed(feed,3,message)									
@@ -1888,13 +1916,22 @@ class ChromeNsp(Pfs0):
 								NcaId = cnmt.read(0x10)
 								size = cnmt.read(0x6)
 								ncatype = cnmt.read(0x1)
-								ncatype = int.from_bytes(ncatype, byteorder='little')	
-								unknown = cnmt.read(0x1)
+								ncatype = int.from_bytes(ncatype, byteorder='little')
+								IdOffset = cnmt.read(0x1)
+								IdOffset = int.from_bytes(IdOffset, byteorder='little', signed=True)										
 								#Print.info(str(ncatype))
 								if ncatype != 6:									
 									nca_name=str(hx(NcaId))
 									nca_name=nca_name[2:-1]+'.nca'
-									s1=0;s1,feed=self.print_nca_by_title(nca_name,ncatype,feed)
+									if titleid2.endswith('800'):
+										showID=str(original_ID2).upper()
+									else:
+										showID=str(titleid2).upper()	
+									if IdOffset>0:
+										showID=showID[:-1]+str(IdOffset)
+									ncadb[nca_name]=[showID,version,v_number]
+									showID=showID+' v'+version
+									s1=0;s1,feed=self.print_nca_by_title(nca_name,ncatype,showID,feed)
 									ncasize=ncasize+s1
 									ncalist.append(nca_name[:-4])
 									contentlist.append(nca_name)									
@@ -1906,7 +1943,10 @@ class ChromeNsp(Pfs0):
 							nca_meta=str(nca._path)
 							ncalist.append(nca_meta[:-4])	
 							contentlist.append(nca_meta)
-							s1=0;s1,feed=self.print_nca_by_title(nca_meta,0,feed)							
+							showID=str(titleid2).upper()
+							ncadb[nca_name]=[showID,version,v_number]
+							showID=showID+' v'+version
+							s1=0;s1,feed=self.print_nca_by_title(nca_meta,0,showID,feed)							
 							ncasize=ncasize+s1
 							size1=ncasize
 							size_pr=sq_tools.getSize(ncasize)		
@@ -1935,11 +1975,20 @@ class ChromeNsp(Pfs0):
 									size = cnmt.read(0x6)
 									ncatype = cnmt.read(0x1)
 									ncatype = int.from_bytes(ncatype, byteorder='little')	
-									unknown = cnmt.read(0x1)	
+									IdOffset = cnmt.read(0x1)
+									IdOffset = int.from_bytes(IdOffset, byteorder='little', signed=True)
 									if ncatype == 6:
 										nca_name=str(hx(NcaId))
 										nca_name=nca_name[2:-1]+'.nca'
-										s1=0;s1,feed=self.print_nca_by_title(nca_name,ncatype,feed)
+										if titleid2.endswith('800'):
+											showID=str(original_ID2).upper()
+										else:
+											showID=str(titleid2).upper()			
+										if IdOffset>0:
+											showID=showID[:-1]+str(IdOffset)												
+										ncadb[nca_name]=[showID,version,v_number]
+										showID=showID+' v'+version
+										s1=0;s1,feed=self.print_nca_by_title(nca_name,ncatype,showID,feed)
 										ncasize=ncasize+s1
 								size2=ncasize
 								size_pr=sq_tools.getSize(ncasize)		
@@ -1958,13 +2007,14 @@ class ChromeNsp(Pfs0):
 								feed+='</ul>'
 								feed=self.html_feed(feed,5,message=('TOTAL SIZE: '+size_pr))										
 					finalsize=size1+size2+size3	
-					size_pr=sq_tools.getSize(finalsize)	
-					feed=self.html_feed(feed,2,message=('FULL CONTENT TOTAL SIZE: '+size_pr))	
-		self.printnonlisted(contentlist,feed)
+		size_pr=sq_tools.getSize(finalsize)	
+		feed=self.html_feed(feed,2,message=('FULL CONTENT TOTAL SIZE: '+size_pr))	
+		feed=self.printnonlisted(contentlist,feed)
+		feed=self.print_BuildIDs(ncadb,feed)
 		return feed
 					
 																				
-	def print_nca_by_title(self,nca_name,ncatype,feed=''):	
+	def print_nca_by_title(self,nca_name,ncatype,showID,feed):	
 		tab="\t";
 		size=0
 		ncz_name=nca_name[:-1]+'z'			
@@ -1978,22 +2028,22 @@ class ChromeNsp(Pfs0):
 					content=content[8:]+": "
 					ncatype=sq_tools.getTypeFromCNMT(ncatype)	
 					if ncatype != "Meta: ":
-						message=[ncatype,str(filename),'Size:',size_pr];feed=self.html_feed(feed,4,message)						
+						message=[ncatype,str(filename),'TitleID:',showID,'Size',size_pr];feed=self.html_feed(feed,8,message)						
 					else:
-						message=[ncatype,str(filename),'Size:',size_pr];feed=self.html_feed(feed,4,message)					
+						message=[ncatype,str(filename),'TitleID:',showID,'Size',size_pr];feed=self.html_feed(feed,8,message)					
 					return size,feed	
 			elif filename == ncz_name:
 				ncztype=Nca(nca)
-				ncztype._path=nca._path				
+				ncztype._path=nca._path							
 				size=ncztype.header.size
 				size_pr=sq_tools.getSize(size)
 				content=str(ncztype.header.contentType)
 				content=content[8:]+": "
 				ncatype=sq_tools.getTypeFromCNMT(ncatype)	
 				if ncatype != "Meta: ":
-					message=[ncatype,str(filename),'Size:',size_pr];feed=self.html_feed(feed,4,message)						
+					message=[ncatype,str(filename),'Size:',size_pr];feed=self.html_feed(feed,8,message)						
 				else:
-					message=[ncatype,str(filename),'Size:',size_pr];feed=self.html_feed(feed,4,message)					
+					message=[ncatype,str(filename),'Size:',size_pr];feed=self.html_feed(feed,8,message)		
 				return size,feed		
 		return size,feed						
 	def print_xml_by_title(self,ncalist,contentlist,feed=''):	
@@ -2108,6 +2158,26 @@ class ChromeNsp(Pfs0):
 					message=['OTHER:',str(filename),'Size:',size_pr];feed=self.html_feed(feed,4,message)
 			size_pr=sq_tools.getSize(totsnl)		
 			feed=self.html_feed(feed,5,message=('TOTAL SIZE: '+size_pr))	
+		return feed				
+		
+	def print_BuildIDs(self,ncadb,feed=''):	
+		c=0
+		for nca in self:
+			size1=0;size2=0;size3=0	
+			if type(nca) == Nca:	
+				if 	str(nca.header.contentType) == 'Content.PROGRAM':	
+					target=str(nca._path)
+					tit=str(nca.header.titleId).upper()
+					entry=ncadb[target]							
+					ModuleId,BuildID8,BuildID16=self.read_buildid(target)	
+					ModuleId=sq_tools.trimm_module_id(ModuleId)
+					if ModuleId!="":
+						if c==0:
+							feed=self.html_feed(feed,2,'EXEFS DATA:')
+							c+=1	
+						feed=self.html_feed(feed,2,f'[Title: {tit} v{entry[1]}]')
+						message=[f'BuildID8:',str(BuildID8)];feed=self.html_feed(feed,3,message)	
+						message=[f'BuildID:',str(ModuleId)];feed=self.html_feed(feed,3,message)								
 		return feed				
 
 #ADVANCED FILE-LIST			
@@ -2633,9 +2703,11 @@ class ChromeNsp(Pfs0):
 		
 		for nca in self:
 			if type(nca) == Nca:
-				if nca.header.getCryptoType2() != masterKeyRev:
-					pass
-					raise IOError('Mismatched masterKeyRevs!')
+				if nca.header.getRightsId() != 0:				
+					if nca.header.masterKeyRev != masterKeyRev:
+						print('WARNING!!! Mismatched masterKeyRevs!')
+						print(f"{str(nca._path)} - {nca.header.masterKeyRev}")	
+						print(f"{str(ticket._path)} - {masterKeyRev}")	
 
 		for nca in self:
 			if type(nca) == Nca:
@@ -2739,9 +2811,11 @@ class ChromeNsp(Pfs0):
 		
 		for nca in self:
 			if type(nca) == Nca:
-				if nca.header.getCryptoType2() != masterKeyRev:
-					pass
-					raise IOError('Mismatched masterKeyRevs!')		
+				if nca.header.getRightsId() != 0:				
+					if nca.header.masterKeyRev != masterKeyRev:
+						print('WARNING!!! Mismatched masterKeyRevs!')
+						print(f"{str(nca._path)} - {nca.header.masterKeyRev}")	
+						print(f"{str(ticket._path)} - {masterKeyRev}")			
 		
 		for nca in self:
 			if type(nca) == Nca:
@@ -3523,9 +3597,10 @@ class ChromeNsp(Pfs0):
 		for file in self:				
 			if type(file) == Nca:
 				if file.header.getRightsId() != 0:
-					if file.header.getCryptoType2() != masterKeyRev:
-						pass
-						raise IOError('Mismatched masterKeyRevs!')
+					if file.header.masterKeyRev != masterKeyRev:
+						print('WARNING!!! Mismatched masterKeyRevs!')
+						print(f"{str(file._path)} - {file.header.masterKeyRev}")	
+						print(f"{str(ticket._path)} - {masterKeyRev}")	
 		for file in self:	
 			if type(file) == Nca:	
 				if file.header.getRightsId() != 0:		
@@ -3947,19 +4022,19 @@ class ChromeNsp(Pfs0):
 				if 	str(nca.header.contentType) == 'Content.CONTROL':
 					title,editor,ediver,SupLg,regionstr,isdemo=nca.get_langueblock(title)
 					languetag='('
-					if ("US (eng)" or "UK (eng)") in SupLg:
+					if ("US (eng)" in SupLg) or ("UK (eng)" in SupLg):
 						languetag=languetag+'En,'
 					if "JP" in SupLg:
 						languetag=languetag+'Jp,'				
-					if ("CAD (fr)" or "FR") in SupLg:
+					if ("CAD (fr)" in SupLg) or ("FR" in SupLg):
 						languetag=languetag+'Fr,'
-					elif ("CAD (fr)") in SupLg:	
+					elif ("CAD (fr)" in SupLg):	
 						languetag=languetag+'CADFr,'		
 					elif ("FR") in SupLg:	
 						languetag=languetag+'Fr,'								
 					if "DE" in SupLg:
 						languetag=languetag+'De,'							
-					if ("LAT (spa)" and "SPA") in SupLg:
+					if ("LAT (spa)" in SupLg) and ("SPA" in SupLg):
 						languetag=languetag+'Es,'
 					elif "LAT (spa)" in SupLg:
 						languetag=languetag+'LatEs,'
@@ -3978,10 +4053,10 @@ class ChromeNsp(Pfs0):
 					if "TAI" in SupLg:
 						languetag=languetag+'Tw,'	
 					if "CH" in SupLg:
-						languetag=languetag+'Ch,'
+						languetag=languetag+'Ch,'				
 					languetag=languetag[:-1]
-					languetag=languetag+')'			
-					return(languetag)					
+					languetag=languetag+')'								
+					return(languetag)				
 
 	def gen_nsp_head(self,files,delta,inc_xml,ofolder):
 	
@@ -4052,9 +4127,10 @@ class ChromeNsp(Pfs0):
 		for nca in self:
 			if type(nca) == Nca:
 				if nca.header.getRightsId() != 0:			
-					if nca.header.getCryptoType2() != masterKeyRev:
-						pass
-						raise IOError('Mismatched masterKeyRevs!')
+					if nca.header.masterKeyRev != masterKeyRev:
+						print('WARNING!!! Mismatched masterKeyRevs!')
+						print(f"{str(nca._path)} - {nca.header.masterKeyRev}")	
+						print(f"{str(ticket._path)} - {masterKeyRev}")		
 		for nca in self:	
 			if type(nca) == Nca:		
 				if nca.header.getRightsId() != 0:
@@ -4791,9 +4867,10 @@ class ChromeNsp(Pfs0):
 		for file in self:				
 			if type(file) == Nca:
 				if file.header.getRightsId() != 0:
-					if file.header.getCryptoType2() != masterKeyRev:
-						pass
-						raise IOError('Mismatched masterKeyRevs!')
+					if file.header.masterKeyRev != masterKeyRev:
+						print('WARNING!!! Mismatched masterKeyRevs!')
+						print(f"{str(file._path)} - {file.header.masterKeyRev}")	
+						print(f"{str(ticket._path)} - {masterKeyRev}")	
 		for file in self:	
 			if type(file) == Nca:	
 				if file.header.getRightsId() != 0:		
@@ -6971,9 +7048,10 @@ class ChromeNsp(Pfs0):
 		for file in self:				
 			if type(file) == Nca and file._path in filelist:
 				if file.header.getRightsId() != 0:
-					if file.header.getCryptoType2() != masterKeyRev:
-						pass
-						raise IOError('Mismatched masterKeyRevs!')
+					if file.header.masterKeyRev != masterKeyRev:
+						print('WARNING!!! Mismatched masterKeyRevs!')
+						print(f"{str(file._path)} - {file.header.masterKeyRev}")	
+						print(f"{str(ticket._path)} - {masterKeyRev}")	
 		for file in self:	
 			if type(file) == Nca and file._path in filelist:	
 				if file.header.getRightsId() != 0:		

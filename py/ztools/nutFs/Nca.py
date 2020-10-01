@@ -102,7 +102,12 @@ class NcaHeader(File):
 		for i in range(4):
 			self.sectionHashes.append(self.sectionTables[i])
 
-		self.masterKey = (self.cryptoType if self.cryptoType > self.cryptoType2 else self.cryptoType2)-1
+		if self.cryptoType > self.cryptoType2:								
+			self.masterKeyRev=self.cryptoType
+		else:			
+			self.masterKeyRev=self.cryptoType2			
+
+		self.masterKey = self.masterKeyRev-1
 
 		if self.masterKey < 0:
 			self.masterKey = 0

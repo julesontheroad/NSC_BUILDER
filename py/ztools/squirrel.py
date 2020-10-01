@@ -3158,6 +3158,7 @@ if __name__ == '__main__':
 		# ...................................................
 		#parser.add_argument('-xci_untr', '--xci_untrim', nargs='+', help='Untrims xci')
 		if args.xci_untrim:
+			filename=None
 			if args.buffer:
 				for input in args.buffer:
 					try:
@@ -3172,18 +3173,20 @@ if __name__ == '__main__':
 						ofolder = input
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
-			else:
-				if args.text_file:
-					tfile=args.text_file
-					with open(tfile,"r+", encoding='utf8') as filelist:
-						filename = filelist.readline()
-						filename=os.path.abspath(filename.rstrip('\n'))
+			if args.text_file:
+				tfile=args.text_file
+				with open(tfile,"r+", encoding='utf8') as filelist:
+					filename = filelist.readline()
+					filename=os.path.abspath(filename.rstrip('\n'))
+					if not args.ofolder:
 						dir=os.path.dirname(os.path.abspath(filename))
 						ofolder =os.path.join(dir, 'output')
-				else:
-					for filename in args.xci_untrim:
+			elif not args.ofolder:
+				for filename in args.xci_untrim:
+					if filename.endswith('.xci'):
 						dir=os.path.dirname(os.path.abspath(filename))
 						ofolder =os.path.join(dir, 'output')
+						break
 			if not os.path.exists(ofolder):
 				os.makedirs(ofolder)
 			if args.fat:
@@ -3197,20 +3200,23 @@ if __name__ == '__main__':
 						Print.error('Exception: ' + str(e))
 			else:
 				fat="exfat"
-			for filepath in args.xci_untrim:
-				if filepath.endswith('.xci'):
-					try:
-						f = Fs.factory(filepath)
-						filename=os.path.basename(os.path.abspath(filepath))
-						#print(filename)
-						outfile = os.path.join(ofolder, filename)
-						#print(f.path)
-						f.open(filepath, 'rb')
-						f.untrim(buffer,outfile,ofolder,fat)
-						f.flush()
-						f.close()
-					except BaseException as e:
-						Print.error('Exception: ' + str(e))
+			if filename==None:	
+				for filepath in args.xci_untrim:
+					if filepath.endswith('.xci'):
+						filename=filepath
+			filepath=filename			
+			try:
+				f = Fs.factory(filepath)
+				filename=os.path.basename(os.path.abspath(filepath))
+				#print(filename)
+				outfile = os.path.join(ofolder, filename)
+				#print(f.path)
+				f.open(filepath, 'rb')
+				f.untrim(buffer,outfile,ofolder,fat)
+				f.flush()
+				f.close()
+			except BaseException as e:
+				Print.error('Exception: ' + str(e))
 			Status.close()
 		# ...................................................
 		# Take off deltas
@@ -5869,6 +5875,7 @@ if __name__ == '__main__':
 					############################
 					f = Fs.Nca(filename, 'r+b')
 					f.write_cnmt_titleid(value)
+					f.write_cnmt_updid(value[:-4]+'80'+value[-1])
 					#print(hx(f.get_cnmt_titleid()))
 					f.flush()
 					f.close()
@@ -6529,6 +6536,7 @@ if __name__ == '__main__':
 
 		if args.renamef:
 			import nutdb
+			languetag=''
 			if args.romanize:
 				for input in args.romanize:
 					roman=str(input).upper()
@@ -6943,22 +6951,28 @@ if __name__ == '__main__':
 						if ccount == '(1G)' or ccount == '(1U)' or ccount == '(1D)':
 							ccount=''
 						basename=str(os.path.basename(os.path.abspath(filepath)))
+						if onaddid=='idtag':
+							from pathlib import Path
+							g=Path(basename).stem	
+							try:
+								g0=[pos for pos, char in enumerate(g) if char == '[']							
+								ctitl=(g[0:g0[0]]).strip()	
+							except:
+								ctitl=g.strip()	
+							if languetag!='':
+								ctitl+=' '+languetag
+							renmode="force"
+							onaddid=False
 						if baseid != "" and baseid != "[]":
 							if updver != "":
 								if onaddid==True:
 									endname=basename[:-4]+' '+baseid
-								elif onaddid=='idtag':
-									endname=basename[:-4]+' '+baseid+' '+updver+' '+ccount+' '+mgame
 								elif nover == True and (ccount==''):
 									endname=ctitl+' '+baseid
 								else:
 									endname=ctitl+' '+baseid+' '+updver+' '+ccount+' '+mgame
 							else:
 								if onaddid==True:
-									endname=basename[:-4]+' '+baseid
-								elif onaddid=='idtag' and (ccount!=''):
-									endname=basename[:-4]+' '+baseid+' '+ccount+' '+mgame
-								elif onaddid=='idtag':
 									endname=basename[:-4]+' '+baseid
 								elif nover == True and (ccount==''):
 									endname=ctitl+' '+baseid
@@ -6974,10 +6988,6 @@ if __name__ == '__main__':
 						elif updid !="" and updid != "[]":
 							if onaddid==True:
 								endname=basename[:-4]+' '+updid
-							elif onaddid=='idtag' and (ccount!=''):
-								endname=basename+' '+updid+' '+updver+' '+ccount+' '+mgame
-							elif onaddid=='idtag' and (ccount==''):
-								endname=basename+' '+updid
 							elif nover == True and (ccount==''):
 								endname=ctitl+' '+updid
 							else:
@@ -7458,6 +7468,12 @@ if __name__ == '__main__':
 			if isinstance(args.verify_key, list):
 				filepath=args.verify_key[0]
 				userkey=args.verify_key[1]
+				print(args.verify_key[2])
+				if args.verify_key[2]:
+					if str(args.verify_key[2]).lower()=="true":
+						unlock=True
+				else:
+					unlock=False
 				userkey=str(userkey).upper()
 				if filepath.endswith('.nsp') or filepath.endswith('.nsx'):
 					basename=str(os.path.basename(os.path.abspath(filepath)))
@@ -7468,7 +7484,15 @@ if __name__ == '__main__':
 						f.close()
 						if check==True:
 							print(('\nTitlekey {} is correct for '.format(userkey)).upper()+('"{}"').format(basename))
-							print("-- YOU CAN UNLOCK AND ENJOY THE GAME --")	
+							print("-- YOU CAN UNLOCK AND ENJOY THE GAME --")
+							if unlock==True:
+								print("--> UNLOCKING...")		
+								f = Fs.Nsp(filepath, 'r+b')
+								f.unlock(userkey)
+								try:
+									f.flush()
+									f.close()	
+								except:pass	
 						else:
 							print(('\nTitlekey {} is incorrect for '.format(userkey)).upper()+('"{}"').format(basename))
 							print("-- BETTER LUCK NEXT TIME --")	

@@ -110,9 +110,13 @@ class GamecardCertificate(File):
 		super(GamecardCertificate, self).__init__()
 		self.signature = None
 		self.magic = None
-		self.unknown1 = None
+		self.unknown1 = None		
+		self.KekIndex  = None		
 		self.unknown2 = None
-		self.data = None
+		self.DeviceID = None
+		self.unknown3 = None
+		self.data = None	
+		self.Cert_is_fake = None		
 		
 		if file:
 			self.open(file)
@@ -122,9 +126,19 @@ class GamecardCertificate(File):
 		self.rewind()
 		self.signature = self.read(0x100)
 		self.magic = self.read(0x4)
-		self.unknown1 = self.read(0x10)
-		self.unknown2 = self.read(0xA)
-		self.data = self.read(0xD6)
+		self.unknown1 = self.read(0x4)		
+		self.KekIndex  = self.read(0x1)				
+		self.unknown2 = self.read(0x7)	
+		self.DeviceID = self.read(0x10)	
+		self.unknown3 = self.read(0x10)	
+		self.data = self.read(0xD0)		
+		self.Cert_is_fake = self.is_cert_fake()		
+		
+	def is_cert_fake(self):
+		if self.KekIndex==b'\xff' and self.DeviceID == 16*b'\xff':
+			return True
+		else:
+			return False		
 			
 class Xci(File):
 	def __init__(self, file = None):
@@ -155,6 +169,7 @@ class Xci(File):
 		
 		self.gamecardInfo = None
 		self.gamecardCert = None
+		
 		self.hfs0 = None
 		self.path = file
 		if file:
@@ -186,8 +201,7 @@ class Xci(File):
 		self.normalAreaEndOffset = self.readInt32()
 		
 		self.gamecardInfo = GamecardInfo(self.partition(self.tell(), 0x70))
-		self.gamecardCert = GamecardCertificate(self.partition(0x7000, 0x200))
-		
+		self.gamecardCert = GamecardCertificate(self.partition(0x7000, 0x200))		
 
 	def open(self, path = None, mode = 'rb', cryptoType = -1, cryptoKey = -1, cryptoCounter = -1):
 		r = super(Xci, self).open(path, mode, cryptoType, cryptoKey, cryptoCounter)
@@ -225,8 +239,14 @@ class Xci(File):
 		
 		Print.info(tabs + 'magic = ' + str(self.magic))
 		Print.info(tabs + 'titleKekIndex = ' + str(self.titleKekIndex))
-		
-		Print.info(tabs + 'gamecardCert = ' + str(hx(self.gamecardCert.magic + self.gamecardCert.unknown1 + self.gamecardCert.unknown2 + self.gamecardCert.data)))
+		if not self.gamecardCert.Cert_is_fake:
+			Print.info('\nGAMECARD CERTIFICATE: "PERSONALIZED"')	
+		else:
+			Print.info('\nGAMECARD CERTIFICATE: "FAKE"')	
+		Print.info('\n - CERTIFICATE SIGNATURE:')					
+		Hex.dump(self.signature)		
+		Print.info('\n - CERTIFICATE BODY:')	
+		Hex.dump(self.gamecardCert.magic + self.gamecardCert.unknown1 +self.gamecardCert.KekIndex + self.gamecardCert.unknown2 +self.gamecardCert.DeviceID +self.gamecardCert.unknown3 + self.gamecardCert.data)
 		self.hfs0.printInfo( indent)
 
 
@@ -1154,6 +1174,8 @@ class Xci(File):
 										stringEndOffset = st_size
 										headerSize = 0x10 + 0x18 * n_files + st_size
 										#print(head)
+										if head!=b'PFS0':
+											continue
 										#print(str(n_files))
 										#print(str(st_size))	
 										#print(str((stringTable)))		
@@ -1249,6 +1271,8 @@ class Xci(File):
 									stringEndOffset = st_size
 									headerSize = 0x10 + 0x18 * n_files + st_size
 									#print(head)
+									if head!=b'PFS0':
+										continue
 									#print(str(n_files))
 									#print(str(st_size))	
 									#print(str((stringTable)))		
@@ -3925,14 +3949,17 @@ class Xci(File):
 		sig_padding=bytes.fromhex(sig_padding)		
 		#print (hx(sig_padding))	
 		#gamecardCert
-		CERT_padding='FF'*0x7E0C
+		CERT_padding='FF'*0x7E00
 		CERT_padding=bytes.fromhex(CERT_padding)				
 		#print (hx(fake_CERT))
 		CERT = b''
 		CERT += self.gamecardCert.signature
 		CERT += self.gamecardCert.magic
 		CERT += self.gamecardCert.unknown1
-		CERT += self.gamecardCert.unknown2		
+		CERT += self.gamecardCert.KekIndex
+		CERT += self.gamecardCert.unknown2
+		CERT += self.gamecardCert.DeviceID
+		CERT += self.gamecardCert.unknown3			
 		CERT += self.gamecardCert.data
 		CERT += CERT_padding			
 		#print (hx(CERT))	
@@ -4033,16 +4060,19 @@ class Xci(File):
 		sig_padding=bytes.fromhex(sig_padding)		
 		#print (hx(sig_padding))	
 		#gamecardCert
-		CERT_padding='FF'*0x7E0C
+		CERT_padding='FF'*0x7E00
 		CERT_padding=bytes.fromhex(CERT_padding)				
 		#print (hx(fake_CERT))
 		CERT = b''
 		CERT += self.gamecardCert.signature
 		CERT += self.gamecardCert.magic
 		CERT += self.gamecardCert.unknown1
-		CERT += self.gamecardCert.unknown2		
+		CERT += self.gamecardCert.KekIndex
+		CERT += self.gamecardCert.unknown2
+		CERT += self.gamecardCert.DeviceID
+		CERT += self.gamecardCert.unknown3			
 		CERT += self.gamecardCert.data
-		CERT += CERT_padding			
+		CERT += CERT_padding	
 		#print (hx(CERT))	
 		return header,gamecard_info,sig_padding,CERT,root_header,upd_header,norm_header,sec_header,rootSize,upd_multiplier,norm_multiplier,sec_multiplier
 
@@ -6809,19 +6839,19 @@ class Xci(File):
 						if 	str(nca.header.contentType) == 'Content.CONTROL':
 							title,editor,ediver,SupLg,regionstr,isdemo=nca.get_langueblock(title)
 							languetag='('
-							if ("US (eng)" or "UK (eng)") in SupLg:
+							if ("US (eng)" in SupLg) or ("UK (eng)" in SupLg):
 								languetag=languetag+'En,'
 							if "JP" in SupLg:
 								languetag=languetag+'Jp,'				
-							if ("CAD (fr)" or "FR") in SupLg:
+							if ("CAD (fr)" in SupLg) or ("FR" in SupLg):
 								languetag=languetag+'Fr,'
-							elif ("CAD (fr)") in SupLg:	
+							elif ("CAD (fr)" in SupLg):	
 								languetag=languetag+'CADFr,'		
 							elif ("FR") in SupLg:	
 								languetag=languetag+'Fr,'								
 							if "DE" in SupLg:
 								languetag=languetag+'De,'							
-							if ("LAT (spa)" and "SPA") in SupLg:
+							if ("LAT (spa)" in SupLg) and ("SPA" in SupLg):
 								languetag=languetag+'Es,'
 							elif "LAT (spa)" in SupLg:
 								languetag=languetag+'LatEs,'
@@ -6840,9 +6870,9 @@ class Xci(File):
 							if "TAI" in SupLg:
 								languetag=languetag+'Tw,'	
 							if "CH" in SupLg:
-								languetag=languetag+'Ch,'
+								languetag=languetag+'Ch,'				
 							languetag=languetag[:-1]
-							languetag=languetag+')'			
+							languetag=languetag+')'								
 							return(languetag)										
 						
 	def file_hash(self,target):

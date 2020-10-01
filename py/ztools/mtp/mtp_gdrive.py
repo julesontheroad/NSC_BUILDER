@@ -66,6 +66,7 @@ remote_lib_file = os.path.join(zconfig_dir, 'remote_libraries.txt')
 cache_lib_file= os.path.join(zconfig_dir, 'remote_cache_location.txt')
 _1fichier_token=os.path.join((os.path.join(zconfig_dir, 'credentials')),'_1fichier_token.tk')
 remote_lib_cache=os.path.join(zconfig_dir, 'remote_lib_cache')	
+xci_locations=os.path.join(zconfig_dir, 'mtp_xci_locations.txt')
 
 def libraries(tfile):
 	db={}
@@ -151,18 +152,22 @@ def loop_install(tfile,destiny="SD",outfolder=None,ch_medium=True,check_fw=True,
 		elif os.path.exists(item):
 			print("Item is a local link. Skipping...")	
 		else:
-			test=item.split('|')
-			if len(test)<2:
-				item=test[0]
-				lib,TD,libpath=get_library_from_path(remote_lib_file,item)			
-				if lib!=None:
-					print("Item is a remote library link. Redirecting...")
-					gdrive_install(item,destiny,outfolder=outfolder,ch_medium=ch_medium,check_fw=check_fw,patch_keygen=patch_keygen,ch_base=ch_base,ch_other=ch_other,checked=checked,installed_list=installed)
-				else:
-					print("Couldn't find file. Skipping...")					
-			else:	
-				gdrive_install(item,destiny,outfolder=outfolder,ch_medium=ch_medium,check_fw=check_fw,patch_keygen=patch_keygen,ch_base=ch_base,ch_other=ch_other,checked=checked,installed_list=installed)	
-		print("")				
+			try:
+				test=item.split('|')
+				if len(test)<2:
+					item=test[0]
+					lib,TD,libpath=get_library_from_path(remote_lib_file,item)			
+					if lib!=None:
+						print("Item is a remote library link. Redirecting...")
+						gdrive_install(item,destiny,outfolder=outfolder,ch_medium=ch_medium,check_fw=check_fw,patch_keygen=patch_keygen,ch_base=ch_base,ch_other=ch_other,checked=checked,installed_list=installed)
+					else:
+						print("Couldn't find file. Skipping...")					
+				else:	
+					gdrive_install(item,destiny,outfolder=outfolder,ch_medium=ch_medium,check_fw=check_fw,patch_keygen=patch_keygen,ch_base=ch_base,ch_other=ch_other,checked=checked,installed_list=installed)	
+			except:
+				print(f"Couldn't find {test[0]}. Skipping...")
+		print("")					
+		listmanager.striplines(tfile,1,True)						
 	
 def get_library_from_path(tfile=None,filename=None):
 	if tfile==None:
@@ -196,17 +201,31 @@ def get_library_from_path(tfile=None,filename=None):
 	return lib,TD,libpath	
 	
 def gdrive_install(filename,destiny="SD",outfolder=None,ch_medium=True,check_fw=True,patch_keygen=False,ch_base=False,ch_other=False,checked=False,installed_list=False):
-	check_connection()
+	check_connection();ID=None	
 	test=filename.split('|')
 	if len(test)<2:
 		filename=test[0]		
 		lib,TD,libpath=get_library_from_path(remote_lib_file,filename)
+	elif len(test)<3:
+		filename=test[0]	
+		TD=test[1]			
+		if str(TD).upper()=="NONE":
+			TD=None
 	else:
 		filename=test[0]	
 		TD=test[1]			
 		if str(TD).upper()=="NONE":
 			TD=None
-	ID,name,type,size,md5,remote=DrivePrivate.get_Data(filename,TD=TD,Print=False)
+		ID=test[2]			
+		if str(ID).upper()=="NONE":
+			ID=None		
+	if ID==None:			
+		ID,name,type,size,md5,remote=DrivePrivate.get_Data(filename,TD=TD,Print=False)
+	else:
+		try:
+			ID,name,type,size,md5,remote=DrivePrivate.get_Data(filename,TD=TD,Print=False,ID=ID)	
+		except:
+			ID,name,type,size,md5,remote=DrivePrivate.get_Data(filename,TD=TD,Print=False)
 	# header=DrivePrivate.get_html_header(remote.access_token)
 	token=remote.access_token
 	name=remote.name
@@ -717,8 +736,10 @@ def get_libs_remote_source(lib=remote_lib_file):
 			return False
 	return libraries				
 
-def update_console_from_gd(libraries="all",destiny="SD",exclude_xci=True,prioritize_nsz=True,tfile=None,verification=True,ch_medium=True,ch_other=False,autoupd_aut=True):	
+def update_console_from_gd(libraries="all",destiny="SD",exclude_xci=True,prioritize_nsz=True,tfile=None,verification=True,ch_medium=True,ch_other=False,autoupd_aut=True,use_archived=False):	
 	check_connection()
+	if use_archived==True:
+		autoupd_aut=False	
 	if tfile==None:
 		tfile=os.path.join(NSCB_dir, 'MTP1.txt')
 	if os.path.exists(tfile):
@@ -747,27 +768,61 @@ def update_console_from_gd(libraries="all",destiny="SD",exclude_xci=True,priorit
 			shutil.rmtree(fp)
 		except OSError:
 			os.remove(fp)	
-	print("1. Parsing games in device. Please Wait...")			
-	process=subprocess.Popen([nscb_mtp,"ShowInstalled","-tfile",games_installed_cache,"-show","false"],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-	while process.poll()==None:
-		if process.poll()!=None:
-			process.terminate();	
-	if os.path.exists(games_installed_cache):	
-		print("   Success")
-	gamelist=listmanager.read_lines_to_list(games_installed_cache,all=True)
-	installed={}		
-	for g in gamelist:
-		try:
-			if exclude_xci==True:
-				if g.endswith('xci') or g.endswith('xc0'):
-					continue
-			entry=listmanager.parsetags(g)
-			entry=list(entry)		
-			entry.append(g)
-			installed[entry[0]]=entry	
-		except:pass	
-	# for i in pths:
-		# print(i)
+	if use_archived!=True:				
+		print("1. Parsing games in device. Please Wait...")			
+		if exclude_xci==True:
+			process=subprocess.Popen([nscb_mtp,"ShowInstalled","-tfile",games_installed_cache,"-show","false","-exci","true"],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+		else:	
+			process=subprocess.Popen([nscb_mtp,"ShowInstalled","-tfile",games_installed_cache,"-show","false","-exci","false","-xci_lc",xci_locations],stdout=subprocess.PIPE,stderr=subprocess.PIPE)	
+		while process.poll()==None:
+			if process.poll()!=None:
+				process.terminate();	
+		if os.path.exists(games_installed_cache):	
+			print("   Success")
+		gamelist=listmanager.read_lines_to_list(games_installed_cache,all=True)
+		installed={}		
+		for g in gamelist:
+			try:
+				if exclude_xci==True:
+					if g.endswith('xci') or g.endswith('xc0'):
+						continue
+				entry=listmanager.parsetags(g)
+				entry=list(entry)		
+				entry.append(g)
+				installed[entry[0]]=entry	
+			except:pass	
+		# for i in pths:
+			# print(i)
+	else:
+		print("1. Retrieving registered...")			
+		dbicsv=os.path.join(cachefolder,"registered.csv")
+		process=subprocess.Popen([nscb_mtp,"Download","-ori","4: Installed games\\InstalledApplications.csv","-dst",dbicsv],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+		while process.poll()==None:
+			if process.poll()!=None:
+				process.terminate();
+		if os.path.exists(dbicsv):	
+			print("   Success")					
+			installed={}
+			with open(dbicsv,'rt',encoding='utf8') as csvfile:
+				readCSV = csv.reader(csvfile, delimiter=',')
+				id=0;ver=1;tname=2;
+				for row in readCSV:		
+					try:
+						tid=(str(row[id]).upper())[2:]
+						version=int(row[ver])
+						if version>0 and tid.endswith('000'):
+							tid=tid[:-3]+'800'						
+						name=str(row[tname])
+						g=f"{name} [{tid}][v{version}].nsp"
+						entry=listmanager.parsetags(g)
+						entry=list(entry)		
+						entry.append(g)
+						if entry[0] in installed.keys():
+							if int((intalled[entry[0]])[1])<version:
+								installed[entry[0]]=entry
+						else:
+							installed[entry[0]]=entry							
+					except:pass		
 	print("2. Parsing files from Google Drive. Please Wait...")		
 	# print(pths)
 	if isinstance(pths, dict):
@@ -901,7 +956,6 @@ def update_console_from_gd(libraries="all",destiny="SD",exclude_xci=True,priorit
 					g=game[1]
 					g0=gamepaths[g]
 					newgpaths.append(g0)
-					break
 				gamepaths=newgpaths					
 		print("6. Generating text file...")		
 		with open(tfile,'w', encoding='utf8') as textfile:
@@ -909,14 +963,22 @@ def update_console_from_gd(libraries="all",destiny="SD",exclude_xci=True,priorit
 			for i in gamepaths:
 				location=None
 				for f in files:
+					TD=None;ID=None
 					if f[0]==i:	
 						location=f[2]
+						try:
+							ID=f[4]
+						except:pass	
 						break
 				if location==None:
 					print(f"Can't find location for {i}")
 					continue
 				wpath=f"{location}/{i}"
-				textfile.write((wpath).strip()+"\n")	
+				lib,TD,libpath=get_library_from_path(filename=wpath)
+				if ID==None:
+					textfile.write(f"{(wpath).strip()}|{TD}\n")
+				else:		
+					textfile.write(f"{(wpath).strip()}|{TD}|{ID}\n")	
 		print("7. Triggering installer on loop mode.")
 		print("   Note:If you interrupt the list use normal install mode to continue list")	
 		loop_install(tfile,destiny=destiny,outfolder=None,ch_medium=ch_medium,check_fw=True,patch_keygen=False,ch_base=False,ch_other=False,checked=True)

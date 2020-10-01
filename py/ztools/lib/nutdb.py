@@ -396,6 +396,8 @@ def check_region_file(region,nutdb=True):
 			return True		
 		except:
 			return False
+	elif (th*60*60+tm*60+ts)>=(9999*60*60):
+		return True			
 	elif (time.time() - os.path.getmtime(regionfile)) > (th*60*60+tm*60+ts):
 		try:
 			get_regionDB(region)	
@@ -436,6 +438,8 @@ def check_other_file(dbfile,dbname,nutdb=True):
 			return True
 		except:
 			return False
+	elif (th*60*60+tm*60+ts)>=(9999*60*60):
+		return True						
 	elif (time.time() - os.path.getmtime(_dbfile_)) > (th*60*60+tm*60+ts):
 		try:
 			get_otherDB(dbfile,dbname,f)	
@@ -846,7 +850,9 @@ def check_current():
 		th=24;tm=0;ts=0	
 	if not os.path.exists(nutdbfile):
 		getnutdb()
-		return True			
+		return True		
+	elif (th*60*60+tm*60+ts)>=(9999*60*60):
+		return True					
 	elif (time.time() - os.path.getmtime(nutdbfile)) > (th*60*60+tm*60+ts):
 		try:
 			getnutdb()		
@@ -1764,6 +1770,7 @@ def checkfolder(ofolder,roman=True,printinfo=True):
 				break
 			try:	
 				check=False
+				region='unknown'
 				for j,k in data[i].items():
 					if str(j) == 'id':
 						if str(k).upper() in missID and not str(k).upper() in namedfiles:
@@ -1780,10 +1787,14 @@ def checkfolder(ofolder,roman=True,printinfo=True):
 							cname=set_roma_uppercases(cname)		
 							if cname=='None':
 								cname=''
+					if str(j) == 'region' :
+						region=str(k)
 					if str(j) == 'releaseDate' and check==True:
 						rdate=int(k)
 						if rdate<today:
-							print('{}[{}][v{}]'.format(cname,id,'0'))
+							b=str(rdate)						
+							releaseDate=b[6:]+'/'+b[4:6]+'/'+b[:4]
+							print('{}|{}|{}[{}][v{}]'.format(releaseDate,region,cname,id,'0'))						
 							c+=1	
 							namedfiles.append(id)
 							break
