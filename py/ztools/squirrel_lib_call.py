@@ -57,7 +57,8 @@ if __name__ == '__main__':
 		parser = argparse.ArgumentParser()
 		parser.add_argument('file',nargs='*')		
 		parser.add_argument('-lib_call','--library_call', nargs='+',  help="Call a library function within squirrel")
-		parser.add_argument('-xarg','--explicit_argument', nargs='+', help=argparse.SUPPRESS)	parser.add_argument('-mtpeval','--mtp_eval_link', nargs='+', help=argparse.SUPPRESS)
+		parser.add_argument('-xarg','--explicit_argument', nargs='+', help=argparse.SUPPRESS)
+		parser.add_argument('-mtpeval','--mtp_eval_link', nargs='+', help=argparse.SUPPRESS)
 		
 		args = parser.parse_args()
 
