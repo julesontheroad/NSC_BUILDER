@@ -7907,7 +7907,7 @@ if __name__ == '__main__':
 							if check == True:
 								check=verdict
 						elif vertype == "lv3":
-							f = Fs.Nsp(filename, 'rb')
+							f = Fs.Xci(filename, 'rb')
 							verdict,headerlist,feed=f.verify_sig(feed,tmpfolder)
 							f.flush()
 							f.close()
