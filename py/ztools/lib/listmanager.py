@@ -9,7 +9,7 @@ try:
 	from tkinter import filedialog
 except:pass	
 
-def striplines(textfile,number=1,counter=False):
+def striplines(textfile,number=1,counter=False,jump_line=False):
 	#print(textfile)
 	number=int(number)
 	filelist=list()
@@ -27,6 +27,8 @@ def striplines(textfile,number=1,counter=False):
 		for ln in filelist:
 			f.write(ln+'\n')
 	if counter == True:
+		if jump_line==True:
+			print("")
 		print('...................................................')
 		print('STILL '+str(c)+' FILES TO PROCESS')
 		print('...................................................')
