@@ -462,6 +462,7 @@ def check_other_file(dbfile,dbname,nutdb=True):
 def get_otherDB(dbfile,dbname,f,URL=None):
 	if URL==None:
 		url=get_otherurl(dbfile,dbname)
+		URL=url
 	else:
 		url=URL
 	_dbfile_=os.path.join(DATABASE_folder,f)
@@ -490,6 +491,7 @@ def get_otherDB(dbfile,dbname,f,URL=None):
 	else:
 		dbfile_mirror=dbfile[:-4]+'_mirror.txt'
 		url=get_otherurl(dbfile_mirror,dbname)
+		URL=url
 		_dbfile_=os.path.join(DATABASE_folder,f)
 		try:
 			response = requests.get(url, stream=True)
@@ -514,6 +516,7 @@ def get_otherDB(dbfile,dbname,f,URL=None):
 				check_ver_not_missing(_dbfile_)				
 			return True			
 		else:	
+			URL=None
 			if 	dbname=='versions_txt' and URL==None:
 				check_ver_not_missing(_dbfile_,force=True)	
 			else:	
@@ -557,6 +560,7 @@ def check_ver_not_missing(_dbfile_,force=False):
 def consolidate_versiondb():
 	ver_txt=os.path.join(DATABASE_folder, 'nutdb_versions.txt')
 	ver_JSON=os.path.join(DATABASE_folder, 'nutdb_versions.json')
+	titles_JSON=os.path.join(DATABASE_folder, 'nutdb.json')	
 	ver_txt_dict={};data={}
 	if os.path.exists(ver_txt):	
 		with open(ver_txt,'rt',encoding='utf8') as csvfile:
@@ -604,6 +608,32 @@ def consolidate_versiondb():
 								ver_txt_dict[tid]=j
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
+	if os.path.exists(titles_JSON):	
+		with open(titles_JSON, 'r') as json_file:	
+			data2 = json.load(json_file)	
+			for i in data2:
+				c=0;tid=str(i).upper()
+				if tid.endswith('800'):
+					tid=tid[:-3]+'000'
+				entry=data2[i]	
+				if i.endswith('800'):
+					try:
+						j=entry['version']
+					except:
+						j=65536
+				else:
+					try:
+						j=entry['version']
+					except:
+						j=0	
+				try:
+					if not tid in ver_txt_dict:
+						ver_txt_dict[tid]=j
+					else:
+						if int(j)>int(ver_txt_dict[tid]):
+							ver_txt_dict[tid]=j
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))					
 	from copy import deepcopy
 	newdict= deepcopy(ver_txt_dict)				
 	for i in ver_txt_dict:
@@ -614,7 +644,7 @@ def consolidate_versiondb():
 			updid=i[:-3]+'800'
 			if not updid in newdict:
 				newdict[i]='0'
-				newdict[updid]=v_
+				newdict[updid]=v_	
 	ver_txt_dict=newdict		
 	for i in data:
 		tid=i.upper()
