@@ -486,7 +486,7 @@ def pass_command(args,silence=False):
 					p.terminate();				
 		return 0	
 
-def pararell(args,workers,silence=False):	
+def pararell(args,workers,silence=False,nocls=False):	
 	from subprocess import call
 	from time import sleep
 	c=0;workers=int(workers);tfile=args.text_file;args0=args;f=False
@@ -541,22 +541,24 @@ def pararell(args,workers,silence=False):
 						process.append(subprocess.Popen(arguments, stdout=subprocess.PIPE, stderr=subprocess.PIPE))
 					index+=1
 					p+=1
-	
+			
+			pr_n=0
 			for pr in process: 	
 				#pr.wait()
 				#call('clear' if os.name =='posix' else 'cls') 				
 				# print(str(p.poll()))
 				while pr.poll()==None:
 					sleep(3)
-					if os.name =='posix':
-						call('clear')#linux
-					else:
-						try:
-							call('cls')#macos
-						except:
-							print ("\n" * 100)
-							os.system('cls')#windows
-					listmanager.counter(tfile,doprint=True)	
+					if nocls==False:
+						if os.name =='posix':
+							call('clear')#linux
+						else:
+							try:
+								call('cls')#macos
+							except:
+								print ("\n" * 100)
+								os.system('cls')#windows
+						listmanager.counter(tfile,doprint=True)	
 					p=0;index2=index-workers
 					for r in range(workers):
 						if index2 != items:
@@ -573,24 +575,24 @@ def pararell(args,workers,silence=False):
 							try:
 								f=filelist[index2]
 							except:break
-							tq = tqdm(leave=False,position=0)
-							# tq = tqdm(leave=False,position=0,bar_format="{l_bar}%s{bar}%s{r_bar}" % (color, color))
-							tq.write('Opening thread for '+f)
-							tq.close() 	
-							tq = tqdm(total=1, unit='|', leave=True,position=0,bar_format="{l_bar}%s{bar}%s{r_bar}" % (color, Fore.RESET))
-							tq.update(1)
-							tq.close()  
-							index2+=1;p+=1
+							if nocls==False:
+								tq = tqdm(leave=False,position=0)
+								# tq = tqdm(leave=False,position=0,bar_format="{l_bar}%s{bar}%s{r_bar}" % (color, color))
+								tq.write('Opening thread for '+f)
+								tq.close() 	
+								tq = tqdm(total=1, unit='|', leave=True,position=0,bar_format="{l_bar}%s{bar}%s{r_bar}" % (color, Fore.RESET))
+								tq.update(1)
+								tq.close()  
+								index2+=1;p+=1
 					if pr.poll()!=None:
-						pr.terminate();	
-			if os.name =='posix':
-				call('clear')#linux
+						pr.terminate();						
+					pr_n+=1	
+			if nocls==False:			
+				clear_Screen()
+			if nocls==False:	
+				listmanager.striplines(tfile,number=threads,counter=False)		
 			else:
-				try:
-					call('cls')#macos
-				except:
-					os.system('cls')#windows	
-			listmanager.striplines(tfile,number=threads,counter=False)					
+				listmanager.striplines(tfile,number=threads,counter=True,jump_line=True)					
 			items-=threads	
 			if items<0:
 				items=0	

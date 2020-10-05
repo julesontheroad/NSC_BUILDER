@@ -2041,9 +2041,9 @@ class ChromeNsp(Pfs0):
 				content=content[8:]+": "
 				ncatype=sq_tools.getTypeFromCNMT(ncatype)	
 				if ncatype != "Meta: ":
-					message=[ncatype,str(filename),'Size:',size_pr];feed=self.html_feed(feed,8,message)						
+					message=[ncatype,str(filename),'TitleID:',showID,'Size',size_pr];feed=self.html_feed(feed,8,message)						
 				else:
-					message=[ncatype,str(filename),'Size:',size_pr];feed=self.html_feed(feed,8,message)		
+					message=[ncatype,str(filename),'TitleID:',showID,'Size',size_pr];feed=self.html_feed(feed,8,message)		
 				return size,feed		
 		return size,feed						
 	def print_xml_by_title(self,ncalist,contentlist,feed=''):	
