@@ -3264,7 +3264,7 @@ if __name__ == '__main__':
 				endfile=os.path.join(ofolder,endfile)
 				if not os.path.exists(ofolder):
 					os.makedirs(ofolder)
-				if filepath.endswith(".nsp"):
+				if filepath.endswith(".nsp") or filepath.endswith(".nsz"):
 					try:
 						print('Processing: '+filepath)
 						f = Fs.Nsp(filepath)
@@ -7907,7 +7907,7 @@ if __name__ == '__main__':
 							if check == True:
 								check=verdict
 						elif vertype == "lv3":
-							f = Fs.Xci(filename, 'rb')
+							f = Fs.Xci(filename)
 							verdict,headerlist,feed=f.verify_sig(feed,tmpfolder)
 							f.flush()
 							f.close()
