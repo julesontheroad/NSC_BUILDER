@@ -164,7 +164,8 @@ def loop_install(tfile,destiny="SD",outfolder=None,ch_medium=True,check_fw=True,
 						print("Couldn't find file. Skipping...")					
 				else:	
 					gdrive_install(item,destiny,outfolder=outfolder,ch_medium=ch_medium,check_fw=check_fw,patch_keygen=patch_keygen,ch_base=ch_base,ch_other=ch_other,checked=checked,installed_list=installed)	
-			except:
+			except BaseException as e:
+				Print.error('Exception: ' + str(e))
 				print(f"Couldn't find {test[0]}. Skipping...")
 		print("")					
 		listmanager.striplines(tfile,1,True)						
@@ -223,9 +224,26 @@ def gdrive_install(filename,destiny="SD",outfolder=None,ch_medium=True,check_fw=
 		ID,name,type,size,md5,remote=DrivePrivate.get_Data(filename,TD=TD,Print=False)
 	else:
 		try:
-			ID,name,type,size,md5,remote=DrivePrivate.get_Data(filename,TD=TD,Print=False,ID=ID)	
+			ID,name,type,size,md5,remote=DrivePrivate.get_Data(filename,TD=TD,Print=False,ID=ID)
+			if ID==None:
+				try:
+					ID,name,type,size,md5,remote=DrivePrivate.get_Data(filename,TD=TD,Print=False)
+					if ID==None:
+						lib,TD,libpath=get_library_from_path(remote_lib_file,filename)
+						ID,name,type,size,md5,remote=DrivePrivate.get_Data(filename,TD=TD,Print=False)
+				except:
+					lib,TD,libpath=get_library_from_path(remote_lib_file,filename)
+					ID,name,type,size,md5,remote=DrivePrivate.get_Data(filename,TD=TD,Print=False)						
 		except:
-			ID,name,type,size,md5,remote=DrivePrivate.get_Data(filename,TD=TD,Print=False)
+			try:
+				ID,name,type,size,md5,remote=DrivePrivate.get_Data(filename,TD=TD,Print=False)
+				if ID==None:
+					lib,TD,libpath=get_library_from_path(remote_lib_file,filename)
+					ID,name,type,size,md5,remote=DrivePrivate.get_Data(filename,TD=TD,Print=False)
+			except:
+				lib,TD,libpath=get_library_from_path(remote_lib_file,filename)
+				ID,name,type,size,md5,remote=DrivePrivate.get_Data(filename,TD=TD,Print=False)
+				
 	# header=DrivePrivate.get_html_header(remote.access_token)
 	token=remote.access_token
 	name=remote.name
