@@ -1,4 +1,4 @@
-# NSC_Builder v1.01 - Changelog
+# NSC_Builder v1.01-b - Changelog
 
 ![DeviceTag](https://img.shields.io/badge/Device-SWITCH-e60012.svg)  ![LanguageTag](https://img.shields.io/badge/languages-python_batch_html5_javascript-blue.svg)
 

@@ -5,7 +5,7 @@ set "bat_name=%~n0"
 set "ofile_name=%bat_name%_options.cmd"
 set "opt_interface=Interface_options.cmd"
 set "opt_server=Server_options.cmd"
-Title NSC_Builder v1.01 -- Profile: %ofile_name% -- by JulesOnTheRoad
+Title NSC_Builder v1.01-b -- Profile: %ofile_name% -- by JulesOnTheRoad
 set "list_folder=%prog_dir%lists"
 ::-----------------------------------------------------
 ::EDIT THIS VARIABLE TO LINK OTHER OPTION FILE
