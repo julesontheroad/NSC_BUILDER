@@ -2,7 +2,7 @@
 :TOP_INIT
 CD /d "%prog_dir%"
 set "bat_name=%~n0"
-Title NSC_Builder v1.01 -- Profile: %ofile_name% -- by JulesOnTheRoad
+Title NSC_Builder v1.01-b -- Profile: %ofile_name% -- by JulesOnTheRoad
 REM //////////////////////////////////////////////////
 REM /////////////////////////////////////////////////
 REM START OF MANUAL MODE. INDIVIDUAL PROCESSING
