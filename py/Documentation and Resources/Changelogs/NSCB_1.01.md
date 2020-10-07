@@ -1,12 +1,8 @@
-# NSC_Builder v1.01-b - Changelog
+# NSC_Builder v1.01 - Changelog
 
 ![DeviceTag](https://img.shields.io/badge/Device-SWITCH-e60012.svg)  ![LanguageTag](https://img.shields.io/badge/languages-python_batch_html5_javascript-blue.svg)
 
 ## *Support for DBI newer DBI versions (>155)*
-
-**Note:**
-
-This release is marked as pre-release and subject to changes, I've been busy lately and made less testing than usual so this release falls under the original planned scope. Once is fully tested it'll be released as a lettered release or 1.02.
 
 **Resources**
 
@@ -28,7 +24,18 @@ Here's also a little readme with some DBI information:
 
 https://github.com/julesontheroad/NSC_BUILDER/tree/master/py/Documentation%20and%20Resources/DBI
 
-## *Changelog*
+## *1.01-b - Changelog*
+### 1. Fixed issue in interface where nsz and xcz fails to show the files section
+### 2. Improved titledb version consolidation between databases
+
+* Fixed issue where versions.txt got downloaded from tinfoil.io for instead of my titledb repository
+* Added nutdb.json as a source for versions.txt consolidation
+
+### 3. Made changes to google drive requests on mtp
+
+### 4. Fixed issue where batch verification won't hash xcz files
+
+## *1.01 - Changelog*
 
 ### 1. Support for DBI 155 and 156 new mtp setup
 
