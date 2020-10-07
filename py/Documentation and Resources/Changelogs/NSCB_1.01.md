@@ -12,9 +12,9 @@ https://github.com/rashevskyv/switch/releases/
 
 It can also be downloaded individually as nro or nsp here.
 
-[DBI_156.nsp](https://github.com/julesontheroad/NSC_BUILDER/raw/master/py/Documentation%20and%20Resources/DBI/138/DBI_0591703820420000.nsp)
+[DBI_156.nsp](https://github.com/julesontheroad/NSC_BUILDER/raw/master/py/Documentation%20and%20Resources/DBI/156/DBI_0591703820420000.nsp)
 
-[DBI_156.nro](https://github.com/julesontheroad/NSC_BUILDER/raw/master/py/Documentation%20and%20Resources/DBI/138/DBI.nro)
+[DBI_156.nro](https://github.com/julesontheroad/NSC_BUILDER/raw/master/py/Documentation%20and%20Resources/DBI/156/DBI.nro)
 
 You can find information on how to setup NSCB libraries, google drive auth tokens and 1 fichier auth tokens here:
 
