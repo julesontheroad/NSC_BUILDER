@@ -41,7 +41,9 @@ class Ticket(File):
 		try:
 			self.signatureType = Fs.Type.TicketSignature(self.signatureType)
 		except:
-			raise IOError('Invalid ticket format')
+			self.rewind()
+			mag=self.read(0x4)
+			raise IOError(f'Invalid ticket format. Magic {hx(mag)}')
 
 		self.signaturePadding = 0x40 - ((self.signatureSizes[self.signatureType] + 4) % 0x40)
 
