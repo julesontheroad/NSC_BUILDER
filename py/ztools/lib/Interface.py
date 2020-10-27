@@ -1169,7 +1169,7 @@ def getverificationdata(filename,remotelocation=False):
 	eel.set_ver_data(feed)
 	return	
 
-def server(port='0.0.0.0',host='localhost',videoplayback=True,ssl=False,noconsole=False,overwrite=False):
+def server(port=8000,host='localhost',videoplayback=True,ssl=False,noconsole=False,overwrite=False):
 	ssl_cert= os.path.join(zconfig_dir, 'certificate.pem')
 	ssl_key= os.path.join(zconfig_dir, 'key.pem')
 	web_folder=os.path.join(ztools_dir,'web')
