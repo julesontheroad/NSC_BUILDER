@@ -286,6 +286,7 @@ if __name__ == '__main__':
 		parser.add_argument('-loop','--loop', nargs='+', help="Loop the text file using secondary module")
 		
 		# Hidden
+		parser.add_argument('-dev_env','--dev_environment', help=argparse.SUPPRESS)#Changes key environment to dev if True
 		parser.add_argument('-pos','--position', help=argparse.SUPPRESS)#tqdm position, aux argument for pararell	
 		parser.add_argument('-ninst','--n_instances', help=argparse.SUPPRESS)#number of instances, aux argument for pararell			
 		parser.add_argument('-xarg','--explicit_argument', nargs='+', help=argparse.SUPPRESS)#Explicit	arguments for lib_call for files with ","			
@@ -302,6 +303,11 @@ if __name__ == '__main__':
 		trans=False
 		if args.file==list():
 			args.file=None
+		if args.dev_environment:		
+			from importlib import reload 
+			if 	str(args.dev_environment).upper()=="TRUE":
+				sq_settings.set_dev_environment()
+				reload(Keys)
 			
 		if args.library_call:
 			if (args.library_call[0]).startswith('Drive.'):
