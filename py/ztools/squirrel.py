@@ -24,7 +24,6 @@ Nintendo Switch formats.
 Squirrel original's purpose is to support NSC_Builder though it serves as a
 standalone program with many functions, some of them not being used currently in NSC_Builder.
 '''
-
 import argparse
 import sys
 import os
@@ -40,9 +39,11 @@ sys.path.insert(0, 'lib')
 try:
 	sys.path.insert(0, 'private')
 except:pass	
+import sq_settings
+sq_settings.set_prod_environment()
+import Keys
 import sq_tools
 import listmanager
-import Keys
 import Titles
 import Fs
 import Config
@@ -1374,7 +1375,7 @@ if __name__ == '__main__':
 			else:
 				buffer = 65536
 			for filename in args.NSP_copy_cnmt:
-				if filename.endswith('.nsp'):
+				if filename.endswith('.nsp') or filename.endswith('.nsz') or filename.endswith('.nsx'):
 					try:
 						f = Fs.Nsp(filename, 'rb')
 						f.copy_cnmt(ofolder,buffer)
@@ -1382,13 +1383,34 @@ if __name__ == '__main__':
 						f.close()
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
-				if filename.endswith('.xci'):
+				if filename.endswith('.xci') or  filename.endswith('.xcz'):
 					try:
 						f = Fs.factory(filename)
 						f.open(filename, 'rb')
 						f.copy_cnmt(ofolder,buffer)
 						f.flush()
 						f.close()
+					except BaseException as e:
+						Print.error('Exception: ' + str(e))						
+				if filename.endswith('.cnmt.nca'):
+					try:
+						f = Fs.Nca(filename)
+						f.open(filename, 'rb')						
+						data=f.return_cnmt()
+						f.flush()	
+						f.close()	
+						f = Fs.Nca(filename)
+						f.open(filename, 'rb')
+						filenames=f.ret_cnmt_name()
+						f.flush()	
+						f.close()	
+						try:	
+							basename=str(filenames[0])
+						except:
+							basename=(str(os.path.basename(os.path.abspath(filename))))[:-4]
+						ofile =os.path.join(ofolder,basename)
+						with open (ofile,'wb') as o:
+							o.write(data)
 					except BaseException as e:
 						Print.error('Exception: ' + str(e))
 			Status.close()

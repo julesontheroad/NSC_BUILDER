@@ -3,6 +3,7 @@ import aes128
 from binascii import hexlify as hx, unhexlify as uhx
 import Print
 from pathlib import Path
+import sq_settings
 
 keys = {}
 titleKeks = []
@@ -131,14 +132,25 @@ def load(fileName):
 		else:
 			pass
 
-my_file = Path('keys.txt')
-my_file2 = Path('ztools\\keys.txt')			
-if my_file.is_file():
-	load('keys.txt')
-if my_file2.is_file():
-	load('ztools\\keys.txt')
-if not my_file.is_file() and not my_file2.is_file():
+if sq_settings.key_system =="production":
+	raw_keys_file = Path('keys.txt')
+	raw_keys_file2 = Path('ztools\\keys.txt')
+	raw_keys_file3 = Path('ztools/keys.txt')
+else:
+	raw_keys_file = Path('dev_keys.txt')
+	raw_keys_file2 = Path('ztools\\dev_keys.txt')
+	raw_keys_file3 = Path('ztools/keys.txt')	
+	
+if raw_keys_file.is_file():
+	load(raw_keys_file)
+elif raw_keys_file2.is_file():
+	load(raw_keys_file2)
+elif raw_keys_file3.is_file():
+	load(raw_keys_file3)	
+	
+if not raw_keys_file.is_file() and not raw_keys_file2.is_file() and not raw_keys_file3.is_file():
 	print('keys.txt missing')
+		
 #for k in titleKeks:
 #	Print.info('titleKek = ' + k)
 

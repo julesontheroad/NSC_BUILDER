@@ -7,6 +7,7 @@ from Fs.Nca import Nca
 from Fs.File import File
 import os
 import Print
+
 import Keys
 import aes128
 import Hex
@@ -19,21 +20,20 @@ from hashlib import sha256
 import Fs.Type
 import re
 import pathlib
-import Keys
 import Config
 import Print
 from tqdm import tqdm
 
 MEDIA_SIZE = 0x200
 indent = 1
-tabs = '\t' * indent	
+tabs = '\t' * indent
 
 class GamecardInfo(File):
 	def __init__(self, file = None):
 		super(GamecardInfo, self).__init__()
 		if file:
 			self.open(file)
-	
+
 	def open(self, file, mode='rb', cryptoType = -1, cryptoKey = -1, cryptoCounter = -1):
 		super(GamecardInfo, self).open(file, mode, cryptoType, cryptoKey, cryptoCounter)
 		self.rewind()
@@ -49,7 +49,7 @@ class GamecardInfo(File):
 		self.updatePartitionHash = self.readInt64()
 		self.cupId = self.readInt64()
 		self.empty2 = self.read(0x38)
-		
+
 class GamecardCertificate(File):
 	def __init__(self, file = None):
 		super(GamecardCertificate, self).__init__()
@@ -58,10 +58,10 @@ class GamecardCertificate(File):
 		self.unknown1 = None
 		self.unknown2 = None
 		self.data = None
-		
+
 		if file:
 			self.open(file)
-			
+
 	def open(self, file, mode = 'rb', cryptoType = -1, cryptoKey = -1, cryptoCounter = -1):
 		super(GamecardCertificate, self).open(file, mode, cryptoType, cryptoKey, cryptoCounter)
 		self.rewind()
@@ -70,7 +70,7 @@ class GamecardCertificate(File):
 		self.unknown1 = self.read(0x10)
 		self.unknown2 = self.read(0xA)
 		self.data = self.read(0xD6)
-			
+
 class uXci(File):
 	def __init__(self, file = None):
 		super(uXci, self).__init__()
@@ -86,26 +86,26 @@ class uXci(File):
 		self.packageId = None
 		self.validDataEndOffset = None
 		self.gamecardInfo = None
-		
+
 		self.hfs0Offset = None
 		self.hfs0HeaderSize = None
 		self.hfs0HeaderHash = None
 		self.hfs0InitialDataHash = None
 		self.secureMode = None
-		
+
 		self.titleKeyFlag = None
 		self.keyFlag = None
 		self.normalAreaEndOffset = None
-		
+
 		self.gamecardInfo = None
 		self.gamecardCert = None
 		self.hfs0 = None
-		
+
 		if file:
 			self.open(file)
-		
+
 	def readHeader(self):
-	
+
 		self.signature = self.read(0x100)
 		self.magic = self.read(0x4)
 		self.secureOffset = self.readInt32()
@@ -117,20 +117,20 @@ class uXci(File):
 		self.packageId = self.readInt64()
 		self.validDataEndOffset = self.readInt64()
 		self.gamecardInfo = self.read(0x10)
-		
+
 		self.hfs0Offset = self.readInt64()
 		self.hfs0HeaderSize = self.readInt64()
 		self.hfs0HeaderHash = self.read(0x20)
 		self.hfs0InitialDataHash = self.read(0x20)
 		self.secureMode = self.readInt32()
-		
+
 		self.titleKeyFlag = self.readInt32()
 		self.keyFlag = self.readInt32()
 		self.normalAreaEndOffset = self.readInt32()
-		
+
 		self.gamecardInfo = GamecardInfo(self.partition(self.tell(), 0x70))
 		self.gamecardCert = GamecardCertificate(self.partition(0x7000, 0x200))
-		
+
 
 	def open(self, path = None, mode = 'rb', cryptoType = -1, cryptoKey = -1, cryptoCounter = -1):
 		r = super(uXci, self).open(path, mode, cryptoType, cryptoKey, cryptoCounter)
@@ -158,7 +158,7 @@ class uXci(File):
 				f.write(buf)
 			f.close()
 			Print.info(filePath)
-			
+
 	def copy_nca(self,ofolder,buffer,token,metapatch,keypatch,RSV_cap):
 		if keypatch != 'false':
 			keypatch = int(keypatch)
@@ -184,7 +184,7 @@ class uXci(File):
 							fp.flush()
 							if not data:
 								fp.close()
-								t.close()	
+								t.close()
 								break
 						#///////////////////////////////////
 						target = Fs.Nca(filepath, 'r+b')
@@ -192,7 +192,7 @@ class uXci(File):
 						if keypatch != 'false':
 							if keypatch < target.header.getCryptoType2():
 								self.change_mkrev_nca(target, keypatch)
-						target.close()		
+						target.close()
 						if metapatch == 'true':
 							if 	str(nca.header.contentType) == 'Content.META':
 								for pfs0 in nca:
@@ -203,19 +203,19 @@ class uXci(File):
 										Print.info(tabs + '-------------------------------------')
 										Print.info(tabs +'DLC -> No need to patch the meta' )
 										Print.info(tabs + '-------------------------------------')
-									else:	
-										self.patch_meta(filepath,outfolder,RSV_cap)			
-		
+									else:
+										self.patch_meta(filepath,outfolder,RSV_cap)
+
 	def printInfo(self):
 		maxDepth = 3
 		indent = 0
 		tabs = '\t' * indent
 		Print.info('\n%sXCI Archive\n' % (tabs))
 		super(uXci, self).printInfo(maxDepth, indent)
-		
+
 		Print.info(tabs + 'magic = ' + str(self.magic))
 		Print.info(tabs + 'titleKekIndex = ' + str(self.titleKekIndex))
-		
+
 		Print.info(tabs + 'gamecardCert = ' + str(hx(self.gamecardCert.magic + self.gamecardCert.unknown1 + self.gamecardCert.unknown2 + self.gamecardCert.data)))
 		self.hfs0.printInfo( indent)
 
@@ -224,29 +224,29 @@ class uXci(File):
 		fwver=0;unique=None
 		for nspF in self.hfs0:
 			if str(nspF._path)=="update":
-				for nca in nspF:				
-					if type(nca) == Nca:	
+				for nca in nspF:
+					if type(nca) == Nca:
 						if 	str(nca.header.contentType) == 'Content.META':
 							for f in nca:
-								for cnmt in f:			
+								for cnmt in f:
 									nca.rewind()
 									f.rewind()
-									cnmt.rewind()						
+									cnmt.rewind()
 									titleid=cnmt.readInt64()
-									titleid2 = str(hx(titleid.to_bytes(8, byteorder='big'))) 	
-									titleid2 = titleid2[2:-1]							
-									titleversion = cnmt.read(0x4)	
+									titleid2 = str(hx(titleid.to_bytes(8, byteorder='big')))
+									titleid2 = titleid2[2:-1]
+									titleversion = cnmt.read(0x4)
 									version=int.from_bytes(titleversion, byteorder='little')
 									if fwver<version:
 										fwver=version
-										unique=str(nca._path)				
-									if printdata!=False:	
+										unique=str(nca._path)
+									if printdata!=False:
 										FWnumber=sq_tools.getFWRangeRSV(version)
-										print('- {}: {}'.format(str(nca._path),str(FWnumber)))		
-		FWnumber=sq_tools.getFWRangeRSV(fwver)		
+										print('- {}: {}'.format(str(nca._path),str(FWnumber)))
+		FWnumber=sq_tools.getFWRangeRSV(fwver)
 		FWnumber=FWnumber[1:-1]
-		return 	FWnumber,fwver,unique						
-									
+		return 	FWnumber,fwver,unique
+
 class nXci(File):
 	def __init__(self, file = None):
 		super(nXci, self).__init__()
@@ -262,26 +262,26 @@ class nXci(File):
 		self.packageId = None
 		self.validDataEndOffset = None
 		self.gamecardInfo = None
-		
+
 		self.hfs0Offset = None
 		self.hfs0HeaderSize = None
 		self.hfs0HeaderHash = None
 		self.hfs0InitialDataHash = None
 		self.secureMode = None
-		
+
 		self.titleKeyFlag = None
 		self.keyFlag = None
 		self.normalAreaEndOffset = None
-		
+
 		self.gamecardInfo = None
 		self.gamecardCert = None
 		self.hfs0 = None
-		
+
 		if file:
 			self.open(file)
-		
+
 	def readHeader(self):
-	
+
 		self.signature = self.read(0x100)
 		self.magic = self.read(0x4)
 		self.secureOffset = self.readInt32()
@@ -293,20 +293,20 @@ class nXci(File):
 		self.packageId = self.readInt64()
 		self.validDataEndOffset = self.readInt64()
 		self.gamecardInfo = self.read(0x10)
-		
+
 		self.hfs0Offset = self.readInt64()
 		self.hfs0HeaderSize = self.readInt64()
 		self.hfs0HeaderHash = self.read(0x20)
 		self.hfs0InitialDataHash = self.read(0x20)
 		self.secureMode = self.readInt32()
-		
+
 		self.titleKeyFlag = self.readInt32()
 		self.keyFlag = self.readInt32()
 		self.normalAreaEndOffset = self.readInt32()
-		
+
 		self.gamecardInfo = GamecardInfo(self.partition(self.tell(), 0x70))
 		self.gamecardCert = GamecardCertificate(self.partition(0x7000, 0x200))
-		
+
 
 	def open(self, path = None, mode = 'rb', cryptoType = -1, cryptoKey = -1, cryptoCounter = -1):
 		r = super(nXci, self).open(path, mode, cryptoType, cryptoKey, cryptoCounter)
@@ -360,7 +360,7 @@ class nXci(File):
 							fp.flush()
 							if not data:
 								fp.close()
-								t.close()	
+								t.close()
 								break
 						#///////////////////////////////////
 						target = Fs.Nca(filepath, 'r+b')
@@ -368,7 +368,7 @@ class nXci(File):
 						if keypatch != 'false':
 							if keypatch < target.header.getCryptoType2():
 								self.change_mkrev_nca(target, keypatch)
-						target.close()		
+						target.close()
 						if metapatch == 'true':
 							if 	str(nca.header.contentType) == 'Content.META':
 								for pfs0 in nca:
@@ -379,22 +379,22 @@ class nXci(File):
 										Print.info(tabs + '-------------------------------------')
 										Print.info(tabs +'DLC -> No need to patch the meta' )
 										Print.info(tabs + '-------------------------------------')
-									else:	
-										self.patch_meta(filepath,outfolder,RSV_cap)				
-		
+									else:
+										self.patch_meta(filepath,outfolder,RSV_cap)
+
 	def printInfo(self):
 		maxDepth = 3
 		indent = 0
 		tabs = '\t' * indent
 		Print.info('\n%sXCI Archive\n' % (tabs))
 		super(Xci, self).printInfo(maxDepth, indent)
-		
+
 		Print.info(tabs + 'magic = ' + str(self.magic))
 		Print.info(tabs + 'titleKekIndex = ' + str(self.titleKekIndex))
-		
+
 		Print.info(tabs + 'gamecardCert = ' + str(hx(self.gamecardCert.magic + self.gamecardCert.unknown1 + self.gamecardCert.unknown2 + self.gamecardCert.data)))
-		self.hfs0.printInfo( indent)		
-		
+		self.hfs0.printInfo( indent)
+
 class lXci(File):
 	def __init__(self, file = None):
 		super(lXci, self).__init__()
@@ -410,26 +410,26 @@ class lXci(File):
 		self.packageId = None
 		self.validDataEndOffset = None
 		self.gamecardInfo = None
-		
+
 		self.hfs0Offset = None
 		self.hfs0HeaderSize = None
 		self.hfs0HeaderHash = None
 		self.hfs0InitialDataHash = None
 		self.secureMode = None
-		
+
 		self.titleKeyFlag = None
 		self.keyFlag = None
 		self.normalAreaEndOffset = None
-		
+
 		self.gamecardInfo = None
 		self.gamecardCert = None
 		self.hfs0 = None
-		
+
 		if file:
 			self.open(file)
-		
+
 	def readHeader(self):
-	
+
 		self.signature = self.read(0x100)
 		self.magic = self.read(0x4)
 		self.secureOffset = self.readInt32()
@@ -441,20 +441,20 @@ class lXci(File):
 		self.packageId = self.readInt64()
 		self.validDataEndOffset = self.readInt64()
 		self.gamecardInfo = self.read(0x10)
-		
+
 		self.hfs0Offset = self.readInt64()
 		self.hfs0HeaderSize = self.readInt64()
 		self.hfs0HeaderHash = self.read(0x20)
 		self.hfs0InitialDataHash = self.read(0x20)
 		self.secureMode = self.readInt32()
-		
+
 		self.titleKeyFlag = self.readInt32()
 		self.keyFlag = self.readInt32()
 		self.normalAreaEndOffset = self.readInt32()
-		
+
 		self.gamecardInfo = GamecardInfo(self.partition(self.tell(), 0x70))
 		self.gamecardCert = GamecardCertificate(self.partition(0x7000, 0x200))
-		
+
 
 	def open(self, path = None, mode = 'rb', cryptoType = -1, cryptoKey = -1, cryptoCounter = -1):
 		r = super(lXci, self).open(path, mode, cryptoType, cryptoKey, cryptoCounter)
@@ -482,16 +482,16 @@ class lXci(File):
 				f.write(buf)
 			f.close()
 			Print.info(filePath)
-		
+
 	def printInfo(self):
 		maxDepth = 3
 		indent = 0
 		tabs = '\t' * indent
 		Print.info('\n%sXCI Archive\n' % (tabs))
 		super(lXci, self).printInfo(maxDepth, indent)
-		
+
 		Print.info(tabs + 'magic = ' + str(self.magic))
 		Print.info(tabs + 'titleKekIndex = ' + str(self.titleKekIndex))
-		
+
 		Print.info(tabs + 'gamecardCert = ' + str(hx(self.gamecardCert.magic + self.gamecardCert.unknown1 + self.gamecardCert.unknown2 + self.gamecardCert.data)))
 		self.hfs0.printInfo( indent)
