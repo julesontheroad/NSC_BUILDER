@@ -195,7 +195,6 @@ echo ********************************************************
 echo SHOW INFORMATION AND DATA ABOUT THE REQUIRED FIRMWARE
 echo ********************************************************
 %pycommand% "%squirrel%" -o "%info_dir%" --translate %transnutdb% --fw_req "%targt%"
-pause
 goto sc2
 
 :f_info2
