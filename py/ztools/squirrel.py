@@ -42,27 +42,8 @@ except:pass
 import sq_settings
 sq_settings.set_prod_environment()
 import Keys
-import sq_tools
-import listmanager
-import Titles
-import Fs
 import Config
-import Print
-import Status
-import Nsps
-import DBmodule as dbmodule
-from hashlib import sha256
-from pathlib import Path
-from binascii import hexlify as hx, unhexlify as uhx
-if sys.platform == 'win32':
-	import win32con, win32api
-import shutil
-from tqdm import tqdm
-from datetime import datetime
-import math
-import pykakasi
-from Fs.pyNCA3 import NCA3
-from shutil import disk_usage
+import Status	
 
 # SET ENVIRONMENT
 squirrel_dir=os.path.abspath(os.curdir)
@@ -308,6 +289,26 @@ if __name__ == '__main__':
 			if 	str(args.dev_environment).upper()=="TRUE":
 				sq_settings.set_dev_environment()
 				reload(Keys)
+				
+		import sq_tools
+		import listmanager
+		import Titles
+		import Fs	
+		import Print
+		import Nsps
+		import DBmodule as dbmodule
+		from hashlib import sha256
+		from pathlib import Path
+		from binascii import hexlify as hx, unhexlify as uhx
+		if sys.platform == 'win32':
+			import win32con, win32api
+		import shutil
+		from tqdm import tqdm
+		from datetime import datetime
+		import math
+		import pykakasi
+		from Fs.pyNCA3 import NCA3
+		from shutil import disk_usage				
 			
 		if args.library_call:
 			if (args.library_call[0]).startswith('Drive.'):
@@ -4979,7 +4980,7 @@ if __name__ == '__main__':
 			ofile=basename[:-4]+'-fwinfo.txt'
 			infotext=os.path.join(ofolder, ofile)
 			if filename.endswith('.nsp') or filename.endswith('.nsx') or filename.endswith('.nsz'):
-				try:
+				try:		
 					f = Fs.Nsp(filename, 'rb')
 					feed=f.print_fw_req(trans,roma=roman)
 					f.flush()
