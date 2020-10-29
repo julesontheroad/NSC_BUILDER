@@ -71,7 +71,7 @@ def kgstring():
 	return kg
 
 def kg_by_RSV(RSV):
-	kgs=kgstring();keygen=len(kgs)-1;topkg=len(kgs)
+	kgs=kgstring();keygen=len(kgs);topkg=len(kgs)
 	for k in range(len(kgs)):
 		if RSV in kgs[k]:
 			keygen-=1
@@ -90,16 +90,16 @@ def transform_fw_string(FW):
 	RSV=0
 	for i in range(len(FW)):
 		n=int(FW[i])
-		if i==1:
+		if i==0:
 			if n>=3:
 				RSV+=67108864*n
 			elif n==2:
 				RSV+=65536
-		elif i==2 and int(FW[0])>3:
+		elif i==1 and int(FW[0])>3:
 			RSV+=1048576*n
-		elif i==2 and int(FW[0])==2:
+		elif i==1 and int(FW[0])==2:
 			RSV+=1*n
-		elif i==3 and int(FW[0])>3:
+		elif i==2 and int(FW[0])>3:
 			RSV+=65536*n
 			RRSV=RSV+rem
 	return RSV,RRSV
