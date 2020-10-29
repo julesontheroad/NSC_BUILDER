@@ -16,7 +16,9 @@
 		}
 	</style>
     <script type="text/javascript" src="/eel.js"></script>
-    <script type="text/javascript" src="https://raw.githubusercontent.com/eligrey/FileSaver.js/master/src/FileSaver.js"></script>
+    <script type="text/javascript" src="https://raw.githubusercontent.com/eligrey/FileSaver.js/master/src/FileSaver.js"></script>	
+	<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/underscore@1.11.0/underscore-min.js"></script> 
+	
 	<script>
 		document.addEventListener("DOMContentLoaded", function() {
 		eel.get_libraries()(set_local_libraries)
@@ -210,7 +212,7 @@
 					<p style="margin-bottom: 2px;margin-top: 2px;font-size: 2.4vh;position: fixed; z-index: 1;"><strong>Local Libraries: </strong></p>
 					<div class="row bg-lightGray" style="width:130vw;position: fixed; z-index: 1;">
 						<div class="cell bg-lightGray"  style="width: 70vw">
-							<input type="text" data-role="input" data-search-button="true" data-search-button-click="custom" data-on-search-button-click="search_local_lib" id="slocalbox" onkeyup="search_table('slocalbox','_search_results_')">
+							<input type="text" data-role="input" data-search-button="true" data-search-button-click="custom" data-on-search-button-click="search_local_lib" id="slocalbox" onkeyup="_.debounce(search_table('slocalbox','_search_results_'),500)">
 						</div>
 						<div class="cell bg-lightGray" style="width:25vw" id="_local_lib_tags_">
 							<select class="bg-cobalt fg-white" data-role="select" style="width:25vw" id="_local_lib_select_">
@@ -228,7 +230,7 @@
 					<p style="margin-bottom: 2px;margin-top: 2px;font-size: 2.4vh;position: fixed; z-index: 1;"><strong>Cloud Libraries: </strong></p>
 					<div class="row  bg-lightGray" style="width:130vw;position: fixed; z-index: 1;">
 						<div class="cell  bg-lightGray"  style="width: 70vw">
-							<input type="text" data-role="input" data-search-button="true" data-search-button-click="custom" data-on-search-button-click="search_remote_lib" id="remotebox"  onkeyup="search_table('remotebox','_search_results2_')">
+							<input type="text" data-role="input" data-search-button="true" data-search-button-click="custom" data-on-search-button-click="search_remote_lib" id="remotebox"  onkeyup="search_table(_.debounce(search_table('remotebox','_search_results2_'),500)">
 						</div>
 						<div class="cell bg-lightGray" style="width:25vw" id="_remote_lib_tags_">
 							<select class="bg-cobalt fg-white" data-role="select" style="width:25vw" id="_remote_lib_select_">
