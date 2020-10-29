@@ -14,6 +14,7 @@ from Fs import Ticket
 import sq_tools
 import io
 from Fs import Type as FsType
+
 import Keys
 from binascii import hexlify as hx, unhexlify as uhx
 from DBmodule import Exchange as exchangefile
@@ -29,7 +30,7 @@ import Print
 
 def check_connection():
 	if not is_switch_connected():
-		sys.exit("Switch device isn't connected.\nCheck if mtp responder is running!!!")	
+		sys.exit("Switch device isn't connected.\nCheck if mtp responder is running!!!")
 
 bucketsize = 81920
 
@@ -39,14 +40,14 @@ NSCB_dir=os.path.abspath('../'+(os.curdir))
 
 if os.path.exists(os.path.join(squirrel_dir,'ztools')):
 	NSCB_dir=squirrel_dir
-	zconfig_dir=os.path.join(NSCB_dir, 'zconfig')	  
+	zconfig_dir=os.path.join(NSCB_dir, 'zconfig')
 	ztools_dir=os.path.join(NSCB_dir,'ztools')
 	squirrel_dir=ztools_dir
 elif os.path.exists(os.path.join(NSCB_dir,'ztools')):
 	squirrel_dir=squirrel_dir
 	ztools_dir=os.path.join(NSCB_dir, 'ztools')
 	zconfig_dir=os.path.join(NSCB_dir, 'zconfig')
-else:	
+else:
 	ztools_dir=os.path.join(NSCB_dir, 'ztools')
 	zconfig_dir=os.path.join(NSCB_dir, 'zconfig')
 
@@ -57,7 +58,7 @@ isExe=False
 if os.path.exists(testroute1):
 	squirrel=testroute1
 	isExe=False
-elif os.path.exists(testroute2):	
+elif os.path.exists(testroute2):
 	squirrel=testroute2
 	isExe=True
 bin_folder=os.path.join(ztools_dir, 'bin')
@@ -98,12 +99,12 @@ def get_header_size(flist):
 							if test1 in fplist or test2 in fplist:
 								# print(str(row['NcaId'])+'.nca')
 								files.append(str(row['NcaId'])+'.nca')
-								filesizes.append(int(row['Size']))	
-								sz+=int(row['Size'])		
+								filesizes.append(int(row['Size']))
+								sz+=int(row['Size'])
 						elif row['NCAtype']=='Meta':
 							# print(str(row['NcaId'])+'.cnmt.nca')
 							files.append(str(row['NcaId'])+'.cnmt.nca')
-							filesizes.append(int(row['Size']))	
+							filesizes.append(int(row['Size']))
 							sz+=int(row['Size'])
 			sec_hashlist=list()
 			try:
@@ -111,12 +112,12 @@ def get_header_size(flist):
 					sha,size,gamecard=f.file_hash(file)
 					# print(sha)
 					if sha != False:
-						sec_hashlist.append(sha)	
+						sec_hashlist.append(sha)
 			except BaseException as e:
-				Print.error('Exception: ' + str(e))									
+				Print.error('Exception: ' + str(e))
 			f.flush()
-			f.close()	
-			xci_header,game_info,sig_padding,xci_certificate,root_header,upd_header,norm_header,sec_header,rootSize,upd_multiplier,norm_multiplier,sec_multiplier=sq_tools.get_xciheader(files,filesizes,sec_hashlist)			
+			f.close()
+			xci_header,game_info,sig_padding,xci_certificate,root_header,upd_header,norm_header,sec_header,rootSize,upd_multiplier,norm_multiplier,sec_multiplier=sq_tools.get_xciheader(files,filesizes,sec_hashlist)
 			outheader=xci_header
 			outheader+=game_info
 			outheader+=sig_padding
@@ -124,11 +125,11 @@ def get_header_size(flist):
 			outheader+=root_header
 			outheader+=upd_header
 			outheader+=norm_header
-			outheader+=sec_header		
+			outheader+=sec_header
 		elif filepath.endswith('nsp') or filepath.endswith('nsz'):
 			files_list=sq_tools.ret_nsp_offsets(filepath)
 			joined_list = [*total_list, *files_list]
-			total_list=joined_list			
+			total_list=joined_list
 			files=list();filesizes=list()
 			fplist=list()
 			for k in range(len(files_list)):
@@ -148,26 +149,26 @@ def get_header_size(flist):
 							if test1 in fplist or test2 in fplist:
 								# print(str(row['NcaId'])+'.nca')
 								files.append(str(row['NcaId'])+'.nca')
-								filesizes.append(int(row['Size']))	
-								sz+=int(row['Size'])								
+								filesizes.append(int(row['Size']))
+								sz+=int(row['Size'])
 						elif row['NCAtype']=='Meta':
 							# print(str(row['NcaId'])+'.cnmt.nca')
 							files.append(str(row['NcaId'])+'.cnmt.nca')
 							filesizes.append(int(row['Size']))
-							sz+=int(row['Size'])	
+							sz+=int(row['Size'])
 			try:
-				sec_hashlist=list()	
+				sec_hashlist=list()
 				# print(files)
 				for file in files:
 					sha,size,gamecard=f.file_hash(file)
 					# print(sha)
 					if sha != False:
-						sec_hashlist.append(sha)	
+						sec_hashlist.append(sha)
 			except BaseException as e:
-				Print.error('Exception: ' + str(e))											
+				Print.error('Exception: ' + str(e))
 			f.flush()
-			f.close()	
-			xci_header,game_info,sig_padding,xci_certificate,root_header,upd_header,norm_header,sec_header,rootSize,upd_multiplier,norm_multiplier,sec_multiplier=sq_tools.get_xciheader(files,filesizes,sec_hashlist)	
+			f.close()
+			xci_header,game_info,sig_padding,xci_certificate,root_header,upd_header,norm_header,sec_header,rootSize,upd_multiplier,norm_multiplier,sec_multiplier=sq_tools.get_xciheader(files,filesizes,sec_hashlist)
 			outheader=xci_header
 			outheader+=game_info
 			outheader+=sig_padding
@@ -175,39 +176,39 @@ def get_header_size(flist):
 			outheader+=root_header
 			outheader+=upd_header
 			outheader+=norm_header
-			outheader+=sec_header	
+			outheader+=sec_header
 	properheadsize=len(outheader)
 	return outheader,properheadsize,keygeneration,sz,files,total_list
-	
+
 def transfer_xci_csv(filepath,destiny="SD",cachefolder=None,override=False,keypatch=False):
 	check_connection()
 	if destiny=="SD":
 		destiny="1: External SD Card\\"
 	if cachefolder==None:
-		cachefolder=os.path.join(ztools_dir, '_mtp_cache_')	
+		cachefolder=os.path.join(ztools_dir, '_mtp_cache_')
 	print(f"Creating xci for {filepath}")
 	xciname=gen_xci_parts(filepath,cachefolder=cachefolder,keypatch=keypatch)
-	destinypath=os.path.join(destiny,xciname)	
-	files_csv=os.path.join(cachefolder, 'files.csv')	
-	process=subprocess.Popen([nscb_mtp,"TransferfromCSV","-cs",files_csv,"-dst",destinypath])		
+	destinypath=os.path.join(destiny,xciname)
+	files_csv=os.path.join(cachefolder, 'files.csv')
+	process=subprocess.Popen([nscb_mtp,"TransferfromCSV","-cs",files_csv,"-dst",destinypath])
 	while process.poll()==None:
 		if process.poll()!=None:
-			process.terminate();	
-	if os.path.exists(cachefolder):			
+			process.terminate();
+	if os.path.exists(cachefolder):
 		for f in os.listdir(cachefolder):
 			fp = os.path.join(cachefolder, f)
 			try:
 				shutil.rmtree(fp)
 			except OSError:
-				os.remove(fp)		
-	
+				os.remove(fp)
+
 def gen_xci_parts(filepath,cachefolder=None,keypatch=False):
 	if keypatch!=False:
 		try:
 			keypatch=int(keypatch)
 		except:	keypatch=False
 	if cachefolder==None:
-		cachefolder=os.path.join(ztools_dir, '_mtp_cache_')	
+		cachefolder=os.path.join(ztools_dir, '_mtp_cache_')
 	if not os.path.exists(cachefolder):
 		os.makedirs(cachefolder)
 	else:
@@ -225,140 +226,140 @@ def gen_xci_parts(filepath,cachefolder=None,keypatch=False):
 	if filepath.endswith('xci'):
 		xci=squirrelXCI(filepath)
 		outfile=os.path.join(cachefolder, "0")
-		outf = open(outfile, 'w+b')		
-		outf.write(outheader)	
+		outf = open(outfile, 'w+b')
+		outf.write(outheader)
 		written=0
 		for fi in files:
-			for nspF in xci.hfs0:	
+			for nspF in xci.hfs0:
 				if str(nspF._path)=="secure":
-					for nca in nspF:					
+					for nca in nspF:
 						if nca._path==fi:
 							nca=Nca(nca)
 							crypto1=nca.header.getCryptoType()
-							crypto2=nca.header.getCryptoType2()	
+							crypto2=nca.header.getCryptoType2()
 							if crypto2>crypto1:
 								masterKeyRev=crypto2
-							if crypto2<=crypto1:	
-								masterKeyRev=crypto1									
+							if crypto2<=crypto1:
+								masterKeyRev=crypto1
 							crypto = aes128.AESECB(Keys.keyAreaKey(Keys.getMasterKeyIndex(masterKeyRev), nca.header.keyIndex))
-							hcrypto = aes128.AESXTS(uhx(Keys.get('header_key')))	
-							gc_flag='00'*0x01					
+							hcrypto = aes128.AESXTS(uhx(Keys.get('header_key')))
+							gc_flag='00'*0x01
 							crypto1=nca.header.getCryptoType()
-							crypto2=nca.header.getCryptoType2()					
-							if nca.header.getRightsId() != 0:					
-								nca.rewind()	
+							crypto2=nca.header.getCryptoType2()
+							if nca.header.getRightsId() != 0:
+								nca.rewind()
 								if crypto2>crypto1:
 									masterKeyRev=crypto2
-								if crypto2<=crypto1:	
-									masterKeyRev=crypto1	
+								if crypto2<=crypto1:
+									masterKeyRev=crypto1
 								from mtp_tools import get_nca_ticket
 								check,titleKey=get_nca_ticket(filepath,fi)
 								if check==False:
 									sys.exit("Can't verify titleckey")
-								titleKeyDec = Keys.decryptTitleKey(titleKey, Keys.getMasterKeyIndex(int(masterKeyRev)))							
+								titleKeyDec = Keys.decryptTitleKey(titleKey, Keys.getMasterKeyIndex(int(masterKeyRev)))
 								encKeyBlock = crypto.encrypt(titleKeyDec * 4)
 								if str(keypatch) != "False":
-									t = tqdm(total=False, unit='B', unit_scale=False, leave=False)	
+									t = tqdm(total=False, unit='B', unit_scale=False, leave=False)
 									if keypatch < nca.header.getCryptoType2():
-										encKeyBlock,crypto1,crypto2=squirrelXCI.get_new_cryptoblock(squirrelXCI,nca,keypatch,encKeyBlock,t)	
+										encKeyBlock,crypto1,crypto2=squirrelXCI.get_new_cryptoblock(squirrelXCI,nca,keypatch,encKeyBlock,t)
 									t.close()
 							if nca.header.getRightsId() == 0:
-								nca.rewind()											
-								encKeyBlock = nca.header.getKeyBlock()	
+								nca.rewind()
+								encKeyBlock = nca.header.getKeyBlock()
 								if str(keypatch) != "False":
-									t = tqdm(total=False, unit='B', unit_scale=False, leave=False)								
+									t = tqdm(total=False, unit='B', unit_scale=False, leave=False)
 									if keypatch < nca.header.getCryptoType2():
-										encKeyBlock,crypto1,crypto2=squirrelXCI.get_new_cryptoblock(squirrelXCI,nca,keypatch,encKeyBlock,t)	
-									t.close()									
-							nca.rewind()					
-							i=0				
-							newheader=xci.get_newheader(nca,encKeyBlock,crypto1,crypto2,hcrypto,gc_flag)	
+										encKeyBlock,crypto1,crypto2=squirrelXCI.get_new_cryptoblock(squirrelXCI,nca,keypatch,encKeyBlock,t)
+									t.close()
+							nca.rewind()
+							i=0
+							newheader=xci.get_newheader(nca,encKeyBlock,crypto1,crypto2,hcrypto,gc_flag)
 							outf.write(newheader)
 							written+=len(newheader)
-							nca.seek(0xC00)	
-							break					
-						else:pass					
+							nca.seek(0xC00)
+							break
+						else:pass
 		xci.flush()
-		xci.close()		
-	elif filepath.endswith('nsp'):		
+		xci.close()
+	elif filepath.endswith('nsp'):
 		nsp=squirrelNSP(filepath)
 		outfile=os.path.join(cachefolder, "0")
-		outf = open(outfile, 'w+b')		
-		outf.write(outheader)	
-		written=0	
-		for fi in files:				
-			for nca in nsp:					
+		outf = open(outfile, 'w+b')
+		outf.write(outheader)
+		written=0
+		for fi in files:
+			for nca in nsp:
 				if nca._path==fi:
 					nca=Nca(nca)
 					crypto1=nca.header.getCryptoType()
-					crypto2=nca.header.getCryptoType2()	
+					crypto2=nca.header.getCryptoType2()
 					if crypto2>crypto1:
 						masterKeyRev=crypto2
-					if crypto2<=crypto1:	
-						masterKeyRev=crypto1									
+					if crypto2<=crypto1:
+						masterKeyRev=crypto1
 					crypto = aes128.AESECB(Keys.keyAreaKey(Keys.getMasterKeyIndex(masterKeyRev), nca.header.keyIndex))
-					hcrypto = aes128.AESXTS(uhx(Keys.get('header_key')))	
-					gc_flag='00'*0x01					
+					hcrypto = aes128.AESXTS(uhx(Keys.get('header_key')))
+					gc_flag='00'*0x01
 					crypto1=nca.header.getCryptoType()
-					crypto2=nca.header.getCryptoType2()					
-					if nca.header.getRightsId() != 0:					
-						nca.rewind()	
+					crypto2=nca.header.getCryptoType2()
+					if nca.header.getRightsId() != 0:
+						nca.rewind()
 						if crypto2>crypto1:
 							masterKeyRev=crypto2
-						if crypto2<=crypto1:	
-							masterKeyRev=crypto1		
+						if crypto2<=crypto1:
+							masterKeyRev=crypto1
 						from mtp_tools import get_nca_ticket
 						check,titleKey=get_nca_ticket(filepath,fi)
 						if check==False:
-							sys.exit("Can't verify titleckey")							
-						titleKeyDec = Keys.decryptTitleKey(titleKey, Keys.getMasterKeyIndex(int(masterKeyRev)))							
+							sys.exit("Can't verify titleckey")
+						titleKeyDec = Keys.decryptTitleKey(titleKey, Keys.getMasterKeyIndex(int(masterKeyRev)))
 						encKeyBlock = crypto.encrypt(titleKeyDec * 4)
 						if str(keypatch) != "False":
-							t = tqdm(total=False, unit='B', unit_scale=False, leave=False)	
+							t = tqdm(total=False, unit='B', unit_scale=False, leave=False)
 							if keypatch < nca.header.getCryptoType2():
-								encKeyBlock,crypto1,crypto2=squirrelNSP.get_new_cryptoblock(squirrelNSP,nca,keypatch,encKeyBlock,t)	
+								encKeyBlock,crypto1,crypto2=squirrelNSP.get_new_cryptoblock(squirrelNSP,nca,keypatch,encKeyBlock,t)
 							t.close()
 					if nca.header.getRightsId() == 0:
-						nca.rewind()											
-						encKeyBlock = nca.header.getKeyBlock()	
+						nca.rewind()
+						encKeyBlock = nca.header.getKeyBlock()
 						if str(keypatch) != "False":
-							t = tqdm(total=False, unit='B', unit_scale=False, leave=False)								
+							t = tqdm(total=False, unit='B', unit_scale=False, leave=False)
 							if keypatch < nca.header.getCryptoType2():
-								encKeyBlock,crypto1,crypto2=squirrelNSP.get_new_cryptoblock(squirrelNSP,nca,keypatch,encKeyBlock,t)	
-							t.close()									
-					nca.rewind()					
-					i=0				
-					newheader=nsp.get_newheader(nca,encKeyBlock,crypto1,crypto2,hcrypto,gc_flag)	
+								encKeyBlock,crypto1,crypto2=squirrelNSP.get_new_cryptoblock(squirrelNSP,nca,keypatch,encKeyBlock,t)
+							t.close()
+					nca.rewind()
+					i=0
+					newheader=nsp.get_newheader(nca,encKeyBlock,crypto1,crypto2,hcrypto,gc_flag)
 					outf.write(newheader)
 					written+=len(newheader)
-					nca.seek(0xC00)	
-					break					
-				else:pass					
+					nca.seek(0xC00)
+					break
+				else:pass
 		nsp.flush()
-		nsp.close()								
-	outf.flush()							
-	outf.close()		
-	tfile=os.path.join(cachefolder, "files.csv")	
-	with open(tfile,'w') as csvfile:	
-		csvfile.write("{}|{}|{}|{}|{}|{}\n".format("step","filepath","size","targetsize","off1","off2"))	
-		csvfile.write("{}|{}|{}|{}|{}|{}\n".format(0,outfile,properheadsize+written,properheadsize,0,properheadsize))	
-		k=0;l=0		
+		nsp.close()
+	outf.flush()
+	outf.close()
+	tfile=os.path.join(cachefolder, "files.csv")
+	with open(tfile,'w') as csvfile:
+		csvfile.write("{}|{}|{}|{}|{}|{}\n".format("step","filepath","size","targetsize","off1","off2"))
+		csvfile.write("{}|{}|{}|{}|{}|{}\n".format(0,outfile,properheadsize+written,properheadsize,0,properheadsize))
+		k=0;l=0
 		for fi in files:
 			for j in files_list:
-				if j[0]==fi:	
-					csvfile.write("{}|{}|{}|{}|{}|{}\n".format(k+1,outfile,properheadsize+written,0xC00,(properheadsize+l*0xC00),(properheadsize+(l*0xC00)+0xC00)))	
+				if j[0]==fi:
+					csvfile.write("{}|{}|{}|{}|{}|{}\n".format(k+1,outfile,properheadsize+written,0xC00,(properheadsize+l*0xC00),(properheadsize+(l*0xC00)+0xC00)))
 					off1=j[1]+0xC00
 					off2=j[2]
-					targetsize=j[3]-0xC00				
-					csvfile.write("{}|{}|{}|{}|{}|{}\n".format(k+2,filepath,(os.path.getsize(filepath)),targetsize,off1,off2))	
+					targetsize=j[3]-0xC00
+					csvfile.write("{}|{}|{}|{}|{}|{}\n".format(k+2,filepath,(os.path.getsize(filepath)),targetsize,off1,off2))
 					break
-			k+=2;l+=1	
-	xciname="test.xci"				
+			k+=2;l+=1
+	xciname="test.xci"
 	try:
-		g=os.path.basename(filepath) 				
+		g=os.path.basename(filepath)
 		xciname=g[:-3]+'xci'
 	except:pass
-	return xciname					
+	return xciname
 
 def transfer_mxci_csv(tfile=None,destiny="SD",cachefolder=None,override=False,keypatch=False,input_files=None):
 	check_connection()
@@ -367,25 +368,25 @@ def transfer_mxci_csv(tfile=None,destiny="SD",cachefolder=None,override=False,ke
 	if destiny=="SD":
 		destiny="1: External SD Card\\"
 	if cachefolder==None:
-		cachefolder=os.path.join(ztools_dir, '_mtp_cache_')	
-	if input_files==None:	
+		cachefolder=os.path.join(ztools_dir, '_mtp_cache_')
+	if input_files==None:
 		input_files=listmanager.read_lines_to_list(tfile,all=True)
 	print(f"Creating mxci from {tfile}")
 	xciname=gen_mxci_parts(input_files,cachefolder=cachefolder,keypatch=keypatch)
-	destinypath=os.path.join(destiny,xciname)	
-	files_csv=os.path.join(cachefolder, 'files.csv')	
-	process=subprocess.Popen([nscb_mtp,"TransferfromCSV","-cs",files_csv,"-dst",destinypath])		
+	destinypath=os.path.join(destiny,xciname)
+	files_csv=os.path.join(cachefolder, 'files.csv')
+	process=subprocess.Popen([nscb_mtp,"TransferfromCSV","-cs",files_csv,"-dst",destinypath])
 	while process.poll()==None:
 		if process.poll()!=None:
-			process.terminate();	
-	if os.path.exists(cachefolder):			
+			process.terminate();
+	if os.path.exists(cachefolder):
 		for f in os.listdir(cachefolder):
 			fp = os.path.join(cachefolder, f)
 			try:
 				shutil.rmtree(fp)
 			except OSError:
-				os.remove(fp)	
-				
+				os.remove(fp)
+
 def gen_multi_file_header(prlist,filelist):
 	oflist=[];osizelist=[];ototlist=[];files=[]
 	totSize=0
@@ -417,7 +418,7 @@ def gen_multi_file_header(prlist,filelist):
 					Print.error('Exception: ' + str(e))
 			if filepath.endswith('.xci') or filepath.endswith('.xcz'):
 				try:
-					f = squirrelXCI(filepath)		
+					f = squirrelXCI(filepath)
 					sha,size,gamecard=f.file_hash(file)
 					if sha != False:
 						sec_hashlist.append(sha)
@@ -436,9 +437,9 @@ def gen_multi_file_header(prlist,filelist):
 	outheader+=root_header
 	outheader+=upd_header
 	outheader+=norm_header
-	outheader+=sec_header	
+	outheader+=sec_header
 	properheadsize=len(outheader)
-	return outheader,properheadsize,totSize,oflist								
+	return outheader,properheadsize,totSize,oflist
 
 def gen_mxci_parts(input_files,cachefolder=None,keypatch=False):
 	from listmanager import calculate_name
@@ -447,7 +448,7 @@ def gen_mxci_parts(input_files,cachefolder=None,keypatch=False):
 			keypatch=int(keypatch)
 		except:	keypatch=False
 	if cachefolder==None:
-		cachefolder=os.path.join(ztools_dir, '_mtp_cache_')	
+		cachefolder=os.path.join(ztools_dir, '_mtp_cache_')
 	if not os.path.exists(cachefolder):
 		os.makedirs(cachefolder)
 	else:
@@ -462,8 +463,8 @@ def gen_mxci_parts(input_files,cachefolder=None,keypatch=False):
 	outheader,properheadsize,sz,files=gen_multi_file_header(prlist,input_files)
 	properheadsize=len(outheader)
 	outfile=os.path.join(cachefolder, "0")
-	outf = open(outfile, 'w+b')		
-	outf.write(outheader)		
+	outf = open(outfile, 'w+b')
+	outf.write(outheader)
 	# print(properheadsize)
 	# print(bucketsize)
 	i=0;sum=properheadsize;
@@ -471,131 +472,130 @@ def gen_mxci_parts(input_files,cachefolder=None,keypatch=False):
 		for filepath in input_files:
 			if filepath.endswith('xci'):
 				xci=squirrelXCI(filepath)
-				written=0	
-				for nspF in xci.hfs0:	
+				written=0
+				for nspF in xci.hfs0:
 					if str(nspF._path)=="secure":
-						for nca in nspF:					
+						for nca in nspF:
 							if nca._path==fi:
 								nca=Nca(nca)
 								crypto1=nca.header.getCryptoType()
-								crypto2=nca.header.getCryptoType2()	
+								crypto2=nca.header.getCryptoType2()
 								if crypto2>crypto1:
 									masterKeyRev=crypto2
-								if crypto2<=crypto1:	
-									masterKeyRev=crypto1									
+								if crypto2<=crypto1:
+									masterKeyRev=crypto1
 								crypto = aes128.AESECB(Keys.keyAreaKey(Keys.getMasterKeyIndex(masterKeyRev), nca.header.keyIndex))
-								hcrypto = aes128.AESXTS(uhx(Keys.get('header_key')))	
-								gc_flag='00'*0x01					
+								hcrypto = aes128.AESXTS(uhx(Keys.get('header_key')))
+								gc_flag='00'*0x01
 								crypto1=nca.header.getCryptoType()
-								crypto2=nca.header.getCryptoType2()					
-								if nca.header.getRightsId() != 0:					
-									nca.rewind()	
+								crypto2=nca.header.getCryptoType2()
+								if nca.header.getRightsId() != 0:
+									nca.rewind()
 									if crypto2>crypto1:
 										masterKeyRev=crypto2
-									if crypto2<=crypto1:	
+									if crypto2<=crypto1:
 										masterKeyRev=crypto1
 									from mtp_tools import get_nca_ticket
 									check,titleKey=get_nca_ticket(filepath,fi)
 									if check==False:
 										sys.exit("Can't verify titleckey")
-									titleKeyDec = Keys.decryptTitleKey(titleKey, Keys.getMasterKeyIndex(int(masterKeyRev)))							
+									titleKeyDec = Keys.decryptTitleKey(titleKey, Keys.getMasterKeyIndex(int(masterKeyRev)))
 									encKeyBlock = crypto.encrypt(titleKeyDec * 4)
 									if str(keypatch) != "False":
-										t = tqdm(total=False, unit='B', unit_scale=False, leave=False)	
+										t = tqdm(total=False, unit='B', unit_scale=False, leave=False)
 										if keypatch < nca.header.getCryptoType2():
-											encKeyBlock,crypto1,crypto2=squirrelXCI.get_new_cryptoblock(squirrelXCI,nca,keypatch,encKeyBlock,t)	
+											encKeyBlock,crypto1,crypto2=squirrelXCI.get_new_cryptoblock(squirrelXCI,nca,keypatch,encKeyBlock,t)
 										t.close()
 								if nca.header.getRightsId() == 0:
-									nca.rewind()											
-									encKeyBlock = nca.header.getKeyBlock()	
+									nca.rewind()
+									encKeyBlock = nca.header.getKeyBlock()
 									if str(keypatch) != "False":
-										t = tqdm(total=False, unit='B', unit_scale=False, leave=False)								
+										t = tqdm(total=False, unit='B', unit_scale=False, leave=False)
 										if keypatch < nca.header.getCryptoType2():
-											encKeyBlock,crypto1,crypto2=squirrelXCI.get_new_cryptoblock(squirrelXCI,nca,keypatch,encKeyBlock,t)	
-										t.close()									
-								nca.rewind()					
-								i=0				
-								newheader=xci.get_newheader(nca,encKeyBlock,crypto1,crypto2,hcrypto,gc_flag)	
+											encKeyBlock,crypto1,crypto2=squirrelXCI.get_new_cryptoblock(squirrelXCI,nca,keypatch,encKeyBlock,t)
+										t.close()
+								nca.rewind()
+								i=0
+								newheader=xci.get_newheader(nca,encKeyBlock,crypto1,crypto2,hcrypto,gc_flag)
 								outf.write(newheader)
 								written+=len(newheader)
-								nca.seek(0xC00)	
-								break					
-							else:pass					
+								nca.seek(0xC00)
+								break
+							else:pass
 				xci.flush()
-				xci.close()		
-			elif filepath.endswith('nsp'):		
+				xci.close()
+			elif filepath.endswith('nsp'):
 				nsp=squirrelNSP(filepath)
-				written=0				
-				for nca in nsp:					
+				written=0
+				for nca in nsp:
 					if nca._path==fi:
 						nca=Nca(nca)
 						crypto1=nca.header.getCryptoType()
-						crypto2=nca.header.getCryptoType2()	
+						crypto2=nca.header.getCryptoType2()
 						if crypto2>crypto1:
 							masterKeyRev=crypto2
-						if crypto2<=crypto1:	
-							masterKeyRev=crypto1									
+						if crypto2<=crypto1:
+							masterKeyRev=crypto1
 						crypto = aes128.AESECB(Keys.keyAreaKey(Keys.getMasterKeyIndex(masterKeyRev), nca.header.keyIndex))
-						hcrypto = aes128.AESXTS(uhx(Keys.get('header_key')))	
-						gc_flag='00'*0x01					
+						hcrypto = aes128.AESXTS(uhx(Keys.get('header_key')))
+						gc_flag='00'*0x01
 						crypto1=nca.header.getCryptoType()
-						crypto2=nca.header.getCryptoType2()					
-						if nca.header.getRightsId() != 0:					
-							nca.rewind()	
+						crypto2=nca.header.getCryptoType2()
+						if nca.header.getRightsId() != 0:
+							nca.rewind()
 							if crypto2>crypto1:
 								masterKeyRev=crypto2
-							if crypto2<=crypto1:	
-								masterKeyRev=crypto1		
+							if crypto2<=crypto1:
+								masterKeyRev=crypto1
 							from mtp_tools import get_nca_ticket
 							check,titleKey=get_nca_ticket(filepath,fi)
 							if check==False:
 								sys.exit("Can't verify titleckey")
-							titleKeyDec = Keys.decryptTitleKey(titleKey, Keys.getMasterKeyIndex(int(masterKeyRev)))							
+							titleKeyDec = Keys.decryptTitleKey(titleKey, Keys.getMasterKeyIndex(int(masterKeyRev)))
 							encKeyBlock = crypto.encrypt(titleKeyDec * 4)
 							if str(keypatch) != "False":
-								t = tqdm(total=False, unit='B', unit_scale=False, leave=False)	
+								t = tqdm(total=False, unit='B', unit_scale=False, leave=False)
 								if keypatch < nca.header.getCryptoType2():
-									encKeyBlock,crypto1,crypto2=squirrelNSP.get_new_cryptoblock(squirrelNSP,nca,keypatch,encKeyBlock,t)	
+									encKeyBlock,crypto1,crypto2=squirrelNSP.get_new_cryptoblock(squirrelNSP,nca,keypatch,encKeyBlock,t)
 								t.close()
 						if nca.header.getRightsId() == 0:
-							nca.rewind()											
-							encKeyBlock = nca.header.getKeyBlock()	
+							nca.rewind()
+							encKeyBlock = nca.header.getKeyBlock()
 							if str(keypatch) != "False":
-								t = tqdm(total=False, unit='B', unit_scale=False, leave=False)								
+								t = tqdm(total=False, unit='B', unit_scale=False, leave=False)
 								if keypatch < nca.header.getCryptoType2():
-									encKeyBlock,crypto1,crypto2=squirrelNSP.get_new_cryptoblock(squirrelNSP,nca,keypatch,encKeyBlock,t)	
-								t.close()									
-						nca.rewind()					
-						i=0				
-						newheader=nsp.get_newheader(nca,encKeyBlock,crypto1,crypto2,hcrypto,gc_flag)	
+									encKeyBlock,crypto1,crypto2=squirrelNSP.get_new_cryptoblock(squirrelNSP,nca,keypatch,encKeyBlock,t)
+								t.close()
+						nca.rewind()
+						i=0
+						newheader=nsp.get_newheader(nca,encKeyBlock,crypto1,crypto2,hcrypto,gc_flag)
 						outf.write(newheader)
 						written+=len(newheader)
-						nca.seek(0xC00)	
-						break					
-					else:pass					
+						nca.seek(0xC00)
+						break
+					else:pass
 				nsp.flush()
-				nsp.close()								
-	outf.flush()							
-	outf.close()		
-	tfile=os.path.join(cachefolder, "files.csv")	
-	with open(tfile,'w') as csvfile:	
-		csvfile.write("{}|{}|{}|{}|{}|{}\n".format("step","filepath","size","targetsize","off1","off2"))	
-		csvfile.write("{}|{}|{}|{}|{}|{}\n".format(0,outfile,properheadsize+written,properheadsize,0,properheadsize))	
-		k=0;l=0		
-		for fi in files:		
+				nsp.close()
+	outf.flush()
+	outf.close()
+	tfile=os.path.join(cachefolder, "files.csv")
+	with open(tfile,'w') as csvfile:
+		csvfile.write("{}|{}|{}|{}|{}|{}\n".format("step","filepath","size","targetsize","off1","off2"))
+		csvfile.write("{}|{}|{}|{}|{}|{}\n".format(0,outfile,properheadsize+written,properheadsize,0,properheadsize))
+		k=0;l=0
+		for fi in files:
 			for filepath in input_files:
 				if filepath.endswith('xci'):
-					files_list=sq_tools.ret_xci_offsets(filepath)			
+					files_list=sq_tools.ret_xci_offsets(filepath)
 				elif filepath.endswith('nsp'):
 					files_list=sq_tools.ret_nsp_offsets(filepath)
 				for j in files_list:
-					if j[0]==fi:	
-						csvfile.write("{}|{}|{}|{}|{}|{}\n".format(k+1,outfile,properheadsize+written,0xC00,(properheadsize+l*0xC00),(properheadsize+(l*0xC00)+0xC00)))	
+					if j[0]==fi:
+						csvfile.write("{}|{}|{}|{}|{}|{}\n".format(k+1,outfile,properheadsize+written,0xC00,(properheadsize+l*0xC00),(properheadsize+(l*0xC00)+0xC00)))
 						off1=j[1]+0xC00
 						off2=j[2]
-						targetsize=j[3]-0xC00				
-						csvfile.write("{}|{}|{}|{}|{}|{}\n".format(k+2,filepath,(os.path.getsize(filepath)),targetsize,off1,off2))	
+						targetsize=j[3]-0xC00
+						csvfile.write("{}|{}|{}|{}|{}|{}\n".format(k+2,filepath,(os.path.getsize(filepath)),targetsize,off1,off2))
 						break
-			k+=2;l+=1		
-	return end_name					
-				
+			k+=2;l+=1
+	return end_name

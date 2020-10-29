@@ -12,6 +12,7 @@ from Fs.BaseFs import BaseFs
 import os
 import re
 import pathlib
+
 import Keys
 import Config
 import Print
@@ -21,7 +22,7 @@ from tqdm import tqdm
 
 MEDIA_SIZE = 0x200
 indent = 1
-tabs = '\t' * indent	
+tabs = '\t' * indent
 
 
 class uHfs0(Pfs0):
@@ -35,7 +36,7 @@ class uHfs0(Pfs0):
 		self.magic = self.read(0x4);
 		if self.magic != b'HFS0':
 			raise IOError('Not a valid HFS0 partition ' + str(self.magic))
-			
+
 
 		fileCount = self.readInt32()
 		stringTableSize = self.readInt32()
@@ -44,7 +45,7 @@ class uHfs0(Pfs0):
 		self.seek(0x10 + fileCount * 0x40)
 		stringTable = self.read(stringTableSize)
 		stringEndOffset = stringTableSize
-		
+
 		headerSize = 0x10 + 0x40 * fileCount + stringTableSize
 		self.files = []
 		for i in range(fileCount):
@@ -61,11 +62,11 @@ class uHfs0(Pfs0):
 
 			#if name in ['update', 'secure', 'normal']:
 			if name == 'update':
-				Print.info('Parsing update partition, please wait')		
+				Print.info('Parsing update partition, please wait')
 				f = uHfs0(None)
 				#f = factory(name)
 			else:
-				f = Fs.factory(name)	
+				f = Fs.factory(name)
 
 			f._path = name
 			f.offset = offset
@@ -91,7 +92,7 @@ class nHfs0(Pfs0):
 		self.magic = self.read(0x4);
 		if self.magic != b'HFS0':
 			raise IOError('Not a valid HFS0 partition ' + str(self.magic))
-			
+
 
 		fileCount = self.readInt32()
 		stringTableSize = self.readInt32()
@@ -100,7 +101,7 @@ class nHfs0(Pfs0):
 		self.seek(0x10 + fileCount * 0x40)
 		stringTable = self.read(stringTableSize)
 		stringEndOffset = stringTableSize
-		
+
 		headerSize = 0x10 + 0x40 * fileCount + stringTableSize
 		self.files = []
 
@@ -134,8 +135,8 @@ class nHfs0(Pfs0):
 		maxDepth = 3
 		tabs = '\t' * indent
 		Print.info('\n%sHFS0\n' % (tabs))
-		super(Pfs0, self).printInfo(indent)		
-		
+		super(Pfs0, self).printInfo(indent)
+
 class lHfs0(Pfs0):
 	def __init__(self, buffer, path = None, mode = None, cryptoType = -1, cryptoKey = -1, cryptoCounter = -1):
 		super(lHfs0, self).__init__(buffer, path, mode, cryptoType, cryptoKey, cryptoCounter)
@@ -147,7 +148,7 @@ class lHfs0(Pfs0):
 		self.magic = self.read(0x4);
 		if self.magic != b'HFS0':
 			raise IOError('Not a valid HFS0 partition ' + str(self.magic))
-			
+
 
 		fileCount = self.readInt32()
 		stringTableSize = self.readInt32()
@@ -156,7 +157,7 @@ class lHfs0(Pfs0):
 		self.seek(0x10 + fileCount * 0x40)
 		stringTable = self.read(stringTableSize)
 		stringEndOffset = stringTableSize
-		
+
 		headerSize = 0x10 + 0x40 * fileCount + stringTableSize
 		self.files = []
 		for i in range(fileCount):
@@ -173,11 +174,11 @@ class lHfs0(Pfs0):
 
 			#if name in ['update', 'secure', 'normal']:
 			if name == 'update':
-				Print.info('Parsing update partition, please wait')		
+				Print.info('Parsing update partition, please wait')
 				f = lHfs0(None)
 				#f = factory(name)
 			else:
-				f = Fs.factory(name)	
+				f = Fs.factory(name)
 
 			f._path = name
 			f.offset = offset

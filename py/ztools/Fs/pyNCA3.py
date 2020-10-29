@@ -8,7 +8,7 @@ from binascii import hexlify as hx, unhexlify as uhx
 from Crypto.Cipher import AES
 from Crypto.Util import Counter
 from Utils import (
-	read_at, read_u8, read_u32, read_u64, pk_u32, pk_u64, 
+	read_at, read_u8, read_u32, read_u64, pk_u32, pk_u64,
 	memdump, check_tkey, bytes2human, align_to, FileInContainer
 )
 from CryptoUtils import validate_rsa2048_pss_sig, gen_aes_kek, AESXTSN
@@ -17,6 +17,7 @@ from Fs.pyRomFS import IVFCSuperblock, HashTreeWrappedRomFS
 from Fs.pyNPDM import NPDM
 from NXKeys import ProdKeys, TitleKeys
 from tqdm import tqdm
+
 import Keys
 
 keys  = ProdKeys()
@@ -109,7 +110,7 @@ class NCAHeader:
 		for n in range(4):
 			self.hash_table.append(read_at(raw_header, 0x280 + n * 0x20, 0x20))
 		self.enc_key_area = read_at(raw_header, 0x300, 0x40)
-		
+
 		self.section_headers = []
 		for n in range(4):
 			if self.section_tables[n].start_offset: # Sections exists
@@ -136,12 +137,12 @@ class NCA3:
 			self.name=name
 
 		self.is_valid = True
-		
+
 		self._parse(titlekey=titlekey, verify=verify)
 
 	def __str__(self):
 		string = '%s:\n' % os.path.basename(self.name)
-		string += '  Size:				%s\n'	% bytes2human(self.header.size)  
+		string += '  Size:				%s\n'	% bytes2human(self.header.size)
 		string += '  Content type:		%s\n'	% self.header.content_type
 		string += '  Title ID:			%016x\n' % self.header.tid
 		if self.has_rights_id:
@@ -154,7 +155,7 @@ class NCA3:
 		string += '  Body key:			%s\n\n'	% hx(self.body_key).decode()
 		for n, sec in enumerate(self.sections):
 			string += 'Section %d: %s (%s)\n' % (
-				n, 
+				n,
 				('ExeFS' if sec.is_exefs else sec.fs_type),
 				bytes2human(sec.size)
 			)
@@ -206,14 +207,14 @@ class NCA3:
 		header_keys = keys['nca_header_key'][:0x10], keys['nca_header_key'][0x10:]
 		cipher = AESXTSN(header_keys)
 		return cipher.decrypt(self.f.read(0xC00))
-		
+
 	def _parse(self, titlekey=None, verify=False):
 		raw_header = self._decrypt_header()
 		self.header = NCAHeader(io.BytesIO(raw_header))
 
 		if self.header.magic != b'NCA3':
 			raise ValueError('Invalid NCA3 magic')
-		
+
 		if self.header.crypto_type_2 > self.header.crypto_type:
 			self.crypto_type = self.header.crypto_type_2
 		else:
@@ -221,7 +222,7 @@ class NCA3:
 		if self.crypto_type > 0:
 			self.crypto_type -= 1
 		self.mkey = keys['master_key_%02x' % self.crypto_type]
-		
+
 		if titlekey is not None:
 			#print(hx(titlekey))
 			self.body_key = titlekey
@@ -231,7 +232,7 @@ class NCA3:
 				self.has_rights_id = False
 				self.kaek = self.kaeks[self.header.kaek_ind]
 				keyblob = self._decrypt_keyarea(self.header.enc_key_area)
-				self.key_area = b''.join(keyblob[0x10 * n : 0x10 * (n + 1)] for n in range(4))			
+				self.key_area = b''.join(keyblob[0x10 * n : 0x10 * (n + 1)] for n in range(4))
 		elif self.header.rights_id == 0x10 * b'\0':
 			self.has_rights_id = False
 			self.kaek = self.kaeks[self.header.kaek_ind]
@@ -239,9 +240,9 @@ class NCA3:
 			self.key_area = b''.join(keyblob[0x10 * n : 0x10 * (n + 1)] for n in range(4))
 			self.body_key = self.key_area[0x20:0x30]
 			#print(hx(keyblob))
-			#print(hx(self.key_area))			
-			#print(hx(self.body_key))	
-		else:			
+			#print(hx(self.key_area))
+			#print(hx(self.body_key))
+		else:
 			if self.header.rights_id != 0x10 * b'\0':
 				self.has_rights_id = True
 				self.rights_id = int.from_bytes(self.header.rights_id, byteorder='big')
@@ -255,7 +256,7 @@ class NCA3:
 						self.has_tkey = False
 						return
 				self.has_tkey = True
-				self.body_key = self._decrypt_tkey(self.enc_tkey)		
+				self.body_key = self._decrypt_tkey(self.enc_tkey)
 		self.sections = []
 		if verify:
 			self.is_valid = True
@@ -279,11 +280,11 @@ class NCA3:
 					if not validate_rsa2048_pss_sig(mod, RSA_PUBLIC_EXPONENT, raw_header[0x200:0x400], self.header.rsa_sig_2):
 						self.is_valid = False
 						print('[WARN] Invalid ACID signature')
-					
+
 	def decrypt_to_plaintext(self, out_f, disp=True):
 		if disp:
 			print('Decrypting %s to plaintext...' % os.path.basename(self.name))
-		t = tqdm(total=self.header.size, unit='B', unit_scale=True, leave=False)			
+		t = tqdm(total=self.header.size, unit='B', unit_scale=True, leave=False)
 		out = open(out_f, 'wb')
 		out.write(self._decrypt_header())
 		t.update(int(0x300))
@@ -291,7 +292,7 @@ class NCA3:
 			out.seek(self.ifo+0x300)
 			out.write(self.key_area)
 			t.update(len(self.key_area))
-		t.write(' > Parsing nca this may take some time...')			
+		t.write(' > Parsing nca this may take some time...')
 		for _, sec in enumerate(self.sections):
 			out.seek(self.ifo+sec.offset_in_cont)
 			for buf in sec.decrypt_raw():
@@ -301,29 +302,29 @@ class NCA3:
 		out.close()
 		if disp:
 			print('Decrypted to %s' % out.name)
-			
+
 	def ret_npdm(self):
 		for _, sec in enumerate(self.sections):
 			if sec.is_exefs:
 				npdm = NPDM(sec.fs.open('main.npdm'))
 				n=npdm.ret
 				return n
-				
+
 	def ret_main(self):
 		for _, sec in enumerate(self.sections):
 			if sec.is_exefs:
 				npdm = NPDM(sec.fs.open('main'))
 				n=npdm.ret
-				return n				
+				return n
 
 	def print_npdm(self):
 		for _, sec in enumerate(self.sections):
 			#print(_)
-			#print(sec.fs_type)		
+			#print(sec.fs_type)
 			if sec.is_exefs:
 				npdm = NPDM(sec.fs.open('main.npdm'))
 				n=npdm.__str__()
-				print(n)	
+				print(n)
 				return n
 
 	def decrypt_raw_sections(self, out_dir, disp=True):
@@ -359,9 +360,9 @@ class NCA3:
 					os.makedirs(dest)
 				if disp:
 					print('Extracting files of %s partition %d to %s...' % (sec.fs_type.lower(), n, dest))
-					
+
 				sec.extract_cont(dest)
-			except:continue	
+			except:continue
 		if disp:
 			print('Extracted to %s.' % out_dir)
 
@@ -379,12 +380,12 @@ class NCA3:
 			self.crypto		 = self.section_header.crypto_type
 			self.ifo=ifo
 			self.buffer=buffer
-			
+
 			if self.crypto in ('BTKR', 'XTS'):
 				raise NotImplementedError('BTKR/XTS not implemented')
 
 			super(NCA3.SectionInNCA3, self).__init__(self.nca.f, self.section_offset, self.section_size)
-			
+
 			self.is_exefs = False
 			if self.fs_type == 'PFS0':
 				self.cont_offset = self.section_header.superblock.offset
@@ -441,10 +442,10 @@ class NCA3:
 		def decrypt_raw(self):
 			for buf in self._decrypt_from_offset(0):
 				yield buf
-			
+
 		def decrypt_raw_cont(self):
 			for buf in self._decrypt_from_offset(self.cont_offset, self.cont_size):
 				yield buf
-	
+
 		def extract_cont(self, dest=None):
 			self.fs.extract(dest, disp=False)

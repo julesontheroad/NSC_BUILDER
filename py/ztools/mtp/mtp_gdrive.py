@@ -286,25 +286,28 @@ def gdrive_install(filename,destiny="SD",outfolder=None,ch_medium=True,check_fw=
 				sys.exit("   NOT ENOUGH SPACE ON DEVICE")
 	kgwarning=False			
 	if check_fw==True:	
-		cnmtdata,files_list,remote=DriveTools.get_cnmt_data(file=remote)		
-		keygeneration=int(cnmtdata['keygeneration'])
-		if FW!='unknown':	
-			try:
-				FW_RSV,RRSV=sq_tools.transform_fw_string(FW)
-				FW_kg=sq_tools.kg_by_RSV(FW_RSV)
-			except BaseException as e:
-				Print.error('Exception: ' + str(e))
-				FW='unknown'
-				FW_kg='unknown'
-				pass
-		if FW!='unknown' and FW_kg!='unknown':			
-			if int(keygeneration)>int(FW_kg):
-				kgwarning=True
-				tgkg=int(FW_kg)
+		try:
+			cnmtdata,files_list,remote=DriveTools.get_cnmt_data(file=remote)		
+			keygeneration=int(cnmtdata['keygeneration'])
+			if FW!='unknown':	
+				try:
+					FW_RSV,RRSV=sq_tools.transform_fw_string(FW)
+					FW_kg=sq_tools.kg_by_RSV(FW_RSV)
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))
+					FW='unknown'
+					FW_kg='unknown'
+					pass
+			if FW!='unknown' and FW_kg!='unknown':			
+				if int(keygeneration)>int(FW_kg):
+					kgwarning=True
+					tgkg=int(FW_kg)
+				else:
+					tgkg=keygeneration
 			else:
 				tgkg=keygeneration
-		else:
-			tgkg=keygeneration
+		except:
+			print("Error getting cnmtdata from file")
 		print(f"- Console Firmware: {FW} ({FW_RSV}) - keygen {FW_kg})")		
 		print(f"- File keygeneration: {keygeneration}")				
 		if kgwarning==True:
@@ -400,30 +403,33 @@ def public_gdrive_install(filepath,destiny="SD",truecopy=True,outfolder=None,ch_
 				sys.exit("   NOT ENOUGH SPACE ON DEVICE")
 	kgwarning=False						
 	if check_fw==True:	
-		cnmtdata,files_list,remote=DriveTools.get_cnmt_data(file=remote)		
-		keygeneration=int(cnmtdata['keygeneration'])
-		if FW!='unknown':	
-			try:
-				FW_RSV,RRSV=sq_tools.transform_fw_string(FW)
-				FW_kg=sq_tools.kg_by_RSV(FW_RSV)
-			except BaseException as e:
-				Print.error('Exception: ' + str(e))
-				FW='unknown'
-				FW_kg='unknown'
-				pass
-		if FW!='unknown' and FW_kg!='unknown':			
-			if int(keygeneration)>int(FW_kg):
-				kgwarning=True
-				tgkg=int(FW_kg)
+		try:
+			cnmtdata,files_list,remote=DriveTools.get_cnmt_data(file=remote)		
+			keygeneration=int(cnmtdata['keygeneration'])
+			if FW!='unknown':	
+				try:
+					FW_RSV,RRSV=sq_tools.transform_fw_string(FW)
+					FW_kg=sq_tools.kg_by_RSV(FW_RSV)
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))
+					FW='unknown'
+					FW_kg='unknown'
+					pass
+			if FW!='unknown' and FW_kg!='unknown':			
+				if int(keygeneration)>int(FW_kg):
+					kgwarning=True
+					tgkg=int(FW_kg)
+				else:
+					tgkg=keygeneration
 			else:
 				tgkg=keygeneration
-		else:
-			tgkg=keygeneration
-		print(f"- Console Firmware: {FW} ({FW_RSV}) - keygen {FW_kg})")		
-		print(f"- File keygeneration: {keygeneration}")				
-		if kgwarning==True:
-			print("File requires a higher firmware. Skipping...")
-			return False		
+			print(f"- Console Firmware: {FW} ({FW_RSV}) - keygen {FW_kg})")		
+			print(f"- File keygeneration: {keygeneration}")				
+			if kgwarning==True:
+				print("File requires a higher firmware. Skipping...")
+				return False
+		except:	
+			print("Error getting cnmtdata from file")		
 	if installed_list!=False:
 		try:
 			fileid,fileversion,cctag,nG,nU,nD,baseid=listmanager.parsetags(name)

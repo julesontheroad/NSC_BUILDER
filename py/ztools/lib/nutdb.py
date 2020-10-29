@@ -487,6 +487,8 @@ def get_otherDB(dbfile,dbname,f,URL=None):
 			except:pass	
 		if 	dbname=='versions_txt' and URL==None:	
 			check_ver_not_missing(_dbfile_)
+		if dbname=='HC_VLIST':
+			format_hac_versionlist()
 		return True				
 	else:
 		dbfile_mirror=dbfile[:-4]+'_mirror.txt'
@@ -561,6 +563,7 @@ def consolidate_versiondb():
 	ver_txt=os.path.join(DATABASE_folder, 'nutdb_versions.txt')
 	ver_JSON=os.path.join(DATABASE_folder, 'nutdb_versions.json')
 	titles_JSON=os.path.join(DATABASE_folder, 'nutdb.json')	
+	hcvfile=os.path.join(DATABASE_folder,'HC_VLIST.json')
 	ver_txt_dict={};data={}
 	if os.path.exists(ver_txt):	
 		with open(ver_txt,'rt',encoding='utf8') as csvfile:
@@ -633,7 +636,33 @@ def consolidate_versiondb():
 						if int(j)>int(ver_txt_dict[tid]):
 							ver_txt_dict[tid]=j
 				except BaseException as e:
-					Print.error('Exception: ' + str(e))					
+					Print.error('Exception: ' + str(e))		
+	if os.path.exists(hcvfile):	
+		with open(hcvfile, 'r') as json_file:	
+			data3 = json.load(json_file)	
+			for i in data3:
+				c=0;tid=str(i).upper()
+				if tid.endswith('800'):
+					tid=tid[:-3]+'000'
+				version=data3[i]	
+				if i.endswith('800'):
+					try:
+						j=version
+					except:
+						j=65536
+				else:
+					try:
+						j=version
+					except:
+						j=0	
+				try:
+					if not tid in ver_txt_dict:
+						ver_txt_dict[tid]=j
+					else:
+						if int(j)>int(ver_txt_dict[tid]):
+							ver_txt_dict[tid]=j
+				except BaseException as e:
+					Print.error('Exception: ' + str(e))	
 	from copy import deepcopy
 	newdict= deepcopy(ver_txt_dict)				
 	for i in ver_txt_dict:
@@ -657,6 +686,8 @@ def consolidate_versiondb():
 	with open(ver_txt,'wt',encoding='utf8') as csvfile:			
 		csvfile.write('id|version\n')
 		for i in sorted(ver_txt_dict.keys()):
+			if str(i).upper()=='UNKNOWN':
+				continue
 			csvfile.write(f"{i}|{ver_txt_dict[i]}\n")
 			
 def return_versiondb():
@@ -853,7 +884,26 @@ def get_regionDB(region):
 		print("Response 404. Old Files weren't removed")
 		os.utime(regionfile,(time.time(),time.time()))
 		return False		
-		
+
+def format_hac_versionlist():	
+	try:
+		hcvfile=os.path.join(DATABASE_folder,'HC_VLIST.json')
+		versionlist={}
+		if os.path.exists(hcvfile):
+			with open(hcvfile) as json_file:
+				data = json.load(json_file)	
+			titles=data['titles']
+			for entry in titles:
+				try:
+					tid=entry['id']
+					v=entry['version']
+					versionlist[tid]=v
+				except:pass
+		app_json = json.dumps(versionlist, indent=1)		
+		with open(hcvfile, 'w') as json_file:
+		  json_file.write(app_json)		
+	except:pass
+	
 def force_refresh():
 	try:
 		getnutdb()
@@ -862,7 +912,8 @@ def force_refresh():
 		get_regionDB('Japan')	
 		get_regionDB('Asia')		
 		get_otherDB(urlconfig,'versions_txt','nutdb_versions.txt')
-		get_otherDB(urlconfig,'versions','nutdb_versions.json')		
+		get_otherDB(urlconfig,'versions','nutdb_versions.json')	
+		get_otherDB(urlconfig,'HC_VLIST','HC_VLIST.json')			
 		get_otherDB(urlconfig,'cheats','nutdb_cheats.json')	
 		get_otherDB(urlconfig,'ninshop','ninshop.json')
 		get_otherDB(urlconfig,'metacritic_id','metacritic_id.json')	
@@ -2135,5 +2186,6 @@ def check_files():
 	check_other_file(urlconfig,'fw',nutdb=False)	
 	check_other_file(urlconfig,'versions_txt')
 	check_other_file(urlconfig,'versions')		
+	check_other_file(urlconfig,'HC_VLIST')	
 	check_other_file(urlconfig,'cheats')
 	consolidate_versiondb()	
