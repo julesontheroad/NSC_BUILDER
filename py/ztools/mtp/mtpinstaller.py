@@ -250,7 +250,6 @@ def file_verification(filename,hash=False):
 	return verdict,isrestored,cnmt_is_patched
 		
 def install(filepath=None,destiny="SD",verification=True,outfolder=None,ch_medium=True,check_fw=True,patch_keygen=False,install_mode="spec1",st_crypto=False):	
-	print(check_fw)
 	check_connection()
 	if install_mode!="legacy":
 		from mtpnsp import install_nsp_csv
