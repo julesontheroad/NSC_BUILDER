@@ -6868,9 +6868,7 @@ class Xci(File):
 								languetag=languetag+'Ru,'
 							if "KOR" in SupLg:
 								languetag=languetag+'Kor,'
-							if "TAI" in SupLg:
-								languetag=languetag+'Tw,'
-							if "CH" in SupLg:
+							if ("CH" in SupLg) or ("TW (ch)") in SupLg or ("TAI") in SupLg:
 								languetag=languetag+'Ch,'
 							languetag=languetag[:-1]
 							languetag=languetag+')'
