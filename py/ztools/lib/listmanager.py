@@ -956,3 +956,55 @@ def append_parsed_to_tfile(tfile1,output):
 		with open(output,'a', encoding='utf8') as f: 
 			f.write(entry+'|'+titledb1[entry]+'\n')									
 	print("Done")		
+	
+def check_cxci_dlc_number(cxci_text,dlc_text,outdated_cxci):
+	cxci_list=read_lines_to_list(cxci_text,all=True)
+	dlc_list=read_lines_to_list(dlc_text,all=True)	
+	if os.path.exists(outdated_cxci):
+		try:
+			os.remove(outdated_cxci)
+		except:pass			
+	cxci_db={};dlc_db={};dlc_number={}
+	print("Parsing files")
+	for file in cxci_list:
+		# print(f"Parsing {file}")
+		fileid,fileversion,cctag,nG,nU,nD,baseid=parsetags(file)
+		ky=f"{str(fileid).upper()}|{str(fileversion)}|{str(nG)}|{str(nU)}|{str(nD)}"
+		ky=ky.strip()		
+		# print(ky)
+		if not str(ky) in cxci_db.keys():
+			cxci_db[str(ky)]=[file,baseid,nG,nU,nD]	
+	for file in dlc_list:
+		# print(f"Parsing {file}")	
+		fileid,fileversion,cctag,nG,nU,nD,baseid=parsetags(file)
+		ky=f"{str(fileid).upper()}|{str(fileversion)}|{str(nG)}|{str(nU)}|{str(nD)}"
+		ky=ky.strip()
+		# print(ky)			
+		if not str(ky) in dlc_db.keys():
+			dlc_db[str(ky)]=file
+		if not baseid in dlc_number.keys():
+			dlc_number[baseid]=1
+		else:
+			num_d=dlc_number[baseid]
+			dlc_number[baseid]=num_d+1
+	counter=0		
+	# print(dlc_number)
+	for entry in cxci_db.keys():
+		try:
+			file=(cxci_db[entry])[0]	
+			baseid=(cxci_db[entry])[1]
+			dlc_n=int((cxci_db[entry])[4])
+			available_dlc=0
+			if baseid in dlc_number.keys():
+				available_dlc=int(dlc_number[baseid])
+				print(f"{baseid}:{available_dlc}")
+			if available_dlc>dlc_n:	
+				with open(outdated_cxci,'a', encoding='utf8') as f: 			
+					print(f"Outdated {baseid}")
+					f.write(file+'\n')		
+					counter+=1	
+		except BaseException as e:
+			print('Exception: ' + str(e))
+			pass	
+	print("Done")		
+	print(f"Detected {counter} files missing")	

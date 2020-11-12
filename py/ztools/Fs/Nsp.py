@@ -7325,15 +7325,29 @@ class Nsp(Pfs0):
 								tit_name='-'
 								editor='-'
 							filename=tit_name+' '+titleid3+' '+version
-							titlerights=titleid2+str('0'*15)+str(crypto2)
+							i=keygen
+							cr2=str(hex(i))[2:]
+							if i<3:
+								crypto1='0'+str(i)
+								crypto2='00'
+							else:
+								cr2=str(hex(i))[2:]
+								if len(str(cr2))==1:
+									crypto1='02'
+									crypto2='0'+str(cr2)
+								elif len(str(cr2))==2:
+									crypto1='02'
+									crypto2=str(cr2)									
+							titlerights=titleid2+str('0'*14)+str(crypto2)	
 							contentlist.append([filename,titleid2,titlerights,keygen,ncalist,CTYPE])
 
 		for file in self:
 			if type(file) == Ticket or file._path.endswith('.cert'):
 				test=file._path
 				test=test[0:32]
+				test2=test[0:13]+'800'+test[16:]
 				for i in contentlist:
-					if i[2]==test:
+					if i[2]==test or i[2]==test2:
 						i[4].append(file._path)
 			elif file._path.endswith('.xml'):
 				test=file._path
@@ -7370,7 +7384,7 @@ class Nsp(Pfs0):
 					self.cd_spl_nsp(buffer,i[0],ofolder,i[4],fat,fx,nodecompress)
 					self.cd_spl_xci(buffer,i[0],ofolder,i[4],fat,fx,nodecompress)
 
-	def cd_spl_nsp(self,buffer,ofile,ofolder,filelist,fat,fx,nodecompress=False):
+	def cd_spl_nsp(self,buffer,ofile,ofolder,filelist,fat,fx,nodecompress=False,rtr=False):
 		buffer=int(buffer)
 		self.rewind()
 		outfile=ofile+'.nsp'
@@ -7457,14 +7471,26 @@ class Nsp(Pfs0):
 				hcrypto = aes128.AESXTS(uhx(Keys.get('header_key')))
 				gc_flag='00'*0x01
 				file.rewind()
-				encKeyBlock = file.header.getKeyBlock()
+				if file.header.getRightsId() != 0 and rtr==True:
+					correct, tkey = self.verify_nca_key(str(file._path))
+					if correct == True:
+						decKey = Keys.decryptTitleKey(tkey, Keys.getMasterKeyIndex(int(masterKeyRev)))
+						encKeyBlock = crypto.encrypt(decKey * 4)	
+					else:
+						sys.exit("Invalid Titlekey")
+				else:
+					encKeyBlock = file.header.getKeyBlock()
 				t.write(tabs+'- Appending: ' + str(file._path))
 				file.rewind()
 				i=0
 				outf = open(str(filepath), 'a+b')
 				for data in iter(lambda: file.read(int(buffer)), ""):
 					if i==0:
-						newheader=self.get_newheader(file,encKeyBlock,crypto1,crypto2,hcrypto,gc_flag)
+						if file.header.getRightsId() != 0 and rtr==True:
+							newheader=self.get_newheader(file,encKeyBlock,crypto1,crypto2,hcrypto,gc_flag)
+						else:
+							file.rewind()
+							newheader=file.read(0xC00)
 						if fat=="fat32" and (c+len(newheader))>block:
 							n2=block-c
 							c=0

@@ -154,7 +154,12 @@ class auth():
 			self.access_token = None
 			
 				
-def upload_file(filepath,remote=auth(),mimetype='application/octet-stream', parent="root",upload_filename=None, resumable=True, chunksize=1*1024*1024):
+def upload_file(filepath,remote=auth(),mimetype='application/octet-stream', parent="root",upload_filename=None, resumable=True, ck=80:
+	try:
+		chunksize=int(ck)*1024*1024
+	except:
+		chunksize=30*1024*1024
+	print(chunksize)	
 	if upload_filename==None:
 		upload_filename=str(os.path.basename(os.path.abspath(filepath)))
 	filesize=os.path.getsize(filepath)	
