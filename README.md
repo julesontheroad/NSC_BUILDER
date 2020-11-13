@@ -3,14 +3,13 @@
 
 ## 1. Description
 
-Nintendo Switch Cleaner and Builder. A batchfile, python and html script based in hacbuild and Nut's python libraries. Designed initially to erase titlerights encryption from nsp files and make multicontent nsp/xci files, nowadays is a multicontent tool specialized in batch processing and file information, someone called it a Switch's Knife and he may be right.
+**Nintendo Switch Cleaner and Builder**: A multi-purpose tool for interacting with Switch game files - a "Switch-Army Knife". Written in Python, Batch, and HTML. Originally developed to remove titlerights and create multicontent NSP/XCI files, though over time has expanded to have significantly more features, specializing in batch processing and file information.
 
-NSC_Builder is based both in the works of Blawar’s nut.py and Luca Fraga’s hacbuild and powered by “squirrel” a originally a nut’s fork with added functions nowadays it can be considered it's own separate program.
-From version v0.8 the program doesn’t rely on hacbuild for xci generation and new code was made for a better integration with squirrel.
+NSC_Builder is based on the work of blawar’s nut.py and LucaFraga’s hacbuild. The core library, which is known as `squirrel`, was originally a nut fork, though over time it has added significant functionality and can be considered its own program. NSCB versions > 0.8 no longer rely on hacbuild for XCI generation, rather using its own code.
 
-## 2. What’s the meaning of “REMOVING TITLE RIGHTS”.
-When you remove the titlerights encryption from nsp files you can install the games without any need of tickets, which leaves a smaller trackable footprint on your console, providing you aren’t sending telemetry data to Nintendo.
-It also helps in the conversion from nsp to xci files allowing to not install tickets externally.
+## 2. What does it mean to *REMOVE TITLERIGHTS*?
+This is also known as converting to use *standard crypto* - it means that you have repacked the contents to be installable without a ticket being added to the Switch's database. Theoretically, standard crypto files leave a smaller traceable footprint on your console, provided you're not sending other telemetry to Nintendo. Important: This does NOT mean you can run preloads or dumped content that doesn't have a ticket (sometimes seen as NSX files).
+
 
 ## 3. What can I do with this program?
 
