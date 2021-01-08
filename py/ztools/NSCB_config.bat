@@ -272,9 +272,9 @@ if /i "%bs%"=="b" goto sc2
 if /i "%bs%"=="c" goto sc1
 if /i "%bs%"=="e" goto salida
 
-if "%v_RSV%"=="none" echo WRONG CHOICE
-if "%v_RSV%"=="none" echo.
-if "%v_RSV%"=="none" goto op_RSV
+if "%v_KGEN%"=="none" echo WRONG CHOICE
+if "%v_KGEN%"=="none" echo.
+if "%v_KGEN%"=="none" goto op_KGEN
 
 set v_KGEN="vkey=%v_KGEN%"
 set v_KGEN="%v_KGEN%"
