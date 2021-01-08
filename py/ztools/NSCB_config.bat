@@ -241,7 +241,7 @@ echo ...........................................................................
 echo.
 set /p bs="Enter your choice: "
 set "v_KGEN=none"
-set "v_CAPRSV=0"
+set "v_CAPRSV="
 if /i "%bs%"=="f" set "v_KGEN=-kp false"
 if /i "%bs%"=="0" set "v_KGEN=-kp 0"
 if /i "%bs%"=="0" set "v_CAPRSV=--RSVcap 0"
