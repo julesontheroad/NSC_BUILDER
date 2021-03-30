@@ -1008,3 +1008,34 @@ def check_cxci_dlc_number(cxci_text,dlc_text,outdated_cxci):
 			pass	
 	print("Done")		
 	print(f"Detected {counter} files missing")	
+	
+def get_common_tid_files_ftxt(tfile1,tfile2,output,compare='right'):
+	file_list1=read_lines_to_list(tfile1,all=True)
+	file_list2=read_lines_to_list(tfile2,all=True)	
+	if os.path.exists(output):
+		try:
+			os.remove(output)
+		except:pass			
+	titledb1={};titledb2={}
+	for file in file_list1:
+		# print(f"Parsing {file}")
+		fileid,fileversion,cctag,nG,nU,nD,baseid=parsetags(file)	
+		if not str(fileid) in titledb1.keys():
+			titledb1[str(fileid)]=file	
+	for file in file_list2:
+		# print(f"Parsing {file}")	
+		fileid,fileversion,cctag,nG,nU,nD,baseid=parsetags(file)
+		if not str(fileid) in titledb2.keys():
+			titledb2[str(fileid)]=file						
+	if compare=='right':
+		for entry in titledb1.keys():
+			if entry in titledb2.keys():
+				with open(output,'a', encoding='utf8') as f: 				
+					f.write(titledb1[entry]+'\n')		
+					print(entry)	
+	else:
+		for entry in titledb2.keys():	
+			if entry in titledb1.keys():
+				with open(output,'a', encoding='utf8') as f: 				
+					f.write(titledb2[entry]+'\n')
+					print(entry)		
