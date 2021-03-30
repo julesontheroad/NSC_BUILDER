@@ -80,3 +80,6 @@ py/zconfig/_playlog_/*
 py/mtpxci.txt
 py/MTP2GD.txt
 py/ztools/dev_keys.txt
+*.rar
+py/ztools/lib/Install_server.py
+py/ztools/lib/plaintext.py

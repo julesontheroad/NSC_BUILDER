@@ -8373,6 +8373,7 @@ class Nsp(Pfs0):
 		contentlist=list()
 		validfiles=list()
 		listed_files=list()
+		listed_certs=list()
 		contentlist=list()
 		feed=''
 		delta = False
@@ -8394,9 +8395,11 @@ class Nsp(Pfs0):
 				listed_files.append(str(file._path))
 			if type(file) == Ticket:
 				validfiles.append(str(file._path))
+			if str(file._path).endswith('.cert'):
+				listed_certs.append(str(file._path))
 
 		for file in listed_files:
-			correct=False;baddec=False
+			correct=False;baddec=False;cert_message=False
 			if file in validfiles:
 				if file.endswith('cnmt.nca'):
 					for f in self:
@@ -8462,6 +8465,20 @@ class Nsp(Pfs0):
 						checktik='nsz'
 					else:
 						message=('Content.TICKET');print(message);feed+=message+'\n'
+						cert=file[:-3]+'cert'
+						if not cert in listed_certs:
+							cert_message=f"Warning {cert}{tabs} -> is MISSING"
+						else:
+							for f in self:
+								if  f._path==cert:
+									certfile=f.read()
+									from Fs.Ticket import PublicCert
+									pcert=PublicCert()
+									pubcert=pcert.generate()
+									if not certfile==pubcert:
+										cert_message=f"Warning {cert} doesn't follow normalized standard"
+									else:
+										cert_message=f"{cert}{tabs} -> is CORRECT"									
 					correct = checktik
 				else:
 					correct=False
@@ -8484,6 +8501,9 @@ class Nsp(Pfs0):
 						message=(tabs+'  * NOTE: S.C. CONVERSION WAS PERFORMED WITH BAD KEY');print(message);feed+=message+'\n'
 				elif file.endswith('tik') and not str(self._path).endswith('.nsz'):
 					message=(tabs+file+tabs+'  -> titlekey is INCORRECT <<<-');print(message);feed+=message+'\n'
+			# if cert_message!=False:		
+				# message=('Content.CERT');print(message);feed+=message+'\n'
+				# message=(tabs+cert_message);print(message);feed+=message+'\n'
 		for nca in self:
 			if type(nca) == Nca:
 				if 	str(nca.header.contentType) == 'Content.META':
