@@ -572,14 +572,16 @@ def get_installed_info(tfile=None,search_new=True,excludehb=True,exclude_xci=Fal
 							tid=str(row[id]).upper() 
 							version=str(row[ver]).upper() 
 							if tid.endswith('800'):
-								baseid=tid[:-3]+'000'
-							if 	baseid in versiondict.keys():
-								v=versiondict[baseid]
-								if v<int(version):
-									versiondict[baseid]=int(version)
+								keyid=tid[:-3]+'000'
 							else:
-								versiondict[tid]=int(version)
-						except:pass		
+								keyid=tid
+							if keyid in versiondict.keys():
+								v=versiondict[keyid]
+								if v<int(version):
+									versiondict[keyid]=int(version)
+							else:
+								versiondict[keyid]=int(version)
+						except:pass
 			print("..........................................................")
 			print("NEW UPDATES")
 			print("..........................................................")			
@@ -710,7 +712,7 @@ def get_archived_info(search_new=True,excludehb=True,exclude_xci=False):
 		installed[entry[0]]=entry
 	print("..........................................................")
 	print("ARCHIVED|REGISTERED GAMES")
-	print("..........................................................")			
+	print("..........................................................")	
 	for g in dbi_dict.keys():
 		if not g in installed.keys():
 			tid,version,name=dbi_dict[g]
@@ -740,13 +742,15 @@ def get_archived_info(search_new=True,excludehb=True,exclude_xci=False):
 						tid=str(row[id]).upper() 
 						version=str(row[ver]).upper() 
 						if tid.endswith('800'):
-							baseid=tid[:-3]+'000'
-						if 	baseid in versiondict.keys():
-							v=versiondict[baseid]
-							if v<int(version):
-								versiondict[baseid]=int(version)
+							keyid=tid[:-3]+'000'
 						else:
-							versiondict[tid]=int(version)
+							keyid=tid
+						if keyid in versiondict.keys():
+							v=versiondict[keyid]
+							if v<int(version):
+								versiondict[keyid]=int(version)
+						else:
+							versiondict[keyid]=int(version)
 					except:pass		
 		print("..........................................................")
 		print("NEW UPDATES")
@@ -766,7 +770,8 @@ def get_archived_info(search_new=True,excludehb=True,exclude_xci=False):
 			if updateid in dbi_dict.keys() and fileid.endswith('000'):				
 				continue
 			if	fileid.endswith('800'):
-				try:			
+				try:
+					baseid=fileid[:-3]+'000'
 					v=versiondict[baseid]
 				except:pass						
 			else:	
@@ -775,6 +780,7 @@ def get_archived_info(search_new=True,excludehb=True,exclude_xci=False):
 				except:pass			
 			if int(v)>int(fileversion):
 				if fileid.endswith('000') or fileid.endswith('800'):
+					baseid=fileid[:-3]+'000'
 					updid=fileid[:-3]+'800'
 					print(f"{g0} [{baseid}][{verprint}]{fillver} -> "+forecombo+  f"[{updid}] [v{v}]"+Style.RESET_ALL)
 				else:
@@ -900,7 +906,7 @@ def update_console(libraries="all",destiny="SD",exclude_xci=True,prioritize_nsz=
 				v=(localgames[entry[0]])[1]
 				if int(entry[1])>int(v):
 					localgames[entry[0]]=entry		
-		except:pass					
+		except:pass	
 	print("3. Searching new updates. Please Wait...")						
 	gamestosend={}		
 	for g in installed.keys():
@@ -909,29 +915,29 @@ def update_console(libraries="all",destiny="SD",exclude_xci=True,prioritize_nsz=
 				updid=g[:-3]+'800'
 				if updid in localgames:
 					if updid in installed:
-						if ((installed[updid])[1])<((localgames[updid])[1]):
+						if int((installed[updid])[1])<int((localgames[updid])[1]):
 							if not updid in gamestosend:
 								gamestosend[updid]=localgames[updid]
 							else:
-								if ((gamestosend[updid])[1])<((localgames[updid])[1]):
+								if int((gamestosend[updid])[1])<int((localgames[updid])[1]):
 									gamestosend[updid]=localgames[updid]
 					else:
 						if not updid in gamestosend:
 							gamestosend[updid]=localgames[updid]
 						else:
-							if ((gamestosend[updid])[1])<((localgames[updid])[1]):
-								gamestosend[updid]=localgames[updid]								
+							if int((gamestosend[updid])[1])<int((localgames[updid])[1]):
+								gamestosend[updid]=localgames[updid]				
 			except:pass
 		else:
 			try:		
 				if g in localgames:
-					if ((installed[g])[1])<((localgames[g])[1]):
+					if int((installed[g])[1])<int((localgames[g])[1]):
 						if not g in gamestosend:
 							gamestosend[g]=localgames[g]
 						else:
-							if ((gamestosend[g])[1])<((localgames[g])[1]):
+							if int((gamestosend[g])[1])<int((localgames[g])[1]):
 								gamestosend[g]=localgames[g]
-			except:pass							
+			except:pass
 	print("4. Searching new dlcs. Please Wait...")	
 	for g in installed.keys():	
 		try:
@@ -947,7 +953,7 @@ def update_console(libraries="all",destiny="SD",exclude_xci=True,prioritize_nsz=
 							if not k in gamestosend:
 								gamestosend[k]=localgames[k]
 							else:
-								if ((gamestosend[k])[1])<((localgames[k])[1]):
+								if int((gamestosend[k])[1])<int((localgames[k])[1]):
 									gamestosend[k]=localgames[k]	
 				except BaseException as e:
 					# Print.error('Exception: ' + str(e))			
