@@ -241,7 +241,7 @@ echo ...........................................................................
 echo.
 set /p bs="Enter your choice: "
 set "v_KGEN=none"
-set "v_CAPRSV=0"
+set "v_CAPRSV="
 if /i "%bs%"=="f" set "v_KGEN=-kp false"
 if /i "%bs%"=="0" set "v_KGEN=-kp 0"
 if /i "%bs%"=="0" set "v_CAPRSV=--RSVcap 0"
@@ -272,9 +272,9 @@ if /i "%bs%"=="b" goto sc2
 if /i "%bs%"=="c" goto sc1
 if /i "%bs%"=="e" goto salida
 
-if "%v_RSV%"=="none" echo WRONG CHOICE
-if "%v_RSV%"=="none" echo.
-if "%v_RSV%"=="none" goto op_RSV
+if "%v_KGEN%"=="none" echo WRONG CHOICE
+if "%v_KGEN%"=="none" echo.
+if "%v_KGEN%"=="none" goto op_KGEN
 
 set v_KGEN="vkey=%v_KGEN%"
 set v_KGEN="%v_KGEN%"
