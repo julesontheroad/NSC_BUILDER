@@ -1602,7 +1602,7 @@ class Nca(File):
 		return offset
 
 
-	def get_langueblock(self,title,roman=True,trans=False):
+	def get_langueblock(self,title='',roman=True,trans=False):
 		for f in self:
 			self.rewind()
 			f.rewind()
