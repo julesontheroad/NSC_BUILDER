@@ -80,7 +80,7 @@ class AESCTR:
 class AESXTS:
 	'''Class for performing AES XTS cipher operations'''
 
-	def __init__(self, keys, sector=0):
+	def __init__(self, keys, sector=0,sector_size=0x200):
 		self.keys = keys[:16], keys[16:]
 		if not(type(self.keys) is tuple and len(self.keys) == 2):
 			raise TypeError('XTS mode requires a tuple of two keys.')
@@ -90,7 +90,7 @@ class AESXTS:
 		self.sector = sector
 		self.block_size = self.K1.block_size
 		
-		self.sector_size = 0x200
+		self.sector_size = sector_size
 
 	def encrypt(self, data, sector=None):
 		if sector is None:
@@ -319,7 +319,7 @@ class AESECB:
 		return out
 
 	def decrypt(self, data):
-		'''Decrypts some data in EBC mode.'''
+		'''Decrypts some data in ECB mode.'''
 		if len(data) % self.block_size:
 			raise ValueError('Data is not aligned to block size!')
 		out = b''
