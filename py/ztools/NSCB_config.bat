@@ -232,7 +232,7 @@ echo Input "7" to change top keygeneration to 7 (FW 6.2.0)
 echo Input "8" to change top keygeneration to 8 (FW 7.0.0-8.0.1)
 echo Input "9" to change top keygeneration to 9 (FW 8.1.0)
 echo Input "10" to change top keygeneration to 10 (FW 9.0.0-9.01)
-echo Input "11" to change top keygeneration to 11 (FW 9.1.0-10.2.0)
+echo Input "11" to change top keygeneration to 11 (FW 9.1.0-11.0.3)
 echo.
 echo Input "b" to return to AUTO-MODE - CONFIGURATION
 echo Input "c" to return to CONFIG MENU
