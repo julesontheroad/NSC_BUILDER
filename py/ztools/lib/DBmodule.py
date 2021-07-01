@@ -270,6 +270,7 @@ class FWDB():
 				print(str(fwver)+" ({})".format(FWnumber))
 			if add==True:
 				FWDB.add(FWnumber,filepath)
+				FWDB.add_real_number(FWnumber,filepath)					
 				FWDB.add_specific()
 		elif filepath.endswith('.nsp'):
 			from Fs import Nsp as fwFS	
@@ -280,6 +281,7 @@ class FWDB():
 				print(str(fwver)+" ({})".format(FWnumber))
 			if add==True:
 				FWDB.add(FWnumber,filepath)
+				FWDB.add_real_number(FWnumber,filepath)		
 				FWDB.add_specific()			
 		return FWnumber,fwver,unique
 	
