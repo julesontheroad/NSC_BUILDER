@@ -54,16 +54,17 @@ versions =
 	672202752: "10.1.1"       ->   keygeneration = 11
 	673185792: "10.2.0"       ->   keygeneration = 11
 	738197504: "11.0.0"       ->   keygeneration = 11
-	738263040: "11.0.1-20"    ->   keygeneration = 11
-	738264040: "11.0.1-1000"  ->   keygeneration = 11	
-	805308888: "12.0.0"       ->   keygeneration = 11	
-	805371944: "12.0.1"       ->   keygeneration = 11	
-	805437460: "12.0.2"       ->   keygeneration = 11	
-	805437460: "12.0.3"       ->   keygeneration = 11		
+	738263040: "11.0.1"       ->   keygeneration = 11
+	805306368: "12.0.0"       ->   keygeneration = 11	
+	805371904: "12.0.1"       ->   keygeneration = 11	
+	805437440: "12.0.2"       ->   keygeneration = 11	
+	805502976: "12.0.3"       ->   keygeneration = 11
+	806354944: "12.1.0"		  ->   keygeneration = 12
 '''
 def kgstring():
 	kg=list()
-	kg11=[605028352,606076928,671088640,671154176,671219712,671285248,671350784,672137216,672202752,673185792,738197504,738263040,738264040,805308888,805371944,805437460,805502996];kg.append(kg11)
+	kg12=[806354944]
+	kg11=[605028352,606076928,671088640,671154176,671219712,671285248,671350784,672137216,672202752,673185792,738197504,738263040,805306368,805371904,805437440,805502976];kg.append(kg11)
 	kg10=[603979776,604045312];kg.append(kg10)
 	kg9=[537919488];kg.append(kg9)
 	kg8=[536936448,536870912,469827584,469762048];kg.append(kg8)
@@ -142,6 +143,8 @@ def getTopRSV(keygeneration, RSV):
 		return 603979776
 	if keygeneration == 11:
 		return 605028352
+	if keygeneration == 12:
+		return 806354944		
 	else:
 		return RSV
 
@@ -180,6 +183,9 @@ def getMinRSV(keygeneration, RSV):
 	if keygeneration == 11:
 		RSV=9*67108864+2*1048576+0*65796+0*1
 		return RSV
+	if keygeneration == 11:
+		RSV=12*67108864+1*1048576+0*65796+0*1
+		return RSV		
 	else:
 		return RSV
 
@@ -207,7 +213,9 @@ def getFWRangeKG(keygeneration):
 	if keygeneration == 10:
 		return "(9.0.0 - 9.0.1)"
 	if keygeneration == 11:
-		return "(9.1.0 - >12.0.3)"
+		return "(9.1.0 - 12.0.3)"
+	if keygeneration == 12:
+		return "(>= 12.1.0)"		
 	else:
 		return "UNKNOWN"
 

@@ -233,6 +233,7 @@ echo Input "8" to change top keygeneration to 8 (FW 7.0.0-8.0.1)
 echo Input "9" to change top keygeneration to 9 (FW 8.1.0)
 echo Input "10" to change top keygeneration to 10 (FW 9.0.0-9.01)
 echo Input "11" to change top keygeneration to 11 (FW 9.1.0-11.0.3)
+echo Input "12" to change top keygeneration to 12 (FW 12.1.0 - )
 echo.
 echo Input "b" to return to AUTO-MODE - CONFIGURATION
 echo Input "c" to return to CONFIG MENU
@@ -267,6 +268,8 @@ if /i "%bs%"=="10" set "v_KGEN=-kp 10"
 if /i "%bs%"=="10" set "v_CAPRSV=--RSVcap 603979776"
 if /i "%bs%"=="11" set "v_KGEN=-kp 11"
 if /i "%bs%"=="11" set "v_CAPRSV=--RSVcap 605028352"
+if /i "%bs%"=="12" set "v_KGEN=-kp 12"
+if /i "%bs%"=="12" set "v_CAPRSV=--RSVcap 806354944"
 
 if /i "%bs%"=="b" goto sc2
 if /i "%bs%"=="c" goto sc1
