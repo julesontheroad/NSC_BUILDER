@@ -17,6 +17,7 @@ master_key_07 =
 master_key_08 = 
 master_key_09 =
 master_key_0a = 
+master_key_0b = 
 
 header_key = 
 
