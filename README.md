@@ -1,7 +1,7 @@
 # Nintendo Switch Cleaner and Builder (NSC_Builder)
 ![DeviceTag](https://img.shields.io/badge/Device-SWITCH-e60012.svg)  ![LanguageTag](https://img.shields.io/badge/languages-python_batch_html5_javascript-blue.svg)
 
-**Temporarly archived:** Currently i don't have to work on the repository, i will reopen it and reactivate issues if i have something to commit or time to work regularly on the project. The titledb fork will still continue to update and i will probably compile a new version including the latest master, don't think it had much changes since the last release i did but i'd probably compile it to include the latest keygeneration changes.
+**Temporarly archived:** Currently i don't have the time to work on this repository, i will reopen it and reactivate issues if i have something to commit or time to work regularly on the project. The titledb fork will still continue to update and i will probably compile a new version including the latest master, don't think it had much changes since the last release i did but i'd probably compile it to include the latest keygeneration changes.
 
 ## 1. Description
 
