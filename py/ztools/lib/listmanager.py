@@ -363,6 +363,18 @@ def parsetags(filepath):
 			# print(fileid+' '+str(fileversion)+' '+cctag+' '+str(nG)+'G+'+str(nU)+'U+'+str(nD)+'D')			
 		# else:
 			# print(fileid+' '+str(fileversion)+' '+cctag)	
+	try:
+		int(nG)
+	except:
+		nG=0
+	try:
+		int(nU)
+	except:
+		nU=0
+	try:
+		int(nD)
+	except:
+		nD=0		
 	if int(nG)==0 and int(nU)==0 and int(nD)==0:
 		nG=1
 	return str(fileid),str(fileversion),cctag,int(nG),int(nU),int(nD),baseid
@@ -891,7 +903,7 @@ def blk_txt_fromtxt(textfile1,textfile2,Print=True):
 		for it in newitems:
 			f.write(it+'\n')	
 			
-def check_tfile_4missing(tfile1,tfile2,output,compare='right',include_parsed=False):
+def check_tfile_4missing(tfile1,tfile2,output,compare='right',include_parsed=False,errorfile=False):
 	file_list1=read_lines_to_list(tfile1,all=True)
 	file_list2=read_lines_to_list(tfile2,all=True)	
 	if os.path.exists(output):
@@ -900,40 +912,56 @@ def check_tfile_4missing(tfile1,tfile2,output,compare='right',include_parsed=Fal
 		except:pass			
 	titledb1={};titledb2={}
 	for file in file_list1:
-		print(f"Parsing {file}")
-		fileid,fileversion,cctag,nG,nU,nD,baseid=parsetags(file)
-		ky=f"{str(fileid).upper()}|{str(fileversion)}|{str(nG)}|{str(nU)}|{str(nD)}"
-		ky=ky.strip()		
-		print(ky)
-		if not str(ky) in titledb1.keys():
-			titledb1[str(ky)]=file	
+		try:
+			print(f"Parsing {file}")
+			fileid,fileversion,cctag,nG,nU,nD,baseid=parsetags(file)
+			ky=f"{str(fileid).upper()}|{str(fileversion)}|{str(nG)}|{str(nU)}|{str(nD)}"
+			ky=ky.strip()		
+			print(ky)
+			if not str(ky) in titledb1.keys():
+				titledb1[str(ky)]=file	
+		except:
+			print("Exception: "+file)
+			pass
 	for file in file_list2:
-		print(f"Parsing {file}")	
-		fileid,fileversion,cctag,nG,nU,nD,baseid=parsetags(file)
-		ky=f"{str(fileid).upper()}|{str(fileversion)}|{str(nG)}|{str(nU)}|{str(nD)}"
-		ky=ky.strip()
-		print(ky)			
-		if not str(ky) in titledb2.keys():
-			titledb2[str(ky)]=file			
+		try:
+			print(f"Parsing {file}")	
+			fileid,fileversion,cctag,nG,nU,nD,baseid=parsetags(file)
+			ky=f"{str(fileid).upper()}|{str(fileversion)}|{str(nG)}|{str(nU)}|{str(nD)}"
+			ky=ky.strip()
+			print(ky)			
+			if not str(ky) in titledb2.keys():
+				titledb2[str(ky)]=file			
+		except:
+			print("Exception: "+file)
+			pass			
 	counter=0			
 	if compare=='right':
 		for entry in titledb1.keys():
-			if not entry in titledb2.keys():
-				with open(output,'a', encoding='utf8') as f: 
-					if include_parsed==False:				
-						f.write(titledb1[entry]+'\n')	
-					else:
-						f.write(entry+'|'+titledb1[entry]+'\n')							
-					counter+=1
+			try:
+				if not entry in titledb2.keys():
+					with open(output,'a', encoding='utf8') as f: 
+						if include_parsed==False:				
+							f.write(titledb1[entry]+'\n')	
+						else:
+							f.write(entry+'|'+titledb1[entry]+'\n')							
+						counter+=1
+			except:
+				print("Exception: "+entry)
+				pass					
 	else:
 		for entry in titledb2.keys():	
-			if not entry in titledb1.keys():
-				with open(output,'a', encoding='utf8') as f: 
-					if include_parsed==False:					
-						f.write(titledb2[entry]+'\n')
-					else:
-						f.write(entry+'|'+titledb2[entry]+'\n')								
-					counter+=1					
+			try:
+				if not entry in titledb1.keys():
+					with open(output,'a', encoding='utf8') as f: 
+						if include_parsed==False:					
+							f.write(titledb2[entry]+'\n')
+						else:
+							f.write(entry+'|'+titledb2[entry]+'\n')								
+						counter+=1	
+			except:
+				print("Exception: "+entry)
+				pass							
 	print("Done")		
 	print(f"Detected {counter} files missing")
 

@@ -8400,6 +8400,7 @@ class Nsp(Pfs0):
 
 		for file in listed_files:
 			correct=False;baddec=False;cert_message=False
+
 			if file in validfiles:
 				if file.endswith('cnmt.nca'):
 					for f in self:
@@ -8418,6 +8419,7 @@ class Nsp(Pfs0):
 					for f in self:
 						if str(f._path) == file:
 							message=(str(f.header.titleId)+' - '+str(f.header.contentType));print(message);feed+=message+'\n'
+
 							if str(f.header.contentType) != 'Content.PROGRAM':
 								correct = self.verify_enforcer(file)
 								if correct == True:
@@ -8427,12 +8429,15 @@ class Nsp(Pfs0):
 											baddec=True
 							else:
 								for nf in f:
-									nf.rewind()
-									test=nf.read(0x4)
-									#print(test)
-									if str(test) == "b'PFS0'":
-										correct=True
-										break
+									try:
+										nf.rewind()
+										test=nf.read(0x4)
+										if str(test) == "b'PFS0'":
+											correct=True
+											break
+									except:
+										print(f"{tabs} Error reading {nf}" )
+										pass
 									f.rewind()
 								if correct == True:
 									correct = self.verify_enforcer(file)

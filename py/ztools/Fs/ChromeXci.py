@@ -7184,12 +7184,15 @@ class ChromeXci(File):
 													baddec=True
 									else:
 										for nf in f:
-											nf.rewind()
-											test=nf.read(0x4)
-											#print(test)
-											if str(test) == "b'PFS0'":
-												correct=True
-												break
+											try:
+												nf.rewind()
+												test=nf.read(0x4)
+												if str(test) == "b'PFS0'":
+													correct=True
+													break
+											except:
+												print(f"{tabs} Error reading {nf}" )
+												pass
 											f.rewind()
 										if correct == True:
 											correct = self.verify_enforcer(file)
