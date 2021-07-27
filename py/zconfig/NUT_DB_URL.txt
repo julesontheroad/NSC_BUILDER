@@ -6,3 +6,4 @@ CHEATS|https://raw.githubusercontent.com/blawar/titledb/master/cheats.json|24|0|
 NINSHOP|https://raw.githubusercontent.com/julesontheroad/titledb/master/ninshop.json|24|0|0
 METACRITIC_ID|https://raw.githubusercontent.com/julesontheroad/titledb/master/metacritic_id.json|24|0|0
 FW|https://raw.githubusercontent.com/julesontheroad/titledb/master/fw.json|24|0|0
+HC_VLIST|https://gist.githubusercontent.com/gneurshkgau/81bcaa7064bd8f98d7dffd1a1f1781a7/raw/hac_versionlist.json|24|0|0

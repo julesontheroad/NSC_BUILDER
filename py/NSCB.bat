@@ -5,7 +5,7 @@ set "bat_name=%~n0"
 set "ofile_name=%bat_name%_options.cmd"
 set "opt_interface=Interface_options.cmd"
 set "opt_server=Server_options.cmd"
-Title NSC_Builder v1.00d -- Profile: %ofile_name% -- by JulesOnTheRoad
+Title NSC_Builder v1.20 -- Profile: %ofile_name% -- by JulesOnTheRoad
 set "cmdfolder=%prog_dir%zcmd"
 set "nscb_logos=%cmdfolder%\nscb_logos"
 set "nscb_tools=%cmdfolder%\nscb_tools"

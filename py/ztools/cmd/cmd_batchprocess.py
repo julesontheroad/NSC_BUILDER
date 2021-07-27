@@ -8,9 +8,6 @@ from Fs import factory
 import Print
 from secondary import clear_Screen
 import shutil
-if sys.platform == 'win32':	
-	from win32api import SetFileAttributes
-	import win32con 
 
 # SET ENVIRONMENT
 squirrel_dir=os.path.abspath(os.curdir)
@@ -103,7 +100,7 @@ def file_verification(filename,hash=False):
 def create_nsp_direct(filepath,outfolder,buffer=65536,fat="exfat",fx="files",delta=False,metapatch='false',RSV_cap=268435656,keypatch='false'):
 	tname=str(os.path.basename(filepath))[:-3]+'nsp'
 	tempfolder=os.path.join(outfolder,'temp')
-	archfolder=os.path.join(tempfolder,'archfolder')
+	archfolder=os.path.join(outfolder,'archfolder')
 	tmpfile=os.path.join(tempfolder,tname)
 	endfile=os.path.join(outfolder,tname)	
 	if not os.path.exists(tempfolder):
@@ -121,19 +118,20 @@ def create_nsp_direct(filepath,outfolder,buffer=65536,fat="exfat",fx="files",del
 	elif os.path.exists(archfolder):		
 		shutil.move(archfolder,endfile)
 		if sys.platform == 'win32':		
-			SetFileAttributes(endfile,win32con.FILE_ATTRIBUTE_ARCHIVE)		
+			win32api.SetFileAttributes(endfile,win32con.FILE_ATTRIBUTE_ARCHIVE)		
 	else: 	
-		if os.path.isdir(tempfolder) == True:
-			for dirpath, dnames, fnames in os.walk(tempfolder):
+		if os.path.isdir(ruta) == True:
+			for dirpath, dnames, fnames in os.walk(ruta):
 				for f in fnames:
 					if str(f[:-1]).endswith('.ns'):
-						filepath = os.path.join(tempfolder, f)
-						shutil.move(filepath,outfolder)		
+						filepath = os.path.join(ruta, f)
+						shutil.move(filepath,outfolder)	
+	
 	
 def create_xci_direct(filepath,outfolder,buffer=65536,fat="exfat",fx="files",delta=False,metapatch='false',RSV_cap=268435656,keypatch='false'):
 	tname=str(os.path.basename(filepath))[:-3]+'xci'
 	tempfolder=os.path.join(outfolder,'temp')
-	archfolder=os.path.join(tempfolder,'archfolder')
+	archfolder=os.path.join(outfolder,'archfolder')
 	tmpfile=os.path.join(tempfolder,tname)
 	endfile=os.path.join(outfolder,tname)		
 	if not os.path.exists(tempfolder):
@@ -143,7 +141,7 @@ def create_xci_direct(filepath,outfolder,buffer=65536,fat="exfat",fx="files",del
 		f.open(filepath, 'rb')
 	elif filepath.endswith('nsp'):	
 		f = squirrelNSP(filepath, 'rb')	
-	f.c_xci_direct(buffer,tmpfile,tempfolder,fat,fx,delta,metapatch,RSV_cap,keypatch)
+	f.c_xci_direct(buffer,tmpfile,outfolder,fat,fx,delta,metapatch,RSV_cap,keypatch)
 	if not fat=='fat32':
 		shutil.move(tmpfile,endfile)
 	elif os.path.exists(archfolder):		
@@ -151,11 +149,11 @@ def create_xci_direct(filepath,outfolder,buffer=65536,fat="exfat",fx="files",del
 		if sys.platform == 'win32':		
 			win32api.SetFileAttributes(endfile,win32con.FILE_ATTRIBUTE_ARCHIVE)		
 	else: 	
-		if os.path.isdir(tempfolder) == True:
-			for dirpath, dnames, fnames in os.walk(tempfolder):
+		if os.path.isdir(ruta) == True:
+			for dirpath, dnames, fnames in os.walk(ruta):
 				for f in fnames:
-					if str(f[:-1]).endswith('.xc'):
-						filepath = os.path.join(tempfolder, f)
+					if str(f[:-1]).endswith('.ns'):
+						filepath = os.path.join(ruta, f)
 						shutil.move(filepath,outfolder)		
 	
 def loop_repack(tfile=None,buffer=65536,pv='false',kp='false',RSVcap=268435656,fat="exfat",fx='files',skdelta="true",ofolder=default_output,type="both",verify=False):
@@ -184,7 +182,6 @@ def loop_repack(tfile=None,buffer=65536,pv='false',kp='false',RSVcap=268435656,f
 		delta=True
 	c=0	
 	tempfolder=os.path.join(ofolder,'temp')
-	clear_directory(tempfolder)	
 	for fp in file_list:
 		if c==0:
 			clear_Screen()
@@ -219,7 +216,6 @@ def loop_rebuild(tfile=None,buffer=65536,delta=False,ndskip=False,xml_gen=True,o
 		os.makedirs(ofolder)	
 	c=0	
 	tempfolder=os.path.join(ofolder,'temp')
-	clear_directory(tempfolder)	
 	for fp in file_list:
 		if c==0:
 			clear_Screen()
@@ -245,16 +241,42 @@ def loop_rebuild(tfile=None,buffer=65536,delta=False,ndskip=False,xml_gen=True,o
 			print("File isn't nsp. Skipping...")				
 		listmanager.striplines(tfile,number=1,counter=True)		
 		
+# def create_nsp_direct(filepath,outfolder,buffer=65536,fat="exfat",fx="files",delta=False,metapatch='false',RSV_cap=268435656,keypatch='false'):
+	# tname=str(os.path.basename(filepath))[:-3]+'nsp'
+	# tempfolder=os.path.join(outfolder,'temp')
+	# tmpfile=os.path.join(tempfolder,tname)
+	# endfile=os.path.join(outfolder,tname)	
+	# if not os.path.exists(tempfolder):
+		# os.makedirs(tempfolder)		
+	# if filepath.endswith('xci'):
+		# f = factory(filepath)
+		# f.open(filepath, 'rb')
+	# elif filepath.endswith('nsp'):	
+		# f = squirrelNSP(filepath, 'rb')		
+	# f.c_nsp_direct(buffer,tmpfile,outfolder,fat,fx,delta,metapatch,RSV_cap,keypatch)
+	# f.flush()
+	# f.close()	
+	# shutil.move(tmpfile,endfile)		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
 def processing(input):
 	name=os.path.basename(input)
-	print(f'\nProcessing: {name}\n')
-	
-def clear_directory(target):	
-	if os.path.exists(target):	
-		try:
-			shutil.rmtree(target, ignore_errors=True)
-		except:pass	
-	
+	print('------------------------------------------------------------------------------------- ')
+	print(f'Processing: {name}')
+	print('------------------------------------------------------------------------------------- ')
+
+
 def About():	
 	print('                                       __          _ __    __                         ')
 	print('                 ____  _____ ____     / /_  __  __(_) /___/ /__  _____                ')

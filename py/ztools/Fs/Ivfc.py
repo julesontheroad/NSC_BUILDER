@@ -10,6 +10,7 @@ import  Fs.Type
 import os
 import re
 import pathlib
+
 import Keys
 import Config
 import Print
@@ -18,7 +19,7 @@ from tqdm import tqdm
 
 MEDIA_SIZE = 0x200
 indent = 1
-tabs = '\t' * indent	
+tabs = '\t' * indent
 
 class IvfcLevel:
 	def __init__(self, offset, size, blockSize, reserved):
@@ -50,4 +51,3 @@ class Ivfc(File):
 
 		self.read(32)
 		self.hash = self.read(32)
-		

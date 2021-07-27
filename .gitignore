@@ -5,6 +5,8 @@
 *.xci
 *.ns*
 *.xc*
+*.nca
+*.ncz
 00
 0*
 *.7z
@@ -27,6 +29,8 @@ py/ztools/web/_cache_/
 py/ztools/.net_code/
 py/zconfig/remote_lib_cache/
 py/ztools/keys.txt
+py/ztools/install_server/
+py/install_dependencies - alt.bat
 py/INFO
 py/NSCB_output
 py/NSCB_extracted
@@ -47,6 +51,7 @@ py/rstlist.txt
 py/zconfig/api.txt
 py/lists/
 py/ztools/private/
+py/ztools/cmd/
 py/zconfig/credentials
 py/testurl.txt
 py/ztools/Drive/Retriever.py
@@ -73,3 +78,8 @@ py/ztools/_mtp_cache_/sd_xci.txt
 py/MTP1.txt
 py/zconfig/_playlog_/*
 py/mtpxci.txt
+py/MTP2GD.txt
+py/ztools/dev_keys.txt
+*.rar
+py/ztools/lib/Install_server.py
+py/ztools/lib/plaintext.py

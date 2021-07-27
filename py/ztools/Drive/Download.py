@@ -13,6 +13,7 @@ from hashlib import sha256,sha1
 from Drive import Public
 from Drive import Private
 from Drive import DriveTools
+
 import Keys
 from Fs import Type
 from Fs.Nacp import Nacp
@@ -29,21 +30,21 @@ NSCB_dir=os.path.abspath('../'+(os.curdir))
 
 if os.path.exists(os.path.join(squirrel_dir,'ztools')):
 	NSCB_dir=squirrel_dir
-	zconfig_dir=os.path.join(NSCB_dir, 'zconfig')	  
+	zconfig_dir=os.path.join(NSCB_dir, 'zconfig')
 	ztools_dir=os.path.join(NSCB_dir,'ztools')
 	squirrel_dir=ztools_dir
 elif os.path.exists(os.path.join(NSCB_dir,'ztools')):
 	squirrel_dir=squirrel_dir
 	ztools_dir=os.path.join(NSCB_dir, 'ztools')
 	zconfig_dir=os.path.join(NSCB_dir, 'zconfig')
-else:	
+else:
 	ztools_dir=os.path.join(NSCB_dir, 'ztools')
 	zconfig_dir=os.path.join(NSCB_dir, 'zconfig')
-	
+
 remote_lib_file = os.path.join(zconfig_dir, 'remote_libraries.txt')
 download_lib_file = os.path.join(zconfig_dir, 'download_libraries.txt')
 
-def About():	
+def About():
 	print('                                       __          _ __    __                         ')
 	print('                 ____  _____ ____     / /_  __  __(_) /___/ /__  _____                ')
 	print('                / __ \/ ___/ ___/    / __ \/ / / / / / __  / _ \/ ___/                ')
@@ -57,7 +58,7 @@ def About():
 	print('------------------------------------------------------------------------------------- ')
 	print('"                                POWERED BY SQUIRREL                                " ')
 	print('"                    BASED ON THE WORK OF BLAWAR AND LUCA FRAGA                     " ')
-	print('------------------------------------------------------------------------------------- ')                   
+	print('------------------------------------------------------------------------------------- ')
 	print("Program's github: https://github.com/julesontheroad/NSC_BUILDER                       ")
 	print('Cheats and Eshop information from nutdb and http://tinfoil.io                         ')
 	print('------------------------------------------------------------------------------------- ')
@@ -66,8 +67,8 @@ def libraries(tfile):
 	db={}
 	try:
 		with open(tfile,'rt',encoding='utf8') as csvfile:
-			readCSV = csv.reader(csvfile, delimiter='|')	
-			i=0	
+			readCSV = csv.reader(csvfile, delimiter='|')
+			i=0
 			for row in readCSV:
 				if i==0:
 					csvheader=row
@@ -78,12 +79,12 @@ def libraries(tfile):
 						try:
 							if row[j]==None or row[j]=='':
 								dict_[csvheader[j]]=None
-							else:	
+							else:
 								dict_[csvheader[j]]=row[j]
 						except:
 							dict_[csvheader[j]]=None
 					db[row[0]]=dict_
-		# print(db)			
+		# print(db)
 		return db
 	except BaseException as e:
 		Print.error('Exception: ' + str(e))
@@ -112,7 +113,7 @@ class AESCTR:
 	def seek(self, offset):
 		self.ctr = Counter.new(64, prefix=self.nonce[0:8], initial_value=(offset >> 4))
 		self.aes = AES.new(self.key, AES.MODE_CTR, counter=self.ctr)
-		
+
 class Section:
 	def __init__(self, f):
 		self.f = f
@@ -130,14 +131,14 @@ def pick_libraries():
 	if db==False:
 		return False,False
 	options = [x for x in db.keys()]
-	picker = Picker(options, title,multi_select=True,min_selection_count=1)	
+	picker = Picker(options, title,multi_select=True,min_selection_count=1)
 	def end_selection(picker):
-		return False,-1		
+		return False,-1
 	picker.register_custom_handler(ord('e'),  end_selection)
 	picker.register_custom_handler(ord('E'),  end_selection)
-	selected = picker.start()	
+	selected = picker.start()
 	if selected[0]==False:
-		return False,False	
+		return False,False
 	# print(selected)
 	paths=list();TDs=list()
 	for entry in selected:
@@ -148,8 +149,8 @@ def pick_libraries():
 			TDs.append(None)
 	# for p in range(len(paths)):
 		# print(paths[p])
-		# print(TDs[p])		
-	return paths,TDs	
+		# print(TDs[p])
+	return paths,TDs
 
 def pick_download_folder():
 	from python_pick import pick
@@ -158,32 +159,32 @@ def pick_download_folder():
 	if db==False:
 		return False,False
 	options = [x for x in db.keys()]
-	selected = pick(options, title,min_selection_count=1)	
+	selected = pick(options, title,min_selection_count=1)
 	path=selected[0]
-	return path	
-	
+	return path
+
 def Interface():
 	clear_Screen()
 	About()
-	response=False	
+	response=False
 	print('\n********************************************************')
 	print('DOWNLOAD SYSTEM')
 	print('********************************************************')
 	while True:
 		print('Input "1" to select folder and file via file-picker')
 		if os.path.exists(remote_lib_file):
-			print('Input "2" to select from libraries')		
+			print('Input "2" to select from libraries')
 		print('')
-		print('Input "0" to go back to the MAIN PROGRAM')	
-		print('')		
-		print('--- Or INPUT GDRIVE Route OR PUBLIC_LINK ---')		
-		print('')		
+		print('Input "0" to go back to the MAIN PROGRAM')
+		print('')
+		print('--- Or INPUT GDRIVE Route OR PUBLIC_LINK ---')
+		print('')
 		ck=input('Input your answer: ')
 		if ck=="0":
 			break
-		elif ck=="1":	
+		elif ck=="1":
 			while True:
-				folder,TD=Private.folder_walker()	
+				folder,TD=Private.folder_walker()
 				if folder==False:
 					return False
 				print(folder)
@@ -197,16 +198,16 @@ def Interface():
 					return False
 				response=interface_file(paths,TDs)
 				if response==False:
-					return False				
+					return False
 		elif ck=="0":
-			break	
+			break
 		elif ck.startswith('http'):
 			url=ck
 			response=interface_menu(url,None,True)
-		elif ck.endswith('/') or ck.endswith('\\'):		
-			response=interface_file(ck,"pick")		
+		elif ck.endswith('/') or ck.endswith('\\'):
+			response=interface_file(ck,"pick")
 		elif (ck[:-1]).endswith('.xc') or (ck[:-1]).endswith('.ns'):
-			TD=Private.TD_picker(ck)		
+			TD=Private.TD_picker(ck)
 			response=interface_menu(ck,TD,True)
 		if 	response==False:
 			break
@@ -215,28 +216,28 @@ def interface_file(path,TD):
 	if TD=="pick":
 		TD=Private.TD_picker(path)
 	folder=path;TeamDrive=TD
-	response=False	
+	response=False
 	files=list()
 	while True:
 		filter=interface_filter(path)
 		files=Private.search_folder(folder,TD=TeamDrive,pickmode="multi",filter=filter,Print=False)
 		if files==False:
 			print("Query returned no files")
-			input('\nPress any key to continue...')	
+			input('\nPress any key to continue...')
 			clear_Screen()
 			About()
-			return True			
-		else:	
+			return True
+		else:
 			response=interface_menu(files,TeamDrive)
 			if str(response)=="False":
 				return response
-			elif str(response)=="CHANGE": 
+			elif str(response)=="CHANGE":
 				return True
 
 def interface_filter(path=None):
 	from python_pick import pick
 	title = 'Add a search filter?: '
-	options = ['Yes','No']	
+	options = ['Yes','No']
 	selected = pick(options, title, min_selection_count=1)
 	response=selected[0]
 	if response=='No':
@@ -248,11 +249,11 @@ def interface_filter(path=None):
 			print("Filepath {}\n".format(str(path)))
 		ck=input('INPUT SEARCH FILTER: ')
 		return ck
-		
+
 def interface_xci_mode():
 	from python_pick import pick
 	title = 'Xci files detected. Input download mode'
-	options = ['Untrimmed','Trimmed','Supertrimmed']	
+	options = ['Untrimmed','Trimmed','Supertrimmed']
 	selected = pick(options, title, min_selection_count=1)
 	response=selected[0]
 	return response
@@ -260,11 +261,11 @@ def interface_xci_mode():
 def interface_compressedf_mode():
 	from python_pick import pick
 	title = 'Compressed files detected. Input download mode'
-	options = ['Compressed','Uncompressed']	
+	options = ['Compressed','Uncompressed']
 	selected = pick(options, title, min_selection_count=1)
 	response=selected[0]
-	return response		
-	
+	return response
+
 def ask_download_folder():
 	clear_Screen()
 	About()
@@ -280,10 +281,10 @@ def ask_download_folder():
 				except:
 					print("\nCan't create folder. Please Try again\n")
 	else:
-		while True:	
-			print('Input "1" to Download folder from libraries')		
+		while True:
+			print('Input "1" to Download folder from libraries')
 			print('')
-			print('--- Or Input Download Folder Route ---')	
+			print('--- Or Input Download Folder Route ---')
 			print('')
 			ck=input('Input your answer: ')
 			if ck=="1":
@@ -297,34 +298,34 @@ def ask_download_folder():
 					os.makedirs(ofolder)
 					return ofolder
 				except:
-					print("\nCan't create folder. Please Try again\n")			
+					print("\nCan't create folder. Please Try again\n")
 
 def interface_menu(path,TD,hide_f_op=False):
 	xcipr=False;nxzpr=False;xcimode="Untrimmed";zmode="Compressed"
 	if isinstance(path, list):
-		if not isinstance(path[0], list):	
+		if not isinstance(path[0], list):
 			for file in path:
 				if file.endswith('.xci'):
 					xcipr=True
 				elif file.endswith('.xcz') or file.endswith('.nsz'):
-					nxzpr=True	
+					nxzpr=True
 				if xcipr==True and nxzpr==True:
 					break
 			if xcipr==True:
 				xcimode=interface_xci_mode()
-			if nxzpr==True:	
+			if nxzpr==True:
 				zmode=interface_compressedf_mode()
-			ofolder=ask_download_folder()	
+			ofolder=ask_download_folder()
 			clear_Screen()
-			About()						
-			counter=len(path)	
-			for file in path:	
-				route_download(file,TD,ofolder,xcimode=xcimode,zmode=zmode)	
+			About()
+			counter=len(path)
+			for file in path:
+				route_download(file,TD,ofolder,xcimode=xcimode,zmode=zmode)
 				counter-=1
 				if counter>0:
-					print("Still {} files to download".format(str(counter)))	
-			input('\nPress any key to continue...')					
-			return False	
+					print("Still {} files to download".format(str(counter)))
+			input('\nPress any key to continue...')
+			return False
 		else:
 			counter=0;files=list()
 			for i in path:
@@ -334,76 +335,76 @@ def interface_menu(path,TD,hide_f_op=False):
 				if file.endswith('.xci'):
 					xcipr=True
 				elif file.endswith('.xcz') or file.endswith('.nsz'):
-					nxzpr=True	
+					nxzpr=True
 				if xcipr==True and nxzpr==True:
 					break
 			if xcipr==True:
 				xcimode=interface_xci_mode()
-			if nxzpr==True:	
+			if nxzpr==True:
 				zmode=interface_compressedf_mode()
-			ofolder=ask_download_folder()	
+			ofolder=ask_download_folder()
 			clear_Screen()
-			About()			
+			About()
 			for k in path:
 				TD=k[1];files=k[0]
-				for file in files:	
-					route_download(file,TD,ofolder,xcimode=xcimode,zmode=zmode)	
+				for file in files:
+					route_download(file,TD,ofolder,xcimode=xcimode,zmode=zmode)
 					counter-=1
 					if counter>0:
-						print("Still {} files to download".format(str(counter)))	
-			input('\nPress any key to continue...')					
-			return False				
+						print("Still {} files to download".format(str(counter)))
+			input('\nPress any key to continue...')
+			return False
 	elif path.startswith('http'):
-		file=Public.return_remote(path)		
+		file=Public.return_remote(path)
 		if file.name.endswith('.xci'):
 			xcipr=True
 		elif file.name.endswith('.xcz') or file.name.endswith('.nsz'):
 			nxzpr=True
 		elif file.name==None:
 			print("File overpassed quota or is unreadable")
-			input('\nPress any key to continue...')	
+			input('\nPress any key to continue...')
 			clear_Screen()
-			About()		
+			About()
 		if xcipr==True:
 			xcimode=interface_xci_mode()
-		if nxzpr==True:	
+		if nxzpr==True:
 			zmode=interface_compressedf_mode()
-		ofolder=ask_download_folder()		
-		route_download_public(path,ofolder,file.name,xcimode=xcimode,zmode=zmode,file=file)	
-		input('\nPress any key to continue...')					
+		ofolder=ask_download_folder()
+		route_download_public(path,ofolder,file.name,xcimode=xcimode,zmode=zmode,file=file)
+		input('\nPress any key to continue...')
 		return False
 	elif path !=None:
 		if path.endswith('.xci'):
 			xcipr=True
 		elif path.endswith('.xcz') or path.endswith('.nsz'):
-			nxzpr=True	
+			nxzpr=True
 		if xcipr==True:
 			xcimode=interface_xci_mode()
-		if nxzpr==True:	
+		if nxzpr==True:
 			zmode=interface_compressedf_mode()
-		ofolder=ask_download_folder()	
-		route_download(path,TD,ofolder,xcimode=xcimode,zmode=zmode)	
-		input('\nPress any key to continue...')					
-		return False	
+		ofolder=ask_download_folder()
+		route_download(path,TD,ofolder,xcimode=xcimode,zmode=zmode)
+		input('\nPress any key to continue...')
+		return False
 	else:
 		return False
-	
+
 def route_download(path,TD,ofolder,xcimode="Untrimmed",zmode="Compressed"):
-	if (path.endswith('.xcz') or path.endswith('.nsz')) and zmode=="Uncompressed":	
-		decompress(path,ofolder,TD=TD)		
+	if (path.endswith('.xcz') or path.endswith('.nsz')) and zmode=="Uncompressed":
+		decompress(path,ofolder,TD=TD)
 	if path.endswith('.xci') and xcimode=="Trimmed":
-		Private.download(path,ofolder,TD=TD,trimm=True)	
-	elif path.endswith('.xci') and xcimode=="Supertrimmed":		
+		Private.download(path,ofolder,TD=TD,trimm=True)
+	elif path.endswith('.xci') and xcimode=="Supertrimmed":
 		supertrimm(path,ofolder,TD=TD)
 	else:
-		Private.download(path,ofolder,TD=TD,trimm=False)			
+		Private.download(path,ofolder,TD=TD,trimm=False)
 
 def route_download_public(url,ofolder,fname,xcimode="Untrimmed",zmode="Compressed",file=None):
-	if (fname.endswith('.xcz') or fname.endswith('.nsz')) and zmode=="Uncompressed":	
-		decompress(url,ofolder,file=file)		
+	if (fname.endswith('.xcz') or fname.endswith('.nsz')) and zmode=="Uncompressed":
+		decompress(url,ofolder,file=file)
 	if fname.endswith('.xci') and xcimode=="Trimmed":
-		Public.download(url,ofolder,trimm=True,file=file)	
-	elif fname.endswith('.xci') and xcimode=="Supertrimmed":		
+		Public.download(url,ofolder,trimm=True,file=file)
+	elif fname.endswith('.xci') and xcimode=="Supertrimmed":
 		supertrimm(url,ofolder,file=file)
 	else:
-		Public.download(url,ofolder,trimm=False,file=file)			
+		Public.download(url,ofolder,trimm=False,file=file)

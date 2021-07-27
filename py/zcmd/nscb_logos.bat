@@ -21,7 +21,30 @@ ECHO =============================     BY JULESONTHEROAD     ===================
 ECHO -------------------------------------------------------------------------------------
 ECHO "                                POWERED BY SQUIRREL                                "
 ECHO "                    BASED ON THE WORK OF BLAWAR AND LUCA FRAGA                     "
-ECHO                                  VERSION 1.00d (NEW)
+ECHO                                  VERSION 1.20 (NEW)
+ECHO -------------------------------------------------------------------------------------
+ECHO Program's github: https://github.com/julesontheroad/NSC_BUILDER
+ECHO Blawar's github:  https://github.com/blawar
+ECHO Luca Fraga's github: https://github.com/LucaFraga
+ECHO -------------------------------------------------------------------------------------
+exit /B
+
+:program_logo_old
+ECHO                                        __          _ __    __
+ECHO                  ____  _____ ____     / /_  __  __(_) /___/ /__  _____
+ECHO                 / __ \/ ___/ ___/    / __ \/ / / / / / __  / _ \/ ___/
+ECHO                / / / (__  ) /__     / /_/ / /_/ / / / /_/ /  __/ /
+ECHO               /_/ /_/____/\___/____/_.___/\__,_/_/_/\__,_/\___/_/
+ECHO                              /_____/
+ECHO -------------------------------------------------------------------------------------
+ECHO                         NINTENDO SWITCH CLEANER AND BUILDER
+ECHO                      (THE XCI MULTI CONTENT BUILDER AND MORE)
+ECHO -------------------------------------------------------------------------------------
+ECHO =============================     BY JULESONTHEROAD     =============================
+ECHO -------------------------------------------------------------------------------------
+ECHO "                                POWERED BY SQUIRREL                                "
+ECHO "                    BASED ON THE WORK OF BLAWAR AND LUCA FRAGA                     "
+ECHO                                 VERSION 1.20 (LEGACY)
 ECHO -------------------------------------------------------------------------------------
 ECHO Program's github: https://github.com/julesontheroad/NSC_BUILDER
 ECHO Blawar's github:  https://github.com/blawar

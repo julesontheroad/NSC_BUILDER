@@ -2,6 +2,7 @@ from Fs.File import File
 import Fs.Type
 from binascii import hexlify as hx, unhexlify as uhx
 import Print
+
 import Keys
 
 class MetaEntry:
@@ -30,7 +31,7 @@ class Cnmt(File):
 		self.titleId = None
 		self.version = None
 		self.titleType = None
-		self.IdOffset = None		
+		self.IdOffset = None
 		self.headerOffset = None
 		self.contentEntryCount = None
 		self.metaEntryCount = None
@@ -71,10 +72,8 @@ class Cnmt(File):
 		Print.info('%stitleId = %s' % (tabs, self.titleId))
 		Print.info('%sversion = %x' % (tabs, self.version))
 		Print.info('%stitleType = %x' % (tabs, self.titleType))
-		Print.info('%IdOffset = %x' % (tabs, self.IdOffset))		
+		Print.info('%IdOffset = %x' % (tabs, self.IdOffset))
 
 		for i in self.contentEntries:
 			Print.info('%s\tncaId: %s  type = %x' % (tabs, i.ncaId, i.type))
 		super(Cnmt, self).printInfo(maxDepth, indent)
-
-

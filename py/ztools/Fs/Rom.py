@@ -5,6 +5,7 @@ from Fs.File import MemoryFile
 import os
 import re
 import pathlib
+
 import Keys
 import Config
 import Print
@@ -15,8 +16,8 @@ from Fs.Ivfc import Ivfc
 
 MEDIA_SIZE = 0x200
 indent = 1
-tabs = '\t' * indent	
-		
+tabs = '\t' * indent
+
 class Rom(BaseFs):
 	def __init__(self, buffer, path = None, mode = None, cryptoType = -1, cryptoKey = -1, cryptoCounter = -1):
 		super(Rom, self).__init__(buffer, path, mode, cryptoType, cryptoKey, cryptoCounter)
@@ -48,14 +49,12 @@ class Rom(BaseFs):
 		Hex.dump(level1)
 		'''
 		super(Rom, self).printInfo(indent)
-		
+
 	def get_cryptoType(self):
 		return self.cryptoType
-		
+
 	def get_cryptoKey(self):
 		return self.cryptoKey
 
 	def get_cryptoCounter(self):
-		return self.cryptoCounter			
-
-
+		return self.cryptoCounter
