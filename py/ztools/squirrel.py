@@ -3594,7 +3594,7 @@ if __name__ == '__main__':
 							outfile = os.path.join(ofolder, filename)
 							#print(f.path)
 							f.open(filepath, 'rb')
-							f.c_xci_direct(buffer,outfile,ofolder,fat,delta,metapatch,RSV_cap,vkeypatch)
+							f.c_xci_direct(buffer,outfile,ofolder,fat,fx,delta,metapatch,RSV_cap,vkeypatch)
 							f.flush()
 							f.close()
 						except BaseException as e:
@@ -3621,7 +3621,7 @@ if __name__ == '__main__':
 							outfile = os.path.join(ofolder, filename)
 							#print(f.path)
 							f.open(filepath, 'rb')
-							f.c_xci_direct(buffer,outfile,ofolder,fat,delta,metapatch,RSV_cap,vkeypatch)
+							f.c_xci_direct(buffer,outfile,ofolder,fat,fx,delta,metapatch,RSV_cap,vkeypatch)
 							f.flush()
 							f.close()
 						except BaseException as e:
@@ -3651,7 +3651,7 @@ if __name__ == '__main__':
 							outfile = os.path.join(ofolder, filename)
 							#print(f.path)
 							f.open(filepath, 'rb')
-							temp=f.c_xci_direct(buffer,outfile,ofolder,fat,delta,metapatch,RSV_cap,vkeypatch)
+							temp=f.c_xci_direct(buffer,outfile,ofolder,fat,fx,delta,metapatch,RSV_cap,vkeypatch)
 							f.flush()
 							f.close()
 						except BaseException as e:
@@ -3678,7 +3678,7 @@ if __name__ == '__main__':
 							outfile = os.path.join(ofolder, filename)
 							#print(f.path)
 							f.open(filepath, 'rb')
-							f.c_xci_direct(buffer,outfile,ofolder,fat,delta,metapatch,RSV_cap,vkeypatch)
+							f.c_xci_direct(buffer,outfile,ofolder,fat,fx,delta,metapatch,RSV_cap,vkeypatch)
 							f.flush()
 							f.close()
 						except BaseException as e:
