@@ -404,6 +404,7 @@ class Nsp(Pfs0):
 				sz=int(files_list[i][3])
 				# print(offset)
 				break
+		old_tk_name=name		
 		for nca in self:
 			if type(nca) == Fs.Nca and str(nca.header.contentType) == 'Content.META':
 				crypto1=nca.header.getCryptoType()
@@ -418,11 +419,15 @@ class Nsp(Pfs0):
 			print("* Generating Ticket")
 			ticket=PublicTik()
 			chain=ticket.generate(titleid,userkey,str(keygeneration))
+			tikname=ticket.ret_tikname(titleid,str(keygeneration))
 			self.seek(offset)
 			print("* Writing Ticket")
 			self.write(chain)
 			newPath=(self.path)[:-1]+'p'
 			self.close()
+			if old_tk_name!=tikname:
+				sq_tools.update_tik_and_cert(self.path,old_tk_name,tikname)
+				print("Updating Header")
 			print("* Renaming to nsp")
 			os.rename(self.path, newPath)
 			print("* DONE")
@@ -8961,8 +8966,19 @@ class Nsp(Pfs0):
 					if check==True:
 						break
 		return check
+		
+	def verify_input_key_m2(self,userkey,orig_kg):
+		check=False;newcryptedkey=False
+		for nca in self:
+			if type(nca) == Nca:
+				if nca.header.getRightsId() != 0:
+					check=self.verify_key(nca._path,False,userkey,orig_kg)
+					if check==True:
+						newcryptedkey = Keys.encryptTitleKey(userkey, Keys.getMasterKeyIndex(orig_kg))
+						break
+		return check,newcryptedkey		
 
-	def verify_key(self,nca,ticket,userkey=False):
+	def verify_key(self,nca,ticket,userkey=False,orig_kg=False):
 		verticket=ticket
 		for file in self:
 			if type(file) == Nca:
@@ -8991,12 +9007,20 @@ class Nsp(Pfs0):
 						rightsId = file.getRightsId()
 		else:
 			encKey=bytes.fromhex(userkey)
-			titleKeyDec = Keys.decryptTitleKey(encKey, Keys.getMasterKeyIndex(masterKeyRev))
+			if orig_kg==False:
+				titleKeyDec = Keys.decryptTitleKey(encKey, Keys.getMasterKeyIndex(masterKeyRev))
+			else:	
+				titleKeyDec = Keys.decryptTitleKey(encKey, Keys.getMasterKeyIndex(orig_kg))
+				newcryptedkey = Keys.encryptTitleKey(encKey, Keys.getMasterKeyIndex(orig_kg))
 			verticket=True
 			print('\nTesting {} with:'.format(nca))
 			print('- Keygeneration {}'.format(masterKeyRev))
 			print('- Encrypted key {}'.format(str(hx(encKey))[2:-1]))
+			if orig_kg!=False:
+				print('- Original kg {}'.format(orig_kg))
 			print('- Decrypted key {}'.format(str(hx(titleKeyDec))[2:-1]))
+			if orig_kg!=False:
+				print('- New crypted key {}'.format(str(hx(newcryptedkey))[2:-1]))	
 
 		decKey = titleKeyDec
 		for f in self:

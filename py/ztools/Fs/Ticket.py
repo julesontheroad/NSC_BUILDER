@@ -308,6 +308,20 @@ class PublicTik():
 			return chain
 		except BaseException as e:
 			Print.error('Exception: ' + str(e))
+	
+	def ret_tikname(self,titleid,keygeneration):
+		tikname=False
+		if int(keygeneration,16)>9:
+			keygeneration=str(hex(int(keygeneration,16)))[2:]
+		try:
+			# print(len(str(keygeneration)))
+			if len(str(keygeneration))==1:
+				tikname=str(titleid).lower()+'000000000000000'+keygeneration+'.tik'
+			elif len(str(keygeneration))==2:
+				tikname=str(titleid)+'00000000000000'+keygeneration+'.tik'
+		except BaseException as e:
+			Print.error('Exception: ' + str(e))				
+		return tikname		
 
 class PublicCert():
 
