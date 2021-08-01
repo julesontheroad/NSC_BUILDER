@@ -1319,6 +1319,72 @@ def ret_nsp_offsets(filepath,kbsize=8):
 	except BaseException as e:
 		Print.error('Exception: ' + str(e))
 	return	files_list
+	
+def update_tik_and_cert(filepath,old_tk_name,new_tk_name,kbsize=8):
+	old_cert_name=old_tk_name.replace('.tik','.cert')
+	new_cert_name=new_tk_name.replace('.tik','.cert')	
+	files=[];fileOffsets=[];fileSizes=[]
+	kbsize=int(kbsize)
+	try:
+		with open(filepath, 'r+b') as f:
+			data=f.read(int(kbsize*1024))
+		try:
+			head=data[0:4]
+			n_files=(data[4:8])
+			n_files=int.from_bytes(n_files, byteorder='little')
+			st_size=(data[8:12])
+			st_size=int.from_bytes(st_size, byteorder='little')
+			junk=(data[12:16])
+			offset=(0x10 + n_files * 0x18)
+			stringTable=(data[offset:offset+st_size])
+			stringEndOffset = st_size
+			headerSize = 0x10 + 0x18 * n_files + st_size
+			for i in range(n_files):
+				i = n_files - i - 1
+				pos=0x10 + i * 0x18
+				offset = data[pos:pos+8]
+				offset=int.from_bytes(offset, byteorder='little')
+				size = data[pos+8:pos+16]
+				size=int.from_bytes(size, byteorder='little')
+				nameOffset = data[pos+16:pos+20] # just the offset
+				nameOffset=int.from_bytes(nameOffset, byteorder='little')
+				name = stringTable[nameOffset:stringEndOffset].decode('utf-8').rstrip(' \t\r\n\0')
+				stringEndOffset = nameOffset
+				junk2 = data[pos+20:pos+24] # junk data
+				if name==old_tk_name:
+					files.append(new_tk_name)
+				elif name==old_cert_name:
+					files.append(new_cert_name)
+				else:
+					files.append(name)
+				fileOffsets.append(offset)
+				fileSizes.append(size)
+			files.reverse()
+			fileOffsets.reverse()
+			fileSizes.reverse()
+		except BaseException as e:
+			Print.error('Exception: ' + str(e))
+	except BaseException as e:
+		Print.error('Exception: ' + str(e))	
+	filesNb = len(files)
+	stringTable = '\x00'.join(str(nca) for nca in files)
+	remainder = 0x10 - headerSize%0x10
+	fileNamesLengths = [len(str(nca))+1 for nca in files] # +1 for the \x00
+	stringTableOffsets = [sum(fileNamesLengths[:n]) for n in range(filesNb)]
+	header =  b''
+	header += b'PFS0'
+	header += pk('<I', filesNb)
+	header += pk('<I', st_size)
+	header += b'\x00\x00\x00\x00'
+	for n in range(filesNb):
+		header += pk('<Q', fileOffsets[n])
+		header += pk('<Q', fileSizes[n])
+		header += pk('<I', stringTableOffsets[n])
+		header += b'\x00\x00\x00\x00'
+	header += stringTable.encode()	
+	with open(filepath, 'r+b') as f:	
+		f.seek(0)
+		f.write(header)	
 
 def ret_xci_offsets(filepath,kbsize=8):
 	kbsize=int(kbsize)

@@ -7495,21 +7495,36 @@ if __name__ == '__main__':
 		# Verify. File verification
 		# ...................................................	
 		if args.verify_key:		
+			orig_kg=False
 			if isinstance(args.verify_key, list):
 				filepath=args.verify_key[0]
 				userkey=args.verify_key[1]
-				print(args.verify_key[2])
-				if args.verify_key[2]:
-					if str(args.verify_key[2]).lower()=="true":
-						unlock=True
-				else:
+				# print(args.verify_key[2])
+				try:
+					if args.verify_key[2]:
+						if str(args.verify_key[2]).lower()=="true":
+							unlock=True
+					else:
+						unlock=False
+				except:		
 					unlock=False
+				try:	
+					if args.verify_key[3]:
+						try:
+							orig_kg=int(args.verify_key[3])
+						except:
+							orig_kg=False	
+				except:
+					orig_kg=False	
 				userkey=str(userkey).upper()
 				if filepath.endswith('.nsp') or filepath.endswith('.nsx'):
 					basename=str(os.path.basename(os.path.abspath(filepath)))
 					try:
 						f = Fs.Nsp(filepath, 'rb')
-						check=f.verify_input_key(userkey)
+						if orig_kg==False:
+							check=f.verify_input_key(userkey)
+						else:
+							check,userkey=f.verify_input_key_m2(userkey,orig_kg)
 						f.flush()
 						f.close()
 						if check==True:
