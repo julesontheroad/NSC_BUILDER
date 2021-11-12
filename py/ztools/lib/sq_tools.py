@@ -60,9 +60,12 @@ versions =
 	805437440: "12.0.2"       ->   keygeneration = 11	
 	805502976: "12.0.3"       ->   keygeneration = 11
 	806354944: "12.1.0"		  ->   keygeneration = 12
+	872415232: "13.0.0"		  ->   keygeneration = 13
+	873463808: "13.1.0"		  ->   keygeneration = 13	
 '''
 def kgstring():
 	kg=list()
+	kg13=[872415232,873463808];kg.append(kg13)	
 	kg12=[806354944];kg.append(kg12)
 	kg11=[605028352,606076928,671088640,671154176,671219712,671285248,671350784,672137216,672202752,673185792,738197504,738263040,805306368,805371904,805437440,805502976];kg.append(kg11)
 	kg10=[603979776,604045312];kg.append(kg10)
@@ -145,6 +148,8 @@ def getTopRSV(keygeneration, RSV):
 		return 605028352
 	if keygeneration == 12:
 		return 806354944		
+	if keygeneration == 13:
+		return 872415232			
 	else:
 		return RSV
 
@@ -215,7 +220,9 @@ def getFWRangeKG(keygeneration):
 	if keygeneration == 11:
 		return "(9.1.0 - 12.0.3)"
 	if keygeneration == 12:
-		return "(>= 12.1.0)"		
+		return "(12.1.0)"	
+	if keygeneration == 13:
+		return "(>= 13.0.0)"			
 	else:
 		return "UNKNOWN"
 

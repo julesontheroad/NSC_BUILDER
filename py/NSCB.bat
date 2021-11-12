@@ -1076,7 +1076,8 @@ echo Input "8" to change top keygeneration to 8 (FW 7.0.0-8.0.1)
 echo Input "9" to change top keygeneration to 9 (FW 8.1.0)
 echo Input "10" to change top keygeneration to 10 (FW 9.0.0-9.01)
 echo Input "11" to change top keygeneration to 11 (FW 9.1.0-11.0.3)
-echo Input "12" to change top keygeneration to 12 (FW 12.1.0 - )
+echo Input "12" to change top keygeneration to 12 (FW 12.1.0)
+echo Input "13" to change top keygeneration to 13 (>FW 13.0.0)
 echo.
 ECHO ******************************************
 echo Or Input "b" to return to the list options
@@ -1113,6 +1114,8 @@ if /i "%bs%"=="11" set "vkey=-kp 11"
 if /i "%bs%"=="11" set "capRSV=--RSVcap 605028352"
 if /i "%bs%"=="12" set "vkey=-kp 12"
 if /i "%bs%"=="12" set "capRSV=--RSVcap 806354944"
+if /i "%bs%"=="13" set "vkey=-kp 13"
+if /i "%bs%"=="13" set "capRSV=--RSVcap 872415232"
 if /i "%vkey%"=="none" echo WRONG CHOICE
 if /i "%vkey%"=="none" goto s_KeyChange_wrongchoice
 goto s_KeyChange_skip
@@ -1897,7 +1900,8 @@ echo Input "8" to change top keygeneration to 8 (FW 7.0.0-8.0.1)
 echo Input "9" to change top keygeneration to 9 (FW 8.1.0)
 echo Input "10" to change top keygeneration to 10 (FW 9.0.0-9.01)
 echo Input "11" to change top keygeneration to 11 (FW 9.1.0-11.0.3)
-echo Input "12" to change top keygeneration to 12 (FW 12.1.0 - )
+echo Input "12" to change top keygeneration to 12 (FW 12.1.0)
+echo Input "13" to change top keygeneration to 13 (>FW 13.0.0)
 echo.
 ECHO *****************************************
 echo Or Input "b" to return to the option list
@@ -1934,6 +1938,8 @@ if /i "%bs%"=="11" set "vkey=-kp 11"
 if /i "%bs%"=="11" set "capRSV=--RSVcap 605028352"
 if /i "%bs%"=="12" set "vkey=-kp 12"
 if /i "%bs%"=="12" set "capRSV=--RSVcap 806354944"
+if /i "%bs%"=="13" set "vkey=-kp 13"
+if /i "%bs%"=="13" set "capRSV=--RSVcap 872415232"
 if /i "%vkey%"=="none" echo WRONG CHOICE
 if /i "%vkey%"=="none" goto m_KeyChange_wrongchoice
 
