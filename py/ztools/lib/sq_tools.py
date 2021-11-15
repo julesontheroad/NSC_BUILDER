@@ -82,10 +82,12 @@ def kgstring():
 	return kg
 
 def kg_by_RSV(RSV):
-	kgs=kgstring();keygen=len(kgs);topkg=len(kgs)
+	kgs=kgstring();keygen=len(kgs)-1;topkg=len(kgs)
 	for k in range(len(kgs)):
-		if RSV in kgs[k]:
+		if not RSV in kgs[k]:
 			keygen-=1
+		if RSV in kgs[k]:	
+			break
 	if keygen<0:
 		return 'unknown'
 	return keygen
