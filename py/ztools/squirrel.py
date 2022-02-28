@@ -5830,7 +5830,8 @@ if __name__ == '__main__':
 		if args.patchversion:
 			for input in args.patchversion:
 				try:
-					number = input
+					number = int(input)
+					break
 				except BaseException as e:
 					Print.error('Exception: ' + str(e))
 			else:

@@ -1,6 +1,10 @@
 # Nintendo Switch Cleaner and Builder (NSC_Builder)
 ![DeviceTag](https://img.shields.io/badge/Device-SWITCH-e60012.svg)  ![LanguageTag](https://img.shields.io/badge/languages-python_batch_html5_javascript-blue.svg)
 
+**Temporarly archived:** Currently i don't have the time to work on this repository, i will reopen it and reactivate issues if i have something to commit or time to work regularly on the project. The titledb fork will still continue to update and i will probably compile a new version including the latest master, don't think it had much changes since the last release i did but i'd probably compile it to include the latest keygeneration changes.
+
+**Update:** Leaving it open for commits.
+
 ## 1. Description
 
 **Nintendo Switch Cleaner and Builder**: A multi-purpose tool for interacting with Switch game files - a "Switch-Army Knife". Written in Python, Batch, and HTML. Originally developed to remove titlerights and create multicontent NSP/XCI files, though over time has expanded to have significantly more features, specializing in batch processing and file information.
