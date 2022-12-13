@@ -12,6 +12,7 @@ import subprocess
 from mtp.wpd import is_switch_connected
 import listmanager
 import csv
+import copy
 from colorama import Fore, Back, Style
 from python_pick import pick
 from python_pick import Picker
@@ -79,6 +80,35 @@ def About():
 	print("Program's github: https://github.com/julesontheroad/NSC_BUILDER                       ")
 	print('Cheats and Eshop information from nutdb and http://tinfoil.io                         ')
 	print('------------------------------------------------------------------------------------- ')	
+
+#One CJK character is 2 English characters wide when printed
+def display_len(s:str):
+	cnt=0
+	for c in s:
+		if len(c.encode('utf-8'))>=3: # CJK character take >=3 bytes in utf-8 
+			cnt+=2
+		else:
+			cnt+=1
+	return cnt
+
+def pretty_str(name:str,name_length=40):
+	g0=copy.copy(name)
+	if display_len(g0)>name_length+3:
+		cnt=0
+		short_g0=''
+		for i in range(len(g0)):
+			if cnt+display_len(g0[i])<=name_length:
+				cnt+=display_len(g0[i])
+				short_g0+=g0[i]
+			else:
+				break
+		g0=short_g0
+		if cnt<name_length:
+			g0+=' '
+		g0+='...'	
+	else:
+		g0=g0+((name_length+3-display_len(g0))*' ')
+	return g0
 
 def search_with_filter(folder_paths,mode='installer'):
 	if mode=='installer':
@@ -530,24 +560,21 @@ def get_installed_info(tfile=None,search_new=True,excludehb=True,exclude_xci=Fal
 				g0=[pos for pos, char in enumerate(g) if char == '[']
 				g0=(g[0:g0[0]]).strip()
 				installed[fileid]=[fileid,fileversion,cctag,nG,nU,nD,baseid,g0,g]
-				if len(g0)>33:
-					g0=g0[0:30]+'...'	
-				else:
-					g0=g0+((33-len(g0))*' ')
+				g0=pretty_str(g0)
 				verprint=str(fileversion)
 				if len(verprint)<9:
 					verprint=verprint+((9-len(verprint))*' ')					
 				if excludehb==True:
 					if not fileid.startswith('05') and not fileid.startswith('04')  and not str(fileid).lower()=='unknown':
 						if g.endswith('.xci') or g.endswith('.xc0'):
-							print(f"{g0}|{fileid}|{verprint}|XCI|{nG}G|{nU}U|{nD}D")
+							print(f"{g0} |{fileid}|{verprint}|XCI|{nG}G|{nU}U|{nD}D")
 						else:
-							print(f"{g0}|{fileid}|{verprint}|{cctag}")
+							print(f"{g0} |{fileid}|{verprint}|{cctag}")
 				else:
 					if g.endswith('.xci') or g.endswith('.xc0'):
-						print(f"{g0}|{fileid}|{verprint}|XCI|{nG}G|{nU}U|{nD}D")	
+						print(f"{g0} |{fileid}|{verprint}|XCI|{nG}G|{nU}U|{nD}D")	
 					else:	
-						print(f"{g0}|{fileid}|{verprint}|{cctag}")
+						print(f"{g0} |{fileid}|{verprint}|{cctag}")
 			except:pass
 		if search_new==True:			
 			import nutdb
@@ -587,10 +614,7 @@ def get_installed_info(tfile=None,search_new=True,excludehb=True,exclude_xci=Fal
 			print("..........................................................")			
 			for k in installed.keys():	
 				fileid,fileversion,cctag,nG,nU,nD,baseid,g0,g=installed[k]
-				if len(g0)>33:
-					g0=g0[0:30]+'...'	
-				else:
-					g0=g0+((33-len(g0))*' ')
+				g0=pretty_str(g0)
 				verprint=str(fileversion)
 				fillver=''
 				if len(verprint)<6:
@@ -640,10 +664,7 @@ def get_installed_info(tfile=None,search_new=True,excludehb=True,exclude_xci=Fal
 								entry.append(k)
 								xci_dlcs[baseid]=entry
 							continue
-						if len(g0)>33:
-							g0=g0[0:30]+'...'	
-						else:
-							g0=g0+((33-len(g0))*' ')										
+						g0=pretty_str(g0)									
 						print(f"{g0} [{baseid}] -> "+forecombo+ f"[{k}] [v{versiondict[k]}]"+Style.RESET_ALL)
 			t=0			
 			if check_xcis==True:
@@ -657,10 +678,7 @@ def get_installed_info(tfile=None,search_new=True,excludehb=True,exclude_xci=Fal
 								print("XCI MAY HAVE NEW DLCS. LISTING AVAILABLE")
 								print("..........................................................")	
 								t+=1
-						if len(g0)>33:
-							g0=g0[0:30]+'...'	
-						else:
-							g0=g0+((33-len(g0))*' ')		
+						g0=pretty_str(g0)
 						for k in xci_dlcs[baseid]:	
 							print(f"{g0} [{baseid}] -> "+forecombo+ f"[{k}] [v{versiondict[k]}]"+Style.RESET_ALL)						
 					
@@ -715,10 +733,9 @@ def get_archived_info(search_new=True,excludehb=True,exclude_xci=False):
 	print("..........................................................")	
 	for g in dbi_dict.keys():
 		if not g in installed.keys():
-			tid,version,name=dbi_dict[g]
-			if len(name)>33:
-				name=name[0:30]+'...'							
-			print(f"{name} [{tid}][{version}]")
+			tid,version,g0=dbi_dict[g]
+			g0=pretty_str(g0)			
+			print(f"{g0} [{tid}][{version}]")
 	if search_new==True:			
 		import nutdb
 		nutdb.check_other_file(urlconfig,'versions_txt')
@@ -757,10 +774,7 @@ def get_archived_info(search_new=True,excludehb=True,exclude_xci=False):
 		print("..........................................................")			
 		for k in dbi_dict.keys():	
 			fileid,fileversion,g0=dbi_dict[k]
-			if len(g0)>33:
-				g0=g0[0:30]+'...'
-			else:
-				g0=g0+(33-len(g0))*' '
+			g0=pretty_str(g0)
 			verprint=str(fileversion)
 			fillver=''
 			if len(verprint)<6:
@@ -799,10 +813,7 @@ def get_archived_info(search_new=True,excludehb=True,exclude_xci=False):
 				updid=baseid[:-3]+'800'
 				if baseid in dbi_dict.keys() or updid in dbi_dict.keys():
 					fileid,fileversion,g0=dbi_dict[baseid]
-					if len(g0)>33:
-						g0=g0[0:30]+'...'	
-					else:
-						g0=g0+((33-len(g0))*' ')						
+					g0=pretty_str(g0)			
 					print(f"{g0} [{baseid}] -> "+forecombo+ f"[{k}] [v{versiondict[k]}]"+Style.RESET_ALL)	
 		
 			
