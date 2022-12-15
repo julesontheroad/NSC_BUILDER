@@ -16,57 +16,65 @@ indent = 1
 tabs = '\t' * indent
 '''
 versions =
-    0:         "1.0.0",       ->   keygeneration = 0
-    450:       "1.0.0",       ->   keygeneration = 0
-    65536:     "2.0.0",       ->   keygeneration = 1
-    131072:    "2.1.0",       ->   keygeneration = 1
-    196608:    "2.2.0",       ->   keygeneration = 1
-    262144:    "2.3.0",       ->   keygeneration = 1
-    201326592: "3.0.0",       ->   keygeneration = 2
-    201392128: "3.0.1",       ->   keygeneration = 3
-    201457664: "3.0.2",       ->   keygeneration = 3
-    268435456: "4.0.0",       ->   keygeneration = 4
-    268500992: "4.0.1",       ->   keygeneration = 4
-    269484032: "4.1.0",       ->   keygeneration = 4
-    335544320: "5.0.0",       ->   keygeneration = 5
-    335609856: "5.0.1",       ->   keygeneration = 5
-    335675392: "5.0.2",       ->   keygeneration = 5
-    336592896: "5.1.0",       ->   keygeneration = 5
-    402653184: "6.0.0",       ->   keygeneration = 6
-    402718720: "6.0.1",       ->   keygeneration = 6
-    403701760: "6.1.0",       ->   keygeneration = 6
-	404750336: "6.2.0"        ->   keygeneration = 7
-	469762048: "7.0.0"        ->   keygeneration = 8
-	469827584: "7.0.1"        ->   keygeneration = 8
-	536870912: "8.0.0"        ->   keygeneration = 8
-	536936448: "8.0.1"        ->   keygeneration = 8
-	537919488: "8.1.0"        ->   keygeneration = 9
-	603979776: "9.0.0"        ->   keygeneration = 10
-	604045312: "9.0.1"        ->   keygeneration = 10
-	605028352: "9.1.0"        ->   keygeneration = 11
-	606076928: "9.2.0"        ->   keygeneration = 11
-	671088640: "10.0.0"       ->   keygeneration = 11
-	671154176: "10.0.1"       ->   keygeneration = 11
-	671219712: "10.0.2"       ->   keygeneration = 11
-	671285248: "10.0.3"       ->   keygeneration = 11
-	671350784: "10.0.4"       ->   keygeneration = 11
-	672137216: "10.1.0"       ->   keygeneration = 11
-	672202752: "10.1.1"       ->   keygeneration = 11
-	673185792: "10.2.0"       ->   keygeneration = 11
-	738197504: "11.0.0"       ->   keygeneration = 11
-	738263040: "11.0.1"       ->   keygeneration = 11
-	805306368: "12.0.0"       ->   keygeneration = 11	
-	805371904: "12.0.1"       ->   keygeneration = 11	
-	805437440: "12.0.2"       ->   keygeneration = 11	
-	805502976: "12.0.3"       ->   keygeneration = 11
-	806354944: "12.1.0"		  ->   keygeneration = 12
-	872415232: "13.0.0"		  ->   keygeneration = 13
-	873463808: "13.1.0"		  ->   keygeneration = 13	
-	874512404: "13.2.0"		  ->   keygeneration = 13	
-	874578000: "13.2.1"		  ->   keygeneration = 13		
+    0:           "1.0.0",       ->   keygeneration = 0
+    450:         "1.0.0",       ->   keygeneration = 0
+    65536:       "2.0.0",       ->   keygeneration = 1
+    131072:      "2.1.0",       ->   keygeneration = 1
+    196608:      "2.2.0",       ->   keygeneration = 1
+    262144:      "2.3.0",       ->   keygeneration = 1
+    201326592:   "3.0.0",       ->   keygeneration = 2
+    201392128:   "3.0.1",       ->   keygeneration = 3
+    201457664:   "3.0.2",       ->   keygeneration = 3
+    268435456:   "4.0.0",       ->   keygeneration = 4
+    268500992:   "4.0.1",       ->   keygeneration = 4
+    269484032:   "4.1.0",       ->   keygeneration = 4
+    335544320:   "5.0.0",       ->   keygeneration = 5
+    335609856:   "5.0.1",       ->   keygeneration = 5
+    335675392:   "5.0.2",       ->   keygeneration = 5
+    336592896:   "5.1.0",       ->   keygeneration = 5
+    402653184:   "6.0.0",       ->   keygeneration = 6
+    402718720:   "6.0.1",       ->   keygeneration = 6
+    403701760:   "6.1.0",       ->   keygeneration = 6
+	404750336:   "6.2.0"        ->   keygeneration = 7
+	469762048:   "7.0.0"        ->   keygeneration = 8
+	469827584:   "7.0.1"        ->   keygeneration = 8
+	536870912:   "8.0.0"        ->   keygeneration = 8
+	536936448:   "8.0.1"        ->   keygeneration = 8
+	537919488:   "8.1.0"        ->   keygeneration = 9
+	603979776:   "9.0.0"        ->   keygeneration = 10
+	604045312:   "9.0.1"        ->   keygeneration = 10
+	605028352:   "9.1.0"        ->   keygeneration = 11
+	606076928:   "9.2.0"        ->   keygeneration = 11
+	671088640:   "10.0.0"       ->   keygeneration = 11
+	671154176:   "10.0.1"       ->   keygeneration = 11
+	671219712:   "10.0.2"       ->   keygeneration = 11
+	671285248:   "10.0.3"       ->   keygeneration = 11
+	671350784:   "10.0.4"       ->   keygeneration = 11
+	672137216:   "10.1.0"       ->   keygeneration = 11
+	672202752:   "10.1.1"       ->   keygeneration = 11
+	673185792:   "10.2.0"       ->   keygeneration = 11
+	738197504:   "11.0.0"       ->   keygeneration = 11
+	738263040:   "11.0.1"       ->   keygeneration = 11
+	805306368:   "12.0.0"       ->   keygeneration = 11
+	805371904:   "12.0.1"       ->   keygeneration = 11
+	805437440:   "12.0.2"       ->   keygeneration = 11
+	805502976:   "12.0.3"       ->   keygeneration = 11
+	806354944:   "12.1.0"		->   keygeneration = 12
+	872415232:   "13.0.0"	    ->   keygeneration = 13
+	873463808:   "13.1.0"	    ->   keygeneration = 13
+	874512404:   "13.2.0"	    ->   keygeneration = 13
+	874578000:   "13.2.1"	    ->   keygeneration = 13
+	939524096:   "14.0.0"	    ->   keygeneration = 14
+	940572672:   "14.1.0"	    ->   keygeneration = 14
+	940638208:   "14.1.1"	    ->   keygeneration = 14
+	940703744:   "14.1.2"	    ->   keygeneration = 14
+	1006632960:  "15.0.0"	    ->   keygeneration = 15
+	1006698496:  "15.0.1"	    ->   keygeneration = 15
 '''
 def kgstring():
 	kg=list()
+	kg15=[1006632960,1006698496];kg.append(kg15)
+	kg14=[939524096,940572672,940638208,940703744];kg.append(kg14)
 	kg13=[872415232,873463808,874512404,874578000];kg.append(kg13)	
 	kg12=[806354944];kg.append(kg12)
 	kg11=[605028352,606076928,671088640,671154176,671219712,671285248,671350784,672137216,672202752,673185792,738197504,738263040,805306368,805371904,805437440,805502976];kg.append(kg11)
@@ -153,7 +161,11 @@ def getTopRSV(keygeneration, RSV):
 	if keygeneration == 12:
 		return 806354944		
 	if keygeneration == 13:
-		return 872415232			
+		return 872415232
+	if keygeneration == 14:
+		return 939524096
+	if keygeneration == 15:
+		return 1006632960			
 	else:
 		return RSV
 
@@ -190,11 +202,20 @@ def getMinRSV(keygeneration, RSV):
 		RSV=9*67108864
 		return RSV
 	if keygeneration == 11:
-		RSV=9*67108864+2*1048576+0*65796+0*1
+		RSV=9*67108864+1*1048576+0*65796+0*1
 		return RSV
-	if keygeneration == 11:
+	if keygeneration == 12:
 		RSV=12*67108864+1*1048576+0*65796+0*1
-		return RSV		
+		return RSV
+	if keygeneration == 13:
+		RSV=13*67108864+0*1048576+0*65796+0*1
+		return RSV
+	if keygeneration == 14:
+		RSV=14*67108864+0*1048576+0*65796+0*1
+		return RSV
+	if keygeneration == 15:
+		RSV=15*67108864+0*1048576+0*65796+0*1
+		return RSV
 	else:
 		return RSV
 
@@ -226,7 +247,11 @@ def getFWRangeKG(keygeneration):
 	if keygeneration == 12:
 		return "(12.1.0)"	
 	if keygeneration == 13:
-		return "(>= 13.0.0)"			
+		return "(13.0.0 - 13.2.1)"	
+	if keygeneration == 14:
+		return "(14.0.0 - 14.1.2)"	
+	if keygeneration == 15:
+		return "(>= 15.0.0)"		
 	else:
 		return "UNKNOWN"
 
