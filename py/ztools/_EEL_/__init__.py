@@ -312,7 +312,9 @@ def _process_message(message, ws):
 			error_info['errorText'] = repr(e)
 			error_info['errorTraceback'] = err_traceback
 		_repeated_send(ws, _safe_json({ 'return': message['call'],
-										'value': return_val  }))
+										'status': status,
+                                        'value': return_val,
+                                        'error': error_info,}))
 	elif 'return' in message:
 		call_id = message['return']
 		if call_id in _call_return_callbacks:
