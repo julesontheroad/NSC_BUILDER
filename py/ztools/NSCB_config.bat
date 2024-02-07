@@ -224,7 +224,7 @@ echo Input "f" to not change the keygeneration
 echo Input "0" to change top keygeneration to 0 (FW 1.0)
 echo Input "1" to change top keygeneration to 1 (FW 2.0-2.3)
 echo Input "2" to change top keygeneration to 2 (FW 3.0)
-echo Input "3" to change top keygeneration to 3 (FW 3.0.1-3.02)
+echo Input "3" to change top keygeneration to 3 (FW 3.0.1-3.0.2)
 echo Input "4" to change top keygeneration to 4 (FW 4.0.0-4.1.0)
 echo Input "5" to change top keygeneration to 5 (FW 5.0.0-5.1.0)
 echo Input "6" to change top keygeneration to 6 (FW 6.0.0-6.1.0)
@@ -236,7 +236,9 @@ echo Input "11" to change top keygeneration to 11 (FW 9.1.0-11.0.3)
 echo Input "12" to change top keygeneration to 12 (FW 12.1.0)
 echo Input "13" to change top keygeneration to 13 (FW 13.0.0-13.2.1)
 echo Input "14" to change top keygeneration to 14 (FW 14.0.0-14.1.2)
-echo Input "15" to change top keygeneration to 15 (>FW 15.0.0)
+echo Input "15" to change top keygeneration to 15 (FW 15.0.0-15.0.1)
+echo Input "16" to change top keygeneration to 16 (FW 16.0.0-16.1.0)
+echo Input "17" to change top keygeneration to 17 (>=FW 17.0.0)
 echo.
 echo Input "b" to return to AUTO-MODE - CONFIGURATION
 echo Input "c" to return to CONFIG MENU
@@ -250,7 +252,7 @@ if /i "%bs%"=="f" set "v_KGEN=-kp false"
 if /i "%bs%"=="0" set "v_KGEN=-kp 0"
 if /i "%bs%"=="0" set "v_CAPRSV=--RSVcap 0"
 if /i "%bs%"=="1" set "v_KGEN=-kp 1"
-if /i "%bs%"=="1" set "v_CAPRSV=--RSVcap 65796"
+if /i "%bs%"=="1" set "v_CAPRSV=--RSVcap 65536"
 if /i "%bs%"=="2" set "v_KGEN=-kp 2"
 if /i "%bs%"=="2" set "v_CAPRSV=--RSVcap 201327002"
 if /i "%bs%"=="3" set "v_KGEN=-kp 3"
@@ -279,6 +281,10 @@ if /i "%bs%"=="14" set "v_KGEN=-kp 14"
 if /i "%bs%"=="14" set "v_CAPRSV=--RSVcap 939524096"
 if /i "%bs%"=="15" set "v_KGEN=-kp 15"
 if /i "%bs%"=="15" set "v_CAPRSV=--RSVcap 1006632960"
+if /i "%bs%"=="16" set "v_KGEN=-kp 16"
+if /i "%bs%"=="16" set "v_CAPRSV=--RSVcap 1073741824"
+if /i "%bs%"=="17" set "v_KGEN=-kp 17"
+if /i "%bs%"=="17" set "v_CAPRSV=--RSVcap 1140850688"
 
 if /i "%bs%"=="b" goto sc2
 if /i "%bs%"=="c" goto sc1

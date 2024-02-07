@@ -1055,7 +1055,7 @@ if /i "%bs%"=="0" goto s_KeyChange_skip
 
 :s_KeyChange_wrongchoice
 echo *******************************************************
-echo SET MAXIMUM KEYGENERATION\RSV ALOWED
+echo SET MAXIMUM KEYGENERATION\RSV ALLOWED
 echo *******************************************************
 echo Depending on your choice keygeneration and RSV will be
 echo lowered to the corresponding keygeneration range in case
@@ -1067,7 +1067,7 @@ echo Input "f" to not change the keygeneration
 echo Input "0" to change top keygeneration to 0 (FW 1.0)
 echo Input "1" to change top keygeneration to 1 (FW 2.0-2.3)
 echo Input "2" to change top keygeneration to 2 (FW 3.0)
-echo Input "3" to change top keygeneration to 3 (FW 3.0.1-3.02)
+echo Input "3" to change top keygeneration to 3 (FW 3.0.1-3.0.2)
 echo Input "4" to change top keygeneration to 4 (FW 4.0.0-4.1.0)
 echo Input "5" to change top keygeneration to 5 (FW 5.0.0-5.1.0)
 echo Input "6" to change top keygeneration to 6 (FW 6.0.0-6.1.0)
@@ -1079,7 +1079,9 @@ echo Input "11" to change top keygeneration to 11 (FW 9.1.0-11.0.3)
 echo Input "12" to change top keygeneration to 12 (FW 12.1.0)
 echo Input "13" to change top keygeneration to 13 (FW 13.0.0-13.2.1)
 echo Input "14" to change top keygeneration to 14 (FW 14.0.0-14.1.2)
-echo Input "15" to change top keygeneration to 15 (>FW 15.0.0)
+echo Input "15" to change top keygeneration to 15 (FW 15.0.0-15.0.1)
+echo Input "16" to change top keygeneration to 16 (FW 16.0.0-16.1.0)
+echo Input "17" to change top keygeneration to 17 (>=FW 17.0.0)
 echo.
 ECHO ******************************************
 echo Or Input "b" to return to the list options
@@ -1093,7 +1095,7 @@ if /i "%bs%"=="f" set "vkey=-kp false"
 if /i "%bs%"=="0" set "vkey=-kp 0"
 if /i "%bs%"=="0" set "capRSV=--RSVcap 0"
 if /i "%bs%"=="1" set "vkey=-kp 1"
-if /i "%bs%"=="1" set "capRSV=--RSVcap 65796"
+if /i "%bs%"=="1" set "capRSV=--RSVcap 65536"
 if /i "%bs%"=="2" set "vkey=-kp 2"
 if /i "%bs%"=="2" set "capRSV=--RSVcap 201327002"
 if /i "%bs%"=="3" set "vkey=-kp 3"
@@ -1122,6 +1124,10 @@ if /i "%bs%"=="14" set "vkey=-kp 14"
 if /i "%bs%"=="14" set "capRSV=--RSVcap 939524096"
 if /i "%bs%"=="15" set "vkey=-kp 15"
 if /i "%bs%"=="15" set "capRSV=--RSVcap 1006632960"
+if /i "%bs%"=="16" set "vkey=-kp 16"
+if /i "%bs%"=="16" set "capRSV=--RSVcap 1073741824"
+if /i "%bs%"=="17" set "vkey=-kp 17"
+if /i "%bs%"=="17" set "capRSV=--RSVcap 1140850688"
 if /i "%vkey%"=="none" echo WRONG CHOICE
 if /i "%vkey%"=="none" goto s_KeyChange_wrongchoice
 goto s_KeyChange_skip
@@ -1885,7 +1891,7 @@ if /i "%bs%"=="0" goto m_KeyChange_skip
 
 :m_KeyChange_wrongchoice
 echo *******************************************************
-echo SET MAXIMUM KEYGENERATION\RSV ALOWED
+echo SET MAXIMUM KEYGENERATION\RSV ALLOWED
 echo *******************************************************
 echo Depending on your choice keygeneration and RSV will be
 echo lowered to the corresponding keygeneration range in case
@@ -1897,7 +1903,7 @@ echo Input "f" to not change the keygeneration
 echo Input "0" to change top keygeneration to 0 (FW 1.0)
 echo Input "1" to change top keygeneration to 1 (FW 2.0-2.3)
 echo Input "2" to change top keygeneration to 2 (FW 3.0)
-echo Input "3" to change top keygeneration to 3 (FW 3.0.1-3.02)
+echo Input "3" to change top keygeneration to 3 (FW 3.0.1-3.0.2)
 echo Input "4" to change top keygeneration to 4 (FW 4.0.0-4.1.0)
 echo Input "5" to change top keygeneration to 5 (FW 5.0.0-5.1.0)
 echo Input "6" to change top keygeneration to 6 (FW 6.0.0-6.1.0)
@@ -1909,7 +1915,9 @@ echo Input "11" to change top keygeneration to 11 (FW 9.1.0-11.0.3)
 echo Input "12" to change top keygeneration to 12 (FW 12.1.0)
 echo Input "13" to change top keygeneration to 13 (FW 13.0.0-13.2.1)
 echo Input "14" to change top keygeneration to 14 (FW 14.0.0-14.1.2)
-echo Input "15" to change top keygeneration to 15 (>FW 15.0.0)
+echo Input "15" to change top keygeneration to 15 (FW 15.0.0-15.0.1)
+echo Input "16" to change top keygeneration to 16 (FW 16.0.0-16.1.0)
+echo Input "17" to change top keygeneration to 17 (>=FW 17.0.0)
 echo.
 ECHO *****************************************
 echo Or Input "b" to return to the option list
@@ -1923,7 +1931,7 @@ if /i "%bs%"=="f" set "vkey=-kp false"
 if /i "%bs%"=="0" set "vkey=-kp 0"
 if /i "%bs%"=="0" set "capRSV=--RSVcap 0"
 if /i "%bs%"=="1" set "vkey=-kp 1"
-if /i "%bs%"=="1" set "capRSV=--RSVcap 65796"
+if /i "%bs%"=="1" set "capRSV=--RSVcap 65536"
 if /i "%bs%"=="2" set "vkey=-kp 2"
 if /i "%bs%"=="2" set "capRSV=--RSVcap 201327002"
 if /i "%bs%"=="3" set "vkey=-kp 3"
@@ -1952,6 +1960,10 @@ if /i "%bs%"=="14" set "vkey=-kp 14"
 if /i "%bs%"=="14" set "capRSV=--RSVcap 939524096"
 if /i "%bs%"=="15" set "vkey=-kp 15"
 if /i "%bs%"=="15" set "capRSV=--RSVcap 1006632960"
+if /i "%bs%"=="16" set "vkey=-kp 16"
+if /i "%bs%"=="16" set "capRSV=--RSVcap 1073741824"
+if /i "%bs%"=="17" set "vkey=-kp 17"
+if /i "%bs%"=="17" set "capRSV=--RSVcap 1140850688"
 if /i "%vkey%"=="none" echo WRONG CHOICE
 if /i "%vkey%"=="none" goto m_KeyChange_wrongchoice
 
