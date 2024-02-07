@@ -911,7 +911,7 @@ echo "f" 키 생성을 변경하지 않음
 echo "0" 최상위 키 생성을 0으로 변경 (FW 1.0)
 echo "1" 최상위 키 생성을 1로 변경 (FW 2.0-2.3)
 echo "2" 최상위 키 생성을 2로 변경 (FW 3.0)
-echo "3" 최상위 키 생성을 3으로 변경 (FW 3.0.1-3.02)
+echo "3" 최상위 키 생성을 3으로 변경 (FW 3.0.1-3.0.2)
 echo "4" 최상위 키 생성을 4로 변경 (FW 4.0.0-4.1.0)
 echo "5" 최상위 키 생성을 5로 변경 (FW 5.0.0-5.1.0)
 echo "6" 최상위 키 생성을 6으로 변경 (FW 6.0.0-6.1.0)
@@ -931,7 +931,7 @@ if /i "%bs%"=="f" set "vkey=-kp false"
 if /i "%bs%"=="0" set "vkey=-kp 0"
 if /i "%bs%"=="0" set "capRSV=--RSVcap 0"
 if /i "%bs%"=="1" set "vkey=-kp 1"
-if /i "%bs%"=="1" set "capRSV=--RSVcap 65796"
+if /i "%bs%"=="1" set "capRSV=--RSVcap 65536"
 if /i "%bs%"=="2" set "vkey=-kp 2"
 if /i "%bs%"=="2" set "capRSV=--RSVcap 201327002"
 if /i "%bs%"=="3" set "vkey=-kp 3"
@@ -1606,7 +1606,7 @@ echo "f" 키 생성을 변경하지 않음
 echo "0" 최상위 키 생성을 0으로 변경 (FW 1.0)
 echo "1" 최상위 키 생성을 1로 변경 (FW 2.0-2.3)
 echo "2" 최상위 키 생성을 2로 변경 (FW 3.0)
-echo "3" 최상위 키 생성을 3으로 변경 (FW 3.0.1-3.02)
+echo "3" 최상위 키 생성을 3으로 변경 (FW 3.0.1-3.0.2)
 echo "4" 최상위 키 생성을 4으로 변경 (FW 4.0.0-4.1.0)
 echo "5" 최상위 키 생성을 5로 변경 (FW 5.0.0-5.1.0)
 echo "6" 최상위 키 생성을 6으로 변경 (FW 6.0.0-6.1.0)
@@ -1626,7 +1626,7 @@ if /i "%bs%"=="f" set "vkey=-kp false"
 if /i "%bs%"=="0" set "vkey=-kp 0"
 if /i "%bs%"=="0" set "capRSV=--RSVcap 0"
 if /i "%bs%"=="1" set "vkey=-kp 1"
-if /i "%bs%"=="1" set "capRSV=--RSVcap 65796"
+if /i "%bs%"=="1" set "capRSV=--RSVcap 65536"
 if /i "%bs%"=="2" set "vkey=-kp 2"
 if /i "%bs%"=="2" set "capRSV=--RSVcap 201327002"
 if /i "%bs%"=="3" set "vkey=-kp 3"
