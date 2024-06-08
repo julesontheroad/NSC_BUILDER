@@ -16,56 +16,78 @@ indent = 1
 tabs = '\t' * indent
 '''
 versions =
-    0:         "1.0.0",       ->   keygeneration = 0
-    450:       "1.0.0",       ->   keygeneration = 0
-    65536:     "2.0.0",       ->   keygeneration = 1
-    131072:    "2.1.0",       ->   keygeneration = 1
-    196608:    "2.2.0",       ->   keygeneration = 1
-    262144:    "2.3.0",       ->   keygeneration = 1
-    201326592: "3.0.0",       ->   keygeneration = 2
-    201392128: "3.0.1",       ->   keygeneration = 3
-    201457664: "3.0.2",       ->   keygeneration = 3
-    268435456: "4.0.0",       ->   keygeneration = 4
-    268500992: "4.0.1",       ->   keygeneration = 4
-    269484032: "4.1.0",       ->   keygeneration = 4
-    335544320: "5.0.0",       ->   keygeneration = 5
-    335609856: "5.0.1",       ->   keygeneration = 5
-    335675392: "5.0.2",       ->   keygeneration = 5
-    336592896: "5.1.0",       ->   keygeneration = 5
-    402653184: "6.0.0",       ->   keygeneration = 6
-    402718720: "6.0.1",       ->   keygeneration = 6
-    403701760: "6.1.0",       ->   keygeneration = 6
-	404750336: "6.2.0"        ->   keygeneration = 7
-	469762048: "7.0.0"        ->   keygeneration = 8
-	469827584: "7.0.1"        ->   keygeneration = 8
-	536870912: "8.0.0"        ->   keygeneration = 8
-	536936448: "8.0.1"        ->   keygeneration = 8
-	537919488: "8.1.0"        ->   keygeneration = 9
-	603979776: "9.0.0"        ->   keygeneration = 10
-	604045312: "9.0.1"        ->   keygeneration = 10
-	605028352: "9.1.0"        ->   keygeneration = 11
-	606076928: "9.2.0"        ->   keygeneration = 11
-	671088640: "10.0.0"       ->   keygeneration = 11
-	671154176: "10.0.1"       ->   keygeneration = 11
-	671219712: "10.0.2"       ->   keygeneration = 11
-	671285248: "10.0.3"       ->   keygeneration = 11
-	671350784: "10.0.4"       ->   keygeneration = 11
-	672137216: "10.1.0"       ->   keygeneration = 11
-	672202752: "10.1.1"       ->   keygeneration = 11
-	673185792: "10.2.0"       ->   keygeneration = 11
-	738197504: "11.0.0"       ->   keygeneration = 11
-	738263040: "11.0.1"       ->   keygeneration = 11
-	805306368: "12.0.0"       ->   keygeneration = 11	
-	805371904: "12.0.1"       ->   keygeneration = 11	
-	805437440: "12.0.2"       ->   keygeneration = 11	
-	805502976: "12.0.3"       ->   keygeneration = 11
-	806354944: "12.1.0"		  ->   keygeneration = 12
-	872415232: "13.0.0"		  ->   keygeneration = 13
-	873463808: "13.1.0"		  ->   keygeneration = 13	
+    0:           "1.0.0",       ->   keygeneration = 0
+    450:         "1.0.0",       ->   keygeneration = 0
+    65536:       "2.0.0",       ->   keygeneration = 1
+    131072:      "2.1.0",       ->   keygeneration = 1
+    196608:      "2.2.0",       ->   keygeneration = 1
+    262144:      "2.3.0",       ->   keygeneration = 1
+    201326592:   "3.0.0",       ->   keygeneration = 2
+    201392128:   "3.0.1",       ->   keygeneration = 3
+    201457664:   "3.0.2",       ->   keygeneration = 3
+    268435456:   "4.0.0",       ->   keygeneration = 4
+    268500992:   "4.0.1",       ->   keygeneration = 4
+    269484032:   "4.1.0",       ->   keygeneration = 4
+    335544320:   "5.0.0",       ->   keygeneration = 5
+    335609856:   "5.0.1",       ->   keygeneration = 5
+    335675392:   "5.0.2",       ->   keygeneration = 5
+    336592896:   "5.1.0",       ->   keygeneration = 5
+    402653184:   "6.0.0",       ->   keygeneration = 6
+    402718720:   "6.0.1",       ->   keygeneration = 6
+    403701760:   "6.1.0",       ->   keygeneration = 6
+	404750336:   "6.2.0"        ->   keygeneration = 7
+	469762048:   "7.0.0"        ->   keygeneration = 8
+	469827584:   "7.0.1"        ->   keygeneration = 8
+	536870912:   "8.0.0"        ->   keygeneration = 8
+	536936448:   "8.0.1"        ->   keygeneration = 8
+	537919488:   "8.1.0"        ->   keygeneration = 9
+	603979776:   "9.0.0"        ->   keygeneration = 10
+	604045312:   "9.0.1"        ->   keygeneration = 10
+	605028352:   "9.1.0"        ->   keygeneration = 11
+	606076928:   "9.2.0"        ->   keygeneration = 11
+	671088640:   "10.0.0"       ->   keygeneration = 11
+	671154176:   "10.0.1"       ->   keygeneration = 11
+	671219712:   "10.0.2"       ->   keygeneration = 11
+	671285248:   "10.0.3"       ->   keygeneration = 11
+	671350784:   "10.0.4"       ->   keygeneration = 11
+	672137216:   "10.1.0"       ->   keygeneration = 11
+	672202752:   "10.1.1"       ->   keygeneration = 11
+	673185792:   "10.2.0"       ->   keygeneration = 11
+	738197504:   "11.0.0"       ->   keygeneration = 11
+	738263040:   "11.0.1"       ->   keygeneration = 11
+	805306368:   "12.0.0"       ->   keygeneration = 11
+	805371904:   "12.0.1"       ->   keygeneration = 11
+	805437440:   "12.0.2"       ->   keygeneration = 11
+	805502976:   "12.0.3"       ->   keygeneration = 11
+	806354944:   "12.1.0"       ->   keygeneration = 12
+	872415232:   "13.0.0"       ->   keygeneration = 13
+	873463808:   "13.1.0"       ->   keygeneration = 13
+	874512404:   "13.2.0"       ->   keygeneration = 13
+	874578000:   "13.2.1"       ->   keygeneration = 13
+	939524096:   "14.0.0"       ->   keygeneration = 14
+	940572672:   "14.1.0"       ->   keygeneration = 14
+	940638208:   "14.1.1"       ->   keygeneration = 14
+	940703744:   "14.1.2"       ->   keygeneration = 14
+	1006632960:  "15.0.0"       ->   keygeneration = 15
+	1006698496:  "15.0.1"       ->   keygeneration = 15
+	1073741824:  "16.0.0"       ->   keygeneration = 16
+	1073807360:  "16.0.1"       ->   keygeneration = 16
+	1073872896:  "16.0.2"       ->   keygeneration = 16
+	1073938432:  "16.0.3"       ->   keygeneration = 16
+	1074790400:  "16.1.0"       ->   keygeneration = 16
+	1140851708:  "17.0.0"       ->   keygeneration = 17
+	1140916284:  "17.0.1"       ->   keygeneration = 17
+	1207960692:  "18.0.0"       ->   keygeneration = 18
+	
 '''
 def kgstring():
 	kg=list()
-	kg13=[872415232,873463808];kg.append(kg13)	
+	kg18=[1207960692];kg.append(kg18)
+	kg17=[1140851708,1140916284];kg.append(kg17)
+	kg16=[1073741824,1073807360,1073872896,1073938432,1074790400];kg.append(kg16)
+	kg15=[1006632960,1006698496];kg.append(kg15)
+	kg14=[939524096,940572672,940638208,940703744];kg.append(kg14)
+	kg13=[872415232,873463808,874512404,874578000];kg.append(kg13)	
 	kg12=[806354944];kg.append(kg12)
 	kg11=[605028352,606076928,671088640,671154176,671219712,671285248,671350784,672137216,672202752,673185792,738197504,738263040,805306368,805371904,805437440,805502976];kg.append(kg11)
 	kg10=[603979776,604045312];kg.append(kg10)
@@ -151,7 +173,17 @@ def getTopRSV(keygeneration, RSV):
 	if keygeneration == 12:
 		return 806354944		
 	if keygeneration == 13:
-		return 872415232			
+		return 872415232
+	if keygeneration == 14:
+		return 939524096
+	if keygeneration == 15:
+		return 1006632960	
+	if keygeneration == 16:
+		return 1073741824
+	if keygeneration == 17:
+		return 1140851708
+	if keygeneration == 18:
+		return 1207960692
 	else:
 		return RSV
 
@@ -188,11 +220,29 @@ def getMinRSV(keygeneration, RSV):
 		RSV=9*67108864
 		return RSV
 	if keygeneration == 11:
-		RSV=9*67108864+2*1048576+0*65796+0*1
+		RSV=9*67108864+1*1048576+0*65796+0*1
 		return RSV
-	if keygeneration == 11:
+	if keygeneration == 12:
 		RSV=12*67108864+1*1048576+0*65796+0*1
-		return RSV		
+		return RSV
+	if keygeneration == 13:
+		RSV=13*67108864+0*1048576+0*65796+0*1
+		return RSV
+	if keygeneration == 14:
+		RSV=14*67108864+0*1048576+0*65796+0*1
+		return RSV
+	if keygeneration == 15:
+		RSV=15*67108864+0*1048576+0*65796+0*1
+		return RSV
+	if keygeneration == 16:
+		RSV=16*67108864+0*1048576+0*65796+0*1
+		return RSV
+	if keygeneration == 17:
+		RSV=17*67108864+0*1048576+0*65796+0*1
+		return RSV
+	if keygeneration == 18:
+		RSV=18*67108864+0*1048576+0*65796+0*1
+		return RSV
 	else:
 		return RSV
 
@@ -224,7 +274,17 @@ def getFWRangeKG(keygeneration):
 	if keygeneration == 12:
 		return "(12.1.0)"	
 	if keygeneration == 13:
-		return "(>= 13.0.0)"			
+		return "(13.0.0 - 13.2.1)"	
+	if keygeneration == 14:
+		return "(14.0.0 - 14.1.2)"	
+	if keygeneration == 15:
+		return "(15.0.0 - 15.0.1)"
+	if keygeneration == 16:
+		return "(16.0.0 - 16.1.0)"
+	if keygeneration == 17:
+		return "(17.0.0 - 17.0.1)"
+	if keygeneration == 18:
+		return "(>= 18.0.0)"
 	else:
 		return "UNKNOWN"
 
@@ -542,8 +602,36 @@ def verify_nkeys(fileName):
 		print("master_key_09 is Missing")
 	else:
 		counter+=1
-	if 'master_key_10' not in checkkeys and 'master_key_0a' not in checkkeys:
-		print("master_key_10|master_key_0a is Missing")
+	if 'master_key_0a' not in checkkeys:
+		print("master_key_0a is Missing")
+	else:
+		counter+=1
+	if 'master_key_0b' not in checkkeys:
+		print("master_key_0b is Missing")
+	else:
+		counter+=1
+	if 'master_key_0c' not in checkkeys:
+		print("master_key_0c is Missing")
+	else:
+		counter+=1
+	if 'master_key_0d' not in checkkeys:
+		print("master_key_0d is Missing")
+	else:
+		counter+=1
+	if 'master_key_0e' not in checkkeys:
+		print("master_key_0e is Missing")
+	else:
+		counter+=1
+	if 'master_key_0f' not in checkkeys:
+		print("master_key_0f is Missing")
+	else:
+		counter+=1
+	if 'master_key_10' not in checkkeys:
+		print("master_key_10 is Missing")
+	else:
+		counter+=1
+	if 'master_key_11' not in checkkeys:
+		print("master_key_11 is Missing")
 	else:
 		counter+=1
 
@@ -745,12 +833,89 @@ def verify_nkeys(fileName):
 				print(tabs+'> Key is invalid!!! -> PLEASE CHECK YOUR KEYS.TXT!!!')
 			print('')
 
-		if i == 'master_key_10' or i == 'master_key_0a':
-			master_key_10=checkkeys[i][:]
-			print('master_key_10|master_key_0a: '+master_key_10)
-			sha=sha256(uhx(master_key_10)).hexdigest()
+		if i == 'master_key_0a':
+			master_key_0a=checkkeys[i][:]
+			print('master_key_0a: '+master_key_0a)
+			sha=sha256(uhx(master_key_0a)).hexdigest()
 			print('  > HEX SHA256: '+sha)
 			if sha == '4ec5a237a75a083a9c5f6cf615601522a7f822d06bd4ba32612c9cebbb29bd45':
+				print(tabs+'> Key is valid!!!')
+			else:
+				print(tabs+'> Key is invalid!!! -> PLEASE CHECK YOUR KEYS.TXT!!!')
+			print('')
+			
+		if i == 'master_key_0b':
+			master_key_0b=checkkeys[i][:]
+			print('master_key_0b: '+master_key_0b)
+			sha=sha256(uhx(master_key_0b)).hexdigest()
+			print('  > HEX SHA256: '+sha)
+			if sha == '7f72f59a2784cf94b521ee114d68f100217a6fdb6fefc770b7c5267db7b148b0':
+				print(tabs+'> Key is valid!!!')
+			else:
+				print(tabs+'> Key is invalid!!! -> PLEASE CHECK YOUR KEYS.TXT!!!')
+			print('')
+			
+		if i == 'master_key_0c':
+			master_key_0c=checkkeys[i][:]
+			print('master_key_0c: '+master_key_0c)
+			sha=sha256(uhx(master_key_0c)).hexdigest()
+			print('  > HEX SHA256: '+sha)
+			if sha == 'f7f14661a41870d882570d4afa951077e57a2c951a2cc3ba279fb9ac12be6fce':
+				print(tabs+'> Key is valid!!!')
+			else:
+				print(tabs+'> Key is invalid!!! -> PLEASE CHECK YOUR KEYS.TXT!!!')
+			print('')
+			
+		if i == 'master_key_0d':
+			master_key_0d=checkkeys[i][:]
+			print('master_key_0d: '+master_key_0d)
+			sha=sha256(uhx(master_key_0d)).hexdigest()
+			print('  > HEX SHA256: '+sha)
+			if sha == '5dcc229fc0ad897af8c1cead84aedecb6d621d5d9f67486e60e1acf1b85bf4ba':
+				print(tabs+'> Key is valid!!!')
+			else:
+				print(tabs+'> Key is invalid!!! -> PLEASE CHECK YOUR KEYS.TXT!!!')
+			print('')
+			
+		if i == 'master_key_0e':
+			master_key_0e=checkkeys[i][:]
+			print('master_key_0e: '+master_key_0e)
+			sha=sha256(uhx(master_key_0e)).hexdigest()
+			print('  > HEX SHA256: '+sha)
+			if sha == '4c0e48bf968f4c50920f35abfc7e68b3a46a682db4729b8e7f21d2e2efbcf909':
+				print(tabs+'> Key is valid!!!')
+			else:
+				print(tabs+'> Key is invalid!!! -> PLEASE CHECK YOUR KEYS.TXT!!!')
+			print('')
+			
+		if i == 'master_key_0f':
+			master_key_0f=checkkeys[i][:]
+			print('master_key_0f: '+master_key_0f)
+			sha=sha256(uhx(master_key_0f)).hexdigest()
+			print('  > HEX SHA256: '+sha)
+			if sha == '7badc190f34e6fa0b8c3343aa6594a9f22cfbbeb0dda1439a65af568b685d71e':
+				print(tabs+'> Key is valid!!!')
+			else:
+				print(tabs+'> Key is invalid!!! -> PLEASE CHECK YOUR KEYS.TXT!!!')
+			print('')
+			
+		if i == 'master_key_10':
+			master_key_10=checkkeys[i][:]
+			print('master_key_10: '+master_key_10)
+			sha=sha256(uhx(master_key_10)).hexdigest()
+			print('  > HEX SHA256: '+sha)
+			if sha == '4a9b09a4c4923fd0d71054d3b4b9e839a0281d5f049bfdd717f29819d5663b67':
+				print(tabs+'> Key is valid!!!')
+			else:
+				print(tabs+'> Key is invalid!!! -> PLEASE CHECK YOUR KEYS.TXT!!!')
+			print('')
+		
+		if i == 'master_key_11':
+			master_key_11=checkkeys[i][:]
+			print('master_key_11: '+master_key_11)
+			sha=sha256(uhx(master_key_11)).hexdigest()
+			print('  > HEX SHA256: '+sha)
+			if sha == '21235cdedccd725bd07726aaff7673869c48ba5d691a751ae2c3a4701792cf62':
 				print(tabs+'> Key is valid!!!')
 			else:
 				print(tabs+'> Key is invalid!!! -> PLEASE CHECK YOUR KEYS.TXT!!!')
@@ -881,14 +1046,63 @@ def verify_nkeys_startup(fileName):
 	if 'master_key_09' not in checkkeys:
 		print("master_key_09 is Missing!!!")
 		print("The program won't be able to decrypt games content that uses this key")
-		print("This key represents FW 9.0 requirement")
+		print("This key represents FW 8.1.0 requirement")
 		startup=True
 	else:
 		counter+=1
-	if 'master_key_10' not in checkkeys and 'master_key_0a' not in checkkeys:
-		print("master_key_10|master_key_0a is Missing!!!")
+	if 'master_key_0a' not in checkkeys:
+		print("master_key_0a is Missing!!!")
 		print("The program won't be able to decrypt games content that uses this key")
-		print("This key represents FW 9.1-10.04 requirement")
+		print("This key represents FW 9.0-9.0.1 requirement")
+		startup=True
+	else:
+		counter+=1
+	if 'master_key_0b' not in checkkeys:
+		print("master_key_0b is Missing!!!")
+		print("The program won't be able to decrypt games content that uses this key")
+		print("This key represents FW 9.1-12.0.3 requirement")
+		startup=True
+	else:
+		counter+=1
+	if 'master_key_0c' not in checkkeys:
+		print("master_key_0c is Missing!!!")
+		print("The program won't be able to decrypt games content that uses this key")
+		print("This key represents FW 13.0.0-13.2.1 requirement")
+		startup=True
+	else:
+		counter+=1
+	if 'master_key_0d' not in checkkeys:
+		print("master_key_0d is Missing!!!")
+		print("The program won't be able to decrypt games content that uses this key")
+		print("This key represents FW 14.0.0-14.1.2 requirement")
+		startup=True
+	else:
+		counter+=1
+	if 'master_key_0e' not in checkkeys:
+		print("master_key_0e is Missing!!!")
+		print("The program won't be able to decrypt games content that uses this key")
+		print("This key represents FW 15.0.0-15.0.1 requirement")
+		startup=True
+	else:
+		counter+=1
+	if 'master_key_0f' not in checkkeys:
+		print("master_key_0f is Missing!!!")
+		print("The program won't be able to decrypt games content that uses this key")
+		print("This key represents FW 16.0.0-16.1.0 requirement")
+		startup=True
+	else:
+		counter+=1
+	if 'master_key_10' not in checkkeys:
+		print("master_key_10 is Missing!!!")
+		print("The program won't be able to decrypt games content that uses this key")
+		print("This key represents FW 17.0.0-17.0.1 requirement")
+		startup=True
+	else:
+		counter+=1
+	if 'master_key_11' not in checkkeys:
+		print("master_key_11 is Missing!!!")
+		print("The program won't be able to decrypt games content that uses this key")
+		print("This key represents FW 18.0.0+ requirement")
 		startup=True
 	else:
 		counter+=1
@@ -1077,11 +1291,81 @@ def verify_nkeys_startup(fileName):
 				startup=True
 			print('')
 
-		if (i == 'master_key_10' or i=='master_key_0a'):
+		if (i=='master_key_0a'):
+			master_key_0a=checkkeys[i][:]
+			sha=sha256(uhx(master_key_0a)).hexdigest()
+			if sha != '4ec5a237a75a083a9c5f6cf615601522a7f822d06bd4ba32612c9cebbb29bd45':
+				print('master_key_0a: '+aes_kek_generation_source )
+				print('  > HEX SHA256: '+sha)
+				print(tabs+'> Key is invalid!!! -> PLEASE CHECK YOUR KEYS.TXT!!!')
+				startup=True
+			print('')
+			
+		if (i=='master_key_0b'):
+			master_key_0b=checkkeys[i][:]
+			sha=sha256(uhx(master_key_0b)).hexdigest()
+			if sha != '7f72f59a2784cf94b521ee114d68f100217a6fdb6fefc770b7c5267db7b148b0':
+				print('master_key_0b: '+aes_kek_generation_source )
+				print('  > HEX SHA256: '+sha)
+				print(tabs+'> Key is invalid!!! -> PLEASE CHECK YOUR KEYS.TXT!!!')
+				startup=True
+			print('')
+			
+		if (i=='master_key_0c'):
+			master_key_0c=checkkeys[i][:]
+			sha=sha256(uhx(master_key_0c)).hexdigest()
+			if sha != 'f7f14661a41870d882570d4afa951077e57a2c951a2cc3ba279fb9ac12be6fce':
+				print('master_key_0c: '+aes_kek_generation_source )
+				print('  > HEX SHA256: '+sha)
+				print(tabs+'> Key is invalid!!! -> PLEASE CHECK YOUR KEYS.TXT!!!')
+				startup=True
+			print('')
+			
+		if (i=='master_key_0d'):
+			master_key_0d=checkkeys[i][:]
+			sha=sha256(uhx(master_key_0d)).hexdigest()
+			if sha != '5dcc229fc0ad897af8c1cead84aedecb6d621d5d9f67486e60e1acf1b85bf4ba':
+				print('master_key_0d: '+aes_kek_generation_source )
+				print('  > HEX SHA256: '+sha)
+				print(tabs+'> Key is invalid!!! -> PLEASE CHECK YOUR KEYS.TXT!!!')
+				startup=True
+			print('')
+			
+		if (i=='master_key_0e'):
+			master_key_0e=checkkeys[i][:]
+			sha=sha256(uhx(master_key_0e)).hexdigest()
+			if sha != '4c0e48bf968f4c50920f35abfc7e68b3a46a682db4729b8e7f21d2e2efbcf909':
+				print('master_key_0e: '+aes_kek_generation_source )
+				print('  > HEX SHA256: '+sha)
+				print(tabs+'> Key is invalid!!! -> PLEASE CHECK YOUR KEYS.TXT!!!')
+				startup=True
+			print('')
+			
+		if (i=='master_key_0f'):
+			master_key_0f=checkkeys[i][:]
+			sha=sha256(uhx(master_key_0f)).hexdigest()
+			if sha != '7badc190f34e6fa0b8c3343aa6594a9f22cfbbeb0dda1439a65af568b685d71e':
+				print('master_key_0f: '+aes_kek_generation_source )
+				print('  > HEX SHA256: '+sha)
+				print(tabs+'> Key is invalid!!! -> PLEASE CHECK YOUR KEYS.TXT!!!')
+				startup=True
+			print('')
+			
+		if (i=='master_key_10'):
 			master_key_10=checkkeys[i][:]
 			sha=sha256(uhx(master_key_10)).hexdigest()
-			if sha != '4ec5a237a75a083a9c5f6cf615601522a7f822d06bd4ba32612c9cebbb29bd45':
-				print('master_key_10|master_key_0a: '+aes_kek_generation_source )
+			if sha != '4a9b09a4c4923fd0d71054d3b4b9e839a0281d5f049bfdd717f29819d5663b67':
+				print('master_key_10: '+aes_kek_generation_source )
+				print('  > HEX SHA256: '+sha)
+				print(tabs+'> Key is invalid!!! -> PLEASE CHECK YOUR KEYS.TXT!!!')
+				startup=True
+			print('')
+			
+		if (i=='master_key_11'):
+			master_key_11=checkkeys[i][:]
+			sha=sha256(uhx(master_key_11)).hexdigest()
+			if sha != '21235cdedccd725bd07726aaff7673869c48ba5d691a751ae2c3a4701792cf62':
+				print('master_key_11: '+aes_kek_generation_source )
 				print('  > HEX SHA256: '+sha)
 				print(tabs+'> Key is invalid!!! -> PLEASE CHECK YOUR KEYS.TXT!!!')
 				startup=True
