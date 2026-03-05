@@ -112,11 +112,11 @@ def load(fileName):
 	aes_key_generation_source = uhx(keys['aes_key_generation_source'])
 
 	keyAreaKeys = []
-	for i in range(20):
+	for i in range(28):
 		keyAreaKeys.append([None, None, None])
 
 	
-	for i in range(20):
+	for i in range(28):
 		if i<10:
 			masterKeyName = 'master_key_0' + str(i)
 		else:
