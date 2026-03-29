@@ -9,6 +9,22 @@ keys = {}
 titleKeks = []
 keyAreaKeys = []
 
+
+def _master_key_name(index):
+	return 'master_key_%02d' % int(index)
+
+
+def _parse_master_key_suffix(suffix, force_hex=False):
+	# Support both legacy hex-like names (e.g. 0a) and decimal names (e.g. 10).
+	suffix = suffix.strip().lower()
+	if force_hex and re.fullmatch('[0-9a-f]+', suffix):
+		return int(suffix, 16)
+	if re.search('[a-f]', suffix):
+		return int(suffix, 16)
+	if len(suffix) == 2 and suffix.startswith('0'):
+		return int(suffix, 16)
+	return int(suffix, 10)
+
 def getMasterKeyIndex(i):
 	if i > 0:
 		return i-1
@@ -16,14 +32,19 @@ def getMasterKeyIndex(i):
 		return 0
 
 def keyAreaKey(cryptoType, i):
-	# print(cryptoType)
-	# print(i)
-	return keyAreaKeys[cryptoType][i]
+	if cryptoType < 0 or cryptoType >= len(keyAreaKeys):
+		raise IOError('missing key area key generation %d in keys.txt' % cryptoType)
+	key = keyAreaKeys[cryptoType][i]
+	if key is None:
+		raise IOError('missing key area key generation %d/%d in keys.txt' % (cryptoType, i))
+	return key
 
 def get(key):
 	return keys[key]
 	
 def getTitleKek(i):
+	if i < 0 or i >= len(titleKeks) or titleKeks[i] is None:
+		raise IOError('missing titlekek generation %d in keys.txt' % i)
 	return titleKeks[i]
 	
 def decryptTitleKey(key, i):
@@ -77,33 +98,35 @@ def getKey(key):
 	return uhx(keys[key])
 
 def masterKey(masterKeyIndex):
-	return getKey('master_key_0' + str(masterKeyIndex))
+	return getKey(_master_key_name(masterKeyIndex))
 
 def load(fileName):
 	global keyAreaKeys
 	global titleKeks
 
+	entries = []
+	master_suffixes = []
 	with open(fileName, encoding="utf8") as f:
 		for line in f.readlines():
-			r = re.match('\s*([a-z0-9_]+)\s*=\s*([A-F0-9]+)\s*', line, re.I)
+			r = re.match(r'\s*([a-z0-9_]+)\s*=\s*([A-F0-9]+)\s*', line, re.I)
 			if r:
-				keyname=r.group(1)
+				keyname = r.group(1)
+				keyvalue = r.group(2)
+				entries.append((keyname, keyvalue))
 				if keyname.startswith('master_key_'):
-					if keyname[-2]!='0':
-						num=keyname[-2:]
-					else:	
-						num=keyname[-1]
-					try:	
-						num=int(int(num,16))
-					except:
-						num=int(num,10)
-					if len(str(num))<2:
-						num='0'+str(num)
-					keyname='master_key_'+str(num)	
-				keys[keyname] = r.group(2)				
-		if 'master_key_16' in keys.keys() and not 'master_key_10' in keys.keys() and not 'master_key_11' in keys.keys() and not 'master_key_12' in keys.keys() and not 'master_key_13' in keys.keys() and not 'master_key_14' in keys.keys() and not 'master_key_15' in keys.keys():
-			keys['master_key_10'] = keys['master_key_16']
-			del keys['master_key_16']
+					suffix = keyname.split('master_key_', 1)[1]
+					if re.fullmatch('[0-9a-f]+', suffix, re.I):
+						master_suffixes.append(suffix.lower())
+
+	hex_series = any(re.search('[a-f]', s) for s in master_suffixes)
+
+	for keyname, keyvalue in entries:
+		if keyname.startswith('master_key_'):
+			suffix = keyname.split('master_key_', 1)[1]
+			if re.fullmatch('[0-9a-f]+', suffix, re.I):
+				num = _parse_master_key_suffix(suffix, force_hex=hex_series)
+				keyname = _master_key_name(num)
+		keys[keyname] = keyvalue
 		# for k in keys.keys():
 			# print(k)
 	
@@ -111,21 +134,26 @@ def load(fileName):
 	aes_kek_generation_source = uhx(keys['aes_kek_generation_source'])
 	aes_key_generation_source = uhx(keys['aes_key_generation_source'])
 
-	keyAreaKeys = []
-	for i in range(20):
-		keyAreaKeys.append([None, None, None])
+	master_indices = []
+	for keyname in keys.keys():
+		if keyname.startswith('master_key_'):
+			try:
+				master_indices.append(int(keyname.split('master_key_', 1)[1], 10))
+			except Exception:
+				pass
 
-	
-	for i in range(20):
-		if i<10:
-			masterKeyName = 'master_key_0' + str(i)
-		else:
-			masterKeyName = 'master_key_' + str(i)			
+	max_generation = max(master_indices) if master_indices else 0
+
+	titleKeks = [None] * (max_generation + 1)
+	keyAreaKeys = [[None, None, None] for _ in range(max_generation + 1)]
+
+	for i in range(max_generation + 1):
+		masterKeyName = _master_key_name(i)
 		if masterKeyName in keys.keys():
 			# aes_decrypt(master_ctx, &keyset->titlekeks[i], keyset->titlekek_source, 0x10);
 			masterKey = uhx(keys[masterKeyName])
 			crypto = aes128.AESECB(masterKey)
-			titleKeks.append(crypto.decrypt(uhx(keys['titlekek_source'])).hex())
+			titleKeks[i] = crypto.decrypt(uhx(keys['titlekek_source'])).hex()
 			keyAreaKeys[i][0] = generateKek(uhx(keys['key_area_key_application_source']), masterKey, aes_kek_generation_source, aes_key_generation_source)
 			keyAreaKeys[i][1] = generateKek(uhx(keys['key_area_key_ocean_source']), masterKey, aes_kek_generation_source, aes_key_generation_source)
 			keyAreaKeys[i][2] = generateKek(uhx(keys['key_area_key_system_source']), masterKey, aes_kek_generation_source, aes_key_generation_source)

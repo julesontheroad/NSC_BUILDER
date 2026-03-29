@@ -1,7 +1,7 @@
 ::--------------------------------------------------------------
 ::SET CUSTOM COLOR FOR THE BATCH FILES
 ::--------------------------------------------------------------
-color 1F
+rem color 0F
 ::--------------------------------------------------------------
 ::OPTION 1: FOLDERS
 ::--------------------------------------------------------------
@@ -26,7 +26,7 @@ set "infobat=ztools\info.bat"
 ::OPTION 3: SQUIRREL OPTIONS
 ::--------------------------------------------------------------
 ::python command
-set "pycommand=py -3"
+set "pycommand=py -3.10"
 ::Buffer for the copy functions. 
 ::Change the number for the number of bytes that works best for you
 ::32768=32kB ; 65536=64kB

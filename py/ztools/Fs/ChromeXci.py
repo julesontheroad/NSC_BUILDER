@@ -6312,11 +6312,20 @@ class ChromeXci(File):
 		indent = 1
 		tabs = '\t' * indent
 		ticketlist=list()
-		if keypatch != 'false':
+		keypatch_raw = str(keypatch).strip().lower()
+		metapatch = str(metapatch).strip().lower()
+		try:
+			RSV_cap = int(str(RSV_cap).strip())
+		except:
+			RSV_cap = 268435656
+		if keypatch_raw in ('false', 'none', ''):
+			keypatch = 'false'
+		else:
 			try:
-				keypatch = int(keypatch)
+				keypatch = int(keypatch_raw)
 			except:
 				print("New keygeneration is no valid integer")
+				keypatch = 'false'
 		for nspF in self.hfs0:
 			if str(nspF._path)=="secure":
 				for file in nspF:
@@ -6548,7 +6557,14 @@ class ChromeXci(File):
 													target.close()
 												else:
 													target.close()
-													minRSV=sq_tools.getMinRSV(keypatch,RSV_cap)
+													if keypatch == 'false':
+														keygen_for_rsv = target.header.getCryptoType2()
+													else:
+														try:
+															keygen_for_rsv = int(keypatch)
+														except:
+															keygen_for_rsv = target.header.getCryptoType2()
+													minRSV=sq_tools.getMinRSV(keygen_for_rsv,RSV_cap)
 													if int(minRSV)>int(RSV_cap):
 														RSV_cap=minRSV
 													self.patcher_meta(metafile,RSV_cap,t)

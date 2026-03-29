@@ -462,9 +462,7 @@ if /i "%bs%"=="14" set "v_colB=C"
 if /i "%bs%"=="15" set "v_colB=D"
 if /i "%bs%"=="16" set "v_colB=E"
 
-if /i "%bs%"=="d" set "v_colF=F"
-if /i "%bs%"=="d" set /a "v_colB=1"
-if /i "%bs%"=="d" goto do_set_col
+if /i "%bs%"=="d" goto do_set_col_default
 
 if /i "%bs%"=="b" goto sc3
 if /i "%bs%"=="0" goto sc1
@@ -478,6 +476,15 @@ color !v_col!
 echo.
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "3" -nl "Line in config was changed to: "
 endlocal
+echo.
+pause
+goto sc3
+
+:do_set_col_default
+color
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "3" -nl "rem color 0F"
+echo.
+%pycommand% "%listmanager%" -rl "%op_file%" -ln "3" -nl "Line in config was changed to: "
 echo.
 pause
 goto sc3
@@ -1185,14 +1192,9 @@ exit /B
 echo.
 echo **GLOBAL OPTIONS**
 REM OP_COLOR
-set "v_colF=F"
-set /a "v_colB=1"
-setlocal enabledelayedexpansion
-set "v_col=!v_colB!!v_colF!"
-color !v_col!
-%pycommand% "%listmanager%" -cl "%op_file%" -ln "3" -nl "color !v_col!"
+color
+%pycommand% "%listmanager%" -cl "%op_file%" -ln "3" -nl "rem color 0F"
 %pycommand% "%listmanager%" -rl "%op_file%" -ln "3" -nl "Line in config was changed to: "
-endlocal
 
 REM w_folder
 set "v_wf=NSCB_temp"

@@ -309,6 +309,53 @@ if __name__ == '__main__':
 		import pykakasi
 		from Fs.pyNCA3 import NCA3
 		from shutil import disk_usage				
+
+		def _max_supported_keygeneration():
+			max_master_index = -1
+			for keyname in Keys.keys.keys():
+				match = re.match(r'^master_key_(\d+)$', str(keyname))
+				if not match:
+					continue
+				try:
+					master_index = int(match.group(1))
+				except:
+					continue
+				if master_index > max_master_index:
+					max_master_index = master_index
+			if max_master_index < 0:
+				return None
+			# Content keygeneration N uses master_key_(N-1).
+			return max_master_index + 1
+
+		def _default_patchversion_number(fallback=336592896):
+			try:
+				supported_kg = _max_supported_keygeneration()
+				if supported_kg is None:
+					return fallback
+				if supported_kg < 0:
+					return fallback
+				number = sq_tools.getMinRSV(int(supported_kg), 0)
+				if isinstance(number, int) and number > 0:
+					return number
+			except:
+				pass
+			return fallback
+
+		def _resolve_patchversion_number(raw_value):
+			value = str(raw_value).strip().lower()
+			if value in ('false', 'none', 'auto', ''):
+				return _default_patchversion_number()
+			number = int(value)
+			supported_kg = _max_supported_keygeneration()
+			if supported_kg is None:
+				return number
+			try:
+				requested_kg = sq_tools.kg_by_RSV(number)
+			except:
+				requested_kg = 'unknown'
+			if requested_kg != 'unknown' and requested_kg > supported_kg:
+				return _default_patchversion_number()
+			return number
 			
 		if args.library_call:
 			if (args.library_call[0]).startswith('Drive.'):
@@ -5830,12 +5877,14 @@ if __name__ == '__main__':
 		if args.patchversion:
 			for input in args.patchversion:
 				try:
-					number = int(input)
+					number = _resolve_patchversion_number(input)
 					break
 				except BaseException as e:
 					Print.error('Exception: ' + str(e))
 			else:
-				number = 336592896
+				number = _default_patchversion_number()
+		else:
+			number = _default_patchversion_number()
 		if args.set_cnmt_RSV:
 			for filename in args.set_cnmt_RSV:
 				if filename.endswith('.nca'):

@@ -1,5 +1,5 @@
 @ECHO OFF
-set "pycommand=py -3"
+set "pycommand=py -3.10"
 set "op_file=%~dp0zconfig/NSCB_options.cmd"
 call :program_logo
 setlocal

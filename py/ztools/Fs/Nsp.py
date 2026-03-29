@@ -87,6 +87,89 @@ class Section:
 		self.cryptoKey = f.read(16)
 		self.cryptoCounter = f.read(16)
 
+
+class NCZBlockReader:
+	def __init__(self, f, blockSize, compressedBlockSizes, decompressedSize):
+		self.f = f
+		self.blockSize = int(blockSize)
+		self.compressedBlockSizes = compressedBlockSizes
+		self.decompressedRemaining = int(decompressedSize)
+		self.blockIndex = 0
+		self.blockOffset = 0
+		self.blockData = b''
+		self.dctx = zstandard.ZstdDecompressor()
+
+	def _load_next_block(self):
+		if self.blockIndex >= len(self.compressedBlockSizes) or self.decompressedRemaining <= 0:
+			self.blockData = b''
+			self.blockOffset = 0
+			return False
+
+		compSize = int(self.compressedBlockSizes[self.blockIndex])
+		self.blockIndex += 1
+		if compSize < 0:
+			raise IOError('Invalid NCZBLOCK compressed block size: %d' % compSize)
+
+		compressed = self.f.read(compSize)
+		if len(compressed) != compSize:
+			raise IOError('Unexpected EOF while reading NCZBLOCK compressed block')
+
+		expected = self.blockSize if self.decompressedRemaining > self.blockSize else self.decompressedRemaining
+		try:
+			block = self.dctx.decompress(compressed, max_output_size=self.blockSize)
+		except zstandard.ZstdError:
+			if len(compressed) == expected:
+				# Some producers may store an uncompressed tail block.
+				block = compressed
+			else:
+				raise
+
+		if len(block) > expected:
+			block = block[:expected]
+		self.decompressedRemaining -= len(block)
+		self.blockData = block
+		self.blockOffset = 0
+		return len(block) > 0
+
+	def read(self, size):
+		if size is None or size < 0:
+			size = self.decompressedRemaining
+		if size == 0:
+			return b''
+
+		out = bytearray()
+		while len(out) < size:
+			if self.blockOffset >= len(self.blockData):
+				if not self._load_next_block():
+					break
+
+			available = len(self.blockData) - self.blockOffset
+			need = size - len(out)
+			take = available if available < need else need
+			out += self.blockData[self.blockOffset:self.blockOffset + take]
+			self.blockOffset += take
+
+		return bytes(out)
+
+
+def get_ncz_reader(f):
+	probe = f.read(8)
+	if probe == b'NCZBLOCK':
+		version = int.from_bytes(f.read(1), byteorder='little', signed=False)
+		if version not in (1, 2):
+			raise IOError('Unsupported NCZBLOCK version: %d' % version)
+		f.read(1) # compression type/reserved
+		f.read(1) # reserved
+		blockPower = int.from_bytes(f.read(1), byteorder='little', signed=False)
+		blockCount = int.from_bytes(f.read(4), byteorder='little', signed=False)
+		decompressedSize = int.from_bytes(f.read(8), byteorder='little', signed=False)
+		blockSizes = [int.from_bytes(f.read(4), byteorder='little', signed=False) for _ in range(blockCount)]
+		return NCZBlockReader(f, 1 << blockPower, blockSizes, decompressedSize)
+
+	f.seek(-8, os.SEEK_CUR)
+	dctx = zstandard.ZstdDecompressor()
+	return dctx.stream_reader(f)
+
 class Nsp(Pfs0):
 
 	def __init__(self, path = None, mode = 'rb'):
@@ -258,13 +341,13 @@ class Nsp(Pfs0):
 		self.path = path
 		self.version = '0'
 
-		z = re.match('.*\[([a-zA-Z0-9]{16})\].*', path, re.I)
+		z = re.match(r'.*\[([a-zA-Z0-9]{16})\].*', path, re.I)
 		if z:
 			self.titleId = z.groups()[0].upper()
 		else:
 			self.titleId = None
 
-		z = re.match('.*\[v([0-9]+)\].*', path, re.I)
+		z = re.match(r'.*\[v([0-9]+)\].*', path, re.I)
 		if z:
 			self.version = z.groups()[0]
 
@@ -313,8 +396,8 @@ class Nsp(Pfs0):
 		return True
 
 	def cleanFilename(self, s):
-		#s = re.sub('\s+\Demo\s*', ' ', s, re.I)
-		s = re.sub('\s*\[DLC\]\s*', '', s, re.I)
+		#s = re.sub(r'\s+\\Demo\s*', ' ', s, re.I)
+		s = re.sub(r'\s*\[DLC\]\s*', '', s, re.I)
 		s = re.sub(r'[\/\\\:\*\?\"\<\>\|\.\s™©®()\~]+', ' ', s)
 		return s.strip()
 
@@ -2471,7 +2554,7 @@ class Nsp(Pfs0):
 							message='Table offset = '+ str(hx((offset+0x20).to_bytes(2, byteorder='big')));print(message);feed+=message+'\n'
 							message='Number of content = '+ str(content_entries);print(message);feed+=message+'\n'
 							message='Number of meta entries = '+ str(meta_entries);print(message);feed+=message+'\n'
-							message='Application id\Patch id = ' + (str(hx(original_ID.to_bytes(8, byteorder='big')))[2:-1]).upper();print(message);feed+=message+'\n'
+							message='Application id\\Patch id = ' + (str(hx(original_ID.to_bytes(8, byteorder='big')))[2:-1]).upper();print(message);feed+=message+'\n'
 							content_name=str(cnmt._path)
 							content_name=content_name[:-22]
 							if content_name == 'AddOnContent':
@@ -6756,12 +6839,21 @@ class Nsp(Pfs0):
 		tabs = '\t' * indent
 		ticketlist=list()
 		buffer=int(buffer)
-		targetZ=target[:-1]+'z'
-		if keypatch != 'false':
+		keypatch_raw = str(keypatch).strip().lower()
+		metapatch = str(metapatch).strip().lower()
+		try:
+			RSV_cap = int(str(RSV_cap).strip())
+		except:
+			RSV_cap = 268435656
+		if keypatch_raw in ('false', 'none', ''):
+			keypatch = 'false'
+		else:
 			try:
-				keypatch = int(keypatch)
+				keypatch = int(keypatch_raw)
 			except:
 				print("New keygeneration is no valid integer")
+				keypatch = 'false'
+		targetZ=target[:-1]+'z'
 		for file in self:
 			if type(file) == Ticket:
 				masterKeyRev = file.getMasterKeyRevision()
@@ -7002,7 +7094,14 @@ class Nsp(Pfs0):
 											target.close()
 										else:
 											target.close()
-											minRSV=sq_tools.getMinRSV(keypatch,RSV_cap)
+											if keypatch == 'false':
+												keygen_for_rsv = target.header.getCryptoType2()
+											else:
+												try:
+													keygen_for_rsv = int(keypatch)
+												except:
+													keygen_for_rsv = target.header.getCryptoType2()
+											minRSV=sq_tools.getMinRSV(keygen_for_rsv,RSV_cap)
 											if int(minRSV)>int(RSV_cap):
 												RSV_cap=minRSV
 											self.patcher_meta(metafile,RSV_cap,t)
@@ -10070,8 +10169,7 @@ class Nsp(Pfs0):
 						for i in range(sectionCount):
 							sections.append(Section(nca))
 						# print(sections)
-						dctx = zstandard.ZstdDecompressor()
-						reader = dctx.stream_reader(nca)
+						reader = get_ncz_reader(nca)
 						with open(output, 'rb+') as o:
 							o.seek(0, os.SEEK_END)
 							curr_off= o.tell()
@@ -10082,8 +10180,6 @@ class Nsp(Pfs0):
 							timestamp = time.time()
 							t.write('  Writing decompressed body in plaintext')
 							count=0;checkstarter=0
-							dctx = zstandard.ZstdDecompressor()
-							reader = dctx.stream_reader(nca)
 							c=0;spsize=0
 							for s in sections:
 								end = s.offset + s.size
@@ -10348,8 +10444,7 @@ class Nsp(Pfs0):
 					sections.append(Section(f))
 				# print(sections)
 				count=0;checkstarter=0
-				dctx = zstandard.ZstdDecompressor()
-				reader = dctx.stream_reader(f)
+				reader = get_ncz_reader(f)
 				c=0;spsize=0
 				for s in sections:
 					end = s.offset + s.size
