@@ -162,6 +162,35 @@ The behavior of the auto-mode is configured trough the “Configuration menu in 
     * Push SX autoloader files from library folder
     * Run collision check, cleanup unused SD autoloader files, cleanup colliding autoloader files pointing to HDD (In case a xci with that id is already in the SD)
 
+### Bundled update version in Astris
+
+In **Mode 2: Multi packing**, choose **6** to generate a ticketless NSP whose
+Application metadata references the newest matching update's Control NCA. For
+example, a base game with display version `1.0.0` and an update whose NACP says
+`1.4.2` can expose `1.4.2` to CNMT-based library scanners. The version comes from
+the update's internal metadata, never its filename or a conversion of the numeric
+CNMT version. Games without a newer matching update retain their base metadata.
+
+Python CLI equivalent (one absolute input path per line in `files.txt`):
+
+```sh
+python py/ztools/squirrel.py -dmul calculate -t cnsp -fat exfat \
+  -tfile /absolute/path/files.txt -o /absolute/path/output --prefer-update-metadata
+```
+
+This mode preserves both the base and update NCAs and only changes the base
+Application's Control references. It does **not** flatten the update into the base
+Program NCA. If Astris requires explicit update selection, add the generated NSP
+in **Manage Updates** and select its update before playing; the displayed version
+alone does not confirm the patch is active. Refresh the game library after replacing
+an older NSP. Astris compatibility still needs verification with real game files.
+
+Only unsplit NSP output with a single-block Application CNMT is supported. The
+menu selects exfat automatically. A
+temporary second copy of the output is needed while rebuilding the package; the
+original output is replaced only after rebuilding succeeds. Source game files
+are never modified. Unmodified eshop NSP and XCI modes keep their existing behavior.
+
 ## 6. Configuration mode:
 
 #### Auto Mode options. (Affects only Auto-Mode)

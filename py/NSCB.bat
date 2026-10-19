@@ -1830,6 +1830,7 @@ echo.
 echo SPECIAL OPTIONS:
 echo Input "4" to as NSP with only Unmodified eshop nca files
 echo Input "5" to repack list as both NSP-U and XCI
+echo Input "6" to repack as NSP with bundled update metadata for Astris (exfat)
 echo.
 ECHO *****************************************
 echo Or Input "b" to return to the option list
@@ -1838,6 +1839,8 @@ echo.
 set /p bs="Enter your choice: "
 set bs=%bs:"=%
 set vrepack=none
+set "update_metadata="
+set "metadata_fat="
 if /i "%bs%"=="b" goto multi_checkagain
 if /i "%bs%"=="1" set "vrepack=cnsp"
 if /i "%bs%"=="2" set "vrepack=xci"
@@ -1846,6 +1849,9 @@ if /i "%bs%"=="3" set "vrepack=cboth"
 if /i "%bs%"=="4" set "vrepack=nsp"
 if /i "%bs%"=="4" set "skipRSVprompt=true"
 if /i "%bs%"=="5" set "vrepack=both"
+if /i "%bs%"=="6" set "vrepack=cnsp"
+if /i "%bs%"=="6" set "update_metadata=--prefer-update-metadata"
+if /i "%bs%"=="6" set "metadata_fat=-fat exfat"
 
 if %vrepack%=="none" goto m_cl_wrongchoice
 :m_RSV_wrongchoice
@@ -1987,7 +1993,7 @@ for /f "tokens=*" %%f in (mlist.txt) do (
 set "listname=%%f"
 if "%vrepack%" EQU "cnsp" call :program_logo
 if "%vrepack%" EQU "cnsp" call :m_split_merge_list_name
-if "%vrepack%" EQU "cnsp" ( %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t cnsp -o "%w_folder%" -tfile "%mlistfol%\%%f" -roma %romaji% -dmul "calculate" )
+if "%vrepack%" EQU "cnsp" ( %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% %metadata_fat% %update_metadata% -t cnsp -o "%w_folder%" -tfile "%mlistfol%\%%f" -roma %romaji% -dmul "calculate" )
 
 if "%vrepack%" EQU "xci" call :program_logo
 if "%vrepack%" EQU "xci" call :m_split_merge_list_name
@@ -2121,7 +2127,7 @@ rem if /i "%finalname%"=="b" goto multi_checkagain
 
 cls
 if "%vrepack%" EQU "cnsp" call :program_logo
-if "%vrepack%" EQU "cnsp" ( %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t cnsp -o "%w_folder%" -tfile "%prog_dir%mlist.txt" -roma %romaji% -dmul "calculate" )
+if "%vrepack%" EQU "cnsp" ( %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% %metadata_fat% %update_metadata% -t cnsp -o "%w_folder%" -tfile "%prog_dir%mlist.txt" -roma %romaji% -dmul "calculate" )
 
 if "%vrepack%" EQU "xci" call :program_logo
 if "%vrepack%" EQU "xci" ( %pycommand% "%squirrel%" %buffer% %patchRSV% %vkey% %capRSV% %fatype% %fexport% %skdelta% -t xci -o "%w_folder%" -tfile "%prog_dir%mlist.txt" -roma %romaji% -dmul "calculate" )

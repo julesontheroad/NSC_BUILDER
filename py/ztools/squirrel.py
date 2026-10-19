@@ -110,6 +110,7 @@ if __name__ == '__main__':
 		parser.add_argument('-xci_tr', '--xci_trim', nargs='+', help='Trims xci')
 		parser.add_argument('-xci_untr', '--xci_untrim', nargs='+', help='Untrims xci')
 		parser.add_argument('-dc', '--direct_creation', nargs='+', help='Create directly a nsp or xci')
+		parser.add_argument('--prefer-update-metadata', action='store_true', help='Use bundled update Control metadata in multi ticketless NSP (unsplit only; emulator update selection may still be required)')
 		parser.add_argument('-dmul', '--direct_multi', nargs='+', help='Create directly a multi nsp or xci')
 		parser.add_argument('-ed', '--erase_deltas', nargs='+', help='Take of deltas from updates')
 		parser.add_argument('-rbnsp', '--rebuild_nsp', nargs='+', help='Rebuild nsp by cnmt order')
@@ -3687,6 +3688,8 @@ if __name__ == '__main__':
 		# ...................................................
 		# Direct MULTI NSP OR XCI
 		# ...................................................
+		if args.prefer_update_metadata and not args.direct_multi:
+			parser.error('--prefer-update-metadata requires --direct_multi')
 		if args.direct_multi:
 			indent = 1
 			index = 0
@@ -3793,6 +3796,12 @@ if __name__ == '__main__':
 						export.append('cnsp')
 					else:
 						print ("Wrong Type!!!")
+
+			if args.prefer_update_metadata:
+				if export != ['cnsp'] or fat == 'fat32':
+					parser.error('--prefer-update-metadata requires -t cnsp -fat exfat')
+				if not args.text_file:
+					parser.error('--prefer-update-metadata requires --text_file')
 
 			if args.direct_multi:
 				if args.text_file:
@@ -4465,6 +4474,12 @@ if __name__ == '__main__':
 							except BaseException as e:
 								Print.error('Exception: ' + str(e))
 					t.close()
+					if args.prefer_update_metadata:
+						from update_metadata import prefer_update_metadata
+						print('Preparing bundled update metadata (requires temporary space for a second NSP)...')
+						count = prefer_update_metadata(endfile)
+						print('Updated Application Control references: ' + str(count))
+						print('If Astris requires update selection, select this NSP in Manage Updates before playing.')
 			Status.close()
 		# ...................................................
 		# Direct Splitter
