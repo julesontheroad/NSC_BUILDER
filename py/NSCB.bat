@@ -1830,7 +1830,7 @@ echo.
 echo SPECIAL OPTIONS:
 echo Input "4" to as NSP with only Unmodified eshop nca files
 echo Input "5" to repack list as both NSP-U and XCI
-echo Input "6" to repack as NSP with bundled update metadata for Astris (exfat)
+echo Input "6" for experimental library metadata only (does not apply update; exfat)
 echo.
 ECHO *****************************************
 echo Or Input "b" to return to the option list

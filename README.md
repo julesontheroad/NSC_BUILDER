@@ -162,7 +162,12 @@ The behavior of the auto-mode is configured trough the “Configuration menu in 
     * Push SX autoloader files from library folder
     * Run collision check, cleanup unused SD autoloader files, cleanup colliding autoloader files pointing to HDD (In case a xci with that id is already in the SD)
 
-### Bundled update version in Astris
+### Bundled update metadata (experimental prototype)
+
+**This mode changes displayed metadata only. It does not activate the bundled
+Program patch and does not resolve a game that still executes version 1.0.0.
+The Astris feature remains incomplete until both library and in-game behavior
+are verified with the update active.**
 
 In **Mode 2: Multi packing**, choose **6** to generate a ticketless NSP whose
 Application metadata references the newest matching update's Control NCA. For

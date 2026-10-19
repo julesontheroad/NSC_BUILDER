@@ -4476,6 +4476,7 @@ if __name__ == '__main__':
 					t.close()
 					if args.prefer_update_metadata:
 						from update_metadata import prefer_update_metadata
+						print('Metadata-only prototype: this does not activate the Program patch. The game may still run the base version.')
 						print('Preparing bundled update metadata (requires temporary space for a second NSP)...')
 						count = prefer_update_metadata(endfile)
 						print('Updated Application Control references: ' + str(count))
